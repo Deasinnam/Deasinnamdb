@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="대신남 채널이 직접 측정한 PC·노트북·UMPC·태블릿·스마트폰 벤치마크 DB">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>대신남 벤치마크 DB</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: 계측 리드아웃 — 필터 바 → 선택 비교표 → 지표별 순위 막대 */
+:root{
+  --bg:#F3F5F8; --panel:#FFFFFF; --ink:#16202E; --muted:#5B6678; --line:#DCE1E9;
+  --accent:#1F4FD8; --hi:#FFE27A; --hi-ink:#16202E;
+  --c-desktop:#D2452F; --c-laptop:#1F4FD8; --c-mini:#8A3FD1; --c-tablet:#0E8F6E; --c-phone:#C98500;
+  --track:#E8ECF2;
+  --f-display:"Do Hyeon","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR",system-ui,-apple-system,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141C; --panel:#171E29; --ink:#E6EBF2; --muted:#93A0B4; --line:#2A3443;
+  --accent:#7FA2FF; --hi:#5A4A10; --hi-ink:#FFF3C4; --track:#232C3A;
+  --c-desktop:#F07A63; --c-laptop:#7FA2FF; --c-mini:#BC8CF0; --c-tablet:#4CC9A4; --c-phone:#E8B44A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141C; --panel:#171E29; --ink:#E6EBF2; --muted:#93A0B4; --line:#2A3443;
+  --accent:#7FA2FF; --hi:#5A4A10; --hi-ink:#FFF3C4; --track:#232C3A;
+  --c-desktop:#F07A63; --c-laptop:#7FA2FF; --c-mini:#BC8CF0; --c-tablet:#4CC9A4; --c-phone:#E8B44A;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+header{display:grid;gap:6px}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,6vw,44px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 small{font-family:var(--f-num);font-size:13px;color:var(--muted);letter-spacing:.06em;margin-left:8px;vertical-align:middle}
+.sub{color:var(--muted);margin:0;max-width:68ch}
+h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.controls{display:grid;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-weight:500;border:1px solid var(--line);background:transparent;color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{font-family:var(--f-num);font-size:12px;opacity:.7}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+label.f{display:grid;gap:4px;font-size:12px;color:var(--muted);letter-spacing:.04em;flex:1 1 220px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+button:focus-visible,input:focus-visible,select:focus-visible,.bar:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.metricnote{font-size:12px;color:var(--muted);margin:0}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}
+.ghost{font:inherit;font-size:13px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;cursor:pointer}
+.empty{color:var(--muted);margin:0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{position:sticky;top:0;background:var(--panel);font-weight:700;min-width:150px}
+tbody th{color:var(--muted);font-weight:500;white-space:nowrap;font-size:12px}
+td.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+td.best{background:var(--hi);color:var(--hi-ink);font-weight:600}
+tr.sec th{color:var(--ink);font-weight:700;padding-top:14px;letter-spacing:.06em;font-size:11px}
+.x{border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 0 0 6px;line-height:1}
+.cathead{display:flex;align-items:center;gap:6px}
+a{color:var(--accent)}
+.links a{margin-right:10px;white-space:nowrap}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:28px minmax(0,1fr) 92px;gap:10px;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.bar:hover{background:var(--bg)}
+.bar.sel{background:var(--hi);color:var(--hi-ink);border-color:transparent}
+.rank{font-family:var(--f-num);color:var(--muted);font-size:12px;text-align:right}
+.bar.sel .rank{color:inherit}
+.meta{min-width:0;display:grid;gap:3px}
+.nm{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.spec{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar.sel .spec{color:inherit;opacity:.75}
+.track{height:7px;background:var(--track);border-radius:4px;overflow:hidden}
+.fill{height:100%;border-radius:4px}
+.val{font-family:var(--f-num);font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+.val small{display:block;font-weight:500;font-size:10.5px;color:var(--muted)}
+.foot{font-size:12px;color:var(--muted);display:grid;gap:4px}
+.foot p{margin:0;max-width:80ch}
+@media (max-width:520px){.bar{grid-template-columns:22px minmax(0,1fr) 74px;gap:8px}thead th{min-width:120px}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .35s ease}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>대신남 벤치마크 DB <small>BENCH · LAB</small></h1>
+    <p class="sub">대신남 채널에서 직접 측정한 데스크탑·노트북·미니PC·UMPC·태블릿·스마트폰 벤치마크를 한곳에 모았습니다. 드라이브 대본에 있던 결과까지 모두 합쳤습니다. 지표를 고르면 순위가 바뀌고, 제품을 누르면 위 비교표에 추가됩니다.</p>
+  </header>
+
+  <section class="panel controls" aria-label="필터">
+    <div class="chips" id="cats" role="group" aria-label="분류"></div>
+    <div class="row">
+      <label class="f" for="q">제품·CPU·GPU 검색
+        <input id="q" type="search" placeholder="예: 8840U, 스냅드래곤, 갤럭시">
+      </label>
+      <label class="f" for="metric">순위 기준
+        <select id="metric"></select>
+      </label>
+    </div>
+    <p class="metricnote" id="mnote"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="cmpT">
+    <div class="head">
+      <h2 id="cmpT">선택한 제품 비교</h2>
+      <button class="ghost" id="clear" type="button">비교 비우기</button>
+    </div>
+    <div id="cmp"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="rankT">
+    <div class="head">
+      <h2 id="rankT">순위</h2>
+      <span class="metricnote" id="rcount"></span>
+    </div>
+    <div class="bars" id="bars"></div>
+  </section>
+
+  <footer class="foot">
+    <p>직접 테스트한 결과를 기반으로 작성된 데이터이며, 벤치마크 결과는 동일 제품이라도 사용자 환경에 따라 차이를 보일 수 있습니다. 제조사의 공식 발표 성능 자료와 차이가 있을 수 있습니다.</p>
+    <p>제품 링크는 알리 및 쿠팡 파트너스 활동의 일환으로, 소정의 수수료가 크리에이터에게 제공되며 오리지널 영상 제작비로 사용됩니다.</p>
+  </footer>
+</div>
+
+<script>
+const CATS={desktop:'데스크탑',laptop:'노트북',mini:'미니PC·UMPC',tablet:'태블릿',phone:'스마트폰'};
+const YT=id=>'https://www.youtube.com/watch?v='+id;
+const D=[
+// ── 데스크탑
+{c:'desktop',n:'FX 8300 + GT630 (교체 전)',cpu:'AMD FX 8300',gpu:'GT630',ram:'DDR3 16GB',d:'25.03.02',v:YT('Ck5FxStbG2s'),r23:[455,2681],fs:[426,432]},
+{c:'desktop',n:'중국산 라데온 RX580 8GB',cpu:'AMD FX 8300',gpu:'RX580 8GB',ram:'DDR3 16GB',d:'25.03.02',v:YT('Ck5FxStbG2s'),r23:[455,2681],fs:[8146,12927],ts:[3539,3763],snl:3486,sn:825,up:'FSR 10.38 → 48.53 fps (+367.6%)',st:'PCIe 5.97 GB/s'},
+{c:'desktop',n:'i5-3470 (쿨러 고장 상태)',cpu:'i5-3470',gpu:'-',ram:'DDR3 8GB',d:'25.03.02',r23:[494,1235]},
+{c:'desktop',n:'i5-3470 + GTX 1050Ti (쿨러 수리 후)',cpu:'i5-3470',gpu:'GTX 1050Ti',ram:'DDR3 8GB',d:'25.03.02',r23:[731,2745],fs:[6027,7158],ts:[1079,1065],snl:2197},
+{c:'desktop',n:'8병장 + R9 290',cpu:'8병장',gpu:'R9 290',ram:'DDR3 8GB',d:'25.04.23',fs:[8096,12789],ts:[3538,3783],snl:3573,wle:8308,up:'FSR 19.40 → 57.32 fps (+195.5%)',g:['쉐도우 오브 더 툼레이더 62 / 84 / 145','포르자 호라이즌 46.7 / 66.1 / 81.7','사이버펑크 43.7 / 57.2 / 76.1']},
+{c:'desktop',n:'어로스 RX 9070 XT 엘리트 (FX 8300 보드)',cpu:'AMD FX 8300',gpu:'RX 9070 XT',ram:'DDR3 16GB',d:'25.03.25',r23:[455,2681],fs:[10056,23384],ts:[8401,14224],pr:16516,sw:6127,snl:11823,sn:7134,up:'FSR 90.07 → 137.62 fps (+52.8%)',st:'PCIe 2.0 보드'},
+{c:'desktop',n:'어로스 RX 9070 XT 엘리트 (7900X3D)',cpu:'Ryzen 9 7900X3D',gpu:'RX 9070 XT',ram:'DDR5 32GB 7400MHz',d:'25.03.25',r23:[2090,22000],fs:[50173,68916],ts:[25529,30766],pr:18792,sw:6399,snl:26568,sn:7257,sb:121446,wle:55834,wl:112467,up:'FSR 92.06 → 262.30 fps (+184.9%)'},
+{c:'desktop',n:'HP 오멘 35L',cpu:'i7-14700F',gpu:'RTX 4070 Super',ram:'DDR5 32GB 6000MHz',d:'24.12.30',v:YT('28w-Qy1U5e8'),r23:[2509,28015],cb:[118,1346],fs:[41548,49555],ts:[20073,20531],pr:12866,sn:4555},
+{c:'desktop',n:'형이사왔다 6월 (Ryzen5 3600 + 1080Ti)',cpu:'Ryzen5 3600',gpu:'GTX 1080Ti',ram:'DDR4 16GB 3200MHz',d:'26.06.20',r23:[1200,9054],cb:[71,513],fs:[22408,28525],ts:[9090,9635],sn:2185,sb:27492,wle:19552,wl:64401,up:'FSR 31.44 → 58.79 fps (+87%)',st:'R 3,676 / W 2,778 MB/s',g:['툼레이더 높음 FHD 102 / 136 / 233','포르자 호라이즌 매우 높음 64.6 / 81.2 / 98.9','사이버펑크 높음 FSR2.1 성능 80.99 / 105.92 / 133.45']},
+{c:'desktop',n:'Ryzen5 5600 + RTX4060 조립PC',cpu:'Ryzen5 5600',gpu:'RTX4060 8GB OC',ram:'DDR4 32GB 3200MHz',d:'24.11.17',v:YT('Bx7T64YkFG0'),r23:[1440,10850],fs:[24280,28127],ts:[10043,10493],pr:5990,sn:2345},
+// ── 노트북
+{c:'laptop',n:'LG그램 루나레이크',cpu:'Ultra 5 226V',gpu:'Arc 130V',ram:'LPDDR5X 16GB',d:'25.03.03',v:YT('baAOJliQ1jk'),gb6:[2524,9812],r23:[1633,9535],cb:[104,498],fs:[7073,7506],ts:[3304,3017],snl:2654},
+{c:'laptop',n:'LG그램 에로우레이크',cpu:'Ultra 7 225H',gpu:'Arc 140T',ram:'LPDDR5X 16GB',d:'25.03.03',v:YT('baAOJliQ1jk'),gb6:[2773,15470],r23:[1946,14255],cb:[116,807],fs:[9621,10496],ts:[4538,4184],snl:3188},
+{c:'laptop',n:'LG그램 2024년 모델',cpu:'Ultra 5 125U',gpu:'Intel Graphics',ram:'DDR5 16GB',d:'25.03.03',v:YT('baAOJliQ1jk'),gb6:[2134,7685],r23:[1467,8063],fs:[3370,3650],ts:[1573,1401]},
+{c:'laptop',n:'LG그램 13세대',cpu:'i5-1335U',gpu:'Iris Xe',ram:'LPDDR4 16GB',d:'25.01.06',v:YT('KYyS-ppPYaA'),gb6:[2385,8816],r23:[1479,6311],fs:[3293,4315]},
+{c:'laptop',n:'갤럭시북5 프로',cpu:'Ultra 7 258V',gpu:'Arc 140V',ram:'LPDDR5X 32GB',d:'24.12.24',gb6:[2720,11132],r23:[1861,11143],cb:[125,645],fs:[9176,10053],ts:[4354,4025],sb:15869,wle:7387,up:'XeSS 7.15 → 30.9 fps (+332%)'},
+{c:'laptop',n:'레노버 아이디어패드 슬림 5',cpu:'Ryzen AI 7 350',gpu:'Radeon 860M',ram:'DDR5 32GB',d:'25.03.20',v:YT('csAhsEr9o0k'),l:'https://link.coupang.com/a/cl4RYK',gb6:[2860,13833],r23:[1941,15415],cb:[144,871],fs:[6818,7531],ts:[3174,2829],snl:2502,st:'R 5,097 / W 3,996 MB/s'},
+{c:'laptop',n:'HP X360 830 G11',cpu:'Ultra 5 125U',gpu:'Intel Graphics',ram:'32GB 7500MHz',d:'24.07.17',r23:[1594,8869],fs:[5193,5493],ts:[2299,2057],bat:'56Wh'},
+{c:'laptop',n:'갤럭시북4 엣지',cpu:'Snapdragon X Elite',gpu:'Adreno',ram:'16GB',d:'24.06.23',v:YT('LT57gj94OHg'),l:'https://link.coupang.com/a/bGAOcW',gb6:[2488,11924],r23:[1233,9765],fs:[null,6069],ts:[null,1734],sn:517,snl:2077,wle:6406,wl:16856,bat:'61.8Wh'},
+{c:'laptop',n:'ROG 제피러스 G16',cpu:'Ultra 9 185H',gpu:'RTX 4060 115W',ram:'32GB',d:'24.06.11',v:YT('vLLtjsF8a6o'),l:'https://link.coupang.com/a/bGX3DH',r23:[1822,19365],fs:[null,25281],ts:[null,10090],pr:5743,bat:'90Wh'},
+{c:'laptop',n:'HP 빅터스 15',cpu:'Ryzen 7 8845HS',gpu:'RTX 4060 75W',ram:'16GB',d:'24.05.13',v:YT('f8gJ-fY01Bg'),l:'https://link.coupang.com/a/bGX7sn',r23:[1742,15911],fs:[null,25330],ts:[null,9252],pr:5217,bat:'70Wh'},
+{c:'laptop',n:'짭요가북 (비추)',cpu:'Intel N100',gpu:'Intel 내장',ram:'16GB',d:'24.05.11',v:YT('Gd2pb5xiKVA'),l:'https://s.click.aliexpress.com/e/_Dncf3vh',r23:[710,2829],fs:[null,1131],ts:[null,317],bat:'9000mAh'},
+{c:'laptop',n:'ROG 스트릭스 G18',cpu:'i9-14900HX',gpu:'RTX 4060 140W',ram:'16GB',d:'24.04.14',v:YT('e7qifeQwlCs'),l:'https://link.coupang.com/a/bGYcEw',r23:[2128,33880],fs:[null,26927],ts:[null,11121],pr:6184,bat:'90Wh'},
+{c:'laptop',n:'레노버 요가북 9i',cpu:'Ultra 7 155U',gpu:'Intel Graphics',ram:'32GB',d:'24.04.13',v:YT('99HBEb0LkaM'),l:'https://link.coupang.com/a/bxDOCm',r23:[1679,8054],fs:[null,5421],ts:[null,2069],sb:6574,bat:'80Wh'},
+{c:'laptop',n:'갤럭시북4 울트라',cpu:'Ultra 9 185H',gpu:'RTX 4070 80W',ram:'32GB',d:'24.03.31',v:YT('chm975KAUok'),l:'https://link.coupang.com/a/bGYgdR',r23:[1965,18111],fs:[null,26936],ts:[null,10277],pr:6165,bat:'76Wh'},
+{c:'laptop',n:'MSI 타이탄 18HX',cpu:'i9-14900HX',gpu:'RTX 4090 175W',ram:'64GB',d:'24.03.27',v:YT('aVNCVW80ckU'),l:'https://www.11st.co.kr/products/6760716311',r23:[2079,30867],fs:[null,47184],ts:[null,22051],pr:13951,bat:'99.9Wh'},
+{c:'laptop',n:'레노버 슬림1',cpu:'Ryzen 3 7320U',gpu:'Radeon 610M',ram:'8GB',d:'23.02.10',v:YT('fZZ90M_4dbw'),l:'https://link.coupang.com/a/bpDmAV',r23:[1025,4559],fs:[1735,1893],bat:'42Wh'},
+// ── 미니PC · UMPC · 올인원
+{c:'mini',n:'미니스포럼 AI X1 Pro',cpu:'Ryzen AI 9 HX370',gpu:'Radeon 890M',ram:'DDR5 32GB 5600MHz',d:'25.03.20',v:YT('lxSDsEDgexw'),gb6:[2924,15176],r23:[2016,21452],cb:[119,1252],fs:[8094,8869],ts:[2920,3210],snl:3040,sb:14637,up:'FSR 9.58 → 35.74 fps (+273%)'},
+{c:'mini',n:'HP Pro One 245 G10 (올인원)',cpu:'Ryzen 3 7320U',gpu:'Radeon 610M',ram:'LPDDR4 16GB',d:'25.01.08',v:YT('W7I-HlvVkFk'),gb6:[1229,3780],r23:[1065,4586],fs:[1624,1781],st:'R 1,770 / W 1,670 MB/s'},
+{c:'mini',n:'AOKZOE A1X (UMPC)',cpu:'Ryzen AI 9 HX370',gpu:'Radeon 890M',ram:'DDR5 32GB 7500MHz',d:'25.04.30',gb6:[2811,11479],r23:[1916,16327],fs:[7735,8357],ts:[3505,3161],pr:1779,snl:2968,sn:535,sb:13982,wle:6425,wl:19229,g:['쉐도우 오브 더 툼레이더 52 / 63 / 97','포르자 호라이즌 66.8 / 79.4 / 95.4','사이버펑크 FSR2.1 고성능 45 / 63 / 88']},
+{c:'mini',n:'AOKZOE A2 (UMPC)',cpu:'Ryzen 7 7840U',gpu:'Radeon 780M',ram:'LPDDR5x 32GB',d:'24.02.18',v:YT('lOcuLeXlsLI'),r23:[1689,13540],fs:[7345,7913],ts:[3227,2930],g:['쉐도우 오브 더 툼레이더 62 / 84 / 145','포르자 호라이즌 65.8 / 68.3 / 71.8','사이버펑크 45 / 59 / 86']},
+{c:'mini',n:'ROG Ally (UMPC)',cpu:'Ryzen Z1 Extreme',gpu:'Radeon 780M',ram:'-',d:'23.08.27',v:YT('lA_8sMrsWt0'),r23:[1736,13913],fs:[7581,8119],ts:[3193,2868],sb:12098},
+{c:'mini',n:'ONEXFLY (UMPC)',cpu:'Ryzen 7 7840U',gpu:'Radeon 780M',ram:'LPDDR5x 32GB',d:'23.08.27',v:YT('lA_8sMrsWt0'),r23:[1690,13157],fs:[7365,7897],ts:[3153,2840],sb:12098,g:['쉐도우 오브 더 툼레이더 38 / 50 / 87','사이버펑크 14 / 53 / 65','콜 오브 듀티4 최소 41 / 평균 74']},
+{c:'mini',n:'ONEXPLAYER 2 (UMPC)',cpu:'Ryzen 7 6800U',gpu:'Radeon 680M',ram:'-',d:'23.08.27',v:YT('lA_8sMrsWt0'),r23:[1495,10490],fs:[5456,7049],ts:[2650,2379],sb:9830},
+{c:'mini',n:'ONEXPLAYER G1 (UMPC)',cpu:'Ryzen 7 8840U',gpu:'Radeon 780M',ram:'LPDDR5x 32GB',d:'25.05.09',gb6:[2391,10987],r23:[1700,13015],cb:[98,723],fs:[7356,7843],ts:[3068,2754],pr:1362,snl:2539,sn:470,sb:11432,wle:5481,up:'FSR 8.23 → 34.01 fps (+313%)',st:'R 6,952 / W 5,990 MB/s',g:['사이버펑크 2560x1600 FSR2.1 고성능 23.24 / 33.57 / 48.04']},
+{c:'mini',n:'AYANEO 2S (UMPC)',cpu:'Ryzen 7 8840U',gpu:'Radeon 780M 35W',ram:'16GB',d:'24.08.04',gb6:[1727,9539],r23:[1675,13553],fs:[6847,7502],ts:[3131,2825],pr:1313,sb:11313,sn:444,snl:2743,wle:5287,wl:18339,g:['사이버펑크 낮음 FSR2.1 성능 45.14 / 53.56 / 64.19','쉐도우 오브 더 툼레이더 최소 47 / 64 / 115']},
+{c:'mini',n:'에즈락 X600 (ITX 베어본)',cpu:'Ryzen 7 8700G',gpu:'Radeon 780M',ram:'32GB',d:'24.06.16',v:YT('0kY7HqC2XFc'),l:'https://link.coupang.com/a/bG2XMn',r23:[1748,17722],fs:[8373,9031],ts:[3640,3245],sb:12579},
+{c:'mini',n:'FIREBAT MN56',cpu:'Ryzen 7 7840HS',gpu:'Radeon 780M',ram:'16GB',d:'24.03.18',v:YT('pICfMhm1kRA'),l:'https://s.click.aliexpress.com/e/_DeGCTNr',r23:[1688,15287],fs:[7139,7741],ts:[3034,2700],pr:1179},
+{c:'mini',n:'CHUWI N150 미니PC',cpu:'Intel N150',gpu:'Intel Graphics',ram:'LPDDR5x 16GB',d:'25.06.03',gb6:[1151,3011],r23:[965,2838],fs:[1443,1523],ts:[486,426],snl:320,wle:1064,wl:3767,st:'R 3,317 / W 2,754 MB/s'},
+{c:'mini',n:'Beelink EQ13',cpu:'Intel N200',gpu:'Intel UHD',ram:'16GB',d:'24.06.29',v:YT('N6mwUfUMc3M'),l:'https://www.bee-link.com/products/beelink-eq13-n200',gb6:[1310,3382],r23:[1002,3010],fs:[1204,1279],ts:[425,372],snl:281,wle:906,wl:3280},
+{c:'mini',n:'FIREBAT S1',cpu:'Intel N100',gpu:'Intel UHD',ram:'16GB',d:'24.06.17',v:YT('Ek2_Ky_4GhI'),l:'https://s.click.aliexpress.com/e/_DFem0c7',gb6:[1171,2879],r23:[903,2839],fs:[1043,1107],ts:[359,313],snl:236,wle:774,wl:2761},
+{c:'mini',n:'FIREBAT T8',cpu:'Intel N100',gpu:'Intel UHD',ram:'16GB',d:'23.11.11',v:YT('-HClrEtICo4'),l:'https://s.click.aliexpress.com/e/_Dn0YL4x',r23:[910,2966],fs:[1135,1195]},
+// ── 태블릿
+{c:'tablet',n:'레노버 Y700 1세대 (중국 내수)',cpu:'Snapdragon 870',gpu:'Adreno 650',ram:'LPDDR5 12GB',d:'25.03.20',v:YT('vFmHz_9GLk0'),gb6:[1283,3440],wle:1260,lte:'미지원',p:'단종'},
+{c:'tablet',n:'레노버 Y700 2세대 (중국 내수)',cpu:'Snapdragon 8+ Gen1',gpu:'Adreno 730',ram:'LPDDR5 12GB',d:'25.03.31',gb6:[1855,4720],gv:6247,snl:859,wle:2800,lte:'미지원',gen:'60fps',p:'498,000원'},
+{c:'tablet',n:'레노버 Y700 3세대 (중국 내수)',cpu:'Snapdragon 8 Gen3',gpu:'Adreno 750',ram:'LPDDR5 12GB',d:'25.03.31',gb6:[2164,7053],gv:16387,snl:1665,sb:8513,wle:4840,lte:'미지원',gen:'60fps',st:'R 1.18 / W 1.59 GB/s',p:'599,900원'},
+{c:'tablet',n:'레노버 Y700 4세대 (중국 내수)',cpu:'Snapdragon 8 Elite',gpu:'Adreno',ram:'LPDDR5 12GB',d:'26.05.29',gb6:[3086,9053],snl:2583,sbe:1259,sb:11877,wle:6528,lte:'미지원',gen:'60fps'},
+{c:'tablet',n:'레노버 샤오신패드 프로 GT13',cpu:'Snapdragon 8s Gen4',gpu:'Adreno 825',ram:'LPDDR5 12GB',d:'26.05.29',gb6:[2114,6651],snl:1616,sbe:734,sb:7237,wle:4055,wl:'MAX',lte:'미지원'},
+{c:'tablet',n:'레노버 샤오신11 GT',cpu:'Snapdragon 8 Gen3',gpu:'Adreno',ram:'8GB',d:'26.05.29',gb6:[2114,4566],snl:1642,sbe:830,sb:8511,wle:4509,wl:'MAX',lte:'미지원'},
+{c:'tablet',n:'레노버 샤오신11 2025',cpu:'MediaTek MT8755',gpu:'-',ram:'LPDDR4 6GB',d:'26.05.29',gb6:[788,2039],wle:338,wl:1211,lte:'미지원'},
+{c:'tablet',n:'레노버 샤오신패드 프로 12.7',cpu:'Dimensity 8300 Ultra',gpu:'Mali-G615 MC5',ram:'LPDDR4X 8GB',d:'27.03.06',gb6:[1299,3893],gv:7967,snl:740,sbe:332,sb:3191,wle:1903,wl:7706,bat:'10,200mAh / 45W',lte:'미지원'},
+{c:'tablet',n:'올도큐브 iPlay80 mini Pro',cpu:'UNISOC T7300',gpu:'-',ram:'LPDDR4 8GB',d:'26.05.29',gb6:[894,2248],snl:146,wle:355,wl:1256,lte:'지원'},
+{c:'tablet',n:'올도큐브 iPlay70 mini Ultra 5G',cpu:'Dimensity 8300',gpu:'Mali-G615 MC6',ram:'LPDDR5 12GB',d:'26.02.20',l:'https://brand.naver.com/alldocube/products/12973376208',gb6:[1472,4355],gv:8884,snl:1180,sbe:525,sb:4791,wle:2900,wl:'MAX',bat:'7,200mAh / 33W',lte:'5G',gen:'중간 권장 · 높음 가능'},
+{c:'tablet',n:'올도큐브 iPlay70 mini Ultra',cpu:'Snapdragon 7+ Gen3',gpu:'Adreno 732',ram:'LPDDR5 12GB',d:'25.04.09',gb6:[1875,5147],gv:8811,snl:966,wle:3017,wl:'MAX',bat:'7,300mAh / 20W',lte:'미지원',st:'R 724 MB/s / W 1.58 GB/s',p:'398,000원'},
+{c:'tablet',n:'올도큐브 iPlay70 Ultra Pad (13")',cpu:'Snapdragon 7+ Gen3',gpu:'Adreno 732',ram:'LPDDR5 12GB',d:'26.02.20',l:'https://brand.naver.com/alldocube/products/12901734967',gb6:[1752,5135],gv:9165,snl:960,wle:2946,wl:'MAX',bat:'15,000mAh / 33W',lte:'미지원',st:'R 894 MB/s / W 1.95 GB/s',gen:'중간 권장 · 높음 가능'},
+{c:'tablet',n:'올도큐브 iPlay70 Max Pro (13")',cpu:'UNISOC T7300',gpu:'Mali-G57 MC2',ram:'LPDDR4X 8GB',d:'27.03.06',gb6:[909,2181],gv:1606,snl:145,wle:355,wl:1243,bat:'10,000mAh / 30W',lte:'지원'},
+{c:'tablet',n:'올도큐브 iPlay70 mini Pro',cpu:'Dimensity MT8791',gpu:'Mali-G68 MC4',ram:'LPDDR5 8GB',d:'25.08.14',gb6:[889,2345],wle:645,wl:2264,lte:'LTE·VoLTE',st:'R 467 MB/s / W 1.07 GB/s'},
+{c:'tablet',n:'올도큐브 iPlay70 mini 터보',cpu:'Snapdragon 6 Gen1',gpu:'Adreno 710',ram:'LPDDR5 12GB',d:'25.06.17',gb6:[918,2898],gv:1718,snl:200,wle:601,wl:2351,bat:'5,500mAh / 18W',lte:'미지원',l:'https://naver.me/GZ6k5BOq',p:'254,320원'},
+{c:'tablet',n:'올도큐브 iPlay60 mini 터보',cpu:'Snapdragon 6 Gen1',gpu:'Adreno 710',ram:'LPDDR5 8GB',d:'25.02.08',v:YT('A4pZvflme-4'),gb6:[929,2846],gv:1683,snl:199,wle:605,wl:2379,bat:'5,500mAh / 18W',lte:'미지원',st:'R 416 / W 729 MB/s',l:'https://naver.me/FK5lgPCa',p:'166,500원'},
+{c:'tablet',n:'올도큐브 iPlay60 mini Pro',cpu:'Helio G99',gpu:'Mali-G57 MC2',ram:'LPDDR5 8GB',gb6:[706,1825],wle:341,wl:1220,bat:'6,050mAh / 18W',lte:'LTE·VoLTE',st:'R 343 / W 433 MB/s'},
+{c:'tablet',n:'올도큐브 iPlay50 mini Pro',cpu:'Helio G99',gpu:'Mali-G57 MC2',ram:'LPDDR5 8GB',gb6:[702,1862],wl:1179,bat:'5,000mAh / 18W',lte:'LTE·VoLTE'},
+{c:'tablet',n:'HeadWolf TITAN',cpu:'Dimensity 8300',gpu:'Mali-G615 MC6',ram:'LPDDR5 12GB',d:'25.12.06',gb6:[1399,4040],snl:1177,sbe:516,wle:2816,wl:'MAX',bat:'7,200mAh / 20W',lte:'LTE'},
+{c:'tablet',n:'BNCF 11인치',cpu:'Helio G100',gpu:'Mali-G57 MC2',ram:'LPDDR4X 8GB',d:'26.02.18',v:'https://s.click.aliexpress.com/e/_c3AUi1iR',gb6:[654,1810],wle:341,wl:1221,bat:'7,000mAh',lte:'LTE·VoLTE',st:'R 170 / W 575 MB/s'},
+{c:'tablet',n:'테클라스트 T65',cpu:'UNISOC T7280',gpu:'-',ram:'LPDDR4 6GB',d:'26.05.29',gb6:[440,1488],wle:161,wl:581,lte:'지원'},
+{c:'tablet',n:'킹콩 미니',cpu:'UNISOC T615',gpu:'Mali-G57',ram:'LPDDR4X 6GB',d:'26.01.27',gb6:[430,1399],wle:158,wl:575,bat:'10,200mAh / 33W',lte:'LTE·VoLTE',st:'R 575 / W 164 MB/s'},
+{c:'tablet',n:'MEGA 8 (13")',cpu:'UNISOC T620',gpu:'Mali-G57',ram:'12GB',d:'25.04.09',gb6:[501,1567],snl:67,wle:159,wl:573,bat:'11,000mAh / 18W',lte:'LTE'},
+{c:'tablet',n:'아이패드 프로 1세대',cpu:'Apple A9X',gpu:'PowerVR GT7800+',ram:'LPDDR4 4GB',d:'2015 출시',gb6:[713,1053],wle:977,wl:3790,bat:'10,407mAh / 18W',lte:'LTE'},
+// ── 스마트폰
+{c:'phone',n:'갤럭시 S25 울트라',cpu:'Snapdragon 8 Elite',gpu:'Adreno 830',ram:'LPDDR5X 12GB',d:'25.01.27',gb6:[3057,9846],gv:26076,snl:2619,sb:12295,wle:6910,wl:'MAX',lte:'5G',st:'R 1.84 / W 1.05 GB/s'},
+{c:'phone',n:'갤럭시 S25 엣지',cpu:'Snapdragon 8 Elite',gpu:'Adreno 830',ram:'LPDDR5X 12GB',d:'25.05.14',gb6:[3022,9416],gv:24959,snl:2327,sb:10866,wle:6158,wl:'MAX',bat:'3,900mAh / 25W',lte:'5G',st:'R 1.50 / W 3.17 GB/s'},
+{c:'phone',n:'샤오미 15 울트라',cpu:'Snapdragon 8 Elite',gpu:'Adreno 830',ram:'LPDDR5X 16GB',d:'25.04.01',gb6:[3001,9197],gv:24449,snl:2156,sb:9901,wle:5990,wl:'MAX',bat:'5,410mAh / 90W · 무선 80W',lte:'5G',st:'R 1.12 / W 1.16 GB/s'},
+{c:'phone',n:'샤오미 포코 F7 Pro',cpu:'Snapdragon 8 Gen3',gpu:'Adreno 750',ram:'LPDDR5 12GB',d:'25.04.01',gb6:[2113,6303],gv:16166,snl:1694,sb:8240,wle:4571,wl:'MAX',bat:'6,000mAh / 90W',lte:'5G',st:'R 895 MB/s / W 1.38 GB/s'},
+{c:'phone',n:'낫싱폰 3a Pro',cpu:'Snapdragon 7s Gen3',gpu:'Adreno 810',ram:'LPDDR5 12GB',d:'25.04.01',gb6:[1153,3261],snl:382,wle:1059,wl:3994,gen:'40fps',lte:'LTE·VoLTE',st:'R 497 / W 944 MB/s'},
+{c:'phone',n:'서피스 듀오',cpu:'Snapdragon 855',gpu:'Adreno 640',ram:'6GB',d:'26.09.14',gb6:[943,2790],wle:882,wl:3010,lte:'LTE·eSIM'},
+// ── 드라이브 대본에서 추가한 결과 (26.10.19)
+{c:'desktop',n:'인텔 Ultra5 245K + RTX4090',cpu:'Ultra 5 245K',gpu:'RTX 4090 AERO OC 24GB',ram:'DDR5 32GB 6400MHz',d:'24.11.17',r23:[2167,25157],fs:[50960,78085],ts:[30407,36561],pr:26008,sn:9222,g:['어크 미라지 2K 가장높음 75 / 175 / 215','사이버펑크 RTX OD 81 / 92 / 105','검은신화 오공 울트라 41 / 145 / 169','아바타 울트라 99 / 122 / 151','RDR2 매우높음 51 / 138 / 172']},
+{c:'desktop',n:'레트로 PC 2편 (타워형)',cpu:'Ryzen7 7700X3D',gpu:'RX 9070 GRE',ram:'DDR5 32GB',d:'26.09.09',r23:[1627,16313],fs:[39839,52838],ts:[19898,22259],pr:12352,sn:5430,g:['사이버펑크 프레임생성 310 / 383 / 454','검은신화 오공 129 / 154 / 177']},
+{c:'desktop',n:'레트로 PC 1편 (가로형)',cpu:'Ryzen9 9950X3D2',gpu:'RX 9060 XT 16GB',ram:'DDR5 32GB 4800MHz',d:'26.08.24',r23:[2233,42087],fs:[36890,null],ts:[16700,null],memo:'FireStrike·TimeSpy 값은 대본에 종합/그래픽 표기가 섞여 있어 종합 칸에만 넣었습니다.',g:['사이버펑크 FSR3 품질+FG 248 / 296 / 357','검은신화 오공 FSR4 매우높음 102 / 121 / 138','배틀그라운드 울트라 평균 200+']},
+{c:'desktop',n:'현주 게이밍 PC (i5-12400F + RTX5060 Ti)',cpu:'i5-12400F',gpu:'RTX 5060 Ti 8GB',ram:'DDR4 16GB 3200MHz',d:'26.04.15',r23:[1661,12126],fs:[28734,null],ts:[14535,null],sn:3702,up:'DLSS 47.83 → 150.75 fps',g:['사이버펑크 RT울트라 DLSS+FG4x 평균 249.67','검은신화 오공 매우높음 FG4x 평균 약 156']},
+{c:'desktop',n:'Ryzen9 7900X + RX 7700XT',cpu:'Ryzen9 7900X',gpu:'RX 7700XT',ram:'DDR5 16GB 6400MHz',d:'24.12.04',fs:[34953,42317],pr:8889,sw:3081,sn:3278,g:['사이버펑크 2K 136.62 / 156.51 / 179.25']},
+{c:'laptop',n:'레노버 리전5 15AHP11',cpu:'Ryzen7 250',gpu:'RTX 5070 115W',ram:'DDR5 16GB',d:'26.09.17',g7:[2161,10504],r23:[1734,15236],cb26:[564,3334],fs:[29139,37043],ts:[13167,14108],pr:7547,sn:3064,bat:'80Wh',g:['사이버펑크 RT울트라 DLSS4+FG 121 / 131 / 142','검은신화 오공 RT높음 62 / 84 / 108']},
+{c:'laptop',n:'에이서 프레데터 헬리오스 네오 16S AI',cpu:'Ultra 9 275HX',gpu:'RTX 5070 Ti',ram:'DDR5 64GB',d:'25.06.22',r23:[2017,27974],cb:[128,1510],fs:[29665,34899],ts:[14173,13772],pr:8816,sn:3049,st:'R 6,843 / W 6,142 MB/s',bat:'76Wh',g:['어크 섀도우스 48 / 70 / 102','사이버펑크 RTX중간 FG4x 142 / 152 / 174','검은신화 오공 31 / 90 / 101']},
+{c:'laptop',n:'레노버 리전 프로 7i 10세대',cpu:'Ultra 9 275HX',gpu:'RTX 5080 175W',ram:'DDR5 32GB 6400MHz',d:'25.04.23',r23:[2160,37503],cb:[133,2129],fs:[35173,42831],ts:[21680,22693],pr:14574,sn:5386,bat:'80Wh',g:['사이버펑크 RTX울트라 70.71 / 80.19 / 88.65','어크 섀도우스 77 / 105 / 134','검은신화 오공 39 / 117 / 137','몬헌 와일즈 평균 154.29']},
+{c:'laptop',n:'LG 그램 Pro AI 2026 (12Xe)',cpu:'Ultra X7 358H',gpu:'Arc B390',ram:'LPDDR5x 32GB',d:'26.01.11',r23:[2005,18686],cb:[123,1087],fs:[13951,16516],ts:[7385,6831],st:'R 13,490 / W 13,515 MB/s',g:['사이버펑크 스팀덱 XeSS+FG 69.77 / 78.39 / 88.56','디아블로4 높음 평균 약 98','롤 매우높음 평균 약 151']},
+{c:'laptop',n:'LG 그램 Pro AI 2026 (10Xe)',cpu:'338H',gpu:'Arc B370',ram:'LPDDR5x 32GB',d:'26.01.11',r23:[1766,13169],cb:[113,901],fs:[12863,15012],ts:[6528,6094],st:'R 12,713 / W 7,033 MB/s',memo:'대본에 U5 / X5 338H 표기가 섞여 있습니다.',g:['사이버펑크 스팀덱 XeSS+FG 63.63 / 71.60 / 81.78','디아블로4 중간 평균 약 96','롤 평균 약 142']},
+{c:'laptop',n:'LG 그램 Pro RTX5050',cpu:'Ultra 5 225H',gpu:'RTX 5050 65W',ram:'LPDDR5X 32GB 8400MHz',d:'25.12.23',r23:[1821,14635],cb:[119,832],fs:[19675,21738],ts:[7945,7658],pr:4553,sn:1662,st:'R 7,161 / W 4,936 MB/s',bat:'90Wh',g:['사이버펑크 DLSS4 품질 FG4x 112 / 121 / 133','검은신화 오공 25 / 66 / 78','스텔라 블레이드 약 77 / 115 / 150']},
+{c:'laptop',n:'LG 그램북 2026',cpu:'Core 5 시리즈3',gpu:'Intel 내장',ram:'-',d:'26.09.01',g7:[2301,7846],r23:[1670,7674],cb26:[445,1760],ts:[1658,1473],snl:1095,bat:'61.2Wh',g:['롤 FHD 높음 90 / 120 / 214','FC온라인 평균 약 60']},
+{c:'laptop',n:'에이서 아스파이어 14 AI 2026',cpu:'Ultra 5 325',gpu:'Intel Graphics (Xe3 4코어)',ram:'LPDDR5X 16GB',d:'26.07.06',r23:[1774,10721],fs:[5723,6246],ts:[2961,2664],sb:10611,bat:'65Wh',g:['사이버펑크 낮음 XeSS+FG 77.04 / 87.67 / 99.15','포르자5 낮음 54 / 61 / 71','롤 매우높음 116 / 227 / 411']},
+{c:'laptop',n:'ASUS ExpertBook P3 G2',cpu:'Ryzen7 8840HS',gpu:'Radeon 780M',ram:'DDR5 32GB 5600MHz',d:'26.09.07',g7:[2279,12600],r23:[1688,13852],cb26:[565,2846],fs:[6724,7407],ts:[2784,2505],snl:2734,sb:10931,st:'R 6,743 / W 3,672 MB/s',g:['사이버펑크 FSR3.1+FG 48.81 / 58.59 / 71.33','롤 매우높음 33 / 136 / 150']},
+{c:'laptop',n:'LG 그램 Pro 17 (2025)',cpu:'Ultra 7 255H',gpu:'Arc 140T',ram:'LPDDR5x 32GB 8400MHz',d:'25.02.18',r23:[1936,15362],fs:[9342,10062],ts:[4447,4135],pr:2149,sn:902,sb:13933,up:'XeSS 8.86 → 32.22 fps',memo:'RX7700XT eGPU 데스크탑 모드: FireStrike 25,768 / 31,302, TimeSpy 12,718 / 14,529',g:['사이버펑크 낮음 FSR 49 / 56 / 66','포르자5 낮음 43 / 60 / 70']},
+{c:'laptop',n:'에이서 프레데터 헬리오스 네오 14',cpu:'Ultra 7 155H',gpu:'RTX 4060 120W',ram:'LPDDR5X 32GB 6400MHz',d:'24.08.27',r23:[1802,18179],fs:[24164,27770],ts:[10874,10862],pr:6026,sn:2345,st:'R 7,150 / W 5,035 MB/s',bat:'76Wh',g:['포르자 모터스포츠 71 / 108 / 128','사이버펑크 53 / 65 / 79','검은신화 오공 32 / 96 / 109']},
+{c:'laptop',n:'Ryzen5 8640HS OLED 가성비 노트북',cpu:'Ryzen5 8640HS',gpu:'Radeon 760M',ram:'LPDDR5 8GB (싱글)',d:'26.01.16',r23:[1687,10229],fs:[3866,4131],memo:'16GB 듀얼 업그레이드 후 FireStrike 6,059 / 6,497',g:['롤 매우높음 85fps (램 업그레이드 후)']},
+{c:'laptop',n:'Ryzen5 7535HS + RTX2050 노트북',cpu:'Ryzen5 7535HS',gpu:'RTX 2050',ram:'DDR5 16GB 5600MHz',d:'24.08.23',fs:[9488,10782],ts:[4236,3933],sb:20189,g:['사이버펑크 낮음 FSR 69.56 / 92.98 / 128.19']},
+{c:'laptop',n:'Ryzen AI9 HX370 노트북 (890M 단독)',cpu:'Ryzen AI 9 HX370',gpu:'Radeon 890M',ram:'LPDDR5X 32GB',d:'24.08.23',fs:[9245,10128],ts:[4081,3680],snl:3585,sb:16513,memo:'MUX로 RTX4060을 끄고 FHD에서 측정',g:['사이버펑크 낮음 FSR 69.49 / 85.27 / 109.56']},
+{c:'mini',n:'ONEXPLAYER X1 Air',cpu:'Ultra 7 258V',gpu:'Arc 140V',ram:'LPDDR5x 32GB',d:'25.10.15',r23:[1801,10301],fs:[8973,9899],ts:[4373,4055],snl:3188,st:'R 6,736 / W 6,156 MB/s',bat:'72.77Wh',memo:'TDP 30W / RX7600M XT eGPU 연결 시 FireStrike 15,649 / 19,332',g:['사이버펑크 XeSS 55.05 / 65.03 / 76.38','배틀그라운드 울트라 51 / 71 / 86']},
+{c:'mini',n:'ONEXPLAYER X1 mini',cpu:'Ryzen7 8840U',gpu:'Radeon 780M',ram:'LPDDR5 32GB',d:'24.10.31',fs:[7864,8476],ts:[3267,2939],sn:502,g:['사이버펑크 중간 FSR 29.70 / 73.53 / 85.49']},
+{c:'mini',n:'X1 mini + ONEXGPU (RX7600M eGPU)',cpu:'Ryzen7 8840U',gpu:'RX 7600M (eGPU)',ram:'LPDDR5 32GB',d:'24.10.31',fs:[22323,27581],ts:[9331,9476],sn:2062,g:['사이버펑크 중간 FSR 평균 92.10']},
+{c:'mini',n:'X1 mini + ONEXGPU2 (RX7800M eGPU)',cpu:'Ryzen7 8840U',gpu:'RX 7800M (eGPU)',ram:'LPDDR5 32GB',d:'24.10.31',fs:[26228,36423],ts:[12035,13024],pr:7433,sn:2792,g:['사이버펑크 중간 FSR 70.58 / 121.29 / 138.81','배틀그라운드 울트라 29 / 104 / 135']},
+{c:'mini',n:'X1 mini + RX7700XT eGPU',cpu:'Ryzen7 8840U',gpu:'RX 7700XT (Razer Core X)',ram:'LPDDR5 32GB',d:'24.12.04',fs:[27350,34436],ts:[13437,14841],pr:6638,sw:2840,sn:3126,g:['사이버펑크 중간 FSR 69.33 / 88.18 / 117.09']},
+{c:'mini',n:'FIREBAT AM02',cpu:'Ryzen5 6600H',gpu:'Radeon 660M',ram:'LPDDR5 16GB',d:'26.03.04',r23:[1435,9376],fs:[4943,null]},
+{c:'mini',n:'GMKtec 미니PC (6650H)',cpu:'Ryzen5 Pro 6650H',gpu:'Radeon 660M',ram:'LPDDR5 16GB',d:'26.03.04',r23:[null,8392]},
+{c:'mini',n:'CHUWI 미니PC (i3-1220P)',cpu:'i3-1220P',gpu:'Intel 내장',ram:'DDR4 8GB',d:'26.03.04',r23:[1297,6218],fs:[2552,null]},
+{c:'mini',n:'CHUWI Hi10 Max (윈도우 태블릿)',cpu:'Intel N100',gpu:'Intel UHD',ram:'LPDDR5 12GB',d:'25.01.30',gb6:[1191,2969],r23:[710,2834],fs:[1144,1193],ts:[372,324],snl:251,st:'R 3,260 / W 2,646 MB/s',g:['롤 낮음 FHD 평균 120','발로란트 낮음 평균 77']},
+{c:'tablet',n:'REDMAGIC Astra2',cpu:'Snapdragon 8 Elite Gen5',gpu:'Adreno',ram:'LPDDR5x 16GB',d:'26.09.21',g7:[3144,10455],snl:3165,gen:'91fps',bat:'8,300mAh / 75W',memo:'긱벤치7 기본 상태 2,191 / 8,665. SNL 스트레스 안정성 51.6% → 게임스페이스+액체냉각 88.7%'},
+{c:'phone',n:'갤럭시 S26 울트라',cpu:'Snapdragon 8 Elite Gen5',gpu:'Adreno 840',ram:'LPDDR5 12GB',d:'26.03.17',gb6:[3720,11326],gv:29378,snl:2784,sbe:1218,sb:10671,wle:7554,wl:'MAX',lte:'5G'},
+{c:'phone',n:'샤오미 Poco X8 Pro',cpu:'Dimensity 8500 Ultra',gpu:'Mali-G720 MC8',ram:'LPDDR5 8GB',d:'26.03.17',gb6:[1622,6689],gv:15487,snl:1297,sbe:645,wle:7050,wl:'MAX',st:'R 740 / W 844 MB/s'},
+{c:'phone',n:'갤럭시 Z폴드6',cpu:'Snapdragon 8 Gen3',gpu:'Adreno 750',ram:'12GB',d:'24.07.10',gb6:[2329,7304],snl:1724,sb:7779,wle:5034,memo:'긱벤치6 GPU 14,423 / WLE 스트레스 안정성 68.8%'},
+{c:'phone',n:'CMF Phone 1',cpu:'Dimensity 7300',gpu:'Mali-G615',ram:'LPDDR4X 6GB',d:'24.08.07',gb6:[1011,2977],snl:348,wle:848,wl:3136,bat:'5,000mAh / 33W',memo:'긱벤치6 GPU 2,506'},
+{c:'phone',n:'갤럭시 S25 울트라 (언팩 현장)',cpu:'Snapdragon 8 Elite',gpu:'Adreno 830',ram:'LPDDR5X 12GB',d:'25.01.20',gb6:[3182,9930],snl:1837,sb:9760,wle:5225,memo:'출시 전 현장 체험기기 측정값'},
+{c:'phone',n:'갤럭시 S25+ (언팩 현장)',cpu:'Snapdragon 8 Elite',gpu:'Adreno 830',ram:'12GB',d:'25.01.20',gb6:[3157,10142],memo:'출시 전 현장 체험기기 측정값'},
+{c:'phone',n:'갤럭시 S25 (언팩 현장)',cpu:'Snapdragon 8 Elite',gpu:'Adreno 830',ram:'12GB',d:'25.01.20',gb6:[3111,9853],memo:'출시 전 현장 체험기기 측정값'}
+];
+
+const M=[
+ {k:'gb6s',t:'긱벤치 6 · 싱글',f:i=>i.gb6&&i.gb6[0],note:'CPU 단일 코어 성능. 모든 분류를 같은 축으로 비교할 수 있습니다.'},
+ {k:'gb6m',t:'긱벤치 6 · 멀티',f:i=>i.gb6&&i.gb6[1],note:'CPU 멀티 코어 성능.'},
+ {k:'g7s',t:'긱벤치 7 · 싱글',f:i=>i.g7&&i.g7[0],note:'최신 긱벤치 7 단일 코어 점수. 2026년 테스트부터 측정했습니다.'},
+ {k:'g7m',t:'긱벤치 7 · 멀티',f:i=>i.g7&&i.g7[1],note:'최신 긱벤치 7 멀티 코어 점수.'},
+ {k:'r23s',t:'시네벤치 R23 · 싱글',f:i=>i.r23&&i.r23[0],note:'PC 계열 CPU 인코딩 성능(단일 코어).'},
+ {k:'r23m',t:'시네벤치 R23 · 멀티',f:i=>i.r23&&i.r23[1],note:'PC 계열 CPU 인코딩 성능(멀티 코어).'},
+ {k:'cbm',t:'시네벤치 2024 · 멀티',f:i=>i.cb&&i.cb[1],note:'시네벤치 2024 멀티 코어 점수.'},
+ {k:'cb26m',t:'시네벤치 2026 · 멀티',f:i=>i.cb26&&i.cb26[1],note:'시네벤치 2026 멀티 코어 점수.'},
+ {k:'fs',t:'3DMark Fire Strike · 그래픽',f:i=>i.fs&&i.fs[1],note:'DX11 그래픽 점수 기준입니다.'},
+ {k:'ts',t:'3DMark Time Spy · 그래픽',f:i=>i.ts&&i.ts[1],note:'DX12 그래픽 점수 기준입니다.'},
+ {k:'pr',t:'3DMark Port Royal',f:i=>i.pr,note:'레이트레이싱 성능.'},
+ {k:'sn',t:'3DMark Steel Nomad',f:i=>i.sn,note:'최신 DX12 고부하 그래픽 테스트.'},
+ {k:'snl',t:'3DMark Steel Nomad Light',f:i=>i.snl,note:'PC·모바일 겸용 테스트라 기기 간 비교가 가능합니다.'},
+ {k:'sb',t:'3DMark Solar Bay',f:i=>i.sb,note:'PC·모바일 겸용 레이트레이싱 테스트.'},
+ {k:'wle',t:'3DMark Wild Life Extreme',f:i=>i.wle,note:'PC·모바일 겸용 테스트. 가장 많은 기기에 측정값이 있습니다.'},
+ {k:'gv',t:'긱벤치 6 · Vulkan (GPU)',f:i=>i.gv,note:'모바일 GPU 연산 성능.'}
+];
+const ROWS=[
+ ['기본',null],
+ ['분류',i=>CATS[i.c]],['CPU / AP',i=>i.cpu],['GPU',i=>i.gpu],['메모리',i=>i.ram],['테스트 일자',i=>i.d],
+ ['CPU',null],
+ ...['gb6s','gb6m','g7s','g7m','r23s','r23m','cbm','cb26m'].map(k=>[M.find(m=>m.k===k).t,'m:'+k]),
+ ['GPU',null],
+ ['Fire Strike 종합',i=>i.fs&&i.fs[0],1],['Time Spy 종합',i=>i.ts&&i.ts[0],1],
+ ...['fs','ts','pr','sn','snl','sb','wle','gv'].map(k=>[M.find(m=>m.k===k).t,'m:'+k]),
+ ['Speed Way',i=>i.sw,1],['Solar Bay Extreme',i=>i.sbe,1],['Wild Life',i=>i.wl==='MAX'?'MAX OUT':i.wl,1],
+ ['기타',null],
+ ['업스케일 테스트',i=>i.up],['게임 FPS (최소 / 평균 / 최대)',i=>i.g&&i.g.join('<br>')],['원신 매우높음',i=>i.gen],
+ ['배터리 · 충전',i=>i.bat],['통신',i=>i.lte],['저장장치',i=>i.st],['가격 메모',i=>i.p],['메모',i=>i.memo],
+ ['링크',i=>{let s=[];if(i.v)s.push(`<a href="${i.v}" target="_blank" rel="noopener">영상</a>`);if(i.l)s.push(`<a href="${i.l}" target="_blank" rel="noopener">제품</a>`);return s.length?'<span class="links">'+s.join('')+'</span>':''}]
+];
+
+D.forEach((i,ix)=>i.id=ix);
+let cat='all', metric='wle', q='';
+let sel=new Set(['레노버 Y700 4세대 (중국 내수)','갤럭시 S25 울트라','AYANEO 2S (UMPC)'].map(n=>D.find(i=>i.n===n).id));
+try{const s=JSON.parse(localStorage.getItem('bench-state')||'null');if(s){cat=s.cat||cat;metric=s.metric||metric;if(Array.isArray(s.sel))sel=new Set(s.sel.filter(x=>D[x]))}}catch(e){}
+const save=()=>{try{localStorage.setItem('bench-state',JSON.stringify({cat,metric,sel:[...sel]}))}catch(e){}};
+const fmt=v=>typeof v==='number'?v.toLocaleString('ko-KR'):v;
+const $=id=>document.getElementById(id);
+const match=i=>(cat==='all'||i.c===cat)&&(!q||[i.n,i.cpu,i.gpu].join(' ').toLowerCase().includes(q));
+
+function renderCats(){
+  const opts=[['all','전체']].concat(Object.entries(CATS));
+  $('cats').innerHTML=opts.map(([k,t])=>`<button class="chip" type="button" data-k="${k}" aria-pressed="${cat===k}">${k!=='all'?`<span class="dot" style="background:var(--c-${k})"></span>`:''}${t}<span class="n">${k==='all'?D.length:D.filter(i=>i.c===k).length}</span></button>`).join('');
+}
+function renderMetric(){
+  $('metric').innerHTML=M.map(m=>{const n=D.filter(i=>(cat==='all'||i.c===cat)&&typeof m.f(i)==='number').length;return `<option value="${m.k}" ${m.k===metric?'selected':''} ${n?'':'disabled'}>${m.t} (${n})</option>`}).join('');
+  const m=M.find(m=>m.k===metric);$('mnote').textContent=m.note;
+}
+function renderBars(){
+  const m=M.find(m=>m.k===metric);
+  const list=D.filter(match).map(i=>({i,v:m.f(i)})).filter(x=>typeof x.v==='number').sort((a,b)=>b.v-a.v);
+  const max=list.length?list[0].v:1;
+  const missing=D.filter(match).length-list.length;
+  $('rankT').textContent=m.t+' 순위';
+  $('rcount').textContent=`${list.length}개 제품`+(missing?` · 측정값 없는 ${missing}개 제외`:'');
+  $('bars').innerHTML=list.length?list.map((x,r)=>`<div class="bar${sel.has(x.i.id)?' sel':''}" role="button" tabindex="0" aria-pressed="${sel.has(x.i.id)}" data-id="${x.i.id}">
+    <span class="rank">${r+1}</span>
+    <span class="meta"><span class="nm"><span class="dot" style="background:var(--c-${x.i.c})"></span>${x.i.n}</span>
+      <span class="spec">${x.i.cpu}${x.i.gpu&&x.i.gpu!=='-'?' · '+x.i.gpu:''}</span>
+      <span class="track"><span class="fill" style="width:${(x.v/max*100).toFixed(1)}%;background:var(--c-${x.i.c})"></span></span></span>
+    <span class="val">${fmt(x.v)}<small>${r===0?'최고점':Math.round(x.v/max*100)+'%'}</small></span></div>`).join(''):'<p class="empty">조건에 맞는 측정값이 없습니다. 다른 지표나 분류를 골라 보세요.</p>';
+}
+function renderCmp(){
+  const items=[...sel].map(id=>D[id]);
+  $('clear').hidden=!items.length;
+  if(!items.length){$('cmp').innerHTML='<p class="empty">아래 순위에서 제품을 누르면 여기에 나란히 비교됩니다. 최대 5개까지 담을 수 있습니다.</p>';return}
+  let h='<div class="scroll"><table><thead><tr><th></th>'+items.map(i=>`<th><span class="cathead"><span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c-${i.c})"></span>${i.n}<button class="x" type="button" data-rm="${i.id}" aria-label="${i.n} 비교에서 빼기">×</button></span></th>`).join('')+'</tr></thead><tbody>';
+  for(const [label,f,isNum] of ROWS){
+    if(f===null){h+=`<tr class="sec"><th colspan="${items.length+1}">${label}</th></tr>`;continue}
+    const get=typeof f==='string'?M.find(m=>m.k===f.slice(2)).f:f;
+    const vals=items.map(i=>get(i));
+    if(vals.every(v=>v==null||v===''))continue;
+    const nums=vals.filter(v=>typeof v==='number');
+    const best=(typeof f==='string'||isNum)&&nums.length>1?Math.max(...nums):null;
+    h+=`<tr><th>${label}</th>`+vals.map(v=>`<td class="${typeof v==='number'?'num':''}${best!==null&&v===best?' best':''}">${v==null||v===''?'–':fmt(v)}</td>`).join('')+'</tr>';
+  }
+  $('cmp').innerHTML=h+'</tbody></table></div>';
+}
+function all(){renderCats();renderMetric();renderBars();renderCmp();save()}
+function toggle(id){if(sel.has(id))sel.delete(id);else{if(sel.size>=5)sel.delete([...sel][0]);sel.add(id)}renderBars();renderCmp();save()}
+
+$('cats').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.k;
+  const m=M.find(m=>m.k===metric);if(!D.some(i=>(cat==='all'||i.c===cat)&&typeof m.f(i)==='number')){const alt=M.find(m=>D.some(i=>(cat==='all'||i.c===cat)&&typeof m.f(i)==='number'));if(alt)metric=alt.k}all()});
+$('metric').addEventListener('change',e=>{metric=e.target.value;renderMetric();renderBars();save()});
+$('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();renderBars()});
+$('bars').addEventListener('click',e=>{const b=e.target.closest('.bar');if(b)toggle(+b.dataset.id)});
+$('bars').addEventListener('keydown',e=>{const b=e.target.closest('.bar');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();toggle(+b.dataset.id)}});
+$('cmp').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b)toggle(+b.dataset.rm)});
+$('clear').addEventListener('click',()=>{sel.clear();renderBars();renderCmp();save()});
+all();
+</script>
+
+</body>
+</html>
