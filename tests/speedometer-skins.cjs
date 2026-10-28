@@ -66,6 +66,7 @@ async function main() {
     await page.waitForFunction(() => document.querySelector('#wGps').classList.contains('over'));
     await page.locator('#gHudBtn').click();
     assert.equal(await page.locator('#hud').isVisible(), true);
+    await page.waitForFunction(() => document.querySelector('#hSpd').textContent === '36');
     assert.equal(await page.locator('#hSpd').textContent(), '36');
     await page.locator('#hudClose').click();
     for (const [width,height] of [[390,844],[1024,768],[1920,1080]]) {
