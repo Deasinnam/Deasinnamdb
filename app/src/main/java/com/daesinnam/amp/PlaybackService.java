@@ -8,6 +8,11 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Icon;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -42,6 +47,20 @@ public class PlaybackService extends Service {
     private boolean ext = false;
     private PowerManager.WakeLock cpuLock;
     private MediaSession session;
+    private AudioManager am;
+    private AudioFocusRequest focusReq;
+    private boolean hasFocus = false;
+    private boolean pausedByFocus = false;
+    private AudioTrack keepAlive;
+
+    /** 핸들·이어폰 버튼 진단용: 마지막으로 받은 신호 */
+    static volatile String lastKey = "";
+    static volatile long lastKeyAt = 0;
+
+    static void logKey(String k) {
+        lastKey = k;
+        lastKeyAt = System.currentTimeMillis();
+    }
 
     @Override
     public void onCreate() {
@@ -55,18 +74,19 @@ public class PlaybackService extends Service {
         cpuLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DaesinnamAmp:playback");
         cpuLock.setReferenceCounted(false);
 
+        am = getSystemService(AudioManager.class);
         session = new MediaSession(this, "DaesinnamAmp");
         Intent open = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         session.setSessionActivity(PendingIntent.getActivity(this, 10, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         session.setCallback(new MediaSession.Callback() {
-            @Override public void onPlay() { send("play"); }
-            @Override public void onPause() { send("pause"); }
-            @Override public void onStop() { send("stop"); }
-            @Override public void onSkipToNext() { send("next"); }
-            @Override public void onSkipToPrevious() { send("prev"); }
-            @Override public void onFastForward() { send("ff"); }
-            @Override public void onRewind() { send("rw"); }
-            @Override public void onSeekTo(long pos) { send("seek:" + pos); }
+            @Override public void onPlay() { logKey("재생"); send("play"); }
+            @Override public void onPause() { logKey("일시정지"); send("pause"); }
+            @Override public void onStop() { logKey("정지"); send("stop"); }
+            @Override public void onSkipToNext() { logKey("다음 곡"); send("next"); }
+            @Override public void onSkipToPrevious() { logKey("이전 곡"); send("prev"); }
+            @Override public void onFastForward() { logKey("빨리감기"); send("ff"); }
+            @Override public void onRewind() { logKey("되감기"); send("rw"); }
+            @Override public void onSeekTo(long pos) { logKey("탐색"); send("seek:" + pos); }
 
             @Override
             public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
@@ -76,12 +96,15 @@ public class PlaybackService extends Service {
                         // 일부 차량·이어폰은 재생/일시정지 하나의 키만 보내므로 직접 토글합니다.
                         case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                         case KeyEvent.KEYCODE_HEADSETHOOK:
+                            logKey("재생/일시정지");
                             send("toggle");
                             return true;
                         case KeyEvent.KEYCODE_MEDIA_NEXT:
+                            logKey("다음 곡");
                             send("next");
                             return true;
                         case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                            logKey("이전 곡");
                             send("prev");
                             return true;
                         default:
@@ -133,9 +156,106 @@ public class PlaybackService extends Service {
             return START_NOT_STICKY;
         }
 
-        if (own && NowPlaying.playing) cpuLock.acquire(6 * 60 * 60 * 1000L);
-        else if (cpuLock.isHeld()) cpuLock.release();
+        if (own && NowPlaying.playing) {
+            cpuLock.acquire(6 * 60 * 60 * 1000L);
+            requestFocus();
+            startKeepAlive();
+        } else {
+            if (cpuLock.isHeld()) cpuLock.release();
+            stopKeepAlive();
+            if (!own) abandonFocus();
+        }
         return START_NOT_STICKY;
+    }
+
+    // ------------------------------------------------------------ 오디오 포커스 · 버튼 수신
+
+    /**
+     * 안드로이드는 핸들·이어폰 버튼을 "마지막으로 소리를 낸 앱"에 보냅니다.
+     * 화면(WebView)이 내는 소리만으로는 이 앱이 그 대상으로 잡히지 않을 수 있어,
+     * 재생하는 동안 오디오 포커스를 직접 잡고 들리지 않는 무음 트랙을 함께 재생합니다.
+     */
+    private void requestFocus() {
+        if (hasFocus || am == null) return;
+        AudioAttributes attrs = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+        focusReq = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(attrs)
+                .setWillPauseWhenDucked(false)
+                .setOnAudioFocusChangeListener(this::onFocusChange)
+                .build();
+        hasFocus = am.requestAudioFocus(focusReq) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+    }
+
+    private void abandonFocus() {
+        if (focusReq != null && am != null) am.abandonAudioFocusRequest(focusReq);
+        hasFocus = false;
+    }
+
+    private void onFocusChange(int change) {
+        switch (change) {
+            case AudioManager.AUDIOFOCUS_LOSS:
+                // 다른 음악 앱이 재생을 시작함: 일시정지
+                hasFocus = false;
+                pausedByFocus = false;
+                if (NowPlaying.playing) send("pause");
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                // 전화 등 잠깐 끊김: 일시정지했다가 끝나면 이어서 재생
+                if (NowPlaying.playing) {
+                    pausedByFocus = true;
+                    send("pause");
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_GAIN:
+                hasFocus = true;
+                if (pausedByFocus) {
+                    pausedByFocus = false;
+                    send("play");
+                }
+                break;
+            default:
+                // 내비게이션 안내 음성(LOSS_TRANSIENT_CAN_DUCK)은 안드로이드가 소리를 줄여 줍니다.
+                break;
+        }
+    }
+
+    private void startKeepAlive() {
+        if (keepAlive != null) return;
+        try {
+            int rate = 8000;
+            short[] silence = new short[rate]; // 1초 무음
+            AudioTrack t = new AudioTrack.Builder()
+                    .setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build())
+                    .setAudioFormat(new AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(rate)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build())
+                    .setTransferMode(AudioTrack.MODE_STATIC)
+                    .setBufferSizeInBytes(silence.length * 2)
+                    .build();
+            t.write(silence, 0, silence.length);
+            t.setLoopPoints(0, silence.length, -1);
+            t.play();
+            keepAlive = t;
+        } catch (Exception ignored) {
+            keepAlive = null;
+        }
+    }
+
+    private void stopKeepAlive() {
+        if (keepAlive == null) return;
+        try {
+            keepAlive.stop();
+            keepAlive.release();
+        } catch (Exception ignored) {}
+        keepAlive = null;
     }
 
     private void updateSession() {
@@ -202,6 +322,8 @@ public class PlaybackService extends Service {
     public void onDestroy() {
         running = false;
         if (cpuLock != null && cpuLock.isHeld()) cpuLock.release();
+        stopKeepAlive();
+        abandonFocus();
         if (session != null) {
             session.setActive(false);
             session.release();

@@ -22,7 +22,13 @@ async function main() {
   try {
     browser = await chromium.launch({headless:true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? {executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH} : {})});
     const context = await browser.newContext({viewport:{width:1470,height:1000}});
-    await context.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
+    await context.route('**/*', route => {
+      const url = route.request().url();
+      if (!url.startsWith(origin)) return route.abort();
+      // 앱에서는 /media, /art를 네이티브가 기기 파일로 응답합니다. 테스트에서는 빈 응답으로 대신합니다.
+      if (/\/(media|art)\?/.test(url)) return route.fulfill({status:404, body:''});
+      return route.continue();
+    });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => {
@@ -135,8 +141,46 @@ async function main() {
     await p2.waitForFunction(() => document.querySelector('#xPermSum').textContent === '모두 허용됨');
     assert.equal(await p2.locator('#xPerm').evaluate(d => d.open), false, 'Granted permissions fold away');
     await p2.close();
+    // 저장되는 플레이리스트 · 설정 · 간편 모드 · 차 연결
+    const p3 = await context.newPage();
+    p3.on('pageerror', error => errors.push(error.message));
+    await p3.addInitScript(() => {
+      window.AndroidBridge = {pickAudio(){}, takeCarAutoplay:() => false, adjustVolume(){window.__vol=(window.__vol||0)+1}, keepScreenOn(){}, onPlayState(){}, onNowPlaying(){}, onArt(){},
+        carStatus:() => JSON.stringify({autoplay:false,carName:'',btPerm:true,autoLaunch:false,connected:['KIA CARNIVAL'],lastKey:'다음 곡',lastKeyAt:Date.now()}),
+        setCarAutoplay(v){window.__ap=v}, setCarName(n){window.__cn=n}, requestAutoLaunch(){}};
+    });
+    await p3.setViewportSize({width:390,height:844});
+    await p3.goto(origin);
+    await p3.evaluate(() => window.__onPicked([
+      {uri:'content://a/1',name:'Song One.mp3',title:'Song One',artist:'Artist A',duration:200,size:1,hasArt:false},
+      {uri:'content://a/2',name:'Artist B - Song Two.mp3',duration:180,size:1,hasArt:false}]));
+    assert.equal(await p3.locator('#pl li').count(), 2);
+    await p3.reload({timeout:90000});
+    assert.equal(await p3.locator('#pl li').count(), 2, 'Playlist survives an app restart');
+    assert.match(await p3.locator('#pl li').nth(1).textContent(), /Artist B - Song Two/);
+    assert.equal(await p3.locator('#addDir').isVisible(), true, 'Folder add is offered in the app');
+    await p3.locator('#setBtn').click();
+    await p3.waitForFunction(() => document.querySelector('#sKey').textContent.startsWith('다음 곡'));
+    await p3.locator('#sCarName').selectOption('KIA CARNIVAL');
+    assert.equal(await p3.evaluate(() => window.__cn), 'KIA CARNIVAL');
+    await p3.locator('#sCarAuto').check();
+    assert.equal(await p3.evaluate(() => window.__ap), true);
+    await p3.locator('#setClose').click();
+    await p3.locator('#driveBtn').click();
+    assert.equal(await p3.locator('#drive').isVisible(), true);
+    await p3.waitForFunction(() => document.querySelector('#dvTitle').textContent === 'Song One');
+    assert.ok((await p3.locator('#dvNext').boundingBox()).width >= 90, 'Drive mode buttons are large');
+    assert.equal(await p3.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await p3.locator('#dvVolUp').click();
+    assert.equal(await p3.evaluate(() => window.__vol), 1);
+    await p3.locator('#dvClose').click();
+    assert.equal(await p3.locator('#drive').isVisible(), false);
+    await p3.evaluate(() => window.__carConnected('KIA CARNIVAL'));
+    assert.equal(await p3.locator('#toast').isVisible(), true);
+    assert.equal(await p3.locator('#drive').isVisible(), true, 'Drive mode opens when the car connects');
+    await p3.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin and permission folding');
+    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode and car connect');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

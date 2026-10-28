@@ -483,6 +483,56 @@ input[type=range]:disabled{opacity:.35}
 .keyrow input{flex:1 1 220px}
 .keyrow input{flex:1;min-width:0;height:40px;padding:0 10px;border:1px solid var(--frame-in);border-radius:3px;background:var(--lcd);color:var(--lcd-fg);font-family:var(--f-lcd)}
 .mapkey .hint{margin:0 10px 10px}
+/* 토스트 · 설정 · 간편 모드 */
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:90;max-width:calc(100% - 32px);padding:12px 18px;border-radius:6px;background:#000d;color:#fff;font-size:14px;box-shadow:0 6px 24px #0008}
+#settings{position:fixed;inset:0;z-index:80;background:#000a;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.set-card{width:min(640px,100%);background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--edge);border-radius:8px;box-shadow:0 20px 60px #000a;color:var(--text)}
+.set-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--edge)}
+.set-head b{font-size:18px}
+.set-card section{padding:6px 16px 14px;border-bottom:1px solid #ffffff10}
+.set-card h3{margin:12px 0 6px;font-size:13px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.set-card .row{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid #ffffff0a}
+.set-card .row>span{flex:1;min-width:0}
+.set-card .row b{display:block;font-size:15px}
+.set-card .row small{display:block;color:var(--muted);font-size:12.5px;line-height:1.5;margin-top:2px}
+.set-card .sel{height:40px;max-width:52%}
+.set-card .pill{height:40px}
+.set-card .pill.ok{opacity:.7}
+.set-note{margin:4px 0;color:var(--muted);font-size:13px}
+.keyst{font-style:normal;font-family:var(--f-lcd);font-size:13px;color:var(--muted);text-align:right}
+.keyst.ok{color:var(--led1)}
+.sw{appearance:none;-webkit-appearance:none;flex:none;width:52px;height:30px;border-radius:15px;background:var(--track);border:1px solid var(--edge);position:relative;cursor:pointer;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--metal-a);transition:left .2s}
+.sw:checked{background:var(--accent)}
+.sw:checked::after{left:25px}
+#drive{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;gap:clamp(12px,3vh,28px);padding:calc(16px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));background:radial-gradient(1000px 500px at 50% -10%,var(--bg-glow),transparent 60%),var(--bg);color:var(--text)}
+.dv-top{display:flex;align-items:center;gap:16px}
+.dv-clock{font-family:var(--f-tech,var(--f-display));font-weight:700;font-size:clamp(26px,4vw,40px);letter-spacing:.04em}
+.dv-spd{margin-left:auto;display:flex;align-items:baseline;gap:6px;padding:4px 16px;border:1px solid var(--frame-in);border-radius:6px;background:var(--lcd)}
+.dv-spd b{font-family:var(--f-tech,var(--f-lcd));font-size:clamp(30px,5vw,52px);color:var(--lcd-text);font-variant-numeric:tabular-nums}
+.dv-spd small{color:var(--lcd-fg);font-size:14px}
+.dv-spd.over b{color:#ff3b30}
+.dv-top .pill{margin-left:auto;height:48px;padding:0 18px;font-size:16px}
+.dv-spd+.pill{margin-left:0}
+.dv-mid{flex:1;min-height:0;display:flex;align-items:center;gap:clamp(16px,4vw,40px)}
+.dv-art{flex:none;width:min(36vh,34vw);aspect-ratio:1;max-width:100%;border-radius:10px;background:var(--lcd) center/cover no-repeat;border:1px solid var(--frame-in);box-shadow:0 12px 40px #0009}
+.dv-art.empty{background:var(--lcd) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' fill-opacity='.22' d='M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9z'/%3E%3C/svg%3E") center/40% no-repeat}
+.dv-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.dv-meta b{font-size:clamp(26px,4.6vw,52px);line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dv-meta span{font-size:clamp(18px,2.6vw,28px);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv-prog{height:8px;border-radius:4px;background:var(--track);overflow:hidden;margin-top:10px}
+.dv-prog i{display:block;height:100%;width:0;background:var(--accent)}
+.dv-time{display:flex;justify-content:space-between;font-family:var(--f-lcd);color:var(--muted);font-size:15px}
+.dv-ctl{display:flex;justify-content:center;align-items:center;gap:clamp(16px,5vw,56px)}
+.dv-b{width:clamp(96px,16vw,150px);aspect-ratio:1;border-radius:50%;border:1px solid var(--edge);display:grid;place-items:center;background:linear-gradient(180deg,var(--metal-a),var(--metal-c));box-shadow:inset 0 1px 0 #ffffff60,0 8px 24px #0008}
+.dv-b svg{width:44%;height:44%;fill:var(--metal-ink)}
+.dv-b.big{width:clamp(124px,21vw,200px);background:linear-gradient(180deg,var(--hot-a),var(--hot-b) 55%,var(--hot-c));box-shadow:0 0 30px color-mix(in srgb,var(--accent) 45%,transparent),0 8px 24px #0008}
+.dv-b.big svg{fill:var(--hot-ink)}
+.dv-b:active{transform:scale(.96)}
+.dv-sub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.dv-s{height:clamp(64px,9vh,84px);border-radius:10px;border:1px solid var(--edge);background:linear-gradient(180deg,var(--metal-b),var(--metal-c));color:var(--metal-ink);font-size:clamp(17px,2.4vw,24px);font-weight:700}
+@media (max-aspect-ratio:1/1){.dv-mid{flex-direction:column;align-items:stretch;text-align:center}.dv-art{width:min(46vw,34vh);margin:0 auto}.dv-meta span{white-space:normal}}
+html.driving body{overflow:hidden}
 #hud{position:fixed;inset:0;z-index:60;background:#000;display:flex;align-items:center;justify-content:center;color:var(--accent)}
 #hud .hudin{text-align:center;line-height:.85;font-family:var(--f-tech,var(--f-lcd))}
 #hud.mirror .hudin{transform:scaleX(-1)}
@@ -513,6 +563,8 @@ input[type=range]:disabled{opacity:.35}
     <label class="selw" for="layout">화면<select class="sel" id="layout">
       <option value="auto">자동</option><option value="1">1열 (세로)</option><option value="2">2열</option><option value="3">가로 한 줄</option>
     </select></label>
+    <button class="pill" id="driveBtn" title="운전 중 큰 버튼 화면">간편 모드</button>
+    <button class="pill" id="setBtn" aria-label="설정"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-4px;fill:currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.4 2.7h4l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg> 설정</button>
     <button class="pill on" id="addTop">+ 음악 추가</button>
   </div>
 </header>
@@ -643,10 +695,11 @@ input[type=range]:disabled{opacity:.35}
       <ul class="pl" id="pl"></ul>
       <div class="plfoot">
         <button class="pill on" id="add">+ 추가</button>
+        <button class="pill" id="addDir" hidden>+ 폴더</button>
         <button class="pill" id="clear">비우기</button>
         <span class="sum" id="sum">0곡 · 0:00</span>
       </div>
-      <p class="hint">기기에 저장된 MP3·M4A·OGG·WAV 파일을 여러 개 한 번에 선택할 수 있어요. 1번 곡은 바로 들어볼 수 있는 합성 데모 트랙입니다.</p>
+      <p class="hint" id="plHint">기기에 저장된 MP3·M4A·OGG·WAV 파일을 여러 개 한 번에 선택할 수 있어요. 목록이 비어 있을 때는 바로 들어볼 수 있는 데모 곡이 들어 있어요.</p>
     </div>
   </section>
 
@@ -671,6 +724,45 @@ input[type=range]:disabled{opacity:.35}
     </div>
   </section>
 </main>
+<div id="drive" hidden role="dialog" aria-label="주행 중 간편 모드">
+  <div class="dv-top"><span class="dv-clock" id="dvClock">0:00</span><span class="dv-spd" id="dvSpdBox" hidden><b id="dvSpd">--</b><small>km/h</small></span><button class="pill" id="dvClose">간편 모드 끄기</button></div>
+  <div class="dv-mid"><div class="dv-art empty" id="dvArt"></div><div class="dv-meta"><b id="dvTitle">—</b><span id="dvArtist"></span><div class="dv-prog"><i id="dvBar"></i></div><div class="dv-time"><span id="dvCur">0:00</span><span id="dvDur">0:00</span></div></div></div>
+  <div class="dv-ctl">
+    <button class="dv-b" id="dvPrev" aria-label="이전 곡"><svg viewBox="0 0 24 24"><path d="M5 5h3v14H5zM20 5v14L9 12z"/></svg></button>
+    <button class="dv-b big" id="dvPlay" aria-label="재생"><svg viewBox="0 0 24 24" id="dvPlayIco"><path d="M7 4l13 8-13 8z"/></svg></button>
+    <button class="dv-b" id="dvNext" aria-label="다음 곡"><svg viewBox="0 0 24 24"><path d="M16 5h3v14h-3zM4 5v14l11-7z"/></svg></button>
+  </div>
+  <div class="dv-sub"><button class="dv-s" id="dvVolDn">볼륨 −</button><button class="dv-s" id="dvSrc">내 음악</button><button class="dv-s" id="dvVolUp">볼륨 +</button></div>
+</div>
+
+<div id="settings" hidden role="dialog" aria-label="설정">
+  <div class="set-card">
+    <div class="set-head"><b>설정</b><button class="pill" id="setClose">닫기</button></div>
+    <section id="secCar">
+      <h3>차량 연결</h3>
+      <label class="row"><span><b>차에 연결되면 이어서 재생</b><small>블루투스로 차에 연결되면 마지막 곡을 이어서 틀어요.</small></span><input type="checkbox" id="sCarAuto" class="sw"></label>
+      <label class="row"><span><b>자동 재생할 기기</b><small>차에 연결된 상태에서 고르면 그 차에서만 동작해요.</small></span><select class="sel" id="sCarName"><option value="">모든 블루투스 오디오 기기</option></select></label>
+      <label class="row"><span><b>연결되면 GPS 켜기</b><small>자동차 스킨에서 속도계와 지도를 바로 켜요.</small></span><input type="checkbox" id="sCarGps" class="sw" checked></label>
+      <div class="row"><span><b>블루투스 권한</b><small>연결된 기기 이름을 확인하는 데 필요해요.</small></span><button class="pill" id="sBt">확인 중</button></div>
+      <div class="row"><span><b>앱이 꺼져 있어도 자동으로 열기</b><small>"다른 앱 위에 표시"를 허용하면 앱이 꺼져 있어도 차에 타면 바로 열려요. 허용하지 않으면 "차량 연결됨" 알림을 눌러 시작해요.</small></span><button class="pill" id="sLaunch">확인 중</button></div>
+    </section>
+    <section>
+      <h3>주행 중 간편 모드</h3>
+      <label class="row"><span><b>자동으로 켜기</b><small>운전 중에는 큰 버튼만 보이는 화면으로 바뀌어요.</small></span><select class="sel" id="sDriveAuto"><option value="off">끔</option><option value="car">차에 연결되면</option><option value="speed">시속 10km 이상 달리면 (GPS)</option><option value="both">둘 다</option></select></label>
+      <div class="row"><span><b>지금 켜기</b><small>상단의 간편 모드 버튼으로도 켤 수 있어요.</small></span><button class="pill on" id="sDriveNow">간편 모드 켜기</button></div>
+    </section>
+    <section id="secKey">
+      <h3>핸들 버튼 확인</h3>
+      <div class="row"><span><b>마지막으로 받은 버튼 신호</b><small>내 음악으로 곡을 한 번 재생한 뒤 핸들의 다음 곡 버튼을 눌러 보세요. 여기 아무것도 안 뜨면 차가 이 앱으로 신호를 보내지 않는 거예요.</small></span><em class="keyst" id="sKey">아직 받은 신호가 없어요</em></div>
+    </section>
+    <section>
+      <h3>플레이리스트</h3>
+      <p class="set-note" id="sLib"></p>
+    </section>
+  </div>
+</div>
+<div id="toast" hidden role="status"></div>
+
 <div id="hud" hidden class="mirror">
   <div class="hudbtn"><button class="pill" id="hudMir">좌우 반전</button><button class="pill" id="hudClose">닫기</button></div>
   <div class="hudin"><b id="hSpd">0</b><small>KM/H</small><span id="hHdg">N</span></div>
@@ -884,11 +976,11 @@ function addFiles(files){
 }
 function renderList(){
   const ul=$('#pl');ul.innerHTML='';
-  if(!list.length){ul.innerHTML='<li class="empty" style="display:block;cursor:default">재생 목록이 비어 있어요.<br>“+ 추가”로 기기의 음악 파일을 불러오세요.</li>'}
+  if(!list.length){ul.innerHTML='<li class="empty" style="display:block;cursor:default">재생 목록이 비어 있어요.<br>“+ 추가”로 음악 파일을, “+ 폴더”로 폴더 전체를 불러오세요.</li>'}
   list.forEach((it,i)=>{
     const li=document.createElement('li');if(i===cur)li.className='cur';
     li.innerHTML=`<span class="n">${i+1}</span><span class="nm"></span><span class="d">${it.duration?fmt(it.duration):'--:--'}</span><button class="x" aria-label="목록에서 제거"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.8"/></svg></button>`;
-    li.querySelector('.nm').textContent=(it.artist?it.artist+' - ':'')+it.title;
+    li.querySelector('.nm').textContent=(it.missing?'⚠ ':'')+(it.artist?it.artist+' - ':'')+it.title;
     li.onclick=e=>{if(e.target.closest('.x'))return;playIndex(i)};
     li.querySelector('.x').onclick=()=>removeAt(i);
     ul.appendChild(li);
@@ -901,7 +993,7 @@ function removeAt(i){
   if(i===cur){audio.pause();audio.removeAttribute('src');audio.load();cur=-1}
   else if(i<cur)cur--;
   list.splice(i,1);if(it.file)URL.revokeObjectURL(it.url);
-  renderList();updateMeta();
+  savePlaylist();renderList();updateMeta();
 }
 function playIndex(i){
   if(i<0||i>=list.length)return;
@@ -949,10 +1041,13 @@ function stop(){if(mode==='ext')return X('stop');audio.pause();audio.currentTime
 function next(){if(mode==='ext')return X('next');const n=nextIdx(1);if(n>=0)playIndex(n)}
 function prev(){if(mode==='ext')return X('prev');if(audio.currentTime>3){audio.currentTime=0;return}const n=shuffle?nextIdx(1):nextIdx(-1);if(n>=0)playIndex(n)}
 $('#bPlay').onclick=play;$('#bPause').onclick=toggle;$('#bStop').onclick=stop;$('#bNext').onclick=next;$('#bPrev').onclick=prev;
-const pick=()=>$('#file').click();
-$('#bEject').onclick=pick;$('#add').onclick=pick;$('#addTop').onclick=pick;
+$('#bEject').onclick=()=>pickMusic(false);$('#add').onclick=()=>pickMusic(false);$('#addTop').onclick=()=>pickMusic(false);$('#addDir').onclick=()=>pickMusic(true);
 $('#file').onchange=e=>{addFiles(e.target.files);e.target.value=''};
-$('#clear').onclick=()=>{audio.pause();audio.removeAttribute('src');audio.load();list.forEach(it=>it.file&&URL.revokeObjectURL(it.url));list=[];cur=-1;renderList();updateMeta();state()};
+let clearArm=0;
+$('#clear').onclick=()=>{
+  if(performance.now()-clearArm>3000){clearArm=performance.now();$('#clear').textContent='한 번 더 누르면 비워요';setTimeout(()=>{$('#clear').textContent='비우기'},3000);return}
+  clearArm=0;$('#clear').textContent='비우기';
+  audio.pause();audio.removeAttribute('src');audio.load();list.forEach(it=>it.file&&URL.revokeObjectURL(it.url));list=[];cur=-1;savePlaylist();store.set('resume',null);renderList();updateMeta();state()};
 audio.addEventListener('ended',()=>{if(repeat==='one'){audio.currentTime=0;audio.play();return}const n=nextIdx(1,true);if(n>=0)playIndex(n);else state()});
 ['play','pause','playing'].forEach(ev=>audio.addEventListener(ev,state));
 audio.addEventListener('seeked',()=>bridgeState(true));
@@ -1101,6 +1196,7 @@ function frame(){
   if(has){$('#time').textContent=showRemain&&d?'-'+lcdFmt(d-t):lcdFmt(t);
     if(!seeking){seek.value=d?t/d*1000:0;setP(seek);$('#tCur').textContent=fmt(t);$('#tDur').textContent=fmt(d)}}
   else{$('#time').textContent='00:00';if(!seeking){seek.value=0;setP(seek)}$('#tCur').textContent='0:00';$('#tDur').textContent='0:00'}
+  if(driveOn)driveUi();
   idle+=.016;requestAnimationFrame(frame);
 }
 function drawVis(live){
@@ -1169,7 +1265,7 @@ function pollGps(){
     spdNow=v>0.5?v*3.6:0;
     hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
-  gpsUi();mapUpdate(false);
+  gpsUi();mapUpdate(false);driveAutoTick();
 }
 function gpsUi(){
   $('#gOn').textContent=gpsOn?'GPS 끄기':'GPS 켜기';$('#gOn').classList.toggle('on',!gpsOn);
@@ -1383,6 +1479,117 @@ syncKeyUi();
 document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{try{b.dataset.tmap==='side'&&NB.openAppSide?NB.openAppSide(TMAP_PKG):NB.openApp(TMAP_PKG)}catch(e){}});
 if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
 
+/* ---------- 저장되는 플레이리스트 (앱) ---------- */
+const LIB=!!(NB&&NB.pickAudio);
+const mediaUrl=u=>'/media?u='+encodeURIComponent(u), artUrl=u=>'/art?u='+encodeURIComponent(u);
+function libItem(o){const nm=splitName(o.name||'');return{uri:o.uri,lib:true,url:mediaUrl(o.uri),title:o.title||nm.title||'제목 없음',artist:o.artist||nm.artist||'',album:o.album||'',duration:o.duration||0,size:o.size||0,hasArt:!!o.hasArt,art:o.hasArt?artUrl(o.uri):null,name:o.name||''}}
+function savePlaylist(){if(!LIB)return;store.set('playlist',list.filter(it=>it.lib).map(it=>({uri:it.uri,name:it.name,title:it.title,artist:it.artist,album:it.album,duration:it.duration,size:it.size,hasArt:it.hasArt})))}
+let resumeSaveT=0;
+function saveResume(force){if(!LIB)return;const it=list[cur];if(!it||!it.lib)return;const now=performance.now();if(!force&&now-resumeSaveT<5000)return;resumeSaveT=now;store.set('resume',{uri:it.uri,t:Math.floor(audio.currentTime||0)})}
+audio.addEventListener('timeupdate',()=>saveResume(false));
+audio.addEventListener('pause',()=>saveResume(true));
+audio.addEventListener('error',()=>{const it=list[cur];if(!it||!it.lib)return;it.missing=true;renderList();setMarquee('파일을 열 수 없어요: '+it.title+' (옮겨졌거나 지워졌을 수 있어요)')});
+window.__onPickStart=()=>{setMarquee('음악을 불러오는 중…');$('#sum').textContent='불러오는 중…'};
+window.__onPicked=arr=>{
+  if(!arr){renderList();updateMeta();return}
+  if(mode==='ext')setMode('local');
+  const have=new Set(list.filter(it=>it.lib).map(it=>it.uri)),start=list.length;let added=0;
+  arr.forEach(o=>{if(o&&o.uri&&!have.has(o.uri)){list.push(libItem(o));have.add(o.uri);added++}});
+  savePlaylist();renderList();
+  if(!added){setMarquee(arr.length?'이미 목록에 있는 곡이에요':'음악 파일을 찾지 못했어요');return}
+  toast(`${added}곡을 추가했어요. 앱을 다시 켜도 목록이 유지돼요.`);
+  if(cur<0||audio.paused)playIndex(start);else updateMeta();
+};
+function restorePlaylist(){
+  if(!LIB)return false;const saved=store.get('playlist',[]);if(!saved.length)return false;
+  list=saved.map(libItem);const r=store.get('resume',null);let idx=r?list.findIndex(it=>it.uri===r.uri):-1;if(idx<0)idx=0;
+  cur=idx;audio.src=list[cur].url;
+  if(r&&r.uri===list[cur].uri&&r.t>2){const seekOnce=()=>{audio.removeEventListener('loadedmetadata',seekOnce);try{audio.currentTime=Math.max(0,r.t-2)}catch(e){}};audio.addEventListener('loadedmetadata',seekOnce)}
+  renderList();updateMeta();return true;
+}
+function pickMusic(folder){if(LIB){try{NB.pickAudio(!!folder)}catch(e){}}else $('#file').click()}
+
+/* ---------- 알림 토스트 ---------- */
+let toastT=0;
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3200)}
+
+/* ---------- 차 연결 시 이어서 재생 ---------- */
+const HAS_CAR=!!(NB&&NB.carStatus);
+window.__carConnected=name=>{
+  try{NB.takeCarAutoplay&&NB.takeCarAutoplay()}catch(e){}
+  toast('차량에 연결됐어요'+(name?' · '+name:'')+' · 이어서 재생해요');
+  if(mode==='ext'){X('play')}else{if(cur<0&&list.length)cur=0;if(cur>=0)play()}
+  if(isCar()&&store.get('carGps',true)&&!gpsOn)gpsStart();
+  const da=store.get('driveAuto','car');if(da==='car'||da==='both')drive(true);
+  return true;
+};
+
+/* ---------- 주행 중 간편 모드 ---------- */
+let driveOn=false,driveSuppress=false,stillSince=0;
+function drive(on){
+  driveOn=on;$('#drive').hidden=!on;document.documentElement.classList.toggle('driving',on);
+  if(NB&&NB.keepScreenOn){try{NB.keepScreenOn(on||hudOn)}catch(e){}}
+  if(on)driveUi();
+}
+function driveUi(){
+  if(!driveOn)return;
+  const playing=mode==='ext'?!!ext.playing:(!audio.paused&&cur>=0);
+  $('#dvTitle').textContent=$('#npTitle').textContent||'—';
+  $('#dvArtist').textContent=$('#npArtist').textContent||'';
+  $('#dvArt').style.backgroundImage=$('#cover').style.backgroundImage||'';
+  $('#dvArt').classList.toggle('empty',$('#cover').classList.contains('empty'));
+  $('#dvPlay').classList.toggle('on',playing);$('#dvPlay').setAttribute('aria-label',playing?'일시정지':'재생');
+  $('#dvPlayIco').innerHTML=playing?'<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>':'<path d="M7 4l13 8-13 8z"/>';
+  let d=0,t=0;if(mode==='ext'){d=(ext.dur||0)/1000;t=extPos()}else if(cur>=0){d=audio.duration||(list[cur]&&list[cur].duration)||0;t=audio.currentTime}
+  $('#dvBar').style.width=(d?Math.min(100,t/d*100):0)+'%';$('#dvCur').textContent=fmt(t);$('#dvDur').textContent=fmt(d);
+  const now=new Date();$('#dvClock').textContent=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  const showSpd=isCar()&&gpsOn;$('#dvSpdBox').hidden=!showSpd;
+  if(showSpd){$('#dvSpd').textContent=gs.fix?Math.round(spdDisp):'--';$('#dvSpdBox').classList.toggle('over',gLimit>0&&spdDisp>gLimit)}
+  $('#dvSrc').textContent=mode==='ext'?(ext.app||'외부 앱'):'내 음악';
+}
+function driveAutoTick(){
+  const da=store.get('driveAuto','car');if(!(da==='speed'||da==='both')||!gpsOn||!gs.fix)return;
+  if(spdNow<1){if(!stillSince)stillSince=performance.now();if(performance.now()-stillSince>60000)driveSuppress=false}else stillSince=0;
+  if(!driveOn&&!driveSuppress&&spdNow>=10)drive(true);
+}
+$('#dvClose').onclick=()=>{drive(false);driveSuppress=true};
+$('#dvPrev').onclick=()=>prev();$('#dvNext').onclick=()=>next();$('#dvPlay').onclick=()=>toggle();
+const vol1=dir=>{if(NB&&NB.adjustVolume){try{NB.adjustVolume(dir)}catch(e){}}else{volEl.value=Math.max(0,Math.min(100,+volEl.value+dir*10));volEl.oninput()}};
+$('#dvVolDn').onclick=()=>vol1(-1);$('#dvVolUp').onclick=()=>vol1(1);
+$('#dvSrc').onclick=()=>{if(HAS_EXT)setMode(mode==='ext'?'local':'ext')};
+$('#driveBtn').onclick=()=>{drive(true);driveSuppress=false};
+
+/* ---------- 설정 창 ---------- */
+function openSettings(){$('#settings').hidden=false;syncSettings();clearInterval(setTimer);setTimer=setInterval(syncSettings,1000)}
+function closeSettings(){$('#settings').hidden=true;clearInterval(setTimer)}
+let setTimer=0;
+function syncSettings(){
+  $('#sDriveAuto').value=store.get('driveAuto','car');
+  $('#sCarGps').checked=store.get('carGps',true);
+  $('#secCar').hidden=!HAS_CAR;$('#secKey').hidden=!HAS_CAR;
+  $('#sLib').textContent=LIB?`저장된 곡 ${list.filter(it=>it.lib).length}곡 · 마지막 곡과 위치를 기억해요`:'웹 버전에서는 목록이 저장되지 않아요. 앱에서 사용하세요.';
+  if(!HAS_CAR)return;
+  let c={};try{c=JSON.parse(NB.carStatus())}catch(e){}
+  $('#sCarAuto').checked=!!c.autoplay;
+  const sel=$('#sCarName'),names=[...new Set([...(c.connected||[]),c.carName].filter(Boolean))];
+  const want=['',...names].join('|');if(sel.dataset.k!==want){sel.dataset.k=want;sel.innerHTML='<option value="">모든 블루투스 오디오 기기</option>'+names.map(n=>`<option></option>`).join('');[...sel.options].slice(1).forEach((o,i)=>{o.value=names[i];o.textContent=names[i]+((c.connected||[]).includes(names[i])?' (지금 연결됨)':'')})}
+  sel.value=c.carName||'';
+  $('#sBt').textContent=c.btPerm?'허용됨':'허용 필요';$('#sBt').classList.toggle('ok',!!c.btPerm);
+  $('#sLaunch').textContent=c.autoLaunch?'허용됨':'허용하기';$('#sLaunch').classList.toggle('on',!c.autoLaunch);
+  const k=$('#sKey');
+  if(c.lastKey){const t=new Date(c.lastKeyAt);k.textContent=`${c.lastKey} · ${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}`;k.classList.add('ok')}
+  else{k.textContent='아직 받은 신호가 없어요';k.classList.remove('ok')}
+}
+$('#setBtn').onclick=openSettings;$('#setClose').onclick=closeSettings;
+$('#settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings()});
+$('#sDriveAuto').onchange=e=>store.set('driveAuto',e.target.value);
+$('#sCarGps').onchange=e=>store.set('carGps',e.target.checked);
+$('#sCarAuto').onchange=e=>{try{NB.setCarAutoplay(e.target.checked)}catch(x){}};
+$('#sCarName').onchange=e=>{try{NB.setCarName(e.target.value)}catch(x){}};
+$('#sLaunch').onclick=()=>{try{NB.requestAutoLaunch()}catch(e){}};
+$('#sBt').onclick=()=>{try{NB.setCarAutoplay($('#sCarAuto').checked||true);$('#sCarAuto').checked=true}catch(e){}};
+$('#sDriveNow').onclick=()=>{closeSettings();drive(true);driveSuppress=false};
+
 /* ---------- 창 높이 조절 ---------- */
 let winH=store.get('winH',{});
 function applySizes(){document.querySelectorAll('.win').forEach(w=>{const h=winH[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h)})}
@@ -1401,10 +1608,14 @@ new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.
 /* ---------- boot ---------- */
 applySizes();setGStyle(gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
-(async()=>{
+if(LIB){$('#addDir').hidden=false;$('#plHint').textContent='음악 파일이나 폴더를 고르면 목록이 저장돼서, 앱을 다시 켜도 그대로 남고 마지막 곡과 위치부터 이어서 들을 수 있어요. 폴더로 추가하면 새로 넣은 곡도 다시 추가하기 쉬워요.'}
+const restored=restorePlaylist();
+if(NB&&NB.takeCarAutoplay){try{if(NB.takeCarAutoplay())setTimeout(()=>window.__carConnected(''),1200)}catch(e){}}
+if(!restored)(async()=>{
   try{
     const buf=await renderDemo();
     const art=demoArt();
+    if(list.length)return; // 데모를 만드는 사이에 사용자가 곡을 추가했으면 데모는 넣지 않음
     list.unshift({title:'Neon Harbor (데모)',artist:'Daesinnam',url:URL.createObjectURL(toWav(buf)),size:buf.length*buf.numberOfChannels*2,duration:buf.duration,art});
     if(cur>=0)cur++;else cur=0;
     renderList();if(mode==='local'){updateMeta();audio.src=list[cur].url}

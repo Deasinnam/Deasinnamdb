@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Insets;
+import android.media.AudioDeviceCallback;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.audiofx.Visualizer;
@@ -46,13 +48,19 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
     private static final int REQ_FILES = 41;
     private static final int REQ_MIC = 42;
     private static final int REQ_LOC = 43;
+    private static final int REQ_PICK = 44;
+    private static final int REQ_TREE = 45;
+    private static final int REQ_BT = 46;
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     static WeakReference<MainActivity> current = new WeakReference<>(null);
@@ -67,6 +75,25 @@ public class MainActivity extends Activity {
     private GpsTracker gps;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
+
+    // 플레이리스트 · 차량 연결
+    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private volatile boolean pendingCarAutoplay = false;
+    private long lastCarTrigger = 0;
+    private boolean devCallbackReady = false;
+    private final AudioDeviceCallback devCallback = new AudioDeviceCallback() {
+        @Override
+        public void onAudioDevicesAdded(AudioDeviceInfo[] added) {
+            if (!devCallbackReady || !CarConnect.enabled(MainActivity.this)) return;
+            for (AudioDeviceInfo d : added) {
+                if (d.isSink() && d.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP) {
+                    String name = String.valueOf(d.getProductName());
+                    if (CarConnect.matches(MainActivity.this, name)) onCarConnected(name);
+                    return;
+                }
+            }
+        }
+    };
 
     // 외부 앱 연동
     private volatile boolean extMode = false;
@@ -123,7 +150,11 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return loader.shouldInterceptRequest(request.getUrl());
+                Uri u = request.getUrl();
+                if ("appassets.androidplatform.net".equals(u.getHost()) && ("/media".equals(u.getPath()) || "/art".equals(u.getPath()))) {
+                    return MediaLibrary.serve(MainActivity.this, u, request.getRequestHeaders());
+                }
+                return loader.shouldInterceptRequest(u);
             }
         });
 
@@ -151,6 +182,11 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else web.loadUrl(START_URL);
 
+        handleCarIntent(getIntent());
+        am.registerAudioDeviceCallback(devCallback, main);
+        // 등록 직후에는 이미 연결된 기기가 한꺼번에 전달되므로, 그 뒤에 새로 연결되는 것만 차량 연결로 봅니다.
+        main.postDelayed(() -> devCallbackReady = true, 1500);
+
         if (Build.VERSION.SDK_INT >= 33
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 7);
@@ -176,6 +212,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_PICK || requestCode == REQ_TREE) {
+            onPicked(requestCode, resultCode, data);
+            return;
+        }
         if (requestCode != REQ_FILES || pendingChooser == null) return;
         Uri[] result = null;
         if (resultCode == RESULT_OK && data != null) {
@@ -196,6 +236,114 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         if (requestCode == REQ_MIC && extMode) startViz();
         if (requestCode == REQ_LOC && gpsWanted) gps.start();
+    }
+
+    // ------------------------------------------------------------ 플레이리스트 저장용 파일 선택
+
+    private void pickAudio(boolean folder) {
+        Intent i;
+        if (folder) {
+            i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        } else {
+            i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType("audio/*");
+            i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        }
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        try {
+            startActivityForResult(i, folder ? REQ_TREE : REQ_PICK);
+        } catch (Exception e) {
+            js("window.__onPicked && window.__onPicked(null)");
+        }
+    }
+
+    private void onPicked(int req, int result, Intent data) {
+        if (result != RESULT_OK || data == null) {
+            js("window.__onPicked && window.__onPicked(null)");
+            return;
+        }
+        final List<Uri> uris = new ArrayList<>();
+        final Uri tree = req == REQ_TREE ? data.getData() : null;
+        if (tree != null) {
+            MediaLibrary.persist(getContentResolver(), tree);
+        } else {
+            ClipData clip = data.getClipData();
+            if (clip != null) for (int k = 0; k < clip.getItemCount(); k++) uris.add(clip.getItemAt(k).getUri());
+            else if (data.getData() != null) uris.add(data.getData());
+            for (Uri u : uris) MediaLibrary.persist(getContentResolver(), u);
+        }
+        js("window.__onPickStart && window.__onPickStart()");
+        io.execute(() -> {
+            List<Uri> list = tree != null ? MediaLibrary.scanTree(getContentResolver(), tree) : uris;
+            final String json = MediaLibrary.describeAll(this, list).toString();
+            js("window.__onPicked && window.__onPicked(" + json + ")");
+        });
+    }
+
+    private void js(final String code) {
+        main.post(() -> {
+            if (web != null) web.evaluateJavascript(code, null);
+        });
+    }
+
+    // ------------------------------------------------------------ 차량 연결 시 자동 재생
+
+    private void handleCarIntent(Intent i) {
+        if (i != null && i.getBooleanExtra(CarConnect.EXTRA_AUTOPLAY, false)) {
+            i.removeExtra(CarConnect.EXTRA_AUTOPLAY);
+            CarConnect.clearNotification(this);
+            pendingCarAutoplay = true;
+            // 화면이 이미 떠 있으면 바로 전달, 아직 로딩 중이면 화면이 takeCarAutoplay()로 가져갑니다.
+            js("window.__carConnected && window.__carConnected('') && (window.__carTaken=1)");
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleCarIntent(intent);
+    }
+
+    void onCarConnected(final String name) {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastCarTrigger < 20000) return; // 같은 연결로 여러 신호가 와도 한 번만
+        lastCarTrigger = now;
+        CarConnect.clearNotification(this);
+        // 블루투스 오디오 경로가 준비될 시간을 잠깐 줍니다.
+        main.postDelayed(() -> js("window.__carConnected && window.__carConnected(" + JSONObject.quote(name == null ? "" : name) + ")"), 2500);
+    }
+
+    private List<String> connectedCarAudio() {
+        List<String> out = new ArrayList<>();
+        for (AudioDeviceInfo d : am.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
+            if (d.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP) out.add(String.valueOf(d.getProductName()));
+        }
+        return out;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        // DeX 키보드·블루투스 키보드의 미디어 키 (앱 창에 초점이 있을 때)
+        if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {
+            String cmd = null, label = null;
+            switch (e.getKeyCode()) {
+                case KeyEvent.KEYCODE_MEDIA_NEXT: cmd = "next"; label = "다음 곡"; break;
+                case KeyEvent.KEYCODE_MEDIA_PREVIOUS: cmd = "prev"; label = "이전 곡"; break;
+                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                case KeyEvent.KEYCODE_HEADSETHOOK: cmd = "toggle"; label = "재생/일시정지"; break;
+                case KeyEvent.KEYCODE_MEDIA_PLAY: cmd = "play"; label = "재생"; break;
+                case KeyEvent.KEYCODE_MEDIA_PAUSE: cmd = "pause"; label = "일시정지"; break;
+                default: break;
+            }
+            if (cmd != null) {
+                PlaybackService.logKey(label + " (키보드)");
+                control(cmd);
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(e);
     }
 
     /** 알림의 재생 버튼을 누르면 웹 화면의 플레이어를 조작합니다. */
@@ -265,6 +413,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         main.removeCallbacksAndMessages(null);
+        try { am.unregisterAudioDeviceCallback(devCallback); } catch (Exception ignored) {}
         stopViz();
         gps.stop();
         ExternalEq.I.setActive(false);
@@ -727,6 +876,69 @@ public class MainActivity extends Activity {
                 if (on || playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
+        }
+
+        /** 음악 파일(여러 개) 또는 폴더를 고르고, 다시 켜도 재생할 수 있게 권한을 기억합니다. */
+        @JavascriptInterface
+        public void pickAudio(final boolean folder) {
+            main.post(() -> MainActivity.this.pickAudio(folder));
+        }
+
+        @JavascriptInterface
+        public boolean hasLibrary() {
+            return true;
+        }
+
+        /** 차량 연결 설정과 상태 */
+        @JavascriptInterface
+        public String carStatus() {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("autoplay", CarConnect.enabled(MainActivity.this));
+                o.put("carName", CarConnect.carName(MainActivity.this));
+                o.put("btPerm", CarConnect.hasBtPerm(MainActivity.this));
+                o.put("autoLaunch", CarConnect.canAutoLaunch(MainActivity.this));
+                o.put("connected", new JSONArray(connectedCarAudio()));
+                o.put("lastKey", PlaybackService.lastKey);
+                o.put("lastKeyAt", PlaybackService.lastKeyAt);
+            } catch (Exception ignored) {}
+            return o.toString();
+        }
+
+        @JavascriptInterface
+        public void setCarAutoplay(final boolean on) {
+            CarConnect.prefs(MainActivity.this).edit().putBoolean("autoplay", on).apply();
+            if (on && !CarConnect.hasBtPerm(MainActivity.this) && Build.VERSION.SDK_INT >= 31) {
+                main.post(() -> requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQ_BT));
+            }
+        }
+
+        /** name이 비어 있으면 모든 블루투스 오디오, 아니면 그 기기에서만 자동 재생 */
+        @JavascriptInterface
+        public void setCarName(final String name) {
+            CarConnect.prefs(MainActivity.this).edit().putString("carName", name == null ? "" : name).apply();
+        }
+
+        @JavascriptInterface
+        public void requestAutoLaunch() {
+            main.post(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())));
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
+        public boolean takeCarAutoplay() {
+            boolean p = pendingCarAutoplay;
+            pendingCarAutoplay = false;
+            return p;
+        }
+
+        /** 간편 모드의 볼륨 버튼: 시스템 미디어 볼륨을 한 칸씩 */
+        @JavascriptInterface
+        public void adjustVolume(final int dir) {
+            am.adjustStreamVolume(AudioManager.STREAM_MUSIC, dir > 0 ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
         }
 
         @JavascriptInterface
