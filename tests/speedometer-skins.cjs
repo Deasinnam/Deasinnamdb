@@ -111,12 +111,16 @@ async function main() {
     // TMAP 키: 저장하면 입력란이 접히고 키가 다시 보이지 않음
     await page.locator('#mapYes').click();
     await page.locator('#mapKeyBox summary').click();
+    assert.equal(await page.locator('#mapProvSel option').count(), 3, 'Naver, Kakao and TMAP are offered');
+    await page.locator('#mapProvSel').selectOption('naver');
+    assert.match(await page.locator('#mapKeyHelp').textContent(), /appassets\.androidplatform\.net/);
     await page.locator('#tmapKey').fill('test-key-123');
     assert.equal(await page.locator('#tmapKey').getAttribute('type'), 'password');
     await page.locator('#tmapKeySave').click();
     assert.equal(await page.locator('#mapKeyBox').evaluate(d => d.open), false, 'Key box folds after saving');
     assert.equal(await page.locator('#tmapKey').inputValue(), '', 'Saved key is not shown again');
-    assert.match(await page.locator('#mapKeySum').textContent(), /키 저장됨/);
+    assert.match(await page.locator('#mapKeySum').textContent(), /네이버 지도 사용 중 · 키 저장됨/);
+    assert.match(await page.locator('#mapbox iframe').getAttribute('src'), /^map\.html\?p=naver&k=test-key-123$/);
     await page.locator('#mapKeyBox summary').click();
     await page.locator('#tmapKeyDel').click();
     assert.match(await page.locator('#mapKeySum').textContent(), /기본 지도/);

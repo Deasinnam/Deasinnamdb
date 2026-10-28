@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>지도</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#d9d9d9}#m{position:absolute;inset:0}</style>
+<script>
+/* 지도 제공자별 SDK를 페이지를 읽는 도중에 정적으로 불러옵니다(document.write 기반 SDK 대응).
+   p = naver | kakao | tmap, k = 키 */
+var Q = new URLSearchParams(location.search), P = Q.get('p') || '', K = encodeURIComponent(Q.get('k') || '');
+var HOST = location.protocol + '//' + location.host;
+function post(o){ o.t = 'map'; o.p = P; try { parent.postMessage(o, '*'); } catch (e) {} }
+var SDK = {
+  naver: 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + K,
+  kakao: 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + K + '&autoload=false',
+  tmap: 'https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=' + K
+}[P];
+window.navermap_authFailure = function(){
+  post({ ok: false, err: '네이버 지도 인증에 실패했어요. 네이버 클라우드 콘솔의 Maps Application에서 Dynamic Map이 선택돼 있는지, Web 서비스 URL에 ' + HOST + ' 가 등록돼 있는지 확인하세요.' });
+};
+if (SDK) document.write('<script src="' + SDK + '" onerror="window.__sdkErr=1"><\/script>');
+</script>
+</head>
+<body>
+<div id="m"></div>
+<script>
+var map, mk, ok = false, last = null, el = document.getElementById('m');
+function sz(){ return { w: window.innerWidth, h: window.innerHeight }; }
+var A = {
+  naver: {
+    ready: function(){ return window.naver && naver.maps && naver.maps.Map; },
+    make: function(cb){ map = new naver.maps.Map(el, { center: new naver.maps.LatLng(37.5665, 126.978), zoom: 16, zoomControl: true });
+      mk = new naver.maps.Marker({ position: map.getCenter(), map: map }); cb(); },
+    pos: function(d){ var p = new naver.maps.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); },
+    resize: function(s){ map.setSize(new naver.maps.Size(s.w, s.h)); },
+    fail: '네이버 지도 프로그램을 불러오지 못했어요. Client ID와 인터넷 연결을 확인하세요.'
+  },
+  kakao: {
+    ready: function(){ return window.kakao && kakao.maps && kakao.maps.load; },
+    make: function(cb){ kakao.maps.load(function(){
+      map = new kakao.maps.Map(el, { center: new kakao.maps.LatLng(37.5665, 126.978), level: 3 });
+      map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+      mk = new kakao.maps.Marker({ position: map.getCenter(), map: map }); cb(); }); },
+    pos: function(d){ var p = new kakao.maps.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); },
+    resize: function(){ map.relayout(); },
+    fail: '카카오맵을 불러오지 못했어요. JavaScript 키, [플랫폼 → Web]의 사이트 도메인(' + HOST + '), [카카오맵] 사용 설정을 확인하세요.'
+  },
+  tmap: {
+    ready: function(){ return window.Tmapv2 && Tmapv2.Map; },
+    make: function(cb){ var s = sz(); map = new Tmapv2.Map('m', { center: new Tmapv2.LatLng(37.5665, 126.978), width: s.w + 'px', height: s.h + 'px', zoom: 16, zoomControl: true });
+      mk = new Tmapv2.Marker({ position: map.getCenter(), map: map }); cb(); },
+    pos: function(d){ var p = new Tmapv2.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); },
+    resize: function(s){ map.resize(s.w, s.h); },
+    fail: 'TMAP 지도 프로그램을 불러오지 못했어요. 앱 키와 인터넷 연결을 확인하세요.'
+  }
+}[P];
+function init(){
+  if (!A) { post({ ok: false, err: '지원하지 않는 지도예요.' }); return; }
+  if (!A.ready()) { post({ ok: false, err: A.fail }); return; }
+  var s = sz();
+  if (s.w < 20 || s.h < 20) { setTimeout(init, 300); return; } // 창이 접혀 있으면 펼쳐질 때까지 기다림
+  try {
+    A.make(function(){ ok = true; post({ ok: true }); if (last) A.pos(last); });
+  } catch (e) { post({ ok: false, err: '지도를 만들지 못했어요: ' + e }); }
+}
+window.addEventListener('resize', function(){ if (ok) try { A.resize(sz()); } catch (e) {} });
+window.addEventListener('message', function(e){ var d = e.data; if (!d || d.t !== 'pos') return; last = d; if (ok) try { A.pos(d); } catch (x) {} });
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

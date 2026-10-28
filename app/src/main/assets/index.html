@@ -623,9 +623,11 @@ html.driving body{overflow:hidden}
           <button class="pill" id="mapSwap" hidden>지도 바꾸기</button>
           <button class="pill" id="mapOff">지도 끄기</button>
         </div>
-        <details class="permbox mapkey" id="mapKeyBox"><summary><span>TMAP 지도로 보기 (선택)</span><em id="mapKeySum">기본 지도 사용 중</em></summary>
-          <div class="keyrow"><input id="tmapKey" type="password" placeholder="TMAP API 앱 키" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="TMAP API 앱 키"><button class="pill on" id="tmapKeySave">적용</button><button class="pill" id="tmapKeyDel" hidden>키 삭제</button></div>
-          <p class="hint">SK open API(openapi.sk.com)에서 무료로 발급받은 TMAP 앱 키를 넣으면 지도가 TMAP 지도로 바뀌어요. 저장한 키는 다시 표시되지 않고 이 기기에만 보관돼요. 키를 지우면 OpenStreetMap 지도로 돌아갑니다.</p>
+        <details class="permbox mapkey" id="mapKeyBox"><summary><span>지도 종류 · 키</span><em id="mapKeySum">기본 지도 사용 중</em></summary>
+          <div class="keyrow"><select class="sel" id="mapProvSel" aria-label="지도 종류"><option value="naver">네이버 지도</option><option value="kakao">카카오맵</option><option value="tmap">TMAP 지도</option></select>
+            <input id="tmapKey" type="password" placeholder="키" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="지도 키"><button class="pill on" id="tmapKeySave">적용</button><button class="pill" id="tmapKeyDel" hidden>키 삭제</button></div>
+          <p class="hint" id="mapKeyHelp"></p>
+          <p class="hint">저장한 키는 다시 표시되지 않고 이 기기에만 보관돼요. 키가 없거나 지우면 기본 지도(OpenStreetMap)를 씁니다.</p>
         </details>
       </div>
       <div class="mapoff" id="mapOffMsg" hidden><span>지도를 쓰지 않도록 설정했어요.</span><button class="pill on" id="mapOn2">지도 켜기</button></div>
@@ -1414,23 +1416,26 @@ function loadLeaflet(){
   return css('leaflet/leaflet.css').catch(()=>css(CDN+'leaflet.min.css')).then(()=>js('leaflet/leaflet.js').catch(()=>js(CDN+'leaflet.min.js')));
 }
 function mapMsg(t){const m=$('#mapMsg');m.textContent=t||'';m.hidden=!t}
-function tmapDoc(key){
-  const k=encodeURIComponent(key);
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,#m{margin:0;height:100%;background:#111}</style>`+
-  `<script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=${k}"><\/script></head><body><div id="m"></div><script>`+
-  `var map,mk,ok=false;function init(){try{map=new Tmapv2.Map('m',{center:new Tmapv2.LatLng(37.5665,126.978),width:'100%',height:'100%',zoom:16});mk=new Tmapv2.Marker({position:map.getCenter(),map:map});ok=true;parent.postMessage({t:'tmap',ok:true},'*')}catch(e){parent.postMessage({t:'tmap',ok:false,err:String(e)},'*')}}`+
-  `window.onload=init;window.addEventListener('message',function(e){var d=e.data;if(!ok||!d||d.t!=='pos')return;var p=new Tmapv2.LatLng(d.lat,d.lon);mk.setPosition(p);if(d.follow)map.setCenter(p)});<\/script></body></html>`;
-}
-window.addEventListener('message',e=>{const d=e.data;if(!d||d.t!=='tmap')return;
-  if(d.ok){mapMsg('');$('#mSrc').textContent='· TMAP 지도';return}
-  mapMsg((d.err||'TMAP 지도를 불러오지 못했어요.')+(d.src?' ('+d.src+')':'')+' 아래 [지도 바꾸기]를 누르면 기본 지도로 볼 수 있어요.')});
+const PROV={osm:'기본 지도',naver:'네이버 지도',kakao:'카카오맵',tmap:'TMAP 지도'};
+const APP_HOST='https://appassets.androidplatform.net';
+const KEYHELP={
+  naver:`네이버 클라우드 플랫폼 콘솔 → Maps → Application 등록에서 Dynamic Map을 고르고, Web 서비스 URL에 ${APP_HOST} 을 등록한 뒤 받은 Client ID를 넣으세요.`,
+  kakao:`Kakao Developers에서 앱을 만들고 [앱 → 플랫폼 → Web] 사이트 도메인에 ${APP_HOST} 을 등록, [카카오맵] 사용 설정을 켠 뒤 JavaScript 키를 넣으세요.`,
+  tmap:'SK open API에서 받은 TMAP 앱 키를 넣으세요.'};
+let mapKeys=store.get('mapKeys',null);
+if(!mapKeys){mapKeys={};const t=store.get('tmapKey','');if(t)mapKeys.tmap=t;store.set('mapKeys',mapKeys);store.set('mapProv',t&&store.get('mapEngine','tmap')!=='osm'?'tmap':'osm')}
+let mapProv=store.get('mapProv','osm'),lastProv=store.get('mapLastProv',mapKeys.tmap?'tmap':'naver');
+if(mapProv!=='osm'&&!mapKeys[mapProv])mapProv='osm';
+window.addEventListener('message',e=>{const d=e.data;if(!d||d.t!=='map')return;
+  if(d.ok){mapMsg('');$('#mSrc').textContent='· '+PROV[d.p];return}
+  mapMsg((d.err||'지도를 불러오지 못했어요.')+' [기본 지도로]를 누르면 바로 기본 지도로 볼 수 있어요.')});
 async function mapInit(){
   if(mapLoading||mapEngine)return;mapLoading=true;
-  const box=$('#mapbox'),key=store.get('tmapKey','');
-  if(key&&store.get('mapEngine','tmap')!=='osm'){
-    tmapFrame=document.createElement('iframe');tmapFrame.className='tmapframe';tmapFrame.title='TMAP 지도';
-    if(NB)tmapFrame.src='tmap.html?k='+encodeURIComponent(key);else tmapFrame.srcdoc=tmapDoc(key);
-    box.appendChild(tmapFrame);mapEngine='tmap';mapMsg('TMAP 지도를 불러오는 중…');mapLoading=false;mapUpdate(true);return;
+  const box=$('#mapbox'),key=mapKeys[mapProv];
+  if(NB&&mapProv!=='osm'&&key){
+    tmapFrame=document.createElement('iframe');tmapFrame.className='tmapframe';tmapFrame.title=PROV[mapProv];
+    tmapFrame.src=`map.html?p=${mapProv}&k=${encodeURIComponent(key)}`;
+    box.appendChild(tmapFrame);mapEngine='frame';mapMsg(PROV[mapProv]+'를 불러오는 중…');mapLoading=false;mapUpdate(true);return;
   }
   mapMsg('지도를 불러오는 중…');
   try{await loadLeaflet()}catch(e){mapLoading=false;mapMsg('지도를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 지도 끄기 → 지도 켜기를 눌러 주세요.');return}
@@ -1449,13 +1454,13 @@ function mapUpdate(force){
   if(!gpsOn){mapMsg('속도계에서 GPS 켜기를 누르면 현재 위치를 따라가요.');return}
   if(!gs.fix){mapMsg('GPS 신호를 찾는 중이에요…');return}
   const now=performance.now();if(!force&&now-mapLastPush<900)return;mapLastPush=now;
-  if(!(mapEngine==='tmap'&&$('#mapMsg').textContent.startsWith('TMAP 지도를 불러오지')))mapMsg('');
+  const mm=$('#mapMsg').textContent;if(!(mapEngine==='frame'&&/못했어요|실패/.test(mm)))mapMsg('');
   const lat=gs.lat,lon=gs.lon;
   if(mapEngine==='osm'&&mapObj){mapMarker.setLatLng([lat,lon]);const el=mapMarker.getElement();if(el){const i=el.querySelector('i');if(i)i.style.transform=`rotate(${Math.round(hdgDisp)}deg)`}
     if(mapFollow){const z=spdNow>90?15:spdNow>40?16:17;mapObj.setView([lat,lon],force?z:mapObj.getZoom(),{animate:!force})}}
-  if(mapEngine==='tmap'&&tmapFrame&&tmapFrame.contentWindow)tmapFrame.contentWindow.postMessage({t:'pos',lat,lon,follow:mapFollow},'*');
+  if(mapEngine==='frame'&&tmapFrame&&tmapFrame.contentWindow)tmapFrame.contentWindow.postMessage({t:'pos',lat,lon,follow:mapFollow},'*');
 }
-function syncMapBtns(){const hasKey=!!store.get('tmapKey','');$('#mapSwap').hidden=!hasKey;$('#mapSwap').textContent=store.get('mapEngine','tmap')==='osm'?'TMAP 지도로':'기본 지도로';$('#mapFollow').classList.toggle('on',mapFollow);$('#mapNight').classList.toggle('on',mapNight);$('#mapbox').classList.toggle('night',mapNight)}
+function syncMapBtns(){const alt=mapProv==='osm'?lastProv:'osm';$('#mapSwap').hidden=!(NB&&(mapProv!=='osm'||mapKeys[lastProv]));$('#mapSwap').textContent=alt==='osm'?'기본 지도로':PROV[alt]+'로';$('#mapFollow').classList.toggle('on',mapFollow);$('#mapNight').classList.toggle('on',mapNight);$('#mapbox').classList.toggle('night',mapNight)}
 function mapApply(){
   const w=$('#wMap');
   $('#mapAsk').hidden=mapPref!==null;$('#mapWrap').hidden=mapPref!=='on';$('#mapOffMsg').hidden=mapPref!=='off';
@@ -1472,15 +1477,19 @@ $('#mapOff').onclick=()=>setMapPref('off');
 $('#mapOn2').onclick=()=>setMapPref('on');
 $('#mapFollow').onclick=()=>{mapFollow=true;syncMapBtns();mapUpdate(true)};
 $('#mapNight').onclick=()=>{mapNight=!mapNight;store.set('mapNight',mapNight);syncMapBtns()};
-$('#mapSwap').onclick=()=>{store.set('mapEngine',store.get('mapEngine','tmap')==='osm'?'tmap':'osm');mapDestroy();syncMapBtns();if(mapPref==='on')mapInit()};
+function setProv(p){mapProv=p;store.set('mapProv',p);if(p!=='osm'){lastProv=p;store.set('mapLastProv',p)}syncKeyUi();syncMapBtns();mapDestroy();if(mapPref==='on')mapInit()}
+$('#mapSwap').onclick=()=>setProv(mapProv==='osm'?lastProv:'osm');
 /* 저장한 키는 화면에 다시 보이지 않게 하고, 입력란은 접어 둡니다. */
-function syncKeyUi(){const has=!!store.get('tmapKey','');const i=$('#tmapKey');i.value='';
-  i.placeholder=has?'키가 저장되어 있어요. 바꾸려면 새 키를 넣으세요':'TMAP API 앱 키';
-  $('#tmapKeyDel').hidden=!has;$('#mapKeySum').textContent=has?'TMAP 지도 사용 중 · 키 저장됨':'기본 지도 사용 중'}
-function applyKey(k){store.set('tmapKey',k);if(k)store.set('mapEngine','tmap');syncKeyUi();syncMapBtns();$('#mapKeyBox').open=false;mapDestroy();if(mapPref==='on')mapInit()}
-$('#tmapKeySave').onclick=()=>{const k=$('#tmapKey').value.trim();if(!k){$('#tmapKey').focus();return}applyKey(k)};
+function syncKeyUi(){const sel=$('#mapProvSel').value||lastProv,has=!!mapKeys[sel],i=$('#tmapKey');i.value='';
+  i.placeholder=has?'키가 저장되어 있어요. 바꾸려면 새 키를 넣으세요':(sel==='naver'?'Client ID':sel==='kakao'?'JavaScript 키':'TMAP 앱 키');
+  $('#tmapKeyDel').hidden=!has;$('#mapKeyHelp').textContent=KEYHELP[sel];
+  $('#mapKeySum').textContent=PROV[mapProv]+' 사용 중'+(mapProv!=='osm'?' · 키 저장됨':'')}
+$('#mapProvSel').value=lastProv;
+$('#mapProvSel').onchange=syncKeyUi;
+$('#tmapKeySave').onclick=()=>{const k=$('#tmapKey').value.trim(),sel=$('#mapProvSel').value;if(!k){$('#tmapKey').focus();return}mapKeys[sel]=k;store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(sel)};
 $('#tmapKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tmapKeySave').click()});
-$('#tmapKeyDel').onclick=()=>applyKey('');
+$('#tmapKeyDel').onclick=()=>{const sel=$('#mapProvSel').value;delete mapKeys[sel];store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(mapProv===sel?'osm':mapProv)};
+if(!NB)$('#mapKeyBox').hidden=true;
 syncKeyUi();
 document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{try{b.dataset.tmap==='side'&&NB.openAppSide?NB.openAppSide(TMAP_PKG):NB.openApp(TMAP_PKG)}catch(e){}});
 if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
