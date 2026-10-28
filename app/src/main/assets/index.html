@@ -331,10 +331,11 @@ input[type=range]:disabled{opacity:.35}
         <button class="tb" data-pkg="com.spotify.music">Spotify 열기</button>
       </div>
       <ul class="perm">
-        <li><div><b>곡 정보 · 재생 조작</b><small>다른 앱의 곡 제목, 앨범 아트를 보여 주고 재생 버튼으로 조작하려면 알림 접근 권한이 필요해요.</small></div><button class="pill" id="xNotif">설정 열기</button></li>
+        <li id="rowNotif"><div><b>곡 정보 · 재생 조작 (모든 앱)</b><small>다른 앱의 곡 제목, 앨범 아트, 재생 위치를 보여 주고 조작하려면 알림 접근 권한이 필요해요.</small></div><button class="pill" id="xNotif">설정 열기</button></li>
+        <li id="rowSpotify"><div><b>Spotify 곡 정보</b><small>Spotify 앱 → 설정 → <b>기기 브로드캐스트 상태</b>를 켜면 곡 제목과 재생 시간이 여기에 표시돼요. 재생·다음·이전 버튼은 설정 없이 모든 앱에서 동작해요.</small></div><button class="pill" data-pkg="com.spotify.music">Spotify 열기</button></li>
         <li><div><b>사운드 시각화</b><small>재생 중인 소리를 실시간으로 분석만 하고, 녹음하거나 저장하지 않아요.</small></div><button class="pill" id="xMic">허용</button></li>
       </ul>
-      <p class="hint">알림 접근 스위치가 회색으로 잠겨 있으면 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>을 누른 뒤 다시 켜세요.<br>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
+      <p class="hint"><span id="hintNotif">알림 접근 스위치가 회색으로 잠겨 있으면 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>을 누른 뒤 다시 켜세요.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
     </div>
   </section>
 </main>
@@ -423,6 +424,8 @@ function pollExt(){
   $('#xApp').textContent=s.app||'재생 중인 앱 없음';
   $('#xEq').textContent='EQ: '+(s.eq||'꺼짐');
   $('#eqSrc').textContent=s.eq?'· '+s.eq:'';
+  const ns=s.notifSupported!==false;$('#rowNotif').hidden=!ns;$('#hintNotif').hidden=!ns;$('#rowSpotify').hidden=ns&&!!s.notif;
+  seek.disabled=!s.seekable;
   const n=$('#xNotif');n.textContent=s.notif?'허용됨':'설정 열기';n.classList.toggle('ok',!!s.notif);n.classList.toggle('on',!s.notif);
   const m=$('#xMic');m.textContent=s.mic?'허용됨':'허용';m.classList.toggle('ok',!!s.mic);m.classList.toggle('on',!s.mic);
   $('#khz').textContent=(s.rate?Math.round(s.rate/1000):44)+' kHz';
@@ -445,6 +448,7 @@ function setMode(m){
     $('#kbps').textContent='--- kbps';$('#kbps').classList.remove('lit');
   }else{
     if(HAS_EXT){try{NB.setExternalMode(false)}catch(e){}}
+    seek.disabled=false;
     $('#eqSrc').textContent='';volEl.value=vol;setP(volEl);
     $('#khz').textContent=(ctx?Math.round(ctx.sampleRate/1000):44)+' kHz';
   }
@@ -571,7 +575,7 @@ function setMarquee(txt){const el=$('#marqText');if(el.textContent!==txt){el.tex
 function updateMeta(){
   if(mode==='ext'){
     const has=!!ext.title;
-    setMarquee(has?`${ext.artist?ext.artist+' - ':''}${ext.title}${ext.app?'  ['+ext.app+']':''}`:(ext.notif?'YouTube Music이나 Spotify에서 음악을 재생하세요':'외부 앱 연동: 아래에서 알림 접근을 허용하세요'));
+    setMarquee(has?`${ext.artist?ext.artist+' - ':''}${ext.title}${ext.app?'  ['+ext.app+']':''}`:(ext.playing?'외부 앱에서 재생 중':(ext.notif||ext.notifSupported===false?'YouTube Music이나 Spotify에서 음악을 재생하세요':'외부 앱 연동: 아래에서 알림 접근을 허용하세요')));
     $('#npTitle').textContent=has?ext.title:'—';
     $('#npArtist').textContent=has?(ext.artist||ext.app||''):(ext.app||'');
     $('#stereo').classList.add('lit');$('#mono').classList.remove('lit');

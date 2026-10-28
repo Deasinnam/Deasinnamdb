@@ -26,6 +26,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Base64;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -241,7 +242,12 @@ public class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- 외부 앱
 
+    private static boolean notifSupported() {
+        return "full".equals(BuildConfig.FLAVOR);
+    }
+
     private boolean hasNotifAccess() {
+        if (!notifSupported()) return false;
         if (Build.VERSION.SDK_INT >= 27) {
             NotificationManager nm = getSystemService(NotificationManager.class);
             return nm.isNotificationListenerAccessGranted(listenerCn);
@@ -257,6 +263,7 @@ public class MainActivity extends Activity {
     private void refreshSessions() {
         if (!hasNotifAccess()) {
             ctrl = null;
+            updateArt(null);
             return;
         }
         try {
@@ -405,6 +412,23 @@ public class MainActivity extends Activity {
         requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_MIC);
     }
 
+    /** 알림 접근 권한이 없을 때: 현재 재생 중인 앱에 미디어 버튼 신호를 보냅니다. */
+    private void sendMediaKey(String cmd) {
+        int code;
+        switch (cmd) {
+            case "play": code = KeyEvent.KEYCODE_MEDIA_PLAY; break;
+            case "pause": code = KeyEvent.KEYCODE_MEDIA_PAUSE; break;
+            case "stop": code = KeyEvent.KEYCODE_MEDIA_STOP; break;
+            case "next": code = KeyEvent.KEYCODE_MEDIA_NEXT; break;
+            case "prev": code = KeyEvent.KEYCODE_MEDIA_PREVIOUS; break;
+            default: return;
+        }
+        try {
+            am.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
+            am.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+        } catch (Exception ignored) {}
+    }
+
     private int systemVolume() {
         int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         return max > 0 ? Math.round(am.getStreamVolume(AudioManager.STREAM_MUSIC) * 100f / max) : 0;
@@ -477,8 +501,25 @@ public class MainActivity extends Activity {
                 o.put("eq", ExternalEq.I.status());
                 o.put("vol", systemVolume());
                 o.put("artV", artVersion);
+                o.put("notifSupported", notifSupported());
                 MediaController c = ctrl;
-                if (c != null) {
+                o.put("seekable", c != null);
+                if (c == null) {
+                    if (SpotifyInfo.known() && (SpotifyInfo.playing || !am.isMusicActive())) {
+                        o.put("pkg", "com.spotify.music");
+                        o.put("app", "Spotify");
+                        o.put("title", SpotifyInfo.title);
+                        o.put("artist", SpotifyInfo.artist);
+                        o.put("album", SpotifyInfo.album);
+                        o.put("dur", SpotifyInfo.durationMs);
+                        o.put("pos", SpotifyInfo.position());
+                        o.put("playing", SpotifyInfo.playing);
+                    } else {
+                        boolean active = am.isMusicActive();
+                        o.put("playing", active);
+                        if (active) o.put("app", "외부 앱 재생 중");
+                    }
+                } else {
                     String pkg = c.getPackageName();
                     o.put("pkg", pkg);
                     o.put("app", appLabel(pkg));
@@ -530,7 +571,10 @@ public class MainActivity extends Activity {
         public void extCmd(final String cmd, final double arg) {
             main.post(() -> {
                 MediaController c = ctrl;
-                if (c == null) return;
+                if (c == null) {
+                    sendMediaKey(cmd);
+                    return;
+                }
                 MediaController.TransportControls t = c.getTransportControls();
                 switch (cmd) {
                     case "play": t.play(); break;

@@ -32,5 +32,17 @@ public class App extends Application {
         f.addAction(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(rx, f, Context.RECEIVER_EXPORTED);
         else registerReceiver(rx, f);
+
+        BroadcastReceiver spotify = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent i) {
+                SpotifyInfo.onBroadcast(i);
+            }
+        };
+        IntentFilter sf = new IntentFilter();
+        sf.addAction(SpotifyInfo.META);
+        sf.addAction(SpotifyInfo.STATE);
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(spotify, sf, Context.RECEIVER_EXPORTED);
+        else registerReceiver(spotify, sf);
     }
 }
