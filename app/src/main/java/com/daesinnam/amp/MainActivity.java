@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
         listenerCn = new ComponentName(this, MediaListener.class);
 
         web = new WebView(this);
-        web.setBackgroundColor(Color.parseColor("#08090B"));
+        web.setBackgroundColor(Color.parseColor("#05070D"));
         setContentView(web);
         applySystemBarPadding(web);
 

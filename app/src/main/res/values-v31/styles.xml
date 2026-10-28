@@ -1,0 +1,12 @@
+<resources>
+    <!-- Android 12 이상 실행 화면: 대신남 블루 배경에 로고 아이콘 -->
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#05070D</item>
+        <item name="android:statusBarColor">#05070D</item>
+        <item name="android:navigationBarColor">#05070D</item>
+        <item name="android:colorAccent">#2F5BFF</item>
+        <item name="android:windowSplashScreenBackground">#05070D</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_fg</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#05070D</item>
+    </style>
+</resources>

@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>body{margin:0}</style>
+<style>body{margin:0;background:#05070d}</style>
 <title>Daesinnam Amp</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Share+Tech+Mono&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Montserrat:wght@500;800;900&family=Share+Tech+Mono&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <script src="jsmediatags.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js';document.head.appendChild(s)"></script>
 <style>
 /* Layout: skinned hi-fi windows on a grid — 1 column (narrow), 2 columns, or one wide row; chosen by width or by the viewer */
@@ -20,10 +20,22 @@
   --lcd:#040605; --lcd-edge:#1d2128; --lcd-text:#ff8c1a; --lcd-text-2:#ffb54d; --lcd-dim:#7a4a12; --lcd-fg:#d8d2c8; --lcd-glow:#ff8c1a88;
   --led1:#36e05a; --led2:#e9e43a; --led3:#ff9a1f; --led4:#ff3b2a; --peak:#ffe2b0; --led-off:#ffffff0e; --grid:#14201a;
   --text:#ece6dc; --muted:#8d929b; --accent:#ff8c1a; --track:#2a2d33;
+  --logo-word:#f6f2ea; --logo-blue:#4a78ff; --logo-tag:#9a958c;
+  --f-logo:"Montserrat","Noto Sans KR",system-ui,sans-serif;
   --f-display:"Barlow Condensed","Noto Sans KR",system-ui,sans-serif;
   --f-body:"Noto Sans KR",system-ui,sans-serif;
   --f-lcd:"Share Tech Mono",ui-monospace,monospace;
   color-scheme:dark;
+}
+:root[data-skin="blue"]{
+  --bg:#05070d; --bg-glow:#0c1d55; --panel:#0d1120; --panel-2:#141a2e; --edge:#02040a; --frame-hi:#ffffff12; --frame-in:#202a48;
+  --bar-a:#19213f; --bar-b:#0b1020; --bar-text:#e8ecff; --groove:#2c3966;
+  --metal-a:#36426a; --metal-b:#232d50; --metal-c:#121933; --metal-d:#1b2443; --metal-ink:#e8ecff;
+  --hot-a:#7d9bff; --hot-b:#2f5bff; --hot-c:#0b33d6; --hot-ink:#ffffff;
+  --lcd:#02040a; --lcd-edge:#18224a; --lcd-text:#6f93ff; --lcd-text-2:#f2f5ff; --lcd-dim:#26346a; --lcd-fg:#dfe6ff; --lcd-glow:#2f5bff99;
+  --led1:#1f4bff; --led2:#3f6bff; --led3:#86a3ff; --led4:#ffffff; --peak:#ffffff; --led-off:#ffffff0b; --grid:#0c1638;
+  --text:#eef1ff; --muted:#8a93b8; --accent:#2f5bff; --track:#182040;
+  --logo-word:#ffffff; --logo-blue:#2f5bff; --logo-tag:#8a93b8; color-scheme:dark;
 }
 :root[data-skin="base"]{
   --bg:#14161d; --bg-glow:#1d2433; --panel:#2a2e3b; --panel-2:#363b4b; --edge:#0b0c10; --frame-hi:#ffffff22; --frame-in:#454b5e;
@@ -32,7 +44,7 @@
   --hot-a:#d8ff8a; --hot-b:#7fdc3a; --hot-c:#3c9a19; --hot-ink:#0d2400;
   --lcd:#000000; --lcd-edge:#2b3040; --lcd-text:#00e000; --lcd-text-2:#00e000; --lcd-dim:#0b5a0b; --lcd-fg:#c9f5c9; --lcd-glow:#00e00066;
   --led1:#00c800; --led2:#c8d400; --led3:#e88a00; --led4:#e01a1a; --peak:#d0d0d0; --led-off:#ffffff0c; --grid:#0d2a0d;
-  --text:#eef0f6; --muted:#a3a9bb; --accent:#7fdc3a; --track:#1b1e28; color-scheme:dark;
+  --text:#eef0f6; --muted:#a3a9bb; --accent:#7fdc3a; --track:#1b1e28; --logo-word:#ffffff; --logo-blue:#5b84ff; --logo-tag:#a3a9bb; color-scheme:dark;
 }
 :root[data-skin="neon"]{
   --bg:#0b0716; --bg-glow:#2c0e44; --panel:#160f25; --panel-2:#1f1634; --edge:#05030b; --frame-hi:#ffffff12; --frame-in:#33245a;
@@ -41,7 +53,7 @@
   --hot-a:#ff9cec; --hot-b:#ff4fd8; --hot-c:#b5229a; --hot-ink:#2a0024;
   --lcd:#05030c; --lcd-edge:#2a1d4a; --lcd-text:#2ef2ff; --lcd-text-2:#ff6fe0; --lcd-dim:#3b2a5c; --lcd-fg:#e6dcff; --lcd-glow:#2ef2ff88;
   --led1:#2ef2ff; --led2:#6f8bff; --led3:#c65bff; --led4:#ff4fd8; --peak:#ffffff; --led-off:#ffffff0c; --grid:#1d1236;
-  --text:#f3eaff; --muted:#a493c7; --accent:#ff4fd8; --track:#241a3d; color-scheme:dark;
+  --text:#f3eaff; --muted:#a493c7; --accent:#ff4fd8; --track:#241a3d; --logo-word:#ffffff; --logo-blue:#5b84ff; --logo-tag:#a493c7; color-scheme:dark;
 }
 :root[data-skin="ice"]{
   --bg:#cfd6df; --bg-glow:#f5f8fb; --panel:#e4e9ef; --panel-2:#f3f6f9; --edge:#8792a0; --frame-hi:#ffffffcc; --frame-in:#c3ccd7;
@@ -50,7 +62,7 @@
   --hot-a:#a8dcff; --hot-b:#3a9bff; --hot-c:#1f6fd1; --hot-ink:#04223f;
   --lcd:#0c1a29; --lcd-edge:#2a3c52; --lcd-text:#7fd4ff; --lcd-text-2:#c4ecff; --lcd-dim:#2c4a68; --lcd-fg:#dcefff; --lcd-glow:#7fd4ff88;
   --led1:#3aa0ff; --led2:#5cc8ff; --led3:#a6e6ff; --led4:#ff5c7a; --peak:#ffffff; --led-off:#ffffff10; --grid:#16283b;
-  --text:#1d2530; --muted:#5b6676; --accent:#1f8fff; --track:#b9c3cf; color-scheme:light;
+  --text:#1d2530; --muted:#5b6676; --accent:#1f8fff; --track:#b9c3cf; --logo-word:#0b1530; --logo-blue:#0a3dff; --logo-tag:#5b6676; color-scheme:light;
 }
 :root[data-skin="red"]{
   --bg:#080505; --bg-glow:#2e0707; --panel:#171010; --panel-2:#1f1414; --edge:#030101; --frame-hi:#ffffff10; --frame-in:#3a1d1d;
@@ -59,7 +71,7 @@
   --hot-a:#ff8a7c; --hot-b:#ff3b30; --hot-c:#b8140a; --hot-ink:#250000;
   --lcd:#060202; --lcd-edge:#2d1414; --lcd-text:#ff3b30; --lcd-text-2:#ff7a6c; --lcd-dim:#4a1410; --lcd-fg:#ffe1dc; --lcd-glow:#ff3b3088;
   --led1:#e8e8e8; --led2:#ffb2a3; --led3:#ff5a45; --led4:#ff1f1f; --peak:#ffffff; --led-off:#ffffff0b; --grid:#2a0d0d;
-  --text:#f6e9e6; --muted:#a38c88; --accent:#ff3b30; --track:#2c1c1c; color-scheme:dark;
+  --text:#f6e9e6; --muted:#a38c88; --accent:#ff3b30; --track:#2c1c1c; --logo-word:#ffffff; --logo-blue:#4a78ff; --logo-tag:#a38c88; color-scheme:dark;
 }
 :root[data-skin="wood"]{
   --bg:#120c07; --bg-glow:#3a2410; --panel:#3b2413; --panel-2:#54331b; --edge:#0d0804; --frame-hi:#ffd9a51c; --frame-in:#6a4426;
@@ -68,7 +80,7 @@
   --hot-a:#ffd896; --hot-b:#e6a24a; --hot-c:#a8661c; --hot-ink:#2a1600;
   --lcd:#021311; --lcd-edge:#123a34; --lcd-text:#46f0d0; --lcd-text-2:#8af6e2; --lcd-dim:#0f4a40; --lcd-fg:#d2fbf2; --lcd-glow:#46f0d088;
   --led1:#46f0d0; --led2:#46f0d0; --led3:#e8e05a; --led4:#f0704a; --peak:#e8fff9; --led-off:#46f0d012; --grid:#06261f;
-  --text:#f4e8d6; --muted:#c3a887; --accent:#e6a24a; --track:#2a1a0e; color-scheme:dark;
+  --text:#f4e8d6; --muted:#c3a887; --accent:#e6a24a; --track:#2a1a0e; --logo-word:#fff6e8; --logo-blue:#5a86ff; --logo-tag:#c3a887; color-scheme:dark;
 }
 :root[data-skin="wood"] .win{background-image:repeating-linear-gradient(92deg,#ffffff06 0 2px,transparent 2px 7px,#00000010 7px 9px,transparent 9px 15px),linear-gradient(180deg,var(--panel-2),var(--panel))}
 
@@ -81,12 +93,12 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .top{max-width:2000px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding-block:14px 6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
-.brand svg{flex:none}
-.brand svg rect.b{fill:var(--accent)}
-.brand svg rect.f{fill:var(--panel);stroke:var(--groove)}
-.brand b{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(180deg,var(--hot-a) 0%,var(--hot-b) 55%,var(--hot-c) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
-.brand small{font-family:var(--f-lcd);color:var(--muted);font-size:11px;letter-spacing:.12em;white-space:nowrap}
+.brand{display:flex;align-items:center;gap:clamp(10px,1.4vw,16px);margin-right:auto;min-width:0}
+.brand .mark{flex:none;width:clamp(34px,4.2vw,48px);height:auto;fill:var(--logo-blue)}
+.brand .word{min-width:0;display:flex;flex-direction:column;gap:3px}
+.brand .wm{font-family:var(--f-logo);font-weight:900;font-size:clamp(22px,3.2vw,34px);line-height:.9;letter-spacing:-.01em;white-space:nowrap;color:var(--logo-word)}
+.brand .wm em{font-style:normal;color:var(--logo-blue);margin-left:.22em}
+.brand .tag{font-family:var(--f-logo);font-weight:500;font-size:clamp(8px,.95vw,11px);letter-spacing:.42em;color:var(--logo-tag);white-space:nowrap}
 .tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .selw{display:flex;align-items:center;gap:6px;font-family:var(--f-display);font-weight:600;letter-spacing:.1em;font-size:13px;color:var(--muted)}
 .seg{display:flex;border:1px solid var(--edge);border-radius:4px;overflow:hidden}
@@ -229,15 +241,13 @@ input[type=range]:disabled{opacity:.35}
 
 
 <header class="top">
-  <div class="brand">
-    <svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true">
-      <rect class="f" x="1" y="1" width="36" height="36" rx="7"/>
-      <rect class="b" x="7" y="20" width="4" height="11" rx="1"/>
-      <rect class="b" x="13" y="12" width="4" height="19" rx="1"/>
-      <rect class="b" x="19" y="7" width="4" height="24" rx="1"/>
-      <rect class="b" x="25" y="15" width="4" height="16" rx="1"/>
+  <div class="brand" role="img" aria-label="Daesinnam Amp">
+    <svg class="mark" viewBox="0 0 340 300" aria-hidden="true">
+      <rect x="0" y="150" width="97" height="150" rx="48.5"/>
+      <rect x="116" y="86" width="97" height="214" rx="48.5"/>
+      <rect x="232" y="0" width="108" height="300" rx="54"/>
     </svg>
-    <div><b>Daesinnam Amp</b><br><small>MUSIC LAB · MP3 PLAYER</small></div>
+    <div class="word"><div class="wm">DAESINNAM<em>AMP</em></div><div class="tag">MUSIC LAB · MP3 PLAYER</div></div>
   </div>
   <div class="tools">
     <div class="seg" id="srcSeg" hidden><button data-src="local">내 음악</button><button data-src="ext">외부 앱</button></div>
@@ -359,19 +369,19 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이']];
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이']];
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
-let skin=store.get('skin','amber'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local';
+let skin=store.get('skin2','blue'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local';
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 
 /* ---------- skin & layout ---------- */
 let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge')}}
-function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='amber';skin=k;document.documentElement.dataset.skin=k;store.set('skin',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
 $('#skin').onchange=e=>setSkin(e.target.value);
 const appEl=$('#app');
@@ -509,15 +519,16 @@ function toWav(buf){
 }
 function demoArt(){
   const c=document.createElement('canvas');c.width=c.height=320;const g=c.getContext('2d');
-  const sky=g.createLinearGradient(0,0,0,320);sky.addColorStop(0,'#1a0f2e');sky.addColorStop(.55,'#7a2a55');sky.addColorStop(.75,'#ff8c1a');sky.addColorStop(1,'#1a0d08');
+  const sky=g.createLinearGradient(0,0,0,320);sky.addColorStop(0,'#03050c');sky.addColorStop(.55,'#0c1d55');sky.addColorStop(.78,'#2f5bff');sky.addColorStop(1,'#03050c');
   g.fillStyle=sky;g.fillRect(0,0,320,320);
-  const sun=g.createLinearGradient(0,110,0,230);sun.addColorStop(0,'#ffe08a');sun.addColorStop(1,'#ff5a2a');
+  const sun=g.createLinearGradient(0,110,0,230);sun.addColorStop(0,'#ffffff');sun.addColorStop(1,'#7d9bff');
   g.fillStyle=sun;g.beginPath();g.arc(160,200,72,Math.PI,0);g.fill();
-  g.fillStyle='#1a0f2e';for(let i=0;i<6;i++)g.fillRect(80,150+i*10+i*i,160,2+i*.8);
+  g.fillStyle='#0c1d55';for(let i=0;i<6;i++)g.fillRect(80,150+i*10+i*i,160,2+i*.8);
   g.fillStyle='#0b0710';let x=0;while(x<320){const w=10+Math.random()*22,h=20+Math.random()*70;g.fillRect(x,230-h,w,h+90);x+=w+2}
-  g.fillStyle='#ffb54d';for(let i=0;i<70;i++)if(Math.random()<.6)g.fillRect(Math.random()*320,170+Math.random()*60,2,2);
-  g.fillStyle='#ffffffe6';g.font='700 34px "Barlow Condensed",sans-serif';g.textAlign='center';g.fillText('DAESINNAM',160,282);
-  g.font='500 15px "Barlow Condensed",sans-serif';g.fillStyle='#ffffffb0';g.fillText('MUSIC LAB',160,302);
+  g.fillStyle='#86a3ff';for(let i=0;i<70;i++)if(Math.random()<.6)g.fillRect(Math.random()*320,170+Math.random()*60,2,2);
+  g.textAlign='center';g.font='900 30px Montserrat,sans-serif';g.fillStyle='#ffffff';g.fillText('DAESINNAM',138,284);
+  g.fillStyle='#2f5bff';g.fillText('AMP',262,284);
+  g.font='500 11px Montserrat,sans-serif';g.fillStyle='#ffffffb0';g.fillText('M U S I C   L A B',160,304);
   return c.toDataURL('image/jpeg',.85);
 }
 

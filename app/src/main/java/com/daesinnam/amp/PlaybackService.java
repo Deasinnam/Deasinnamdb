@@ -105,7 +105,7 @@ public class PlaybackService extends Service {
         Notification.Builder b = new Notification.Builder(this, CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat)
                 .setContentIntent(content)
-                .setColor(0xFFFF8C1A)
+                .setColor(0xFF2F5BFF)
                 .setOnlyAlertOnce(true)
                 .setVisibility(Notification.VISIBILITY_PUBLIC);
 
