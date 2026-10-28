@@ -457,7 +457,7 @@ function setMode(m){
   clearInterval(extTimer);
   if(isExt){
     audio.pause();
-    if(NB&&NB.onPlayState){try{NB.onPlayState('stopped','','')}catch(e){}lastBridge='stopped'}
+    if(NB&&NB.onPlayState){try{NB.onPlayState('stopped','','')}catch(e){}lastBridge='ext'}
     try{NB.setExternalMode(true)}catch(e){}
     extArtV=-1;pollExt();extTimer=setInterval(pollExt,300);pushExtEq();
     $('#kbps').textContent='--- kbps';$('#kbps').classList.remove('lit');
@@ -546,7 +546,7 @@ function addFiles(files){
     const it={...splitName(f.name),url:URL.createObjectURL(f),size:f.size,duration:0,art:null,file:f};
     list.push(it);
     const probe=new Audio();probe.preload='metadata';probe.src=it.url;probe.onloadedmetadata=()=>{it.duration=probe.duration;renderList();if(list[cur]===it)updateMeta()};
-    if(window.jsmediatags) try{window.jsmediatags.read(f,{onSuccess:tag=>{const t=tag.tags||{};if(t.title)it.title=t.title;if(t.artist)it.artist=t.artist;if(t.picture){const p=t.picture;it.art=URL.createObjectURL(new Blob([new Uint8Array(p.data)],{type:p.format}))}renderList();if(list[cur]===it)updateMeta()},onError:()=>{}})}catch(e){}
+    if(window.jsmediatags) try{window.jsmediatags.read(f,{onSuccess:tag=>{const t=tag.tags||{};if(t.title)it.title=t.title;if(t.artist)it.artist=t.artist;if(t.picture){const p=t.picture;it.art=URL.createObjectURL(new Blob([new Uint8Array(p.data)],{type:p.format}))}renderList();if(list[cur]===it){updateMeta();lastArtSent=null;bridgeState(true)}},onError:()=>{}})}catch(e){}
   });
   renderList();
   if(list.length>start&&(cur<0||audio.paused)) playIndex(start);
@@ -624,6 +624,8 @@ $('#file').onchange=e=>{addFiles(e.target.files);e.target.value=''};
 $('#clear').onclick=()=>{audio.pause();audio.removeAttribute('src');audio.load();list.forEach(it=>it.file&&URL.revokeObjectURL(it.url));list=[];cur=-1;renderList();updateMeta();state()};
 audio.addEventListener('ended',()=>{if(repeat==='one'){audio.currentTime=0;audio.play();return}const n=nextIdx(1,true);if(n>=0)playIndex(n);else state()});
 ['play','pause','playing'].forEach(ev=>audio.addEventListener(ev,state));
+audio.addEventListener('seeked',()=>bridgeState(true));
+audio.addEventListener('loadedmetadata',()=>bridgeState(true));
 let lastBridge='';
 function state(){
   const playing=mode==='ext'?!!ext.playing:(!audio.paused&&cur>=0);
@@ -634,9 +636,36 @@ function state(){
   if('mediaSession' in navigator)navigator.mediaSession.playbackState=playing?'playing':'paused';
   if(playing&&navigator.wakeLock&&!wake){navigator.wakeLock.request('screen').then(w=>{wake=w;w.addEventListener('release',()=>wake=null)}).catch(()=>{})}
   if(!playing&&wake){wake.release().catch(()=>{});wake=null}
-  if(NB&&NB.onPlayState){const it=list[cur];const st=playing?'playing':(cur>=0&&audio.currentTime>0?'paused':'stopped');if(st!==lastBridge){lastBridge=st;try{NB.onPlayState(st,it?it.title:'',it?(it.artist||''):'')}catch(e){}}}
+  bridgeState(false);
 }
-window.__ctl=c=>{if(c==='prev')prev();else if(c==='next')next();else if(c==='toggle')toggle()};
+/* 차량 핸들·블루투스·잠금 화면 조작을 위해 앱의 미디어 세션에 곡 정보를 보냅니다. */
+let lastArtSent=null;
+function bridgeState(force){
+  if(!NB||!NB.onPlayState||mode==='ext')return;
+  const it=list[cur];const playing=!audio.paused&&cur>=0;
+  const st=playing?'playing':(cur>=0&&audio.currentTime>0?'paused':'stopped');
+  const key=st+'|'+cur+'|'+(it?it.title+it.artist:'');
+  if(!force&&key===lastBridge)return;lastBridge=key;
+  const dur=Math.round((audio.duration||(it&&it.duration)||0)*1000),pos=Math.round(audio.currentTime*1000);
+  try{if(NB.onNowPlaying)NB.onNowPlaying(st,it?it.title:'',it?(it.artist||''):'',dur,pos);else NB.onPlayState(st,it?it.title:'',it?(it.artist||''):'')}catch(e){}
+  if(it&&NB.onArt&&lastArtSent!==it){lastArtSent=it;sendArt(it)}
+}
+async function sendArt(it){
+  let d='';
+  try{
+    if(it.artData)d=it.artData;
+    else if(it.art&&it.art.startsWith('data:'))d=it.art;
+    else if(it.art){const b=await (await fetch(it.art)).blob();d=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.onerror=()=>r('');f.readAsDataURL(b)})}
+    it.artData=d;
+  }catch(e){}
+  if(list[cur]===it){try{NB.onArt(d)}catch(e){}}
+}
+window.__ctl=c=>{
+  if(c==='prev')prev();else if(c==='next')next();else if(c==='toggle')toggle();
+  else if(c==='play')play();else if(c==='pause')pause();else if(c==='stop')stop();
+  else if(c==='ff'||c==='rw'){if(mode==='ext')return;audio.currentTime=Math.max(0,Math.min((audio.duration||0)-1,audio.currentTime+(c==='ff'?15:-15)))}
+  else if(c.startsWith('seek:')){if(mode==='ext')X('seek',+c.slice(5));else audio.currentTime=+c.slice(5)/1000}
+};
 if('mediaSession' in navigator){const ms=navigator.mediaSession;try{ms.setActionHandler('play',play);ms.setActionHandler('pause',pause);ms.setActionHandler('stop',stop);ms.setActionHandler('nexttrack',next);ms.setActionHandler('previoustrack',prev);ms.setActionHandler('seekto',d=>{audio.currentTime=d.seekTime})}catch(e){}}
 document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;if(e.code==='Space'){e.preventDefault();toggle()}else if(e.code==='ArrowRight')next();else if(e.code==='ArrowLeft')prev()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')state()});

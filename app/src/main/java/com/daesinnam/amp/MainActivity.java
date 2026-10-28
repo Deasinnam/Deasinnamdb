@@ -494,8 +494,19 @@ public class MainActivity extends Activity {
         /** 내 음악 재생 상태. state: "playing" | "paused" | "stopped" */
         @JavascriptInterface
         public void onPlayState(final String state, final String title, final String artist) {
+            onNowPlaying(state, title, artist, NowPlaying.durationMs, NowPlaying.positionMs);
+        }
+
+        /** 내 음악 재생 상태. state: "playing" | "paused" | "stopped" */
+        @JavascriptInterface
+        public void onNowPlaying(final String state, final String title, final String artist, final double durMs, final double posMs) {
+            NowPlaying.title = title == null || title.isEmpty() ? "Daesinnam Amp" : title;
+            NowPlaying.artist = artist == null ? "" : artist;
+            NowPlaying.durationMs = (long) durMs;
+            NowPlaying.positionMs = (long) posMs;
+            NowPlaying.playing = "playing".equals(state);
             main.post(() -> {
-                playing = "playing".equals(state);
+                playing = NowPlaying.playing;
                 if (playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -506,13 +517,21 @@ public class MainActivity extends Activity {
                         return;
                     }
                     i.setAction(PlaybackService.ACTION_UPDATE);
-                    i.putExtra("playing", playing);
-                    i.putExtra("title", title);
-                    i.putExtra("artist", artist);
                     if (playing) startForegroundService(i);
                     else if (PlaybackService.running) startService(i);
                 } catch (Exception ignored) {
                     // 백그라운드 시작 제한 등으로 실패해도 재생 자체는 계속됩니다.
+                }
+            });
+        }
+
+        /** 현재 곡의 앨범 아트(data URL). 차량 화면·잠금 화면·알림에 표시됩니다. */
+        @JavascriptInterface
+        public void onArt(final String dataUrl) {
+            NowPlaying.setArt(dataUrl);
+            main.post(() -> {
+                if (PlaybackService.running) {
+                    try { startService(new Intent(MainActivity.this, PlaybackService.class).setAction(PlaybackService.ACTION_REFRESH)); } catch (Exception ignored) {}
                 }
             });
         }
