@@ -534,6 +534,7 @@ public class MainActivity extends Activity {
                 o.put("vol", systemVolume());
                 o.put("artV", artVersion);
                 o.put("notifSupported", notifSupported());
+                o.put("spotifyRx", SpotifyInfo.lastUpdate > 0);
                 MediaController c = ctrl;
                 o.put("seekable", c != null);
                 if (c == null) {
