@@ -305,8 +305,10 @@ input[type=range]:disabled{opacity:.35}
 .eqgrid{position:relative;flex:1;min-height:150px;display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;padding:10px 4px 6px}
 #eqled{position:absolute;left:4px;top:10px;height:var(--slot-h,180px);width:calc(100% - 8px);pointer-events:none}
 .band{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;height:100%}
-.slot{position:relative;width:100%;flex:1;min-height:110px}
-.slot input{position:absolute;left:50%;top:50%;width:calc(var(--slot-h,180px) - 10px);transform:translate(-50%,-50%) rotate(-90deg);height:30px}
+.slot{position:relative;width:100%;flex:1;min-height:110px;touch-action:none;cursor:ns-resize;-webkit-user-select:none;user-select:none}
+/* 세로 드래그는 .slot이 직접 처리합니다(화면 스크롤로 넘어가지 않게). 슬라이더는 표시·키보드 조작용 */
+.slot input{position:absolute;left:50%;top:50%;width:calc(var(--slot-h,180px) - 10px);transform:translate(-50%,-50%) rotate(-90deg);height:30px;pointer-events:none}
+.slot.drag input::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent),0 2px 4px #000}
 .slot input::-webkit-slider-runnable-track{height:4px;background:#0000;box-shadow:none}
 .slot input::-moz-range-track{height:4px;background:#0000}
 .slot input::-webkit-slider-thumb{width:16px;height:30px;margin-top:-13px;border-radius:2px;background:linear-gradient(90deg,var(--metal-c),var(--metal-a) 45%,var(--metal-c) 55%,var(--metal-b));border:1px solid var(--edge);box-shadow:0 2px 4px #000}
@@ -1145,7 +1147,17 @@ const grid=$('#eqgrid');const eqInputs=[];
 function mkBand(label,val,cls,on){
   const d=document.createElement('div');d.className='band '+(cls||'');
   d.innerHTML=`<div class="slot"><input type="range" min="-12" max="12" step="0.5" aria-label="${label} 게인"></div><span>${label}</span>`;
-  const inp=d.querySelector('input');inp.value=val;setP(inp);inp.oninput=()=>{setP(inp);on(+inp.value)};inp.ondblclick=()=>{inp.value=0;setP(inp);on(0)};
+  const inp=d.querySelector('input'),slot=d.querySelector('.slot');inp.value=val;setP(inp);inp.oninput=()=>{setP(inp);on(+inp.value)};
+  const set=v=>{v=Math.max(-12,Math.min(12,Math.round(v*2)/2));if(+inp.value!==v){inp.value=v;setP(inp);on(v)}};
+  /* 손가락 위치(세로)를 바로 값으로: 위 +12dB, 아래 -12dB */
+  const fromY=y=>{const r=slot.getBoundingClientRect(),pad=5,h=Math.max(1,r.height-pad*2);return 12-((y-r.top-pad)/h)*24};
+  let pid=null,lastTap=0;
+  slot.addEventListener('pointerdown',e=>{e.preventDefault();pid=e.pointerId;slot.setPointerCapture(pid);slot.classList.add('drag');
+    const now=performance.now();if(now-lastTap<300){set(0);lastTap=0;return}lastTap=now;set(fromY(e.clientY))});
+  slot.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;e.preventDefault();set(fromY(e.clientY))});
+  const end=e=>{if(e.pointerId!==pid)return;pid=null;slot.classList.remove('drag')};
+  slot.addEventListener('pointerup',end);slot.addEventListener('pointercancel',end);
+  slot.addEventListener('touchmove',e=>e.preventDefault(),{passive:false}); // 일부 기기의 스크롤 가로채기 방지
   grid.appendChild(d);return inp;
 }
 const preInp=mkBand('PRE',pre,'pre',v=>{pre=v;store.set('pre',pre);applyEq();drawCurve()});

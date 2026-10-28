@@ -205,8 +205,29 @@ async function main() {
     await p4.waitForFunction(() => document.querySelector('#bPlay').classList.contains('hot'));
     assert.equal(await p4.evaluate(() => window.__webBridge), undefined, 'Web player session stays off when the native player is used');
     await p4.close();
+    // EQ 슬라이더를 손가락으로 위아래로 끌면 값만 바뀌고 화면은 스크롤되지 않아야 함
+    const tctx = await browser.newContext({viewport:{width:820,height:1180}, hasTouch:true, isMobile:true});
+    await tctx.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
+    const p5 = await tctx.newPage();
+    p5.on('pageerror', error => errors.push(error.message));
+    await p5.addInitScript(() => { localStorage.setItem('dna_skin2', JSON.stringify('carnival')); localStorage.setItem('dna_layout', JSON.stringify('1')); });
+    await p5.goto(origin);
+    await p5.locator('#eqgrid').scrollIntoViewIfNeeded();
+    const slot = p5.locator('#eqgrid .band').nth(3).locator('.slot');
+    const box = await slot.boundingBox();
+    const cdp = await tctx.newCDPSession(p5);
+    const before = await p5.evaluate(() => ({y: scrollY, g: JSON.parse(localStorage.getItem('dna_gains') || '[0,0,0,0,0,0,0,0,0,0]')[2]}));
+    const x = box.x + box.width / 2, y0 = box.y + box.height * 0.6;
+    await cdp.send('Input.dispatchTouchEvent', {type:'touchStart', touchPoints:[{x, y:y0}]});
+    for (let k = 1; k <= 8; k++) await cdp.send('Input.dispatchTouchEvent', {type:'touchMove', touchPoints:[{x, y:y0 - k * 12}]});
+    await cdp.send('Input.dispatchTouchEvent', {type:'touchEnd', touchPoints:[]});
+    await p5.waitForTimeout(200);
+    const after = await p5.evaluate(() => ({y: scrollY, g: JSON.parse(localStorage.getItem('dna_gains'))[2]}));
+    assert.equal(after.y, before.y, 'Dragging an EQ slider must not scroll the page');
+    assert.ok(after.g > before.g, `EQ band follows the finger upward (${before.g} -> ${after.g})`);
+    await tctx.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect and native player hand-off');
+    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
