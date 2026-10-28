@@ -361,6 +361,8 @@ input[type=range]:disabled{opacity:.35}
 #hud .hudbtn{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));display:flex;gap:8px;opacity:.55}
 @media (prefers-reduced-motion:reduce){.marquee span{animation:none;padding-left:0}}
 </style>
+<link rel="stylesheet" href="gps-skins.css">
+<script src="gps-skins.js"></script>
 </head>
 <body>
 
@@ -979,13 +981,14 @@ cv.vis.onclick=()=>{visMode=(visMode+1)%3;store.set('vis',visMode);syncVis()};
 const HAS_GPS=!!(NB&&NB.gpsStatus);
 let gpsOn=false,gs={},gpsTimer=0,lastFix=null,spdNow=0,spdDisp=0,hdgNow=-1,hdgDisp=0,hudOn=false;
 let trip=store.get('trip',{dist:0,time:0,max:0}),gLimit=+store.get('gLimit',0);
+const gpsSkinUi=window.GpsSkins?GpsSkins.mount({panel:$('#wGps'),hud:$('#hud'),store}):null;
 const DIRS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
 const DIRK={N:'북',NE:'북동',E:'동',SE:'남동',S:'남',SW:'남서',W:'서',NW:'북서'};
 const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
 function hav(a,b,c,d){const R=6371000,t=Math.PI/180,x=(c-a)*t,y=(d-b)*t;const h=Math.sin(x/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function gpsStart(){if(!HAS_GPS)return;try{NB.startGps()}catch(e){}gpsOn=true;store.set('gpsOn',true);clearInterval(gpsTimer);gpsTimer=setInterval(pollGps,250);gpsUi()}
 function gpsStop(user){if(HAS_GPS){try{NB.stopGps()}catch(e){}}gpsOn=false;if(user)store.set('gpsOn',false);clearInterval(gpsTimer);spdNow=0;gpsUi()}
-function gpsSkinChanged(){if(skin==='carnival'){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&skin!=='carnival')hud(false)}
+function gpsSkinChanged(){if(skin==='carnival'){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&skin!=='carnival')hud(false);if(gpsSkinUi)gpsSkinUi.refresh()}
 function pollGps(){
   if(!gpsOn)return;let s;try{s=JSON.parse(NB.gpsStatus())}catch(e){return}gs=s;
   if(s.fix){
@@ -1042,6 +1045,7 @@ function drawGps(){
   drawGauge(over);drawTape();
 }
 function drawGauge(over){
+  if(gpsSkinUi){gpsSkinUi.drawGauge({canvas:cv.gauge,context:cx.gauge,speed:spdDisp,limit:gLimit,over,pixelRatio:Math.min(devicePixelRatio||1,2)});return}
   const c=cv.gauge,g=cx.gauge;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const r=Math.min(w*.46,h*.5),x0=w/2,y0=h*.54,a0=Math.PI*.75,a1=Math.PI*2.25,MAX=200;
   $('#dial').style.setProperty('--g',(r*2/d)+'px');
@@ -1063,6 +1067,7 @@ function drawGauge(over){
   g.beginPath();g.arc(x0+Math.cos(a)*r*.86,y0+Math.sin(a)*r*.86,r*.045,0,Math.PI*2);g.fill();g.shadowBlur=0;
 }
 function drawTape(){
+  if(gpsSkinUi){gpsSkinUi.drawCompass({canvas:cv.tape,context:cx.tape,heading:hdgDisp,pixelRatio:Math.min(devicePixelRatio||1,2)});return}
   const c=cv.tape,g=cx.tape;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const ppd=w/140,ctr=hdgDisp;g.textAlign='center';g.textBaseline='bottom';
   for(let deg=Math.floor((ctr-75)/5)*5;deg<=ctr+75;deg+=5){

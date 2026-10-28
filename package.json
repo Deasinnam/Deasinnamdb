@@ -1,0 +1,6 @@
+{
+  "name": "daesinnam-amp-ui-checks",
+  "private": true,
+  "scripts": {"test": "node tests/speedometer-skins.cjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

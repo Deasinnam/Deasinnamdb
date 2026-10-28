@@ -13,6 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: 속도계 디자인과 GPS 연동 확인
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -40,6 +51,7 @@ jobs:
           path: app/build/outputs/apk/*/release/*.apk
 
       - name: Releases에 APK 올리기
+        if: github.ref == 'refs/heads/daesinnam-amp'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
