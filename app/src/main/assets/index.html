@@ -185,7 +185,13 @@ button{cursor:pointer}
 .app{max-width:2000px;margin:0 auto;display:grid;gap:14px;grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "vis" "eq" "pl";padding-block:8px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .app.L2{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"main eq" "vis pl"}
 .app.L3{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);grid-template-areas:"main eq pl" "vis vis pl"}
-#wMain{grid-area:main}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}
+#wMain{grid-area:main}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}#wGps{grid-area:gps}
+/* 사이버 카니발: 가운데에 GPS 속도계 창 */
+.app.G{grid-template-areas:"main" "gps" "vis" "eq" "pl"}
+.app.L2.G{grid-template-areas:"main eq" "gps gps" "vis pl"}
+.app.L3.G{grid-template-areas:"main gps pl" "vis eq pl"}
+#wGps{display:none}
+.app.G #wGps{display:flex}
 
 /* skinned window */
 .win{display:flex;flex-direction:column;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--edge);border-radius:6px;box-shadow:inset 0 1px 0 var(--frame-hi),inset 0 0 0 1px var(--frame-in),0 10px 30px #0006;min-width:0}
@@ -197,6 +203,15 @@ button{cursor:pointer}
 .wbtn svg{width:9px;height:9px;fill:var(--metal-ink)}
 .body{padding:12px;flex:1;min-height:0}
 .win.collapsed .body{display:none}
+.win{position:relative}
+.win.collapsed{height:auto!important}
+.win.collapsed .grip{display:none}
+.win.sized{align-self:start}
+.win.sized>.body{overflow:auto}
+/* 창 높이 조절 손잡이 */
+.grip{flex:none;height:16px;margin-top:-4px;cursor:ns-resize;touch-action:none;display:grid;place-items:center;user-select:none;-webkit-user-select:none}
+.grip::before{content:"";width:46px;height:5px;border-radius:3px;background:repeating-linear-gradient(180deg,var(--groove) 0 1px,transparent 1px 2px);opacity:.75}
+.grip:hover::before,.win.sizing .grip::before{opacity:1;background:var(--accent)}
 
 /* LCD */
 .lcd{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;box-shadow:inset 0 0 0 1px var(--lcd-edge),inset 0 6px 18px #000;padding:12px 14px}
@@ -253,7 +268,8 @@ input[type=range]:disabled{opacity:.35}
 @media (max-width:560px){.art{flex-direction:row;align-items:center}.art .cover{width:84px;flex:none}}
 .art .tt{font-weight:700;font-size:16px;line-height:1.3;overflow-wrap:anywhere}
 .art .ar{color:var(--muted);font-size:13px}
-.visbox{position:relative;min-width:0;min-height:230px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;box-shadow:inset 0 0 0 1px var(--lcd-edge);overflow:hidden}
+#wVis .body{grid-template-rows:minmax(0,1fr)}
+.visbox{position:relative;min-width:0;min-height:150px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;box-shadow:inset 0 0 0 1px var(--lcd-edge);overflow:hidden}
 #vis{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .vmode{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:1}
 .vmode button{height:26px;padding:0 8px;border:1px solid var(--edge);border-radius:3px;background:var(--lcd);opacity:.85;font-family:var(--f-display);font-size:12px;letter-spacing:.1em;color:var(--lcd-dim)}
@@ -266,11 +282,12 @@ input[type=range]:disabled{opacity:.35}
 #curve{flex:1;min-width:120px;height:30px;background:var(--lcd);border:1px solid var(--edge);border-radius:3px}
 .sel{height:30px;max-width:100%;border:1px solid var(--edge);border-radius:3px;background:linear-gradient(180deg,var(--metal-b),var(--metal-c));font-family:var(--f-display);font-weight:600;letter-spacing:.06em;padding:0 8px;color:var(--metal-ink)}
 .sel option{background:var(--panel);color:var(--text)}
-.eqgrid{position:relative;display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;padding:10px 4px 6px}
-#eqled{position:absolute;left:4px;top:10px;height:180px;width:calc(100% - 8px);pointer-events:none}
-.band{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
-.slot{position:relative;width:100%;height:180px}
-.slot input{position:absolute;left:50%;top:50%;width:170px;transform:translate(-50%,-50%) rotate(-90deg);height:30px}
+#wEq .body{display:flex;flex-direction:column}
+.eqgrid{position:relative;flex:1;min-height:150px;display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;padding:10px 4px 6px}
+#eqled{position:absolute;left:4px;top:10px;height:var(--slot-h,180px);width:calc(100% - 8px);pointer-events:none}
+.band{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;height:100%}
+.slot{position:relative;width:100%;flex:1;min-height:110px}
+.slot input{position:absolute;left:50%;top:50%;width:calc(var(--slot-h,180px) - 10px);transform:translate(-50%,-50%) rotate(-90deg);height:30px}
 .slot input::-webkit-slider-runnable-track{height:4px;background:#0000;box-shadow:none}
 .slot input::-moz-range-track{height:4px;background:#0000}
 .slot input::-webkit-slider-thumb{width:16px;height:30px;margin-top:-13px;border-radius:2px;background:linear-gradient(90deg,var(--metal-c),var(--metal-a) 45%,var(--metal-c) 55%,var(--metal-b));border:1px solid var(--edge);box-shadow:0 2px 4px #000}
@@ -283,6 +300,7 @@ input[type=range]:disabled{opacity:.35}
 #wPl .body{display:flex;flex-direction:column}
 .pl{list-style:none;margin:0;padding:4px;background:var(--lcd);border:1px solid var(--edge);border-radius:4px;max-height:330px;overflow-y:auto;overscroll-behavior:contain}
 .app.L2 .pl,.app.L3 .pl{flex:1;max-height:62vh;min-height:220px}
+.win.sized .pl{flex:1;max-height:none;min-height:60px}
 .pl li{display:grid;grid-template-columns:30px minmax(0,1fr) auto 32px;align-items:center;gap:8px;min-height:44px;padding:0 4px 0 8px;border-radius:3px;cursor:pointer;color:var(--lcd-fg);font-variant-numeric:tabular-nums}
 .pl li:hover{background:#ffffff0a}
 .pl li .n,.pl li .d{font-family:var(--f-lcd);opacity:.6}
@@ -311,6 +329,36 @@ input[type=range]:disabled{opacity:.35}
 .perm b{display:block;font-size:14px}
 .perm small{display:block;color:var(--muted);font-size:12.5px;line-height:1.5}
 .perm .pill.ok{opacity:.7}
+/* GPS 속도계 */
+#wGps .body{container-type:inline-size;display:flex;flex-direction:column;gap:10px}
+.gps{flex:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px;min-height:0}
+@container (max-width:520px){.gps{grid-template-columns:minmax(0,1fr)}}
+.gauge{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0}
+.dial{position:relative;flex:1;min-height:240px;background:radial-gradient(circle at 50% 55%,#1a1210 0%,var(--lcd) 70%);border:1px solid var(--lcd-edge);border-radius:4px;overflow:hidden}
+#gauge{position:absolute;inset:0;width:100%;height:100%}
+.spd{position:absolute;left:0;right:0;top:54%;transform:translateY(-58%);text-align:center;pointer-events:none;line-height:.9}
+.spd b{display:block;font-family:var(--f-tech,var(--f-lcd));font-weight:700;font-size:calc(var(--g,260px)*.26);color:var(--lcd-text-2);text-shadow:0 0 18px var(--lcd-glow);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.spd small{display:block;font-family:var(--f-tech,var(--f-lcd));font-size:calc(var(--g,260px)*.07);color:var(--lcd-text);letter-spacing:.2em;margin-top:.3em}
+.dial .hd{position:absolute;left:0;right:0;bottom:3%;text-align:center;font-family:var(--f-tech,var(--f-lcd));font-weight:600;font-size:calc(var(--g,260px)*.075);color:var(--lcd-fg);letter-spacing:.06em;pointer-events:none}
+#wGps.over .spd b{color:#ff4636;text-shadow:0 0 22px #ff4636aa;animation:blink .8s steps(2) infinite}
+@keyframes blink{50%{opacity:.45}}
+#tape{display:block;width:100%;height:42px;background:var(--lcd);border:1px solid var(--lcd-edge);border-radius:4px}
+.gstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start}
+.gstats div{padding:8px 10px;background:var(--lcd);border:1px solid var(--lcd-edge);border-radius:3px;min-width:0}
+.gstats small{display:block;font-size:11.5px;color:var(--lcd-dim);letter-spacing:.06em}
+.gstats b{display:block;font-family:var(--f-tech,var(--f-lcd));font-weight:700;font-size:22px;color:var(--lcd-text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gstats b i{font-style:normal;font-size:.6em;color:var(--lcd-fg);margin-left:3px}
+.gctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.gmsg{font-size:12.5px;color:var(--muted);line-height:1.5;min-height:1.5em}
+.gmsg button{margin-left:6px;height:26px;padding:0 10px;font-size:13px}
+#hud{position:fixed;inset:0;z-index:60;background:#000;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+#hud .hudin{text-align:center;line-height:.85;font-family:var(--f-tech,var(--f-lcd))}
+#hud.mirror .hudin{transform:scaleX(-1)}
+#hud b{display:block;font-weight:700;font-size:min(46vw,62vh);font-variant-numeric:tabular-nums;color:var(--lcd-text);text-shadow:0 0 30px var(--lcd-glow)}
+#hud small{display:block;font-size:min(7vw,9vh);letter-spacing:.2em;color:var(--lcd-fg);margin-top:.2em}
+#hud span{display:block;font-size:min(9vw,12vh);color:var(--lcd-text-2);margin-top:.3em}
+#hud.over b{color:#ff3b30;text-shadow:0 0 34px #ff3b30}
+#hud .hudbtn{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));display:flex;gap:8px;opacity:.55}
 @media (prefers-reduced-motion:reduce){.marquee span{animation:none;padding-left:0}}
 </style>
 </head>
@@ -373,6 +421,38 @@ input[type=range]:disabled{opacity:.35}
     </div>
   </section>
 
+  <section class="win" id="wGps">
+    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><span class="groove"></span><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="body">
+      <div class="gps">
+        <div class="gauge">
+          <div class="dial" id="dial"><canvas id="gauge" aria-label="속도 게이지"></canvas>
+            <div class="spd"><b id="gSpd">--</b><small>KM/H</small></div>
+            <span class="hd" id="gHdg">--</span>
+          </div>
+          <canvas id="tape" aria-label="진행 방향"></canvas>
+        </div>
+        <div class="gstats">
+          <div><small>최고 속도</small><b id="gMax">0<i>km/h</i></b></div>
+          <div><small>평균 속도</small><b id="gAvg">0<i>km/h</i></b></div>
+          <div><small>주행 거리</small><b id="gDist">0.0<i>km</i></b></div>
+          <div><small>주행 시간</small><b id="gTime">0:00</b></div>
+          <div><small>고도</small><b id="gAlt">-<i>m</i></b></div>
+          <div><small>GPS 정확도 · 위성</small><b id="gAcc">-</b></div>
+        </div>
+      </div>
+      <div class="gctl">
+        <button class="pill on" id="gOn">GPS 켜기</button>
+        <button class="pill" id="gReset">기록 초기화</button>
+        <button class="pill" id="gHudBtn">HUD</button>
+        <label class="selw" for="gLimit">경고<select class="sel" id="gLimit">
+          <option value="0">끔</option><option value="30">30</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="90">90</option><option value="100">100</option><option value="110">110</option><option value="120">120</option>
+        </select></label>
+      </div>
+      <div class="gmsg" id="gMsg"></div>
+    </div>
+  </section>
+
   <section class="win" id="wVis">
     <div class="bar"><span class="t">Now Playing</span><span class="groove"></span><button class="wbtn" data-col="wVis" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
@@ -428,6 +508,10 @@ input[type=range]:disabled{opacity:.35}
     </div>
   </section>
 </main>
+<div id="hud" hidden class="mirror">
+  <div class="hudbtn"><button class="pill" id="hudMir">좌우 반전</button><button class="pill" id="hudClose">닫기</button></div>
+  <div class="hudin"><b id="hSpd">0</b><small>KM/H</small><span id="hHdg">N</span></div>
+</div>
 <input type="file" id="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" multiple hidden>
 
 <script>
@@ -460,11 +544,11 @@ let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge')}}
-function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;const nm=k==='carnival'?'Cyber Carnival Amp':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;const nm=k==='carnival'?'Cyber Carnival Amp':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
 $('#skin').onchange=e=>setSkin(e.target.value);
 const appEl=$('#app');
-function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n)}
+function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',skin==='carnival')}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
 window.addEventListener('resize',layout);
 
@@ -791,7 +875,7 @@ const eqOnBtn=$('#eqOn');const syncOn=()=>{eqOnBtn.classList.toggle('on',eqOn);e
 eqOnBtn.onclick=()=>{eqOn=!eqOn;store.set('eqOn',eqOn);syncOn();applyEq();drawCurve()};
 
 /* ---------- canvases ---------- */
-const cv={vis:$('#vis'),mini:$('#mini'),eqled:$('#eqled'),curve:$('#curve')};const cx={};
+const cv={vis:$('#vis'),mini:$('#mini'),eqled:$('#eqled'),curve:$('#curve'),gauge:$('#gauge'),tape:$('#tape')};const cx={};
 function size(c){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=Math.max(1,Math.round(r.width*d));c.height=Math.max(1,Math.round(r.height*d));cx[c.id]=c.getContext('2d')}
 const ro=new ResizeObserver(es=>{es.forEach(e=>size(e.target));drawCurve()});
 Object.values(cv).forEach(c=>{size(c);ro.observe(c)});
@@ -842,7 +926,7 @@ function frame(){
   for(let i=0;i<N;i++){if(bars[i]>=peaks[i]){peaks[i]=bars[i];pv[i]=0}else{pv[i]+=.0009;peaks[i]=Math.max(0,peaks[i]-pv[i])}}
   for(let i=0;i<19;i++)miniP[i]=Math.max(miniB[i],miniP[i]-.012);
   for(let i=0;i<11;i++){let v=0;if(live){if(i===0){let s=0;for(let k=0;k<W.length;k+=2){const d=(W[k]-128)/128;s+=d*d}v=Math.min(1,Math.sqrt(s/(W.length/2))*2.6)}else{const f=BANDS[i-1];v=Math.pow(band(f/1.3,f*1.3),1.25)*1.08}}eqLv[i]=Math.max(v,eqLv[i]*.88)}
-  drawVis(live);drawMini();drawEqLed();
+  drawVis(live);drawMini();drawEqLed();drawGps();
   let d=0,t=0,has=false;
   if(mode==='ext'){has=!!ext.title;d=(ext.dur||0)/1000;t=extPos()}
   else if(cur>=0){has=true;d=audio.duration||list[cur].duration||0;t=audio.currentTime}
@@ -891,8 +975,124 @@ const syncVis=()=>vbtns.forEach(b=>b.classList.toggle('on',+b.dataset.m===visMod
 vbtns.forEach(b=>b.onclick=e=>{e.stopPropagation();visMode=+b.dataset.m;store.set('vis',visMode);syncVis()});
 cv.vis.onclick=()=>{visMode=(visMode+1)%3;store.set('vis',visMode);syncVis()};
 
+/* ---------- GPS 속도계 (사이버 카니발) ---------- */
+const HAS_GPS=!!(NB&&NB.gpsStatus);
+let gpsOn=false,gs={},gpsTimer=0,lastFix=null,spdNow=0,spdDisp=0,hdgNow=-1,hdgDisp=0,hudOn=false;
+let trip=store.get('trip',{dist:0,time:0,max:0}),gLimit=+store.get('gLimit',0);
+const DIRS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+const DIRK={N:'북',NE:'북동',E:'동',SE:'남동',S:'남',SW:'남서',W:'서',NW:'북서'};
+const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
+function hav(a,b,c,d){const R=6371000,t=Math.PI/180,x=(c-a)*t,y=(d-b)*t;const h=Math.sin(x/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function gpsStart(){if(!HAS_GPS)return;try{NB.startGps()}catch(e){}gpsOn=true;store.set('gpsOn',true);clearInterval(gpsTimer);gpsTimer=setInterval(pollGps,250);gpsUi()}
+function gpsStop(user){if(HAS_GPS){try{NB.stopGps()}catch(e){}}gpsOn=false;if(user)store.set('gpsOn',false);clearInterval(gpsTimer);spdNow=0;gpsUi()}
+function gpsSkinChanged(){if(skin==='carnival'){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&skin!=='carnival')hud(false)}
+function pollGps(){
+  if(!gpsOn)return;let s;try{s=JSON.parse(NB.gpsStatus())}catch(e){return}gs=s;
+  if(s.fix){
+    let v=s.speed;
+    if(lastFix&&s.ts!==lastFix.ts){
+      const dt=(s.ts-lastFix.ts)/1000,dd=hav(lastFix.lat,lastFix.lon,s.lat,s.lon);
+      if(v<0&&dt>0)v=dd/dt;
+      if(dt>0&&dt<10&&s.acc<35&&v>0.8){trip.dist+=dd;trip.time+=dt}
+      if(s.acc<35&&v*3.6>trip.max&&v*3.6<400)trip.max=v*3.6;
+      store.set('trip',trip);
+    }
+    if(!lastFix||s.ts!==lastFix.ts)lastFix=s;
+    spdNow=v>0.5?v*3.6:0;
+    hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
+  }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
+  gpsUi();
+}
+function gpsUi(){
+  $('#gOn').textContent=gpsOn?'GPS 끄기':'GPS 켜기';$('#gOn').classList.toggle('on',!gpsOn);
+  const avg=trip.time>0?trip.dist/trip.time*3.6:0;
+  $('#gMax').innerHTML=Math.round(trip.max)+'<i>km/h</i>';$('#gAvg').innerHTML=Math.round(avg)+'<i>km/h</i>';
+  $('#gDist').innerHTML=(trip.dist/1000).toFixed(trip.dist<100000?1:0)+'<i>km</i>';
+  const t=Math.round(trip.time);$('#gTime').textContent=Math.floor(t/3600)+':'+String(Math.floor(t%3600/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+  $('#gAlt').innerHTML=(gs.fix&&gs.alt>-9000?Math.round(gs.alt):'-')+'<i>m</i>';
+  $('#gAcc').innerHTML=gs.fix?`±${Math.round(gs.acc)}<i>m · ${gs.satsUsed||0}/${gs.satsSeen||0}</i>`:`-<i>${gs.satsSeen?gs.satsUsed+'/'+gs.satsSeen:''}</i>`;
+  const m=$('#gMsg');let msg='',btn='';
+  if(!HAS_GPS)msg='GPS 속도계는 Android 앱에서 동작해요. 웹 버전에서는 표시만 볼 수 있어요.';
+  else if(!gpsOn)msg='GPS 켜기를 누르면 실시간 속도와 진행 방향이 표시돼요. 위치는 화면 표시에만 쓰고 저장하거나 보내지 않아요.';
+  else if(gs.perm===false){msg='위치 권한이 필요해요.';btn='<button class="pill on" id="gPerm">권한 허용</button>'}
+  else if(gs.enabled===false){msg='휴대폰의 위치(GPS)가 꺼져 있어요.';btn='<button class="pill on" id="gLoc">위치 설정 열기</button>'}
+  else if(!gs.fix)msg=`GPS 신호를 찾는 중이에요${gs.satsSeen?` · 위성 ${gs.satsSeen}개 보임`:''}. 하늘이 트인 곳에서 더 빨리 잡혀요.`;
+  else msg=gs.provider==='gps'?'':'네트워크 위치를 쓰는 중이라 속도가 부정확할 수 있어요.';
+  if(m.dataset.k!==msg+btn){m.dataset.k=msg+btn;m.innerHTML='';m.append(msg);if(btn){m.insertAdjacentHTML('beforeend',btn);const p=$('#gPerm'),l=$('#gLoc');if(p)p.onclick=()=>{try{NB.startGps()}catch(e){}};if(l)l.onclick=()=>{try{NB.openLocationSettings()}catch(e){}}}}
+  $('#gSrc').textContent=gpsOn&&gs.fix?'· GPS 수신':'';
+}
+function hud(on){hudOn=on;$('#hud').hidden=!on;if(NB&&NB.keepScreenOn){try{NB.keepScreenOn(on)}catch(e){}}if(on&&navigator.wakeLock){navigator.wakeLock.request('screen').catch(()=>{})}}
+$('#gOn').onclick=()=>gpsOn?gpsStop(true):gpsStart();
+$('#gReset').onclick=()=>{trip={dist:0,time:0,max:0};store.set('trip',trip);gpsUi()};
+$('#gHudBtn').onclick=()=>hud(true);
+$('#hudClose').onclick=()=>hud(false);
+$('#hudMir').onclick=()=>{const m=$('#hud').classList.toggle('mirror');store.set('hudMirror',m)};
+$('#hud').classList.toggle('mirror',store.get('hudMirror',true));
+$('#gLimit').value=String(gLimit);$('#gLimit').onchange=e=>{gLimit=+e.target.value;store.set('gLimit',gLimit)};
+const angDiff=(a,b)=>((b-a+540)%360)-180;
+function drawGps(){
+  if(skin!=='carnival'||$('#wGps').classList.contains('collapsed'))return;
+  spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
+  if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
+  const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
+  const sp=hasFix?String(Math.round(spdDisp)):'--';
+  $('#gSpd').textContent=sp;$('#wGps').classList.toggle('over',over);
+  const hd=hdgNow>=0?`${dirName(hdgDisp)} ${Math.round(hdgDisp)}°`:'--';$('#gHdg').textContent=hd;
+  if(hudOn){$('#hSpd').textContent=sp;$('#hHdg').textContent=hdgNow>=0?(DIRK[dirName(hdgDisp)]||dirName(hdgDisp))+' '+Math.round(hdgDisp)+'°':'';$('#hud').classList.toggle('over',over)}
+  drawGauge(over);drawTape();
+}
+function drawGauge(over){
+  const c=cv.gauge,g=cx.gauge;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
+  const r=Math.min(w*.46,h*.5),x0=w/2,y0=h*.54,a0=Math.PI*.75,a1=Math.PI*2.25,MAX=200;
+  $('#dial').style.setProperty('--g',(r*2/d)+'px');
+  const A=v=>a0+(a1-a0)*Math.max(0,Math.min(1,v/MAX));
+  const N=50,seg=(a1-a0)/N;
+  g.lineWidth=r*.1;
+  for(let i=0;i<N;i++){const v=(i+.5)/N*MAX,on=v<=spdDisp;const t=i/N;
+    g.strokeStyle=on?(over?'#ff3b30':(t<.45?C.l2:t<.8?C.l3:C.l4)):C.off;
+    g.shadowBlur=on?10*d:0;g.shadowColor=over?'#ff3b30':C.text;
+    g.beginPath();g.arc(x0,y0,r*.86,a0+i*seg+seg*.12,a0+(i+1)*seg-seg*.12);g.stroke()}
+  g.shadowBlur=0;g.fillStyle=C.fg;g.strokeStyle=C.fg;g.textAlign='center';g.textBaseline='middle';
+  g.font=`600 ${Math.max(10,r*.085)}px Rajdhani,"Barlow Condensed",sans-serif`;
+  for(let v=0;v<=MAX;v+=10){const a=A(v),maj=v%20===0,ri=r*(maj?.66:.7),ro=r*.75;
+    g.globalAlpha=maj?.9:.45;g.lineWidth=maj?2*d:1*d;g.beginPath();g.moveTo(x0+Math.cos(a)*ri,y0+Math.sin(a)*ri);g.lineTo(x0+Math.cos(a)*ro,y0+Math.sin(a)*ro);g.stroke();
+    if(maj&&v%40===0&&v>0&&v<MAX){g.globalAlpha=.8;g.fillText(v,x0+Math.cos(a)*r*.55,y0+Math.sin(a)*r*.55)}}
+  g.globalAlpha=1;
+  if(gLimit>0){const a=A(gLimit);g.strokeStyle='#ff3b30';g.lineWidth=3*d;g.beginPath();g.moveTo(x0+Math.cos(a)*r*.78,y0+Math.sin(a)*r*.78);g.lineTo(x0+Math.cos(a)*r*.98,y0+Math.sin(a)*r*.98);g.stroke()}
+  const a=A(spdDisp);g.fillStyle=over?'#ff3b30':C.peak;g.shadowBlur=12*d;g.shadowColor=over?'#ff3b30':C.text;
+  g.beginPath();g.arc(x0+Math.cos(a)*r*.86,y0+Math.sin(a)*r*.86,r*.045,0,Math.PI*2);g.fill();g.shadowBlur=0;
+}
+function drawTape(){
+  const c=cv.tape,g=cx.tape;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
+  const ppd=w/140,ctr=hdgDisp;g.textAlign='center';g.textBaseline='bottom';
+  for(let deg=Math.floor((ctr-75)/5)*5;deg<=ctr+75;deg+=5){
+    const x=w/2+(deg-ctr)*ppd,n=((deg%360)+360)%360,big=n%45===0,mid=n%15===0;
+    g.strokeStyle=C.fg;g.globalAlpha=big?.95:mid?.55:.25;g.lineWidth=(big?2:1)*d;
+    g.beginPath();g.moveTo(x,0);g.lineTo(x,h*(big?.34:mid?.24:.14));g.stroke();
+    if(big){g.globalAlpha=1;g.fillStyle=n===0?C.text:C.fg;g.font=`700 ${h*.42}px Rajdhani,"Barlow Condensed",sans-serif`;g.fillText(DIRS[n/22.5],x,h-3*d)}
+    else if(mid){g.globalAlpha=.5;g.fillStyle=C.fg;g.font=`500 ${h*.26}px Rajdhani,"Barlow Condensed",sans-serif`;g.fillText(n,x,h-5*d)}
+  }
+  g.globalAlpha=1;g.fillStyle=C.text;g.shadowBlur=8*d;g.shadowColor=C.text;
+  g.beginPath();g.moveTo(w/2-7*d,0);g.lineTo(w/2+7*d,0);g.lineTo(w/2,10*d);g.closePath();g.fill();g.fillRect(w/2-1*d,0,2*d,h);g.shadowBlur=0;
+}
+
+/* ---------- 창 높이 조절 ---------- */
+let winH=store.get('winH',{});
+function applySizes(){document.querySelectorAll('.win').forEach(w=>{const h=winH[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h)})}
+document.querySelectorAll('.win').forEach(w=>{
+  const gr=document.createElement('div');gr.className='grip';gr.title='끌어서 창 높이 조절 · 두 번 누르면 원래 높이';gr.setAttribute('role','separator');gr.setAttribute('aria-orientation','horizontal');w.appendChild(gr);
+  let y0=0,h0=0,pid=null;
+  gr.addEventListener('pointerdown',e=>{e.preventDefault();pid=e.pointerId;gr.setPointerCapture(pid);y0=e.clientY;h0=w.getBoundingClientRect().height;w.classList.add('sizing')});
+  gr.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;const h=Math.max(90,Math.round(h0+e.clientY-y0));w.style.height=h+'px';w.classList.add('sized')});
+  const end=e=>{if(e.pointerId!==pid)return;pid=null;w.classList.remove('sizing');if(w.classList.contains('sized')){winH[w.id]=Math.round(w.getBoundingClientRect().height);store.set('winH',winH)}};
+  gr.addEventListener('pointerup',end);gr.addEventListener('pointercancel',end);
+  gr.addEventListener('dblclick',()=>{delete winH[w.id];store.set('winH',winH);applySizes()});
+});
+const eqgridEl=$('#eqgrid');
+new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
+
 /* ---------- boot ---------- */
-setSkin(skin);layout();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
+applySizes();setSkin(skin);layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
 (async()=>{
   try{

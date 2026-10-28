@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- 외부 앱 EQ와 시스템 볼륨 조절에 필요합니다. -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- 사이버 카니발 스킨의 GPS 속도계: 속도와 진행 방향 표시에만 쓰며 위치를 저장하거나 전송하지 않습니다. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
 
     <!-- YouTube Music, Spotify 설치 여부 확인과 실행 -->
     <queries>

@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
 
     private static final int REQ_FILES = 41;
     private static final int REQ_MIC = 42;
+    private static final int REQ_LOC = 43;
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     static WeakReference<MainActivity> current = new WeakReference<>(null);
@@ -61,6 +62,11 @@ public class MainActivity extends Activity {
     private final Handler main = new Handler(Looper.getMainLooper());
     private boolean playing = false;
     private boolean resumed = false;
+
+    // GPS 속도계
+    private GpsTracker gps;
+    private volatile boolean gpsWanted = false;
+    private boolean hudOn = false;
 
     // 외부 앱 연동
     private volatile boolean extMode = false;
@@ -95,6 +101,7 @@ public class MainActivity extends Activity {
         msm = getSystemService(MediaSessionManager.class);
         am = getSystemService(AudioManager.class);
         listenerCn = new ComponentName(this, MediaListener.class);
+        gps = new GpsTracker(this);
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#05070D"));
@@ -188,6 +195,7 @@ public class MainActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         if (requestCode == REQ_MIC && extMode) startViz();
+        if (requestCode == REQ_LOC && gpsWanted) gps.start();
     }
 
     /** 알림의 재생 버튼을 누르면 웹 화면의 플레이어를 조작합니다. */
@@ -195,6 +203,33 @@ public class MainActivity extends Activity {
         main.post(() -> {
             if (web != null) web.evaluateJavascript("window.__ctl && window.__ctl('" + cmd + "')", null);
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (gpsWanted) gps.start();
+    }
+
+    @Override
+    protected void onStop() {
+        gps.stop(); // 화면에 안 보일 때는 GPS를 꺼서 배터리를 아낍니다.
+        super.onStop();
+    }
+
+    private void startGps() {
+        gpsWanted = true;
+        if (gps.hasPerm()) {
+            gps.start();
+            return;
+        }
+        SharedPreferences p = getSharedPreferences("perm", MODE_PRIVATE);
+        if (p.getBoolean("loc", false) && !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            try { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))); } catch (Exception ignored) {}
+            return;
+        }
+        p.edit().putBoolean("loc", true).apply();
+        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQ_LOC);
     }
 
     @Override
@@ -231,6 +266,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         main.removeCallbacksAndMessages(null);
         stopViz();
+        gps.stop();
         ExternalEq.I.setActive(false);
         stopService(new Intent(this, PlaybackService.class));
         if (web != null) {
@@ -508,7 +544,7 @@ public class MainActivity extends Activity {
             main.post(() -> {
                 playing = NowPlaying.playing;
                 if (playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                else if (!hudOn) getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                 Intent i = new Intent(MainActivity.this, PlaybackService.class);
                 try {
@@ -667,6 +703,41 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void openNotificationAccess() {
             main.post(MainActivity.this::openNotificationAccess);
+        }
+
+        /** HUD 모드처럼 음악을 안 틀어도 화면을 켜 둬야 할 때 */
+        @JavascriptInterface
+        public void keepScreenOn(final boolean on) {
+            main.post(() -> {
+                hudOn = on;
+                if (on || playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            });
+        }
+
+        @JavascriptInterface
+        public void startGps() {
+            main.post(MainActivity.this::startGps);
+        }
+
+        @JavascriptInterface
+        public void stopGps() {
+            main.post(() -> {
+                gpsWanted = false;
+                gps.stop();
+            });
+        }
+
+        @JavascriptInterface
+        public String gpsStatus() {
+            return gps.status();
+        }
+
+        @JavascriptInterface
+        public void openLocationSettings() {
+            main.post(() -> {
+                try { startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)); } catch (Exception ignored) {}
+            });
         }
 
         @JavascriptInterface
