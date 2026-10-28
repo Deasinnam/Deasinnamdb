@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TMAP</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#d9d9d9}#m{position:absolute;inset:0}</style>
+<script>
+/* TMAP JS V2는 document.write로 하위 스크립트를 불러오므로, 페이지를 읽는 도중에 정적으로 넣어야 합니다. */
+var K = new URLSearchParams(location.search).get('k') || '';
+document.write('<script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=' + encodeURIComponent(K) + '"><\/script>');
+</script>
+</head>
+<body>
+<div id="m"></div>
+<script>
+var map, mk, ok = false, last = null, imgOk = 0, imgErr = 0, errSrc = '';
+function post(o){ try { parent.postMessage(o, '*'); } catch (e) {} }
+function size(){ return { w: window.innerWidth, h: window.innerHeight }; }
+document.addEventListener('load', function(e){ if (e.target && e.target.tagName === 'IMG') imgOk++; }, true);
+document.addEventListener('error', function(e){ if (e.target && e.target.tagName === 'IMG') { imgErr++; if (!errSrc) errSrc = String(e.target.src || '').slice(0, 90); } }, true);
+function init(){
+  if (!window.Tmapv2 || !Tmapv2.Map) { post({ t: 'tmap', ok: false, err: 'TMAP 지도 프로그램을 불러오지 못했어요(앱 키 또는 인터넷 연결 확인).' }); return; }
+  var s = size();
+  if (s.w < 20 || s.h < 20) { setTimeout(init, 300); return; } // 창이 접혀 있으면 펼쳐질 때까지 기다림
+  try {
+    map = new Tmapv2.Map('m', { center: new Tmapv2.LatLng(37.5665, 126.978), width: s.w + 'px', height: s.h + 'px', zoom: 16, zoomControl: true });
+    mk = new Tmapv2.Marker({ position: map.getCenter(), map: map });
+    ok = true;
+    post({ t: 'tmap', ok: true });
+    if (last) apply(last);
+    setTimeout(function(){ if (imgOk === 0 && imgErr > 0) post({ t: 'tmap', ok: false, tiles: false, err: '지도 그림을 받지 못했어요.', src: errSrc }); }, 7000);
+  } catch (e) { post({ t: 'tmap', ok: false, err: '지도를 만들지 못했어요: ' + e }); }
+}
+function apply(d){ var p = new Tmapv2.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); }
+window.addEventListener('resize', function(){ if (!ok) return; var s = size(); try { map.resize(s.w, s.h); } catch (e) {} });
+window.addEventListener('message', function(e){ var d = e.data; if (!d || d.t !== 'pos') return; last = d; if (ok) apply(d); });
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

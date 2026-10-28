@@ -142,6 +142,8 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(true);
         s.setTextZoom(100);
+        // TMAP 등 일부 지도 서버가 그림(타일)을 http로 보내도 표시되게 합니다(이미지 같은 수동 콘텐츠만 허용).
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
