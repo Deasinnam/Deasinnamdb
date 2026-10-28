@@ -11,6 +11,7 @@ final class SpotifyInfo {
     static final String META = "com.spotify.music.metadatachanged";
     static final String STATE = "com.spotify.music.playbackstatechanged";
 
+    static volatile String trackId = "";
     static volatile String title = "";
     static volatile String artist = "";
     static volatile String album = "";
@@ -25,6 +26,8 @@ final class SpotifyInfo {
     static void onBroadcast(Intent i) {
         long now = SystemClock.elapsedRealtime();
         if (META.equals(i.getAction())) {
+            String id = i.getStringExtra("id");
+            if (id != null) trackId = id;
             String t = i.getStringExtra("track");
             if (t != null) title = t;
             String a = i.getStringExtra("artist");

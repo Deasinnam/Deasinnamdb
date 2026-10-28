@@ -263,7 +263,7 @@ public class MainActivity extends Activity {
     private void refreshSessions() {
         if (!hasNotifAccess()) {
             ctrl = null;
-            updateArt(null);
+            updateArt(null); // 권한이 없어도 Spotify 방송 정보로 아트를 찾습니다.
             return;
         }
         try {
@@ -279,39 +279,71 @@ public class MainActivity extends Activity {
                 if (pick == null) pick = c;
             }
             ctrl = pick;
-            updateArt(pick);
+            updateArt(pick != null ? pick : null);
         } catch (SecurityException e) {
             ctrl = null;
         }
     }
 
+    private boolean spotifyFallback() {
+        return SpotifyInfo.known() && (SpotifyInfo.playing || !am.isMusicActive());
+    }
+
+    /**
+     * 앨범 아트 갱신.
+     * 재생 앱이 이미지를 주면 그대로 쓰고, 없으면 곡 정보로 인터넷에서 찾아옵니다(ArtLookup).
+     */
     private void updateArt(MediaController c) {
         Bitmap bmp = null;
-        String key = "";
+        String pkg = "", title = "", artist = "", sid = "";
         if (c != null) {
+            pkg = c.getPackageName();
             MediaMetadata md = c.getMetadata();
             if (md != null) {
                 bmp = md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
                 if (bmp == null) bmp = md.getBitmap(MediaMetadata.METADATA_KEY_ART);
                 if (bmp == null) bmp = md.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON);
-                key = c.getPackageName() + "|" + md.getString(MediaMetadata.METADATA_KEY_TITLE) + "|" + System.identityHashCode(bmp);
+                title = nz(md.getString(MediaMetadata.METADATA_KEY_TITLE));
+                String ar = md.getString(MediaMetadata.METADATA_KEY_ARTIST);
+                if (ar == null) ar = md.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
+                artist = nz(ar);
             }
+        } else if (spotifyFallback()) {
+            pkg = "com.spotify.music";
+            title = SpotifyInfo.title;
+            artist = SpotifyInfo.artist;
+            sid = SpotifyInfo.trackId;
         }
+        if ("com.spotify.music".equals(pkg) && sid.isEmpty() && title.equals(SpotifyInfo.title)) sid = SpotifyInfo.trackId;
+
+        final String key = pkg + "|" + title + "|" + artist + "|" + System.identityHashCode(bmp);
         if (key.equals(artKey)) return;
         artKey = key;
-        String data = "";
+
         if (bmp != null) {
+            String data = "";
             try {
                 int w = bmp.getWidth(), h = bmp.getHeight();
-                float sc = Math.min(1f, 360f / Math.max(w, h));
+                float sc = Math.min(1f, 480f / Math.max(w, h));
                 Bitmap small = sc < 1f ? Bitmap.createScaledBitmap(bmp, Math.max(1, Math.round(w * sc)), Math.max(1, Math.round(h * sc)), true) : bmp;
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                small.compress(Bitmap.CompressFormat.JPEG, 85, out);
+                small.compress(Bitmap.CompressFormat.JPEG, 88, out);
                 data = "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
             } catch (Throwable ignored) {}
+            artData = data;
+            artVersion++;
+            return;
         }
-        artData = data;
+
+        artData = "";
         artVersion++;
+        if (title.isEmpty()) return;
+        ArtLookup.find(sid, title, artist, url -> main.post(() -> {
+            if (key.equals(artKey) && url != null) {
+                artData = url;
+                artVersion++;
+            }
+        }));
     }
 
     private void startViz() {
@@ -505,7 +537,7 @@ public class MainActivity extends Activity {
                 MediaController c = ctrl;
                 o.put("seekable", c != null);
                 if (c == null) {
-                    if (SpotifyInfo.known() && (SpotifyInfo.playing || !am.isMusicActive())) {
+                    if (spotifyFallback()) {
                         o.put("pkg", "com.spotify.music");
                         o.put("app", "Spotify");
                         o.put("title", SpotifyInfo.title);
