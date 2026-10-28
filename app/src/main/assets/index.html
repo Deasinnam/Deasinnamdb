@@ -335,17 +335,18 @@ input[type=range]:disabled{opacity:.35}
   <section class="win" id="wExt" hidden>
     <div class="bar"><span class="t">External Apps</span><span class="groove"></span><button class="wbtn" data-col="wExt" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body ext">
-      <div class="now"><small>지금 소리를 내는 앱</small><b id="xApp">없음</b><span id="xEq">EQ: 꺼짐</span></div>
+      <div class="now"><small>지금 소리를 내는 앱</small><b id="xApp">없음</b><span id="xEq">EQ: 꺼짐</span><span id="xSrc">곡 정보: 확인 중</span><span id="xVer"></span></div>
       <div class="launch">
         <button class="tb" data-pkg="com.google.android.apps.youtube.music">YouTube Music 열기</button>
         <button class="tb" data-pkg="com.spotify.music">Spotify 열기</button>
       </div>
       <ul class="perm">
+        <li id="rowFull" hidden><div><b>YouTube Music 곡 정보 · 앨범 아트</b><small>지금 쓰는 <b>기본판</b>은 Play 프로텍트 정책 때문에 다른 앱의 곡 정보를 읽을 수 없어요. YouTube Music 정보를 보려면 full 판을 설치하세요. 설치 방법은 아래 안내를 참고하세요.</small></div><button class="pill on" id="xFull">full 판 받기</button></li>
         <li id="rowNotif"><div><b>곡 정보 · 재생 조작 (모든 앱)</b><small>다른 앱의 곡 제목, 앨범 아트, 재생 위치를 보여 주고 조작하려면 알림 접근 권한이 필요해요.</small></div><button class="pill" id="xNotif">설정 열기</button></li>
         <li id="rowSpotify"><div><b>Spotify 곡 정보 <span id="xSpRx"></span></b><small>Spotify 앱 → 설정 → <b>기기 브로드캐스트 상태</b>를 켜고 곡을 한 번 넘기면 곡 제목, 재생 시간, 앨범 아트가 여기에 표시돼요. YouTube Music 곡 정보는 full 판에서만 볼 수 있어요. 재생·다음·이전 버튼은 모든 앱에서 동작해요.</small></div><button class="pill" data-pkg="com.spotify.music">Spotify 열기</button></li>
         <li><div><b>사운드 시각화</b><small>재생 중인 소리를 실시간으로 분석만 하고, 녹음하거나 저장하지 않아요.</small></div><button class="pill" id="xMic">허용</button></li>
       </ul>
-      <p class="hint"><span id="hintNotif">알림 접근 스위치가 회색으로 잠겨 있으면 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>을 누른 뒤 다시 켜세요.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
+      <p class="hint"><span id="hintNotif"><b>알림 접근이 켜지지 않을 때</b> ① [설정 열기]에서 Daesinnam Amp 스위치를 한 번 눌러 "제한된 설정" 안내가 뜨게 합니다. ② 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>. ③ 다시 [설정 열기]에서 스위치를 켭니다.<br></span><span id="hintFull" hidden><b>full 판 설치</b> ① Play 스토어 → 프로필 → Play 프로텍트 → 톱니바퀴 → "Play 프로텍트로 앱 검사" 끄기 ② [full 판 받기]로 받아 설치(지금 앱 위에 덮어 설치) ③ Play 프로텍트 다시 켜기 ④ 이 화면의 알림 접근 안내 따르기.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
     </div>
   </section>
 </main>
@@ -435,6 +436,9 @@ function pollExt(){
   $('#xEq').textContent='EQ: '+(s.eq||'꺼짐');
   $('#eqSrc').textContent=s.eq?'· '+s.eq:'';
   const ns=s.notifSupported!==false;$('#rowNotif').hidden=!ns;$('#hintNotif').hidden=!ns;$('#rowSpotify').hidden=ns&&!!s.notif;
+  $('#rowFull').hidden=ns;$('#hintFull').hidden=ns;
+  $('#xVer').textContent=s.version?`앱 버전 ${s.version} · ${ns?'full 판':'기본판'}`:'';
+  $('#xSrc').textContent='곡 정보: '+(s.notif?'알림 접근으로 모든 앱에서 받는 중':(s.spotifyRx?'Spotify 방송으로 받는 중':(ns?'알림 접근이 꺼져 있어 받을 수 없어요':'기본판이라 Spotify 방송만 받을 수 있어요(아직 수신 없음)')));
   seek.disabled=!s.seekable;
   $('#xSpRx').textContent=s.spotifyRx?'· 수신 중':'· 아직 수신 안 됨';$('#xSpRx').style.color=s.spotifyRx?'var(--led1)':'var(--led4)';
   const n=$('#xNotif');n.textContent=s.notif?'허용됨':'설정 열기';n.classList.toggle('ok',!!s.notif);n.classList.toggle('on',!s.notif);
@@ -471,6 +475,7 @@ if(HAS_EXT){
   document.querySelectorAll('[data-pkg]').forEach(b=>b.onclick=()=>{try{NB.openApp(b.dataset.pkg)}catch(e){}});
   $('#xNotif').onclick=()=>{try{NB.openNotificationAccess()}catch(e){}};
   $('#xMic').onclick=()=>{try{NB.requestMic()}catch(e){}};
+  $('#xFull').onclick=()=>{try{NB.openUrl('https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk')}catch(e){}};
 }
 
 /* ---------- formatting ---------- */

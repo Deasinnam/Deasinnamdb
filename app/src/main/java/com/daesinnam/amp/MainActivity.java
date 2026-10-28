@@ -535,6 +535,8 @@ public class MainActivity extends Activity {
                 o.put("artV", artVersion);
                 o.put("notifSupported", notifSupported());
                 o.put("spotifyRx", SpotifyInfo.lastUpdate > 0);
+                o.put("edition", BuildConfig.FLAVOR);
+                o.put("version", BuildConfig.VERSION_NAME);
                 MediaController c = ctrl;
                 o.put("seekable", c != null);
                 if (c == null) {
@@ -646,6 +648,13 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void openNotificationAccess() {
             main.post(MainActivity.this::openNotificationAccess);
+        }
+
+        @JavascriptInterface
+        public void openUrl(final String url) {
+            main.post(() -> {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {}
+            });
         }
 
         @JavascriptInterface
