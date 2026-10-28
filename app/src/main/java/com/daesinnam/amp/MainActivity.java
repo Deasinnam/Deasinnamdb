@@ -3,16 +3,29 @@ package com.daesinnam.amp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Insets;
+import android.media.AudioManager;
+import android.media.MediaMetadata;
+import android.media.audiofx.Visualizer;
+import android.media.session.MediaController;
+import android.media.session.MediaSessionManager;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.provider.Settings;
+import android.util.Base64;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -27,11 +40,17 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
     private static final int REQ_FILES = 41;
+    private static final int REQ_MIC = 42;
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     static WeakReference<MainActivity> current = new WeakReference<>(null);
@@ -40,12 +59,41 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> pendingChooser;
     private final Handler main = new Handler(Looper.getMainLooper());
     private boolean playing = false;
+    private boolean resumed = false;
+
+    // 외부 앱 연동
+    private volatile boolean extMode = false;
+    private volatile MediaController ctrl;
+    private MediaSessionManager msm;
+    private ComponentName listenerCn;
+    private AudioManager am;
+    private Visualizer viz;
+    private final Object vizLock = new Object();
+    private byte[] fft, wave;
+    private volatile int vizRate = 44100;
+    private volatile long vizTs = 0;
+    private String artKey = "";
+    private volatile String artData = "";
+    private volatile int artVersion = 0;
+
+    private final Runnable sessionTick = new Runnable() {
+        @Override
+        public void run() {
+            if (!extMode) return;
+            refreshSessions();
+            if (resumed && viz == null) startViz();
+            main.postDelayed(this, 700);
+        }
+    };
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         current = new WeakReference<>(this);
+        msm = getSystemService(MediaSessionManager.class);
+        am = getSystemService(AudioManager.class);
+        listenerCn = new ComponentName(this, MediaListener.class);
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#08090B"));
@@ -58,8 +106,7 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(true);
-        s.setLoadWithOverviewMode(true);
-        s.setUseWideViewPort(true);
+        s.setTextZoom(100);
 
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -136,6 +183,12 @@ public class MainActivity extends Activity {
         pendingChooser = null;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == REQ_MIC && extMode) startViz();
+    }
+
     /** 알림의 재생 버튼을 누르면 웹 화면의 플레이어를 조작합니다. */
     void control(final String cmd) {
         main.post(() -> {
@@ -144,9 +197,26 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        resumed = true;
+        if (extMode) {
+            refreshSessions();
+            startViz();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        resumed = false;
+        stopViz(); // 화면이 안 보일 때는 시각화를 멈춰 배터리를 아낍니다.
+        super.onPause();
+    }
+
+    @Override
     public void onBackPressed() {
-        // 재생 중에 뒤로 가기를 누르면 앱을 종료하지 않고 백그라운드로 보내 음악이 계속 나오게 합니다.
-        if (playing) moveTaskToBack(true);
+        // 재생 중이거나 외부 앱 연동 중이면 앱을 끄지 않고 뒤로 보냅니다.
+        if (playing || extMode) moveTaskToBack(true);
         else super.onBackPressed();
     }
 
@@ -156,10 +226,11 @@ public class MainActivity extends Activity {
         if (web != null) web.saveState(out);
     }
 
-    // 백그라운드 재생을 위해 onPause/onResume에서 WebView를 멈추지 않습니다.
-
     @Override
     protected void onDestroy() {
+        main.removeCallbacksAndMessages(null);
+        stopViz();
+        ExternalEq.I.setActive(false);
         stopService(new Intent(this, PlaybackService.class));
         if (web != null) {
             web.destroy();
@@ -168,8 +239,203 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    // ---------------------------------------------------------------- 외부 앱
+
+    private boolean hasNotifAccess() {
+        if (Build.VERSION.SDK_INT >= 27) {
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            return nm.isNotificationListenerAccessGranted(listenerCn);
+        }
+        String flat = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
+        return flat != null && flat.contains(listenerCn.flattenToString());
+    }
+
+    private boolean hasMic() {
+        return checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void refreshSessions() {
+        if (!hasNotifAccess()) {
+            ctrl = null;
+            return;
+        }
+        try {
+            List<MediaController> list = msm.getActiveSessions(listenerCn);
+            MediaController pick = null;
+            for (MediaController c : list) {
+                if (getPackageName().equals(c.getPackageName())) continue;
+                PlaybackState st = c.getPlaybackState();
+                if (st != null && st.getState() == PlaybackState.STATE_PLAYING) {
+                    pick = c;
+                    break;
+                }
+                if (pick == null) pick = c;
+            }
+            ctrl = pick;
+            updateArt(pick);
+        } catch (SecurityException e) {
+            ctrl = null;
+        }
+    }
+
+    private void updateArt(MediaController c) {
+        Bitmap bmp = null;
+        String key = "";
+        if (c != null) {
+            MediaMetadata md = c.getMetadata();
+            if (md != null) {
+                bmp = md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+                if (bmp == null) bmp = md.getBitmap(MediaMetadata.METADATA_KEY_ART);
+                if (bmp == null) bmp = md.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON);
+                key = c.getPackageName() + "|" + md.getString(MediaMetadata.METADATA_KEY_TITLE) + "|" + System.identityHashCode(bmp);
+            }
+        }
+        if (key.equals(artKey)) return;
+        artKey = key;
+        String data = "";
+        if (bmp != null) {
+            try {
+                int w = bmp.getWidth(), h = bmp.getHeight();
+                float sc = Math.min(1f, 360f / Math.max(w, h));
+                Bitmap small = sc < 1f ? Bitmap.createScaledBitmap(bmp, Math.max(1, Math.round(w * sc)), Math.max(1, Math.round(h * sc)), true) : bmp;
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                small.compress(Bitmap.CompressFormat.JPEG, 85, out);
+                data = "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+            } catch (Throwable ignored) {}
+        }
+        artData = data;
+        artVersion++;
+    }
+
+    private void startViz() {
+        if (viz != null || !extMode || !resumed || !hasMic()) return;
+        try {
+            Visualizer v = new Visualizer(0);
+            int[] range = Visualizer.getCaptureSizeRange();
+            v.setCaptureSize(Math.min(1024, range[1]));
+            v.setScalingMode(Visualizer.SCALING_MODE_NORMALIZED);
+            v.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                @Override
+                public void onWaveFormDataCapture(Visualizer vis, byte[] bytes, int rate) {
+                    synchronized (vizLock) { wave = bytes.clone(); }
+                }
+
+                @Override
+                public void onFftDataCapture(Visualizer vis, byte[] bytes, int rate) {
+                    synchronized (vizLock) { fft = bytes.clone(); }
+                    vizRate = rate / 1000;
+                    vizTs = SystemClock.elapsedRealtime();
+                }
+            }, Visualizer.getMaxCaptureRate(), true, true);
+            v.setEnabled(true);
+            viz = v;
+        } catch (Throwable t) {
+            viz = null;
+        }
+    }
+
+    private void stopViz() {
+        if (viz == null) return;
+        try {
+            viz.setEnabled(false);
+            viz.release();
+        } catch (Throwable ignored) {}
+        viz = null;
+        synchronized (vizLock) { fft = null; wave = null; }
+    }
+
+    private void setExternal(boolean on) {
+        if (extMode == on) return;
+        extMode = on;
+        ExternalEq.I.setActive(on);
+        Intent i = new Intent(this, PlaybackService.class).setAction(PlaybackService.ACTION_EXT).putExtra("on", on);
+        try {
+            if (on) startForegroundService(i);
+            else if (PlaybackService.running) startService(i);
+        } catch (Exception ignored) {}
+        main.removeCallbacks(sessionTick);
+        if (on) {
+            main.post(sessionTick);
+        } else {
+            stopViz();
+            ctrl = null;
+        }
+    }
+
+    private void openApp(String pkg) {
+        Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
+        try {
+            if (launch != null) {
+                startActivity(launch);
+                return;
+            }
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg)));
+        } catch (Exception e) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + pkg)));
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void openNotificationAccess() {
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                Intent i = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS);
+                i.putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, listenerCn.flattenToString());
+                startActivity(i);
+                return;
+            }
+        } catch (Exception ignored) {}
+        try {
+            startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+        } catch (Exception ignored) {}
+    }
+
+    private void requestMic() {
+        if (hasMic()) return;
+        SharedPreferences p = getSharedPreferences("perm", MODE_PRIVATE);
+        boolean askedBefore = p.getBoolean("mic", false);
+        if (askedBefore && !shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)) {
+            // 두 번 거절하면 시스템이 더 묻지 않으므로 앱 설정 화면을 엽니다.
+            Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+            try { startActivity(i); } catch (Exception ignored) {}
+            return;
+        }
+        p.edit().putBoolean("mic", true).apply();
+        requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_MIC);
+    }
+
+    private int systemVolume() {
+        int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        return max > 0 ? Math.round(am.getStreamVolume(AudioManager.STREAM_MUSIC) * 100f / max) : 0;
+    }
+
+    private static String encode(byte[] src, boolean fftMode) {
+        if (src == null) return "";
+        if (fftMode) {
+            int n = src.length / 2;
+            char[] out = new char[n];
+            out[0] = 32;
+            for (int k = 1; k < n; k++) {
+                int re = src[2 * k], im = src[2 * k + 1];
+                double mag = Math.hypot(re, im);
+                double db = 20 * Math.log10(mag / 128.0 + 1e-9);
+                int v = (int) Math.round((db + 54) / 54 * 255);
+                out[k] = (char) (Math.max(0, Math.min(255, v)) + 32);
+            }
+            return new String(out);
+        }
+        int n = Math.min(512, src.length);
+        int step = Math.max(1, src.length / n);
+        char[] out = new char[n];
+        for (int i = 0; i < n; i++) out[i] = (char) ((src[i * step] & 0xff) + 32);
+        return new String(out);
+    }
+
+    // ---------------------------------------------------------------- 웹 화면과 연결
+
     private class Bridge {
-        /** state: "playing" | "paused" | "stopped" */
+        /** 내 음악 재생 상태. state: "playing" | "paused" | "stopped" */
         @JavascriptInterface
         public void onPlayState(final String state, final String title, final String artist) {
             main.post(() -> {
@@ -178,21 +444,150 @@ public class MainActivity extends Activity {
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                 Intent i = new Intent(MainActivity.this, PlaybackService.class);
-                if ("stopped".equals(state)) {
-                    stopService(i);
-                    return;
-                }
-                i.setAction(PlaybackService.ACTION_UPDATE);
-                i.putExtra("playing", playing);
-                i.putExtra("title", title);
-                i.putExtra("artist", artist);
                 try {
+                    if ("stopped".equals(state)) {
+                        if (PlaybackService.running) startService(i.setAction(PlaybackService.ACTION_OWN_STOP));
+                        return;
+                    }
+                    i.setAction(PlaybackService.ACTION_UPDATE);
+                    i.putExtra("playing", playing);
+                    i.putExtra("title", title);
+                    i.putExtra("artist", artist);
                     if (playing) startForegroundService(i);
                     else if (PlaybackService.running) startService(i);
                 } catch (Exception ignored) {
                     // 백그라운드 시작 제한 등으로 실패해도 재생 자체는 계속됩니다.
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void setExternalMode(final boolean on) {
+            main.post(() -> setExternal(on));
+        }
+
+        @JavascriptInterface
+        public String extStatus() {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("notif", hasNotifAccess());
+                o.put("mic", hasMic());
+                o.put("viz", viz != null);
+                o.put("rate", vizRate);
+                o.put("eq", ExternalEq.I.status());
+                o.put("vol", systemVolume());
+                o.put("artV", artVersion);
+                MediaController c = ctrl;
+                if (c != null) {
+                    String pkg = c.getPackageName();
+                    o.put("pkg", pkg);
+                    o.put("app", appLabel(pkg));
+                    MediaMetadata md = c.getMetadata();
+                    if (md != null) {
+                        o.put("title", nz(md.getString(MediaMetadata.METADATA_KEY_TITLE)));
+                        String ar = md.getString(MediaMetadata.METADATA_KEY_ARTIST);
+                        if (ar == null) ar = md.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
+                        o.put("artist", nz(ar));
+                        o.put("album", nz(md.getString(MediaMetadata.METADATA_KEY_ALBUM)));
+                        o.put("dur", Math.max(0, md.getLong(MediaMetadata.METADATA_KEY_DURATION)));
+                    }
+                    PlaybackState st = c.getPlaybackState();
+                    if (st != null) {
+                        boolean pl = st.getState() == PlaybackState.STATE_PLAYING;
+                        long pos = st.getPosition();
+                        if (pl && st.getLastPositionUpdateTime() > 0) {
+                            pos += (long) ((SystemClock.elapsedRealtime() - st.getLastPositionUpdateTime()) * st.getPlaybackSpeed());
+                        }
+                        o.put("playing", pl);
+                        o.put("pos", Math.max(0, pos));
+                    }
+                }
+            } catch (Exception ignored) {}
+            return o.toString();
+        }
+
+        @JavascriptInterface
+        public String extArt() {
+            return artData;
+        }
+
+        @JavascriptInterface
+        public String extFft() {
+            if (SystemClock.elapsedRealtime() - vizTs > 600) return "";
+            byte[] f;
+            synchronized (vizLock) { f = fft; }
+            return encode(f, true);
+        }
+
+        @JavascriptInterface
+        public String extWave() {
+            byte[] w;
+            synchronized (vizLock) { w = wave; }
+            return encode(w, false);
+        }
+
+        @JavascriptInterface
+        public void extCmd(final String cmd, final double arg) {
+            main.post(() -> {
+                MediaController c = ctrl;
+                if (c == null) return;
+                MediaController.TransportControls t = c.getTransportControls();
+                switch (cmd) {
+                    case "play": t.play(); break;
+                    case "pause": t.pause(); break;
+                    case "stop": t.stop(); break;
+                    case "next": t.skipToNext(); break;
+                    case "prev": t.skipToPrevious(); break;
+                    case "seek": t.seekTo((long) arg); break;
+                    default: break;
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void setExtEq(String json) {
+            try {
+                JSONObject o = new JSONObject(json);
+                JSONArray g = o.getJSONArray("gains");
+                float[] gains = new float[10];
+                for (int i = 0; i < 10 && i < g.length(); i++) gains[i] = (float) g.getDouble(i);
+                ExternalEq.I.set(o.optBoolean("on", true), (float) o.optDouble("pre", 0), gains);
+            } catch (Exception ignored) {}
+        }
+
+        @JavascriptInterface
+        public void setSystemVolume(int pct) {
+            int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            am.setStreamVolume(AudioManager.STREAM_MUSIC, Math.round(Math.max(0, Math.min(100, pct)) * max / 100f), 0);
+        }
+
+        @JavascriptInterface
+        public void openApp(final String pkg) {
+            main.post(() -> MainActivity.this.openApp(pkg));
+        }
+
+        @JavascriptInterface
+        public void openNotificationAccess() {
+            main.post(MainActivity.this::openNotificationAccess);
+        }
+
+        @JavascriptInterface
+        public void requestMic() {
+            main.post(MainActivity.this::requestMic);
+        }
+    }
+
+    private static String nz(String s) {
+        return s == null ? "" : s;
+    }
+
+    private String appLabel(String pkg) {
+        String f = ExternalEq.friendly(pkg);
+        if (!f.equals(pkg)) return f;
+        try {
+            return getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(pkg, 0)).toString();
+        } catch (Exception e) {
+            return pkg;
         }
     }
 }

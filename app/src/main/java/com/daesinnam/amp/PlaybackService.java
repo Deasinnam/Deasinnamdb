@@ -7,15 +7,21 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.graphics.drawable.Icon;
 
-/** 화면이 꺼지거나 다른 앱을 써도 음악이 끊기지 않도록 유지하는 포그라운드 서비스. */
+/**
+ * 포그라운드 서비스.
+ * - 내 음악 재생 중: 화면이 꺼져도 재생이 이어지고 알림창에 재생 버튼을 보여 줍니다.
+ * - 외부 앱 연동 중: 앱이 백그라운드에 있어도 EQ 연결이 유지되도록 프로세스를 살려 둡니다.
+ */
 public class PlaybackService extends Service {
 
     static final String ACTION_UPDATE = "com.daesinnam.amp.UPDATE";
+    static final String ACTION_OWN_STOP = "com.daesinnam.amp.OWN_STOP";
+    static final String ACTION_EXT = "com.daesinnam.amp.EXT";
     static final String ACTION_PREV = "com.daesinnam.amp.PREV";
     static final String ACTION_TOGGLE = "com.daesinnam.amp.TOGGLE";
     static final String ACTION_NEXT = "com.daesinnam.amp.NEXT";
@@ -24,7 +30,9 @@ public class PlaybackService extends Service {
 
     static volatile boolean running = false;
 
-    private boolean playing = false;
+    private boolean own = false;
+    private boolean ownPlaying = false;
+    private boolean ext = false;
     private String title = "Daesinnam Amp";
     private String artist = "";
     private PowerManager.WakeLock cpuLock;
@@ -46,11 +54,17 @@ public class PlaybackService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent != null ? intent.getAction() : null;
         if (ACTION_UPDATE.equals(action)) {
-            playing = intent.getBooleanExtra("playing", false);
+            own = true;
+            ownPlaying = intent.getBooleanExtra("playing", false);
             String t = intent.getStringExtra("title");
             String a = intent.getStringExtra("artist");
             if (t != null && !t.isEmpty()) title = t;
             artist = a != null ? a : "";
+        } else if (ACTION_OWN_STOP.equals(action)) {
+            own = false;
+            ownPlaying = false;
+        } else if (ACTION_EXT.equals(action)) {
+            ext = intent.getBooleanExtra("on", false);
         } else if (action != null) {
             MainActivity act = MainActivity.current.get();
             if (act != null) {
@@ -60,6 +74,7 @@ public class PlaybackService extends Service {
             }
         }
 
+        // startForegroundService로 시작된 경우 반드시 startForeground를 먼저 호출해야 합니다.
         Notification n = build();
         if (Build.VERSION.SDK_INT >= 29) {
             startForeground(NOTI_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
@@ -67,7 +82,13 @@ public class PlaybackService extends Service {
             startForeground(NOTI_ID, n);
         }
 
-        if (playing) cpuLock.acquire(6 * 60 * 60 * 1000L);
+        if (!own && !ext) {
+            stopForeground(STOP_FOREGROUND_REMOVE);
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
+        if (ownPlaying) cpuLock.acquire(6 * 60 * 60 * 1000L);
         else if (cpuLock.isHeld()) cpuLock.release();
         return START_NOT_STICKY;
     }
@@ -83,17 +104,24 @@ public class PlaybackService extends Service {
 
         Notification.Builder b = new Notification.Builder(this, CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat)
-                .setContentTitle(title)
-                .setContentText(artist.isEmpty() ? (playing ? "재생 중" : "일시정지") : artist)
                 .setContentIntent(content)
                 .setColor(0xFFFF8C1A)
-                .setOngoing(playing)
                 .setOnlyAlertOnce(true)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .addAction(new Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_media_previous), "이전", action(ACTION_PREV, 1)).build())
-                .addAction(new Notification.Action.Builder(Icon.createWithResource(this, playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play), playing ? "일시정지" : "재생", action(ACTION_TOGGLE, 2)).build())
-                .addAction(new Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_media_next), "다음", action(ACTION_NEXT, 3)).build())
-                .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2));
+                .setVisibility(Notification.VISIBILITY_PUBLIC);
+
+        if (own) {
+            b.setContentTitle(title)
+                    .setContentText(artist.isEmpty() ? (ownPlaying ? "재생 중" : "일시정지") : artist)
+                    .setOngoing(ownPlaying)
+                    .addAction(new Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_media_previous), "이전", action(ACTION_PREV, 1)).build())
+                    .addAction(new Notification.Action.Builder(Icon.createWithResource(this, ownPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play), ownPlaying ? "일시정지" : "재생", action(ACTION_TOGGLE, 2)).build())
+                    .addAction(new Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_media_next), "다음", action(ACTION_NEXT, 3)).build())
+                    .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2));
+        } else {
+            b.setContentTitle("외부 앱 연동 중")
+                    .setContentText("EQ: " + ExternalEq.I.status())
+                    .setOngoing(true);
+        }
         return b.build();
     }
 
