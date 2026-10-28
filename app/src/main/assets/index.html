@@ -95,13 +95,26 @@
   --f-tech:"Rajdhani","Barlow Condensed","Noto Sans KR",sans-serif;
   color-scheme:dark;
 }
+:root[data-skin="drive"]{
+  --bg:#08090b; --bg-glow:#0a2550; --panel:#1b1c1f; --panel-2:#2e3034; --edge:#0b0b0c; --frame-hi:#ffffff1a; --frame-in:#4a4d53;
+  --bar-a:#3e4147; --bar-b:#26282c; --bar-text:#eceef2; --groove:#2f8bff;
+  --metal-a:#f6f7f9; --metal-b:#d4d7dc; --metal-c:#a6aab1; --metal-d:#c6c9ce; --metal-ink:#141416;
+  --hot-a:#a8d0ff; --hot-b:#2f7cff; --hot-c:#1243a8; --hot-ink:#ffffff;
+  --lcd:#06080b; --lcd-edge:#3c3e43; --lcd-text:#4fa3ff; --lcd-text-2:#eef5ff; --lcd-dim:#1f3a5e; --lcd-fg:#e3ebf5; --lcd-glow:#2f8bff88;
+  --led1:#163f86; --led2:#2f7cff; --led3:#7fbaff; --led4:#eaf4ff; --peak:#ffffff; --led-off:#4fa3ff12; --grid:#0d1626;
+  --text:#eceef2; --muted:#9da3ad; --accent:#2f8bff; --track:#232427;
+  --logo-word:#f2f6ff; --logo-blue:#3d8bff; --logo-tag:#9aa6b8;
+  --cut:16px; --copper:#2f8bff; --copper-hi:#9ccbff; --gv-c:#5aa8ff;
+  --f-tech:"Rajdhani","Barlow Condensed","Noto Sans KR",sans-serif;
+  color-scheme:dark;
+}
 /* 사이버 카니발: 브러시드 건메탈 + 구리 발광 라인 + 모서리 컷 */
-:root[data-skin="carnival"] body{background:
+:root[data-car] body{background:
   linear-gradient(118deg,transparent 0 62%,#ffffff07 62% 62.3%,transparent 62.3%),
   linear-gradient(118deg,transparent 0 70%,#ffffff05 70% 78%,transparent 78%),
-  radial-gradient(900px 420px at 85% -5%,#4a220b 0%,transparent 60%),
+  radial-gradient(900px 420px at 85% -5%,var(--bg-glow) 0%,transparent 60%),
   linear-gradient(180deg,#121214,#070708);background-color:#070708;background-repeat:no-repeat;background-attachment:fixed}
-:root[data-skin="carnival"] .win{position:relative;border:1px solid #55585e;border-radius:0;
+:root[data-car] .win{position:relative;border:1px solid #55585e;border-radius:0;
   clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)));
   background:
     linear-gradient(225deg,transparent 11px,var(--copper) 11px 12.6px,transparent 12.6px) top right/24px 24px no-repeat,
@@ -110,51 +123,51 @@
     repeating-linear-gradient(90deg,#ffffff06 0 1px,transparent 1px 3px,#00000010 3px 4px),
     linear-gradient(180deg,var(--panel-2) 0%,#232528 40%,var(--panel) 100%);
   box-shadow:inset 0 1px 0 #ffffff1f,inset 0 0 0 1px #00000066}
-:root[data-skin="carnival"] .bar{height:38px;padding:0 8px 0 0;background:linear-gradient(180deg,#00000033,transparent);border-bottom:1px solid #00000066;border-radius:0}
-:root[data-skin="carnival"] .bar .t{align-self:stretch;display:flex;align-items:center;padding:0 30px 0 14px;font-family:var(--f-tech);font-weight:700;font-size:17px;letter-spacing:.16em;
+:root[data-car] .bar{height:38px;padding:0 8px 0 0;background:linear-gradient(180deg,#00000033,transparent);border-bottom:1px solid #00000066;border-radius:0}
+:root[data-car] .bar .t{align-self:stretch;display:flex;align-items:center;padding:0 30px 0 14px;font-family:var(--f-tech);font-weight:700;font-size:17px;letter-spacing:.16em;
   background:linear-gradient(180deg,#45484e,#2a2c30);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 100%,0 100%);box-shadow:inset 0 1px 0 #ffffff22}
-:root[data-skin="carnival"] .groove{height:2px;min-width:20px;opacity:1;background:linear-gradient(90deg,transparent 0,#ffffffd0 18%,#ffe1c8 55%,var(--copper) 80%,transparent 100%);box-shadow:0 0 8px #e0803a99}
-:root[data-skin="carnival"] .wbtn{width:30px;height:24px;border-radius:3px;border:1px solid #111;background:linear-gradient(180deg,#f2f3f5,#a9adb4);box-shadow:inset 0 1px 0 #fff}
-:root[data-skin="carnival"] .wbtn svg{width:12px;height:12px}
-:root[data-skin="carnival"] .lcd{border:1px solid #4d5056;border-radius:2px;box-shadow:inset 0 0 0 1px #000,inset 0 8px 24px #000,0 0 0 3px #1a1b1e}
-:root[data-skin="carnival"] .state{padding-top:12px}
-:root[data-skin="carnival"] .state i{width:14px;height:16px;border-radius:0;clip-path:polygon(0 0,100% 50%,0 100%);background:var(--lcd-dim)}
-:root[data-skin="carnival"] .state i.on{background:var(--copper);box-shadow:none;filter:drop-shadow(0 0 4px var(--copper))}
-:root[data-skin="carnival"] .state i.pa{clip-path:none}
-:root[data-skin="carnival"] .state i.pa:not(.on){display:none}
-:root[data-skin="carnival"] .state i.pa.on{background:linear-gradient(90deg,var(--copper) 0 36%,transparent 36% 64%,var(--copper) 64%)}
-:root[data-skin="carnival"] .state:has(.pa.on) #stPlay{display:none}
-:root[data-skin="carnival"] .tb{border:1px solid #121214;border-radius:4px;
+:root[data-car] .groove{height:2px;min-width:20px;opacity:1;background:linear-gradient(90deg,transparent 0,#ffffffd0 18%,#ffe1c8 55%,var(--copper) 80%,transparent 100%);box-shadow:0 0 8px color-mix(in srgb,var(--copper) 60%,transparent)}
+:root[data-car] .wbtn{width:30px;height:24px;border-radius:3px;border:1px solid #111;background:linear-gradient(180deg,#f2f3f5,#a9adb4);box-shadow:inset 0 1px 0 #fff}
+:root[data-car] .wbtn svg{width:12px;height:12px}
+:root[data-car] .lcd{border:1px solid #4d5056;border-radius:2px;box-shadow:inset 0 0 0 1px #000,inset 0 8px 24px #000,0 0 0 3px #1a1b1e}
+:root[data-car] .state{padding-top:12px}
+:root[data-car] .state i{width:14px;height:16px;border-radius:0;clip-path:polygon(0 0,100% 50%,0 100%);background:var(--lcd-dim)}
+:root[data-car] .state i.on{background:var(--copper);box-shadow:none;filter:drop-shadow(0 0 4px var(--copper))}
+:root[data-car] .state i.pa{clip-path:none}
+:root[data-car] .state i.pa:not(.on){display:none}
+:root[data-car] .state i.pa.on{background:linear-gradient(90deg,var(--copper) 0 36%,transparent 36% 64%,var(--copper) 64%)}
+:root[data-car] .state:has(.pa.on) #stPlay{display:none}
+:root[data-car] .tb{border:1px solid #121214;border-radius:4px;
   background:linear-gradient(180deg,#fbfbfc 0%,#dcdfe3 42%,#aeb2b9 56%,#d0d3d8 100%);
-  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #0003,0 3px 0 -1px var(--copper),0 7px 12px -5px #e0803acc}
-:root[data-skin="carnival"] .tb svg{fill:#141416;filter:none}
-:root[data-skin="carnival"] .tb.hot{background:linear-gradient(180deg,#ffffff 0%,#e6e8eb 42%,#b9bdc3 56%,#dadde1 100%);box-shadow:inset 0 1px 0 #fff,0 0 0 1px var(--copper),0 3px 0 -1px var(--copper-hi),0 0 16px #e0803acc}
-:root[data-skin="carnival"] .tb.hot svg{fill:#141416}
-:root[data-skin="carnival"] .launch .tb{color:#141416}
-:root[data-skin="carnival"] .tog{opacity:1;color:#e9e6e2;border:1px solid #4a4d53;background:linear-gradient(180deg,#2e3034,#17181a);font-family:var(--f-tech);font-size:16px}
-:root[data-skin="carnival"] .tog.on,:root[data-skin="carnival"] .pill.on,:root[data-skin="carnival"] .seg button.on{color:#1a0b02;background:linear-gradient(180deg,#f7bd8a,#d9773a 52%,#a9531e);border-color:#3a1c08;box-shadow:inset 0 1px 0 #ffffff80,0 0 12px #e0803a66}
-:root[data-skin="carnival"] .pill,:root[data-skin="carnival"] .seg button{font-family:var(--f-tech);font-size:16px;background:linear-gradient(180deg,#f2f3f5,#c3c6cb 55%,#a3a7ae);color:#141416}
-:root[data-skin="carnival"] .sel{background:linear-gradient(180deg,#2a2c30,#141517);color:#eceae6;border:1px solid var(--copper);box-shadow:0 0 8px #e0803a44}
-:root[data-skin="carnival"] .knob label,:root[data-skin="carnival"] .selw{font-family:var(--f-tech);font-size:15px;color:#d8d5d0}
-:root[data-skin="carnival"] .vmode button{font-family:var(--f-tech);font-size:13px;border-color:#3c3e43}
-:root[data-skin="carnival"] .vmode button.on{color:var(--copper-hi);box-shadow:inset 0 -2px 0 var(--copper);background:#1a120c}
-:root[data-skin="carnival"] .top{padding-block:18px 10px}
-:root[data-skin="carnival"] .brand{padding:12px 34px 12px 18px;border:1px solid #55585e;
+  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #0003,0 3px 0 -1px var(--copper),0 7px 12px -5px color-mix(in srgb,var(--copper) 80%,transparent)}
+:root[data-car] .tb svg{fill:#141416;filter:none}
+:root[data-car] .tb.hot{background:linear-gradient(180deg,#ffffff 0%,#e6e8eb 42%,#b9bdc3 56%,#dadde1 100%);box-shadow:inset 0 1px 0 #fff,0 0 0 1px var(--copper),0 3px 0 -1px var(--copper-hi),0 0 16px color-mix(in srgb,var(--copper) 80%,transparent)}
+:root[data-car] .tb.hot svg{fill:#141416}
+:root[data-car] .launch .tb{color:#141416}
+:root[data-car] .tog{opacity:1;color:#e9e6e2;border:1px solid #4a4d53;background:linear-gradient(180deg,#2e3034,#17181a);font-family:var(--f-tech);font-size:16px}
+:root[data-car] .tog.on,:root[data-car] .pill.on,:root[data-car] .seg button.on{color:var(--hot-ink);background:linear-gradient(180deg,var(--hot-a),var(--hot-b) 52%,var(--hot-c));border-color:color-mix(in srgb,var(--hot-c) 45%,#000);box-shadow:inset 0 1px 0 #ffffff80,0 0 12px color-mix(in srgb,var(--copper) 40%,transparent)}
+:root[data-car] .pill,:root[data-car] .seg button{font-family:var(--f-tech);font-size:16px;background:linear-gradient(180deg,#f2f3f5,#c3c6cb 55%,#a3a7ae);color:#141416}
+:root[data-car] .sel{background:linear-gradient(180deg,#2a2c30,#141517);color:#eceae6;border:1px solid var(--copper);box-shadow:0 0 8px color-mix(in srgb,var(--copper) 27%,transparent)}
+:root[data-car] .knob label,:root[data-car] .selw{font-family:var(--f-tech);font-size:15px;color:#d8d5d0}
+:root[data-car] .vmode button{font-family:var(--f-tech);font-size:13px;border-color:#3c3e43}
+:root[data-car] .vmode button.on{color:var(--copper-hi);box-shadow:inset 0 -2px 0 var(--copper);background:color-mix(in srgb,var(--copper) 10%,#000)}
+:root[data-car] .top{padding-block:18px 10px}
+:root[data-car] .brand{padding:12px 34px 12px 18px;border:1px solid #55585e;
   clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%);
   background:linear-gradient(225deg,transparent 15px,var(--copper) 15px 16.6px,transparent 16.6px) top right/32px 32px no-repeat,
     linear-gradient(90deg,transparent 55%,var(--copper)) bottom right/100% 2px no-repeat,
     repeating-linear-gradient(90deg,#ffffff06 0 1px,transparent 1px 3px),linear-gradient(180deg,#2c2e32,#151618)}
-:root[data-skin="carnival"] .tools{padding:8px 10px;border:1px solid #4a4d53;background:linear-gradient(180deg,#232528,#121315);box-shadow:inset 0 1px 0 #ffffff14}
-:root[data-skin="carnival"] .cover{border:1px solid #4a4d53;box-shadow:inset 0 0 0 1px #000,0 6px 16px #0008}
-:root[data-skin="carnival"] .visbox,:root[data-skin="carnival"] .eqgrid,:root[data-skin="carnival"] .pl,:root[data-skin="carnival"] .now{border-color:#4a4d53;border-radius:2px}
-:root[data-skin="carnival"] #eqled{display:none}
-:root[data-skin="carnival"] .band+.band{border-left:1px solid #ffffff0a}
-:root[data-skin="carnival"] .slot{background:repeating-linear-gradient(180deg,#ffffff24 0 2px,transparent 2px 9px) center/16px 100% no-repeat}
-:root[data-skin="carnival"] .slot input::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,var(--copper) 0 var(--p,50%),transparent var(--p,50%));box-shadow:0 0 6px #e0803a55}
-:root[data-skin="carnival"] .slot input::-moz-range-track{height:4px;background:linear-gradient(90deg,var(--copper) 0 var(--p,50%),transparent var(--p,50%))}
-:root[data-skin="carnival"] .slot input::-webkit-slider-thumb{width:18px;height:32px;margin-top:-14px;border-radius:2px;border:1px solid #111;
+:root[data-car] .tools{padding:8px 10px;border:1px solid #4a4d53;background:linear-gradient(180deg,#232528,#121315);box-shadow:inset 0 1px 0 #ffffff14}
+:root[data-car] .cover{border:1px solid #4a4d53;box-shadow:inset 0 0 0 1px #000,0 6px 16px #0008}
+:root[data-car] .visbox,:root[data-car] .eqgrid,:root[data-car] .pl,:root[data-car] .now{border-color:#4a4d53;border-radius:2px}
+:root[data-car] #eqled{display:none}
+:root[data-car] .band+.band{border-left:1px solid #ffffff0a}
+:root[data-car] .slot{background:repeating-linear-gradient(180deg,#ffffff24 0 2px,transparent 2px 9px) center/16px 100% no-repeat}
+:root[data-car] .slot input::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,var(--copper) 0 var(--p,50%),transparent var(--p,50%));box-shadow:0 0 6px color-mix(in srgb,var(--copper) 33%,transparent)}
+:root[data-car] .slot input::-moz-range-track{height:4px;background:linear-gradient(90deg,var(--copper) 0 var(--p,50%),transparent var(--p,50%))}
+:root[data-car] .slot input::-webkit-slider-thumb{width:18px;height:32px;margin-top:-14px;border-radius:2px;border:1px solid #111;
   background:linear-gradient(90deg,#9ea3aa,#ffffff 40%,#c9ccd1 60%,#8f949b);box-shadow:inset 0 -2px 0 var(--copper),0 2px 6px #000}
-:root[data-skin="carnival"] .band span{font-family:var(--f-tech);font-size:14px;font-weight:600}
+:root[data-car] .band span{font-family:var(--f-tech);font-size:14px;font-weight:600}
 :root[data-skin="wood"] .win{background-image:repeating-linear-gradient(92deg,#ffffff06 0 2px,transparent 2px 7px,#00000010 7px 9px,transparent 9px 15px),linear-gradient(180deg,var(--panel-2),var(--panel))}
 
 html,body{height:100%}
@@ -187,9 +200,15 @@ button{cursor:pointer}
 .app.L3{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);grid-template-areas:"main eq pl" "vis vis pl"}
 #wMain{grid-area:main}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}#wGps{grid-area:gps}
 /* 사이버 카니발: 가운데에 GPS 속도계 창 */
-.app.G{grid-template-areas:"gps" "main" "vis" "eq" "pl"}
-.app.L2.G{grid-template-areas:"gps gps" "main eq" "vis pl"}
-.app.L3.G{grid-template-areas:"gps gps pl" "main eq pl" "vis vis pl"}
+.app.G{grid-template-areas:"gps" "map" "main" "vis" "eq" "pl"}
+.app.L2.G{grid-template-areas:"gps gps" "map map" "main eq" "vis pl"}
+.app.L3.G{grid-template-areas:"gps gps pl" "map map pl" "main eq pl" "vis vis pl"}
+/* 지도를 쓰지 않으면 맨 아래로 */
+.app.G.MO{grid-template-areas:"gps" "main" "vis" "eq" "pl" "map"}
+.app.L2.G.MO{grid-template-areas:"gps gps" "main eq" "vis pl" "map map"}
+.app.L3.G.MO{grid-template-areas:"gps gps pl" "main eq pl" "vis vis pl" "map map map"}
+#wMap{grid-area:map;display:none}
+.app.G #wMap{display:flex}
 #wGps{display:none}
 .app.G #wGps{display:flex}
 
@@ -329,12 +348,20 @@ input[type=range]:disabled{opacity:.35}
 .perm b{display:block;font-size:14px}
 .perm small{display:block;color:var(--muted);font-size:12.5px;line-height:1.5}
 .perm .pill.ok{opacity:.7}
+.permbox{border:1px solid var(--edge);border-radius:4px;background:#0000001a}
+.permbox>summary{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;cursor:pointer;list-style:none;font-weight:700;font-size:14px}
+.permbox>summary::-webkit-details-marker{display:none}
+.permbox>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);opacity:.6;transition:transform .2s}
+.permbox[open]>summary::after{transform:rotate(-135deg)}
+.permbox>summary em{font-style:normal;font-weight:500;font-size:12.5px;color:var(--muted)}
+.permbox>summary em.ok{color:var(--led1)}
+.permbox>.perm,.permbox>.hint{margin:0 10px 10px}
 /* GPS 속도계 — 디자인 5종: carbon(기본) · neon · classic · minimal · tactical */
-#wGps{--gc:#e0803a;--gc-hi:#ffb27a;--gv:#f39a4e;--gt:#e9e5df;--gl:#a9a49d;--gtile:#0d0c0c;--gtile-b:#3a3c41}
+#wGps{--gc:var(--copper,#e0803a);--gc-hi:var(--copper-hi,#ffb27a);--gv:var(--gv-c,#f39a4e);--gt:#e9e5df;--gl:#a9a49d;--gtile:#0d0c0c;--gtile-b:#3a3c41}
 #wGps .body{container-type:inline-size;display:flex;flex-direction:column;gap:10px}
 .gps{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px;min-height:0}
 @container (max-width:540px){.gps{grid-template-columns:minmax(0,1fr)}}
-@container (min-width:980px){.gstats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@container (min-width:980px){.gstats{grid-template-columns:repeat(3,minmax(0,1fr))!important}.gstats b{font-size:clamp(22px,2.5cqw,34px)!important}}
 .gauge{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0}
 .dial{position:relative;flex:1;min-height:250px;overflow:hidden}
 #gauge{position:absolute;inset:0;width:100%;height:100%}
@@ -370,18 +397,18 @@ input[type=range]:disabled{opacity:.35}
   linear-gradient(45deg,transparent 9px,var(--gc) 9px 10.5px,transparent 10.5px) bottom left/var(--k) var(--k) no-repeat,
   linear-gradient(180deg,#121214,#0a0a0b);
   clip-path:polygon(0 0,calc(100% - var(--k)) 0,100% var(--k),100% 100%,var(--k) 100%,0 calc(100% - var(--k)))}
-#wGps[data-gs="carbon"] .gstats b{background:linear-gradient(180deg,#ffd0a2,#e98a43 55%,#b45e22);-webkit-background-clip:text;background-clip:text;color:transparent}
+#wGps[data-gs="carbon"] .gstats b{background:linear-gradient(180deg,var(--copper-hi,#ffd0a2),var(--copper,#e98a43) 55%,var(--hot-c,#b45e22));-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* 2. 네온 링 */
-#wGps[data-gs="neon"]{background:radial-gradient(800px 300px at 30% 40%,#2a1408 0%,transparent 60%),linear-gradient(180deg,#121014,#08070a)!important;box-shadow:inset 0 0 0 1px #e0803a55,0 0 18px #e0803a33!important}
-#wGps[data-gs="neon"] .dial{background:radial-gradient(circle at 50% 52%,#1a100a 0%,#09080a 62%);border:1px solid #e0803a40;border-radius:8px;box-shadow:inset 0 0 30px #000}
-#wGps[data-gs="neon"] .spd b{font-family:"Saira","Rajdhani",sans-serif;font-weight:800;font-size:calc(var(--g,260px)*.3);color:#fff6ec;text-shadow:0 0 18px #ffb27a99,0 0 2px #fff}
-#wGps[data-gs="neon"] .spd small{font-size:calc(var(--g,260px)*.075);color:var(--gc);text-shadow:0 0 10px #e0803a}
-#wGps[data-gs="neon"] #tape{background:#0c0a0b;border:1px solid #e0803a55;border-radius:8px;box-shadow:0 0 12px #e0803a22}
-#wGps[data-gs="neon"] .tapebox{bottom:8px;text-shadow:0 0 10px #e0803a}
-#wGps[data-gs="neon"] .gstats div{border-radius:10px;border-color:#e0803a59;background:linear-gradient(180deg,#151113,#0b0a0c);box-shadow:inset 0 0 18px #e0803a14,0 0 10px #e0803a1c}
-#wGps[data-gs="neon"] .gstats b{color:#f39a4e;text-shadow:0 0 12px #e0803a88}
-#wGps[data-gs="neon"] .gstats small{color:#e9a777}
+#wGps[data-gs="neon"]{background:radial-gradient(800px 300px at 30% 40%,#2a1408 0%,transparent 60%),linear-gradient(180deg,#121014,#08070a)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--copper) 33%,transparent),0 0 18px color-mix(in srgb,var(--copper) 20%,transparent)!important}
+#wGps[data-gs="neon"] .dial{background:radial-gradient(circle at 50% 52%,#1a100a 0%,#09080a 62%);border:1px solid color-mix(in srgb,var(--copper) 25%,transparent);border-radius:8px;box-shadow:inset 0 0 30px #000}
+#wGps[data-gs="neon"] .spd b{font-family:"Saira","Rajdhani",sans-serif;font-weight:800;font-size:calc(var(--g,260px)*.3);color:#fff6ec;text-shadow:0 0 18px color-mix(in srgb,var(--copper-hi) 60%,transparent),0 0 2px #fff}
+#wGps[data-gs="neon"] .spd small{font-size:calc(var(--g,260px)*.075);color:var(--gc);text-shadow:0 0 10px var(--copper)}
+#wGps[data-gs="neon"] #tape{background:#0c0a0b;border:1px solid color-mix(in srgb,var(--copper) 33%,transparent);border-radius:8px;box-shadow:0 0 12px color-mix(in srgb,var(--copper) 13%,transparent)}
+#wGps[data-gs="neon"] .tapebox{bottom:8px;text-shadow:0 0 10px var(--copper)}
+#wGps[data-gs="neon"] .gstats div{border-radius:10px;border-color:color-mix(in srgb,var(--copper) 35%,transparent);background:linear-gradient(180deg,#151113,#0b0a0c);box-shadow:inset 0 0 18px color-mix(in srgb,var(--copper) 8%,transparent),0 0 10px color-mix(in srgb,var(--copper) 11%,transparent)}
+#wGps[data-gs="neon"] .gstats b{color:var(--gv);text-shadow:0 0 12px color-mix(in srgb,var(--copper) 53%,transparent)}
+#wGps[data-gs="neon"] .gstats small{color:var(--gc-hi)}
 
 /* 3. 클래식 아날로그 (밝은 브러시드 메탈 창) */
 #wGps[data-gs="classic"]{--gl:#cdb69a;background:repeating-linear-gradient(90deg,#ffffff10 0 1px,transparent 1px 3px),linear-gradient(180deg,#d7d1c7,#b9b1a4 45%,#a59b8c)!important;border-color:#5b4a38!important;box-shadow:inset 0 1px 0 #fff8,inset 0 0 0 2px #3a2a1a55!important}
@@ -407,7 +434,7 @@ input[type=range]:disabled{opacity:.35}
 /* 4. 미니멀 디지털 */
 #wGps[data-gs="minimal"] .dial{background:#070708;border:1px solid #2c2d31}
 #wGps[data-gs="minimal"] .spd{text-align:left;padding-left:9%;display:flex;align-items:flex-end;gap:.4em}
-#wGps[data-gs="minimal"] .spd b{font-family:"Saira","Rajdhani",sans-serif;font-weight:800;font-size:calc(var(--g,260px)*.52);color:#fff1e2;text-shadow:0 0 26px #ff9a4a66;letter-spacing:-.03em}
+#wGps[data-gs="minimal"] .spd b{font-family:"Saira","Rajdhani",sans-serif;font-weight:800;font-size:calc(var(--g,260px)*.52);color:#fff1e2;text-shadow:0 0 26px color-mix(in srgb,var(--gc) 45%,transparent);letter-spacing:-.03em}
 #wGps[data-gs="minimal"] .spd small{font-size:calc(var(--g,260px)*.12);color:#9b9ea4;margin:0 0 .25em}
 #wGps[data-gs="minimal"] #tape{background:#070708;border:1px solid #2c2d31}
 #wGps[data-gs="minimal"] .gstats div{background:#070708;border-color:#2c2d31}
@@ -435,6 +462,26 @@ input[type=range]:disabled{opacity:.35}
 #wGps[data-gs="tactical"] .gctl .pill.on::before{background:#ffe08a;box-shadow:0 0 6px #ffd04a}
 #wGps[data-gs="tactical"] .gctl .pill:not(.on){background:linear-gradient(180deg,#2c3229,#181b15);color:#e2f2dd;border-color:#3d4337}
 
+/* 지도 */
+#wMap .body{display:flex;flex-direction:column;gap:10px}
+.mapask,.mapoff{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px dashed var(--frame-in);border-radius:4px;background:#0000002a}
+.mapask b{font-size:17px}
+.mapask p{margin:0;color:var(--muted);line-height:1.6;font-size:13.5px;max-width:70ch}
+.mapask div{display:flex;gap:8px;flex-wrap:wrap}
+.mapask .pill,.mapoff .pill,.mapctl .pill{height:42px;padding:0 18px;font-size:16px}
+.mapoff{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;color:var(--muted)}
+#mapWrap{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
+#mapWrap[hidden]{display:none!important}
+.mapbox{position:relative;flex:1;min-height:280px;border:1px solid var(--lcd-edge);border-radius:4px;overflow:hidden;background:#111}
+.leafhold,.tmapframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mapbox.night .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.92) contrast(.92) saturate(.7)}
+.mapmsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:500;max-width:86%;padding:10px 14px;border-radius:4px;background:#000c;color:#eee;font-size:13.5px;text-align:center;line-height:1.5}
+.me{background:none;border:0}
+.me i{display:block;width:34px;height:34px;transition:transform .4s;background:radial-gradient(circle at 50% 58%,#fff 0 5px,var(--accent,#2f8bff) 5.5px 10px,transparent 10.5px),conic-gradient(from -22deg at 50% 50%,var(--accent,#2f8bff) 0 44deg,transparent 44deg);-webkit-mask:radial-gradient(circle,#000 16px,transparent 16.5px);mask:radial-gradient(circle,#000 16px,transparent 16.5px);filter:drop-shadow(0 0 6px var(--accent,#2f8bff))}
+.mapctl{display:flex;flex-wrap:wrap;gap:8px}
+.keyrow{display:flex;gap:8px;margin:0 10px 8px}
+.keyrow input{flex:1;min-width:0;height:40px;padding:0 10px;border:1px solid var(--frame-in);border-radius:3px;background:var(--lcd);color:var(--lcd-fg);font-family:var(--f-lcd)}
+.mapkey .hint{margin:0 10px 10px}
 #hud{position:fixed;inset:0;z-index:60;background:#000;display:flex;align-items:center;justify-content:center;color:var(--accent)}
 #hud .hudin{text-align:center;line-height:.85;font-family:var(--f-tech,var(--f-lcd))}
 #hud.mirror .hudin{transform:scaleX(-1)}
@@ -501,6 +548,32 @@ input[type=range]:disabled{opacity:.35}
         </select></label>
       </div>
       <div class="gmsg" id="gMsg"></div>
+    </div>
+  </section>
+
+  <section class="win" id="wMap">
+    <div class="bar"><span class="t">Navigation</span><span class="s" id="mSrc"></span><span class="groove"></span><button class="wbtn" data-col="wMap" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="body">
+      <div class="mapask" id="mapAsk">
+        <b>속도계 아래에 지도를 표시할까요?</b>
+        <p>GPS 위치를 지도에 실시간으로 보여 주고, TMAP을 바로 열거나 DeX·분할 화면에서 옆 창으로 띄울 수 있어요. 지도는 인터넷으로 받아오고, 위치는 지도 표시에만 쓰며 저장하지 않아요. 나중에 언제든 바꿀 수 있어요.</p>
+        <div><button class="pill on" id="mapYes">지도 사용</button><button class="pill" id="mapNo">사용 안 함</button></div>
+      </div>
+      <div id="mapWrap" hidden>
+        <div class="mapbox" id="mapbox"><div class="mapmsg" id="mapMsg" hidden></div></div>
+        <div class="mapctl">
+          <button class="pill on" data-tmap="open">TMAP 열기</button>
+          <button class="pill" data-tmap="side">TMAP 옆 창</button>
+          <button class="pill" id="mapFollow">내 위치</button>
+          <button class="pill" id="mapNight">야간 지도</button>
+          <button class="pill" id="mapOff">지도 끄기</button>
+        </div>
+        <details class="permbox mapkey"><summary><span>TMAP 지도로 보기 (선택)</span><em id="mapKeySum">기본 지도 사용 중</em></summary>
+          <div class="keyrow"><input id="tmapKey" type="text" placeholder="TMAP API 앱 키" autocomplete="off" aria-label="TMAP API 앱 키"><button class="pill" id="tmapKeySave">적용</button></div>
+          <p class="hint">SK open API(openapi.sk.com)에서 무료로 발급받은 TMAP 앱 키를 넣으면 지도가 TMAP 지도로 바뀌어요. 비워 두면 OpenStreetMap 지도를 씁니다.</p>
+        </details>
+      </div>
+      <div class="mapoff" id="mapOffMsg" hidden><span>지도를 쓰지 않도록 설정했어요.</span><button class="pill on" id="mapOn2">지도 켜기</button></div>
     </div>
   </section>
 
@@ -584,13 +657,16 @@ input[type=range]:disabled{opacity:.35}
         <button class="tb" data-pkg="com.google.android.apps.youtube.music">YouTube Music 열기</button>
         <button class="tb" data-pkg="com.spotify.music">Spotify 열기</button>
       </div>
-      <ul class="perm">
-        <li id="rowFull" hidden><div><b>YouTube Music 곡 정보 · 앨범 아트</b><small>지금 쓰는 <b>기본판</b>은 Play 프로텍트 정책 때문에 다른 앱의 곡 정보를 읽을 수 없어요. YouTube Music 정보를 보려면 full 판을 설치하세요. 설치 방법은 아래 안내를 참고하세요.</small></div><button class="pill on" id="xFull">full 판 받기</button></li>
-        <li id="rowNotif"><div><b>곡 정보 · 재생 조작 (모든 앱)</b><small>다른 앱의 곡 제목, 앨범 아트, 재생 위치를 보여 주고 조작하려면 알림 접근 권한이 필요해요.</small></div><button class="pill" id="xNotif">설정 열기</button></li>
-        <li id="rowSpotify"><div><b>Spotify 곡 정보 <span id="xSpRx"></span></b><small>Spotify 앱 → 설정 → <b>기기 브로드캐스트 상태</b>를 켜고 곡을 한 번 넘기면 곡 제목, 재생 시간, 앨범 아트가 여기에 표시돼요. YouTube Music 곡 정보는 full 판에서만 볼 수 있어요. 재생·다음·이전 버튼은 모든 앱에서 동작해요.</small></div><button class="pill" data-pkg="com.spotify.music">Spotify 열기</button></li>
-        <li><div><b>사운드 시각화</b><small>재생 중인 소리를 실시간으로 분석만 하고, 녹음하거나 저장하지 않아요.</small></div><button class="pill" id="xMic">허용</button></li>
-      </ul>
-      <p class="hint"><span id="hintNotif"><b>알림 접근이 켜지지 않을 때</b> ① [설정 열기]에서 Daesinnam Amp 스위치를 한 번 눌러 "제한된 설정" 안내가 뜨게 합니다. ② 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>. ③ 다시 [설정 열기]에서 스위치를 켭니다.<br></span><span id="hintFull" hidden><b>full 판 설치</b> ① Play 스토어 → 프로필 → Play 프로텍트 → 톱니바퀴 → "Play 프로텍트로 앱 검사" 끄기 ② [full 판 받기]로 받아 설치(지금 앱 위에 덮어 설치) ③ Play 프로텍트 다시 켜기 ④ 이 화면의 알림 접근 안내 따르기.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
+      <details class="permbox" id="xPerm" open>
+        <summary><span>권한 설정</span><em id="xPermSum">확인 중</em></summary>
+        <ul class="perm">
+          <li id="rowFull" hidden><div><b>YouTube Music 곡 정보 · 앨범 아트</b><small>지금 쓰는 <b>기본판</b>은 Play 프로텍트 정책 때문에 다른 앱의 곡 정보를 읽을 수 없어요. YouTube Music 정보를 보려면 full 판을 설치하세요. 설치 방법은 아래 안내를 참고하세요.</small></div><button class="pill on" id="xFull">full 판 받기</button></li>
+          <li id="rowNotif"><div><b>곡 정보 · 재생 조작 (모든 앱)</b><small>다른 앱의 곡 제목, 앨범 아트, 재생 위치를 보여 주고 조작하려면 알림 접근 권한이 필요해요.</small></div><button class="pill" id="xNotif">설정 열기</button></li>
+          <li id="rowSpotify"><div><b>Spotify 곡 정보 <span id="xSpRx"></span></b><small>Spotify 앱 → 설정 → <b>기기 브로드캐스트 상태</b>를 켜고 곡을 한 번 넘기면 곡 제목, 재생 시간, 앨범 아트가 여기에 표시돼요. YouTube Music 곡 정보는 full 판에서만 볼 수 있어요. 재생·다음·이전 버튼은 모든 앱에서 동작해요.</small></div><button class="pill" data-pkg="com.spotify.music">Spotify 열기</button></li>
+          <li><div><b>사운드 시각화</b><small>재생 중인 소리를 실시간으로 분석만 하고, 녹음하거나 저장하지 않아요.</small></div><button class="pill" id="xMic">허용</button></li>
+        </ul>
+        <p class="hint"><span id="hintNotif"><b>알림 접근이 켜지지 않을 때</b> ① [설정 열기]에서 Daesinnam Amp 스위치를 한 번 눌러 "제한된 설정" 안내가 뜨게 합니다. ② 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>. ③ 다시 [설정 열기]에서 스위치를 켭니다.<br></span><span id="hintFull" hidden><b>full 판 설치</b> ① Play 스토어 → 프로필 → Play 프로텍트 → 톱니바퀴 → "Play 프로텍트로 앱 검사" 끄기 ② [full 판 받기]로 받아 설치(지금 앱 위에 덮어 설치) ③ Play 프로텍트 다시 켜기 ④ 이 화면의 알림 접근 안내 따르기.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
+      </details>
     </div>
   </section>
 </main>
@@ -618,7 +694,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','사이버 카니발']];
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','사이버 카니발'],['drive','대신남 드라이브']];
+const CAR_SKINS=['carnival','drive'];const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -629,12 +706,12 @@ let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 /* ---------- skin & layout ---------- */
 let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
-  C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge')}}
-function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;const nm=k==='carnival'?'Cyber Carnival Amp':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+  C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
+function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Cyber Carnival Amp':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
 $('#skin').onchange=e=>setSkin(e.target.value);
 const appEl=$('#app');
-function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',skin==='carnival')}
+function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar())}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
 window.addEventListener('resize',layout);
 
@@ -667,7 +744,7 @@ function applyVol(){
 }
 
 /* ---------- external apps (Android app only) ---------- */
-let ext={}, extT=0, extTimer=0, extArtV=-1, eqPushQueued=false;
+let permState=null,ext={}, extT=0, extTimer=0, extArtV=-1, eqPushQueued=false;
 const extF=new Uint8Array(512), extW=new Uint8Array(512).fill(128);
 function pushExtEq(){
   if(mode!=='ext'||!HAS_EXT||eqPushQueued) return;
@@ -691,6 +768,10 @@ function pollExt(){
   $('#xSpRx').textContent=s.spotifyRx?'· 수신 중':'· 아직 수신 안 됨';$('#xSpRx').style.color=s.spotifyRx?'var(--led1)':'var(--led4)';
   const n=$('#xNotif');n.textContent=s.notif?'허용됨':'설정 열기';n.classList.toggle('ok',!!s.notif);n.classList.toggle('on',!s.notif);
   const m=$('#xMic');m.textContent=s.mic?'허용됨':'허용';m.classList.toggle('ok',!!s.mic);m.classList.toggle('on',!s.mic);
+  /* 필요한 권한이 모두 허용되면 권한 안내를 접어 둡니다(사용자가 다시 펼칠 수 있음). */
+  const allOk=!!s.mic&&(s.notifSupported===false||!!s.notif),pb=$('#xPerm'),ps=$('#xPermSum');
+  ps.textContent=allOk?'모두 허용됨':'허용이 필요해요';ps.classList.toggle('ok',allOk);
+  if(allOk!==permState){permState=allOk;pb.open=!allOk}
   $('#khz').textContent=(s.rate?Math.round(s.rate/1000):44)+' kHz';
   updateMeta();state();
 }
@@ -1071,7 +1152,7 @@ const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
 function hav(a,b,c,d){const R=6371000,t=Math.PI/180,x=(c-a)*t,y=(d-b)*t;const h=Math.sin(x/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function gpsStart(){if(!HAS_GPS)return;try{NB.startGps()}catch(e){}gpsOn=true;store.set('gpsOn',true);clearInterval(gpsTimer);gpsTimer=setInterval(pollGps,250);gpsUi()}
 function gpsStop(user){if(HAS_GPS){try{NB.stopGps()}catch(e){}}gpsOn=false;if(user)store.set('gpsOn',false);clearInterval(gpsTimer);spdNow=0;gpsUi()}
-function gpsSkinChanged(){if(skin==='carnival'){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&skin!=='carnival')hud(false)}
+function gpsSkinChanged(){if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
 function pollGps(){
   if(!gpsOn)return;let s;try{s=JSON.parse(NB.gpsStatus())}catch(e){return}gs=s;
   if(s.fix){
@@ -1087,7 +1168,7 @@ function pollGps(){
     spdNow=v>0.5?v*3.6:0;
     hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
-  gpsUi();
+  gpsUi();mapUpdate(false);
 }
 function gpsUi(){
   $('#gOn').textContent=gpsOn?'GPS 끄기':'GPS 켜기';$('#gOn').classList.toggle('on',!gpsOn);
@@ -1117,7 +1198,7 @@ $('#hud').classList.toggle('mirror',store.get('hudMirror',true));
 $('#gLimit').value=String(gLimit);$('#gLimit').onchange=e=>{gLimit=+e.target.value;store.set('gLimit',gLimit)};
 const angDiff=(a,b)=>((b-a+540)%360)-180;
 function drawGps(){
-  if(skin!=='carnival'||$('#wGps').classList.contains('collapsed'))return;
+  if(!isCar()||$('#wGps').classList.contains('collapsed'))return;
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -1145,7 +1226,7 @@ function drawGauge(over){
   if(gStyle==='minimal'){
     dial.style.setProperty('--g',(Math.min(h,w*.5)/d)+'px');box.style.top=(h*.34/d)+'px';
     const x1=w*.06,x2=w*.94,y=h*.66,bh=h*.085,N=34,gw=(x2-x1)/N;
-    for(let i=0;i<N;i++){const on=(i+.5)/N*GMAX<=v;g.fillStyle=on?(over?RED:'#ff9a3c'):'#24252a';g.shadowBlur=on?12*d:0;g.shadowColor=over?RED:'#ff8a2a';g.fillRect(x1+i*gw+1*d,y,gw-2*d,bh)}
+    for(let i=0;i<N;i++){const on=(i+.5)/N*GMAX<=v;g.fillStyle=on?(over?RED:C.cp):'#24252a';g.shadowBlur=on?12*d:0;g.shadowColor=over?RED:C.cp;g.fillRect(x1+i*gw+1*d,y,gw-2*d,bh)}
     g.shadowBlur=0;
     for(let t=0;t<=GMAX;t+=5){const x=x1+(x2-x1)*t/GMAX,maj=t%20===0,mid=t%10===0;g.fillStyle='#d6d2cc';g.globalAlpha=maj?.9:mid?.55:.3;g.fillRect(x-(maj?1:.5)*d,y+bh+5*d,(maj?2:1)*d,(maj?12:mid?8:5)*d)}
     g.globalAlpha=1;g.font=`600 ${h*.065}px ${RJ}`;g.fillStyle='#d6d2cc';g.textAlign='center';g.textBaseline='top';
@@ -1159,24 +1240,25 @@ function drawGauge(over){
     const N=36,seg=(GA1-GA0)/N;
     for(let i=0;i<N;i++){const on=(i+.5)/N*GMAX<=v,a1=GA0+i*seg+seg*.08,a2=GA0+(i+1)*seg-seg*.08;
       wedge(g,x0,y0,r*.83,r*.99,a1,a2);
-      if(on){const gr=g.createRadialGradient(x0,y0,r*.83,x0,y0,r);gr.addColorStop(0,over?'#a01810':'#b9561c');gr.addColorStop(1,over?RED:'#ffb06a');g.fillStyle=gr;g.shadowBlur=14*d;g.shadowColor=over?RED:'#e0803a'}
+      if(on){const gr=g.createRadialGradient(x0,y0,r*.83,x0,y0,r);gr.addColorStop(0,over?'#a01810':C.cplo);gr.addColorStop(1,over?RED:C.cphi);g.fillStyle=gr;g.shadowBlur=14*d;g.shadowColor=over?RED:C.cp}
       else{const gr=g.createRadialGradient(x0,y0,r*.83,x0,y0,r);gr.addColorStop(0,'#1c1d20');gr.addColorStop(1,'#3d3f44');g.fillStyle=gr;g.shadowBlur=0}
       g.fill();g.shadowBlur=0;g.lineWidth=1*d;g.strokeStyle=on?'#ffd2a866':'#5a5d6366';g.stroke()}
     for(let t=0;t<=GMAX;t+=5){const a=gA(t),maj=t%20===0,mid=t%10===0;tick(g,x0,y0,a,r*(maj?.69:mid?.73:.76),r*.79,(maj?3:1.2)*d,maj?'#f2f2f2':'#bfc2c7'+(mid?'':'99'))}
     for(let t=0;t<=GMAX;t+=20)label(g,x0,y0,gA(t),r*.6,t,`600 ${r*.09}px ${RJ}`,'#e6e6e6');
     g.save();g.translate(x0,y0);g.beginPath();for(let k=0;k<8;k++){const a=Math.PI/8+k*Math.PI/4;g.lineTo(Math.cos(a)*r*.47,Math.sin(a)*r*.47)}g.closePath();
-    g.fillStyle='#0d0d0f';g.fill();g.lineWidth=1.5*d;g.strokeStyle='#e0803a88';g.stroke();g.restore();
-    tick(g,x0,y0,gA(GMAX),r*.83,r*1.02,3*d,'#e0803a');
+    g.fillStyle='#0d0d0f';g.fill();g.lineWidth=1.5*d;g.globalAlpha=.55;g.strokeStyle=C.cp;g.stroke();g.globalAlpha=1;g.restore();
+    tick(g,x0,y0,gA(GMAX),r*.83,r*1.02,3*d,C.cp);
   }else if(gStyle==='neon'){
-    g.shadowColor='#e0803a';g.shadowBlur=10*d;ring(g,x0,y0,r*1.0,1.2*d,'#e0803a99');g.shadowBlur=0;ring(g,x0,y0,r*.965,1*d,'#ffffff1a');
+    g.shadowColor=C.cp;g.shadowBlur=10*d;g.globalAlpha=.6;ring(g,x0,y0,r*1.0,1.2*d,C.cp);g.globalAlpha=1;g.shadowBlur=0;ring(g,x0,y0,r*.965,1*d,'#ffffff1a');
     const steps=Math.round(v/GMAX*120);
-    for(let i=0;i<steps;i++){const a=GA0+(GA1-GA0)*i/120,t=i/120;g.shadowBlur=10*d;g.shadowColor=over?RED:'#ff8a2a';tick(g,x0,y0,a,r*.8,r*.93,2.6*d,over?RED:`rgba(255,${150+Math.round(t*60)},${70+Math.round(t*80)},${.55+t*.45})`)}
+    for(let i=0;i<steps;i++){const a=GA0+(GA1-GA0)*i/120,t=i/120;g.shadowBlur=10*d;g.shadowColor=over?RED:C.cp;g.globalAlpha=.55+t*.45;tick(g,x0,y0,a,r*.8,r*.93,2.6*d,over?RED:(t>.7?C.cphi:C.cp))}
+    g.globalAlpha=1;
     g.shadowBlur=0;
     for(let t=0;t<=GMAX;t+=2){const a=gA(t),maj=t%20===0,mid=t%10===0;tick(g,x0,y0,a,r*(maj?.8:mid?.85:.88),r*.95,(maj?3.2:mid?1.6:1)*d,maj?'#ffffff':mid?'#ffffffaa':'#ffffff44')}
     for(let t=0;t<=GMAX;t+=20)label(g,x0,y0,gA(t),r*.7,t,`600 ${r*.085}px ${RJ}`,'#f1ece6');
     g.fillStyle='#ffffff40';for(let k=0;k<72;k++){const a=k/72*Math.PI*2;g.beginPath();g.arc(x0+Math.cos(a)*r*.56,y0+Math.sin(a)*r*.56,1.1*d,0,Math.PI*2);g.fill()}
     ring(g,x0,y0,r*.5,1*d,'#ffffff12');
-    g.shadowBlur=16*d;g.shadowColor=over?RED:'#ff8a2a';tick(g,x0,y0,gA(v),r*.62,r*.97,4*d,over?RED:'#ff9a46');g.shadowBlur=0;
+    g.shadowBlur=16*d;g.shadowColor=over?RED:C.cp;tick(g,x0,y0,gA(v),r*.62,r*.97,4*d,over?RED:C.cphi);g.shadowBlur=0;
   }else if(gStyle==='classic'){
     let gr=g.createLinearGradient(0,y0-r,0,y0+r);gr.addColorStop(0,'#f2b57e');gr.addColorStop(.5,'#8a4a1e');gr.addColorStop(1,'#d9884a');
     g.fillStyle=gr;g.beginPath();g.arc(x0,y0,r*1.04,0,Math.PI*2);g.fill();
@@ -1205,7 +1287,7 @@ function drawGauge(over){
 }
 function drawTape(){
   const c=cv.tape,g=cx.tape;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
-  const P={carbon:['#e6e3de','#9fa2a7','#e0803a'],neon:['#f1ece6','#a19c96','#ff9a46'],classic:['#efe6d8','#b7a991','#ff9a3c'],minimal:['#ece8e2','#8e9196','#ff9a3c'],tactical:['#c9f5bf','#7fa878','#ffb43a']}[gStyle];
+  const P={carbon:['#e6e3de','#9fa2a7',C.cp],neon:['#f1ece6','#a19c96',C.cphi],classic:['#efe6d8','#b7a991','#ff9a3c'],minimal:['#ece8e2','#8e9196',C.cp],tactical:['#c9f5bf','#7fa878','#ffb43a']}[gStyle];
   const ppd=w/150,ctr=hdgDisp,boxW=110*d;g.textAlign='center';g.textBaseline='alphabetic';
   for(let deg=Math.floor((ctr-80)/5)*5;deg<=ctr+80;deg+=5){
     const x=w/2+(deg-ctr)*ppd,n=((deg%360)+360)%360,card=n%45===0,mid=n%15===0;
@@ -1219,6 +1301,80 @@ function drawTape(){
   g.globalAlpha=1;g.fillStyle=P[2];g.shadowBlur=8*d;g.shadowColor=P[2];
   g.beginPath();g.moveTo(w/2-8*d,0);g.lineTo(w/2+8*d,0);g.lineTo(w/2,12*d);g.closePath();g.fill();g.shadowBlur=0;
 }
+
+/* ---------- 지도 (자동차 스킨: 속도계 아래) ---------- */
+const TMAP_PKG='com.skt.tmap.ku';
+let mapPref=store.get('mapPref',null),mapObj=null,mapMarker=null,mapEngine=null,tmapFrame=null,mapFollow=true,mapLastPush=0,mapLoading=false;
+let mapNight=store.get('mapNight',true);
+function loadLeaflet(){
+  if(window.L)return Promise.resolve();
+  const add=(tag,attrs)=>new Promise((res,rej)=>{const e=document.createElement(tag);Object.assign(e,attrs);e.onload=res;e.onerror=rej;document.head.appendChild(e)});
+  const css=(href)=>add('link',{rel:'stylesheet',href});
+  const js=(src)=>add('script',{src});
+  const CDN='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
+  return css('leaflet/leaflet.css').catch(()=>css(CDN+'leaflet.min.css')).then(()=>js('leaflet/leaflet.js').catch(()=>js(CDN+'leaflet.min.js')));
+}
+function mapMsg(t){const m=$('#mapMsg');m.textContent=t||'';m.hidden=!t}
+function tmapDoc(key){
+  const k=encodeURIComponent(key);
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,#m{margin:0;height:100%;background:#111}</style>`+
+  `<script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=${k}"><\/script></head><body><div id="m"></div><script>`+
+  `var map,mk,ok=false;function init(){try{map=new Tmapv2.Map('m',{center:new Tmapv2.LatLng(37.5665,126.978),width:'100%',height:'100%',zoom:16});mk=new Tmapv2.Marker({position:map.getCenter(),map:map});ok=true;parent.postMessage({t:'tmap',ok:true},'*')}catch(e){parent.postMessage({t:'tmap',ok:false,err:String(e)},'*')}}`+
+  `window.onload=init;window.addEventListener('message',function(e){var d=e.data;if(!ok||!d||d.t!=='pos')return;var p=new Tmapv2.LatLng(d.lat,d.lon);mk.setPosition(p);if(d.follow)map.setCenter(p)});<\/script></body></html>`;
+}
+window.addEventListener('message',e=>{const d=e.data;if(!d||d.t!=='tmap')return;if(d.ok){mapMsg('');$('#mSrc').textContent='· TMAP 지도'}else{mapMsg('TMAP 지도를 불러오지 못했어요. 앱 키를 확인하세요. 기본 지도로 바꾸려면 키를 지우고 적용을 누르세요.')}});
+async function mapInit(){
+  if(mapLoading||mapEngine)return;mapLoading=true;
+  const box=$('#mapbox'),key=store.get('tmapKey','');
+  $('#mapKeySum').textContent=key?'TMAP 지도 사용 중':'기본 지도 사용 중';
+  if(key){
+    tmapFrame=document.createElement('iframe');tmapFrame.className='tmapframe';tmapFrame.title='TMAP 지도';tmapFrame.srcdoc=tmapDoc(key);
+    box.appendChild(tmapFrame);mapEngine='tmap';mapMsg('TMAP 지도를 불러오는 중…');mapLoading=false;mapUpdate(true);return;
+  }
+  mapMsg('지도를 불러오는 중…');
+  try{await loadLeaflet()}catch(e){mapLoading=false;mapMsg('지도를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 지도 끄기 → 지도 켜기를 눌러 주세요.');return}
+  const holder=document.createElement('div');holder.className='leafhold';box.appendChild(holder);
+  mapObj=L.map(holder,{zoomControl:false,attributionControl:true}).setView([37.5665,126.978],16);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(mapObj);
+  L.control.zoom({position:'bottomright'}).addTo(mapObj);
+  mapMarker=L.marker([37.5665,126.978],{icon:L.divIcon({className:'me',html:'<i></i>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(mapObj);
+  mapObj.on('dragstart',()=>{mapFollow=false;syncMapBtns()});
+  new ResizeObserver(()=>mapObj&&mapObj.invalidateSize()).observe(box);
+  mapEngine='osm';mapLoading=false;$('#mSrc').textContent='· OpenStreetMap';mapMsg('');mapUpdate(true);
+}
+function mapDestroy(){if(mapObj){mapObj.remove();mapObj=null;mapMarker=null}if(tmapFrame){tmapFrame.remove();tmapFrame=null}$('#mapbox').querySelectorAll('.leafhold').forEach(e=>e.remove());mapEngine=null;$('#mSrc').textContent=''}
+function mapUpdate(force){
+  if(mapPref!=='on'||!isCar()||!mapEngine)return;
+  if(!gpsOn){mapMsg('속도계에서 GPS 켜기를 누르면 현재 위치를 따라가요.');return}
+  if(!gs.fix){mapMsg('GPS 신호를 찾는 중이에요…');return}
+  const now=performance.now();if(!force&&now-mapLastPush<900)return;mapLastPush=now;
+  if(!(mapEngine==='tmap'&&$('#mapMsg').textContent.startsWith('TMAP 지도를 불러오지')))mapMsg('');
+  const lat=gs.lat,lon=gs.lon;
+  if(mapEngine==='osm'&&mapObj){mapMarker.setLatLng([lat,lon]);const el=mapMarker.getElement();if(el){const i=el.querySelector('i');if(i)i.style.transform=`rotate(${Math.round(hdgDisp)}deg)`}
+    if(mapFollow){const z=spdNow>90?15:spdNow>40?16:17;mapObj.setView([lat,lon],force?z:mapObj.getZoom(),{animate:!force})}}
+  if(mapEngine==='tmap'&&tmapFrame&&tmapFrame.contentWindow)tmapFrame.contentWindow.postMessage({t:'pos',lat,lon,follow:mapFollow},'*');
+}
+function syncMapBtns(){$('#mapFollow').classList.toggle('on',mapFollow);$('#mapNight').classList.toggle('on',mapNight);$('#mapbox').classList.toggle('night',mapNight)}
+function mapApply(){
+  const w=$('#wMap');
+  $('#mapAsk').hidden=mapPref!==null;$('#mapWrap').hidden=mapPref!=='on';$('#mapOffMsg').hidden=mapPref!=='off';
+  appEl.classList.toggle('MO',mapPref==='off');
+  if(mapPref==='off')w.classList.add('collapsed');
+  if(mapPref==='on'&&isCar()){w.classList.remove('collapsed');mapInit()}else if(mapPref!=='on')mapDestroy();
+  syncMapBtns();
+}
+function setMapPref(v){mapPref=v;store.set('mapPref',v);mapApply()}
+function mapSkinChanged(){if(isCar()&&mapPref==='on')mapInit()}
+$('#mapYes').onclick=()=>setMapPref('on');
+$('#mapNo').onclick=()=>setMapPref('off');
+$('#mapOff').onclick=()=>setMapPref('off');
+$('#mapOn2').onclick=()=>setMapPref('on');
+$('#mapFollow').onclick=()=>{mapFollow=true;syncMapBtns();mapUpdate(true)};
+$('#mapNight').onclick=()=>{mapNight=!mapNight;store.set('mapNight',mapNight);syncMapBtns()};
+$('#tmapKey').value=store.get('tmapKey','');
+$('#tmapKeySave').onclick=()=>{store.set('tmapKey',$('#tmapKey').value.trim());mapDestroy();if(mapPref==='on')mapInit()};
+document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{try{b.dataset.tmap==='side'&&NB.openAppSide?NB.openAppSide(TMAP_PKG):NB.openApp(TMAP_PKG)}catch(e){}});
+if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
 
 /* ---------- 창 높이 조절 ---------- */
 let winH=store.get('winH',{});
@@ -1236,7 +1392,7 @@ const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
 
 /* ---------- boot ---------- */
-applySizes();setGStyle(gStyle);setSkin(skin);layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
+applySizes();setGStyle(gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
 (async()=>{
   try{

@@ -96,8 +96,34 @@ async function main() {
     await page.evaluate(() => localStorage.setItem('dna_gStyle', JSON.stringify('invalid-theme')));
     await page.reload();
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon', 'Invalid saved theme has a safe fallback');
+    // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
+    await page.setViewportSize({width:1024,height:768});
+    await page.locator('#skin').selectOption('carnival');
+    assert.equal(await page.locator('#mapAsk').isVisible(), true);
+    const y = sel => page.locator(sel).evaluate(el => el.getBoundingClientRect().top);
+    assert.ok(await y('#wGps') < await y('#wMap') && await y('#wMap') < await y('#wMain'), 'Map sits between speedometer and player');
+    await page.locator('#mapNo').click();
+    assert.equal(await page.locator('#wMap').evaluate(el => el.classList.contains('collapsed')), true, 'Unused map is folded');
+    assert.ok(await y('#wMap') > await y('#wPl'), 'Unused map moves to the bottom');
+    // 두 번째 자동차 스킨: 같은 구성, 다른 색, 대신남 로고
+    await page.locator('#skin').selectOption('drive');
+    assert.equal(await page.locator('#wGps').isVisible(), true, 'Drive skin keeps the speedometer');
+    assert.equal(await page.locator('.brand .wm').isVisible(), true, 'Drive skin shows the Daesinnam logo');
+    assert.equal(await page.locator('.brand .logo-img').isVisible(), false);
+    assert.notEqual(await page.locator('#gauge').evaluate(c => c.toDataURL()), hashes[0], 'Drive skin recolors the gauge');
+    // 외부 앱 권한이 모두 허용되면 권한 안내가 접힘
+    const p2 = await context.newPage();
+    await p2.addInitScript(() => {
+      localStorage.setItem('dna_mode', JSON.stringify('ext'));
+      window.AndroidBridge = {extStatus:() => JSON.stringify({notif:true,mic:true,notifSupported:true,eq:'꺼짐',vol:50,artV:0}),
+        extArt:() => '', extFft:() => '', extWave:() => '', setExternalMode(){}, setExtEq(){}, onPlayState(){}};
+    });
+    await p2.goto(origin);
+    await p2.waitForFunction(() => document.querySelector('#xPermSum').textContent === '모두 허용됨');
+    assert.equal(await p2.locator('#xPerm').evaluate(d => d.open), false, 'Granted permissions fold away');
+    await p2.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence and 3 responsive sizes');
+    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin and permission folding');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

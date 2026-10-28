@@ -37,6 +37,12 @@ jobs:
           "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
+      - name: 지도 라이브러리 내장 (Leaflet)
+        run: |
+          mkdir -p app/src/main/assets/leaflet
+          curl -fsSL -o app/src/main/assets/leaflet/leaflet.js https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js
+          curl -fsSL -o app/src/main/assets/leaflet/leaflet.css https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css
+
       - name: 태그 읽기 라이브러리 내장 (오프라인에서도 앨범아트 표시)
         run: curl -fsSL -o app/src/main/assets/jsmediatags.min.js https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js
 

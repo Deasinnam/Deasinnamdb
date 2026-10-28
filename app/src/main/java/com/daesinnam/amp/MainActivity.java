@@ -700,6 +700,20 @@ public class MainActivity extends Activity {
             main.post(() -> MainActivity.this.openApp(pkg));
         }
 
+        /** DeX·분할 화면에서 다른 앱(TMAP 등)을 이 앱 옆 창으로 엽니다. 전체 화면일 때는 그냥 열립니다. */
+        @JavascriptInterface
+        public void openAppSide(final String pkg) {
+            main.post(() -> {
+                Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
+                if (launch == null) {
+                    MainActivity.this.openApp(pkg);
+                    return;
+                }
+                launch.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
+                try { startActivity(launch); } catch (Exception e) { MainActivity.this.openApp(pkg); }
+            });
+        }
+
         @JavascriptInterface
         public void openNotificationAccess() {
             main.post(MainActivity.this::openNotificationAccess);

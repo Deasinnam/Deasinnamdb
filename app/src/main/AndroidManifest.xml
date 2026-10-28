@@ -20,6 +20,7 @@
     <queries>
         <package android:name="com.google.android.apps.youtube.music" />
         <package android:name="com.spotify.music" />
+        <package android:name="com.skt.tmap.ku" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="market" />
