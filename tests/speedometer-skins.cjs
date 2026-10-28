@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const assets = path.resolve(__dirname, '../app/src/main/assets');
-const themes = ['fighter', 'cybertruck', 'digital', 'retro', 'space'];
+const themes = ['carbon', 'neon', 'classic', 'minimal', 'tactical'];
 
 async function main() {
   const server = http.createServer(async (req, res) => {
@@ -37,19 +37,21 @@ async function main() {
       };
     });
     await page.goto(origin);
-    await page.locator('#gTheme').waitFor();
-    assert.equal(await page.locator('#gTheme option').count(), 5);
-    assert.equal(await page.locator('#gTheme').inputValue(), 'cybertruck');
+    await page.locator('#gStyle').waitFor();
+    assert.equal(await page.locator('#gStyle option').count(), 5);
+    assert.equal(await page.locator('#gStyle').inputValue(), 'carbon');
+    const top = sel => page.locator(sel).evaluate(el => el.getBoundingClientRect().top);
+    assert.ok(await top('#wGps') < await top('#wMain'), 'Speedometer sits above the main player window');
     await page.locator('#gOn').click();
     await page.waitForFunction(() => document.querySelector('#gSpd').textContent === '72');
     await page.evaluate(() => {gpsFixture.ts+=1000;gpsFixture.lat+=.0001;});
     await page.waitForFunction(() => document.querySelector('#gMax').textContent.startsWith('72'));
     const hashes = [];
     for (const key of themes) {
-      await page.locator('#gTheme').selectOption(key);
+      await page.locator('#gStyle').selectOption(key);
       await page.waitForTimeout(100);
-      assert.equal(await page.locator('#wGps').getAttribute('data-gps-theme'), key);
-      assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('dna_gpsTheme'))), key);
+      assert.equal(await page.locator('#wGps').getAttribute('data-gs'), key);
+      assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('dna_gStyle'))), key);
       assert.equal(await page.locator('#gSpd').textContent(), '72');
       assert.match(await page.locator('#gAcc').textContent(), /12\/15/);
       hashes.push(await page.locator('#gauge').evaluate(canvas => canvas.toDataURL()));
@@ -72,10 +74,10 @@ async function main() {
     for (const [width,height] of [[390,844],[1024,768],[1920,1080]]) {
       await page.setViewportSize({width,height});
       for (const key of themes) {
-        await page.locator('#gTheme').selectOption(key);
+        await page.locator('#gStyle').selectOption(key);
         await page.waitForTimeout(80);
         assert.equal(await page.locator('#wGps .body').evaluate(el=>el.scrollWidth<=el.clientWidth+2), true, `${key} overflow at ${width}px`);
-        assert.ok((await page.locator('#gTheme').boundingBox()).height>=40);
+        assert.ok((await page.locator('#gStyle').boundingBox()).height>=40);
         assert.ok((await page.locator('#gOn').boundingBox()).height>=40);
         if (process.env.AMP_SCREENSHOTS && width===390) await page.locator('#wGps').screenshot({path:path.join(process.env.AMP_SCREENSHOTS,key+'-phone.png')});
       }
@@ -84,16 +86,16 @@ async function main() {
     assert.equal(await page.locator('#wGps').isVisible(), false);
     assert.deepEqual(await page.evaluate(() => gpsCalls), {starts:1,stops:1});
     await page.locator('#skin').selectOption('carnival');
-    assert.equal(await page.locator('#gTheme').inputValue(), 'space');
+    assert.equal(await page.locator('#gStyle').inputValue(), 'tactical');
     assert.deepEqual(await page.evaluate(() => gpsCalls), {starts:2,stops:1});
     await page.reload();
-    await page.locator('#gTheme').waitFor();
-    assert.equal(await page.locator('#gTheme').inputValue(), 'space', 'Theme survives app reload');
+    await page.locator('#gStyle').waitFor();
+    assert.equal(await page.locator('#gStyle').inputValue(), 'tactical', 'Theme survives app reload');
     await page.evaluate(() => {gpsFixture.fix=false;});
     await page.waitForFunction(() => document.querySelector('#gSpd').textContent === '--');
-    await page.evaluate(() => localStorage.setItem('dna_gpsTheme', JSON.stringify('invalid-theme')));
+    await page.evaluate(() => localStorage.setItem('dna_gStyle', JSON.stringify('invalid-theme')));
     await page.reload();
-    assert.equal(await page.locator('#gTheme').inputValue(), 'cybertruck', 'Invalid saved theme has a safe fallback');
+    assert.equal(await page.locator('#gStyle').inputValue(), 'carbon', 'Invalid saved theme has a safe fallback');
     assert.deepEqual(errors, []);
     console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence and 3 responsive sizes');
   } finally {
