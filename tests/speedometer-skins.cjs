@@ -183,8 +183,30 @@ async function main() {
     assert.equal(await p3.locator('#toast').isVisible(), true);
     assert.equal(await p3.locator('#drive').isVisible(), true, 'Drive mode opens when the car connects');
     await p3.close();
+    // 저장된 곡은 안드로이드 표준 플레이어(Media3)로 재생: 큐 전달·버튼 명령·현재 곡 동기화
+    const p4 = await context.newPage();
+    p4.on('pageerror', error => errors.push(error.message));
+    await p4.addInitScript(() => {
+      window.__nat = {connected:true,count:0,index:-1,mid:'',playing:false,pos:0,dur:0}; window.__cmds = [];
+      window.AndroidBridge = {natAvailable:() => true, npState:() => JSON.stringify(window.__nat),
+        npSetQueue(j,i,pos,play){window.__q={items:JSON.parse(j),i,pos,play}}, npCmd(c){window.__cmds.push(c)},
+        npMode(sh,rep){window.__mode=[sh,rep]}, npVolume(v){window.__nv=v}, npFft:() => '', npWave:() => '',
+        pickAudio(){}, takeCarAutoplay:() => false, onPlayState(st){if(st==='playing')window.__webBridge=1}, onNowPlaying(st){if(st==='playing')window.__webBridge=1}, onArt(){}};
+    });
+    await p4.goto(origin);
+    await p4.waitForFunction(() => window.__q && window.__q.items.length === 2);
+    assert.equal(await p4.evaluate(() => window.__q.play), false, 'Restored queue is handed over without autoplay');
+    await p4.locator('#bNext').click();
+    await p4.locator('#bPlay').click();
+    await p4.locator('#pl li').nth(1).click();
+    assert.deepEqual(await p4.evaluate(() => window.__cmds), ['next','play','index']);
+    await p4.evaluate(() => { window.__nat = {connected:true,count:2,index:1,mid:'content://a/2',playing:true,pos:5000,dur:180000,rate:44100}; });
+    await p4.waitForFunction(() => document.querySelectorAll('#pl li')[1].classList.contains('cur'));
+    await p4.waitForFunction(() => document.querySelector('#bPlay').classList.contains('hot'));
+    assert.equal(await p4.evaluate(() => window.__webBridge), undefined, 'Web player session stays off when the native player is used');
+    await p4.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode and car connect');
+    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect and native player hand-off');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

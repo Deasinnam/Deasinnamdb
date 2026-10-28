@@ -837,6 +837,7 @@ function applyEq(){
 }
 function applyVol(){
   audio.volume=1;
+  if(NAT&&NB.npVolume){try{NB.npVolume((vol/100)**1.6)}catch(e){}}
   if(ctx){outGain.gain.setTargetAtTime((vol/100)**1.6,ctx.currentTime,.02);panner.pan.setTargetAtTime(bal/100,ctx.currentTime,.02)}
 }
 
@@ -844,7 +845,7 @@ function applyVol(){
 let permState=null,ext={}, extT=0, extTimer=0, extArtV=-1, eqPushQueued=false;
 const extF=new Uint8Array(512), extW=new Uint8Array(512).fill(128);
 function pushExtEq(){
-  if(mode!=='ext'||!HAS_EXT||eqPushQueued) return;
+  if(!HAS_EXT||eqPushQueued) return; // 외부 앱 EQ와 표준 플레이어 EQ에 같은 값이 적용됩니다
   eqPushQueued=true;
   requestAnimationFrame(()=>{eqPushQueued=false;try{NB.setExtEq(JSON.stringify({on:eqOn,pre:pre,gains:gains}))}catch(e){}});
 }
@@ -882,7 +883,7 @@ function setMode(m){
   balEl.disabled=isExt;$('#tShuf').disabled=isExt;$('#tRep').disabled=isExt;
   clearInterval(extTimer);
   if(isExt){
-    audio.pause();
+    audio.pause();if(NAT&&natList())N1('pause');
     if(NB&&NB.onPlayState){try{NB.onPlayState('stopped','','')}catch(e){}lastBridge='ext'}
     try{NB.setExternalMode(true)}catch(e){}
     extArtV=-1;pollExt();extTimer=setInterval(pollExt,300);pushExtEq();
@@ -994,6 +995,9 @@ function renderList(){
 }
 function removeAt(i){
   const it=list[i];
+  if(natList()){const was=!!nat.playing,pos=nat.pos||0;list.splice(i,1);
+    if(i===cur){cur=list.length?Math.min(i,list.length-1):-1;natSync(was&&cur>=0,cur,0)}else{if(i<cur)cur--;natSync(was,cur,pos)}
+    savePlaylist();renderList();updateMeta();return}
   if(i===cur){audio.pause();audio.removeAttribute('src');audio.load();cur=-1}
   else if(i<cur)cur--;
   list.splice(i,1);if(it.file)URL.revokeObjectURL(it.url);
@@ -1002,6 +1006,7 @@ function removeAt(i){
 function playIndex(i){
   if(i<0||i>=list.length)return;
   if(mode==='ext')setMode('local');
+  if(natList()){cur=i;N1('index',i);renderList();updateMeta();const l=$('#pl').children[i];if(l)l.scrollIntoView({block:'nearest'});return}
   initAudio();ctx.resume();
   cur=i;audio.src=list[i].url;audio.play().catch(()=>{});
   lastBridge='';renderList();updateMeta();
@@ -1038,12 +1043,20 @@ function updateMeta(){
 
 /* ---------- transport ---------- */
 const X=(c,a)=>{try{NB.extCmd(c,a||0)}catch(e){};setTimeout(pollExt,120)};
-function play(){if(mode==='ext')return X('play');if(cur<0&&list.length)return playIndex(0);initAudio();ctx.resume();audio.play().catch(()=>{})}
-function pause(){if(mode==='ext')return X('pause');audio.pause()}
-function toggle(){if(mode==='ext')return X(ext.playing?'pause':'play');audio.paused?play():pause()}
-function stop(){if(mode==='ext')return X('stop');audio.pause();audio.currentTime=0;state()}
-function next(){if(mode==='ext')return X('next');const n=nextIdx(1);if(n>=0)playIndex(n)}
-function prev(){if(mode==='ext')return X('prev');if(audio.currentTime>3){audio.currentTime=0;return}const n=shuffle?nextIdx(1):nextIdx(-1);if(n>=0)playIndex(n)}
+/* ---------- 내 음악 표준 플레이어(앱): 저장된 곡은 안드로이드 표준 플레이어가 재생 ---------- */
+const NAT=!!(NB&&NB.natAvailable);
+let nat={connected:false},natT=0,natReady=false;
+function natList(){return NAT&&list.length>0&&list.every(it=>it.lib)}
+function natL(){return mode!=='ext'&&natList()}
+function natPos(){let p=(nat.pos||0)/1000;if(nat.playing)p+=(performance.now()-natT)/1000;const d=(nat.dur||0)/1000;return d?Math.min(p,d):p}
+function natSync(play,idx,posMs){if(!NAT)return;try{NB.npSetQueue(JSON.stringify(list.filter(it=>it.lib).map(it=>({uri:it.uri,title:it.title,artist:it.artist,album:it.album}))),Math.max(0,idx||0),posMs||0,!!play)}catch(e){}}
+const N1=(c,a)=>{try{NB.npCmd(c,a||0)}catch(e){}};
+function play(){if(mode==='ext')return X('play');if(natL()){if(cur<0){playIndex(0);return}N1('play');return}if(cur<0&&list.length)return playIndex(0);initAudio();ctx.resume();audio.play().catch(()=>{})}
+function pause(){if(mode==='ext')return X('pause');if(natL())return N1('pause');audio.pause()}
+function toggle(){if(mode==='ext')return X(ext.playing?'pause':'play');if(natL()){if(cur<0)return play();return N1('toggle')}audio.paused?play():pause()}
+function stop(){if(mode==='ext')return X('stop');if(natL())return N1('stop');audio.pause();audio.currentTime=0;state()}
+function next(){if(mode==='ext')return X('next');if(natL())return N1('next');const n=nextIdx(1);if(n>=0)playIndex(n)}
+function prev(){if(mode==='ext')return X('prev');if(natL())return N1('prev');if(audio.currentTime>3){audio.currentTime=0;return}const n=shuffle?nextIdx(1):nextIdx(-1);if(n>=0)playIndex(n)}
 $('#bPlay').onclick=play;$('#bPause').onclick=toggle;$('#bStop').onclick=stop;$('#bNext').onclick=next;$('#bPrev').onclick=prev;
 $('#bEject').onclick=()=>pickMusic(false);$('#add').onclick=()=>pickMusic(false);$('#addTop').onclick=()=>pickMusic(false);$('#addDir').onclick=()=>pickMusic(true);
 $('#file').onchange=e=>{addFiles(e.target.files);e.target.value=''};
@@ -1051,18 +1064,19 @@ let clearArm=0;
 $('#clear').onclick=()=>{
   if(performance.now()-clearArm>3000){clearArm=performance.now();$('#clear').textContent='한 번 더 누르면 비워요';setTimeout(()=>{$('#clear').textContent='비우기'},3000);return}
   clearArm=0;$('#clear').textContent='비우기';
-  audio.pause();audio.removeAttribute('src');audio.load();list.forEach(it=>it.file&&URL.revokeObjectURL(it.url));list=[];cur=-1;savePlaylist();store.set('resume',null);renderList();updateMeta();state()};
+  audio.pause();audio.removeAttribute('src');audio.load();list.forEach(it=>it.file&&URL.revokeObjectURL(it.url));list=[];cur=-1;savePlaylist();store.set('resume',null);natSync(false,0,0);renderList();updateMeta();state()};
 audio.addEventListener('ended',()=>{if(repeat==='one'){audio.currentTime=0;audio.play();return}const n=nextIdx(1,true);if(n>=0)playIndex(n);else state()});
 ['play','pause','playing'].forEach(ev=>audio.addEventListener(ev,state));
 audio.addEventListener('seeked',()=>bridgeState(true));
 audio.addEventListener('loadedmetadata',()=>bridgeState(true));
 let lastBridge='';
 function state(){
-  const playing=mode==='ext'?!!ext.playing:(!audio.paused&&cur>=0);
-  const paused=mode==='ext'?(!ext.playing&&!!ext.title):(!playing&&audio.currentTime>0&&cur>=0);
+  const nl=natL();
+  const playing=mode==='ext'?!!ext.playing:nl?!!nat.playing:(!audio.paused&&cur>=0);
+  const paused=mode==='ext'?(!ext.playing&&!!ext.title):nl?(!nat.playing&&(nat.pos||0)>0):(!playing&&audio.currentTime>0&&cur>=0);
   $('#bPlay').classList.toggle('hot',playing);$('#bPause').classList.toggle('hot',paused);
   $('#stPlay').classList.toggle('on',playing);$('#stPause').classList.toggle('on',paused);
-  if(mode==='ext')return;
+  if(mode==='ext'||nl)return; // 표준 플레이어가 잠금 화면·알림·핸들 버튼을 직접 처리
   if('mediaSession' in navigator)navigator.mediaSession.playbackState=playing?'playing':'paused';
   if(playing&&navigator.wakeLock&&!wake){navigator.wakeLock.request('screen').then(w=>{wake=w;w.addEventListener('release',()=>wake=null)}).catch(()=>{})}
   if(!playing&&wake){wake.release().catch(()=>{});wake=null}
@@ -1071,7 +1085,7 @@ function state(){
 /* 차량 핸들·블루투스·잠금 화면 조작을 위해 앱의 미디어 세션에 곡 정보를 보냅니다. */
 let lastArtSent=null;
 function bridgeState(force){
-  if(!NB||!NB.onPlayState||mode==='ext')return;
+  if(!NB||!NB.onPlayState||mode==='ext'||natL())return;
   const it=list[cur];const playing=!audio.paused&&cur>=0;
   const st=playing?'playing':(cur>=0&&audio.currentTime>0?'paused':'stopped');
   const key=st+'|'+cur+'|'+(it?it.title+it.artist:'');
@@ -1101,9 +1115,9 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')state()});
 
 const seek=$('#seek');
-const curDur=()=>mode==='ext'?(ext.dur||0)/1000:(audio.duration||(list[cur]&&list[cur].duration)||0);
+const curDur=()=>mode==='ext'?(ext.dur||0)/1000:natL()?((nat.dur||0)/1000||(list[cur]&&list[cur].duration)||0):(audio.duration||(list[cur]&&list[cur].duration)||0);
 seek.addEventListener('input',()=>{seeking=true;setP(seek);$('#tCur').textContent=fmt(seek.value/1000*curDur())});
-seek.addEventListener('change',()=>{const d=curDur();if(d){if(mode==='ext')X('seek',seek.value/1000*d*1000);else audio.currentTime=seek.value/1000*d}seeking=false});
+seek.addEventListener('change',()=>{const d=curDur();if(d){if(mode==='ext')X('seek',seek.value/1000*d*1000);else if(natL()){N1('seek',seek.value/1000*d*1000);nat.pos=seek.value/1000*d*1000;natT=performance.now()}else audio.currentTime=seek.value/1000*d}seeking=false});
 $('#timebox').onclick=()=>showRemain=!showRemain;
 
 const volEl=$('#vol'),balEl=$('#bal');volEl.value=vol;balEl.value=bal;setP(volEl);setP(balEl);
@@ -1112,6 +1126,7 @@ volEl.onchange=()=>{volDrag=false};
 balEl.oninput=()=>{bal=Math.abs(+balEl.value)<6?0:+balEl.value;setP(balEl);applyVol();store.set('bal',bal)};
 balEl.ondblclick=()=>{balEl.value=0;balEl.oninput()};
 function flags(){
+  if(NAT&&NB.npMode){try{NB.npMode(shuffle,repeat)}catch(e){}}
   $('#tShuf').classList.toggle('on',shuffle);$('#fShuf').classList.toggle('lit',shuffle);
   $('#tRep').classList.toggle('on',repeat!=='off');$('#fRep').classList.toggle('lit',repeat!=='off');
   $('#repTxt').textContent='반복: '+({off:'끔',all:'전체',one:'한 곡'})[repeat];
@@ -1175,6 +1190,13 @@ function ledColumn(g,x,w,yb,h,v,segH,gap,peak,dim){
     g.fillRect(x,y,w,segH)}
 }
 function pullData(){
+  if(natL()){
+    let fs='',ws='';try{fs=NB.npFft();ws=NB.npWave()}catch(e){}
+    for(let i=0;i<extF.length;i++)extF[i]=i<fs.length?fs.charCodeAt(i)-32:0;
+    for(let i=0;i<extW.length;i++)extW[i]=i<ws.length?ws.charCodeAt(i)-32:128;
+    F=extF;W=extW;R=nat.rate||44100;
+    return !!nat.playing&&fs.length>0;
+  }
   if(mode==='ext'){
     let fs='',ws='';try{fs=NB.extFft();ws=NB.extWave()}catch(e){}
     for(let i=0;i<extF.length;i++)extF[i]=i<fs.length?fs.charCodeAt(i)-32:0;
@@ -1196,6 +1218,7 @@ function frame(){
   drawVis(live);drawMini();drawEqLed();drawGps();
   let d=0,t=0,has=false;
   if(mode==='ext'){has=!!ext.title;d=(ext.dur||0)/1000;t=extPos()}
+  else if(natL()&&cur>=0){has=true;d=(nat.dur||0)/1000||list[cur].duration||0;t=natPos()}
   else if(cur>=0){has=true;d=audio.duration||list[cur].duration||0;t=audio.currentTime}
   if(has){$('#time').textContent=showRemain&&d?'-'+lcdFmt(d-t):lcdFmt(t);
     if(!seeking){seek.value=d?t/d*1000:0;setP(seek);$('#tCur').textContent=fmt(t);$('#tDur').textContent=fmt(d)}}
@@ -1508,20 +1531,43 @@ window.__onPickStart=()=>{setMarquee('음악을 불러오는 중…');$('#sum').
 window.__onPicked=arr=>{
   if(!arr){renderList();updateMeta();return}
   if(mode==='ext')setMode('local');
+  if(list.some(it=>!it.lib)){audio.pause();audio.removeAttribute('src');audio.load();list=list.filter(it=>it.lib);cur=list.length?0:-1} // 데모 곡은 빼고 내 곡만
   const have=new Set(list.filter(it=>it.lib).map(it=>it.uri)),start=list.length;let added=0;
   arr.forEach(o=>{if(o&&o.uri&&!have.has(o.uri)){list.push(libItem(o));have.add(o.uri);added++}});
   savePlaylist();renderList();
   if(!added){setMarquee(arr.length?'이미 목록에 있는 곡이에요':'음악 파일을 찾지 못했어요');return}
   toast(`${added}곡을 추가했어요. 앱을 다시 켜도 목록이 유지돼요.`);
+  if(NAT){if(cur<0||!nat.playing){cur=start;natSync(true,start,0)}else natSync(true,cur,nat.pos||0);renderList();updateMeta();return}
   if(cur<0||audio.paused)playIndex(start);else updateMeta();
 };
 function restorePlaylist(){
   if(!LIB)return false;const saved=store.get('playlist',[]);if(!saved.length)return false;
   list=saved.map(libItem);const r=store.get('resume',null);let idx=r?list.findIndex(it=>it.uri===r.uri):-1;if(idx<0)idx=0;
-  cur=idx;audio.src=list[cur].url;
+  cur=idx;
+  if(NAT){renderList();updateMeta();return true} // 표준 플레이어와 연결되면 pollNat이 이어서 맞춥니다
+  audio.src=list[cur].url;
   if(r&&r.uri===list[cur].uri&&r.t>2){const seekOnce=()=>{audio.removeEventListener('loadedmetadata',seekOnce);try{audio.currentTime=Math.max(0,r.t-2)}catch(e){}};audio.addEventListener('loadedmetadata',seekOnce)}
   renderList();updateMeta();return true;
 }
+function pollNat(){
+  if(!NAT)return;let s;try{s=JSON.parse(NB.npState())}catch(e){return}
+  nat=s;natT=performance.now();if(!s.connected)return;
+  if(!natReady){natReady=true;
+    if(natList()){
+      const same=s.count===list.length&&list[s.index]&&list[s.index].uri===s.mid;
+      if(same){cur=s.index;renderList();updateMeta()} // 앱을 다시 열었을 때 재생 중인 곡을 그대로 이어받음
+      else{const r=store.get('resume',null);const i=cur<0?0:cur;natSync(false,i,r&&list[i]&&r.uri===list[i].uri?r.t*1000:0)}
+    }
+    flags();applyVol();pushExtEq();
+  }
+  balEl.disabled=natL()||mode==='ext';
+  if(!natL())return;
+  if(s.count===list.length&&s.index>=0&&s.index!==cur){cur=s.index;renderList();updateMeta()}
+  if(s.err&&s.errIndex>=0&&list[s.errIndex]&&!list[s.errIndex].missing){list[s.errIndex].missing=true;renderList()}
+  if(performance.now()-resumeSaveT>5000&&list[cur]){resumeSaveT=performance.now();store.set('resume',{uri:list[cur].uri,t:Math.floor((s.pos||0)/1000)})}
+  state();
+}
+if(NAT)setInterval(pollNat,250);
 function pickMusic(folder){if(LIB){try{NB.pickAudio(!!folder)}catch(e){}}else $('#file').click()}
 
 /* ---------- 알림 토스트 ---------- */

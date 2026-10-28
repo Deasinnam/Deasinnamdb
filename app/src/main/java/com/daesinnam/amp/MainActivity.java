@@ -41,7 +41,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.media3.common.Player;
+import androidx.media3.session.SessionToken;
 import androidx.webkit.WebViewAssetLoader;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,6 +79,19 @@ public class MainActivity extends Activity {
     private GpsTracker gps;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
+
+    // 내 음악 표준 플레이어(Media3)와의 연결
+    private ListenableFuture<androidx.media3.session.MediaController> natFuture;
+    private androidx.media3.session.MediaController nat;
+    private volatile String natSnap = "{\"connected\":false}";
+    private Runnable natPending;
+    private final Runnable natTick = new Runnable() {
+        @Override
+        public void run() {
+            natSnap = buildNatSnap();
+            main.postDelayed(this, 200);
+        }
+    };
 
     // 플레이리스트 · 차량 연결
     private final ExecutorService io = Executors.newSingleThreadExecutor();
@@ -184,6 +201,7 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else web.loadUrl(START_URL);
 
+        connectPlayer();
         handleCarIntent(getIntent());
         am.registerAudioDeviceCallback(devCallback, main);
         // 등록 직후에는 이미 연결된 기기가 한꺼번에 전달되므로, 그 뒤에 새로 연결되는 것만 차량 연결로 봅니다.
@@ -238,6 +256,58 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         if (requestCode == REQ_MIC && extMode) startViz();
         if (requestCode == REQ_LOC && gpsWanted) gps.start();
+    }
+
+    // ------------------------------------------------------------ 표준 플레이어(Media3)
+
+    @androidx.annotation.OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
+    private void connectPlayer() {
+        SessionToken token = new SessionToken(this, new ComponentName(this, AmpPlayerService.class));
+        natFuture = new androidx.media3.session.MediaController.Builder(this, token).buildAsync();
+        natFuture.addListener(() -> {
+            try {
+                nat = natFuture.get();
+                if (natPending != null) {
+                    natPending.run();
+                    natPending = null;
+                }
+                main.removeCallbacks(natTick);
+                main.post(natTick);
+            } catch (Exception ignored) {}
+        }, main::post);
+    }
+
+    /** 연결 전이면 연결된 뒤에 실행 */
+    private void withNat(Runnable r) {
+        main.post(() -> {
+            if (nat != null) r.run();
+            else natPending = r;
+        });
+    }
+
+    private String buildNatSnap() {
+        JSONObject o = new JSONObject();
+        try {
+            androidx.media3.session.MediaController c = nat;
+            o.put("connected", c != null);
+            if (c != null) {
+                o.put("count", c.getMediaItemCount());
+                o.put("index", c.getCurrentMediaItemIndex());
+                androidx.media3.common.MediaItem cur = c.getCurrentMediaItem();
+                o.put("mid", cur != null ? cur.mediaId : "");
+                o.put("playing", c.isPlaying());
+                o.put("pwr", c.getPlayWhenReady());
+                o.put("buffering", c.getPlaybackState() == Player.STATE_BUFFERING);
+                o.put("ended", c.getPlaybackState() == Player.STATE_ENDED);
+                o.put("pos", Math.max(0, c.getCurrentPosition()));
+                long d = c.getDuration();
+                o.put("dur", d > 0 ? d : 0);
+                o.put("rate", AmpPlayerService.TAP.sampleRate);
+                o.put("err", AmpPlayerService.lastError);
+                o.put("errIndex", AmpPlayerService.errorIndex);
+            }
+        } catch (Exception ignored) {}
+        return o.toString();
     }
 
     // ------------------------------------------------------------ 플레이리스트 저장용 파일 선택
@@ -416,6 +486,8 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         main.removeCallbacksAndMessages(null);
         try { am.unregisterAudioDeviceCallback(devCallback); } catch (Exception ignored) {}
+        if (natFuture != null) androidx.media3.session.MediaController.releaseFuture(natFuture);
+        nat = null;
         stopViz();
         gps.stop();
         ExternalEq.I.setActive(false);
@@ -878,6 +950,83 @@ public class MainActivity extends Activity {
                 if (on || playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
+        }
+
+        // ---------- 표준 플레이어 조작 (화면 → 플레이어)
+
+        @JavascriptInterface
+        public boolean natAvailable() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public String npState() {
+            return natSnap;
+        }
+
+        @JavascriptInterface
+        public void npSetQueue(final String json, final int index, final double posMs, final boolean play) {
+            try {
+                AmpPlayerService.saveQueue(MainActivity.this, json, index, (long) posMs);
+            } catch (Exception ignored) {}
+            withNat(() -> {
+                try {
+                    List<androidx.media3.common.MediaItem> items = AmpPlayerService.toItems(new JSONArray(json));
+                    if (items.isEmpty()) {
+                        nat.stop();
+                        nat.clearMediaItems();
+                        return;
+                    }
+                    int i = Math.max(0, Math.min(index, items.size() - 1));
+                    nat.setMediaItems(items, i, (long) Math.max(0, posMs));
+                    nat.prepare();
+                    if (play) nat.play();
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
+        public void npCmd(final String cmd, final double arg) {
+            withNat(() -> {
+                switch (cmd) {
+                    case "play":
+                        if (nat.getPlaybackState() == Player.STATE_IDLE) nat.prepare();
+                        if (nat.getPlaybackState() == Player.STATE_ENDED) nat.seekToDefaultPosition();
+                        nat.play();
+                        break;
+                    case "pause": nat.pause(); break;
+                    case "toggle": if (nat.isPlaying()) nat.pause(); else { if (nat.getPlaybackState() == Player.STATE_IDLE) nat.prepare(); nat.play(); } break;
+                    case "next": nat.seekToNextMediaItem(); nat.play(); break;
+                    case "prev": nat.seekToPrevious(); break;
+                    case "index": nat.seekToDefaultPosition((int) arg); if (nat.getPlaybackState() == Player.STATE_IDLE) nat.prepare(); nat.play(); break;
+                    case "seek": nat.seekTo((long) arg); break;
+                    case "stop": nat.pause(); nat.seekTo(0); break;
+                    default: break;
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void npMode(final boolean shuffle, final String repeat) {
+            withNat(() -> {
+                nat.setShuffleModeEnabled(shuffle);
+                nat.setRepeatMode("one".equals(repeat) ? Player.REPEAT_MODE_ONE : "off".equals(repeat) ? Player.REPEAT_MODE_OFF : Player.REPEAT_MODE_ALL);
+            });
+        }
+
+        @JavascriptInterface
+        public void npVolume(final double v) {
+            withNat(() -> nat.setVolume((float) Math.max(0, Math.min(1, v))));
+        }
+
+        @JavascriptInterface
+        public String npFft() {
+            return AmpPlayerService.TAP.fft();
+        }
+
+        @JavascriptInterface
+        public String npWave() {
+            return AmpPlayerService.TAP.wave();
         }
 
         /** 음악 파일(여러 개) 또는 폴더를 고르고, 다시 켜도 재생할 수 있게 권한을 기억합니다. */

@@ -70,6 +70,25 @@
             </intent-filter>
         </receiver>
 
+        <!-- 내 음악 표준 플레이어: 핸들 버튼·차량 화면·잠금 화면 연동, 앱이 꺼져 있을 때 재생 재개 -->
+        <service
+            android:name=".AmpPlayerService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="androidx.media3.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".PlaybackService"
             android:exported="false"

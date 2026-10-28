@@ -34,6 +34,9 @@ final class ExternalEq {
     private float pre = 0f;
     private float[] gains = new float[10];
     private String status = "꺼짐";
+    // 내 음악(표준 플레이어)의 오디오 세션에 붙는 EQ
+    private int localSession = 0;
+    private AudioEffect localEffect;
 
     private ExternalEq() {}
 
@@ -71,6 +74,25 @@ final class ExternalEq {
         pre = preamp;
         if (g != null && g.length == 10) gains = g.clone();
         for (AudioEffect e : effects.values()) apply(e);
+        if (localEffect != null) apply(localEffect);
+    }
+
+    /** 표준 플레이어가 만들어지거나 없어질 때 호출 (0이면 해제) */
+    synchronized void setLocalSession(int session) {
+        if (session == localSession) return;
+        if (localEffect != null) {
+            release(localEffect);
+            localEffect = null;
+        }
+        localSession = session;
+        if (session > 0) {
+            localEffect = create(session);
+            if (localEffect != null) apply(localEffect);
+        }
+    }
+
+    synchronized boolean localActive() {
+        return localEffect != null;
     }
 
     synchronized String status() {
