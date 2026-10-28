@@ -102,8 +102,21 @@ async function main() {
     assert.equal(await page.locator('#mapAsk').isVisible(), true);
     const y = sel => page.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await y('#wGps') < await y('#wMap') && await y('#wMap') < await y('#wMain'), 'Map sits between speedometer and player');
-    await page.locator('#mapNo').click();
+    // TMAP 키: 저장하면 입력란이 접히고 키가 다시 보이지 않음
+    await page.locator('#mapYes').click();
+    await page.locator('#mapKeyBox summary').click();
+    await page.locator('#tmapKey').fill('test-key-123');
+    assert.equal(await page.locator('#tmapKey').getAttribute('type'), 'password');
+    await page.locator('#tmapKeySave').click();
+    assert.equal(await page.locator('#mapKeyBox').evaluate(d => d.open), false, 'Key box folds after saving');
+    assert.equal(await page.locator('#tmapKey').inputValue(), '', 'Saved key is not shown again');
+    assert.match(await page.locator('#mapKeySum').textContent(), /키 저장됨/);
+    await page.locator('#mapKeyBox summary').click();
+    await page.locator('#tmapKeyDel').click();
+    assert.match(await page.locator('#mapKeySum').textContent(), /기본 지도/);
+    await page.locator('#mapOff').click();
     assert.equal(await page.locator('#wMap').evaluate(el => el.classList.contains('collapsed')), true, 'Unused map is folded');
+    assert.equal(await page.locator('#mapOffMsg').count(), 1);
     assert.ok(await y('#wMap') > await y('#wPl'), 'Unused map moves to the bottom');
     // 두 번째 자동차 스킨: 같은 구성, 다른 색, 대신남 로고
     await page.locator('#skin').selectOption('drive');
