@@ -880,6 +880,20 @@ input[type=range]:disabled{opacity:.35}
 .dsn .guard-cover .lip{background:linear-gradient(#ffe27a,#b38a10);border-color:#6b5300}
 .dsn .guard-frame.open .guard-cover{opacity:.9}
 
+/* 조종 콘솔 더 줄이기: 영문 제목·안내·하단 메시지 제거, MUTE는 + 옆 */
+.dsn .module h2{font-family:"Noto Sans KR",var(--sans)!important;letter-spacing:.02em!important;font-size:13px!important}
+.dsn .emergency h2{font-family:var(--mono)!important;letter-spacing:.14em!important}
+.dsn .micro-note,.dsn #dkContactSummary,.dsn #dkSosNote,.dsn #dkGuardClose,.dsn .console-footer{display:none!important}
+.dsn .module-footer{min-height:0!important}
+.dsn .emergency-footer{display:none}
+.dsn .volume-strip .mute{margin:0 0 0 4px!important;height:30px;min-height:30px!important;padding:0 8px}
+.dsn .console{padding-bottom:12px}
+
+/* 관제탑 속도 주의: 빨간 글자 */
+.atcwarn{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 10px;background:#160404;border:2px solid #ff3b30;border-radius:3px;box-shadow:0 0 18px #ff3b3044,inset 0 0 16px #ff3b3022;text-align:center;animation:warnin .9s steps(2) 2}
+.atcwarn b{font-family:"Barlow Condensed","Noto Sans KR",sans-serif;font-weight:700;font-size:clamp(16px,2.4vw,22px);letter-spacing:.08em;color:#ff3b30;text-shadow:0 0 10px #ff3b30aa;white-space:nowrap;line-height:1}
+.atcwarn span{font-size:12.5px;color:#ff6b5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@keyframes warnin{50%{border-color:#5a0f0a;box-shadow:none}}
 /* 지도 */
 #wMap .body{display:flex;flex-direction:column;gap:10px}
 .mapask,.mapoff{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px dashed var(--frame-in);border-radius:4px;background:#0000002a}
@@ -1045,22 +1059,21 @@ html.driving body{overflow:hidden}
   <div class="deck-topline"><div class="deck-id"><b>AUXILIARY SYSTEMS</b> &nbsp;/&nbsp; PANEL 01</div><div class="ready-tag"><span class="status-dot"></span><span id="dkReadyText">DEMO READY</span></div></div>
   <div class="modules">
    <section class="module volume-module" aria-labelledby="dkVolumeTitle">
-    <div class="module-index">01 / AUDIO</div><h2 id="dkVolumeTitle">MASTER VOL</h2><div class="subline">미디어 볼륨</div>
+    <h2 id="dkVolumeTitle">미디어 볼륨</h2>
     <div class="control-zone knob-zone"><div class="knob-surround">
      <svg class="knob-ticks" viewBox="0 0 156 156" aria-hidden="true"><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m29 127 6-6M15 104l8-3M12 78h8m-5-26 8 3m6-27 6 6m19-20 3 8m21-12v9m26-5-3 8m26 6-6 6m20 18-8 3m12 23h-8m5 26-8-3m-6 26-6-6"/></g></svg>
      <div class="volume-knob" id="dkVolumeKnob" role="slider" tabindex="0" aria-label="미디어 볼륨 노브, 위아래로 드래그" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42"><div class="knob-face"></div></div><div class="knob-legend">MIN &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MAX</div>
     </div></div>
-    <div class="volume-strip"><button id="dkVolumeDown" aria-label="볼륨 5 줄이기">−</button><output id="dkVolumeValue" aria-label="현재 볼륨">42</output><button id="dkVolumeUp" aria-label="볼륨 5 높이기">+</button></div>
+    <div class="volume-strip"><button id="dkVolumeDown" aria-label="볼륨 5 줄이기">−</button><output id="dkVolumeValue" aria-label="현재 볼륨">42</output><button id="dkVolumeUp" aria-label="볼륨 5 높이기">+</button><button class="mute" id="dkMuteButton" aria-pressed="false">MUTE</button></div>
     <input class="volume-range" id="dkVolumeRange" type="range" min="0" max="100" value="42" aria-label="미디어 볼륨">
-    <button class="mute" id="dkMuteButton" aria-pressed="false">MUTE</button>
    </section>
    <section class="module wifi-module" aria-labelledby="dkWifiTitle">
-    <div class="module-index">02 / NETWORK</div><h2 id="dkWifiTitle">DATA LINK</h2><div class="subline">와이파이</div>
+    <h2 id="dkWifiTitle">와이파이</h2>
     <div class="control-zone"><button class="lever-switch" id="dkWifiSwitch" role="switch" aria-checked="true" aria-label="와이파이, 시연 모드"><span class="switch-plate"></span><span class="switch-side on-word">ON</span><span class="switch-side off-word">OFF</span><span class="switch-pivot"></span><span class="switch-stem"></span></button></div>
     <div class="module-footer"><div class="readout" id="dkWifiReadout"><span class="indicator"></span><span>POWER ON</span></div><span class="micro-note" id="dkWifiNote">데모 스위치</span></div>
    </section>
    <section class="module emergency" aria-labelledby="dkSosTitle">
-    <div class="module-index">03 / GUARDED CONTROL</div><h2 id="dkSosTitle">EMERGENCY</h2><div class="subline">보호 덮개 · 연락처 연결</div>
+    <h2 id="dkSosTitle">EMERGENCY</h2>
     <div class="control-zone sos-zone"><div class="guard-frame" id="dkGuardFrame">
      <div class="guard-hinge" aria-hidden="true"></div>
      <button class="sos-button" id="dkSosButton" disabled aria-label="등록한 연락처로 바로 전화"><strong>SOS</strong><small>DIRECT CALL</small></button>
@@ -1069,12 +1082,12 @@ html.driving body{overflow:hidden}
     <div class="module-footer emergency-footer"><span class="sos-contact" id="dkContactSummary">연락처 등록 필요</span><span class="micro-note" id="dkSosNote">덮개 열기 → SOS 누르기</span><button class="guard-close" id="dkGuardClose" hidden>덮개 닫기</button></div>
    </section>
    <section class="module bt-module" aria-labelledby="dkBtTitle">
-    <div class="module-index">04 / WIRELESS</div><h2 id="dkBtTitle">COMMS</h2><div class="subline">블루투스</div>
+    <h2 id="dkBtTitle">블루투스</h2>
     <div class="control-zone"><button class="lever-switch" id="dkBtSwitch" role="switch" aria-checked="true" aria-label="블루투스, 시연 모드"><span class="switch-plate"></span><span class="switch-side on-word">ON</span><span class="switch-side off-word">OFF</span><span class="switch-pivot"></span><span class="switch-stem"></span></button></div>
     <div class="module-footer"><div class="readout" id="dkBtReadout"><span class="indicator"></span><span>POWER ON</span></div><span class="micro-note" id="dkBtNote">데모 스위치</span></div>
    </section>
    <section class="module mode-module" aria-labelledby="dkModeTitle">
-    <div class="module-index">05 / INTERFACE</div><h2 id="dkModeTitle">DRIVE MODE</h2><div class="subline">간편 화면</div>
+    <h2 id="dkModeTitle">간편 모드</h2>
     <div class="control-zone"><button class="lever-switch" id="dkModeSwitch" role="switch" aria-checked="false" aria-label="간편 화면"><span class="switch-plate"></span><span class="switch-side on-word">ON</span><span class="switch-side off-word">OFF</span><span class="switch-pivot"></span><span class="switch-stem"></span></button></div>
     <div class="module-footer"><div class="readout off" id="dkModeReadout"><span class="indicator"></span><span>NORMAL</span></div><span class="micro-note">큰 버튼 운전 화면</span></div>
    </section>
@@ -1105,6 +1118,7 @@ html.driving body{overflow:hidden}
           <div class="atchead"><span>TWR 118.10 · 대신남 원</span><span id="atcClock">--:--</span></div>
           <div class="atcbar"><i id="atcBar"></i></div>
           <div class="atcscreen"><ol class="atclog" id="atcLog"></ol>
+          <div class="atcwarn" id="atcWarn" role="alert" hidden><b></b><span></span></div>
           <div class="atcclr" id="atcClr" hidden>CLEARED FOR TAKEOFF<small>이륙 허가 · 안전 운행하세요</small></div></div>
         </div>
         <div class="atcbtns"><button class="pill" id="atcRun">다시 점검</button><button class="pill" id="atcSkip">건너뛰기</button></div>
@@ -1849,6 +1863,7 @@ function drawGps(){
   const gv=isCar()&&!$('#wGps').classList.contains('collapsed')&&!document.hidden;attWant(gv);
   if(!gv)return;
   attPoll();if(att.hdg>=0)hdgNow=att.hdg;
+  if(typeof atcSpeedTick==='function')atcSpeedTick(spdNow);
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -2397,7 +2412,7 @@ const dk=(()=>{
   if(st.volume>0)st.lastVolume=st.volume;
   let guardT,volT,dragging=false;
   const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify({brightness:st.brightness,volume:st.volume,wifi:st.wifi,bluetooth:st.bluetooth}))}catch(_){}};
-  const msg=t=>{$i('dkSystemMessage').textContent=t};
+  let msgLive=false;const msg=t=>{$i('dkSystemMessage').textContent=t;if(msgLive)toast(t)};
   function radioView(name,value,sup){const k=name==='wifi'?'Wifi':'Bt',label=name==='wifi'?'와이파이':'블루투스',b=$i('dk'+k+'Switch'),r=$i('dk'+k+'Readout');
     b.disabled=!sup;b.setAttribute('aria-checked',String(value===true));b.dataset.unknown=String(value===null);b.setAttribute('aria-label',label+(isNative?' 켜기/끄기 (설정 열기)':', 시연 모드'));
     r.className='readout'+(!sup||value===null?' unknown':value?'':' off');r.lastElementChild.textContent=!sup?'NOT FITTED':value===null?'CHECK STATE':value?'POWER ON':'POWER OFF';
@@ -2466,6 +2481,7 @@ const dk=(()=>{
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&st.guardOpen)setGuard(false)});
   if(isNative){$i('dkPlatformHelp').textContent='Android 기기 연결 모드입니다. 볼륨은 실제 기기 볼륨을 조절합니다. 와이파이·블루투스는 기기 상태를 읽어 표시하고, 직접 바꿀 수 없으면 시스템 설정을 엽니다.';msg('기기에 연결되었습니다. 설정 화면에서 돌아오면 상태를 갱신합니다.')}
   else msg('브라우저 시연 모드입니다. 스위치를 눌러 작동을 확인하세요.');
+  msgLive=true;
   setInterval(()=>{if(!document.hidden&&skin==='carnival2')refresh()},2000);
   return {refresh,render,setGuard,openSettings,state:st};
 })();
@@ -2506,6 +2522,17 @@ async function atcStart(){
 }
 function atcSkip(){atcRun++;$('#atcLog').innerHTML='';
   $('#atcBar').style.width='100%';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true}
+
+// 관제탑 속도 주의: 50·100·120·150·180·200km/h에 처음 도달하면 빨간 글자로 경고(5km/h 아래로 내려가면 다시 경고 가능)
+const SPD_MARKS=[50,100,120,150,180,200],spdArmed=new Set(SPD_MARKS);let atcWarnT=0;
+function atcSpeedTick(v){if(skin!=='carnival2'||!gpsOn||!gs.fix)return;let hit=0;
+  for(const m of SPD_MARKS){if(v>=m&&spdArmed.has(m)){spdArmed.delete(m);hit=m}else if(v<m-5)spdArmed.add(m)}
+  if(hit)atcWarn(hit)}
+function atcWarn(m){const w=$('#atcWarn');w.querySelector('b').textContent='⚠ 속도 주의 · '+m+' km/h';
+  w.querySelector('span').textContent='대신남 원, 시속 '+m+'km를 넘었습니다. '+(m>=120?'즉시 감속하십시오.':'속도에 주의하십시오.');
+  w.hidden=false;w.style.animation='none';void w.offsetWidth;w.style.animation='';
+  $('#atcSt').textContent='· 속도 주의';sndSquelch(0,.16);sndRoger(.2);sndRoger(.42);
+  clearTimeout(atcWarnT);atcWarnT=setTimeout(()=>{w.hidden=true;$('#atcSt').textContent=atcDone?'· 이륙 허가':'· 점검 중'},6000)}
 $('#atcRun').onclick=()=>{fx();atcStart()};
 $('#atcSkip').onclick=atcSkip;
 // 콕핏 스킨에 들어올 때마다(앱 시작 포함) 점검을 한 번 진행

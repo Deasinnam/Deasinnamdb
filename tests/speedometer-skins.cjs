@@ -173,7 +173,11 @@ async function main() {
     assert.equal(await page.locator('#atcLog li').count(), 0, 'After the run only the clearance is left');
     // SOS: 가운데 EMERGENCY, 닫힌 덮개에서는 누를 수 없고 덮개를 연 뒤 SOS로 등록 번호에 전화
     const mods = await page.locator('#dkConsole .module h2').allTextContents();
-    assert.deepEqual(mods, ['MASTER VOL','DATA LINK','EMERGENCY','COMMS','DRIVE MODE'], 'Panel order from the package');
+    assert.deepEqual(mods, ['미디어 볼륨','와이파이','EMERGENCY','블루투스','간편 모드'], 'Korean titles, EMERGENCY stays English');
+    assert.equal(await page.locator('#dkConsole .subline').count(), 0, 'No sublines');
+    assert.equal(await page.locator('#dkConsole .console-footer').isVisible(), false, 'No footer message/usage line');
+    assert.equal(await page.evaluate(() => document.querySelector('#dkMuteButton').parentElement.className), 'volume-strip', 'MUTE sits next to +');
+    assert.ok((await page.locator('#wCtl').boundingBox()).height < 340, 'Control panel stays compact');
     assert.equal(await page.locator('#dkSosButton').isDisabled(), true, 'Closed guard disables SOS');
     await page.locator('#dkGuardCover').click();
     assert.equal(await page.locator('#dkSosButton').isEnabled(), true, 'Lifting the guard arms SOS');
@@ -350,6 +354,23 @@ async function main() {
     await p7.locator('#dkGuardCover').click();await p7.locator('#dkSosButton').click();
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
     await p7.close();
+    // 관제탑 속도 주의: 50/100/120/150/180/200km/h 도달 시 빨간 글자
+    const p8 = await context.newPage();
+    p8.on('pageerror', error => errors.push(error.message));
+    await p8.addInitScript(() => {localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));
+      window.g8={fix:true,perm:true,enabled:true,provider:'gps',speed:5,bearing:0,azimuth:-1,acc:3,alt:10,satsUsed:9,satsSeen:12,lat:37,lon:127,ts:1000};
+      window.AndroidBridge={gpsStatus:()=>JSON.stringify(g8),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
+    await p8.goto(origin);
+    await p8.locator('#gOn').click();
+    await p8.waitForTimeout(500);
+    assert.equal(await p8.locator('#atcWarn').isVisible(), false);
+    await p8.evaluate(() => {g8.speed=14.2;g8.ts+=1000});
+    await p8.waitForFunction(() => !document.querySelector('#atcWarn').hidden, null, {timeout:3000});
+    assert.match(await p8.locator('#atcWarn').textContent(), /속도 주의 · 50 km\/h/);
+    assert.equal(await p8.locator('#atcWarn b').evaluate(el => getComputedStyle(el).color), 'rgb(255, 59, 48)', 'Warning is red');
+    await p8.evaluate(() => {g8.speed=34;g8.ts+=1000});
+    await p8.waitForFunction(() => /120 km/.test(document.querySelector('#atcWarn').textContent), null, {timeout:3000});
+    await p8.close();
     // 콕핏 PFD: 기울기·나침반 센서, 구름, 야간 하늘
     const p6 = await context.newPage();
     p6.on('pageerror', error => errors.push(error.message));
@@ -382,7 +403,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
