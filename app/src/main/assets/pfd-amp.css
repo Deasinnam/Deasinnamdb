@@ -1,0 +1,21 @@
+/* 대신남 AMP ↔ 대신남 PFD 패키지 연결 스타일
+ * pfd/pfd.css(패키지 원본)는 수정하지 않습니다. 앱에 맞춘 차이는 여기에만 둡니다. */
+
+/* 한글: 패키지 내장 글꼴(3.6MB) 대신 앱의 Noto Sans KR */
+.dsn-pfd{font-family:Arial,"Noto Sans KR",sans-serif}
+
+/* 콕핏 스킨 속도계: 제목줄·접기·크기 조절은 앱 창 것을 씀 */
+#pfdHost{display:none}
+:root[data-skin="carnival2"] #pfdHost{display:block}
+:root[data-skin="carnival2"] #wGps .body>.gps,:root[data-skin="carnival2"] #wGps .body>.gctl,:root[data-skin="carnival2"] #wGps .body>.gmsg{display:none!important}
+:root[data-skin="carnival2"] #wGps>.body{padding:6px}
+#pfdHost .pfd-header{display:none}
+#pfdHost .pfd-airforce .pfd-header{display:flex}
+#pfdHost .pfd-airforce .pfd-collapse{display:none}
+#pfdHost .dsn-pfd{min-width:0}
+#wGps.sized #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost .dsn-pfd{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost [data-role="content"]{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost .pfd-canvas-wrap{flex:1;min-height:90px;height:auto!important;aspect-ratio:auto!important}
+:root[data-skin="carnival2"] #wGps.sized>.body{display:flex;flex-direction:column;overflow:hidden}

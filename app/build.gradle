@@ -8,19 +8,24 @@ android {
         applicationId 'com.daesinnam.amp'
         minSdk 26
         targetSdk 35
-        versionCode 37
-        versionName "5.7"
+        versionCode 38
+        versionName "5.8"
     }
 
     buildFeatures { buildConfig true }
 
+    // 서명 키는 저장소에 두지 않습니다. CI가 GitHub 비밀값(Secrets)에서 키를 꺼내 환경 변수로 넘깁니다.
+    // 업데이트할 때마다 같은 키로 서명해야 덮어 설치가 됩니다.
+    def ampKeystore = System.getenv('AMP_KEYSTORE_FILE')
     signingConfigs {
-        // 업데이트할 때마다 같은 키로 서명해야 덮어 설치가 됩니다.
         amp {
-            storeFile rootProject.file('signing/amp.keystore')
-            storePassword 'DaesinnamAmp2026'
-            keyAlias 'amp'
-            keyPassword 'DaesinnamAmp2026'
+            if (ampKeystore) {
+                storeFile file(ampKeystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('AMP_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('AMP_KEY_ALIAS') ?: 'amp'
+                keyPassword System.getenv('AMP_KEY_PASSWORD')
+            }
         }
     }
 
@@ -35,7 +40,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig signingConfigs.amp
+            // 키가 없으면(로컬 빌드) 서명하지 않은 APK를 만듭니다.
+            if (ampKeystore) signingConfig signingConfigs.amp
         }
     }
 

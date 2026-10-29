@@ -46,10 +46,26 @@ jobs:
       - name: 태그 읽기 라이브러리 내장 (오프라인에서도 앨범아트 표시)
         run: curl -fsSL -o app/src/main/assets/jsmediatags.min.js https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js
 
+      - name: 서명 키 준비 (GitHub Secrets)
+        env:
+          AMP_KEYSTORE_BASE64: ${{ secrets.AMP_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$AMP_KEYSTORE_BASE64" ]; then
+            echo "::error::서명 키 비밀값이 없습니다. 저장소 Settings → Secrets and variables → Actions에 AMP_KEYSTORE_BASE64, AMP_KEYSTORE_PASSWORD, AMP_KEY_ALIAS, AMP_KEY_PASSWORD를 등록하세요."
+            exit 1
+          fi
+          echo "$AMP_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/amp-release.p12"
+          echo "AMP_KEYSTORE_FILE=$RUNNER_TEMP/amp-release.p12" >> "$GITHUB_ENV"
+
       - name: Build
+        env:
+          AMP_KEYSTORE_PASSWORD: ${{ secrets.AMP_KEYSTORE_PASSWORD }}
+          AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
+          AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon assembleLiteRelease assembleFullRelease
+          rm -f "$AMP_KEYSTORE_FILE"
 
       - uses: actions/upload-artifact@v5
         with:

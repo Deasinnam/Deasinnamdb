@@ -8,11 +8,11 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v5.7** (versionCode 37) |
+| 최신 버전 | **v5.8** (versionCode 38) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
-| 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → Playwright UI 테스트 → 서명(고정 키스토어, 저장소에 커밋됨) → Releases `latest`에 업로드 |
+| 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → Playwright UI 테스트 → 서명(GitHub Secrets의 키, 저장소에는 없음) → Releases `latest`에 업로드 |
 
 ## 2. 구조
 
@@ -56,6 +56,7 @@
 - v5.5: PFD 패키지 v1.1(`Daesinnam_PFD_Claude_Package_3`)로 pfd.js 교체: 속도 연동 구름·도심 불빛, 야간 달·별. `pfdSet`에 sceneMotion·sceneQuality 저장, 테마 "자동"은 앱이 19~6시 night/day로 넘김(`pfdApplyTheme`, 패키지 화면에는 사용자가 고른 값 표시)
 - v5.6: 인라인 pfd.js에 선회 효과 추가(앱 쪽 수정): `PfdScene.turn(heading)`이 방위 변화만큼 구름·도심을 회전, 별·달·스카이라인은 `yawAcc`로 옆 이동. 패키지 새 버전을 받으면 이 수정을 다시 넣어야 함
 - v5.7: PFD 패키지 v1.2(`Package_6`): 에어포스 디자인(`skin:'airforce'`, `.pfd-airforce`). pfd.js/pfd.css 교체 + 선회 패치 재적용. `pfdSet.skin` 저장·복원, 에어포스일 때만 패키지 헤더 표시(접기 버튼은 숨김). 디자인 전환이 주야간 선택(`pfdTheme`)을 덮어쓰지 않게 설정 창 저장일 때만 theme 갱신
+- v5.8: 화면 파일 정리 — PFD 패키지를 `assets/pfd/`(원본 그대로)로 분리, 앱 연결·선회 효과는 `assets/pfd-amp.js`/`pfd-amp.css`로(선회는 패키지 수정 없이 장면 객체에 런타임으로 덧붙임). index.html은 `window.AmpHost`(읽기·쓰기 창구)만 내놓고 `window.AmpPfd.feed()`를 부름. 웹 미리보기 빌드 시 이 파일들을 인라인. 콕핏 로고를 D1 이미지로 교체. 서명 키를 새로 만들어 Secrets로 이동(설치된 앱은 한 번 지우고 재설치 필요)
 
 ## 4. 확인 대기 중
 
@@ -89,7 +90,7 @@
 
 ## 6. 주의 사항
 
-- 저장소는 공개이고 서명 키스토어와 KIA 로고 이미지가 들어 있음.
+- 저장소는 공개이고 KIA 로고 이미지가 들어 있음. 서명 키는 v5.8부터 저장소에서 빼고 Secrets(`AMP_KEYSTORE_BASE64` 등 4개)로 옮김. 예전 키(`signing/amp.keystore`, 비밀번호 포함)는 git 기록에 남아 있으므로 다시 쓰지 말 것.
 - 사용자 개인정보(이름·이메일·전화번호)는 문서/커밋에 넣지 않음.
 - `ci-check` 브랜치는 삭제 권한(403)이 없어 남아 있음.
 - 버전 올릴 때: `app/build.gradle`의 versionCode/versionName, README 갱신, 테스트 추가 후 푸시하면 CI가 Releases `latest`를 갱신.
