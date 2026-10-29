@@ -1,0 +1,78 @@
+# 대신남 AMP — 작업 인수인계 (2026-10-29 기준)
+
+새 대화에서 이 문서를 먼저 읽고 이어서 작업합니다.
+
+## 1. 한눈에 보기
+
+| 항목 | 내용 |
+|---|---|
+| 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
+| 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
+| 최신 버전 | **v4.1** (versionCode 20) — 커밋 `f3922c8` |
+| APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
+| APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
+| 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
+| 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → Playwright UI 테스트 → 서명(고정 키스토어, 저장소에 커밋됨) → Releases `latest`에 업로드 |
+
+## 2. 구조
+
+- **화면**: `app/src/main/assets/index.html` 하나에 UI 전체(HTML/CSS/JS). WebView + `WebViewAssetLoader`(origin `https://appassets.androidplatform.net`), JS 브리지 이름 `AndroidBridge`.
+  - 아티팩트 버전은 같은 파일에서 `<!doctype>/<head>/<body>` 래퍼와 로컬 jsmediatags 경로만 다름.
+  - `map.html`: 지도 제공자 페이지 (OSM 기본, 네이버 ncpKeyId, 카카오 appkey, TMAP jsv2).
+- **네이티브** (`app/src/main/java/com/daesinnam/amp/`)
+  - `MainActivity` — 브리지 메서드 (재생 상태, 외부 앱, 파일 선택, 차량 연결, GPS, 앱 열기/옆 창, 네이티브 플레이어 `np*`)
+  - `AmpPlayerService` — **Media3 ExoPlayer + MediaSessionService** (v4.0~). 핸들 버튼·잠금화면·재생 재개. `SpectrumTap`(TeeAudioProcessor FFT)으로 시각화, `ExternalEq.setLocalSession`으로 EQ.
+  - `PlaybackService` — 외부 앱 모드 포그라운드 서비스, 웹 데모 세션
+  - `ExternalEq` (DynamicsProcessing/Equalizer), `MediaLibrary` (SAF 영구 URI, 폴더 스캔, `/media` Range 스트리밍, `/art`), `CarConnect`, `GpsTracker`, `NowPlaying`, `SpotifyInfo`, `ArtLookup`, `MediaListener`(full 판만)
+- **판(flavor)**: `lite`(권장) / `full`(NotificationListener 추가)
+- **테스트**: `tests/speedometer-skins.cjs` (Playwright) — 스킨, GPS, 지도, 드라이브 스킨, 권한 패널 접기, 플레이리스트 저장, 설정, 간편 모드, 차량 연결, 네이티브 인계, EQ 터치 드래그
+
+## 3. 지금까지 구현된 기능
+
+- 화면 크기별 자동 배치(1열/2열/가로 한 줄), 스킨: blue(기본)·amber·base·neon·ice·red·wood·**사이버 카니발**(건메탈/구리, KIA 로고)·**대신남 드라이브**(블루, 대신남 로고)
+- 대신남 로고·앱 아이콘·스플래시
+- 외부 앱(YouTube Music/Spotify) 곡 정보·앨범 아트·조작·시각화·EQ
+- 자동차 스킨: GPS 속도계(디자인 5종, 메인 창 위), HUD, 창 높이 조절
+- NAVIGATION 지도 창(선택 사용, OSM/네이버/카카오/TMAP, TMAP 열기·옆 창, 미사용 시 접혀서 맨 아래). TMAP 키 저장 후 자동 접기
+- 권한 패널: 모두 허용되면 자동 접기
+- 플레이리스트 저장(파일/폴더), 이어 듣기
+- 차 연결 시 자동 재생, 주행 중 간편 모드, 설정 패널
+- v4.0: Media3 네이티브 재생 (핸들 버튼 선곡 목적)
+- v4.1: EQ 슬라이더가 페이지 스크롤에 밀리지 않음 (pointer capture, `touch-action:none`)
+
+## 4. 확인 대기 중
+
+- **v4.0 핸들 버튼 선곡**: 이전 두 번의 수정(MediaSession, 오디오 포커스)은 실패. Media3로 바꾼 v4.0이 실제 차량에서 되는지 사용자 확인 필요.
+- **v4.1 EQ 드래그**: 실기기 확인 필요.
+- TMAP 지도 타일이 회색으로 나오던 문제: 미해결. 대안으로 네이버/카카오 선택 기능 제공함 (키 발급 시 웹 주소 `https://appassets.androidplatform.net` 등록 필요).
+
+## 5. 진행 중: JOY TRIP 블랙박스 카메라 "대신남 버전"
+
+**요청**: JOY TRIP 앱은 카메라 와이파이에 붙으면 폰 인터넷이 막힘 → 카메라만 와이파이, 나머지는 모바일 데이터. JOY TRIP을 대신남 버전으로.
+
+**분석 결과 (JoyTrip 2.93 XAPK)**
+- Joyhonest 공용 라이브러리 `libJoyWifiCamera.so` (JNI `com.joyhonest.wifination.wifination`) 사용.
+- 지원 프로토콜: JHCMD, FDWN, GPSOCKET, GPRTP_UDP_SOCKET, GP_tcp_VideoSocket, **GP4225**(GeneralPlus 블랙박스 TCP 계열: 파일 목록, 녹화 시간, OSD, SD 포맷 등), RTSP(ffmpeg).
+- 카메라 IP 후보: 192.168.25.1~192.168.35.1, 175.16.10.2, 192.168.123.1, 192.168.254.1. UDP 20001 (MyUdp20001Data).
+- 블랙박스는 **GP4225** 계열일 가능성이 큼 → 공개 문서 없음.
+- 참고용 공개 구현(MIT): HeikoGr/wifi-cam-proxy `firmware/src/cam_jhcmd.cpp` — JHCMD: 카메라 192.168.29.1, 명령 UDP 20000, 영상은 클라이언트 UDP 10900. INIT1 `"JHCMD"+10 00`, INIT2 `"JHCMD"+20 00`, START(3초 하트비트) `"JHCMD"+D0 01`, STOP `"JHCMD"+D0 02`. 8바이트 헤더(프레임 번호 LE 2B, 패킷 수, 패킷 인덱스), FF D8 FF ~ FF D9로 JPEG 재조립.
+- **하지 말 것**: Joyhonest `.so` 재배포(비공개 라이브러리, 저장소 공개), JOY TRIP 이름/디자인 복제.
+
+**구현 계획**
+1. 네트워크 분리: `WifiNetworkSpecifier`(ConnectivityManager.requestNetwork)로 카메라 와이파이에 앱 전용 연결 → 카메라 소켓만 `Network.bindSocket()` / `network.openConnection()`. 기본 네트워크는 모바일 데이터 그대로.
+2. 자동차 스킨에 **CAMERA** 창: 라이브 보기, 녹화 파일 목록, 충격 영상 재생.
+3. 프로토콜 프로브: JHCMD(UDP 20000/10900), RTSP, GP4225/GPSOCKET.
+
+**사용자에게 요청해 둔 것 (아직 안 받음)**
+- PCAPdroid로 JoyTrip 트래픽 캡처(라이브 10초 → 파일 목록 → 파일 하나 재생) 후 PCAP 파일
+- 카메라 와이파이 이름(SSID)
+- XAPK는 이전 대화에만 첨부되어 있으므로, 다시 분석이 필요하면 재첨부 필요
+
+**당장 쓸 수 있는 우회(설정)**: Wi-Fi → ⋮ → 인텔리전트 Wi-Fi → "모바일 데이터로 전환" 켜기, 개발자 옵션 → "모바일 데이터 항상 사용" 켜기, 카메라 와이파이 다시 연결 후 "인터넷 없음"에서 연결 유지.
+
+## 6. 주의 사항
+
+- 저장소는 공개이고 서명 키스토어와 KIA 로고 이미지가 들어 있음.
+- 사용자 개인정보(이름·이메일·전화번호)는 문서/커밋에 넣지 않음.
+- `ci-check` 브랜치는 삭제 권한(403)이 없어 남아 있음.
+- 버전 올릴 때: `app/build.gradle`의 versionCode/versionName, README 갱신, 테스트 추가 후 푸시하면 CI가 Releases `latest`를 갱신.
