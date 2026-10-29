@@ -132,29 +132,31 @@ async function main() {
     const cw = await page.locator('#gauge').evaluate(c => c.width / c.height);
     assert.ok(cw > 2, 'Gauge canvas follows the new aspect ratio');
     await page.evaluate(() => {const w=document.querySelector('#wGps');w.style.height='';w.classList.remove('sized')});
-    // 조종 패널: 누르면 들어가며 켜지고, 다시 누르면 튀어나오며 꺼짐
+    // 조종 패널(패키지 콘솔): 웹 시연에서는 레버가 바로 바뀌고, 볼륨 노브·+/−·음소거, DRIVE MODE는 앱의 간편 모드
     assert.equal(await page.locator('#wCtl').isVisible(), true);
     assert.equal(await page.locator('#wAtc').isVisible(), true);
     assert.ok((await top('#wGps')) < (await top('#wCtl')) && (await top('#wCtl')) < (await top('#wAtc')), 'Control panel under the speedometer, tower under the panel');
-    for (const id of ['#ckVol','#ckWifi','#ckBt']) {
-      const was = await page.locator(id).getAttribute('aria-pressed');
+    assert.equal(await page.locator('#dkPlatformText').textContent(), 'WEB DEMO');
+    for (const id of ['#dkWifiSwitch','#dkBtSwitch']) {
+      const was = await page.locator(id).getAttribute('aria-checked');
       await page.locator(id).click();
-      assert.notEqual(await page.locator(id).getAttribute('aria-pressed'), was, id+' toggles');
-      assert.equal(await page.locator(id+' i').textContent(), was==='true' ? 'OFF' : 'ON');
+      assert.notEqual(await page.locator(id).getAttribute('aria-checked'), was, id+' toggles in the demo');
       await page.locator(id).click();
-      assert.equal(await page.locator(id).getAttribute('aria-pressed'), was);
     }
-    assert.equal(await page.locator('#ckVol').getAttribute('aria-pressed'), 'true');
-    const pressedY = await page.locator('#ckVol .ckface').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42);
-    await page.locator('#ckVol').click();await page.waitForTimeout(400);
-    const raisedY = await page.locator('#ckVol .ckface').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42);
-    assert.ok(pressedY > raisedY, 'ON sits pressed in, OFF pops out');
-    assert.match(await page.locator('#ckMsg').textContent(), /소리를 껐어요/, 'Master VOL off mutes playback');
-    await page.locator('#ckVol').click();
-    await page.locator('#ckEz').click();
+    await page.locator('#dkVolumeUp').click();
+    assert.equal(await page.locator('#dkVolumeValue').textContent(), '47');
+    await page.locator('#dkMuteButton').click();
+    assert.equal(await page.locator('#dkVolumeValue').textContent(), '0');
+    assert.equal(await page.locator('#dkMuteButton').textContent(), 'MUTED');
+    await page.locator('#dkMuteButton').click();
+    assert.equal(await page.locator('#dkVolumeValue').textContent(), '47', 'Unmute restores the last volume');
+    const kb = await page.locator('#dkVolumeKnob').boundingBox();
+    await page.mouse.move(kb.x+kb.width/2, kb.y+kb.height/2);await page.mouse.down();await page.mouse.move(kb.x+kb.width/2, kb.y+kb.height/2-30,{steps:5});await page.mouse.up();
+    assert.ok(+(await page.locator('#dkVolumeValue').textContent()) > 47, 'Dragging the knob up raises the volume');
+    await page.locator('#dkModeSwitch').click();
     await page.waitForFunction(() => !document.querySelector('#drive').hidden);
     await page.locator('#dvClose').click();
-    await page.waitForFunction(() => document.querySelector('#ckEz').getAttribute('aria-pressed') === 'false');
+    await page.waitForFunction(() => document.querySelector('#dkModeSwitch').getAttribute('aria-checked') === 'false');
     // 관제탑: 점검 문구가 차례로 나오고 끝나면 이륙 허가
     // 두 줄만 보이고, 두 줄 단위로 바뀌며 진행
     await page.evaluate(() => {window.__atcMax=0;window.__atcSeen='';new MutationObserver(()=>{const l=document.querySelector('#atcLog');__atcMax=Math.max(__atcMax,l.children.length);__atcSeen+=l.textContent}).observe(document.querySelector('#atcLog'),{childList:true,subtree:true,characterData:true})});
@@ -169,24 +171,33 @@ async function main() {
     await page.evaluate(() => {window.__spoke=[];window.AndroidBridge.speak=t=>__spoke.push(t)});
     await page.waitForFunction(() => window.__spoke.length > 0 && !document.querySelector('#atcClr').hidden, null, {timeout:40000});
     assert.equal(await page.locator('#atcLog li').count(), 0, 'After the run only the clearance is left');
-    // SOS: 가운데 버튼, 덮개를 연 뒤 두 번째 누름에 설정한 번호로 전화
-    const cells = await page.locator('#wCtl .ckcell').evaluateAll(els => els.map(e => e.querySelector('button').id));
-    assert.equal(cells[2], 'ckSos', 'SOS sits in the middle of the panel');
-    await page.locator('#ckSos').click();
-    assert.equal(await page.locator('#ckSos').evaluate(el => el.classList.contains('armed')), true, 'First press lifts the guard');
-    await page.locator('#ckSos').click();
-    assert.equal(await page.locator('#settings').isVisible(), true, 'No contact yet: opens SOS settings');
-    await page.locator('#sSosName').fill('가족');
-    await page.locator('#sSosNum').fill('010-0000-0000');
-    await page.locator('#sSosSave').click();
-    await page.locator('#setClose').click();
-    assert.match(await page.locator('#sosName').textContent(), /가족/);
+    // SOS: 가운데 EMERGENCY, 닫힌 덮개에서는 누를 수 없고 덮개를 연 뒤 SOS로 등록 번호에 전화
+    const mods = await page.locator('#dkConsole .module h2').allTextContents();
+    assert.deepEqual(mods, ['MASTER VOL','DATA LINK','EMERGENCY','COMMS','DRIVE MODE'], 'Panel order from the package');
+    assert.equal(await page.locator('#dkSosButton').isDisabled(), true, 'Closed guard disables SOS');
+    await page.locator('#dkGuardCover').click();
+    assert.equal(await page.locator('#dkSosButton').isEnabled(), true, 'Lifting the guard arms SOS');
+    await page.locator('#dkSosButton').click();
+    assert.equal(await page.locator('#dkSettingsDialog').isVisible(), true, 'No contact yet: opens panel setup');
+    await page.locator('#dkContactPhone').fill('12');
+    await page.locator('#dkSettingsForm .save-btn').click();
+    assert.equal(await page.locator('#dkFormError').isVisible(), true, 'Invalid number is rejected');
+    await page.locator('#dkContactName').fill('가족');
+    await page.locator('#dkContactPhone').fill('010-0000-0000');
+    await page.locator('#dkSettingsForm .save-btn').click();
+    assert.equal(await page.locator('#dkSettingsDialog').isVisible(), false);
+    assert.match(await page.locator('#dkContactSummary').textContent(), /가족 · 010···0000/);
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('dna_sos')).number), '01000000000', 'Shares the app SOS contact store');
     await page.evaluate(() => {window.__calls=[];window.AndroidBridge.sosCall=n=>{__calls.push(n);return 'call'}});
-    await page.locator('#ckSos').click();
-    assert.deepEqual(await page.evaluate(() => __calls), [], 'Guard press alone never calls');
-    await page.locator('#ckSos').click();
-    assert.deepEqual(await page.evaluate(() => __calls), ['010-0000-0000']);
-    assert.match(await page.locator('#ckMsg').textContent(), /가족에게 전화/);
+    await page.locator('#dkGuardCover').click();
+    await page.locator('#dkSosButton').click();
+    assert.equal(await page.locator('#dkSosButton').isDisabled(), true, 'Guard closes again after the call');
+    assert.match(await page.locator('#dkSystemMessage').textContent(), /가족|시연/);
+    await page.locator('#dkGuardCover').click();
+    await page.locator('#dkCollapseButton').click();
+    assert.equal(await page.locator('#dkGuardFrame').evaluate(el => el.classList.contains('open')), false, 'Collapsing closes the guard');
+    assert.equal(await page.locator('#dkControlDeck').isVisible(), false);
+    await page.locator('#dkCollapseButton').click();
     await page.locator('#gStyle').selectOption('carbon');
     assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
@@ -313,6 +324,32 @@ async function main() {
     assert.equal(after.y, before.y, 'Dragging an EQ slider must not scroll the page');
     assert.ok(after.g > before.g, `EQ band follows the finger upward (${before.g} -> ${after.g})`);
     await tctx.close();
+    // 조종 패널 + 앱 연결: 기기 상태가 기준(거짓 ON 없음), 볼륨은 기기 단계로 반올림된 값을 다시 읽음, SOS는 바로 전화
+    const p7 = await context.newPage();
+    p7.on('pageerror', error => errors.push(error.message));
+    await p7.addInitScript(() => {
+      localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));localStorage.setItem('dna_sos', JSON.stringify({name:'가족',number:'01000000000'}));
+      window.dev = {steps:15,level:6,wifi:false,hasBt:true,bt:null};window.log=[];
+      window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
+        cockpitState:()=>JSON.stringify({volume:Math.round(dev.level*100/dev.steps),wifiSupported:true,wifi:dev.wifi,hasBt:dev.hasBt,...(dev.bt===null?{}:{bt:dev.bt})}),
+        setSystemVolume:p=>{dev.level=Math.round(p*dev.steps/100);log.push('vol:'+p)},
+        setWifi:w=>{log.push('wifi:'+w);return 'panel'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
+    });
+    await p7.goto(origin);
+    await p7.waitForFunction(() => document.querySelector('#dkPlatformText').textContent === 'ANDROID LINK');
+    assert.equal(await p7.locator('#dkVolumeValue').textContent(), '40');
+    assert.equal(await p7.locator('#dkWifiReadout').textContent(), 'POWER OFF');
+    assert.equal(await p7.locator('#dkBtReadout').textContent(), 'CHECK STATE', 'Unreadable Bluetooth is not shown as ON');
+    await p7.locator('#dkWifiSwitch').click();
+    assert.equal(await p7.locator('#dkWifiSwitch').getAttribute('aria-checked'), 'false', 'Tapping does not fake ON before the device confirms');
+    await p7.evaluate(() => {dev.wifi=true});
+    await p7.waitForFunction(() => document.querySelector('#dkWifiSwitch').getAttribute('aria-checked') === 'true', null, {timeout:4000});
+    await p7.locator('#dkVolumeUp').click();
+    await p7.waitForFunction(() => log.includes('vol:45'));
+    await p7.waitForFunction(() => document.querySelector('#dkVolumeValue').textContent === '47', null, {timeout:4000});
+    await p7.locator('#dkGuardCover').click();await p7.locator('#dkSosButton').click();
+    assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
+    await p7.close();
     // 콕핏 PFD: 기울기·나침반 센서, 구름, 야간 하늘
     const p6 = await context.newPage();
     p6.on('pageerror', error => errors.push(error.message));
@@ -345,7 +382,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, control panel, SOS guard+call, two-line tower, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

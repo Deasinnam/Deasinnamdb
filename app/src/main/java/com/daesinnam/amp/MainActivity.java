@@ -1223,14 +1223,17 @@ public class MainActivity extends Activity {
 
         // ---------- 콕핏 스킨 조종 패널
 
-        /** {"muted":bool,"wifi":bool,"bt":bool,"hasBt":bool} */
+        /** {"muted":bool,"volume":0~100,"wifi":bool,"wifiSupported":bool,"bt":bool,"hasBt":bool} — 읽을 수 없는 값은 빠짐 */
         @JavascriptInterface
         public String cockpitState() {
             JSONObject o = new JSONObject();
             try {
                 o.put("muted", am.isStreamMute(AudioManager.STREAM_MUSIC) || am.getStreamVolume(AudioManager.STREAM_MUSIC) == 0);
+                int max = Math.max(1, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+                o.put("volume", am.isStreamMute(AudioManager.STREAM_MUSIC) ? 0 : Math.round(am.getStreamVolume(AudioManager.STREAM_MUSIC) * 100f / max));
                 WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-                o.put("wifi", wm != null && wm.isWifiEnabled());
+                o.put("wifiSupported", wm != null);
+                if (wm != null) o.put("wifi", wm.isWifiEnabled());
                 BluetoothAdapter ba = btAdapter();
                 o.put("hasBt", ba != null);
                 o.put("bt", ba != null && ba.isEnabled());
