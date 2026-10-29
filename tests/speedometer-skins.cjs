@@ -110,6 +110,10 @@ async function main() {
     assert.equal(await page.locator('#mainTitle').textContent(), 'Cyber Carnival Cockpit');
     assert.equal(await page.locator('.brand .logo-img').isVisible(), true);
     assert.equal(await page.locator('#wMain').evaluate(el => getComputedStyle(el).clipPath), 'none', 'Cockpit panels are square-cornered plates, not cut corners');
+    const r = sel => page.locator(sel).evaluate(el => {const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,width:b.width}});
+    const st = await r('#wGps .gstats'), dl = await r('#dial'), body = await r('#wGps .gps');
+    assert.ok(st.bottom <= dl.top, 'Cockpit: trip stats sit in one strip above the speedometer');
+    assert.ok(dl.width >= body.width - 2, 'Cockpit: speedometer fills the window width');
     await page.locator('#gStyle').selectOption('carbon');
     assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
