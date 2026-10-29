@@ -23,6 +23,10 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!-- D1 DASHCAM: 블랙박스 와이파이를 앱 전용으로 연결(인터넷은 모바일 데이터 유지) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <!-- 선택: 앱이 꺼져 있을 때 차에 연결되면 앱을 자동으로 열기 (사용자가 설정에서 허용) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />

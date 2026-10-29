@@ -399,7 +399,7 @@ async function main() {
     const ty = sel => pa.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await ty('#wGps') < await ty('#wAtc'));
     await pa.locator('#setBtn').click();
-    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','지도','플레이어','재생 화면','이퀄라이저','재생 목록']);
+    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','블랙박스','지도','플레이어','재생 화면','이퀄라이저','재생 목록']);
     await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
     await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
     assert.deepEqual((await pa.locator('#ordList li b').allTextContents()).slice(0,3), ['관제탑','속도계','조종 패널']);
@@ -415,6 +415,55 @@ async function main() {
     await pa.locator('#setClose').click();
     assert.ok(await ty('#wGps') < await ty('#wAtc'), 'Reset restores the default layout');
     await pa.close();
+    // D1 DASHCAM: 자동차 스킨에만 보이고, 연결 → 실시간 화면(/cam/frame.jpg) → 카메라 찾기 결과, 인터넷은 모바일 데이터 표시
+    const pc = await context.newPage();
+    pc.on('pageerror', error => errors.push(error.message));
+    const jpg = Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAJABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDhKKKK4DzD/9k=','base64');
+    let camHits = 0;
+    await pc.route('**/cam/frame.jpg*', route => { camHits++; route.fulfill({status:200, contentType:'image/jpeg', body:jpg}); });
+    await pc.addInitScript(() => {if(!sessionStorage.getItem('pc')){sessionStorage.setItem('pc','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));localStorage.setItem('dna_layout', JSON.stringify('1'))}
+      const c={state:'idle',internet:true,defaultNet:'mobile',live:false,frames:0,probe:[],probing:false,fps:0,packets:0};window.__cam=c;window.__camCalls=[];
+      window.AndroidBridge={gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
+        camState:()=>JSON.stringify(c),
+        camConnect:(s,p)=>{window.__camCalls.push(['connect',s,p]);Object.assign(c,{state:'connected',via:'request',camIp:'192.168.29.1',gateway:'192.168.29.1',localIp:'192.168.29.2'});setTimeout(()=>window.__camConnect&&window.__camConnect('request'),10)},
+        camDisconnect:()=>{window.__camCalls.push(['disconnect']);Object.assign(c,{state:'idle',live:false,frames:0})},
+        camLive:on=>{window.__camCalls.push(['live',on]);c.live=on;if(on){c.frames=0;c.proto='jhcmd';let n=0;clearInterval(window.__ci);window.__ci=setInterval(()=>{if(!c.live)return;c.frames=++n;c.fps=15},80)}},
+        camProbe:()=>{c.probe=[{what:'JHCMD (UDP 20000 → 10900)',ip:'192.168.29.1',ok:true,note:'영상 조각 42개 수신'},{what:'RTSP (TCP 554)',ip:'192.168.29.1',ok:false,note:'닫힘'}]}};});
+    await pc.goto(origin);
+    const camTop = await pc.locator('#wCam').evaluate(el => el.getBoundingClientRect().top);
+    assert.ok(camTop > await pc.locator('#wAtc').evaluate(el => el.getBoundingClientRect().top), 'Dashcam sits after the tower');
+    assert.ok(camTop < await pc.locator('#wMap').evaluate(el => el.getBoundingClientRect().top), 'and before the map');
+    assert.equal(await pc.locator('#wCam .bar .t').textContent(), 'D1 Dashcam');
+    assert.match(await pc.locator('#camNet').textContent(), /인터넷\s*모바일 데이터/);
+    assert.ok(await pc.locator('#camLiveBtn').isDisabled());
+    await pc.locator('#camConn').click();
+    await pc.waitForFunction(() => document.querySelector('#camImg') && !document.querySelector('#camImg').hidden, null, {timeout:5000});
+    const calls = await pc.evaluate(() => window.__camCalls);
+    assert.deepEqual(calls[0], ['connect','Car-Cam*',''], 'Default SSID pattern Car-Cam*');
+    assert.ok(calls.some(c => c[0]==='live' && c[1]===true), 'Connect starts live view');
+    await pc.waitForFunction(() => document.querySelector('#camImg').naturalWidth > 0);
+    assert.ok(camHits >= 1, 'Frames requested from /cam/frame.jpg');
+    assert.equal(await pc.locator('#camSt').textContent(), 'LIVE');
+    assert.match(await pc.locator('#camNet').textContent(), /192\.168\.29\.1/);
+    assert.match(await pc.locator('#camNet').textContent(), /JHCMD/);
+    await pc.locator('#camProbeBtn').click();
+    await pc.waitForFunction(() => document.querySelectorAll('#camProbeList li').length === 2);
+    assert.ok(await pc.locator('#camSetBox').evaluate(el => el.open));
+    await pc.locator('#camFull').click();
+    assert.ok(await pc.locator('#wCam').evaluate(el => el.classList.contains('full')));
+    await pc.locator('#camView').click();
+    assert.ok(!(await pc.locator('#wCam').evaluate(el => el.classList.contains('full'))));
+    await pc.locator('#camSsid').fill('Car-Cam c9e710');
+    await pc.locator('#camSave').click();
+    assert.equal(await pc.locator('#camSsidSum').textContent(), 'Car-Cam c9e710');
+    await pc.locator('#camConn').click();
+    assert.ok((await pc.evaluate(() => window.__camCalls)).some(c => c[0]==='disconnect'));
+    await pc.waitForFunction(() => document.querySelector('#camImg').hidden);
+    await pc.locator('#camConn').click();
+    assert.deepEqual((await pc.evaluate(() => window.__camCalls)).filter(c=>c[0]==='connect').pop(), ['connect','Car-Cam c9e710',''], 'Saved SSID used');
+    await pc.locator('#skin').selectOption('blue');
+    assert.ok(!(await pc.locator('#wCam').isVisible()), 'Dashcam hidden outside car skins');
+    await pc.close();
     // 시각화 효과 10종: 고를 때마다 다른 화면, 다시 열어도 유지, 캔버스를 누르면 다음 효과
     const p9 = await context.newPage();
     p9.on('pageerror', error => errors.push(error.message));
@@ -537,7 +586,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

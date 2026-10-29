@@ -283,13 +283,13 @@ button{cursor:pointer}
 .app.L3{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);grid-template-areas:"main eq pl" "vis vis pl"}
 #wMain{grid-area:main}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}#wGps{grid-area:gps}
 /* 자동차 스킨: 가운데에 GPS 속도계 창 */
-.app.G{grid-template-areas:"gps" "map" "main" "vis" "eq" "pl"}
-.app.L2.G{grid-template-areas:"gps gps" "map map" "main eq" "vis pl"}
-.app.L3.G{grid-template-areas:"gps gps pl" "map map pl" "main eq pl" "vis vis pl"}
+.app.G{grid-template-areas:"gps" "cam" "map" "main" "vis" "eq" "pl"}
+.app.L2.G{grid-template-areas:"gps gps" "cam cam" "map map" "main eq" "vis pl"}
+.app.L3.G{grid-template-areas:"gps gps pl" "cam cam pl" "map map pl" "main eq pl" "vis vis pl"}
 /* 지도를 쓰지 않으면 맨 아래로 */
-.app.G.MO{grid-template-areas:"gps" "main" "vis" "eq" "pl" "map"}
-.app.L2.G.MO{grid-template-areas:"gps gps" "main eq" "vis pl" "map map"}
-.app.L3.G.MO{grid-template-areas:"gps gps pl" "main eq pl" "vis vis pl" "map map map"}
+.app.G.MO{grid-template-areas:"gps" "cam" "main" "vis" "eq" "pl" "map"}
+.app.L2.G.MO{grid-template-areas:"gps gps" "cam cam" "main eq" "vis pl" "map map"}
+.app.L3.G.MO{grid-template-areas:"gps gps pl" "cam cam pl" "main eq pl" "vis vis pl" "map map map"}
 #wMap{grid-area:map;display:none}
 .app.G #wMap{display:flex}
 #wGps{display:none}
@@ -580,15 +580,38 @@ input[type=range]:disabled{opacity:.35}
 :root[data-skin="carnival2"] #wGps.sized .gps{grid-template-rows:auto minmax(0,1fr);min-height:0;overflow:hidden}
 :root[data-skin="carnival2"] #wGps.sized .gauge{min-height:0}
 :root[data-skin="carnival2"] #wGps.sized .dial{min-height:60px}
+/* D1 DASHCAM: 블랙박스 실시간 화면 */
+#wCam{grid-area:cam;display:none}
+.app.G #wCam{display:flex}
+#wCam .body{display:flex;flex-direction:column;gap:10px}
+.camview{position:relative;aspect-ratio:16/9;max-height:62vh;border:1px solid var(--lcd-edge);border-radius:4px;overflow:hidden;background:#050605;display:flex;align-items:center;justify-content:center}
+.camview img{width:100%;height:100%;object-fit:contain;display:block}
+.camview img[hidden]{display:none}
+.cammsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5}
+.cammsg b{color:var(--ink,#ddd);font-size:15px}
+.camtag{position:absolute;top:8px;left:8px;display:flex;gap:6px;font:600 11px/1 var(--f-display);letter-spacing:.12em}
+.camtag span{padding:4px 7px;border-radius:3px;background:#000a;color:#cfd8c8;border:1px solid #fff2}
+.camtag .live{background:#b3141c;color:#fff;border-color:#ff5a5a}
+.camtag .live::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-right:5px;vertical-align:1px;animation:camblink 1s steps(2) infinite}
+@keyframes camblink{50%{opacity:0}}
+.camnet{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.camnet b{color:inherit;font-weight:600}
+.camnet .ok{color:#8fd16a}.camnet .bad{color:#ff7a6b}
+.camprobe{list-style:none;margin:0 10px 10px;padding:0;font-size:12.5px;display:grid;gap:3px}
+.camprobe li{display:flex;gap:8px;align-items:baseline}
+.camprobe li i{font-style:normal;width:14px;flex:none}
+.camprobe li.ok i{color:#8fd16a}.camprobe li:not(.ok) i{color:var(--muted)}
+.camprobe li em{font-style:normal;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#wCam.full .camview{position:fixed;inset:0;z-index:90;max-height:none;aspect-ratio:auto;border:0;border-radius:0}
 /* 콕핏 스킨 전용 창: 조종 패널 · 관제탑 */
 #wCtl{grid-area:ctl;display:none}#wAtc{grid-area:atc;display:none}
 .app.G.K #wCtl,.app.G.K #wAtc{display:flex}
-.app.G.K{grid-template-areas:"gps" "ctl" "atc" "map" "main" "vis" "eq" "pl"}
-.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "map map" "main eq" "vis pl"}
-.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "map map pl" "main eq pl" "vis vis pl"}
-.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "main" "vis" "eq" "pl" "map"}
-.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "main eq" "vis pl" "map map"}
-.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "main eq pl" "vis vis pl" "map map map"}
+.app.G.K{grid-template-areas:"gps" "ctl" "atc" "cam" "map" "main" "vis" "eq" "pl"}
+.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "map map" "main eq" "vis pl"}
+.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "map map pl" "main eq pl" "vis vis pl"}
+.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "cam" "main" "vis" "eq" "pl" "map"}
+.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "main eq" "vis pl" "map map"}
+.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "main eq pl" "vis vis pl" "map map map"}
 /* 관제탑: 데이터링크 화면에 출발 전 점검을 차례로 띄움 */
 #wAtc .body{display:flex;flex-direction:column;gap:10px}
 .atcrow{display:flex;gap:12px;align-items:stretch}
@@ -907,7 +930,7 @@ input[type=range]:disabled{opacity:.35}
 /* 창 순서 사용자 지정: 정해진 배치 대신 순서대로 흘려 놓고, 넓은 창(속도계·조종 패널·관제탑·지도)은 한 줄 전체 */
 .app.CO{grid-template-areas:none!important;grid-auto-flow:row dense}
 .app.CO>.win{grid-area:auto!important}
-.app.CO.L2>#wGps,.app.CO.L2>#wCtl,.app.CO.L2>#wAtc,.app.CO.L2>#wMap,.app.CO.L3>#wGps,.app.CO.L3>#wCtl,.app.CO.L3>#wAtc,.app.CO.L3>#wMap{grid-column:1/-1!important}
+.app.CO.L2>#wGps,.app.CO.L2>#wCtl,.app.CO.L2>#wAtc,.app.CO.L2>#wMap,.app.CO.L2>#wCam,.app.CO.L3>#wCam,.app.CO.L3>#wGps,.app.CO.L3>#wCtl,.app.CO.L3>#wAtc,.app.CO.L3>#wMap{grid-column:1/-1!important}
 .ordlist{list-style:none;margin:6px 0 4px;padding:0;display:flex;flex-direction:column;gap:6px}
 .ordlist li{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 6px 0 12px;border:1px solid var(--frame-in);border-radius:4px;background:#0000002a}
 .ordlist li b{flex:1;font-size:15px}
@@ -1153,6 +1176,31 @@ html.driving body{overflow:hidden}
         </div>
         <div class="atcbtns"><button class="pill" id="atcRun">다시 점검</button><button class="pill" id="atcSkip">건너뛰기</button></div>
       </div>
+    </div>
+  </section>
+
+  <section class="win" id="wCam">
+    <div class="bar"><span class="t">D1 Dashcam</span><span class="s" id="camSt"></span><span class="groove"></span><button class="wbtn" data-col="wCam" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="body">
+      <div class="camview" id="camView">
+        <img id="camImg" alt="블랙박스 실시간 화면" hidden>
+        <div class="cammsg" id="camMsg"><b>블랙박스에 연결하지 않았어요</b><span>연결을 누르면 블랙박스 와이파이에 이 앱만 연결해요. 인터넷(지도·음악 정보)은 모바일 데이터를 그대로 씁니다.</span></div>
+        <div class="camtag"><span class="live" id="camLiveTag" hidden>LIVE</span><span id="camFps" hidden></span></div>
+      </div>
+      <div class="mapctl">
+        <button class="pill on" id="camConn">연결</button>
+        <button class="pill" id="camLiveBtn" disabled>실시간 보기</button>
+        <button class="pill" id="camProbeBtn" disabled>카메라 찾기</button>
+        <button class="pill" id="camFull" disabled>전체 화면</button>
+        <button class="pill" id="camWifi">와이파이 설정</button>
+      </div>
+      <div class="camnet" id="camNet"></div>
+      <details class="permbox mapkey" id="camSetBox"><summary><span>블랙박스 와이파이</span><em id="camSsidSum">Car-Cam</em></summary>
+        <div class="keyrow"><input id="camSsid" placeholder="와이파이 이름 (예: Car-Cam c9e710)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="블랙박스 와이파이 이름">
+          <input id="camPass" type="password" placeholder="비밀번호 (없으면 비워 두기)" autocomplete="off" aria-label="블랙박스 와이파이 비밀번호"><button class="pill on" id="camSave">저장</button></div>
+        <p class="hint">이름 끝에 *를 붙이거나 비워 두면 Car-Cam으로 시작하는 와이파이를 찾아요. 비밀번호는 이 기기에만 저장돼요.</p>
+        <ul class="camprobe" id="camProbeList"></ul>
+      </details>
     </div>
   </section>
 
@@ -2777,10 +2825,67 @@ window.AmpHost={
   gpsStart(){gpsStart()},gpsStop(){gpsStop(true)},
   load(k,d){return store.get(k,d)},save(k,v){store.set(k,v)}
 };
+/* ---------- D1 DASHCAM: 블랙박스 실시간 화면 ---------- */
+(function(){
+  const HAS_CAM=!!(NB&&NB.camState);
+  const img=$('#camImg'),msg=$('#camMsg'),w=$('#wCam');
+  let cs={},liveWant=false,loading=false,lastFrames=-1,pollT=0;
+  const ssid=()=>store.get('camSsid','Car-Cam*'),pass=()=>store.get('camPass','');
+  $('#camSsid').value=store.get('camSsid','');$('#camSsidSum').textContent=ssid().replace(/\*$/,'')||'Car-Cam';
+  function say(title,sub){msg.hidden=false;msg.innerHTML='<b></b><span></span>';msg.children[0].textContent=title;msg.children[1].textContent=sub||''}
+  function render(){
+    const st=cs.state||'idle',on=st==='connected';
+    $('#camConn').textContent=on||st==='requesting'?'연결 끊기':'연결';$('#camConn').classList.toggle('on',!(on||st==='requesting'));
+    $('#camLiveBtn').disabled=!on;$('#camProbeBtn').disabled=!on||cs.probing;$('#camFull').disabled=!cs.live;
+    $('#camLiveBtn').textContent=cs.live?'실시간 끄기':'실시간 보기';$('#camLiveBtn').classList.toggle('on',!!cs.live);
+    $('#camProbeBtn').textContent=cs.probing?'찾는 중…':'카메라 찾기';
+    $('#camSt').textContent={idle:'',requesting:'연결 중',connected:cs.live?'LIVE':'연결됨',lost:'끊김',unavailable:'연결 실패'}[st]||'';
+    $('#camLiveTag').hidden=!(cs.live&&cs.frames>0);
+    $('#camFps').hidden=!(cs.live&&cs.frames>0);$('#camFps').textContent=(cs.fps||0)+' FPS';
+    const net=$('#camNet');net.innerHTML='';
+    const add=(k,v,c)=>{const s=document.createElement('span');s.innerHTML='<b></b> ';s.firstChild.textContent=k;s.append(v);if(c)s.className=c;net.appendChild(s)};
+    if(on){add('카메라',cs.camIp||cs.gateway||'-');if(cs.localIp)add('내 주소',cs.localIp);if(cs.proto)add('방식',cs.proto==='jhcmd'?'JHCMD 실시간':cs.proto)}
+    add('인터넷',cs.internet?(cs.defaultNet==='mobile'?'모바일 데이터':cs.defaultNet==='wifi'?'와이파이':'연결됨'):'없음',cs.internet?'ok':'bad');
+    const ul=$('#camProbeList');ul.innerHTML='';
+    (cs.probe||[]).forEach(r=>{const li=document.createElement('li');li.className=r.ok?'ok':'';li.innerHTML='<i></i><span></span><em></em>';li.children[0].textContent=r.ok?'●':'○';li.children[1].textContent=r.what;li.children[2].textContent=r.note||'';ul.appendChild(li)});
+    if(!HAS_CAM){img.hidden=true;say('앱에서만 쓸 수 있어요','휴대폰 앱에서 블랙박스 와이파이에 연결해 실시간 화면을 볼 수 있어요.');return}
+    if(cs.live&&cs.frames>0){msg.hidden=true;img.hidden=false;return}
+    img.hidden=true;
+    if(st==='requesting')say('블랙박스 와이파이를 찾는 중…','휴대폰에 연결 확인 창이 뜨면 블랙박스 와이파이를 골라 주세요.');
+    else if(st==='unavailable')say('연결하지 못했어요',cs.err||'블랙박스 전원과 와이파이 이름을 확인해 주세요.');
+    else if(st==='lost')say('연결이 끊겼어요','블랙박스 전원이 꺼졌거나 너무 멀어졌어요. 다시 연결해 주세요.');
+    else if(on&&cs.live)say('화면을 기다리는 중…',cs.packets>0?'영상 조각을 받고 있어요 ('+cs.packets+')':'카메라가 응답하지 않으면 카메라 찾기로 통신 방식을 확인해 보세요.');
+    else if(on)say('블랙박스에 연결됐어요','실시간 보기를 누르면 화면이 나와요.');
+    else say('블랙박스에 연결하지 않았어요','연결을 누르면 블랙박스 와이파이에 이 앱만 연결해요. 인터넷(지도·음악 정보)은 모바일 데이터를 그대로 씁니다.');
+  }
+  function pull(){
+    if(HAS_CAM)try{cs=JSON.parse(NB.camState())||{}}catch(e){cs={}}
+    if(liveWant&&cs.state==='connected'&&!cs.live&&HAS_CAM){try{NB.camLive(true)}catch(e){}}
+    if(cs.live&&cs.frames!==lastFrames&&cs.frames>0&&!loading){loading=true;lastFrames=cs.frames;img.src='/cam/frame.jpg?n='+cs.frames}
+    render();
+  }
+  img.onload=img.onerror=()=>{loading=false};
+  function loop(){clearTimeout(pollT);const vis=isCar()&&!w.classList.contains('collapsed')&&!document.hidden;
+    if(vis||cs.state==='requesting')pull();pollT=setTimeout(loop,cs.live?66:600)}
+  window.__camConnect=r=>{if(r==='old')toast('휴대폰 와이파이 설정에서 블랙박스 와이파이에 먼저 연결해 주세요.');pull()};
+  $('#camConn').onclick=()=>{if(!HAS_CAM){toast('휴대폰 앱에서 쓸 수 있어요.');return}
+    const st=cs.state;if(st==='connected'||st==='requesting'){liveWant=false;try{NB.camDisconnect()}catch(e){}pull();return}
+    liveWant=true;try{NB.camConnect(ssid(),pass())}catch(e){}setTimeout(pull,300)};
+  $('#camLiveBtn').onclick=()=>{liveWant=!cs.live;try{NB.camLive(liveWant)}catch(e){}if(!liveWant){lastFrames=-1;$('#wCam').classList.remove('full')}setTimeout(pull,200)};
+  $('#camProbeBtn').onclick=()=>{try{NB.camProbe()}catch(e){}$('#camSetBox').open=true;setTimeout(pull,200)};
+  $('#camFull').onclick=()=>w.classList.toggle('full');
+  $('#camView').onclick=()=>{if(w.classList.contains('full'))w.classList.remove('full')};
+  $('#camWifi').onclick=()=>{if(NB&&NB.openWifiSettings)try{NB.openWifiSettings()}catch(e){}else toast('휴대폰 앱에서 쓸 수 있어요.')};
+  $('#camSave').onclick=()=>{const v=$('#camSsid').value.trim();store.set('camSsid',v||'Car-Cam*');const pw=$('#camPass').value;if(pw)store.set('camPass',pw);$('#camPass').value='';
+    $('#camSsidSum').textContent=ssid().replace(/\*$/,'')||'Car-Cam';toast('블랙박스 와이파이를 저장했어요.')};
+  document.addEventListener('visibilitychange',loop);
+  window.AmpCam={pull,state:()=>cs};
+  render();loop();
+})();
 /* ---------- 창 순서(설정) ---------- */
-const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wEq:'이퀄라이저',wPl:'재생 목록'};
+const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wEq:'이퀄라이저',wPl:'재생 목록'};
 function winKind(){return skin==='carnival2'?'K':isCar()?'G':'N'}
-function winDefault(){return {K:['wGps','wCtl','wAtc','wMap','wMain','wVis','wEq','wPl'],G:['wGps','wMap','wMain','wVis','wEq','wPl'],N:['wMain','wVis','wEq','wPl']}[winKind()]}
+function winDefault(){return {K:['wGps','wCtl','wAtc','wCam','wMap','wMain','wVis','wEq','wPl'],G:['wGps','wCam','wMap','wMain','wVis','wEq','wPl'],N:['wMain','wVis','wEq','wPl']}[winKind()]}
 function winOrder(){const d=winDefault(),o=store.get('winOrder_'+winKind(),null);if(!Array.isArray(o))return null;const f=o.filter(id=>d.includes(id));d.forEach(id=>{if(!f.includes(id))f.push(id)});return f}
 function applyWinOrder(){const o=winOrder();appEl.classList.toggle('CO',!!o);
   document.querySelectorAll('#app>.win').forEach(w=>w.style.order='');

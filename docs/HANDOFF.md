@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v5.9** (versionCode 39) |
+| 최신 버전 | **v6.0** (versionCode 40) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -59,6 +59,8 @@
 - v5.8: 화면 파일 정리 — PFD 패키지를 `assets/pfd/`(원본 그대로)로 분리, 앱 연결·선회 효과는 `assets/pfd-amp.js`/`pfd-amp.css`로(선회는 패키지 수정 없이 장면 객체에 런타임으로 덧붙임). index.html은 `window.AmpHost`(읽기·쓰기 창구)만 내놓고 `window.AmpPfd.feed()`를 부름. 웹 미리보기 빌드 시 이 파일들을 인라인. 콕핏 로고를 D1 이미지로 교체. 서명 키를 새로 만들어 Secrets로 이동(설치된 앱은 한 번 지우고 재설치 필요)
 - v5.9: 배포 준비 — KIA 로고 이미지 삭제, 스킨 표시 이름 "대신남 자동차 모드"/"대신남 자동차 모드 · 콕핏"(내부 키 carnival/carnival2는 저장값 호환 위해 유지), 제목 Daesinnam Car Mode. 설정에 오픈소스 라이선스(`#secOss`, 전문 4종). OSM 출처를 "© OpenStreetMap contributors"(링크)로
 
+- v6.0: **D1 DASHCAM** 창(`#wCam`, 자동차 스킨 공통, 콕핏은 관제탑 아래·그 외는 속도계 아래, 창 순서 이름 "블랙박스"). 네이티브 `CamLink.java`: 카메라 와이파이에 앱 전용 연결(`WifiNetworkSpecifier`, 인터넷 없음 요청, 이미 연결된 인터넷 없는 와이파이 우선 재사용), 카메라 소켓만 `Network.bindSocket()`/`getSocketFactory()` — `bindProcessToNetwork`는 쓰지 않아 인터넷은 모바일 데이터 유지. JHCMD 실시간(UDP 20000 명령, 10900 수신, 1초 하트비트, JPEG 재조립) → `/cam/frame.jpg`(shouldInterceptRequest). "카메라 찾기"는 JHCMD·RTSP 554/8554·HTTP 80/8080·TCP 포트 몇 개를 확인해 결과 표시. 브리지: camState/camConnect/camDisconnect/camProbe/camLive/openWifiSettings. 권한: ACCESS/CHANGE_NETWORK_STATE, NEARBY_WIFI_DEVICES(neverForLocation, 13+), 10~12는 정확한 위치. 기본 SSID 패턴 `Car-Cam*`, 설정에서 이름·비밀번호 저장
+
 ## 4. 확인 대기 중
 
 - **v4.0 핸들 버튼 선곡**: 이전 두 번의 수정(MediaSession, 오디오 포커스)은 실패. Media3로 바꾼 v4.0이 실제 차량에서 되는지 사용자 확인 필요.
@@ -82,9 +84,12 @@
 2. 자동차 스킨에 **CAMERA** 창: 라이브 보기, 녹화 파일 목록, 충격 영상 재생.
 3. 프로토콜 프로브: JHCMD(UDP 20000/10900), RTSP, GP4225/GPSOCKET.
 
+**받은 정보**: 카메라 와이파이 "Car-Cam c9e710", 보안 없음, DHCP, 폰 IP 192.168.29.2 → 카메라 192.168.29.1(JHCMD 기본 주소와 일치). 이름은 **D1 DASHCAM**, 형태는 AMP 안의 창.
+
+**v6.0에서 한 것**: 1번(네트워크 분리)·2번 중 라이브 보기·3번 프로브. 실기기에서 JHCMD 화면이 나오는지 확인 필요(안 나오면 "카메라 찾기" 결과를 받아 볼 것).
+
 **사용자에게 요청해 둔 것 (아직 안 받음)**
-- PCAPdroid로 JoyTrip 트래픽 캡처(라이브 10초 → 파일 목록 → 파일 하나 재생) 후 PCAP 파일
-- 카메라 와이파이 이름(SSID)
+- PCAPdroid로 JoyTrip 트래픽 캡처(라이브 10초 → 파일 목록 → 파일 하나 재생) 후 PCAP 파일 → 녹화 파일 목록·재생 구현에 필요
 - XAPK는 이전 대화에만 첨부되어 있으므로, 다시 분석이 필요하면 재첨부 필요
 
 **당장 쓸 수 있는 우회(설정)**: Wi-Fi → ⋮ → 인텔리전트 Wi-Fi → "모바일 데이터로 전환" 켜기, 개발자 옵션 → "모바일 데이터 항상 사용" 켜기, 카메라 와이파이 다시 연결 후 "인터넷 없음"에서 연결 유지.

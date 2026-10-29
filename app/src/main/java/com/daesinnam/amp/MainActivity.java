@@ -76,6 +76,8 @@ public class MainActivity extends Activity {
     private static final int REQ_BT = 46;
     private static final int REQ_CALL = 47;
     private static final int REQ_CONTACT = 48;
+    private static final int REQ_CAM = 49;
+    private String[] pendingCam;
     private String pendingCall;
     private boolean attWanted;
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
@@ -90,6 +92,8 @@ public class MainActivity extends Activity {
 
     // GPS 속도계
     private GpsTracker gps;
+    // D1 DASHCAM: 블랙박스 와이파이(앱 전용) 연결
+    private CamLink cam;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
 
@@ -159,6 +163,7 @@ public class MainActivity extends Activity {
         am = getSystemService(AudioManager.class);
         listenerCn = new ComponentName(this, MediaListener.class);
         gps = new GpsTracker(this);
+        cam = new CamLink(this);
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#05070D"));
@@ -185,6 +190,9 @@ public class MainActivity extends Activity {
                 Uri u = request.getUrl();
                 if ("appassets.androidplatform.net".equals(u.getHost()) && ("/media".equals(u.getPath()) || "/art".equals(u.getPath()))) {
                     return MediaLibrary.serve(MainActivity.this, u, request.getRequestHeaders());
+                }
+                if ("appassets.androidplatform.net".equals(u.getHost()) && "/cam/frame.jpg".equals(u.getPath())) {
+                    return camFrame();
                 }
                 return loader.shouldInterceptRequest(u);
             }
@@ -279,6 +287,32 @@ public class MainActivity extends Activity {
             boolean ok = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
             placeCall(n, ok);
         }
+        if (requestCode == REQ_CAM && pendingCam != null) {
+            String[] a = pendingCam;
+            pendingCam = null;
+            camResult(cam.connect(a[0], a[1]));
+        }
+    }
+
+    // ---------- D1 DASHCAM
+    private WebResourceResponse camFrame() {
+        byte[] f = cam.latestFrame();
+        java.util.Map<String, String> h = new java.util.HashMap<>();
+        h.put("Cache-Control", "no-store");
+        h.put("Access-Control-Allow-Origin", "*");
+        if (f == null) return new WebResourceResponse("image/jpeg", null, 404, "No Frame", h, new java.io.ByteArrayInputStream(new byte[0]));
+        return new WebResourceResponse("image/jpeg", null, 200, "OK", h, new java.io.ByteArrayInputStream(f));
+    }
+
+    /** 와이파이 연결 요청에 필요한 권한: 13 이상은 근처 기기, 10~12는 정확한 위치 */
+    private String camPermission() {
+        if (Build.VERSION.SDK_INT >= 33) return "android.permission.NEARBY_WIFI_DEVICES";
+        if (Build.VERSION.SDK_INT >= 29) return Manifest.permission.ACCESS_FINE_LOCATION;
+        return null;
+    }
+
+    private void camResult(String r) {
+        js("window.__camConnect && window.__camConnect(" + JSONObject.quote(r) + ")");
     }
 
     // ---------- 콕핏 스킨 SOS: 정해 둔 연락처로 바로 전화
@@ -568,6 +602,7 @@ public class MainActivity extends Activity {
         nat = null;
         stopViz();
         gps.stop();
+        cam.disconnect();
         ExternalEq.I.setActive(false);
         stopService(new Intent(this, PlaybackService.class));
         if (web != null) {
@@ -1349,6 +1384,47 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void speak(final String text) {
             main.post(() -> MainActivity.this.speak(text));
+        }
+
+        // ---------- D1 DASHCAM
+        @JavascriptInterface
+        public String camState() {
+            return cam.status();
+        }
+
+        @JavascriptInterface
+        public void camConnect(final String ssid, final String pass) {
+            main.post(() -> {
+                String perm = camPermission();
+                if (perm != null && checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
+                    pendingCam = new String[]{nz(ssid), nz(pass)};
+                    requestPermissions(new String[]{perm}, REQ_CAM);
+                    return;
+                }
+                camResult(cam.connect(nz(ssid), nz(pass)));
+            });
+        }
+
+        @JavascriptInterface
+        public void camDisconnect() {
+            cam.disconnect();
+        }
+
+        @JavascriptInterface
+        public void camProbe() {
+            cam.startProbe();
+        }
+
+        @JavascriptInterface
+        public void camLive(boolean on) {
+            if (on) cam.startLive(); else cam.stopLive();
+        }
+
+        @JavascriptInterface
+        public void openWifiSettings() {
+            main.post(() -> {
+                try { startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); } catch (Exception ignored) {}
+            });
         }
     }
 
