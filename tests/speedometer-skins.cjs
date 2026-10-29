@@ -118,7 +118,10 @@ async function main() {
     for (const id of ['#wCtl','#wAtc','#wMain','#wEq','#wPl','#wVis']) assert.equal(await page.locator(id+' > .grip').isVisible(), false, id+' has no resize grip');
     assert.equal(await page.locator('#wMain').evaluate(el => getComputedStyle(el).clipPath), 'none', 'Cockpit panels are square-cornered plates, not cut corners');
     const r = sel => page.locator(sel).evaluate(el => {const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,width:b.width}});
-    const st = await r('#wGps .gstats'), dl = await r('#dial'), body = await r('#wGps .gps');
+    assert.equal(await page.locator('#pfdHost .dsn-pfd').isVisible(), true, 'Cockpit uses the Daesinnam PFD package');
+    assert.equal(await page.locator('#wGps .body > .gps').isVisible(), false, 'Old cockpit gauge hidden');
+    assert.equal(await page.locator('#pfdHost .pfd-header').isVisible(), false, 'App window bar is the only title bar');
+    const st = await r('#pfdHost .pfd-metrics'), dl = await r('#pfdHost .pfd-canvas-wrap'), body = await r('#pfdHost .pfd-glass');
     assert.ok(st.bottom <= dl.top, 'Cockpit: trip stats sit in one strip above the speedometer');
     assert.ok(dl.width >= body.width - 2, 'Cockpit: speedometer fills the window width');
     // 속도계 크기 조절은 조절 버튼을 켰을 때만
@@ -136,15 +139,16 @@ async function main() {
     assert.equal(await page.locator('#wGps > .grip').isVisible(), false, 'Turning resize off hides the grip again');
     assert.equal(await page.locator('#gRz').getAttribute('aria-pressed'), 'false');
     // 콕핏 창을 줄이면 속도계도 함께 작아지고, 늘리면 커짐
-    const dialH = () => page.locator('#dial').evaluate(el => el.getBoundingClientRect().height);
+    const dialH = () => page.locator('#pfdHost .pfd-canvas-wrap').evaluate(el => el.getBoundingClientRect().height);
     const fullH = await dialH();
     await page.evaluate(() => {const w=document.querySelector('#wGps');w.style.height=(w.getBoundingClientRect().height-220)+'px';w.classList.add('sized')});
     await page.waitForTimeout(150);
     const smallH = await dialH();
     assert.ok(smallH < fullH - 150, `Shrinking the cockpit window shrinks the PFD (${fullH} -> ${smallH})`);
     assert.equal(await page.locator('#wGps .body').evaluate(el => el.scrollHeight <= el.clientHeight + 1), true, 'Shrunk cockpit fits without scrolling');
-    const cw = await page.locator('#gauge').evaluate(c => c.width / c.height);
-    assert.ok(cw > 2, 'Gauge canvas follows the new aspect ratio');
+    await page.waitForTimeout(150);
+    const cw = await page.locator('#pfdHost canvas').evaluate(c => c.width / c.height);
+    assert.ok(cw > 3, `PFD canvas follows the new aspect ratio (${cw})`);
     await page.evaluate(() => {const w=document.querySelector('#wGps');w.style.height='';w.classList.remove('sized')});
     // 조종 패널(패키지 콘솔): 웹 시연에서는 레버가 바로 바뀌고, 볼륨 노브·+/−·음소거, DRIVE MODE는 앱의 간편 모드
     assert.equal(await page.locator('#wCtl').isVisible(), true);
@@ -216,6 +220,9 @@ async function main() {
     assert.equal(await page.locator('#dkGuardFrame').evaluate(el => el.classList.contains('open')), false, 'Collapsing closes the guard');
     assert.equal(await page.locator('#dkControlDeck').isVisible(), false);
     await page.locator('#dkCollapseButton').click();
+    await page.locator('#skin').selectOption('carnival');
+    await page.locator('#gStyle').selectOption('cockpit');
+    await page.waitForTimeout(150);
     await page.locator('#gStyle').selectOption('carbon');
     assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
@@ -417,7 +424,11 @@ async function main() {
       window.g8={fix:true,perm:true,enabled:true,provider:'gps',speed:5,bearing:0,azimuth:-1,acc:3,alt:10,satsUsed:9,satsSeen:12,lat:37,lon:127,ts:1000};
       window.AndroidBridge={gpsStatus:()=>JSON.stringify(g8),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
     await p8.goto(origin);
-    await p8.locator('#gOn').click();
+    await p8.locator('#pfdHost [data-role="gps"]').click();
+    await p8.waitForFunction(() => window.pfd.getState().valid && document.querySelector('#pfdHost [data-role="signalText"]').textContent === 'GPS LIVE', null, {timeout:3000});
+    assert.equal(Math.round(await p8.evaluate(() => pfd.getState().telemetry.speedKmh)), 18, 'PFD gets the app GPS speed in km/h');
+    assert.equal(await p8.locator('#pfdHost [data-role="gpsText"]').textContent(), 'GPS 끄기');
+    assert.equal(await p8.locator('#pfdHost [data-role="satellites"]').textContent(), '위성 9/12');
     await p8.waitForTimeout(500);
     assert.equal(await p8.locator('#atcWarn').isVisible(), false);
     await p8.evaluate(() => {g8.speed=14.2;g8.ts+=1000});
@@ -426,13 +437,22 @@ async function main() {
     assert.equal(await p8.locator('#atcWarn b').evaluate(el => getComputedStyle(el).color), 'rgb(255, 59, 48)', 'Warning is red');
     await p8.evaluate(() => {g8.speed=34;g8.ts+=1000});
     await p8.waitForFunction(() => /120 km/.test(document.querySelector('#atcWarn').textContent), null, {timeout:3000});
+    await p8.waitForFunction(() => pfd.getState().telemetry.maxSpeedKmh > 100, null, {timeout:3000});
+    await p8.locator('#pfdHost [data-role="reset"]').click();
+    assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_trip')).max), 0, 'PFD reset clears the app trip record');
+    await p8.locator('#pfdHost [data-role="settings"]').click();
+    await p8.locator('#pfdHost [data-role="limitInput"]').fill('80');
+    await p8.locator('#pfdHost .pfd-save').click();
+    assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_gLimit'))), 80, 'PFD speed limit is the app speed warning');
+    await p8.locator('#pfdHost [data-role="gps"]').click();
+    await p8.waitForFunction(() => document.querySelector('#pfdHost [data-role="signalText"]').textContent === 'GPS OFF', null, {timeout:3000});
     await p8.close();
     // 콕핏 PFD: 기울기·나침반 센서, 구름, 야간 하늘
     const p6 = await context.newPage();
     p6.on('pageerror', error => errors.push(error.message));
     await p6.addInitScript(() => {
       localStorage.clear();
-      localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));localStorage.setItem('dna_gStyle', JSON.stringify('cockpit'));localStorage.setItem('dna_gSky', JSON.stringify('day'));
+      localStorage.setItem('dna_skin2', JSON.stringify('carnival'));localStorage.setItem('dna_gStyle', JSON.stringify('cockpit'));localStorage.setItem('dna_gSky', JSON.stringify('day'));
       window.attF = {ok:true,r:[1,0,0,0,1,0,0,0,1],srot:0,decl:0,compass:true};window.attCalls={start:0,stop:0};
       window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
         attStart:()=>attCalls.start++,attStop:()=>attCalls.stop++,attitude:()=>JSON.stringify(attF)};
@@ -459,7 +479,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: Daesinnam PFD package in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

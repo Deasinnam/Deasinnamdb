@@ -892,6 +892,7 @@ input[type=range]:disabled{opacity:.35}
 .dsn .volume-strip .mute{margin:0 0 0 4px!important;height:30px;min-height:30px!important;padding:0 8px}
 .dsn .console{padding-bottom:12px}
 
+@container dsn (max-width:340px){.dsn .squad-mark{display:none}.dsn .brand-block h1{font-size:12px!important;letter-spacing:.03em!important}.dsn .eyebrow{display:none}.dsn .header-btn{min-width:34px;height:34px}.dsn .console-header{padding-left:6px;gap:6px}.dsn .lever-switch,.dsn .guard-frame,.dsn .knob-surround{zoom:.52}.dsn .module{padding:8px 3px!important}.dsn .volume-strip{gap:2px!important}.dsn .volume-strip button{min-width:24px!important;height:28px!important}.dsn .volume-strip output{min-width:30px!important;font-size:15px!important}.dsn .volume-strip .mute{padding:0 4px;margin-left:2px!important}.dsn .console{padding:12px 8px 10px}.dsn .deck{padding:8px 6px}}
 /* 관제탑 속도 주의: 빨간 글자 */
 .atcwarn{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 10px;background:#160404;border:2px solid #ff3b30;border-radius:3px;box-shadow:0 0 18px #ff3b3044,inset 0 0 16px #ff3b3022;text-align:center;animation:warnin .9s steps(2) 2}
 .atcwarn b{font-family:"Barlow Condensed","Noto Sans KR",sans-serif;font-weight:700;font-size:clamp(16px,2.4vw,22px);letter-spacing:.08em;color:#ff3b30;text-shadow:0 0 10px #ff3b30aa;white-space:nowrap;line-height:1}
@@ -916,6 +917,31 @@ input[type=range]:disabled{opacity:.35}
 .ordlist li em{font-style:normal;font-family:var(--f-lcd);color:var(--muted);width:22px}
 .ordlist li button{width:44px;height:40px;padding:0;font-size:16px}
 .ordlist li button:disabled{opacity:.3}
+/* 콕핏 스킨 속도계: 대신남 PFD 패키지(pfd.css). 제목줄·접기·크기 조절은 앱 창 것을 씀 */
+#pfdHost{display:none}
+:root[data-skin="carnival2"] #pfdHost{display:block}
+:root[data-skin="carnival2"] #wGps .body>.gps,:root[data-skin="carnival2"] #wGps .body>.gctl,:root[data-skin="carnival2"] #wGps .body>.gmsg{display:none!important}
+:root[data-skin="carnival2"] #wGps>.body{padding:6px}
+#pfdHost .pfd-header{display:none}
+#pfdHost .dsn-pfd{min-width:0}
+#wGps.sized #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost .dsn-pfd{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost [data-role="content"]{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
+#wGps.sized #pfdHost .pfd-canvas-wrap{flex:1;min-height:90px;height:auto!important;aspect-ratio:auto!important}
+:root[data-skin="carnival2"] #wGps.sized>.body{display:flex;flex-direction:column;overflow:hidden}
+.dsn-pfd{--pfd-bg:#1b241e;--pfd-text:#e1eadc;--pfd-muted:#94a58f;--pfd-green:#b3f6a3;--pfd-amber:#ffd16a;--pfd-border:#3e5040;--pfd-black:#040a07;font-family:Arial,"Noto Sans KR",sans-serif;color:var(--pfd-text);background:linear-gradient(150deg,#253028,#121b15 85%);border:1px solid #60705e;border-radius:11px;padding:10px;box-shadow:inset 0 0 0 4px #101912,0 9px 28px #0006;position:relative;isolation:isolate;box-sizing:border-box;min-width:280px}
+.dsn-pfd *{box-sizing:border-box}.dsn-pfd button,.dsn-pfd select,.dsn-pfd input{font:inherit}.dsn-pfd button,.dsn-pfd select{cursor:pointer;touch-action:manipulation}.dsn-pfd button:focus-visible,.dsn-pfd select:focus-visible,.dsn-pfd input:focus-visible{outline:3px solid var(--pfd-amber);outline-offset:2px}.dsn-pfd [hidden]{display:none!important}.dsn-pfd .pfd-header{min-height:42px;display:flex;gap:20px;align-items:center;padding:0 10px 9px;border-bottom:1px solid #41503f;box-shadow:0 1px #020803;margin:0 0 10px}.dsn-pfd .pfd-header h2{font:bold clamp(13px,1.6vw,23px) ui-monospace,Consolas,monospace;letter-spacing:.22em;margin:0;white-space:nowrap}.dsn-pfd .pfd-signal{display:flex;align-items:center;gap:8px;font:bold 11px ui-monospace,monospace;letter-spacing:.06em;color:var(--pfd-amber)}.dsn-pfd .pfd-signal i{display:block;width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 7px currentColor}.dsn-pfd .pfd-signal[data-live="true"]{color:var(--pfd-green)}.dsn-pfd .pfd-collapse{margin-left:auto;min-height:36px;min-width:42px;border:1px solid #596b54;border-radius:4px;background:linear-gradient(#27352a,#131f16);color:#dde6d7;font:22px monospace}.dsn-pfd .pfd-bolt{position:absolute;width:7px;height:7px;border-radius:50%;background:linear-gradient(140deg,#9ba694,#344033);box-shadow:0 0 0 2px #10180f;pointer-events:none}.dsn-pfd .pfd-bolt.one{left:8px;top:8px}.dsn-pfd .pfd-bolt.two{right:8px;bottom:8px}
+.dsn-pfd .pfd-metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:0 2px 9px}.dsn-pfd .pfd-metric{min-width:0;border:1px solid #3f533f;border-radius:5px;box-shadow:inset 0 0 0 3px #070e08;background:linear-gradient(145deg,#0b150c,#030905);padding:11px 15px 9px}.dsn-pfd .pfd-metric-label{font-size:clamp(10px,1.05vw,15px);color:#b8c7b0;display:block;margin-bottom:5px;letter-spacing:.03em;white-space:nowrap}.dsn-pfd .pfd-metric-value{font:bold clamp(17px,2.7vw,39px) Arial,sans-serif;color:#c4f5b9;font-variant-numeric:tabular-nums;line-height:1.15;white-space:nowrap}.dsn-pfd .pfd-unit{font-size:.48em;letter-spacing:.02em;font-weight:500;margin-left:5px}.dsn-pfd .pfd-sat{font-size:10px;color:#abc79e;display:block;margin-top:3px;line-height:1.25}
+.dsn-pfd .pfd-glass{margin:0 2px;border:1px solid #415440;border-radius:5px;overflow:hidden;background:#020704;box-shadow:inset 0 0 0 3px #010502;position:relative}.dsn-pfd .pfd-flight-meta{height:38px;display:flex;justify-content:space-between;align-items:center;padding:0 18px;font:bold clamp(11px,1.5vw,21px) ui-monospace,monospace;color:var(--pfd-green);letter-spacing:.025em;background:#020603}.dsn-pfd .pfd-flight-meta button{border:0;color:#a4b49d;background:transparent;min-width:80px;min-height:34px;font:inherit;text-align:right}.dsn-pfd .pfd-flight-meta button[data-active="true"]{color:var(--pfd-amber)}.dsn-pfd .pfd-canvas-wrap{width:100%;aspect-ratio:2.6;position:relative;overflow:hidden}.dsn-pfd canvas{display:block;width:100%;height:100%}.dsn-pfd .pfd-hud-layer{position:absolute;inset:0;background:#010502;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#bdffb1;gap:10px}.dsn-pfd .pfd-hud-digits{font:700 clamp(88px,15vw,240px) Arial,sans-serif;line-height:.95;font-variant-numeric:tabular-nums}.dsn-pfd .pfd-hud-unit{font:20px ui-monospace,monospace;letter-spacing:.18em}.dsn-pfd .pfd-hud-heading{font:24px ui-monospace,monospace;letter-spacing:.1em;margin-top:16px}.dsn-pfd .pfd-hud-caption{font:11px ui-monospace,monospace;letter-spacing:.15em;color:#8dba86;margin-top:14px}.dsn-pfd .pfd-hud-layer.mirrored{transform:scaleX(-1)}
+.dsn-pfd .pfd-tools{display:grid;grid-template-columns:1fr 1fr .7fr 1.4fr 1fr 1fr;gap:9px;margin:10px 3px 1px}.dsn-pfd .pfd-tool{display:flex;align-items:center;justify-content:center;gap:12px;min-width:0;min-height:53px;border:1px solid #53664e;border-radius:4px;padding:9px;color:#dfe7d9;background:linear-gradient(#26322a,#121e16);box-shadow:0 2px 3px #0007,inset 0 0 0 2px #0a130d;font-size:clamp(10px,1.2vw,17px);font-weight:600;white-space:nowrap}.dsn-pfd .pfd-tool:hover{border-color:#a3b995}.dsn-pfd .pfd-tool svg{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7}.dsn-pfd .pfd-tool[aria-pressed="true"]{color:var(--pfd-green);border-color:#88ac71}.dsn-pfd .pfd-mode{color:var(--pfd-green);background:#09130b}.dsn-pfd select.pfd-tool{appearance:auto;text-align:left;padding-left:16px;outline-offset:2px}.dsn-pfd .pfd-status-line{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:10px 7px 1px;min-height:16px;font-size:10px;line-height:1.5;color:#a3b39a}.dsn-pfd .pfd-status-line>span:first-child{flex:1}.dsn-pfd .pfd-status-code{font:9px ui-monospace,monospace;letter-spacing:.09em;white-space:nowrap;color:#81997a}.dsn-pfd .pfd-toast{position:absolute;z-index:5;left:50%;bottom:83px;transform:translate(-50%,10px);max-width:90%;padding:12px 20px;background:#263a21f5;border:1px solid #9ab884;border-radius:5px;color:#ecf7e3;font-size:13px;line-height:1.6;box-shadow:0 5px 20px #0008;pointer-events:none;opacity:0;transition:transform .16s,opacity .16s;text-align:center}.dsn-pfd .pfd-toast.visible{opacity:1;transform:translate(-50%,0)}
+.dsn-pfd dialog{border:1px solid #748b65;border-radius:8px;background:#1a2b1d;color:#e4eddd;max-width:min(440px,calc(100vw - 28px));width:100%;padding:24px;box-shadow:0 10px 60px #000a;font-size:14px}.dsn-pfd dialog::backdrop{background:#010501bf}.dsn-pfd .pfd-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px;font-size:18px;font-weight:700}.dsn-pfd .pfd-close{min-width:42px;min-height:42px;border:1px solid #69865c;background:#0b1a0d;color:#e8f0e1;font-size:22px;border-radius:3px}.dsn-pfd .pfd-field{display:block;margin:18px 0;line-height:1.6}.dsn-pfd .pfd-field input[type="number"],.dsn-pfd .pfd-field select{margin-top:8px;width:100%;padding:12px;min-height:45px;background:#08130a;color:#e8f4e0;border:1px solid #68865c;border-radius:3px}.dsn-pfd .pfd-field input[type="checkbox"]{accent-color:#b4e69f;width:19px;height:19px;vertical-align:middle;margin-right:8px}.dsn-pfd .pfd-save{width:100%;min-height:48px;border:1px solid #a8c990;background:#c0d5ad;color:#12200e;font-weight:700;border-radius:3px}.dsn-pfd .pfd-dialog-note{font-size:12px;line-height:1.8;color:#a4be98}.dsn-pfd .pfd-field-error{color:#ffcf82;font-size:12px;line-height:1.6}.dsn-pfd.pfd-day{background:linear-gradient(#3c473c,#29352a);--pfd-muted:#b6c5ad;--pfd-green:#d0ffb7}
+@media(max-width:1000px){.dsn-pfd .pfd-metric{padding:10px}.dsn-pfd .pfd-tools{gap:5px}.dsn-pfd .pfd-tool{gap:7px;min-height:48px}.dsn-pfd .pfd-tool svg{width:19px;height:19px}.dsn-pfd .pfd-flight-meta{height:32px;padding:0 12px}.dsn-pfd .pfd-canvas-wrap{aspect-ratio:2.35}.dsn-pfd .pfd-sat{font-size:9px}}
+@media(max-width:650px){.dsn-pfd{padding:8px}.dsn-pfd .pfd-header{gap:12px;padding-left:8px}.dsn-pfd .pfd-header h2{font-size:12px;letter-spacing:.13em}.dsn-pfd .pfd-signal{font-size:8px;gap:5px;max-width:100px}.dsn-pfd .pfd-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.dsn-pfd .pfd-metric-value{font-size:22px}.dsn-pfd .pfd-metric-label{font-size:11px}.dsn-pfd .pfd-sat{font-size:9px}.dsn-pfd .pfd-canvas-wrap{aspect-ratio:auto;height:325px}.dsn-pfd .pfd-flight-meta{font-size:10px;height:30px;padding:0 9px}.dsn-pfd .pfd-flight-meta button{min-width:60px;font-size:10px}.dsn-pfd .pfd-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.dsn-pfd .pfd-tool{font-size:11px;gap:7px;min-height:46px}.dsn-pfd .pfd-status-code{display:none}.dsn-pfd .pfd-toast{bottom:142px;max-width:90%;width:90%;font-size:12px}.dsn-pfd .pfd-hud-heading{font-size:18px}.dsn-pfd .pfd-status-line{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.dsn-pfd *{transition:none!important}}
+
+@media(max-width:450px){.dsn-pfd .pfd-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dsn-pfd .pfd-header h2{font-size:10px}.dsn-pfd .pfd-header{gap:8px}.dsn-pfd .pfd-collapse{min-width:34px}.dsn-pfd .pfd-tool{gap:5px;font-size:10px}.dsn-pfd .pfd-tool svg{width:16px;height:16px}.dsn-pfd .pfd-metric-value{font-size:23px}}
+
 /* 지도 */
 #wMap .body{display:flex;flex-direction:column;gap:10px}
 .mapask,.mapoff{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px dashed var(--frame-in);border-radius:4px;background:#0000002a}
@@ -1029,6 +1055,7 @@ html.driving body{overflow:hidden}
   <section class="win" id="wGps">
     <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
+      <div id="pfdHost"></div>
       <div class="gps">
         <div class="gauge">
           <div class="dial" id="dial"><canvas id="gauge" aria-label="속도 게이지"></canvas>
@@ -1328,6 +1355,177 @@ html.driving body{overflow:hidden}
 </div>
 <input type="file" id="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" multiple hidden>
 
+<script>
+/* DAESINNAM ONE PFD. Framework-independent, local assets only. */
+(function(global){
+'use strict';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const finite=v=>typeof v==='number'&&Number.isFinite(v);
+const bearing=v=>((v%360)+360)%360;
+const angleDelta=(a,b)=>((b-a+540)%360)-180;
+const formatTime=s=>{s=Math.max(0,Math.floor(s||0));return [Math.floor(s/3600),Math.floor(s/60)%60,s%60].map(v=>String(v).padStart(2,'0')).join(':');};
+const cardinal=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(bearing(d)/45)%8];
+const haversine=(a,b)=>{const r=Math.PI/180,p=(b.latitude-a.latitude)*r,l=(b.longitude-a.longitude)*r;const q=Math.sin(p/2)**2+Math.cos(a.latitude*r)*Math.cos(b.latitude*r)*Math.sin(l/2)**2;return 6371000*2*Math.atan2(Math.sqrt(q),Math.sqrt(Math.max(0,1-q)));};
+const initial=()=>({source:'none',speedKmh:null,altitudeM:null,headingDeg:null,accuracyM:null,pitchDeg:null,rollDeg:null,satellitesUsed:null,satellitesVisible:null,maxSpeedKmh:0,avgSpeedKmh:0,distanceKm:0,durationSeconds:0,timestampMs:0,fixValid:false});
+const sample=()=>({source:'demo',speedKmh:72,altitudeM:10,headingDeg:0,accuracyM:3,pitchDeg:0,rollDeg:0,satellitesUsed:9,satellitesVisible:12,maxSpeedKmh:86,avgSpeedKmh:54,distanceKm:12.6,durationSeconds:840,timestampMs:Date.now(),fixValid:true});
+const numericKeys=['speedKmh','altitudeM','headingDeg','accuracyM','pitchDeg','rollDeg','satellitesUsed','satellitesVisible','maxSpeedKmh','avgSpeedKmh','distanceKm','durationSeconds','timestampMs'];
+const nonNegative=new Set(['speedKmh','accuracyM','satellitesUsed','satellitesVisible','maxSpeedKmh','avgSpeedKmh','distanceKm','durationSeconds']);
+const icon=(path)=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+path+'</svg>';
+const icons={power:icon('<path d="M12 2v9m-5-6a9 9 0 1 0 10 0"/>'),reset:icon('<path d="M3 11a9 9 0 0 1 15-6l3 3M21 3v5h-5M21 13A9 9 0 0 1 6 19l-3-3M3 21v-5h5"/>'),hud:icon('<rect x="2" y="4" width="20" height="16" rx="1"/>'),level:icon('<circle cx="12" cy="12" r="7"/><path d="M12 1v7m0 8v7M1 12h7m8 0h7"/>'),theme:icon('<path d="M12 3a9 9 0 1 0 0 18h2a3 3 0 0 0 2-5c-1-1-1-2 1-2h1a3 3 0 0 0 3-3c0-5-4-8-9-8Z"/><circle cx="7" cy="11" r=".8"/><circle cx="10" cy="7" r=".8"/><circle cx="15" cy="7" r=".8"/>')};
+
+class TripTracker{
+ constructor(){this.reset();}
+ reset(){this.started=null;this.last=null;this.distanceM=0;this.max=0;this.duration=0;}
+ feed(point,speedKmh){
+  if(!finite(point.timestamp)||!finite(point.latitude)||!finite(point.longitude)||!finite(point.accuracy))return this.metrics();
+  if(this.started===null)this.started=point.timestamp;
+  this.duration=Math.max(this.duration,(point.timestamp-this.started)/1000);
+  if(finite(speedKmh))this.max=Math.max(this.max,speedKmh);
+  if(this.last){const dt=(point.timestamp-this.last.timestamp)/1000,dist=haversine(this.last,point);const noise=Math.max(3,(point.accuracy+this.last.accuracy)/2);if(dt>0&&dt<=15&&point.accuracy<=50&&this.last.accuracy<=50&&finite(speedKmh)&&speedKmh>=1&&dist>noise&&dist<dt*(220/3.6)+noise)this.distanceM+=dist;}
+  this.last=point;return this.metrics();
+ }
+ metrics(){return {maxSpeedKmh:this.max,avgSpeedKmh:this.duration>0?this.distanceM/this.duration*3.6:0,distanceKm:this.distanceM/1000,durationSeconds:this.duration};}
+}
+
+class PfdPanel{
+ constructor(container,options={}){
+  if(!container||typeof container.appendChild!=='function')throw new TypeError('A container element is required');
+  this.options=options;this.data=initial();this.settings={theme:'auto',limitKmh:0,mirrorHud:false};this.calibration={pitch:0,roll:0};this.hud=false;this.playing=false;this.disposed=false;this.watchId=null;this.demoTimer=null;this.toastTimer=null;this.events=[];this.frame=null;this.display={speedKmh:0,altitudeM:0,headingDeg:0,pitchDeg:0,rollDeg:0};this.trip=new TripTracker();this.native=options.nativeBridge||global.PfdNative||null;
+  this.root=document.createElement('section');this.root.className='dsn-pfd';this.root.setAttribute('aria-label','대신남 원 GPS 스피드미터');
+  this.root.innerHTML=`<i class="pfd-bolt one" aria-hidden="true"></i><i class="pfd-bolt two" aria-hidden="true"></i>
+   <header class="pfd-header"><h2>SPEEDOMETER</h2><span class="pfd-signal" data-role="signal"><i></i><span data-role="signalText">GPS OFF</span></span><button class="pfd-collapse" data-role="collapse" aria-label="스피드미터 접기" aria-expanded="true">−</button></header>
+   <div data-role="content">
+   <div class="pfd-metrics">
+    <div class="pfd-metric"><span class="pfd-metric-label">최고 속도</span><span class="pfd-metric-value"><span data-role="max">0</span><span class="pfd-unit">km/h</span></span></div>
+    <div class="pfd-metric"><span class="pfd-metric-label">평균 속도</span><span class="pfd-metric-value"><span data-role="avg">0</span><span class="pfd-unit">km/h</span></span></div>
+    <div class="pfd-metric"><span class="pfd-metric-label">주행 거리</span><span class="pfd-metric-value"><span data-role="distance">0.0</span><span class="pfd-unit">km</span></span></div>
+    <div class="pfd-metric"><span class="pfd-metric-label">주행 시간</span><span class="pfd-metric-value" data-role="duration">00:00:00</span></div>
+    <div class="pfd-metric"><span class="pfd-metric-label">고도</span><span class="pfd-metric-value"><span data-role="altitude">—</span><span class="pfd-unit">m</span></span></div>
+    <div class="pfd-metric"><span class="pfd-metric-label">GPS 정확도</span><span class="pfd-metric-value"><span data-role="accuracy">—</span><span class="pfd-unit">m</span></span><span class="pfd-sat" data-role="satellites">위성 —</span></div>
+   </div>
+   <div class="pfd-glass"><div class="pfd-flight-meta"><span data-role="source">GPS</span><span data-role="track">TRK —</span><button data-role="limit" aria-label="속도 경고 설정">LIM OFF</button></div>
+   <div class="pfd-canvas-wrap" data-role="canvasWrap"><canvas data-role="canvas" role="img" aria-label="속도 및 자세 표시"></canvas><div class="pfd-hud-layer" data-role="hudLayer" hidden><span class="pfd-hud-digits" data-role="hudSpeed">—</span><span class="pfd-hud-unit">km/h</span><span class="pfd-hud-heading" data-role="hudHeading">—</span><span class="pfd-hud-caption" data-role="hudCaption">GPS OFF</span></div></div></div>
+   <div class="pfd-tools">
+    <button class="pfd-tool" data-role="gps" aria-pressed="false">${icons.power}<span data-role="gpsText">GPS 켜기</span></button>
+    <button class="pfd-tool" data-role="reset">${icons.reset}<span>기록 초기화</span></button>
+    <button class="pfd-tool" data-role="hud" aria-pressed="false">${icons.hud}<span>HUD</span></button>
+    <select class="pfd-tool pfd-mode" data-role="mode" aria-label="표시 방식"><option value="pfd">콕핏 PFD</option><option value="hud">심플 HUD</option></select>
+    <button class="pfd-tool" data-role="level">${icons.level}<span>수평 맞춤</span></button>
+    <button class="pfd-tool" data-role="settings">${icons.theme}<span data-role="themeText">테마 자동</span></button>
+   </div><div class="pfd-status-line"><span data-role="status" role="status">GPS 또는 앱 데이터 연결을 기다립니다.</span><span class="pfd-status-code">DSN-PFD / SVG-CANVAS UI</span></div></div>
+   <div class="pfd-toast" data-role="toast" role="status" aria-live="polite"></div>
+   <dialog data-role="dialog"><form data-role="form"><div class="pfd-dialog-head">계기판 설정<button class="pfd-close" type="button" data-role="close" aria-label="설정 닫기">×</button></div><label class="pfd-field">테마<select data-role="theme"><option value="auto">자동</option><option value="night">야간</option><option value="day">주간</option></select></label><label class="pfd-field">속도 경고 기준 (0 = 끄기)<input data-role="limitInput" type="number" inputmode="numeric" min="0" max="300" step="1" value="0"></label><label class="pfd-field"><input type="checkbox" data-role="mirror">HUD 좌우 반전</label><p class="pfd-dialog-note">자세 표시는 앱에서 받은 기울기 값에 연결됩니다. 지형 배경은 시각 효과이며 실제 지도나 장애물 정보가 아닙니다.</p><p class="pfd-field-error" data-role="formError" role="alert" hidden></p><button class="pfd-save" type="submit">설정 적용</button></form></dialog>`;
+  container.appendChild(this.root);this.els={};this.root.querySelectorAll('[data-role]').forEach(e=>{this.els[e.dataset.role]=e;});this.canvas=this.els.canvas;this.ctx=this.canvas.getContext('2d');
+  if(!this.ctx)throw new Error('Canvas 2D is not supported');
+  this.on(this.els.collapse,'click',()=>{const open=this.els.content.hidden;this.els.content.hidden=!open;this.els.collapse.textContent=open?'−':'+';this.els.collapse.setAttribute('aria-expanded',String(open));this.els.collapse.setAttribute('aria-label',open?'스피드미터 접기':'스피드미터 펼치기');if(open)this.resize();});
+  this.on(this.els.gps,'click',()=>{if(this.watchId!==null||this.nativeGpsRequested)this.stopGps();else this.startGps();});
+  this.on(this.els.reset,'click',()=>{this.trip.reset();this.updateTelemetry({maxSpeedKmh:finite(this.data.speedKmh)?this.data.speedKmh:0,avgSpeedKmh:0,distanceKm:0,durationSeconds:0},{touchTimestamp:false});this.command('trip:reset');this.notify('주행 기록을 초기화했습니다.');});
+  this.on(this.els.hud,'click',()=>this.setHud(!this.hud));this.on(this.els.mode,'change',()=>this.setHud(this.els.mode.value==='hud'));
+  this.on(this.els.level,'click',()=>this.calibrate());this.on(this.els.settings,'click',()=>this.openSettings());this.on(this.els.limit,'click',()=>this.openSettings());this.on(this.els.close,'click',()=>this.els.dialog.close());
+  this.on(this.els.form,'submit',e=>{e.preventDefault();const limit=Number(this.els.limitInput.value);if(!Number.isInteger(limit)||limit<0||limit>300){this.els.formError.textContent='속도 기준은 0~300의 정수로 입력하세요.';this.els.formError.hidden=false;return;}this.setSettings({theme:this.els.theme.value,limitKmh:limit,mirrorHud:this.els.mirror.checked});this.els.dialog.close();this.command('settings:change',{...this.settings});});
+  this.media=global.matchMedia('(prefers-color-scheme: light)');this.reduced=global.matchMedia('(prefers-reduced-motion: reduce)');this.on(this.media,'change',()=>{this.applyTheme();this.draw();});
+  this.resizeObserver=global.ResizeObserver?new ResizeObserver(()=>this.resize()):null;if(this.resizeObserver)this.resizeObserver.observe(this.els.canvasWrap);else this.on(global,'resize',()=>this.resize());
+  this.on(document,'visibilitychange',()=>{if(document.hidden)this.stopDemo();else{this.renderText();this.draw();}});
+  this.healthTimer=setInterval(()=>{if(!this.disposed&&!document.hidden){this.renderText();this.draw();}},1000);
+  this.applyTheme();this.resize();if(options.demo)this.useDemo();else this.renderText();
+ }
+ on(target,event,fn){target.addEventListener(event,fn);this.events.push([target,event,fn]);}
+ command(type,detail={}){const event={type,...detail};this.root.dispatchEvent(new CustomEvent('pfd:command',{detail:event,bubbles:true}));if(typeof this.options.onCommand==='function')this.options.onCommand(event);}
+ notify(text){this.els.toast.textContent=String(text);this.els.toast.classList.add('visible');clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>this.els.toast.classList.remove('visible'),3600);}
+ updateTelemetry(patch,opts={}){
+  if(this.disposed)throw new Error('PFD has been destroyed');if(!patch||typeof patch!=='object')throw new TypeError('Telemetry must be an object');
+  if('source'in patch&&!['none','demo','gps','external'].includes(patch.source))throw new TypeError('Invalid source');
+  const source='source'in patch?patch.source:this.data.source;
+  const sourceChanged=source!==this.data.source;
+  const next=sourceChanged?{...initial(),source}:{...this.data};
+  for(const key of numericKeys){if(!(key in patch))continue;const v=patch[key];if(v!==null&&!finite(v))throw new TypeError(key+' must be a finite number or null');if(v!==null&&nonNegative.has(key)&&v<0)throw new RangeError(key+' cannot be negative');next[key]=key==='headingDeg'&&v!==null?bearing(v):v;}
+  if(next.pitchDeg!==null)next.pitchDeg=clamp(next.pitchDeg,-90,90);if(next.rollDeg!==null)next.rollDeg=clamp(next.rollDeg,-180,180);
+  if('fixValid'in patch){if(typeof patch.fixValid!=='boolean')throw new TypeError('fixValid must be boolean');next.fixValid=patch.fixValid;}else if('speedKmh'in patch||'accuracyM'in patch)next.fixValid=finite(next.speedKmh)||finite(next.accuracyM);
+  if(opts.touchTimestamp!==false&&!('timestampMs'in patch))next.timestampMs=Date.now();
+  if(sourceChanged){this.calibration={pitch:0,roll:0};if(source!=='demo')this.stopDemo();}
+  this.data=next;this.renderText();this.animate();return this.getState();
+ }
+ effective(){const stale=this.data.source!=='demo'&&this.data.source!=='none'&&Date.now()-this.data.timestampMs>15000;const valid=this.data.source!=='none'&&this.data.fixValid&&!stale;return {valid,stale};}
+ getState(){return {telemetry:{...this.data},settings:{...this.settings},hud:this.hud,playing:this.playing,...this.effective()};}
+ setSettings(patch={}){if(patch.theme!==undefined){if(!['auto','day','night'].includes(patch.theme))throw new RangeError('Invalid theme');this.settings.theme=patch.theme;}if(patch.limitKmh!==undefined){if(!finite(patch.limitKmh)||patch.limitKmh<0||patch.limitKmh>300)throw new RangeError('Invalid limit');this.settings.limitKmh=Math.round(patch.limitKmh);}if(patch.mirrorHud!==undefined)this.settings.mirrorHud=!!patch.mirrorHud;this.applyTheme();this.renderText();this.draw();}
+ applyTheme(){this.day=this.settings.theme==='day'||(this.settings.theme==='auto'&&this.media.matches);this.root.classList.toggle('pfd-day',this.day);}
+ openSettings(){this.els.theme.value=this.settings.theme;this.els.limitInput.value=String(this.settings.limitKmh);this.els.mirror.checked=this.settings.mirrorHud;this.els.formError.hidden=true;this.els.dialog.showModal();}
+ setHud(enabled){this.hud=!!enabled;this.els.hudLayer.hidden=!this.hud;this.els.hud.setAttribute('aria-pressed',String(this.hud));this.els.mode.value=this.hud?'hud':'pfd';this.renderText();this.command('display:change',{mode:this.hud?'hud':'pfd'});}
+ calibrate(){if(!finite(this.data.pitchDeg)||!finite(this.data.rollDeg)){this.notify('기울기 센서 입력이 없습니다. 앱의 자세 데이터에 연결하세요.');this.command('attitude:request');return false;}this.calibration={pitch:this.data.pitchDeg,roll:this.data.rollDeg};this.animate();this.command('attitude:calibrate',{...this.calibration});this.notify('현재 기기 자세를 수평 기준으로 맞췄습니다.');return true;}
+ useDemo(){this.stopGps(false);this.stopDemo();this.updateTelemetry(sample());}
+ toggleDemo(){if(this.playing){this.stopDemo();return false;}this.useDemo();this.playing=true;this.demoStart=performance.now();this.demoPrevious=this.demoStart;this.demoTimer=setInterval(()=>{if(document.hidden)return;const now=performance.now(),t=(now-this.demoStart)/1000,dt=(now-this.demoPrevious)/1000;this.demoPrevious=now;const speed=72+Math.sin(t*.4)*13+Math.sin(t*.14)*8;this.updateTelemetry({source:'demo',speedKmh:speed,altitudeM:10+Math.sin(t*.14)*6,headingDeg:t*3,pitchDeg:Math.sin(t*.32)*3,rollDeg:Math.sin(t*.22)*11,distanceKm:this.data.distanceKm+speed/3.6*dt/1000,durationSeconds:this.data.durationSeconds+dt,maxSpeedKmh:Math.max(this.data.maxSpeedKmh,speed),fixValid:true});},250);return true;}
+ stopDemo(){if(this.demoTimer!==null)clearInterval(this.demoTimer);this.demoTimer=null;this.playing=false;}
+ startGps(){
+  this.stopDemo();this.trip.reset();this.updateTelemetry({...initial(),source:'gps',timestampMs:Date.now()});
+  if(this.native&&typeof this.native.startGps==='function'){this.nativeGpsRequested=true;try{this.native.startGps();this.command('gps:start');}catch(_){this.reportGpsError('앱의 GPS 연결을 확인하세요.');}this.renderText();return;}
+  if(!global.isSecureContext||!navigator.geolocation){this.reportGpsError('실제 GPS는 HTTPS 또는 localhost에서 사용하세요. 기존 앱에서는 위치 데이터 함수를 연결하면 됩니다.');return;}
+  try{this.watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords,speed=finite(c.speed)?Math.max(0,c.speed*3.6):null;const metrics=this.trip.feed({latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,timestamp:pos.timestamp},speed);this.updateTelemetry({source:'gps',speedKmh:speed,altitudeM:finite(c.altitude)?c.altitude:null,headingDeg:finite(c.heading)?c.heading:null,accuracyM:finite(c.accuracy)?c.accuracy:null,pitchDeg:null,rollDeg:null,satellitesUsed:null,satellitesVisible:null,timestampMs:pos.timestamp,fixValid:true,...metrics});},error=>this.reportGpsError(error.code===1?'위치 권한이 허용되지 않았습니다.':error.code===3?'GPS 응답 시간이 초과되었습니다.':'위치 정보를 읽을 수 없습니다.'),{enableHighAccuracy:true,maximumAge:0,timeout:15000});this.command('gps:start');this.renderText();}catch(_){this.reportGpsError('이 환경에서는 위치 정보를 시작할 수 없습니다.');}
+ }
+ stopGps(clear=true){if(this.watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(this.watchId);this.watchId=null;if(this.nativeGpsRequested&&this.native&&typeof this.native.stopGps==='function'){try{this.native.stopGps();}catch(_){}}this.nativeGpsRequested=false;if(clear&&!this.disposed){this.updateTelemetry({...initial()});this.command('gps:stop');}}
+ reportGpsError(text){this.stopGps(false);if(this.data.source==='gps')this.updateTelemetry({fixValid:false,speedKmh:null,altitudeM:null,headingDeg:null,accuracyM:null},{touchTimestamp:false});this.notify(text);this.els.status.textContent=text;this.command('gps:error',{message:text});}
+ renderText(){
+  const d=this.data,e=this.effective(),v=e.valid;let signal=d.source==='demo'?'DEMO':d.source==='none'?'GPS OFF':e.stale?'DATA LOST':v?(d.source==='gps'?'GPS LIVE':'APP DATA'):'GPS WAIT';
+  this.els.signalText.textContent=signal;this.els.signal.dataset.live=String(v&&d.source!=='demo');this.els.source.textContent=d.source==='demo'?'GPS / DEMO':d.source==='external'?'APP / GPS':'GPS';
+  const h=v&&finite(d.headingDeg)?String(Math.round(bearing(d.headingDeg))%360).padStart(3,'0'):null;
+  this.els.track.textContent='TRK '+(h?h+'°':'—');
+  this.els.max.textContent=finite(d.maxSpeedKmh)?String(Math.round(d.maxSpeedKmh)):'—';this.els.avg.textContent=finite(d.avgSpeedKmh)?String(Math.round(d.avgSpeedKmh)):'—';this.els.distance.textContent=finite(d.distanceKm)?d.distanceKm.toFixed(1):'—';this.els.duration.textContent=finite(d.durationSeconds)?formatTime(d.durationSeconds):'—';
+  this.els.altitude.textContent=v&&finite(d.altitudeM)?String(Math.round(d.altitudeM)):'—';this.els.accuracy.textContent=v&&finite(d.accuracyM)?'±'+Math.round(d.accuracyM):'—';this.els.satellites.textContent=v&&finite(d.satellitesUsed)?'위성 '+Math.round(d.satellitesUsed)+(finite(d.satellitesVisible)?'/'+Math.round(d.satellitesVisible):''):'위성 —';
+  this.els.hudSpeed.textContent=v&&finite(d.speedKmh)?String(Math.round(d.speedKmh)):'—';this.els.hudHeading.textContent=h?h+'° '+cardinal(d.headingDeg):'—';this.els.hudCaption.textContent=signal;this.els.hudLayer.classList.toggle('mirrored',this.settings.mirrorHud);
+  this.els.limit.textContent=this.settings.limitKmh?'LIM '+this.settings.limitKmh:'LIM OFF';this.els.limit.dataset.active=String(this.settings.limitKmh>0);
+  const requested=this.watchId!==null||!!this.nativeGpsRequested;this.els.gps.setAttribute('aria-pressed',String(requested));this.els.gpsText.textContent=requested?'GPS 끄기':'GPS 켜기';this.els.themeText.textContent='테마 '+({auto:'자동',day:'주간',night:'야간'}[this.settings.theme]);
+  this.els.status.textContent=d.source==='demo'?'시연 모드 · 표시된 주행 값과 자세는 예시입니다.':e.stale?'데이터가 15초 이상 갱신되지 않았습니다. 연결을 확인하세요.':v?(finite(d.pitchDeg)&&finite(d.rollDeg)?'GPS / 앱 데이터 수신 중':'GPS 수신 중 · 자세 센서 입력 없음'):'GPS 또는 앱 데이터 연결을 기다립니다.';
+  this.canvas.setAttribute('aria-label','속도 '+this.els.hudSpeed.textContent+' km/h, 고도 '+this.els.altitude.textContent+' m, 방위 '+(h||'미확인')+', '+signal);
+ }
+ resize(){const r=this.els.canvasWrap.getBoundingClientRect();if(r.width<1||r.height<1)return;this.width=r.width;this.height=r.height;const ratio=Math.min(global.devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*ratio);this.canvas.height=Math.round(r.height*ratio);this.ctx.setTransform(ratio,0,0,ratio,0,0);this.draw();}
+ animate(){
+  if(this.frame!==null)cancelAnimationFrame(this.frame);const start={...this.display},target={};for(const key of Object.keys(start))target[key]=finite(this.data[key])?this.data[key]:0;
+  const begin=performance.now(),duration=this.reduced.matches?0:300;
+  const tick=now=>{if(this.disposed)return;const p=duration?clamp((now-begin)/duration,0,1):1,q=1-(1-p)**3;for(const key of Object.keys(start))this.display[key]=key==='headingDeg'?bearing(start[key]+angleDelta(start[key],target[key])*q):start[key]+(target[key]-start[key])*q;this.draw();if(p<1)this.frame=requestAnimationFrame(tick);else this.frame=null;};this.frame=requestAnimationFrame(tick);
+ }
+ draw(){
+  if(!this.width||this.disposed||this.els.content.hidden)return;const c=this.ctx,w=this.width,h=this.height;const compassH=clamp(h*.145,43,66),fh=h-compassH;const tape=clamp(w*.12,67,175),left=tape,right=w-tape,center=w/2,cy=fh*.53;const valid=this.effective().valid;
+  c.clearRect(0,0,w,h);c.fillStyle='#030805';c.fillRect(0,0,w,h);this.drawHorizon(c,left,0,right-left,fh,valid);this.drawTape(c,0,0,tape,fh,'speed',valid?this.display.speedKmh:null,valid&&finite(this.data.speedKmh));this.drawTape(c,right,0,tape,fh,'altitude',valid?this.display.altitudeM:null,valid&&finite(this.data.altitudeM));this.drawCompass(c,0,fh,w,compassH,valid&&finite(this.data.headingDeg)?this.display.headingDeg:null);
+  c.strokeStyle='#526746';c.lineWidth=1;c.beginPath();c.moveTo(left+.5,0);c.lineTo(left+.5,fh);c.moveTo(right-.5,0);c.lineTo(right-.5,fh);c.stroke();
+ }
+ drawHorizon(c,x,y,w,h,valid){
+  const cx=x+w/2,cy=h*.53,attitude=finite(this.data.pitchDeg)&&finite(this.data.rollDeg),pitch=attitude?this.display.pitchDeg-this.calibration.pitch:0,roll=attitude?this.display.rollDeg-this.calibration.roll:0;const ppd=h/58;
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.translate(cx,cy);c.rotate(-roll*Math.PI/180);c.translate(0,pitch*ppd);
+  let g=c.createLinearGradient(0,-h,0,0);g.addColorStop(0,this.day?'#16477a':'#06284d');g.addColorStop(1,this.day?'#3986b4':'#286aa2');c.fillStyle=g;c.fillRect(-w*2,-h*3,w*4,h*3);
+  g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,this.day?'#66613a':'#545033');g.addColorStop(1,this.day?'#29351d':'#1b2716');c.fillStyle=g;c.fillRect(-w*2,0,w*4,h*3);
+  c.strokeStyle='#9bbd8850';c.lineWidth=.7;
+  for(let n=-12;n<=12;n++){c.beginPath();c.moveTo(n*13,0);c.lineTo(n*w*.19,h*2);c.stroke();}
+  for(let i=1;i<=13;i++){const gy=(i/13)**2*h*1.8;c.beginPath();c.moveTo(-w*2,gy);c.lineTo(w*2,gy);c.stroke();}
+  // Fixed synthetic terrain decoration; never represented as measured terrain.
+  for(let layer=0;layer<3;layer++){c.strokeStyle=layer===0?'#8bb5b35a':'#a9bd7e24';c.beginPath();for(let i=0;i<=70;i++){const gx=-w/2+i*w/70,noise=Math.sin(i*.67+layer*2)*Math.sin(i*.21+layer)+Math.sin(i*.36+layer);const gy=layer===0?-Math.abs(noise)*h*.035:30+layer*34+Math.abs(noise)*h*.06;if(i===0)c.moveTo(gx,gy);else c.lineTo(gx,gy);}c.stroke();}
+  c.strokeStyle='#f4f0d9';c.lineWidth=1.5;c.beginPath();c.moveTo(-w*2,0);c.lineTo(w*2,0);c.stroke();
+  c.font='600 '+clamp(w*.024,11,20)+'px Arial';c.textBaseline='middle';c.fillStyle='#edf2e6';c.strokeStyle='#edf2e6dc';c.lineWidth=1.4;
+  for(let a=-25;a<=25;a+=5){if(a===0)continue;const py=-a*ppd,len=a%10===0?w*.24:w*.115;c.beginPath();c.moveTo(-len/2,py);c.lineTo(len/2,py);c.stroke();if(a%10===0){c.textAlign='right';c.fillText(String(Math.abs(a)),-len/2-12,py);c.textAlign='left';c.fillText(String(Math.abs(a)),len/2+12,py);}}
+  c.restore();
+  // Bank scale and fixed aircraft datum stay stationary.
+  const radius=Math.min(w*.35,h*.74),arcY=radius+18;c.save();c.beginPath();c.rect(x,0,w,h);c.clip();c.strokeStyle='#e6f0e5';c.lineWidth=1.5;c.beginPath();c.arc(cx,arcY,radius,-Math.PI*2/3,-Math.PI/3);c.stroke();for(const deg of [-60,-45,-30,-20,-10,0,10,20,30,45,60]){const a=(deg*.5-90)*Math.PI/180,l=deg%30===0?12:7;c.beginPath();c.moveTo(cx+Math.cos(a)*radius,arcY+Math.sin(a)*radius);c.lineTo(cx+Math.cos(a)*(radius+l),arcY+Math.sin(a)*(radius+l));c.stroke();}
+  const bankAngle=clamp(roll,-60,60)*.5*Math.PI/180;
+  this.triangle(c,cx+Math.sin(bankAngle)*radius,arcY-Math.cos(bankAngle)*radius-11,7,10,'#f1f6e8',true);this.triangle(c,cx,35,7,10,'#ffd15a',false);
+  const span=Math.min(w*.125,107),notch=Math.min(span*.46,39);c.lineCap='square';c.lineJoin='miter';c.strokeStyle='#12170b';c.lineWidth=8;c.beginPath();c.moveTo(cx-span,cy);c.lineTo(cx-notch,cy);c.lineTo(cx-notch,cy+27);c.moveTo(cx+span,cy);c.lineTo(cx+notch,cy);c.lineTo(cx+notch,cy+27);c.stroke();c.strokeStyle='#ffd76c';c.lineWidth=4;c.stroke();c.fillStyle='#10170a';c.fillRect(cx-6,cy-6,12,12);c.fillStyle='#ffdb72';c.fillRect(cx-3.5,cy-3.5,7,7);
+  c.fillStyle='#d0e2c09c';c.font='9px monospace';c.textAlign='left';c.fillText(attitude?(this.data.source==='demo'?'ATT DEMO':'ATT DATA'):'ATT —',x+13,h-16);c.textAlign='right';c.fillStyle='#c1cba07a';c.fillText('SYNTHETIC VIEW',x+w-12,h-16);c.restore();
+ }
+ triangle(c,x,y,w,h,color,down){c.fillStyle=color;c.beginPath();c.moveTo(x-w,y);c.lineTo(x+w,y);c.lineTo(x,y+(down?h:-h));c.closePath();c.fill();}
+ drawTape(c,x,y,w,h,kind,value,known){
+  const isSpeed=kind==='speed',cy=h*.53;let g=c.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#111e14');g.addColorStop(1,'#1b2a1b');c.fillStyle=g;c.fillRect(x,y,w,h);c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
+  const edge=isSpeed?x+w:x,dir=isSpeed?-1:1,numberX=isSpeed?x+w-33:x+33;const px=h/(isSpeed?160:360),step=isSpeed?5:10,major=isSpeed?20:50;const val=known?value:0;
+  if(known){const range=h/px/2+major;for(let n=Math.floor((val-range)/step)*step;n<=val+range;n+=step){if(isSpeed&&n<0)continue;const ty=cy-(n-val)*px;if(ty<30||ty>h-5)continue;const big=n%major===0;c.strokeStyle=big?'#e5eddf':'#9aad92';c.lineWidth=big?1.5:1;c.beginPath();c.moveTo(edge+dir*2,ty);c.lineTo(edge+dir*(big?25:12),ty);c.stroke();if(big&&Math.abs(ty-cy)>clamp(h*.19,60,87)/2+13){c.font='600 '+clamp(w*.2,12,24)+'px Arial';c.fillStyle='#e8efdf';c.textAlign=isSpeed?'right':'left';c.textBaseline='middle';c.fillText(String(n),numberX,ty);}}}
+  c.fillStyle='#b4f49f';c.font='700 '+clamp(w*.15,11,17)+'px Arial';c.textAlign='center';c.textBaseline='top';c.fillText(isSpeed?'GS':'ALT m',x+w/2,9);
+  const boxH=clamp(h*.19,60,87),inset=3,tip=14;c.beginPath();if(isSpeed){c.moveTo(x+inset,cy-boxH/2);c.lineTo(x+w-tip,cy-boxH/2);c.lineTo(x+w,cy);c.lineTo(x+w-tip,cy+boxH/2);c.lineTo(x+inset,cy+boxH/2);}else{c.moveTo(x+w-inset,cy-boxH/2);c.lineTo(x+tip,cy-boxH/2);c.lineTo(x,cy);c.lineTo(x+tip,cy+boxH/2);c.lineTo(x+w-inset,cy+boxH/2);}c.closePath();c.fillStyle='#000603';c.fill();c.strokeStyle='#e1e8d7';c.lineWidth=1.5;c.stroke();
+  const warn=isSpeed&&known&&this.settings.limitKmh>0&&value>this.settings.limitKmh;c.fillStyle=warn?'#ffd16a':isSpeed?'#f7fbef':'#b8f3a7';c.textAlign='center';c.textBaseline='middle';c.font='700 '+clamp(w*.4,27,58)+'px Arial';c.fillText(known?String(Math.round(value)):'—',x+w/2+(isSpeed?-3:3),cy-8);c.font='700 '+clamp(w*.14,10,18)+'px Arial';c.fillStyle='#e4eddd';c.fillText(isSpeed?'km/h':'m',x+w/2+(isSpeed?-3:3),cy+boxH*.29);
+  c.fillStyle='#ffd15a';c.beginPath();c.moveTo(edge,cy);c.lineTo(edge+dir*12,cy-10);c.lineTo(edge+dir*12,cy+10);c.closePath();c.fill();c.restore();
+ }
+ drawCompass(c,x,y,w,h,value){c.fillStyle='#010603';c.fillRect(x,y,w,h);c.save();c.beginPath();c.rect(x,y,w,h);c.clip();const mid=w/2,ppd=w/140;if(value!==null){for(let n=Math.floor((value-75)/5)*5;n<=value+75;n+=5){const tx=mid+(n-value)*ppd,major=n%15===0;c.strokeStyle=major?'#dbe8d0':'#9bad8e';c.lineWidth=major?1.6:1;c.beginPath();c.moveTo(tx,y+8);c.lineTo(tx,y+(major?24:16));c.stroke();if(n%30===0||bearing(n)%45===0){let text=String(Math.round(bearing(n))).padStart(3,'0');if(bearing(n)%90===0)text=cardinal(n);else if(bearing(n)%45===0)text=cardinal(n);c.fillStyle='#d9e5cd';c.font='600 '+clamp(w*.012,10,16)+'px Arial';c.textAlign='center';c.fillText(text,tx,y+h-10);}}}
+  const bw=clamp(w*.09,93,140),bh=Math.min(39,h-17);c.fillStyle='#020804';c.fillRect(mid-bw/2,y+h-bh-3,bw,bh);c.strokeStyle='#e0e9d2';c.lineWidth=1.4;c.strokeRect(mid-bw/2,y+h-bh-3,bw,bh);c.font='700 '+clamp(w*.02,16,27)+'px Arial';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#b6f6a4';const rounded=value===null?null:Math.round(bearing(value))%360;c.fillText(rounded===null?'—':String(rounded).padStart(3,'0')+'° '+cardinal(value),mid,y+h-bh/2-3);this.triangle(c,mid,y+3,10,11,'#ffcf60',true);c.restore();}
+ destroy(){if(this.disposed)return;this.stopDemo();this.stopGps(false);clearInterval(this.healthTimer);clearTimeout(this.toastTimer);if(this.frame!==null)cancelAnimationFrame(this.frame);if(this.resizeObserver)this.resizeObserver.disconnect();for(const [t,e,f]of this.events)t.removeEventListener(e,f);if(this.els.dialog.open)this.els.dialog.close();this.root.remove();this.disposed=true;}
+}
+global.DaesinnamPFD={version:'1.0.0',mount:(container,options)=>new PfdPanel(container,options),utils:{bearing,angleDelta,formatTime,haversine},TripTracker};
+})(window);
+
+</script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -1942,6 +2140,7 @@ function drawGps(){
   if(!gv)return;
   attPoll();if(att.hdg>=0)hdgNow=att.hdg;
   if(typeof atcSpeedTick==='function')atcSpeedTick(spdNow);
+  if(skin==='carnival2'&&typeof P!=='undefined'&&P){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;pfdFeed();return}
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -2394,6 +2593,24 @@ $('#driveBtn').onclick=()=>{drive(true);driveSuppress=false};
 
 /* ---------- 설정 창 ---------- */
 
+
+/* ---------- 콕핏 스킨 PFD(대신남 PFD 패키지) 연결: 앱의 GPS·나침반·기울기·주행 기록을 넣어 줌 ---------- */
+let P=null,pfdT=0;
+try{P=DaesinnamPFD.mount($('#pfdHost'),{demo:false,nativeBridge:{startGps(){gpsStart()},stopGps(){gpsStop(true)}},onCommand(e){
+  if(e.type==='trip:reset'){trip={dist:0,time:0,max:0};store.set('trip',trip);gpsUi()}
+  else if(e.type==='settings:change'){store.set('pfdSet',{theme:e.theme,mirrorHud:e.mirrorHud});gLimit=e.limitKmh|0;store.set('gLimit',gLimit);const sel=$('#gLimit');if([...sel.options].some(o=>+o.value===gLimit))sel.value=String(gLimit)}}});
+  window.pfd=P;const ps=store.get('pfdSet',{});P.setSettings({theme:['auto','day','night'].includes(ps.theme)?ps.theme:'auto',mirrorHud:!!ps.mirrorHud,limitKmh:Math.max(0,Math.min(300,gLimit|0))});
+}catch(e){P=null}
+function pfdFeed(){if(!P||skin!=='carnival2')return;const now=performance.now();if(now-pfdT<100)return;pfdT=now;
+  if(!!P.nativeGpsRequested!==gpsOn){P.nativeGpsRequested=gpsOn;P.renderText()}
+  const patch={};
+  if(gpsOn){const fix=!!gs.fix,num=v=>typeof v==='number'&&isFinite(v)?v:null;
+    Object.assign(patch,{source:'gps',fixValid:fix,speedKmh:fix?Math.max(0,spdNow):null,altitudeM:fix&&gs.alt>-9000?gs.alt:null,headingDeg:hdgNow>=0?hdgNow:null,accuracyM:fix&&gs.acc>=0?gs.acc:null,
+      satellitesUsed:num(gs.satsUsed),satellitesVisible:num(gs.satsSeen),maxSpeedKmh:Math.max(0,trip.max),avgSpeedKmh:trip.time>0?trip.dist/trip.time*3.6:0,distanceKm:trip.dist/1000,durationSeconds:trip.time,
+      timestampMs:fix?Date.now()-(gs.age>0?gs.age:0):(P.data.timestampMs||Date.now())})}
+  else if(P.data.source!=='none')patch.source='none';
+  if(att.ok){patch.pitchDeg=att.pitch;patch.rollDeg=att.bank}
+  if(Object.keys(patch).length)try{P.updateTelemetry(patch,{touchTimestamp:false})}catch(e){}}
 /* ---------- 창 순서(설정) ---------- */
 const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wEq:'이퀄라이저',wPl:'재생 목록'};
 function winKind(){return skin==='carnival2'?'K':isCar()?'G':'N'}
