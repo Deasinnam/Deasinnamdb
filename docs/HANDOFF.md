@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v4.9** (versionCode 29) |
+| 최신 버전 | **v5.0** (versionCode 30) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -48,6 +48,7 @@
 - v4.7: COCKPIT CONTROL을 사용자가 준 `Daesinnam_Cockpit_Claude_Package`(cockpit.html)로 교체. CSS는 `.dsn` 범위·컨테이너 쿼리로 이식, id는 `dk` 접두사, 패키지의 `CockpitNative` 계약은 기존 `AndroidBridge`(cockpitState에 volume·wifiSupported 추가, setSystemVolume, setWifi, setBluetooth, sosCall)로 어댑터 연결. 내장 한글 글꼴(3.6MB)은 넣지 않고 앱의 Noto Sans KR 사용. SOS는 패키지의 "전화 화면 열기" 대신 이전 요청대로 바로 전화. `window.Cockpit`·`cockpit:command` 이벤트 제공
 - v4.8: 조종 콘솔 압축(레버·덮개·노브 `zoom:.66`, 데스크톱 높이 약 395px), LIFT TO ARM 덮개 노란 경고 커버, 폰에서 EMERGENCY 가운데 줄. 콕핏 스킨 상단 로고를 사용자 제공 이미지(`.brand .af-img`, WebP 1200px 인라인)로 교체
 - v4.9: 조종 콘솔 제목 한글화(EMERGENCY만 영문), 안내·연락처 요약·하단 메시지 줄 제거(결과는 토스트), MUTE를 + 옆으로(데스크톱 높이 약 317px). 관제탑 속도 주의(`atcSpeedTick`, 50/100/120/150/180/200km/h, 빨간 `#atcWarn`)
+- v5.0: 콕핏 스킨 전체를 조종 콘솔의 무광 올리브·연두(#a7e29a/#a8f08f)·앰버(#f3bc65)로 재색칠, 스코프·속도계 정보 녹색. 시각화 10종(`visMode` 0~9, `drawVisFx`, 선택 `#visSel`)
 
 ## 4. 확인 대기 중
 

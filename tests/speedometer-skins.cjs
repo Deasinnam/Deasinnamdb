@@ -354,6 +354,24 @@ async function main() {
     await p7.locator('#dkGuardCover').click();await p7.locator('#dkSosButton').click();
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
     await p7.close();
+    // 시각화 효과 10종: 고를 때마다 다른 화면, 다시 열어도 유지, 캔버스를 누르면 다음 효과
+    const p9 = await context.newPage();
+    p9.on('pageerror', error => errors.push(error.message));
+    await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
+    await p9.goto(origin);
+    assert.equal(await p9.locator('#visSel option').count(), 10);
+    const visImgs = new Set();
+    for (let m = 0; m < 10; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
+    assert.ok(visImgs.size >= 9, `Effects render differently (${visImgs.size}/10)`);
+    await p9.locator('#visSel').selectOption('9');
+    await p9.locator('#wVis .vstep[data-d="1"]').click();
+    assert.equal(await p9.locator('#visSel').inputValue(), '0', 'Next wraps around');
+    await p9.locator('#visSel').selectOption('5');
+    await p9.reload();
+    assert.equal(await p9.locator('#visSel').inputValue(), '5', 'Chosen effect survives reload');
+    const sc = await p9.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--led3').trim());
+    assert.equal(sc, '#a8f08f', 'Cockpit scope uses the green from the reference gauge');
+    await p9.close();
     // 관제탑 속도 주의: 50/100/120/150/180/200km/h 도달 시 빨간 글자
     const p8 = await context.newPage();
     p8.on('pageerror', error => errors.push(error.message));
@@ -403,7 +421,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
