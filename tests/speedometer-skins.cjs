@@ -313,8 +313,39 @@ async function main() {
     assert.equal(after.y, before.y, 'Dragging an EQ slider must not scroll the page');
     assert.ok(after.g > before.g, `EQ band follows the finger upward (${before.g} -> ${after.g})`);
     await tctx.close();
+    // 콕핏 PFD: 기울기·나침반 센서, 구름, 야간 하늘
+    const p6 = await context.newPage();
+    p6.on('pageerror', error => errors.push(error.message));
+    await p6.addInitScript(() => {
+      localStorage.clear();
+      localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));localStorage.setItem('dna_gStyle', JSON.stringify('cockpit'));localStorage.setItem('dna_gSky', JSON.stringify('day'));
+      window.attF = {ok:true,r:[1,0,0,0,1,0,0,0,1],srot:0,decl:0,compass:true};window.attCalls={start:0,stop:0};
+      window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
+        attStart:()=>attCalls.start++,attStop:()=>attCalls.stop++,attitude:()=>JSON.stringify(attF)};
+    });
+    await p6.goto(origin);
+    await p6.waitForFunction(() => window.__att && __att.ref && attCalls.start === 1, null, {timeout:5000});
+    // 오른쪽으로 20° 기울이고 동쪽(90°)을 향함
+    await p6.evaluate(() => {const t=20/180*Math.PI,c=Math.cos(t),s=Math.sin(t),y=Math.PI/2,cy=Math.cos(y),sy=Math.sin(y);
+      const Ry=[c,0,s,0,1,0,-s,0,c],Rz=[cy,sy,0,-sy,cy,0,0,0,1],m=[];for(let i=0;i<3;i++)for(let j=0;j<3;j++){let v=0;for(let k=0;k<3;k++)v+=Rz[i*3+k]*Ry[k*3+j];m.push(v)}attF.r=m});
+    await p6.waitForFunction(() => Math.abs(__att.bank-20) < 1 && Math.abs(__att.hdg-90) < 1);
+    await p6.waitForFunction(() => /^09\d° E/.test(document.querySelector('#gHdg').textContent), null, {timeout:5000});
+    const dayImg = await p6.locator('#gauge').evaluate(c => c.toDataURL());
+    await p6.locator('#gLevel').click();
+    await p6.waitForFunction(() => Math.abs(__att.bank) < 1, null, {timeout:3000});
+    await p6.locator('#gSky').selectOption('night');
+    await p6.waitForTimeout(300);
+    const px = await p6.locator('#gauge').evaluate(c => {const d=c.getContext('2d').getImageData(Math.round(c.width*.5),Math.round(c.height*.2),1,1).data;return d[0]+d[1]+d[2]});
+    assert.ok(px < 260, `Night sky is dark (${px})`);
+    assert.notEqual(await p6.locator('#gauge').evaluate(c => c.toDataURL()), dayImg);
+    assert.equal(await p6.locator('#gLevel').isVisible(), true);
+    await p6.locator('#gStyle').selectOption('carbon');
+    assert.equal(await p6.locator('#gLevel').isVisible(), false, 'Level/sky controls only for the PFD');
+    await p6.locator('#skin').selectOption('blue');
+    await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
+    await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, cockpit skin, cockpit resize, control panel, SOS guard+call, two-line tower, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, control panel, SOS guard+call, two-line tower, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

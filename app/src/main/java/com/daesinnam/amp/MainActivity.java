@@ -75,6 +75,7 @@ public class MainActivity extends Activity {
     private static final int REQ_CALL = 47;
     private static final int REQ_CONTACT = 48;
     private String pendingCall;
+    private boolean attWanted;
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     static WeakReference<MainActivity> current = new WeakReference<>(null);
@@ -473,11 +474,13 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         if (gpsWanted) gps.start();
+        if (attWanted) gps.attStart();
     }
 
     @Override
     protected void onStop() {
         gps.stop(); // 화면에 안 보일 때는 GPS를 꺼서 배터리를 아낍니다.
+        gps.attStop();
         super.onStop();
     }
 
@@ -1181,6 +1184,22 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String gpsStatus() {
             return gps.status();
+        }
+
+        // 콕핏 PFD: 나침반·기울기
+        @JavascriptInterface
+        public void attStart() {
+            main.post(() -> { attWanted = true; gps.attStart(); });
+        }
+
+        @JavascriptInterface
+        public void attStop() {
+            main.post(() -> { attWanted = false; gps.attStop(); });
+        }
+
+        @JavascriptInterface
+        public String attitude() {
+            return gps.attitude();
         }
 
         @JavascriptInterface

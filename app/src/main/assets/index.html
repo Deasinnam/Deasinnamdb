@@ -556,6 +556,7 @@ input[type=range]:disabled{opacity:.35}
 #wGps[data-gs="tactical"] .gctl .pill:not(.on){background:linear-gradient(180deg,#2c3229,#181b15);color:#e2f2dd;border-color:#3d4337}
 
 /* 6. 콕핏 PFD */
+#wGps:not([data-gs="cockpit"]) .ck-only{display:none}
 #wGps[data-gs="cockpit"]{--gl:#9aa3ad;--gv:#3ccfff}
 #wGps[data-gs="cockpit"] .dial{background:#000;border:1px solid #000;border-radius:4px;box-shadow:0 0 0 3px #1c1f23,0 0 0 4px #464c54}
 #wGps[data-gs="cockpit"] .spd{right:auto;text-align:center}
@@ -801,6 +802,8 @@ html.driving body{overflow:hidden}
         <label class="selw" for="gStyle">디자인<select class="sel" id="gStyle">
           <option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option><option value="cockpit">콕핏 PFD</option>
         </select></label>
+        <button class="pill ck-only" id="gLevel" title="지금 기기 자세를 수평으로">수평 맞춤</button>
+        <label class="selw ck-only" for="gSky">하늘<select class="sel" id="gSky"><option value="auto">자동</option><option value="day">주간</option><option value="night">야간</option></select></label>
         <label class="selw" for="gLimit">경고<select class="sel" id="gLimit">
           <option value="0">끔</option><option value="30">30</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="90">90</option><option value="100">100</option><option value="110">110</option><option value="120">120</option>
         </select></label>
@@ -1541,6 +1544,7 @@ function pollGps(){
     spdNow=v>0.5?v*3.6:0;
     hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
+  if(typeof att!=='undefined'&&att.hdg>=0)hdgNow=att.hdg;
   gpsUi();mapUpdate(false);driveAutoTick();
 }
 function gpsUi(){
@@ -1571,7 +1575,9 @@ $('#hud').classList.toggle('mirror',store.get('hudMirror',true));
 $('#gLimit').value=String(gLimit);$('#gLimit').onchange=e=>{gLimit=+e.target.value;store.set('gLimit',gLimit)};
 const angDiff=(a,b)=>((b-a+540)%360)-180;
 function drawGps(){
-  if(!isCar()||$('#wGps').classList.contains('collapsed'))return;
+  const gv=isCar()&&!$('#wGps').classList.contains('collapsed')&&!document.hidden;attWant(gv);
+  if(!gv)return;
+  attPoll();if(att.hdg>=0)hdgNow=att.hdg;
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -1661,13 +1667,97 @@ function drawGauge(over){
   }
 }
 /* 콕핏 PFD: 왼쪽 속도 테이프 · 가운데 자세계(선회하면 기울고 가속하면 기수가 듦) · 오른쪽 고도 테이프 */
+/* ----- 콕핏 PFD: 나침반·기울기 센서, 구름, 밤하늘 ----- */
+const att={ok:false,u:null,ref:store.get('attRef',null),acc:[],bank:0,pitch:0,hdg:-1,web:null,t:0,on:false};
+window.__att=att;
+const HAS_ATT=!!(NB&&NB.attitude);
+function attWant(on){if(on===att.on)return;att.on=on;if(HAS_ATT){try{on?NB.attStart():NB.attStop()}catch(e){}}else if(on)webOrient()}
+function webOrient(){if(webOrient.done)return;webOrient.done=true;const h=e=>{if(e.beta==null)return;att.web={a:e.alpha||0,b:e.beta,g:e.gamma||0,abs:!!e.absolute||e.webkitCompassHeading!=null,ch:e.webkitCompassHeading,t:performance.now()}};
+  addEventListener('deviceorientationabsolute',h);addEventListener('deviceorientation',h)}
+// W3C 기기 방향 → 회전 행렬(기기→지구, 안드로이드와 같은 형식)
+function eulerR(al,be,ga){const r=Math.PI/180,cX=Math.cos(be*r),cY=Math.cos(ga*r),cZ=Math.cos(al*r),sX=Math.sin(be*r),sY=Math.sin(ga*r),sZ=Math.sin(al*r);
+  return [cZ*cY-sZ*sX*sY,-cX*sZ,cY*sZ*sX+cZ*sY, cY*sZ+cZ*sX*sY,cZ*cX,sZ*sY-cZ*cY*sX, -cX*sY,sX,cX*cY]}
+const SCR=[[[1,0,0],[0,1,0]],[[0,1,0],[-1,0,0]],[[-1,0,0],[0,-1,0]],[[0,-1,0],[1,0,0]]]; // 화면 회전별 [오른쪽, 위] 축
+const v3={dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],nrm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]}};
+const DEG=180/Math.PI;
+function attPoll(){
+  const now=performance.now();if(now-att.t<30)return;att.t=now;
+  let R=null,srot=0,decl=0,compass=false;
+  if(HAS_ATT){try{const o=JSON.parse(NB.attitude());if(o.ok&&o.r&&o.r.length===9){R=o.r;srot=(o.srot|0)&3;decl=+o.decl||0;compass=!!o.compass}}catch(e){}}
+  else if(att.web&&now-att.web.t<2000){const w=att.web;R=eulerR(w.a,w.b,w.g);srot=((Math.round(((screen.orientation&&screen.orientation.angle)||window.orientation||0)/90)%4)+4)%4;compass=w.abs}
+  att.ok=!!R;if(!R){att.hdg=-1;return}
+  const [rt,up]=SCR[srot],gv=[R[6],R[7],R[8]],u=v3.nrm([v3.dot(gv,rt),v3.dot(gv,up),gv[2]]);att.u=u;
+  // 처음 1초 남짓의 자세를 "수평"으로 삼습니다(거치대 각도 보정). 수평 맞춤 버튼으로 다시 정할 수 있어요.
+  if(!att.ref){att.acc.push(u);if(att.acc.length<20)return;const s=att.acc.reduce((p,q)=>[p[0]+q[0],p[1]+q[1],p[2]+q[2]],[0,0,0]);att.ref=v3.nrm(s);att.acc=[];store.set('attRef',att.ref)}
+  const u0=att.ref,r0=v3.nrm([1-u0[0]*u0[0],-u0[0]*u0[1],-u0[0]*u0[2]]),f0=v3.cross(u0,r0);
+  const a=v3.dot(u,r0),b=v3.dot(u,f0),c=v3.dot(u,u0);
+  att.bank=Math.max(-75,Math.min(75,Math.atan2(-a,c)*DEG));att.pitch=Math.max(-40,Math.min(40,Math.atan2(-b,c)*DEG));
+  // 나침반: 거치된 기기의 "앞"(수평일 때 화면 위쪽, 세웠을 때 뒷면 카메라 쪽)이 가리키는 방위
+  const fd=[0,1,2].map(i=>f0[0]*rt[i]+f0[1]*up[i]+(i===2?f0[2]:0));
+  const fe=R[0]*fd[0]+R[1]*fd[1]+R[2]*fd[2],fn=R[3]*fd[0]+R[4]*fd[1]+R[5]*fd[2];
+  att.hdg=compass&&Math.hypot(fe,fn)>.3?((Math.atan2(fe,fn)*DEG+decl)%360+360)%360:-1;
+  if(!HAS_ATT&&att.web&&att.web.ch!=null)att.hdg=att.web.ch;
+}
+function attLevel(){try{if(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission)DeviceOrientationEvent.requestPermission().catch(()=>{})}catch(e){}
+  if(att.u){att.ref=att.u.slice();store.set('attRef',att.ref);toast('지금 자세를 수평으로 맞췄어요.')}else{att.ref=null;att.acc=[];store.set('attRef',null);toast('기울기 센서를 기다리는 중이에요. 잡히면 그 자세를 수평으로 삼아요.')}}
+
+// 하늘: 구름은 진행 방향 앞쪽에서 다가오고(속도가 빠를수록 빨리), 방향을 틀면 옆으로 흘러감
+let skyMode=store.get('gSky','auto');
+const isNight=()=>skyMode==='night'||(skyMode==='auto'&&(()=>{const h=new Date().getHours();return h>=19||h<6})());
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const sky={cl:[],stars:[],spr:{},h:null};
+function cloudNew(init){const f=init?60+Math.random()*940:780+Math.random()*260;return {f,l:(Math.random()*2-1)*f*.95,hgt:12+Math.random()*80,s:.7+Math.random()*.9,k:Math.random()*4|0}}
+(()=>{for(let i=0;i<16;i++)sky.cl.push(cloudNew(true));const r=rng(7);for(let i=0;i<160;i++)sky.stars.push({az:r()*360,el:1+Math.pow(r(),.75)*55,m:r(),tw:r()*6.3})})();
+function cloudSprite(k,night){const key=k+(night?'n':'d');if(sky.spr[key])return sky.spr[key];
+  const c=document.createElement('canvas');c.width=256;c.height=128;const x=c.getContext('2d'),r=rng(k*31+3);
+  const puffs=[];for(let i=0;i<10;i++)puffs.push([44+r()*168,70+r()*22-(i%3)*10,20+r()*26]);
+  puffs.sort((p,q)=>q[1]-p[1]);
+  for(const [px,py,pr] of puffs){const gr=x.createRadialGradient(px,py-pr*.4,pr*.1,px,py,pr);
+    if(night){gr.addColorStop(0,'rgba(132,146,182,.62)');gr.addColorStop(.6,'rgba(70,80,108,.5)');gr.addColorStop(1,'rgba(30,36,54,0)')}
+    else{gr.addColorStop(0,'rgba(255,255,255,.98)');gr.addColorStop(.62,'rgba(236,241,248,.85)');gr.addColorStop(1,'rgba(196,208,226,0)')}
+    x.fillStyle=gr;x.beginPath();x.arc(px,py,pr,0,Math.PI*2);x.fill()}
+  return sky.spr[key]=c}
+let moonSpr=null;
+function moonSprite(){if(moonSpr)return moonSpr;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  let gr=x.createRadialGradient(64,64,10,64,64,64);gr.addColorStop(0,'rgba(255,248,220,.35)');gr.addColorStop(1,'rgba(255,248,220,0)');x.fillStyle=gr;x.fillRect(0,0,128,128);
+  gr=x.createRadialGradient(56,56,4,64,64,24);gr.addColorStop(0,'#fffdf0');gr.addColorStop(1,'#e2dcc4');x.fillStyle=gr;x.beginPath();x.arc(64,64,24,0,Math.PI*2);x.fill();
+  x.fillStyle='rgba(150,145,125,.35)';for(const [a,b,r] of [[56,58,5],[71,70,4],[62,75,3],[73,55,3]]){x.beginPath();x.arc(a,b,r,0,Math.PI*2);x.fill()}
+  return moonSpr=c}
+// 회전된 자세계 좌표(수평선이 y=0, 진행 방향이 x=0)에서 하늘 그리기
+function drawSky(g,w,h,d,ppd,adiW,v,dt,night){
+  const W=w*2,H=h*2,F=adiW*.75,pxDeg=adiW/70;
+  let gr=g.createLinearGradient(0,-h*1.2,0,0);
+  if(night){gr.addColorStop(0,'#01030a');gr.addColorStop(.7,'#061230');gr.addColorStop(1,'#123064')}else{gr.addColorStop(0,'#0b3a7a');gr.addColorStop(1,'#2e7fe0')}
+  g.fillStyle=gr;g.fillRect(-W,-H,W*2,H);
+  // 방향을 틀면 하늘 전체가 옆으로
+  const dH=sky.h==null?0:angDiff(sky.h,hdgDisp);sky.h=hdgDisp;
+  if(night){const t=performance.now()/1000;
+    for(const s of sky.stars){let x=angDiff(hdgDisp,s.az)*pxDeg;if(Math.abs(x)>W)continue;const y=-s.el*ppd;
+      g.globalAlpha=(.35+.65*Math.abs(Math.sin(t*1.3+s.tw)))*(.4+.6*s.m);g.fillStyle='#fff';g.beginPath();g.arc(x,y,(.8+s.m*1.6)*d,0,Math.PI*2);g.fill()}
+    g.globalAlpha=1;if(sky.moonAz==null)sky.moonAz=(hdgDisp+22)%360;{const off=angDiff(sky.moonAz,(hdgDisp+18)%360);if(Math.abs(off)>30)sky.moonAz=(sky.moonAz+Math.sign(off)*Math.min(Math.abs(off)-30,40*dt)+360)%360}const mx=angDiff(hdgDisp,sky.moonAz)*pxDeg,my=-16*ppd,ms=Math.min(adiW*.26,130*d);
+    if(Math.abs(mx)<W)g.drawImage(moonSprite(),mx-ms/2,my-ms/2,ms,ms)}
+  // 구름: 앞으로 다가오고, 선회하면 옆으로 회전
+  const step=(6+v*2.2)*dt,cs=Math.cos(dH/DEG),sn=Math.sin(dH/DEG);
+  for(const c of sky.cl){const f=c.f*cs+c.l*sn,l=-c.f*sn+c.l*cs;c.f=f-step;c.l=l;
+    if(c.f<22||Math.abs(c.l)/Math.max(c.f,1)>2.4)Object.assign(c,cloudNew(false))}
+  sky.cl.sort((p,q)=>q.f-p.f);
+  for(const c of sky.cl){const x=c.l/c.f*F,y=-c.hgt/c.f*F,cw=150*c.s/c.f*F,ch=cw/2;if(Math.abs(x)-cw>W||cw<2)continue;
+    g.globalAlpha=Math.max(0,Math.min(1,(1040-c.f)/240,(c.f-22)/40))*(night?.85:.95);g.drawImage(cloudSprite(c.k,night),x-cw/2,y-ch*.75,cw,ch)}
+  g.globalAlpha=1;
+}
+$('#gLevel').onclick=attLevel;
+$('#gSky').value=skyMode;$('#gSky').onchange=e=>{skyMode=e.target.value;store.set('gSky',skyMode)};
 let pfd={bank:0,pitch:0,h:null,v:null,t:0};
 function drawPFD(g,w,h,d,v,over,box,dial){
   const now=performance.now(),dt=pfd.t?Math.min(.5,(now-pfd.t)/1000):0;pfd.t=now;
   let tb=0,tp=0;
   if(dt>0&&pfd.h!=null&&gs.fix&&v>3)tb=Math.max(-30,Math.min(30,angDiff(pfd.h,hdgDisp)/dt*1.2));
   if(dt>0&&pfd.v!=null&&gs.fix)tp=Math.max(-8,Math.min(8,(v-pfd.v)/dt*.9));
-  pfd.h=hdgDisp;pfd.v=v;pfd.bank+=(tb-pfd.bank)*.06;pfd.pitch+=(tp-pfd.pitch)*.05;
+  pfd.h=hdgDisp;pfd.v=v;
+  // 센서가 있으면 기기·차량 기울기, 없으면 GPS 선회·가속으로 흉내
+  const useAtt=att.ok&&!!att.ref,tB=useAtt?att.bank+tb*.25:tb,tP=useAtt?att.pitch:tp;
+  pfd.bank+=(tB-pfd.bank)*(useAtt?.22:.06);pfd.pitch+=(tP-pfd.pitch)*(useAtt?.22:.05);
+  const night=isNight();
   const RED='#ff3b30',W='#ffffff',MAG='#ff52d9',GRN='#44e07a',CY='#3ccfff',AMB='#ffb21f',YEL='#f3c623';
   const nar=w/d<420,sw=w*(nar?.22:.17),aw=w*(nar?.2:.15),x1=w*.015,x2=w-w*.015-aw,cx=(x1+sw+x2)/2,at=Math.min(h*.1,36*d),ah=h-at-Math.min(h*.08,30*d),cy=at+ah/2,K=Math.min(h,520*d,w*.9);
   const fnt=(px,wt=600)=>`${wt} ${px}px "Barlow Condensed",Rajdhani,sans-serif`;
@@ -1675,9 +1765,9 @@ function drawPFD(g,w,h,d,v,over,box,dial){
   // 자세계
   g.save();g.beginPath();g.rect(x1+sw,at,x2-x1-sw,ah);g.clip();
   g.translate(cx,cy);g.rotate(-pfd.bank*Math.PI/180);const ppd=ah*.018;g.translate(0,pfd.pitch*ppd);
-  let gr=g.createLinearGradient(0,-h,0,0);gr.addColorStop(0,'#0b3a7a');gr.addColorStop(1,'#2e7fe0');g.fillStyle=gr;g.fillRect(-w,-h*2,w*2,h*2);
-  gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#8a5a2b');gr.addColorStop(1,'#4a2e14');g.fillStyle=gr;g.fillRect(-w,0,w*2,h*2);
-  g.strokeStyle=W;g.lineWidth=2*d;g.beginPath();g.moveTo(-w,0);g.lineTo(w,0);g.stroke();
+  drawSky(g,w,h,d,ppd,x2-x1-sw,v,dt,night);
+  let gr=g.createLinearGradient(0,0,0,h);if(night){gr.addColorStop(0,'#2e1f10');gr.addColorStop(1,'#0e0905')}else{gr.addColorStop(0,'#8a5a2b');gr.addColorStop(1,'#4a2e14')}g.fillStyle=gr;g.fillRect(-w*2,0,w*4,h*2);
+  g.strokeStyle=night?'#cfd8e6':W;g.lineWidth=2*d;g.beginPath();g.moveTo(-w,0);g.lineTo(w,0);g.stroke();
   g.lineWidth=1.4*d;g.fillStyle=W;g.font=fnt(K*.045);g.textBaseline='middle';
   for(let p=-20;p<=20;p+=5){if(!p)continue;const y=-p*ppd,L=(p%10?.06:.13)*w;g.beginPath();g.moveTo(-L/2,y);g.lineTo(L/2,y);g.stroke();
     if(p%10===0){g.textAlign='right';g.fillText(Math.abs(p),-L/2-6*d,y);g.textAlign='left';g.fillText(Math.abs(p),L/2+6*d,y)}}

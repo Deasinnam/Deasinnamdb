@@ -19,6 +19,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Surface;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -32,6 +33,14 @@ final class GpsTracker implements LocationListener, SensorEventListener {
     private final LocationManager lm;
     private final SensorManager sm;
     private final Sensor rot;
+    private final Sensor game;
+    private volatile boolean sensOn = false;
+    private volatile boolean attWanted = false;
+    // 콕핏 PFD용: 마지막 회전 행렬(기기→지구), 화면 회전, 시각
+    private final float[] lastR = new float[9];
+    private volatile int lastRot = 0;
+    private volatile long rTs = 0;
+    private volatile boolean rCompass = false;
     private GnssStatus.Callback gnssCb;
 
     private volatile Location last;
@@ -45,6 +54,50 @@ final class GpsTracker implements LocationListener, SensorEventListener {
         lm = a.getSystemService(LocationManager.class);
         sm = a.getSystemService(SensorManager.class);
         rot = sm != null ? sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) : null;
+        game = sm != null ? sm.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR) : null;
+    }
+
+    /** 나침반·기울기 센서: GPS가 꺼져 있어도 콕핏 PFD가 보이면 켭니다. */
+    private void sensorsOn() {
+        if (sensOn || sm == null) return;
+        Sensor s = rot != null ? rot : game;
+        if (s == null) return;
+        sm.registerListener(this, s, SensorManager.SENSOR_DELAY_GAME);
+        sensOn = true;
+    }
+
+    private void sensorsMaybeOff() {
+        if (!sensOn || running || attWanted || sm == null) return;
+        try { sm.unregisterListener(this); } catch (Exception ignored) {}
+        sensOn = false;
+    }
+
+    void attStart() {
+        attWanted = true;
+        sensorsOn();
+    }
+
+    void attStop() {
+        attWanted = false;
+        sensorsMaybeOff();
+    }
+
+    /** {"ok":bool,"r":[9],"srot":0~3,"decl":도,"compass":bool,"age":ms} */
+    String attitude() {
+        JSONObject o = new JSONObject();
+        try {
+            long age = rTs == 0 ? -1 : (SystemClock.elapsedRealtime() - rTs);
+            o.put("ok", rTs != 0 && age < 2000);
+            JSONArray a = new JSONArray();
+            synchronized (lastR) { for (float v : lastR) a.put((double) v); }
+            o.put("r", a);
+            o.put("srot", lastRot);
+            o.put("compass", rCompass);
+            o.put("age", age);
+            Location l = last;
+            o.put("decl", l == null ? 0 : new GeomagneticField((float) l.getLatitude(), (float) l.getLongitude(), (float) l.getAltitude(), System.currentTimeMillis()).getDeclination());
+        } catch (Exception ignored) {}
+        return o.toString();
     }
 
     boolean hasPerm() {
@@ -74,16 +127,16 @@ final class GpsTracker implements LocationListener, SensorEventListener {
             Location l = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (l != null) last = l;
         } catch (Exception ignored) {}
-        if (rot != null) sm.registerListener(this, rot, SensorManager.SENSOR_DELAY_UI);
         running = true;
+        sensorsOn();
     }
 
     void stop() {
         if (!running) return;
         try { lm.removeUpdates(this); } catch (Exception ignored) {}
         try { if (gnssCb != null) lm.unregisterGnssStatusCallback(gnssCb); } catch (Exception ignored) {}
-        try { if (sm != null) sm.unregisterListener(this); } catch (Exception ignored) {}
         running = false;
+        sensorsMaybeOff();
     }
 
     boolean isRunning() {
@@ -128,6 +181,11 @@ final class GpsTracker implements LocationListener, SensorEventListener {
             default:
                 System.arraycopy(r, 0, r2, 0, 9);
         }
+        synchronized (lastR) { System.arraycopy(r, 0, lastR, 0, 9); }
+        lastRot = rotation;
+        rCompass = e.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR;
+        rTs = SystemClock.elapsedRealtime();
+        if (!rCompass) return;
         SensorManager.getOrientation(r2, o);
         float az = (float) Math.toDegrees(o[0]);
         Location l = last;
