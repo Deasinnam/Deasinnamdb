@@ -109,8 +109,13 @@ async function main() {
     assert.equal(await page.locator('html').getAttribute('data-car'), '1');
     assert.equal(await page.locator('#wGps').isVisible(), true);
     assert.equal(await page.locator('#gStyle').inputValue(), 'cockpit');
-    assert.equal(await page.locator('#mainTitle').textContent(), 'Cyber Carnival Cockpit');
-    assert.equal(await page.locator('.brand .logo-img').isVisible(), true);
+    assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
+    assert.equal(await page.locator('.brand .logo-img').isVisible(), false, 'Cockpit drops the KIA logo');
+    assert.equal(await page.locator('.brand .af').isVisible(), true);
+    assert.match(await page.locator('.brand .af').textContent(), /대신남 원 에어포스/);
+    // 콕핏 스킨: 속도계 창만 높이 조절
+    assert.equal(await page.locator('#wGps > .grip').isVisible(), true);
+    for (const id of ['#wCtl','#wAtc','#wMain','#wEq','#wPl','#wVis']) assert.equal(await page.locator(id+' > .grip').isVisible(), false, id+' has no resize grip');
     assert.equal(await page.locator('#wMain').evaluate(el => getComputedStyle(el).clipPath), 'none', 'Cockpit panels are square-cornered plates, not cut corners');
     const r = sel => page.locator(sel).evaluate(el => {const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,width:b.width}});
     const st = await r('#wGps .gstats'), dl = await r('#dial'), body = await r('#wGps .gps');
