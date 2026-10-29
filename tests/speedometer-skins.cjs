@@ -442,6 +442,12 @@ async function main() {
     await p8.waitForTimeout(800);
     const v1 = await p8.evaluate(() => pfd.getVisualState());
     assert.ok(v1.moving && v1.distanceMeters > v0, 'Scene moves with the GPS speed');
+    // 좌우 선회: 방위가 바뀌면 배경이 옆으로 흐름
+    const yaw0 = await p8.evaluate(() => pfd.scene.yawAcc || 0);
+    await p8.evaluate(() => {g8.bearing=40;g8.ts+=1000});
+    await p8.waitForFunction(y0 => Math.abs((pfd.scene.yawAcc||0) - y0 - 40) < 2, yaw0, {timeout:3000});
+    await p8.evaluate(() => {g8.bearing=0;g8.ts+=1000});
+    await p8.waitForFunction(y0 => Math.abs((pfd.scene.yawAcc||0) - y0) < 2, yaw0, {timeout:3000});
     await p8.locator('#pfdHost [data-role="settings"]').click();
     await p8.locator('#pfdHost [data-role="theme"]').selectOption('night');
     await p8.locator('#pfdHost .pfd-save').click();
@@ -508,7 +514,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: Daesinnam PFD v1.1 (speed-linked clouds/city, night) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: Daesinnam PFD v1.1 (speed-linked clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

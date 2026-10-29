@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v5.5** (versionCode 35) |
+| 최신 버전 | **v5.6** (versionCode 36) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -54,6 +54,7 @@
 - v5.3: 콕핏 스킨 속도계를 사용자 제공 `Daesinnam_PFD_Claude_Package`(pfd.js/pfd.css, `.dsn-pfd`)로 교체. index.html에 인라인, `#pfdHost`에 마운트, 패키지 헤더는 숨기고 앱 창 제목줄(크기 조절·접기) 사용. `pfdFeed()`가 10Hz로 GPS(`gs`, `spdNow`, `hdgNow`)·기울기(`att`)·주행 기록(`trip`)을 `updateTelemetry`로 전달, nativeBridge = `gpsStart/gpsStop`, `trip:reset`·`settings:change`(속도 경고=`gLimit`, 테마·HUD 반전=`pfdSet`) 연결. 패키지 내장 글꼴(3.6MB)은 넣지 않고 Noto Sans KR. 다른 자동차 스킨은 기존 속도계 유지
 - v5.4: 지도 창 버튼 TMAP 켜기 / TMAP 하단에 켜기(브리지 `openAppBottom`: LAUNCH_ADJACENT + 자유 창이면 아래쪽 절반 `setLaunchBounds`, 가로 화면이면 "landscape" 반환) / TMAP 옆 창. 실기기 분할 위치 확인 필요
 - v5.5: PFD 패키지 v1.1(`Daesinnam_PFD_Claude_Package_3`)로 pfd.js 교체: 속도 연동 구름·도심 불빛, 야간 달·별. `pfdSet`에 sceneMotion·sceneQuality 저장, 테마 "자동"은 앱이 19~6시 night/day로 넘김(`pfdApplyTheme`, 패키지 화면에는 사용자가 고른 값 표시)
+- v5.6: 인라인 pfd.js에 선회 효과 추가(앱 쪽 수정): `PfdScene.turn(heading)`이 방위 변화만큼 구름·도심을 회전, 별·달·스카이라인은 `yawAcc`로 옆 이동. 패키지 새 버전을 받으면 이 수정을 다시 넣어야 함
 
 ## 4. 확인 대기 중
 

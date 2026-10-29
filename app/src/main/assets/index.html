@@ -1444,13 +1444,22 @@ class PfdScene{
   for(let i=0;i<330;i++)this.city.push({x:(randomAt(i,17)-.5)*980,z:35+randomAt(i,18)*1065,color:randomAt(i,19)>.83?1:0,size:.7+randomAt(i,20),lamp:false});
   for(const lane of [-310,-180,-85,-29,29,85,180,310])for(let j=0;j<22;j++)this.city.push({x:lane,z:35+j*48+randomAt(j,21)*9,color:0,size:1.1,lamp:true});
  }
+ /* 대신남 AMP: 방위가 바뀌면 배경이 좌우로 흐름(선회 효과). 회전 후 범위를 벗어난 물체는 반대편으로 감쌉니다. */
+ turn(headingDeg){
+  if(!finite(headingDeg)){return}
+  if(this.heading===undefined||this.heading===null){this.heading=headingDeg;this.yawAcc=this.yawAcc||0;return}
+  const d=angleDelta(this.heading,headingDeg);this.heading=headingDeg;if(Math.abs(d)<1e-4)return;this.yawAcc=(this.yawAcc||0)+d;
+  const r=d*Math.PI/180,cs=Math.cos(r),sn=Math.sin(r);
+  for(const cl of this.clouds){const d0=160+wrap(cl.z-160-this.distanceMeters*cl.layer,1520),x1=cl.x*cs-d0*sn,d1=cl.x*sn+d0*cs;cl.x=wrap(x1+800,1600)-800;cl.z+=d1-d0;}
+  for(const p of this.city){const d0=35+wrap(p.z-35-this.distanceMeters,1065),x1=p.x*cs-d0*sn,d1=p.x*sn+d0*cs;p.x=wrap(x1+490,980)-490;p.z+=d1-d0;}
+ }
  advance(seconds,speedKmh){if(finite(seconds)&&finite(speedKmh)&&seconds>0&&speedKmh>0)this.distanceMeters+=speedKmh/3.6*2.2*clamp(seconds,0,.1);}
  drawSky(c,w,h,night,quality){
   this.drawCount++;c.save();c.beginPath();c.rect(-w*2,-h*3,w*4,h*3);c.clip();
   if(night){
    const count=quality==='balanced'?105:180;c.fillStyle='#c8dcff';
-   for(let i=0;i<count;i++){const s=this.stars[i];c.globalAlpha=s.alpha;c.beginPath();c.arc(s.x*w,-s.y*h,s.size,0,Math.PI*2);c.fill();if(s.size>1.38){c.globalAlpha=s.alpha*.28;c.fillRect(s.x*w-3,-s.y*h-.3,6,.6);c.fillRect(s.x*w-.3,-s.y*h-3,.6,6);}}
-   c.globalAlpha=1;const mx=w*.31,my=-h*.355,r=clamp(w*.019,14,24),glow=c.createRadialGradient(mx,my,r*.8,mx,my,r*5);glow.addColorStop(0,'#7d9fc51d');glow.addColorStop(1,'#7d9fc500');c.fillStyle=glow;c.fillRect(mx-r*5,my-r*5,r*10,r*10);c.drawImage(this.moon,mx-r,my-r,r*2,r*2);
+   const pan=(this.yawAcc||0)*w/72.5;for(let i=0;i<count;i++){const s=this.stars[i],sx=wrap(s.x*w-pan+w*1.35,w*2.7)-w*1.35;c.globalAlpha=s.alpha;c.beginPath();c.arc(sx,-s.y*h,s.size,0,Math.PI*2);c.fill();if(s.size>1.38){c.globalAlpha=s.alpha*.28;c.fillRect(sx-3,-s.y*h-.3,6,.6);c.fillRect(sx-.3,-s.y*h-3,.6,6);}}
+   c.globalAlpha=1;if(this.moonYaw===undefined)this.moonYaw=(this.yawAcc||0)+22.5;{const off=this.moonYaw-(this.yawAcc||0)-22.5;if(Math.abs(off)>35)this.moonYaw-=Math.sign(off)*Math.min(Math.abs(off)-35,.6);}const mx=(this.moonYaw-(this.yawAcc||0))*w/72.5,my=-h*.355,r=clamp(w*.019,14,24),glow=c.createRadialGradient(mx,my,r*.8,mx,my,r*5);glow.addColorStop(0,'#7d9fc51d');glow.addColorStop(1,'#7d9fc500');c.fillStyle=glow;c.fillRect(mx-r*5,my-r*5,r*10,r*10);c.drawImage(this.moon,mx-r,my-r,r*2,r*2);
   }
   const focal=w*.79;for(const o of this.clouds)o.depth=160+wrap(o.z-160-this.distanceMeters*o.layer,1520);const clouds=this.clouds.sort((a,b)=>b.depth-a.depth);
   for(const cl of clouds){if(quality==='balanced'&&cl.id%3===0)continue;const fade=clamp((1680-cl.depth)/150,0,1)*clamp((cl.depth-160)/95,0,1);if(fade<.01)continue;const scale=focal/cl.depth,cx=cl.x*scale,cy=-cl.height*scale,cw=cl.width*scale,ch=cw*.375;
@@ -1462,8 +1471,8 @@ class PfdScene{
  drawGround(c,w,h,night,speed,quality){
   if(!night)return;c.save();c.beginPath();c.rect(-w*2,0,w*4,h*3);c.clip();const focal=w*.79;
   // Faint silhouettes and window clusters at the distant city edge.
-  const shift=wrap(this.distanceMeters*.028,52);
-  for(let i=-22;i<23;i++){const bw=22+randomAt(i,41)*32,bh=5+randomAt(i,42)*27,bx=i*52-shift;c.fillStyle='#030a12';c.fillRect(bx,0,bw,bh);for(let col=0;col<4;col++)for(let row=0;row<3;row++){if(randomAt(i*31+col*7+row,43)<.45)continue;c.globalAlpha=.18+randomAt(i+row,44)*.4;c.fillStyle=col===2?'#a9c4da':'#edc18b';c.fillRect(bx+4+col*5,3+row*5,1.4,1.2);}}c.globalAlpha=1;
+  const off=this.distanceMeters*.028+(this.yawAcc||0)*w/72.5,base=Math.floor(off/52),shift=off-base*52;
+  for(let j=-22;j<23;j++){const i=j+base,bw=22+randomAt(i,41)*32,bh=5+randomAt(i,42)*27,bx=j*52-shift;c.fillStyle='#030a12';c.fillRect(bx,0,bw,bh);for(let col=0;col<4;col++)for(let row=0;row<3;row++){if(randomAt(i*31+col*7+row,43)<.45)continue;c.globalAlpha=.18+randomAt(i+row,44)*.4;c.fillStyle=col===2?'#a9c4da':'#edc18b';c.fillRect(bx+4+col*5,3+row*5,1.4,1.2);}}c.globalAlpha=1;
   const points=this.lightDraw;points.length=0;for(let i=0;i<this.city.length;i++){if(quality==='balanced'&&!this.city[i].lamp&&i%2===0)continue;const p=this.city[i],z=35+wrap(p.z-35-this.distanceMeters,1065),scale=focal/z,xx=p.x*scale,yy=11*scale;if(Math.abs(xx)>w*.9||yy>h*1.6)continue;p.depth=z;p.scale=scale;p.xx=xx;p.yy=yy;points.push(p);}points.sort((a,b)=>b.depth-a.depth);
   for(const p of points){const fade=clamp((1100-p.depth)/160,0,1)*clamp((p.depth-35)/22,0,1),size=clamp(p.scale*p.size*.32,.75,3.5);if(fade<.01)continue;
    if(p.lamp&&p.scale>1.8){const poleHeight=clamp(p.scale*2.6,0,h*.26);c.globalAlpha=fade*.9;c.strokeStyle='#2b3d50';c.lineWidth=clamp(p.scale*.07,.7,1.6);c.beginPath();c.moveTo(p.xx,p.yy);c.lineTo(p.xx,p.yy-poleHeight);c.lineTo(p.xx+(p.x<0?1:-1)*Math.min(p.scale*.6,9),p.yy-poleHeight);c.stroke();const headX=p.xx+(p.x<0?1:-1)*Math.min(p.scale*.6,9),headY=p.yy-poleHeight,gsize=size*12;c.globalAlpha=fade*.75;c.drawImage(this.glows[0],headX-gsize/2,headY-gsize/2,gsize,gsize);c.fillStyle='#ffe2ae';c.fillRect(headX-size*.35,headY-size*.28,size*.7,size*.56);c.globalAlpha=fade*.12;c.drawImage(this.glows[0],p.xx-size*8,p.yy-size*1.9,size*16,size*3.8);
@@ -1605,6 +1614,7 @@ class PfdPanel{
   c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.translate(cx,cy);c.rotate(-roll*Math.PI/180);c.translate(0,pitch*ppd);
   let g=c.createLinearGradient(0,-h,0,0);g.addColorStop(0,this.day?'#15548d':'#020615');g.addColorStop(1,this.day?'#75bae0':'#14273f');c.fillStyle=g;c.fillRect(-w*2,-h*3,w*4,h*3);
   g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,this.day?'#62613b':'#08121e');g.addColorStop(1,this.day?'#29351d':'#02060b');c.fillStyle=g;c.fillRect(-w*2,0,w*4,h*3);
+  if(valid&&finite(this.data.headingDeg))this.scene.turn(this.display.headingDeg);
   this.scene.drawSky(c,w,h,!this.day,this.settings.sceneQuality);
   c.strokeStyle=this.day?'#a9bd7c34':'#6586aa15';c.lineWidth=.7;
   for(let n=-12;n<=12;n++){c.beginPath();c.moveTo(n*13,0);c.lineTo(n*w*.19,h*2);c.stroke();}
