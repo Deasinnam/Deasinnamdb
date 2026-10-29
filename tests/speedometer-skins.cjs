@@ -90,6 +90,8 @@ async function main() {
     }
     await page.locator('#skin').selectOption('blue');
     assert.equal(await page.locator('#wGps').isVisible(), false);
+    assert.equal(await page.locator('#wCtl').isVisible(), false);
+    assert.equal(await page.locator('#wAtc').isVisible(), false);
     assert.deepEqual(await page.evaluate(() => gpsCalls), {starts:1,stops:1});
     await page.locator('#skin').selectOption('carnival');
     assert.equal(await page.locator('#gStyle').inputValue(), themes.at(-1));
@@ -114,6 +116,50 @@ async function main() {
     const st = await r('#wGps .gstats'), dl = await r('#dial'), body = await r('#wGps .gps');
     assert.ok(st.bottom <= dl.top, 'Cockpit: trip stats sit in one strip above the speedometer');
     assert.ok(dl.width >= body.width - 2, 'Cockpit: speedometer fills the window width');
+    // 콕핏 창을 줄이면 속도계도 함께 작아지고, 늘리면 커짐
+    const dialH = () => page.locator('#dial').evaluate(el => el.getBoundingClientRect().height);
+    const fullH = await dialH();
+    await page.evaluate(() => {const w=document.querySelector('#wGps');w.style.height=(w.getBoundingClientRect().height-220)+'px';w.classList.add('sized')});
+    await page.waitForTimeout(150);
+    const smallH = await dialH();
+    assert.ok(smallH < fullH - 150, `Shrinking the cockpit window shrinks the PFD (${fullH} -> ${smallH})`);
+    assert.equal(await page.locator('#wGps .body').evaluate(el => el.scrollHeight <= el.clientHeight + 1), true, 'Shrunk cockpit fits without scrolling');
+    const cw = await page.locator('#gauge').evaluate(c => c.width / c.height);
+    assert.ok(cw > 2, 'Gauge canvas follows the new aspect ratio');
+    await page.evaluate(() => {const w=document.querySelector('#wGps');w.style.height='';w.classList.remove('sized')});
+    // 조종 패널: 누르면 들어가며 켜지고, 다시 누르면 튀어나오며 꺼짐
+    assert.equal(await page.locator('#wCtl').isVisible(), true);
+    assert.equal(await page.locator('#wAtc').isVisible(), true);
+    assert.ok((await top('#wGps')) < (await top('#wCtl')) && (await top('#wCtl')) < (await top('#wAtc')), 'Control panel under the speedometer, tower under the panel');
+    for (const id of ['#ckVol','#ckWifi','#ckBt']) {
+      const was = await page.locator(id).getAttribute('aria-pressed');
+      await page.locator(id).click();
+      assert.notEqual(await page.locator(id).getAttribute('aria-pressed'), was, id+' toggles');
+      assert.equal(await page.locator(id+' i').textContent(), was==='true' ? 'OFF' : 'ON');
+      await page.locator(id).click();
+      assert.equal(await page.locator(id).getAttribute('aria-pressed'), was);
+    }
+    assert.equal(await page.locator('#ckVol').getAttribute('aria-pressed'), 'true');
+    const pressedY = await page.locator('#ckVol .ckface').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42);
+    await page.locator('#ckVol').click();await page.waitForTimeout(400);
+    const raisedY = await page.locator('#ckVol .ckface').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42);
+    assert.ok(pressedY > raisedY, 'ON sits pressed in, OFF pops out');
+    assert.match(await page.locator('#ckMsg').textContent(), /소리를 껐어요/, 'Master VOL off mutes playback');
+    await page.locator('#ckVol').click();
+    await page.locator('#ckEz').click();
+    await page.waitForFunction(() => !document.querySelector('#drive').hidden);
+    await page.locator('#dvClose').click();
+    await page.waitForFunction(() => document.querySelector('#ckEz').getAttribute('aria-pressed') === 'false');
+    // 관제탑: 점검 문구가 차례로 나오고 끝나면 이륙 허가
+    await page.waitForFunction(() => document.querySelectorAll('#atcLog li').length >= 3, null, {timeout:15000});
+    await page.locator('#atcSkip').click();
+    assert.equal(await page.locator('#atcClr').isVisible(), true);
+    assert.match(await page.locator('#atcLog').textContent(), /안전벨트/);
+    assert.match(await page.locator('#atcLog').textContent(), /브레이크/);
+    await page.locator('#atcRun').click();
+    assert.equal(await page.locator('#atcClr').isVisible(), false, 'Re-running the checklist starts over');
+    await page.evaluate(() => {window.__spoke=[];window.AndroidBridge.speak=t=>__spoke.push(t)});
+    await page.waitForFunction(() => window.__spoke.length > 0 && !document.querySelector('#atcClr').hidden, null, {timeout:40000});
     await page.locator('#gStyle').selectOption('carbon');
     assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
@@ -241,7 +287,7 @@ async function main() {
     assert.ok(after.g > before.g, `EQ band follows the finger upward (${before.g} -> ${after.g})`);
     await tctx.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, cockpit skin, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, cockpit skin, cockpit resize, control panel, tower checklist, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

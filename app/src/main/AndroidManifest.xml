@@ -17,6 +17,10 @@
     <!-- 차(블루투스)에 연결되면 이어서 재생: 연결 감지와 기기 이름 확인 -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- 콕핏 스킨 조종 패널: 와이파이·블루투스 켜짐 상태 표시. 안드로이드 9 이하에서만 앱이 직접 켜고 끕니다. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <!-- 선택: 앱이 꺼져 있을 때 차에 연결되면 앱을 자동으로 열기 (사용자가 설정에서 허용) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
@@ -30,6 +34,10 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="market" />
+        </intent>
+        <!-- 관제탑 음성(TextToSpeech) 엔진 찾기 -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
 

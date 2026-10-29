@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -21,12 +23,14 @@ import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
 import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
@@ -54,6 +58,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -482,9 +487,38 @@ public class MainActivity extends Activity {
         if (web != null) web.saveState(out);
     }
 
+    // ---------- 콕핏 스킨: 관제탑 음성
+    private TextToSpeech tts;
+    private boolean ttsReady;
+    private String ttsPending;
+
+    private void speak(String text) {
+        if (tts == null) {
+            ttsPending = text;
+            tts = new TextToSpeech(getApplicationContext(), status -> {
+                ttsReady = status == TextToSpeech.SUCCESS;
+                if (ttsReady) {
+                    tts.setLanguage(Locale.KOREAN);
+                    tts.setSpeechRate(1.05f);
+                    if (ttsPending != null) tts.speak(ttsPending, TextToSpeech.QUEUE_FLUSH, null, "atc");
+                }
+                ttsPending = null;
+            });
+            return;
+        }
+        if (ttsReady) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "atc");
+        else ttsPending = text;
+    }
+
+    private BluetoothAdapter btAdapter() {
+        BluetoothManager bm = getSystemService(BluetoothManager.class);
+        return bm == null ? null : bm.getAdapter();
+    }
+
     @Override
     protected void onDestroy() {
         main.removeCallbacksAndMessages(null);
+        if (tts != null) { tts.shutdown(); tts = null; }
         try { am.unregisterAudioDeviceCallback(devCallback); } catch (Exception ignored) {}
         if (natFuture != null) androidx.media3.session.MediaController.releaseFuture(natFuture);
         nat = null;
@@ -1127,6 +1161,80 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void requestMic() {
             main.post(MainActivity.this::requestMic);
+        }
+
+        // ---------- 콕핏 스킨 조종 패널
+
+        /** {"muted":bool,"wifi":bool,"bt":bool,"hasBt":bool} */
+        @JavascriptInterface
+        public String cockpitState() {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("muted", am.isStreamMute(AudioManager.STREAM_MUSIC) || am.getStreamVolume(AudioManager.STREAM_MUSIC) == 0);
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+                o.put("wifi", wm != null && wm.isWifiEnabled());
+                BluetoothAdapter ba = btAdapter();
+                o.put("hasBt", ba != null);
+                o.put("bt", ba != null && ba.isEnabled());
+            } catch (Exception ignored) {}
+            return o.toString();
+        }
+
+        @JavascriptInterface
+        public void setMuted(final boolean muted) {
+            am.adjustStreamVolume(AudioManager.STREAM_MUSIC, muted ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE, 0);
+            if (!muted && am.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, Math.max(1, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 3), 0);
+            }
+        }
+
+        /** 안드로이드 9 이하는 바로 바꾸고 "done", 10 이상은 앱이 바꿀 수 없어 와이파이 패널을 열고 "panel" */
+        @SuppressWarnings("deprecation")
+        @JavascriptInterface
+        public String setWifi(final boolean on) {
+            if (Build.VERSION.SDK_INT < 29) {
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+                if (wm != null && wm.setWifiEnabled(on)) return "done";
+            }
+            main.post(() -> {
+                try {
+                    startActivity(new Intent(Build.VERSION.SDK_INT >= 29 ? Settings.Panel.ACTION_WIFI : Settings.ACTION_WIFI_SETTINGS));
+                } catch (Exception e) {
+                    try { startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); } catch (Exception ignored) {}
+                }
+            });
+            return "panel";
+        }
+
+        /** "done" 바로 바뀜, "ask" 켜기 확인 창, "panel" 설정 화면, "perm" 권한 요청, "none" 블루투스 없음 */
+        @SuppressWarnings({"deprecation", "MissingPermission"})
+        @JavascriptInterface
+        public String setBluetooth(final boolean on) {
+            final BluetoothAdapter ba = btAdapter();
+            if (ba == null) return "none";
+            if (Build.VERSION.SDK_INT >= 31 && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                main.post(() -> requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQ_BT));
+                return "perm";
+            }
+            if (!on && Build.VERSION.SDK_INT < 33) {
+                try { if (ba.disable()) return "done"; } catch (Exception ignored) {}
+            }
+            if (on) {
+                main.post(() -> {
+                    try { startActivity(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)); }
+                    catch (Exception e) { try { startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); } catch (Exception ignored) {} }
+                });
+                return "ask";
+            }
+            main.post(() -> {
+                try { startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); } catch (Exception ignored) {}
+            });
+            return "panel";
+        }
+
+        @JavascriptInterface
+        public void speak(final String text) {
+            main.post(() -> MainActivity.this.speak(text));
         }
     }
 

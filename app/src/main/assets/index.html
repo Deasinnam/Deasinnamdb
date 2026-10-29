@@ -561,12 +561,76 @@ input[type=range]:disabled{opacity:.35}
 /* 콕핏 스킨: 주행 정보는 속도계 위에 한 줄로, 속도계는 창 너비를 가득 채움 */
 :root[data-skin="carnival2"] #wGps .gps{grid-template-columns:minmax(0,1fr)!important;gap:10px}
 :root[data-skin="carnival2"] #wGps .gstats{order:-1;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px}
-@container (max-width:760px){:root[data-skin="carnival2"] #wGps .gstats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@container (max-width:760px){:root[data-skin="carnival2"] #wGps .gstats{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(112px,1fr);overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}:root[data-skin="carnival2"] #wGps .gstats::-webkit-scrollbar{display:none}}
 :root[data-skin="carnival2"] #wGps .gstats div{padding:6px 10px;gap:2px}
 :root[data-skin="carnival2"] #wGps .gstats small{font-size:12px}
 :root[data-skin="carnival2"] #wGps .gstats b{font-size:clamp(17px,2.6cqw,30px)!important}
 :root[data-skin="carnival2"] #wGps .gstats small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :root[data-skin="carnival2"] #wGps .dial{min-height:clamp(300px,58vh,720px)}
+
+/* 콕핏: 창 높이를 줄이거나 늘리면 속도계가 남은 공간에 맞춰 비율째 바뀜 */
+#wGps.sized .dial{min-height:100px}
+:root[data-skin="carnival2"] #wGps.sized>.body{overflow:hidden}
+:root[data-skin="carnival2"] #wGps.sized .gps{grid-template-rows:auto minmax(0,1fr);min-height:0;overflow:hidden}
+:root[data-skin="carnival2"] #wGps.sized .gauge{min-height:0}
+:root[data-skin="carnival2"] #wGps.sized .dial{min-height:60px}
+/* 콕핏 스킨 전용 창: 조종 패널 · 관제탑 */
+#wCtl{grid-area:ctl;display:none}#wAtc{grid-area:atc;display:none}
+.app.G.K #wCtl,.app.G.K #wAtc{display:flex}
+.app.G.K{grid-template-areas:"gps" "ctl" "atc" "map" "main" "vis" "eq" "pl"}
+.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "map map" "main eq" "vis pl"}
+.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "map map pl" "main eq pl" "vis vis pl"}
+.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "main" "vis" "eq" "pl" "map"}
+.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "main eq" "vis pl" "map map"}
+.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "main eq pl" "vis vis pl" "map map map"}
+/* 조종 패널: 가드 레일 사이에 들어앉은 래칭 버튼. 켜면 쑥 들어가 불이 켜지고, 끄면 튀어나옴 */
+.ckpanel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,2vw,22px);padding:16px clamp(10px,2vw,22px) 18px;border-radius:4px;
+  background:repeating-linear-gradient(-45deg,#f3c623 0 10px,#141414 10px 20px) top/100% 5px no-repeat,repeating-linear-gradient(-45deg,#f3c623 0 10px,#141414 10px 20px) bottom/100% 5px no-repeat,
+  radial-gradient(#ffffff06 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,#1d2024,#121417);box-shadow:inset 0 0 0 1px #000,inset 0 6px 14px #000a}
+@media (max-width:520px){.ckpanel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ckcell{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.ckcap{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;letter-spacing:.2em;color:#e6eaee;text-shadow:0 1px 0 #000;white-space:nowrap}
+.ckcell small{font-size:12.5px;color:#9aa3ad}
+.ckb{position:relative;width:min(100%,140px);aspect-ratio:1;padding:12px;border:0;border-radius:6px;background:linear-gradient(180deg,#0a0b0d,#1b1e22);box-shadow:inset 0 2px 6px #000,0 1px 0 #ffffff14;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ckb::before,.ckb::after{content:"";position:absolute;top:-6px;bottom:-6px;width:9px;border-radius:3px;background:linear-gradient(90deg,#3a3f45,#8b939b 45%,#3a3f45);box-shadow:0 3px 6px #000c,inset 0 1px 0 #ffffff40}
+.ckb::before{left:-5px}.ckb::after{right:-5px}
+.ckface{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:100%;height:100%;padding:12% 8% 10%;border-radius:4px;border:1px solid #000;
+  background:linear-gradient(180deg,#5a6168,#3a3f45 48%,#2a2e33);
+  box-shadow:inset 0 1px 0 #ffffff40,inset 0 -3px 0 #0007,0 9px 0 -1px #15171a,0 12px 16px #000c;
+  transform:translateY(-6px);transition:transform .22s cubic-bezier(.2,1.8,.4,1),box-shadow .22s,background .2s}
+.ckface svg{width:38%;height:38%;fill:#e6eaee;opacity:.85;transition:fill .2s,filter .2s}
+.ckface b{white-space:nowrap;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(13px,1.6vw,17px);letter-spacing:.14em;color:#e6eaee}
+.ckface i{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(14px,1.8vw,19px);letter-spacing:.24em;width:84%;text-align:center;padding:2px 0;border-radius:2px;background:#0b0c0e;color:#7a5410;box-shadow:inset 0 1px 3px #000;transition:color .2s,text-shadow .2s,background .2s}
+.ckb.on .ckface{transform:translateY(1px) scale(.97);background:linear-gradient(180deg,#43494f,#2c3035 50%,#212428);
+  box-shadow:inset 0 2px 6px #000c,inset 0 -1px 0 #ffffff12,0 1px 0 0 #15171a,0 2px 4px #0008;transition:transform .09s ease-in,box-shadow .09s,background .1s}
+.ckb.on .ckface svg{fill:#44e07a;opacity:1;filter:drop-shadow(0 0 6px #44e07a)}
+.ckb.on .ckface i{color:#44e07a;text-shadow:0 0 8px #44e07a;background:#06120a}
+.ckb:not(.on) .ckface i{color:#ffb21f;text-shadow:0 0 6px #ffb21f88}
+.ckb.wait .ckface i{animation:blink .5s steps(2) infinite}
+.ckb:focus-visible{outline:2px solid #3ccfff;outline-offset:8px}
+.ckmsg{min-height:1.5em;margin-top:10px;font-size:13px;color:#9aa3ad;line-height:1.5}
+/* 관제탑: 데이터링크 화면에 출발 전 점검을 차례로 띄움 */
+#wAtc .body{display:flex;flex-direction:column;gap:10px}
+.atc{position:relative;border:1px solid #000;border-radius:4px;background:radial-gradient(120% 90% at 30% 0%,#0b1116,#040608 60%);box-shadow:inset 0 0 0 1px #2b3036,0 0 0 3px #1c1f23,0 0 0 4px #464c54;padding:12px 14px;overflow:hidden}
+.atc::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,#ffffff05 0 1px,transparent 1px 3px)}
+.atchead{display:flex;justify-content:space-between;gap:10px;font-family:"Share Tech Mono",monospace;font-size:13px;color:#3ccfff;padding-bottom:8px;border-bottom:1px solid #ffffff14;margin-bottom:8px}
+.atchead span:last-child{color:#9aa3ad}
+.atcbar{height:4px;background:#ffffff10;border-radius:2px;margin-bottom:8px;overflow:hidden}
+.atcbar i{display:block;height:100%;width:0;background:#44e07a;box-shadow:0 0 8px #44e07a;transition:width .4s}
+.atclog{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.atclog li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:baseline;font-size:15px;color:#e6eaee;line-height:1.45}
+.atclog li b{font-family:"Share Tech Mono",monospace;font-weight:400;font-size:13px;color:#3ccfff}
+.atclog li.me b{color:#ff52d9}
+.atclog li.me{color:#c9d0d7}
+.atclog li em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.14em;font-size:14px;color:#5f6a74}
+.atclog li em.ok{color:#44e07a;text-shadow:0 0 6px #44e07a88}
+.atclog li em.warn{color:#ffb21f}
+.atclog li em.run{color:#3ccfff;animation:blink .5s steps(2) infinite}
+.atclog .cur::after{content:"▌";color:#44e07a;animation:blink .6s steps(2) infinite;margin-left:2px}
+.atcclr{margin-top:12px;padding:10px 12px;text-align:center;border:2px solid #44e07a;border-radius:3px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(20px,3.2vw,30px);letter-spacing:.24em;color:#44e07a;text-shadow:0 0 12px #44e07a;box-shadow:0 0 18px #44e07a33,inset 0 0 18px #44e07a22;animation:clr 1s ease-out 3}
+.atcclr small{display:block;font-family:"Noto Sans KR",sans-serif;font-size:14px;letter-spacing:.06em;color:#e6eaee;text-shadow:none;margin-top:2px}
+@keyframes clr{0%{opacity:0;transform:scale(1.06)}30%{opacity:1}60%{opacity:.55}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ckface,.ckb.on .ckface{transition:none}.atcclr{animation:none}}
 
 /* 지도 */
 #wMap .body{display:flex;flex-direction:column;gap:10px}
@@ -708,6 +772,32 @@ html.driving body{overflow:hidden}
         </select></label>
       </div>
       <div class="gmsg" id="gMsg"></div>
+    </div>
+  </section>
+
+  <section class="win" id="wCtl">
+    <div class="bar"><span class="t">Cockpit Control</span><span class="s" id="ckSrc"></span><span class="groove"></span><button class="wbtn" data-col="wCtl" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="body">
+      <div class="ckpanel">
+        <div class="ckcell"><span class="ckcap">MASTER VOL</span><button class="ckb" id="ckVol" aria-pressed="false" aria-label="볼륨 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg><b>VOL</b><i>OFF</i></span></button><small>볼륨</small></div>
+        <div class="ckcell"><span class="ckcap">DATA LINK</span><button class="ckb" id="ckWifi" aria-pressed="false" aria-label="와이파이 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5.6 13.6l1.8 1.8a6.5 6.5 0 0 1 9.2 0l1.8-1.8a9 9 0 0 0-12.8 0zM1.7 9.7l1.8 1.8a12 12 0 0 1 17 0l1.8-1.8a14.5 14.5 0 0 0-20.6 0z"/></svg><b>WIFI</b><i>OFF</i></span></button><small>와이파이</small></div>
+        <div class="ckcell"><span class="ckcap">COMMS</span><button class="ckb" id="ckBt" aria-pressed="false" aria-label="블루투스 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.7 7.7 12 2h-1v7.6L6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l4.6-4.6V22h1l5.7-5.7-4.3-4.3 4.3-4.3zM13 5.8l1.9 1.9L13 9.6V5.8zm1.9 10.5L13 18.2v-3.8l1.9 1.9z"/></svg><b>BT</b><i>OFF</i></span></button><small>블루투스</small></div>
+        <div class="ckcell"><span class="ckcap">AUTOPILOT</span><button class="ckb" id="ckEz" aria-pressed="false" aria-label="간편 모드 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 0 1 7.9 7h-3.1a4.9 4.9 0 0 0-9.6 0H4.1A8 8 0 0 1 12 4zm0 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-7.9 3h3.2a5 5 0 0 0 3.7 3.8v3.1A8 8 0 0 1 4.1 13zm9.8 6.9v-3.1a5 5 0 0 0 3.7-3.8h3.2a8 8 0 0 1-6.9 6.9z"/></svg><b>EASY</b><i>OFF</i></span></button><small>간편 모드</small></div>
+      </div>
+      <div class="ckmsg" id="ckMsg"></div>
+    </div>
+  </section>
+
+  <section class="win" id="wAtc">
+    <div class="bar"><span class="t">Tower</span><span class="s" id="atcSt"></span><span class="groove"></span><button class="wbtn" data-col="wAtc" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="body">
+      <div class="atc" aria-live="polite">
+        <div class="atchead"><span>TWR 118.10 · 대신남 원</span><span id="atcClock">--:--</span></div>
+        <div class="atcbar"><i id="atcBar"></i></div>
+        <ol class="atclog" id="atcLog"></ol>
+        <div class="atcclr" id="atcClr" hidden>CLEARED FOR TAKEOFF<small>이륙 허가 · 안전 운행하세요</small></div>
+      </div>
+      <div class="gctl"><button class="pill" id="atcRun">다시 점검</button><button class="pill" id="atcSkip">건너뛰기</button></div>
     </div>
   </section>
 
@@ -910,11 +1000,11 @@ let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
-function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Cyber Carnival Amp':k==='carnival2'?'Cyber Carnival Cockpit':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Cyber Carnival Amp':k==='carnival2'?'Cyber Carnival Cockpit':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
 $('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if(k==='carnival2'&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
-function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar())}
+function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',skin==='carnival2')}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
 window.addEventListener('resize',layout);
 
@@ -1528,20 +1618,20 @@ function drawGauge(over){
   }
 }
 /* 콕핏 PFD: 왼쪽 속도 테이프 · 가운데 자세계(선회하면 기울고 가속하면 기수가 듦) · 오른쪽 고도 테이프 */
-let ck={bank:0,pitch:0,h:null,v:null,t:0};
+let pfd={bank:0,pitch:0,h:null,v:null,t:0};
 function drawPFD(g,w,h,d,v,over,box,dial){
-  const now=performance.now(),dt=ck.t?Math.min(.5,(now-ck.t)/1000):0;ck.t=now;
+  const now=performance.now(),dt=pfd.t?Math.min(.5,(now-pfd.t)/1000):0;pfd.t=now;
   let tb=0,tp=0;
-  if(dt>0&&ck.h!=null&&gs.fix&&v>3)tb=Math.max(-30,Math.min(30,angDiff(ck.h,hdgDisp)/dt*1.2));
-  if(dt>0&&ck.v!=null&&gs.fix)tp=Math.max(-8,Math.min(8,(v-ck.v)/dt*.9));
-  ck.h=hdgDisp;ck.v=v;ck.bank+=(tb-ck.bank)*.06;ck.pitch+=(tp-ck.pitch)*.05;
+  if(dt>0&&pfd.h!=null&&gs.fix&&v>3)tb=Math.max(-30,Math.min(30,angDiff(pfd.h,hdgDisp)/dt*1.2));
+  if(dt>0&&pfd.v!=null&&gs.fix)tp=Math.max(-8,Math.min(8,(v-pfd.v)/dt*.9));
+  pfd.h=hdgDisp;pfd.v=v;pfd.bank+=(tb-pfd.bank)*.06;pfd.pitch+=(tp-pfd.pitch)*.05;
   const RED='#ff3b30',W='#ffffff',MAG='#ff52d9',GRN='#44e07a',CY='#3ccfff',AMB='#ffb21f',YEL='#f3c623';
   const nar=w/d<420,sw=w*(nar?.22:.17),aw=w*(nar?.2:.15),x1=w*.015,x2=w-w*.015-aw,cx=(x1+sw+x2)/2,at=Math.min(h*.1,36*d),ah=h-at-Math.min(h*.08,30*d),cy=at+ah/2,K=Math.min(h,520*d,w*.9);
   const fnt=(px,wt=600)=>`${wt} ${px}px "Barlow Condensed",Rajdhani,sans-serif`;
   dial.style.setProperty('--g',(K/d)+'px');box.style.top=(cy/d)+'px';box.style.left=(x1/d)+'px';box.style.width=(sw*.82/d)+'px';
   // 자세계
   g.save();g.beginPath();g.rect(x1+sw,at,x2-x1-sw,ah);g.clip();
-  g.translate(cx,cy);g.rotate(-ck.bank*Math.PI/180);const ppd=ah*.018;g.translate(0,ck.pitch*ppd);
+  g.translate(cx,cy);g.rotate(-pfd.bank*Math.PI/180);const ppd=ah*.018;g.translate(0,pfd.pitch*ppd);
   let gr=g.createLinearGradient(0,-h,0,0);gr.addColorStop(0,'#0b3a7a');gr.addColorStop(1,'#2e7fe0');g.fillStyle=gr;g.fillRect(-w,-h*2,w*2,h*2);
   gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#8a5a2b');gr.addColorStop(1,'#4a2e14');g.fillStyle=gr;g.fillRect(-w,0,w*2,h*2);
   g.strokeStyle=W;g.lineWidth=2*d;g.beginPath();g.moveTo(-w,0);g.lineTo(w,0);g.stroke();
@@ -1554,7 +1644,7 @@ function drawPFD(g,w,h,d,v,over,box,dial){
   g.beginPath();g.arc(0,0,br,Math.PI*1.33,Math.PI*1.67);g.stroke();
   for(const a of [-60,-45,-30,-20,-10,10,20,30,45,60]){const r=(a-90)*Math.PI/180,L=Math.abs(a)%30===0?14:8;tick(g,0,0,r,br,br+L*d,2*d,W)}
   g.fillStyle=W;g.beginPath();g.moveTo(0,-br-2*d);g.lineTo(-7*d,-br-14*d);g.lineTo(7*d,-br-14*d);g.closePath();g.fill();
-  g.rotate(-ck.bank*Math.PI/180);g.fillStyle=YEL;g.beginPath();g.moveTo(0,-br+2*d);g.lineTo(-8*d,-br+15*d);g.lineTo(8*d,-br+15*d);g.closePath();g.fill();g.restore();
+  g.rotate(-pfd.bank*Math.PI/180);g.fillStyle=YEL;g.beginPath();g.moveTo(0,-br+2*d);g.lineTo(-8*d,-br+15*d);g.lineTo(8*d,-br+15*d);g.closePath();g.fill();g.restore();
   // 항공기 심볼
   g.save();g.translate(cx,cy);const s=Math.min(x2-x1-sw,ah)*.2;g.lineWidth=2*d;g.strokeStyle='#000';g.fillStyle=YEL;
   for(const k of [-1,1]){g.beginPath();g.rect(k>0?s*.35:-s*1.35,-3*d,s,6*d);g.rect(k>0?s*.35:-s*.35-6*d,-3*d,6*d,s*.35);g.fill();g.stroke()}
@@ -1775,6 +1865,7 @@ function drive(on){
   driveOn=on;$('#drive').hidden=!on;document.documentElement.classList.toggle('driving',on);
   if(NB&&NB.keepScreenOn){try{NB.keepScreenOn(on||hudOn)}catch(e){}}
   if(on)driveUi();
+  if(typeof ckPaint==='function'&&skin==='carnival2')ckPaint();
 }
 function driveUi(){
   if(!driveOn)return;
@@ -1851,6 +1942,96 @@ const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
 
 /* ---------- boot ---------- */
+/* ---------- 콕핏 스킨: 조종 패널 · 관제탑 ---------- */
+let fxc=null;
+function fx(){try{if(!fxc)fxc=new (window.AudioContext||window.webkitAudioContext)();if(fxc.state==='suspended')fxc.resume();return fxc}catch(e){return null}}
+function fxNoise(a,dur){const b=a.createBuffer(1,Math.ceil(a.sampleRate*dur),a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=a.createBufferSource();s.buffer=b;return s}
+function fxEnv(a,t,peak,att,dec){const g=a.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+att+dec);return g}
+// 버튼: 켜면 묵직하게 "철컥", 끄면 가볍게 "팅"
+function sndPress(on){const a=fx();if(!a)return;const t=a.currentTime;
+  const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(on?110:220,t);o.frequency.exponentialRampToValueAtTime(on?42:130,t+.12);
+  const g=fxEnv(a,t,on?.55:.3,.003,on?.16:.08);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.25);
+  const n=fxNoise(a,.05),hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=on?1800:3200;const gn=fxEnv(a,t,on?.35:.25,.001,.03);n.connect(hp).connect(gn).connect(a.destination);n.start(t)}
+// 무전 스퀠치("치익")
+function sndSquelch(at=0,len=.14){const a=fx();if(!a)return;const t=a.currentTime+at,n=fxNoise(a,len+.05),bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1700;bp.Q.value=.8;
+  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16,t+.01);g.gain.setValueAtTime(.16,t+len*.7);g.gain.exponentialRampToValueAtTime(.0001,t+len);n.connect(bp).connect(g).connect(a.destination);n.start(t)}
+function sndRoger(at=0){const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator();o.type='square';o.frequency.value=1050;const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;
+  const g=fxEnv(a,t,.06,.005,.07);o.connect(bp).connect(g).connect(a.destination);o.start(t);o.stop(t+.1)}
+// 이륙 허가: 무전 → 두 음 차임 → 엔진 스풀업
+function sndTakeoff(){const a=fx();if(!a)return;const t=a.currentTime;sndSquelch(0,.22);
+  [[784,.25],[659,.75]].forEach(([f,dt])=>{const o=a.createOscillator(),o2=a.createOscillator();o.frequency.value=f;o2.frequency.value=f*2;const g=fxEnv(a,t+dt,.22,.01,1.2),g2=fxEnv(a,t+dt,.05,.01,.6);o.connect(g).connect(a.destination);o2.connect(g2).connect(a.destination);o.start(t+dt);o2.start(t+dt);o.stop(t+dt+1.4);o2.stop(t+dt+1.4)});
+  const s=t+1.6,L=6.5,n=fxNoise(a,L),lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.setValueAtTime(180,s);lp.frequency.exponentialRampToValueAtTime(3200,s+4);lp.frequency.exponentialRampToValueAtTime(900,s+L);
+  const gn=a.createGain();gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.32,s+3.6);gn.gain.exponentialRampToValueAtTime(.0001,s+L);n.connect(lp).connect(gn).connect(a.destination);n.start(s);
+  const w=a.createOscillator();w.type='sawtooth';w.frequency.setValueAtTime(160,s);w.frequency.exponentialRampToValueAtTime(2100,s+4.2);const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=6;bp.frequency.setValueAtTime(320,s);bp.frequency.exponentialRampToValueAtTime(4200,s+4.2);
+  const gw=a.createGain();gw.gain.setValueAtTime(.0001,s);gw.gain.exponentialRampToValueAtTime(.05,s+3.4);gw.gain.exponentialRampToValueAtTime(.0001,s+L);w.connect(bp).connect(gw).connect(a.destination);w.start(s);w.stop(s+L)}
+function atcSpeak(text){try{if(NB&&NB.speak){NB.speak(text);return}}catch(e){}
+  try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=1.05;speechSynthesis.cancel();speechSynthesis.speak(u)}}catch(e){}}
+
+// 조종 패널 상태: 앱에서는 실제 기기 상태, 웹 미리보기에서는 화면 안에서만
+const ck={vol:true,wifi:true,bt:false,ez:false,demo:!(NB&&NB.cockpitState),busy:{}};
+const CKB={vol:'#ckVol',wifi:'#ckWifi',bt:'#ckBt',ez:'#ckEz'};
+function ckPaint(){for(const k in CKB){const b=$(CKB[k]),on=k==='ez'?driveOn:ck[k];b.classList.toggle('on',!!on);b.classList.toggle('wait',!!ck.busy[k]);b.setAttribute('aria-pressed',on?'true':'false');b.querySelector('i').textContent=on?'ON':'OFF'}}
+function ckRead(){if(ck.demo){ck.vol=!audio.muted;return}
+  try{const o=JSON.parse(NB.cockpitState());for(const[k,v]of[['vol',!o.muted],['wifi',!!o.wifi],['bt',!!o.bt]]){if(ck[k]!==v){ck[k]=v;if(ck.busy[k]){delete ck.busy[k];sndPress(v)}}}}catch(e){}}
+function ckSync(){if(skin!=='carnival2')return;ckRead();ckPaint()}
+function ckSay(t){$('#ckMsg').textContent=t}
+function ckTap(k){
+  const want=k==='ez'?!driveOn:!ck[k];
+  if(k==='ez'){sndPress(want);ckPaint();setTimeout(()=>{drive(want);if(want)driveSuppress=false},want?220:0);return}
+  if(k==='vol'){ck.vol=want;sndPress(want);if(ck.demo)audio.muted=!want;else try{NB.setMuted(!want)}catch(e){}ckSay(want?'볼륨을 켰어요.':'소리를 껐어요.');ckPaint();return}
+  if(ck.demo){ck[k]=want;sndPress(want);ckSay((k==='wifi'?'와이파이':'블루투스')+(want?'를 켰어요':'를 껐어요')+' (미리보기에서는 화면에만 표시돼요).');ckPaint();return}
+  let r='';try{r=k==='wifi'?NB.setWifi(want):NB.setBluetooth(want)}catch(e){}
+  const nm=k==='wifi'?'와이파이':'블루투스';
+  if(r==='done'){ck[k]=want;sndPress(want);ckSay(nm+(want?'를 켰어요.':'를 껐어요.'))}
+  else if(r==='perm')ckSay('블루투스를 바꾸려면 "근처 기기" 권한이 필요해요. 허용한 뒤 다시 눌러 주세요.');
+  else if(r==='none')ckSay('이 기기에는 블루투스가 없어요.');
+  else{ck.busy[k]=true;sndPress(false);ckSay(r==='ask'?nm+' 켜기 요청 창에서 "허용"을 누르세요.':'안드로이드 정책상 '+nm+'는 설정 창에서 직접 '+(want?'켜야':'꺼야')+' 해요. 바꾸고 돌아오면 버튼이 따라 바뀌어요.');setTimeout(()=>{if(ck.busy[k]){delete ck.busy[k];ckPaint()}},30000)}
+  ckPaint()}
+for(const k in CKB)$(CKB[k]).onclick=()=>ckTap(k);
+setInterval(ckSync,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)ckSync()});
+$('#ckSrc').textContent=ck.demo?'· 미리보기':'';
+
+// 관제탑 출발 전 점검
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let atcRun=0,atcDone=false;
+const ATC=[
+  {me:1,t:'관제탑, 대신남 원. 출발 전 점검을 요청합니다.'},
+  {t:'대신남 원, 관제탑. 출발 전 점검을 시작합니다.'},
+  {t:'좌석 위치와 안전벨트 착용 확인',c:'CHECK'},
+  {t:'브레이크 페달 작동 확인',c:'CHECK'},
+  {t:'사이드미러 · 룸미러 각도 확인',c:'CHECK'},
+  {t:'연료 · 배터리 잔량 확인',c:'CHECK'},
+  {t:'전조등 · 계기판 조명 확인',c:'CHECK'},
+  {t:'GPS 위성 수신 확인',c:()=>gpsOn&&gs.fix?['위성 '+(gs.satsUsed||'-'),'ok']:[gpsOn?'수신 대기':'GPS 꺼짐','warn']},
+  {t:'오디오 시스템 확인',c:()=>[ck.vol?'VOL ON':'MUTE',ck.vol?'ok':'warn']},
+  {t:'휴대폰 거치 · 내비게이션 경로 확인',c:'CHECK'},
+  {me:1,t:'관제탑, 대신남 원. 출발 준비 완료.'},
+  {t:'대신남 원, 활주로 진입 허가. 바람 잔잔, 이륙을 허가합니다.',fin:1}];
+function atcClock(){const d=new Date();$('#atcClock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')}
+setInterval(atcClock,1000);atcClock();
+async function atcStart(){
+  const id=++atcRun,live=()=>id===atcRun&&skin==='carnival2';
+  const log=$('#atcLog');log.innerHTML='';$('#atcClr').hidden=true;atcDone=false;$('#atcSt').textContent='· 점검 중';
+  const nChk=ATC.filter(x=>x.c).length;let k=0;$('#atcBar').style.width='0';
+  for(const it of ATC){if(!live())return;
+    const li=document.createElement('li');li.className=it.me?'me':'';li.innerHTML=`<b>${it.me?'D1':'TWR'}</b><span class="cur"></span><em></em>`;log.appendChild(li);
+    const sp=li.querySelector('span'),em=li.querySelector('em');sndSquelch();
+    for(const ch of it.t){if(!live())return;sp.textContent+=ch;await sleep(26)}
+    sp.classList.remove('cur');
+    if(it.c){em.textContent='· · ·';em.className='run';await sleep(650);if(!live())return;
+      const [txt,cls]=typeof it.c==='function'?it.c():[it.c,'ok'];em.textContent=txt;em.className=cls;sndRoger();k++;$('#atcBar').style.width=(k/nChk*100)+'%'}
+    else sndSquelch(0,.1);
+    if(it.fin){await sleep(300);if(!live())return;$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true;sndTakeoff();setTimeout(()=>{if(live())atcSpeak('대신남 원, 이륙을 허가합니다. 안전 운행하십시오.')},1300);return}
+    await sleep(it.c?350:550)}
+}
+function atcSkip(){atcRun++;const log=$('#atcLog');log.innerHTML='';
+  for(const it of ATC){const li=document.createElement('li');li.className=it.me?'me':'';const r=it.c?(typeof it.c==='function'?it.c():[it.c,'ok']):['',''];li.innerHTML=`<b>${it.me?'D1':'TWR'}</b><span></span><em class="${r[1]}">${r[0]}</em>`;li.querySelector('span').textContent=it.t;log.appendChild(li)}
+  $('#atcBar').style.width='100%';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true}
+$('#atcRun').onclick=()=>{fx();atcStart()};
+$('#atcSkip').onclick=atcSkip;
+// 콕핏 스킨에 들어올 때마다(앱 시작 포함) 점검을 한 번 진행
+let ckWasOn=false;
+function cockpitSkin(){const on=skin==='carnival2';if(on&&!ckWasOn){ckSync();setTimeout(()=>{if(skin==='carnival2')atcStart()},500)}if(!on)atcRun++;ckWasOn=on}
 applySizes();setGStyle(gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
 if(LIB){$('#addDir').hidden=false;$('#plHint').textContent='음악 파일이나 폴더를 고르면 목록이 저장돼서, 앱을 다시 켜도 그대로 남고 마지막 곡과 위치부터 이어서 들을 수 있어요. 폴더로 추가하면 새로 넣은 곡도 다시 추가하기 쉬워요.'}
