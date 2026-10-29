@@ -104,13 +104,21 @@ async function main() {
     await page.evaluate(() => localStorage.setItem('dna_gStyle', JSON.stringify('invalid-theme')));
     await page.reload();
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon', 'Invalid saved theme has a safe fallback');
-    // 사이버 카니발 2 · 콕핏: 자동차 스킨으로 동작하고, 고르면 속도계가 콕핏 PFD로 바뀜
+    // 대신남 자동차 모드 · 콕핏: 자동차 스킨으로 동작하고, 고르면 속도계가 콕핏 PFD로 바뀜
     await page.locator('#skin').selectOption('carnival2');
     assert.equal(await page.locator('html').getAttribute('data-car'), '1');
     assert.equal(await page.locator('#wGps').isVisible(), true);
     assert.equal(await page.locator('#gStyle').inputValue(), 'cockpit');
     assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
-    assert.equal(await page.locator('.brand .logo-img').isVisible(), false, 'Cockpit drops the KIA logo');
+    assert.equal(await page.locator('.brand .logo-img').count(), 0, 'No third-party car-maker logo in the app');
+    assert.equal(await page.evaluate(() => /카니발|KIA|Carnival/i.test(document.body.innerText + [...document.querySelectorAll('#skin option')].map(o=>o.textContent).join(''))), false, 'No Kia/Carnival names on screen');
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏']);
+    // 설정 → 오픈소스 라이선스
+    await page.locator('#setBtn').click();
+    assert.match(await page.locator('#secOss').textContent(), /Apache License 2\.0[\s\S]*Leaflet[\s\S]*jsmediatags[\s\S]*OpenStreetMap contributors/);
+    assert.equal(await page.locator('#secOss details pre').count(), 4, 'Full license texts included');
+    assert.match(await page.locator('#secOss details pre').first().textContent(), /TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION/);
+    await page.locator('#setClose').click();
     assert.equal(await page.locator('.brand .af-img').isVisible(), true, 'Cockpit shows the Daesinnam One Air Force logo');
     assert.ok(await page.locator('.brand .af-img').evaluate(i => i.complete && i.naturalWidth > 0), 'Logo image decodes');
     // 콕핏 스킨: 속도계 창만 높이 조절(조절 버튼이 있음)
@@ -273,7 +281,7 @@ async function main() {
     p3.on('pageerror', error => errors.push(error.message));
     await p3.addInitScript(() => {
       window.AndroidBridge = {pickAudio(){}, takeCarAutoplay:() => false, adjustVolume(){window.__vol=(window.__vol||0)+1}, keepScreenOn(){}, onPlayState(){}, onNowPlaying(){}, onArt(){},
-        carStatus:() => JSON.stringify({autoplay:false,carName:'',btPerm:true,autoLaunch:false,connected:['KIA CARNIVAL'],lastKey:'다음 곡',lastKeyAt:Date.now()}),
+        carStatus:() => JSON.stringify({autoplay:false,carName:'',btPerm:true,autoLaunch:false,connected:['MY CAR'],lastKey:'다음 곡',lastKeyAt:Date.now()}),
         setCarAutoplay(v){window.__ap=v}, setCarName(n){window.__cn=n}, requestAutoLaunch(){}};
     });
     await p3.setViewportSize({width:390,height:844});
@@ -288,8 +296,8 @@ async function main() {
     assert.equal(await p3.locator('#addDir').isVisible(), true, 'Folder add is offered in the app');
     await p3.locator('#setBtn').click();
     await p3.waitForFunction(() => document.querySelector('#sKey').textContent.startsWith('다음 곡'));
-    await p3.locator('#sCarName').selectOption('KIA CARNIVAL');
-    assert.equal(await p3.evaluate(() => window.__cn), 'KIA CARNIVAL');
+    await p3.locator('#sCarName').selectOption('MY CAR');
+    assert.equal(await p3.evaluate(() => window.__cn), 'MY CAR');
     await p3.locator('#sCarAuto').check();
     assert.equal(await p3.evaluate(() => window.__ap), true);
     await p3.locator('#setClose').click();
@@ -302,7 +310,7 @@ async function main() {
     assert.equal(await p3.evaluate(() => window.__vol), 1);
     await p3.locator('#dvClose').click();
     assert.equal(await p3.locator('#drive').isVisible(), false);
-    await p3.evaluate(() => window.__carConnected('KIA CARNIVAL'));
+    await p3.evaluate(() => window.__carConnected('MY CAR'));
     assert.equal(await p3.locator('#toast').isVisible(), true);
     assert.equal(await p3.locator('#drive').isVisible(), true, 'Drive mode opens when the car connects');
     await p3.close();

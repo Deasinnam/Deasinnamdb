@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v5.8** (versionCode 38) |
+| 최신 버전 | **v5.9** (versionCode 39) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -29,7 +29,7 @@
 
 ## 3. 지금까지 구현된 기능
 
-- 화면 크기별 자동 배치(1열/2열/가로 한 줄), 스킨: blue(기본)·amber·base·neon·ice·red·wood·**사이버 카니발**(건메탈/구리, KIA 로고)·**사이버 카니발 2 · 콕핏**(`carnival2`, 비행기 조종석 계기판, 속도계 기본 `cockpit` PFD)·**대신남 드라이브**(블루, 대신남 로고)
+- 화면 크기별 자동 배치(1열/2열/가로 한 줄), 스킨: blue(기본)·amber·base·neon·ice·red·wood·**대신남 자동차 모드**(`carnival`, 건메탈/구리)·**대신남 자동차 모드 · 콕핏**(`carnival2`, 비행기 조종석 계기판, 속도계 기본 `cockpit` PFD)·**대신남 드라이브**(블루, 대신남 로고)
 - 대신남 로고·앱 아이콘·스플래시
 - 외부 앱(YouTube Music/Spotify) 곡 정보·앨범 아트·조작·시각화·EQ
 - 자동차 스킨: GPS 속도계(디자인 5종, 메인 창 위), HUD, 창 높이 조절
@@ -39,7 +39,7 @@
 - 차 연결 시 자동 재생, 주행 중 간편 모드, 설정 패널
 - v4.0: Media3 네이티브 재생 (핸들 버튼 선곡 목적)
 - v4.1: EQ 슬라이더가 페이지 스크롤에 밀리지 않음 (pointer capture, `touch-action:none`)
-- v4.2: 사이버 카니발 2 · 콕핏 스킨 + 속도계 디자인 6번째 "콕핏 PFD" (`drawPFD`)
+- v4.2: 콕핏 스킨(현 "대신남 자동차 모드 · 콕핏") + 속도계 디자인 6번째 "콕핏 PFD" (`drawPFD`)
 - v4.2.1: 콕핏 스킨에서 주행 정보를 속도계 위 한 줄로, 속도계를 창 너비 가득 크게
 - v4.3: 콕핏 창 크기 조절 시 PFD 비율 대응, COCKPIT CONTROL 창(`#wCtl`, 브리지 `cockpitState/setMuted/setWifi/setBluetooth`), TOWER 창(`#wAtc`, 출발 전 점검 + WebAudio 효과음 + 브리지 `speak` TTS). 레이아웃 클래스 `.app.K`. 실기기에서 와이파이 패널·블루투스 요청 창·TTS 확인 필요
 - v4.4: 조종 패널 가운데 SOS(보호 덮개 → 두 번째 누름에 `sosCall`, CALL_PHONE 권한, 설정 `#secSos`, 연락처 고르기 `pickContact` → `__sosPicked`, 저장 키 `sos`), TOWER 창 두 줄 높이로 줄이고 두 줄씩 교체, 끝나면 이륙 허가만 남김
@@ -57,6 +57,7 @@
 - v5.6: 인라인 pfd.js에 선회 효과 추가(앱 쪽 수정): `PfdScene.turn(heading)`이 방위 변화만큼 구름·도심을 회전, 별·달·스카이라인은 `yawAcc`로 옆 이동. 패키지 새 버전을 받으면 이 수정을 다시 넣어야 함
 - v5.7: PFD 패키지 v1.2(`Package_6`): 에어포스 디자인(`skin:'airforce'`, `.pfd-airforce`). pfd.js/pfd.css 교체 + 선회 패치 재적용. `pfdSet.skin` 저장·복원, 에어포스일 때만 패키지 헤더 표시(접기 버튼은 숨김). 디자인 전환이 주야간 선택(`pfdTheme`)을 덮어쓰지 않게 설정 창 저장일 때만 theme 갱신
 - v5.8: 화면 파일 정리 — PFD 패키지를 `assets/pfd/`(원본 그대로)로 분리, 앱 연결·선회 효과는 `assets/pfd-amp.js`/`pfd-amp.css`로(선회는 패키지 수정 없이 장면 객체에 런타임으로 덧붙임). index.html은 `window.AmpHost`(읽기·쓰기 창구)만 내놓고 `window.AmpPfd.feed()`를 부름. 웹 미리보기 빌드 시 이 파일들을 인라인. 콕핏 로고를 D1 이미지로 교체. 서명 키를 새로 만들어 Secrets로 이동(설치된 앱은 한 번 지우고 재설치 필요)
+- v5.9: 배포 준비 — KIA 로고 이미지 삭제, 스킨 표시 이름 "대신남 자동차 모드"/"대신남 자동차 모드 · 콕핏"(내부 키 carnival/carnival2는 저장값 호환 위해 유지), 제목 Daesinnam Car Mode. 설정에 오픈소스 라이선스(`#secOss`, 전문 4종). OSM 출처를 "© OpenStreetMap contributors"(링크)로
 
 ## 4. 확인 대기 중
 
@@ -90,7 +91,7 @@
 
 ## 6. 주의 사항
 
-- 저장소는 공개이고 KIA 로고 이미지가 들어 있음. 서명 키는 v5.8부터 저장소에서 빼고 Secrets(`AMP_KEYSTORE_BASE64` 등 4개)로 옮김. 예전 키(`signing/amp.keystore`, 비밀번호 포함)는 git 기록에 남아 있으므로 다시 쓰지 말 것.
+- 저장소는 공개. KIA 로고·카니발 이름은 v5.9에서 앱에서 제거(예전 버전 git 기록에는 남아 있음). 서명 키는 v5.8부터 저장소에서 빼고 Secrets(`AMP_KEYSTORE_BASE64` 등 4개)로 옮김. 예전 키(`signing/amp.keystore`, 비밀번호 포함)는 git 기록에 남아 있으므로 다시 쓰지 말 것.
 - 사용자 개인정보(이름·이메일·전화번호)는 문서/커밋에 넣지 않음.
 - `ci-check` 브랜치는 삭제 권한(403)이 없어 남아 있음.
 - 버전 올릴 때: `app/build.gradle`의 versionCode/versionName, README 갱신, 테스트 추가 후 푸시하면 CI가 Releases `latest`를 갱신.
