@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v4.1** (versionCode 20) — 커밋 `f3922c8` |
+| 최신 버전 | **v4.2** (versionCode 21) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -29,7 +29,7 @@
 
 ## 3. 지금까지 구현된 기능
 
-- 화면 크기별 자동 배치(1열/2열/가로 한 줄), 스킨: blue(기본)·amber·base·neon·ice·red·wood·**사이버 카니발**(건메탈/구리, KIA 로고)·**대신남 드라이브**(블루, 대신남 로고)
+- 화면 크기별 자동 배치(1열/2열/가로 한 줄), 스킨: blue(기본)·amber·base·neon·ice·red·wood·**사이버 카니발**(건메탈/구리, KIA 로고)·**사이버 카니발 2 · 콕핏**(`carnival2`, 비행기 조종석 계기판, 속도계 기본 `cockpit` PFD)·**대신남 드라이브**(블루, 대신남 로고)
 - 대신남 로고·앱 아이콘·스플래시
 - 외부 앱(YouTube Music/Spotify) 곡 정보·앨범 아트·조작·시각화·EQ
 - 자동차 스킨: GPS 속도계(디자인 5종, 메인 창 위), HUD, 창 높이 조절
@@ -39,6 +39,7 @@
 - 차 연결 시 자동 재생, 주행 중 간편 모드, 설정 패널
 - v4.0: Media3 네이티브 재생 (핸들 버튼 선곡 목적)
 - v4.1: EQ 슬라이더가 페이지 스크롤에 밀리지 않음 (pointer capture, `touch-action:none`)
+- v4.2: 사이버 카니발 2 · 콕핏 스킨 + 속도계 디자인 6번째 "콕핏 PFD" (`drawPFD`)
 
 ## 4. 확인 대기 중
 

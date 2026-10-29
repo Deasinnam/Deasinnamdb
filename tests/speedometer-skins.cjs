@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const assets = path.resolve(__dirname, '../app/src/main/assets');
-const themes = ['carbon', 'neon', 'classic', 'minimal', 'tactical'];
+const themes = ['carbon', 'neon', 'classic', 'minimal', 'tactical', 'cockpit'];
 
 async function main() {
   const server = http.createServer(async (req, res) => {
@@ -44,7 +44,7 @@ async function main() {
     });
     await page.goto(origin);
     await page.locator('#gStyle').waitFor();
-    assert.equal(await page.locator('#gStyle option').count(), 5);
+    assert.equal(await page.locator('#gStyle option').count(), themes.length);
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon');
     const top = sel => page.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await top('#wGps') < await top('#wMain'), 'Speedometer sits above the main player window');
@@ -66,7 +66,7 @@ async function main() {
         await page.locator('#wGps').screenshot({path:path.join(process.env.AMP_SCREENSHOTS,key+'.png')});
       }
     }
-    assert.equal(new Set(hashes).size, 5, 'Each theme must render a distinct live gauge');
+    assert.equal(new Set(hashes).size, themes.length, 'Each theme must render a distinct live gauge');
     assert.deepEqual(await page.evaluate(() => gpsCalls), {starts:1,stops:0}, 'Changing visual themes must not restart GPS');
     await page.evaluate(() => {gpsFixture.speed=10;gpsFixture.bearing=359;});
     await page.waitForFunction(() => document.querySelector('#gSpd').textContent === '36');
@@ -92,16 +92,26 @@ async function main() {
     assert.equal(await page.locator('#wGps').isVisible(), false);
     assert.deepEqual(await page.evaluate(() => gpsCalls), {starts:1,stops:1});
     await page.locator('#skin').selectOption('carnival');
-    assert.equal(await page.locator('#gStyle').inputValue(), 'tactical');
+    assert.equal(await page.locator('#gStyle').inputValue(), themes.at(-1));
     assert.deepEqual(await page.evaluate(() => gpsCalls), {starts:2,stops:1});
     await page.reload();
     await page.locator('#gStyle').waitFor();
-    assert.equal(await page.locator('#gStyle').inputValue(), 'tactical', 'Theme survives app reload');
+    assert.equal(await page.locator('#gStyle').inputValue(), themes.at(-1), 'Theme survives app reload');
     await page.evaluate(() => {gpsFixture.fix=false;});
     await page.waitForFunction(() => document.querySelector('#gSpd').textContent === '--');
     await page.evaluate(() => localStorage.setItem('dna_gStyle', JSON.stringify('invalid-theme')));
     await page.reload();
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon', 'Invalid saved theme has a safe fallback');
+    // 사이버 카니발 2 · 콕핏: 자동차 스킨으로 동작하고, 고르면 속도계가 콕핏 PFD로 바뀜
+    await page.locator('#skin').selectOption('carnival2');
+    assert.equal(await page.locator('html').getAttribute('data-car'), '1');
+    assert.equal(await page.locator('#wGps').isVisible(), true);
+    assert.equal(await page.locator('#gStyle').inputValue(), 'cockpit');
+    assert.equal(await page.locator('#mainTitle').textContent(), 'Cyber Carnival Cockpit');
+    assert.equal(await page.locator('.brand .logo-img').isVisible(), true);
+    assert.equal(await page.locator('#wMain').evaluate(el => getComputedStyle(el).clipPath), 'none', 'Cockpit panels are square-cornered plates, not cut corners');
+    await page.locator('#gStyle').selectOption('carbon');
+    assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
     await page.setViewportSize({width:1024,height:768});
     await page.locator('#skin').selectOption('carnival');
@@ -227,7 +237,7 @@ async function main() {
     assert.ok(after.g > before.g, `EQ band follows the finger upward (${before.g} -> ${after.g})`);
     await tctx.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: five live themes, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, cockpit skin, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

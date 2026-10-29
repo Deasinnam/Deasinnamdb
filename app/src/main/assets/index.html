@@ -168,6 +168,87 @@
 :root[data-car] .slot input::-webkit-slider-thumb{width:18px;height:32px;margin-top:-14px;border-radius:2px;border:1px solid #111;
   background:linear-gradient(90deg,#9ea3aa,#ffffff 40%,#c9ccd1 60%,#8f949b);box-shadow:inset 0 -2px 0 var(--copper),0 2px 6px #000}
 :root[data-car] .band span{font-family:var(--f-tech);font-size:14px;font-weight:600}
+:root[data-skin="carnival2"]{
+  --bg:#0c0e10; --bg-glow:#1a2a3d; --panel:#2a2e33; --panel-2:#363b41; --edge:#0e1012; --frame-hi:#ffffff14; --frame-in:#4a5058;
+  --bar-a:#3a3f45; --bar-b:#2a2e33; --bar-text:#e6eaee; --groove:#3ccfff;
+  --metal-a:#4b5158; --metal-b:#3a3f45; --metal-c:#25292d; --metal-d:#30353a; --metal-ink:#e6eaee;
+  --hot-a:#9be9ff; --hot-b:#3ccfff; --hot-c:#0f6f95; --hot-ink:#021820;
+  --lcd:#040608; --lcd-edge:#2b3036; --lcd-text:#44e07a; --lcd-text-2:#3ccfff; --lcd-dim:#24533a; --lcd-fg:#e6eaee; --lcd-glow:#44e07a66;
+  --led1:#44e07a; --led2:#3ccfff; --led3:#ffb21f; --led4:#ff52d9; --peak:#ffffff; --led-off:#ffffff0c; --grid:#0c1a14;
+  --text:#e6eaee; --muted:#9aa3ad; --accent:#3ccfff; --track:#1b1e22;
+  --logo-word:#e6eaee; --logo-blue:#3ccfff; --logo-tag:#9aa3ad;
+  --cut:0px; --copper:#3ccfff; --copper-hi:#b6f0ff; --gv-c:#3ccfff;
+  --ck-green:#44e07a; --ck-cyan:#3ccfff; --ck-mag:#ff52d9; --ck-amber:#ffb21f; --ck-yel:#f3c623; --ck-white:#e6eaee;
+  --f-tech:"Barlow Condensed","Rajdhani","Noto Sans KR",sans-serif;
+  color-scheme:dark;
+}
+/* 사이버 카니발 2 · 콕핏: 회색 계기판 + 나사 + 각인 명판 + 글래스 디스플레이 */
+:root[data-skin="carnival2"] body{background:
+  radial-gradient(140% 60% at 50% -18%,#2c4c72 0%,#16273b 34%,transparent 62%),
+  linear-gradient(180deg,transparent 0 120px,#0c0e10 220px),
+  radial-gradient(#ffffff05 1px,transparent 1.2px) 0 0/4px 4px,
+  #0c0e10;background-attachment:fixed}
+:root[data-skin="carnival2"] .win{clip-path:none;border-radius:7px;border:1px solid #0e1012;
+  background:
+    radial-gradient(circle at 50% 50%,#c3c9cf 0 1.6px,#59606a 2.2px 3.4px,#14171a 3.8px 4.4px,transparent 4.8px) 4px 5px/12px 12px no-repeat,
+    radial-gradient(circle at 50% 50%,#c3c9cf 0 1.6px,#59606a 2.2px 3.4px,#14171a 3.8px 4.4px,transparent 4.8px) calc(100% - 4px) 5px/12px 12px no-repeat,
+    radial-gradient(circle at 50% 50%,#c3c9cf 0 1.6px,#59606a 2.2px 3.4px,#14171a 3.8px 4.4px,transparent 4.8px) 4px calc(100% - 4px)/12px 12px no-repeat,
+    radial-gradient(circle at 50% 50%,#c3c9cf 0 1.6px,#59606a 2.2px 3.4px,#14171a 3.8px 4.4px,transparent 4.8px) calc(100% - 4px) calc(100% - 4px)/12px 12px no-repeat,
+    radial-gradient(#ffffff07 1px,transparent 1.3px) 0 0/3px 3px,
+    linear-gradient(180deg,#373c42,#2a2e33 60%,#25292d);
+  box-shadow:inset 0 1px 0 #ffffff1c,inset 0 0 0 1px #00000080,0 0 0 1px #4a5058,0 12px 28px #000a}
+:root[data-skin="carnival2"] .bar{height:34px;padding:0 10px 0 18px;margin:0 6px;background:none;border-bottom:1px solid #00000099;box-shadow:0 1px 0 #ffffff12}
+:root[data-skin="carnival2"] .bar .t{clip-path:none;background:none;box-shadow:none;padding:0;font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:16px;letter-spacing:.24em;color:var(--ck-white);text-shadow:0 1px 0 #000,0 -1px 0 #ffffff14}
+:root[data-skin="carnival2"] .bar .s{font-family:"Share Tech Mono",monospace;color:var(--ck-green);opacity:1}
+:root[data-skin="carnival2"] .groove{height:1px;opacity:.9;background:linear-gradient(90deg,#ffffff2a,#ffffff10);box-shadow:none}
+:root[data-skin="carnival2"] .wbtn{width:28px;height:22px;border-radius:2px;border:1px solid #000;background:linear-gradient(180deg,#4b5158,#2a2e33);box-shadow:inset 0 1px 0 #ffffff26}
+:root[data-skin="carnival2"] .wbtn svg{fill:var(--ck-white)}
+/* 글래스 디스플레이 */
+:root[data-skin="carnival2"] .lcd,:root[data-skin="carnival2"] .visbox,:root[data-skin="carnival2"] .eqgrid,:root[data-skin="carnival2"] .pl,:root[data-skin="carnival2"] .now,:root[data-skin="carnival2"] #curve{
+  border:1px solid #000;border-radius:4px;background:radial-gradient(120% 90% at 30% 0%,#0b1116 0%,#040608 60%);
+  box-shadow:inset 0 0 0 1px #2b3036,inset 0 10px 24px #000,0 0 0 3px #1c1f23,0 0 0 4px #464c54}
+:root[data-skin="carnival2"] .time{font-family:"Share Tech Mono",monospace;color:var(--ck-green);text-shadow:0 0 10px #44e07a55}
+:root[data-skin="carnival2"] .marquee{color:var(--ck-cyan);text-shadow:none}
+:root[data-skin="carnival2"] .meta .lit{color:var(--ck-mag);text-shadow:none}
+:root[data-skin="carnival2"] .state i.on{background:var(--ck-green);filter:drop-shadow(0 0 4px var(--ck-green))}
+:root[data-skin="carnival2"] .state i.pa.on{background:linear-gradient(90deg,var(--ck-amber) 0 36%,transparent 36% 64%,var(--ck-amber) 64%)}
+/* 코리(Korry) 조명 버튼 */
+:root[data-skin="carnival2"] .tb{border:1px solid #000;border-radius:3px;background:linear-gradient(180deg,#4a5057,#30353a 50%,#262a2e);
+  box-shadow:inset 0 1px 0 #ffffff26,inset 0 -2px 0 #0008,0 0 0 2px #1a1d20,0 3px 6px #000a}
+:root[data-skin="carnival2"] .tb svg{fill:var(--ck-white)}
+:root[data-skin="carnival2"] .tb.hot{background:linear-gradient(180deg,#4a5057,#30353a 50%,#262a2e);box-shadow:inset 0 1px 0 #ffffff26,inset 0 -4px 0 var(--ck-green),0 0 0 2px #1a1d20,0 0 14px #44e07a40}
+:root[data-skin="carnival2"] .tb.hot svg{fill:var(--ck-green);filter:drop-shadow(0 0 5px #44e07a)}
+:root[data-skin="carnival2"] .launch .tb{color:var(--ck-white)}
+:root[data-skin="carnival2"] .tog,:root[data-skin="carnival2"] .pill,:root[data-skin="carnival2"] .seg button{font-family:"Barlow Condensed",sans-serif;font-weight:600;letter-spacing:.08em;color:#c9d0d7;border:1px solid #000;border-radius:3px;
+  background:linear-gradient(180deg,#3d4248,#25292d);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #14171a}
+:root[data-skin="carnival2"] .tog.on,:root[data-skin="carnival2"] .pill.on,:root[data-skin="carnival2"] .seg button.on{color:var(--ck-green);text-shadow:0 0 8px #44e07a99;
+  background:linear-gradient(180deg,#30353a,#1c1f23);border-color:#000;box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 var(--ck-green),0 0 10px #44e07a26}
+:root[data-skin="carnival2"] .sel{background:#0a0d10;color:var(--ck-cyan);border:1px solid #4a5058;box-shadow:inset 0 2px 6px #000;font-family:"Barlow Condensed",sans-serif}
+:root[data-skin="carnival2"] .knob label,:root[data-skin="carnival2"] .selw{font-family:"Barlow Condensed",sans-serif;color:var(--ck-white);letter-spacing:.14em}
+:root[data-skin="carnival2"] .vmode button{font-family:"Barlow Condensed",sans-serif;background:#000;border-color:#2b3036;color:#5f6a74}
+:root[data-skin="carnival2"] .vmode button.on{color:var(--ck-cyan);box-shadow:inset 0 -2px 0 var(--ck-cyan);background:#000}
+/* 상단 명판: 로고 + 노란·검정 경고 띠 */
+:root[data-skin="carnival2"] .brand{clip-path:none;border:1px solid #000;border-radius:6px;padding:12px 22px 18px;
+  background:repeating-linear-gradient(-45deg,var(--ck-yel) 0 9px,#141414 9px 18px) bottom/100% 6px no-repeat,
+    radial-gradient(#ffffff07 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,#3a3f45,#25292d);
+  box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1px #4a5058}
+:root[data-skin="carnival2"] .brand .mark,:root[data-skin="carnival2"] .brand .word{display:none}
+:root[data-skin="carnival2"] .brand .logo-img{display:block}
+:root[data-skin="carnival2"] .tools{border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#30353a,#1f2327);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #4a5058}
+:root[data-skin="carnival2"] .cover{border:1px solid #000;box-shadow:0 0 0 3px #1c1f23,0 0 0 4px #464c54}
+/* EQ: 스로틀 레버 손잡이 */
+:root[data-skin="carnival2"] .slot{background:linear-gradient(#000,#000) center/6px 100% no-repeat,repeating-linear-gradient(180deg,#ffffff30 0 1px,transparent 1px 10px) center/22px 100% no-repeat}
+:root[data-skin="carnival2"] .slot input::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,var(--ck-cyan) 0 var(--p,50%),transparent var(--p,50%));box-shadow:0 0 6px #3ccfff55}
+:root[data-skin="carnival2"] .slot input::-moz-range-track{height:4px;background:linear-gradient(90deg,var(--ck-cyan) 0 var(--p,50%),transparent var(--p,50%))}
+:root[data-skin="carnival2"] .slot input::-webkit-slider-thumb{width:16px;height:36px;margin-top:-16px;border-radius:3px;border:1px solid #000;
+  background:linear-gradient(90deg,#1c1f23,#5b626a 30%,#2a2e33 50%,#5b626a 70%,#1c1f23),linear-gradient(#fff,#fff);background-blend-mode:normal;
+  box-shadow:inset 3px 0 0 -1px #e6eaee,inset -3px 0 0 -1px #e6eaee,0 2px 6px #000}
+:root[data-skin="carnival2"] .band span{font-family:"Share Tech Mono",monospace;color:var(--ck-white)}
+:root[data-skin="carnival2"] .band.pre span{color:var(--ck-mag)}
+:root[data-skin="carnival2"] .pl li.cur{color:var(--ck-mag);background:#ff52d912}
+:root[data-skin="carnival2"] .now b{color:var(--ck-green);text-shadow:none}
+:root[data-skin="carnival2"] .grip::before{background:repeating-linear-gradient(90deg,#9aa3ad 0 2px,transparent 2px 5px);opacity:.6}
+:root[data-skin="carnival2"] #hud b{color:var(--ck-green)}
 :root[data-skin="wood"] .win{background-image:repeating-linear-gradient(92deg,#ffffff06 0 2px,transparent 2px 7px,#00000010 7px 9px,transparent 9px 15px),linear-gradient(180deg,var(--panel-2),var(--panel))}
 
 html,body{height:100%}
@@ -464,6 +545,19 @@ input[type=range]:disabled{opacity:.35}
 #wGps[data-gs="tactical"] .gctl .pill.on::before{background:#ffe08a;box-shadow:0 0 6px #ffd04a}
 #wGps[data-gs="tactical"] .gctl .pill:not(.on){background:linear-gradient(180deg,#2c3229,#181b15);color:#e2f2dd;border-color:#3d4337}
 
+/* 6. 콕핏 PFD */
+#wGps[data-gs="cockpit"]{--gl:#9aa3ad;--gv:#3ccfff}
+#wGps[data-gs="cockpit"] .dial{background:#000;border:1px solid #000;border-radius:4px;box-shadow:0 0 0 3px #1c1f23,0 0 0 4px #464c54}
+#wGps[data-gs="cockpit"] .spd{right:auto;text-align:center}
+#wGps[data-gs="cockpit"] .spd b{font-family:"Barlow Condensed",Rajdhani,sans-serif;font-weight:700;font-size:calc(var(--g,260px)*.11);color:#fff;letter-spacing:0}
+#wGps[data-gs="cockpit"] .spd small{display:none}
+#wGps[data-gs="cockpit"] #tape{background:#000;border:1px solid #000;border-radius:4px;box-shadow:0 0 0 3px #1c1f23,0 0 0 4px #464c54}
+#wGps[data-gs="cockpit"] .tapebox{bottom:6px;background:#000;border:2px solid #fff;color:#44e07a;font-family:"Barlow Condensed",sans-serif}
+#wGps[data-gs="cockpit"] .gstats div{border:1px solid #000;border-radius:4px;background:radial-gradient(120% 90% at 30% 0%,#0b1116,#040608 60%);box-shadow:inset 0 0 0 1px #2b3036,0 0 0 2px #1c1f23}
+#wGps[data-gs="cockpit"] .gstats small{color:#e6eaee;font-family:"Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.06em}
+#wGps[data-gs="cockpit"] .gstats b{color:#3ccfff;font-family:"Barlow Condensed",sans-serif}
+#wGps[data-gs="cockpit"] .gstats b i{color:#ff52d9}
+
 /* 지도 */
 #wMap .body{display:flex;flex-direction:column;gap:10px}
 .mapask,.mapoff{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px dashed var(--frame-in);border-radius:4px;background:#0000002a}
@@ -597,7 +691,7 @@ html.driving body{overflow:hidden}
         <button class="pill" id="gReset">기록 초기화</button>
         <button class="pill" id="gHudBtn">HUD</button>
         <label class="selw" for="gStyle">디자인<select class="sel" id="gStyle">
-          <option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option>
+          <option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option><option value="cockpit">콕핏 PFD</option>
         </select></label>
         <label class="selw" for="gLimit">경고<select class="sel" id="gLimit">
           <option value="0">끔</option><option value="30">30</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="90">90</option><option value="100">100</option><option value="110">110</option><option value="120">120</option>
@@ -793,8 +887,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','사이버 카니발'],['drive','대신남 드라이브']];
-const CAR_SKINS=['carnival','drive'];const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','사이버 카니발'],['carnival2','사이버 카니발 2 · 콕핏'],['drive','대신남 드라이브']];
+const CAR_SKINS=['carnival','carnival2','drive'];const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -806,9 +900,9 @@ let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
-function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Cyber Carnival Amp':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Cyber Carnival Amp':k==='carnival2'?'Cyber Carnival Cockpit':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
-$('#skin').onchange=e=>setSkin(e.target.value);
+$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if(k==='carnival2'&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
 function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar())}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
@@ -1348,7 +1442,7 @@ function drawGps(){
 const GMAX=200,GA0=Math.PI*.75,GA1=Math.PI*2.25;
 const gA=v=>GA0+(GA1-GA0)*Math.max(0,Math.min(1,v/GMAX));
 let gStyle=store.get('gStyle','carbon');
-function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical'].includes(k))k='carbon';gStyle=k;$('#wGps').dataset.gs=k;$('#gStyle').value=k;store.set('gStyle',k)}
+function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';gStyle=k;$('#wGps').dataset.gs=k;$('#gStyle').value=k;store.set('gStyle',k)}
 $('#gStyle').onchange=e=>setGStyle(e.target.value);
 const RJ='Rajdhani,"Barlow Condensed",sans-serif';
 function ring(g,x,y,r,lw,col){g.lineWidth=lw;g.strokeStyle=col;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.stroke()}
@@ -1359,6 +1453,8 @@ function needle(g,x,y,a,r1,r2,w,col,glow){g.save();g.translate(x,y);g.rotate(a);
 function drawGauge(over){
   const c=cv.gauge,g=cx.gauge;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const v=spdDisp,RED='#ff3b30',box=$('#spdBox'),dial=$('#dial');
+  if(gStyle==='cockpit'){drawPFD(g,w,h,d,v,over,box,dial);return}
+  box.style.left='';box.style.width='';
   if(gStyle==='minimal'){
     dial.style.setProperty('--g',(Math.min(h,w*.5)/d)+'px');box.style.top=(h*.34/d)+'px';
     const x1=w*.06,x2=w*.94,y=h*.66,bh=h*.085,N=34,gw=(x2-x1)/N;
@@ -1421,9 +1517,75 @@ function drawGauge(over){
     g.shadowBlur=12*d;g.shadowColor='#ffb43a';tick(g,x0,y0,gA(v),r*.48,r*.92,4*d,over?RED:'#ffc23a');g.shadowBlur=0;
   }
 }
+/* 콕핏 PFD: 왼쪽 속도 테이프 · 가운데 자세계(선회하면 기울고 가속하면 기수가 듦) · 오른쪽 고도 테이프 */
+let ck={bank:0,pitch:0,h:null,v:null,t:0};
+function drawPFD(g,w,h,d,v,over,box,dial){
+  const now=performance.now(),dt=ck.t?Math.min(.5,(now-ck.t)/1000):0;ck.t=now;
+  let tb=0,tp=0;
+  if(dt>0&&ck.h!=null&&gs.fix&&v>3)tb=Math.max(-30,Math.min(30,angDiff(ck.h,hdgDisp)/dt*1.2));
+  if(dt>0&&ck.v!=null&&gs.fix)tp=Math.max(-8,Math.min(8,(v-ck.v)/dt*.9));
+  ck.h=hdgDisp;ck.v=v;ck.bank+=(tb-ck.bank)*.06;ck.pitch+=(tp-ck.pitch)*.05;
+  const RED='#ff3b30',W='#ffffff',MAG='#ff52d9',GRN='#44e07a',CY='#3ccfff',AMB='#ffb21f',YEL='#f3c623';
+  const nar=w/d<420,sw=w*(nar?.22:.17),aw=w*(nar?.2:.15),x1=w*.015,x2=w-w*.015-aw,cx=(x1+sw+x2)/2,at=h*.1,ah=h*.82,cy=at+ah/2;
+  const fnt=(px,wt=600)=>`${wt} ${px}px "Barlow Condensed",Rajdhani,sans-serif`;
+  dial.style.setProperty('--g',(h/d)+'px');box.style.top=(cy/d)+'px';box.style.left=(x1/d)+'px';box.style.width=(sw*.82/d)+'px';
+  // 자세계
+  g.save();g.beginPath();g.rect(x1+sw,at,x2-x1-sw,ah);g.clip();
+  g.translate(cx,cy);g.rotate(-ck.bank*Math.PI/180);const ppd=h*.022;g.translate(0,ck.pitch*ppd);
+  let gr=g.createLinearGradient(0,-h,0,0);gr.addColorStop(0,'#0b3a7a');gr.addColorStop(1,'#2e7fe0');g.fillStyle=gr;g.fillRect(-w,-h*2,w*2,h*2);
+  gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#8a5a2b');gr.addColorStop(1,'#4a2e14');g.fillStyle=gr;g.fillRect(-w,0,w*2,h*2);
+  g.strokeStyle=W;g.lineWidth=2*d;g.beginPath();g.moveTo(-w,0);g.lineTo(w,0);g.stroke();
+  g.lineWidth=1.4*d;g.fillStyle=W;g.font=fnt(h*.045);g.textBaseline='middle';
+  for(let p=-30;p<=30;p+=5){if(!p)continue;const y=-p*ppd,L=(p%10?.06:.13)*w;g.beginPath();g.moveTo(-L/2,y);g.lineTo(L/2,y);g.stroke();
+    if(p%10===0){g.textAlign='right';g.fillText(Math.abs(p),-L/2-6*d,y);g.textAlign='left';g.fillText(Math.abs(p),L/2+6*d,y)}}
+  g.restore();
+  // 선회계 눈금(위쪽 호)
+  const br=Math.min((x2-x1-sw)*.42,ah*.42);g.save();g.translate(cx,cy);g.strokeStyle=W;g.lineWidth=2*d;
+  g.beginPath();g.arc(0,0,br,Math.PI*1.33,Math.PI*1.67);g.stroke();
+  for(const a of [-60,-45,-30,-20,-10,10,20,30,45,60]){const r=(a-90)*Math.PI/180,L=Math.abs(a)%30===0?14:8;tick(g,0,0,r,br,br+L*d,2*d,W)}
+  g.fillStyle=W;g.beginPath();g.moveTo(0,-br-2*d);g.lineTo(-7*d,-br-14*d);g.lineTo(7*d,-br-14*d);g.closePath();g.fill();
+  g.rotate(-ck.bank*Math.PI/180);g.fillStyle=YEL;g.beginPath();g.moveTo(0,-br+2*d);g.lineTo(-8*d,-br+15*d);g.lineTo(8*d,-br+15*d);g.closePath();g.fill();g.restore();
+  // 항공기 심볼
+  g.save();g.translate(cx,cy);const s=Math.min(x2-x1-sw,ah)*.2;g.lineWidth=2*d;g.strokeStyle='#000';g.fillStyle=YEL;
+  for(const k of [-1,1]){g.beginPath();g.rect(k>0?s*.35:-s*1.35,-3*d,s,6*d);g.rect(k>0?s*.35:-s*.35-6*d,-3*d,6*d,s*.35);g.fill();g.stroke()}
+  g.beginPath();g.rect(-4*d,-4*d,8*d,8*d);g.fill();g.stroke();g.restore();
+  // 모드 표시줄
+  const col=(w-2*x1)/3,mx=i=>x1+col*(i+.5);
+  g.fillStyle='#000';g.fillRect(x1,0,w-2*x1,at);g.font=fnt(Math.min(at*.62,col*.17));g.textBaseline='middle';g.textAlign='center';
+  g.fillStyle=gs.fix?GRN:AMB;g.fillText(gpsOn?(gs.fix?'GPS':'NO FIX'):'GPS OFF',mx(0),at/2);
+  g.fillStyle=GRN;g.fillText(hdgNow>=0?'TRK '+String(Math.round(hdgDisp)%360).padStart(3,'0'):'TRK ---',mx(1),at/2);
+  g.fillStyle=gLimit>0?MAG:'#5f6a74';g.fillText(gLimit>0?'LIM '+gLimit:'LIM OFF',mx(2),at/2);
+  g.strokeStyle='#ffffff30';g.lineWidth=1*d;for(const i of [1,2]){g.beginPath();g.moveTo(x1+col*i,at*.2);g.lineTo(x1+col*i,at*.8);g.stroke()}
+  // 테이프 공통
+  const tape=(x,tw,val,span,step,lab,fmt,left,lim)=>{
+    g.save();g.fillStyle='#2b3036ee';g.fillRect(x,at,tw,ah);g.beginPath();g.rect(x,at,tw,ah);g.clip();
+    const pp=ah/span,y=u=>cy-(u-val)*pp;
+    if(lim>0){const yl=y(lim);g.save();g.beginPath();g.rect(left?x+tw-8*d:x,at,8*d,Math.max(0,yl-at));g.clip();
+      for(let k=-ah;k<ah*2;k+=12*d){g.fillStyle=k/12/d%2?'#fff':RED;g.fillRect(left?x+tw-8*d:x,k,8*d,6*d)}g.restore()}
+    g.strokeStyle=W;g.fillStyle=W;g.font=fnt(Math.min(h*.05,tw*.34));g.textBaseline='middle';g.textAlign=left?'right':'left';
+    const lo=Math.floor((val-span/2)/step)*step;
+    for(let u=lo;u<=val+span/2;u+=step){if(u<0&&left)continue;const yy=y(u),maj=Math.round(u/step)%lab===0;
+      g.lineWidth=(maj?2:1.2)*d;const L=(maj?14:8)*d;g.beginPath();if(left){g.moveTo(x+tw,yy);g.lineTo(x+tw-L,yy)}else{g.moveTo(x,yy);g.lineTo(x+L,yy)}g.stroke();
+      if(maj)g.fillText(fmt(u),left?x+tw-L-5*d:x+L+5*d,yy)}
+    g.restore();g.strokeStyle='#000';g.lineWidth=2*d;g.strokeRect(x,at,tw,ah);
+  };
+  tape(x1,sw,v,120,10,2,u=>u,true,gLimit);
+  const alt=gs.fix&&gs.alt>-9000?gs.alt:0;tape(x2,aw,alt,400,20,5,u=>Math.round(u),false,0);
+  // 속도 읽음 상자(숫자는 DOM이 그림)
+  const bh=h*.15,bw=sw*.86;g.fillStyle='#000';g.strokeStyle=over?RED:W;g.lineWidth=2*d;g.beginPath();
+  g.moveTo(x1+2*d,cy-bh/2);g.lineTo(x1+bw,cy-bh/2);g.lineTo(x1+bw,cy-bh*.18);g.lineTo(x1+sw-2*d,cy);g.lineTo(x1+bw,cy+bh*.18);g.lineTo(x1+bw,cy+bh/2);g.lineTo(x1+2*d,cy+bh/2);g.closePath();g.fill();g.stroke();
+  // 고도 읽음 상자
+  const ab=aw*.9;g.beginPath();g.moveTo(x2+2*d,cy);g.lineTo(x2+aw-ab+2*d,cy-bh*.38);g.lineTo(x2+aw-2*d,cy-bh*.38);g.lineTo(x2+aw-2*d,cy+bh*.38);g.lineTo(x2+aw-ab+2*d,cy+bh*.38);g.closePath();
+  g.fillStyle='#000';g.fill();g.strokeStyle=W;g.stroke();
+  g.fillStyle=gs.fix&&gs.alt>-9000?GRN:AMB;g.font=fnt(Math.min(bh*.5,aw*.3),700);g.textAlign='center';g.textBaseline='middle';
+  g.fillText(gs.fix&&gs.alt>-9000?Math.round(gs.alt):'----',x2+aw-ab/2,cy+1*d);
+  // 라벨
+  g.font=fnt(h*.042);g.textBaseline='bottom';g.fillStyle=MAG;g.textAlign='center';g.fillText('GS km/h',x1+sw/2,h-2*d);
+  g.fillStyle=CY;g.fillText('ALT m',x2+aw/2,h-2*d);
+}
 function drawTape(){
   const c=cv.tape,g=cx.tape;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
-  const P={carbon:['#e6e3de','#9fa2a7',C.cp],neon:['#f1ece6','#a19c96',C.cphi],classic:['#efe6d8','#b7a991','#ff9a3c'],minimal:['#ece8e2','#8e9196',C.cp],tactical:['#c9f5bf','#7fa878','#ffb43a']}[gStyle];
+  const P={carbon:['#e6e3de','#9fa2a7',C.cp],neon:['#f1ece6','#a19c96',C.cphi],classic:['#efe6d8','#b7a991','#ff9a3c'],minimal:['#ece8e2','#8e9196',C.cp],tactical:['#c9f5bf','#7fa878','#ffb43a'],cockpit:['#ffffff','#9fb3c8','#ff52d9']}[gStyle];
   const ppd=w/150,ctr=hdgDisp,boxW=110*d;g.textAlign='center';g.textBaseline='alphabetic';
   for(let deg=Math.floor((ctr-80)/5)*5;deg<=ctr+80;deg+=5){
     const x=w/2+(deg-ctr)*ppd,n=((deg%360)+360)%360,card=n%45===0,mid=n%15===0;
