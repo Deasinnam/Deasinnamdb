@@ -151,15 +151,37 @@ async function main() {
     await page.locator('#dvClose').click();
     await page.waitForFunction(() => document.querySelector('#ckEz').getAttribute('aria-pressed') === 'false');
     // 관제탑: 점검 문구가 차례로 나오고 끝나면 이륙 허가
-    await page.waitForFunction(() => document.querySelectorAll('#atcLog li').length >= 3, null, {timeout:15000});
+    // 두 줄만 보이고, 두 줄 단위로 바뀌며 진행
+    await page.evaluate(() => {window.__atcMax=0;window.__atcSeen='';new MutationObserver(()=>{const l=document.querySelector('#atcLog');__atcMax=Math.max(__atcMax,l.children.length);__atcSeen+=l.textContent}).observe(document.querySelector('#atcLog'),{childList:true,subtree:true,characterData:true})});
+    await page.waitForFunction(() => /안전벨트/.test(window.__atcSeen) && document.querySelectorAll('#atcLog li').length===2 && /브레이크/.test(window.__atcSeen), null, {timeout:20000});
+    assert.equal(await page.evaluate(() => __atcMax), 2, 'Tower shows two lines at a time');
+    assert.ok((await page.locator('#wAtc .atcscreen').boundingBox()).height < 70, 'Tower screen is two lines tall');
     await page.locator('#atcSkip').click();
     assert.equal(await page.locator('#atcClr').isVisible(), true);
-    assert.match(await page.locator('#atcLog').textContent(), /안전벨트/);
-    assert.match(await page.locator('#atcLog').textContent(), /브레이크/);
+    assert.equal(await page.locator('#atcLog li').count(), 0, 'Only the takeoff clearance remains');
     await page.locator('#atcRun').click();
     assert.equal(await page.locator('#atcClr').isVisible(), false, 'Re-running the checklist starts over');
     await page.evaluate(() => {window.__spoke=[];window.AndroidBridge.speak=t=>__spoke.push(t)});
     await page.waitForFunction(() => window.__spoke.length > 0 && !document.querySelector('#atcClr').hidden, null, {timeout:40000});
+    assert.equal(await page.locator('#atcLog li').count(), 0, 'After the run only the clearance is left');
+    // SOS: 가운데 버튼, 덮개를 연 뒤 두 번째 누름에 설정한 번호로 전화
+    const cells = await page.locator('#wCtl .ckcell').evaluateAll(els => els.map(e => e.querySelector('button').id));
+    assert.equal(cells[2], 'ckSos', 'SOS sits in the middle of the panel');
+    await page.locator('#ckSos').click();
+    assert.equal(await page.locator('#ckSos').evaluate(el => el.classList.contains('armed')), true, 'First press lifts the guard');
+    await page.locator('#ckSos').click();
+    assert.equal(await page.locator('#settings').isVisible(), true, 'No contact yet: opens SOS settings');
+    await page.locator('#sSosName').fill('가족');
+    await page.locator('#sSosNum').fill('010-0000-0000');
+    await page.locator('#sSosSave').click();
+    await page.locator('#setClose').click();
+    assert.match(await page.locator('#sosName').textContent(), /가족/);
+    await page.evaluate(() => {window.__calls=[];window.AndroidBridge.sosCall=n=>{__calls.push(n);return 'call'}});
+    await page.locator('#ckSos').click();
+    assert.deepEqual(await page.evaluate(() => __calls), [], 'Guard press alone never calls');
+    await page.locator('#ckSos').click();
+    assert.deepEqual(await page.evaluate(() => __calls), ['010-0000-0000']);
+    assert.match(await page.locator('#ckMsg').textContent(), /가족에게 전화/);
     await page.locator('#gStyle').selectOption('carbon');
     assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
@@ -287,7 +309,7 @@ async function main() {
     assert.ok(after.g > before.g, `EQ band follows the finger upward (${before.g} -> ${after.g})`);
     await tctx.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, cockpit skin, cockpit resize, control panel, tower checklist, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, cockpit skin, cockpit resize, control panel, SOS guard+call, two-line tower, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

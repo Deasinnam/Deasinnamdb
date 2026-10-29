@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v4.3** (versionCode 23) |
+| 최신 버전 | **v4.4** (versionCode 24) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -42,6 +42,7 @@
 - v4.2: 사이버 카니발 2 · 콕핏 스킨 + 속도계 디자인 6번째 "콕핏 PFD" (`drawPFD`)
 - v4.2.1: 콕핏 스킨에서 주행 정보를 속도계 위 한 줄로, 속도계를 창 너비 가득 크게
 - v4.3: 콕핏 창 크기 조절 시 PFD 비율 대응, COCKPIT CONTROL 창(`#wCtl`, 브리지 `cockpitState/setMuted/setWifi/setBluetooth`), TOWER 창(`#wAtc`, 출발 전 점검 + WebAudio 효과음 + 브리지 `speak` TTS). 레이아웃 클래스 `.app.K`. 실기기에서 와이파이 패널·블루투스 요청 창·TTS 확인 필요
+- v4.4: 조종 패널 가운데 SOS(보호 덮개 → 두 번째 누름에 `sosCall`, CALL_PHONE 권한, 설정 `#secSos`, 연락처 고르기 `pickContact` → `__sosPicked`, 저장 키 `sos`), TOWER 창 두 줄 높이로 줄이고 두 줄씩 교체, 끝나면 이륙 허가만 남김
 
 ## 4. 확인 대기 중
 

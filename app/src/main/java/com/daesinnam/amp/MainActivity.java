@@ -29,7 +29,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.database.Cursor;
 import android.speech.tts.TextToSpeech;
 import android.util.Base64;
 import android.view.KeyEvent;
@@ -70,6 +72,9 @@ public class MainActivity extends Activity {
     private static final int REQ_PICK = 44;
     private static final int REQ_TREE = 45;
     private static final int REQ_BT = 46;
+    private static final int REQ_CALL = 47;
+    private static final int REQ_CONTACT = 48;
+    private String pendingCall;
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     static WeakReference<MainActivity> current = new WeakReference<>(null);
@@ -237,6 +242,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_CONTACT) {
+            onContactPicked(resultCode, data);
+            return;
+        }
         if (requestCode == REQ_PICK || requestCode == REQ_TREE) {
             onPicked(requestCode, resultCode, data);
             return;
@@ -261,6 +270,36 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         if (requestCode == REQ_MIC && extMode) startViz();
         if (requestCode == REQ_LOC && gpsWanted) gps.start();
+        if (requestCode == REQ_CALL && pendingCall != null) {
+            String n = pendingCall;
+            pendingCall = null;
+            boolean ok = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
+            placeCall(n, ok);
+        }
+    }
+
+    // ---------- 콕핏 스킨 SOS: 정해 둔 연락처로 바로 전화
+    private void placeCall(String number, boolean direct) {
+        Uri u = Uri.parse("tel:" + Uri.encode(number));
+        try {
+            startActivity(new Intent(direct ? Intent.ACTION_CALL : Intent.ACTION_DIAL, u));
+        } catch (Exception e) {
+            try { startActivity(new Intent(Intent.ACTION_DIAL, u)); } catch (Exception ignored) {}
+        }
+    }
+
+    /** 연락처 앱에서 고른 번호 하나만 읽습니다(연락처 전체 읽기 권한 없이). */
+    private void onContactPicked(int resultCode, Intent data) {
+        if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
+        try (Cursor c = getContentResolver().query(data.getData(),
+                new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER}, null, null, null)) {
+            if (c != null && c.moveToFirst()) {
+                JSONObject o = new JSONObject();
+                o.put("name", nz(c.getString(0)));
+                o.put("number", nz(c.getString(1)));
+                js("window.__sosPicked && window.__sosPicked(" + o + ")");
+            }
+        } catch (Exception ignored) {}
     }
 
     // ------------------------------------------------------------ 표준 플레이어(Media3)
@@ -1230,6 +1269,32 @@ public class MainActivity extends Activity {
                 try { startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); } catch (Exception ignored) {}
             });
             return "panel";
+        }
+
+        /** "call" 바로 걸기, "perm" 전화 권한 요청 후 걸기, "dial" 전화 앱에 번호만 띄움(전화 기능 없음) */
+        @JavascriptInterface
+        public String sosCall(final String number) {
+            final String n = number == null ? "" : number.replaceAll("[^0-9+*#]", "");
+            if (n.isEmpty()) return "none";
+            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
+                main.post(() -> placeCall(n, false));
+                return "dial";
+            }
+            if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                pendingCall = n;
+                main.post(() -> requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, REQ_CALL));
+                return "perm";
+            }
+            main.post(() -> placeCall(n, true));
+            return "call";
+        }
+
+        @JavascriptInterface
+        public void pickContact() {
+            main.post(() -> {
+                try { startActivityForResult(new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI), REQ_CONTACT); }
+                catch (Exception ignored) {}
+            });
         }
 
         @JavascriptInterface

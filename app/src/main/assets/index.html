@@ -584,10 +584,24 @@ input[type=range]:disabled{opacity:.35}
 .app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "main eq" "vis pl" "map map"}
 .app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "main eq pl" "vis vis pl" "map map map"}
 /* 조종 패널: 가드 레일 사이에 들어앉은 래칭 버튼. 켜면 쑥 들어가 불이 켜지고, 끄면 튀어나옴 */
-.ckpanel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,2vw,22px);padding:16px clamp(10px,2vw,22px) 18px;border-radius:4px;
+.ckpanel{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;gap:clamp(10px,2vw,22px);padding:16px clamp(10px,2vw,22px) 18px;border-radius:4px;
   background:repeating-linear-gradient(-45deg,#f3c623 0 10px,#141414 10px 20px) top/100% 5px no-repeat,repeating-linear-gradient(-45deg,#f3c623 0 10px,#141414 10px 20px) bottom/100% 5px no-repeat,
   radial-gradient(#ffffff06 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,#1d2024,#121417);box-shadow:inset 0 0 0 1px #000,inset 0 6px 14px #000a}
-@media (max-width:520px){.ckpanel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.ckpanel{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"a b" "s s" "c d"}.ckpanel>.ckcell:nth-child(1){grid-area:a}.ckpanel>.ckcell:nth-child(2){grid-area:b}.ckpanel>.sos{grid-area:s}.ckpanel>.ckcell:nth-child(4){grid-area:c}.ckpanel>.ckcell:nth-child(5){grid-area:d}.ckpanel>.sos .ckb{width:min(60%,160px)}}
+/* SOS: 노랑·검정 보호 덮개를 들어 올려야 누를 수 있음 */
+.sos .ckcap{color:#ff6b5e}
+.sos small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sosb{perspective:420px}
+.sosb .ckface{background:radial-gradient(circle at 50% 35%,#ff6b5e,#c4170c 60%,#7d0b05);justify-content:center;gap:10%}
+.sosb .ckface b{font-size:clamp(22px,3vw,34px);letter-spacing:.12em;color:#fff;text-shadow:0 1px 0 #600}
+.sosb .ckface i{color:#ffd0cb;background:#3a0603;text-shadow:none;font-size:clamp(11px,1.3vw,14px);letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sosb.armed .ckface{animation:sosglow .7s ease-in-out infinite alternate}
+@keyframes sosglow{to{box-shadow:inset 0 1px 0 #ffffff40,0 9px 0 -1px #15171a,0 0 26px #ff3b30,0 0 50px #ff3b3088}}
+.sosb.fire .ckface{transform:translateY(1px) scale(.96);box-shadow:inset 0 2px 8px #000c,0 0 30px #ff3b30}
+.sosguard{position:absolute;inset:4px;border-radius:5px;transform-origin:50% 0;transform:rotateX(0deg);transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .45s;
+  background:repeating-linear-gradient(-45deg,#f3c623d8 0 9px,#141414d8 9px 18px);border:2px solid #0b0b0b;box-shadow:inset 0 0 0 2px #ffffff30,0 10px 14px #000c;display:grid;place-items:end center;padding-bottom:10%}
+.sosguard em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.24em;font-size:13px;color:#141414;background:#f3c623;padding:1px 8px;border-radius:2px}
+.sosb.armed .sosguard{transform:rotateX(-112deg);opacity:.35}
 .ckcell{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
 .ckcap{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;letter-spacing:.2em;color:#e6eaee;text-shadow:0 1px 0 #000;white-space:nowrap}
 .ckcell small{font-size:12.5px;color:#9aa3ad}
@@ -611,13 +625,22 @@ input[type=range]:disabled{opacity:.35}
 .ckmsg{min-height:1.5em;margin-top:10px;font-size:13px;color:#9aa3ad;line-height:1.5}
 /* 관제탑: 데이터링크 화면에 출발 전 점검을 차례로 띄움 */
 #wAtc .body{display:flex;flex-direction:column;gap:10px}
+.atcrow{display:flex;gap:12px;align-items:stretch}
+.atcrow .atc{flex:1;min-width:0}
+.atcbtns{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.atcbtns .pill{height:42px;padding:0 16px;font-size:15px}
+@media (max-width:620px){.atcrow{flex-direction:column}.atcbtns{flex-direction:row}.atcbtns .pill{flex:1}}
+.atcscreen{position:relative;height:calc(2.9em + 6px);font-size:15px}
 .atc{position:relative;border:1px solid #000;border-radius:4px;background:radial-gradient(120% 90% at 30% 0%,#0b1116,#040608 60%);box-shadow:inset 0 0 0 1px #2b3036,0 0 0 3px #1c1f23,0 0 0 4px #464c54;padding:12px 14px;overflow:hidden}
 .atc::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,#ffffff05 0 1px,transparent 1px 3px)}
 .atchead{display:flex;justify-content:space-between;gap:10px;font-family:"Share Tech Mono",monospace;font-size:13px;color:#3ccfff;padding-bottom:8px;border-bottom:1px solid #ffffff14;margin-bottom:8px}
 .atchead span:last-child{color:#9aa3ad}
 .atcbar{height:4px;background:#ffffff10;border-radius:2px;margin-bottom:8px;overflow:hidden}
 .atcbar i{display:block;height:100%;width:0;background:#44e07a;box-shadow:0 0 8px #44e07a;transition:width .4s}
-.atclog{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.atclog{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;height:100%;overflow:hidden}
+.atclog li{animation:atcin .25s ease-out}
+@keyframes atcin{from{opacity:0;transform:translateY(6px)}}
+.atclog li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .atclog li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:baseline;font-size:15px;color:#e6eaee;line-height:1.45}
 .atclog li b{font-family:"Share Tech Mono",monospace;font-weight:400;font-size:13px;color:#3ccfff}
 .atclog li.me b{color:#ff52d9}
@@ -627,8 +650,8 @@ input[type=range]:disabled{opacity:.35}
 .atclog li em.warn{color:#ffb21f}
 .atclog li em.run{color:#3ccfff;animation:blink .5s steps(2) infinite}
 .atclog .cur::after{content:"▌";color:#44e07a;animation:blink .6s steps(2) infinite;margin-left:2px}
-.atcclr{margin-top:12px;padding:10px 12px;text-align:center;border:2px solid #44e07a;border-radius:3px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(20px,3.2vw,30px);letter-spacing:.24em;color:#44e07a;text-shadow:0 0 12px #44e07a;box-shadow:0 0 18px #44e07a33,inset 0 0 18px #44e07a22;animation:clr 1s ease-out 3}
-.atcclr small{display:block;font-family:"Noto Sans KR",sans-serif;font-size:14px;letter-spacing:.06em;color:#e6eaee;text-shadow:none;margin-top:2px}
+.atcclr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 12px;text-align:center;border:2px solid #44e07a;border-radius:3px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(14px,4.4vw,26px);line-height:1;white-space:nowrap;letter-spacing:.18em;color:#44e07a;text-shadow:0 0 12px #44e07a;box-shadow:0 0 18px #44e07a33,inset 0 0 18px #44e07a22;animation:clr 1s ease-out 3}
+.atcclr small{display:block;white-space:nowrap;font-family:"Noto Sans KR",sans-serif;font-size:12px;letter-spacing:.06em;color:#e6eaee;text-shadow:none;margin-top:2px}
 @keyframes clr{0%{opacity:0;transform:scale(1.06)}30%{opacity:1}60%{opacity:.55}100%{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.ckface,.ckb.on .ckface{transition:none}.atcclr{animation:none}}
 
@@ -781,6 +804,7 @@ html.driving body{overflow:hidden}
       <div class="ckpanel">
         <div class="ckcell"><span class="ckcap">MASTER VOL</span><button class="ckb" id="ckVol" aria-pressed="false" aria-label="볼륨 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg><b>VOL</b><i>OFF</i></span></button><small>볼륨</small></div>
         <div class="ckcell"><span class="ckcap">DATA LINK</span><button class="ckb" id="ckWifi" aria-pressed="false" aria-label="와이파이 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5.6 13.6l1.8 1.8a6.5 6.5 0 0 1 9.2 0l1.8-1.8a9 9 0 0 0-12.8 0zM1.7 9.7l1.8 1.8a12 12 0 0 1 17 0l1.8-1.8a14.5 14.5 0 0 0-20.6 0z"/></svg><b>WIFI</b><i>OFF</i></span></button><small>와이파이</small></div>
+        <div class="ckcell sos"><span class="ckcap">EMERGENCY</span><button class="ckb sosb" id="ckSos" aria-label="SOS 긴급 전화 (덮개를 열고 한 번 더 누르세요)"><span class="ckface"><b>SOS</b><i id="sosWho">CALL</i></span><span class="sosguard" aria-hidden="true"><em>LIFT</em></span></button><small id="sosName">연락처 설정</small></div>
         <div class="ckcell"><span class="ckcap">COMMS</span><button class="ckb" id="ckBt" aria-pressed="false" aria-label="블루투스 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.7 7.7 12 2h-1v7.6L6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l4.6-4.6V22h1l5.7-5.7-4.3-4.3 4.3-4.3zM13 5.8l1.9 1.9L13 9.6V5.8zm1.9 10.5L13 18.2v-3.8l1.9 1.9z"/></svg><b>BT</b><i>OFF</i></span></button><small>블루투스</small></div>
         <div class="ckcell"><span class="ckcap">AUTOPILOT</span><button class="ckb" id="ckEz" aria-pressed="false" aria-label="간편 모드 켜기/끄기"><span class="ckface"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 0 1 7.9 7h-3.1a4.9 4.9 0 0 0-9.6 0H4.1A8 8 0 0 1 12 4zm0 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-7.9 3h3.2a5 5 0 0 0 3.7 3.8v3.1A8 8 0 0 1 4.1 13zm9.8 6.9v-3.1a5 5 0 0 0 3.7-3.8h3.2a8 8 0 0 1-6.9 6.9z"/></svg><b>EASY</b><i>OFF</i></span></button><small>간편 모드</small></div>
       </div>
@@ -791,13 +815,15 @@ html.driving body{overflow:hidden}
   <section class="win" id="wAtc">
     <div class="bar"><span class="t">Tower</span><span class="s" id="atcSt"></span><span class="groove"></span><button class="wbtn" data-col="wAtc" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
-      <div class="atc" aria-live="polite">
-        <div class="atchead"><span>TWR 118.10 · 대신남 원</span><span id="atcClock">--:--</span></div>
-        <div class="atcbar"><i id="atcBar"></i></div>
-        <ol class="atclog" id="atcLog"></ol>
-        <div class="atcclr" id="atcClr" hidden>CLEARED FOR TAKEOFF<small>이륙 허가 · 안전 운행하세요</small></div>
+      <div class="atcrow">
+        <div class="atc" aria-live="polite">
+          <div class="atchead"><span>TWR 118.10 · 대신남 원</span><span id="atcClock">--:--</span></div>
+          <div class="atcbar"><i id="atcBar"></i></div>
+          <div class="atcscreen"><ol class="atclog" id="atcLog"></ol>
+          <div class="atcclr" id="atcClr" hidden>CLEARED FOR TAKEOFF<small>이륙 허가 · 안전 운행하세요</small></div></div>
+        </div>
+        <div class="atcbtns"><button class="pill" id="atcRun">다시 점검</button><button class="pill" id="atcSkip">건너뛰기</button></div>
       </div>
-      <div class="gctl"><button class="pill" id="atcRun">다시 점검</button><button class="pill" id="atcSkip">건너뛰기</button></div>
     </div>
   </section>
 
@@ -945,6 +971,12 @@ html.driving body{overflow:hidden}
       <label class="row"><span><b>연결되면 GPS 켜기</b><small>자동차 스킨에서 속도계와 지도를 바로 켜요.</small></span><input type="checkbox" id="sCarGps" class="sw" checked></label>
       <div class="row"><span><b>블루투스 권한</b><small>연결된 기기 이름을 확인하는 데 필요해요.</small></span><button class="pill" id="sBt">확인 중</button></div>
       <div class="row"><span><b>앱이 꺼져 있어도 자동으로 열기</b><small>"다른 앱 위에 표시"를 허용하면 앱이 꺼져 있어도 차에 타면 바로 열려요. 허용하지 않으면 "차량 연결됨" 알림을 눌러 시작해요.</small></span><button class="pill" id="sLaunch">확인 중</button></div>
+    </section>
+    <section id="secSos">
+      <h3>SOS 긴급 연락처</h3>
+      <div class="row"><span><b>연락처에서 고르기</b><small>콕핏 스킨의 SOS 버튼을 누르면 이 번호로 바로 전화를 걸어요. 번호는 이 기기에만 저장돼요.</small></span><button class="pill" id="sSosPick">고르기</button></div>
+      <div class="keyrow sosrow"><input id="sSosName" placeholder="이름 (예: 가족)" autocomplete="off"><input id="sSosNum" type="tel" inputmode="tel" placeholder="전화번호" autocomplete="off"><button class="pill on" id="sSosSave">저장</button></div>
+      <p class="set-note" id="sSosSt"></p>
     </section>
     <section>
       <h3>주행 중 간편 모드</h3>
@@ -1991,6 +2023,26 @@ for(const k in CKB)$(CKB[k]).onclick=()=>ckTap(k);
 setInterval(ckSync,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)ckSync()});
 $('#ckSrc').textContent=ck.demo?'· 미리보기':'';
 
+
+// SOS: 덮개를 들어 올린 뒤(첫 번째 누름) 한 번 더 누르면 정해 둔 사람에게 바로 전화
+let sos=store.get('sos',{name:'',number:''}),sosT=0;
+function sosPaint(){const nm=sos.name||sos.number;$('#sosName').textContent=nm?(sos.name?sos.name+' · ':'')+sos.number:'연락처 설정';$('#sosWho').textContent=nm?'CALL':'SET UP';
+  $('#sSosName').value=sos.name||'';$('#sSosNum').value=sos.number||''}
+function sndAlarm(){const a=fx();if(!a)return;const t=a.currentTime;[0,.22,.44].forEach((dt,i)=>{const o=a.createOscillator();o.type='square';o.frequency.value=i%2?660:880;const g=fxEnv(a,t+dt,.12,.005,.18);o.connect(g).connect(a.destination);o.start(t+dt);o.stop(t+dt+.22)})}
+function sosDisarm(){clearTimeout(sosT);$('#ckSos').classList.remove('armed','fire')}
+$('#ckSos').onclick=()=>{const b=$('#ckSos');
+  if(!b.classList.contains('armed')){b.classList.add('armed');sndPress(true);ckSay(sos.number?`SOS 덮개를 열었어요. 한 번 더 누르면 ${sos.name||sos.number}에게 바로 전화해요.`:'SOS 덮개를 열었어요. 한 번 더 누르면 연락처를 정할 수 있어요.');clearTimeout(sosT);sosT=setTimeout(()=>{sosDisarm();sndPress(false)},6000);return}
+  if(!sos.number){sosDisarm();openSettings();$('#secSos').scrollIntoView({block:'start'});$('#sSosNum').focus();return}
+  b.classList.add('fire');sndAlarm();let r='';
+  try{r=NB&&NB.sosCall?NB.sosCall(sos.number):'demo'}catch(e){}
+  ckSay(r==='call'?`${sos.name||sos.number}에게 전화를 걸고 있어요.`:r==='perm'?'전화 권한을 허용하면 바로 전화를 걸어요.':r==='dial'?'이 기기는 전화를 걸 수 없어 전화 앱에 번호를 띄웠어요.':'미리보기에서는 전화를 걸 수 없어요. 앱에서는 이 버튼으로 바로 전화가 걸려요.');
+  clearTimeout(sosT);sosT=setTimeout(sosDisarm,1500)};
+function sosSave(name,number){const n=String(number||'').replace(/[^0-9+*#\- ]/g,'').trim().slice(0,24);if(n.replace(/\D/g,'').length<3){$('#sSosSt').textContent='전화번호를 확인해 주세요.';return false}
+  sos={name:String(name||'').trim().slice(0,30),number:n};store.set('sos',sos);sosPaint();$('#sSosSt').textContent='저장했어요. SOS 버튼이 이 번호로 전화해요.';return true}
+$('#sSosSave').onclick=()=>sosSave($('#sSosName').value,$('#sSosNum').value);
+$('#sSosPick').onclick=()=>{if(NB&&NB.pickContact)NB.pickContact();else $('#sSosSt').textContent='연락처에서 고르기는 앱에서 쓸 수 있어요. 아래에 직접 입력해 주세요.'};
+window.__sosPicked=o=>{if(o&&o.number)sosSave(o.name,o.number)};
+sosPaint();
 // 관제탑 출발 전 점검
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let atcRun=0,atcDone=false;
@@ -2014,6 +2066,7 @@ async function atcStart(){
   const log=$('#atcLog');log.innerHTML='';$('#atcClr').hidden=true;atcDone=false;$('#atcSt').textContent='· 점검 중';
   const nChk=ATC.filter(x=>x.c).length;let k=0;$('#atcBar').style.width='0';
   for(const it of ATC){if(!live())return;
+    if(log.children.length>=2){await sleep(250);if(!live())return;log.innerHTML=''}
     const li=document.createElement('li');li.className=it.me?'me':'';li.innerHTML=`<b>${it.me?'D1':'TWR'}</b><span class="cur"></span><em></em>`;log.appendChild(li);
     const sp=li.querySelector('span'),em=li.querySelector('em');sndSquelch();
     for(const ch of it.t){if(!live())return;sp.textContent+=ch;await sleep(26)}
@@ -2021,11 +2074,10 @@ async function atcStart(){
     if(it.c){em.textContent='· · ·';em.className='run';await sleep(650);if(!live())return;
       const [txt,cls]=typeof it.c==='function'?it.c():[it.c,'ok'];em.textContent=txt;em.className=cls;sndRoger();k++;$('#atcBar').style.width=(k/nChk*100)+'%'}
     else sndSquelch(0,.1);
-    if(it.fin){await sleep(300);if(!live())return;$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true;sndTakeoff();setTimeout(()=>{if(live())atcSpeak('대신남 원, 이륙을 허가합니다. 안전 운행하십시오.')},1300);return}
+    if(it.fin){await sleep(900);if(!live())return;log.innerHTML='';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true;sndTakeoff();setTimeout(()=>{if(live())atcSpeak('대신남 원, 이륙을 허가합니다. 안전 운행하십시오.')},1300);return}
     await sleep(it.c?350:550)}
 }
-function atcSkip(){atcRun++;const log=$('#atcLog');log.innerHTML='';
-  for(const it of ATC){const li=document.createElement('li');li.className=it.me?'me':'';const r=it.c?(typeof it.c==='function'?it.c():[it.c,'ok']):['',''];li.innerHTML=`<b>${it.me?'D1':'TWR'}</b><span></span><em class="${r[1]}">${r[0]}</em>`;li.querySelector('span').textContent=it.t;log.appendChild(li)}
+function atcSkip(){atcRun++;$('#atcLog').innerHTML='';
   $('#atcBar').style.width='100%';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true}
 $('#atcRun').onclick=()=>{fx();atcStart()};
 $('#atcSkip').onclick=atcSkip;
