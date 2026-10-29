@@ -437,6 +437,27 @@ async function main() {
     assert.equal(Math.round(await p8.evaluate(() => pfd.getState().telemetry.speedKmh)), 18, 'PFD gets the app GPS speed in km/h');
     assert.equal(await p8.locator('#pfdHost [data-role="gpsText"]').textContent(), 'GPS 끄기');
     assert.equal(await p8.locator('#pfdHost [data-role="satellites"]').textContent(), '위성 9/12');
+    // PFD v1.1: 배경(구름·도심)이 실제 속도에 맞춰 움직이고, 테마는 앱이 낮·밤을 넘김, 배경 이동 설정 저장
+    const v0 = await p8.evaluate(() => pfd.getVisualState().distanceMeters);
+    await p8.waitForTimeout(800);
+    const v1 = await p8.evaluate(() => pfd.getVisualState());
+    assert.ok(v1.moving && v1.distanceMeters > v0, 'Scene moves with the GPS speed');
+    await p8.locator('#pfdHost [data-role="settings"]').click();
+    await p8.locator('#pfdHost [data-role="theme"]').selectOption('night');
+    await p8.locator('#pfdHost .pfd-save').click();
+    assert.equal(await p8.evaluate(() => pfd.getVisualState().theme), 'night');
+    assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_pfdSet')).theme), 'night');
+    await p8.locator('#pfdHost [data-role="settings"]').click();
+    assert.equal(await p8.locator('#pfdHost [data-role="theme"]').inputValue(), 'night');
+    await p8.locator('#pfdHost [data-role="theme"]').selectOption('auto');
+    await p8.locator('#pfdHost .pfd-save').click();
+    const hr = await p8.evaluate(() => new Date().getHours());
+    assert.equal(await p8.evaluate(() => pfd.getVisualState().theme), (hr>=19||hr<6)?'night':'day', 'Auto follows the app night hours');
+    assert.equal(await p8.locator('#pfdHost [data-role="themeText"]').textContent(), '테마 자동');
+    assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_pfdSet')).sceneMotion), true);
+    await p8.evaluate(() => {g8.speed=0;g8.ts+=1000});
+    await p8.waitForFunction(() => !pfd.getVisualState().moving, null, {timeout:3000});
+    await p8.evaluate(() => {g8.speed=5;g8.ts+=1000});
     await p8.waitForTimeout(500);
     assert.equal(await p8.locator('#atcWarn').isVisible(), false);
     await p8.evaluate(() => {g8.speed=14.2;g8.ts+=1000});
@@ -487,7 +508,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: Daesinnam PFD package in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: Daesinnam PFD v1.1 (speed-linked clouds/city, night) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
