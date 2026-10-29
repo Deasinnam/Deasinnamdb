@@ -1180,13 +1180,14 @@ html.driving body{overflow:hidden}
     <div class="body">
       <div class="mapask" id="mapAsk">
         <b>속도계 아래에 지도를 표시할까요?</b>
-        <p>GPS 위치를 지도에 실시간으로 보여 주고, TMAP을 바로 열거나 DeX·분할 화면에서 옆 창으로 띄울 수 있어요. 지도는 인터넷으로 받아오고, 위치는 지도 표시에만 쓰며 저장하지 않아요. 나중에 언제든 바꿀 수 있어요.</p>
+        <p>GPS 위치를 지도에 실시간으로 보여 주고, TMAP을 켜거나, 화면 아래쪽에 띄워 이 앱과 위아래로 반씩 나눠 볼 수 있어요. 지도는 인터넷으로 받아오고, 위치는 지도 표시에만 쓰며 저장하지 않아요. 나중에 언제든 바꿀 수 있어요.</p>
         <div><button class="pill on" id="mapYes">지도 사용</button><button class="pill" id="mapNo">사용 안 함</button></div>
       </div>
       <div id="mapWrap" hidden>
         <div class="mapbox" id="mapbox"><div class="mapmsg" id="mapMsg" hidden></div></div>
         <div class="mapctl">
-          <button class="pill on" data-tmap="open">TMAP 열기</button>
+          <button class="pill on" data-tmap="open">TMAP 켜기</button>
+          <button class="pill" data-tmap="bottom">TMAP 하단에 켜기</button>
           <button class="pill" data-tmap="side">TMAP 옆 창</button>
           <button class="pill" id="mapFollow">내 위치</button>
           <button class="pill" id="mapNight">야간 지도</button>
@@ -2484,7 +2485,15 @@ $('#tmapKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tmapKeySave'
 $('#tmapKeyDel').onclick=()=>{const sel=$('#mapProvSel').value;delete mapKeys[sel];store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(mapProv===sel?'osm':mapProv)};
 if(!NB)$('#mapKeyBox').hidden=true;
 syncKeyUi();
-document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{try{b.dataset.tmap==='side'&&NB.openAppSide?NB.openAppSide(TMAP_PKG):NB.openApp(TMAP_PKG)}catch(e){}});
+document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{const k=b.dataset.tmap;
+  if(!NB||!NB.openApp){toast('TMAP 켜기는 안드로이드 앱에서 동작해요.');return}
+  try{
+    if(k==='bottom'&&NB.openAppBottom){const r=NB.openAppBottom(TMAP_PKG);
+      if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
+      else{toast(r==='landscape'?'TMAP을 함께 띄웠어요. 가로 화면에서는 안드로이드가 오른쪽에 붙여요. 세로로 돌리면 위아래로 나뉘어요.':'TMAP을 아래쪽에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
+        setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)}}
+    else if(k==='side'&&NB.openAppSide)NB.openAppSide(TMAP_PKG);
+    else NB.openApp(TMAP_PKG)}catch(e){}});
 if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
 
 /* ---------- 저장되는 플레이리스트 (앱) ---------- */

@@ -358,7 +358,7 @@ async function main() {
       window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
         cockpitState:()=>JSON.stringify({volume:Math.round(dev.level*100/dev.steps),wifiSupported:true,wifi:dev.wifi,hasBt:dev.hasBt,...(dev.bt===null?{}:{bt:dev.bt})}),
         setSystemVolume:p=>{dev.level=Math.round(p*dev.steps/100);log.push('vol:'+p)},
-        setWifi:w=>{log.push('wifi:'+w);return 'panel'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
+        setWifi:w=>{log.push('wifi:'+w);return 'panel'},openApp:k=>log.push('open:'+k),openAppSide:k=>log.push('side:'+k),openAppBottom:k=>{log.push('bottom:'+k);return 'bottom'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
     });
     await p7.goto(origin);
     await p7.waitForFunction(() => document.querySelector('#dkPlatformText').textContent === 'ANDROID LINK');
@@ -374,6 +374,14 @@ async function main() {
     await p7.waitForFunction(() => document.querySelector('#dkVolumeValue').textContent === '47', null, {timeout:4000});
     await p7.locator('#dkGuardCover').click();await p7.locator('#dkSosButton').click();
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
+    // 지도: TMAP 켜기 / 하단에 켜기(위아래 반씩) / 옆 창
+    await p7.locator('#mapYes').click();
+    assert.deepEqual(await p7.locator('#wMap [data-tmap]').allTextContents(), ['TMAP 켜기','TMAP 하단에 켜기','TMAP 옆 창']);
+    await p7.locator('#wMap [data-tmap="bottom"]').click();
+    await p7.locator('#wMap [data-tmap="open"]').click();
+    const tl = await p7.evaluate(() => log.filter(x => /^(open|bottom|side):/.test(x)));
+    assert.deepEqual(tl, ['bottom:com.skt.tmap.ku','open:com.skt.tmap.ku']);
+    assert.match(await p7.locator('#toast').textContent(), /아래쪽/);
     await p7.close();
     // 창 순서: 설정에서 바꾸고 되돌리기
     const pa = await context.newPage();
@@ -479,7 +487,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: Daesinnam PFD package in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: Daesinnam PFD package in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

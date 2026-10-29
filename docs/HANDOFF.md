@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v5.3** (versionCode 33) |
+| 최신 버전 | **v5.4** (versionCode 34) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -52,6 +52,7 @@
 - v5.1: 속도계 창 크기 조절 버튼(`#gRz`, `#wGps.rz`일 때만 손잡이 표시·동작, 15초 미조작 시 자동 해제)
 - v5.2: 설정 → 창 순서(`#secOrder`, 저장 키 `winOrder_K/G/N`). 사용자 순서가 있으면 `.app.CO`로 grid-template-areas 대신 `order` 흐름 배치
 - v5.3: 콕핏 스킨 속도계를 사용자 제공 `Daesinnam_PFD_Claude_Package`(pfd.js/pfd.css, `.dsn-pfd`)로 교체. index.html에 인라인, `#pfdHost`에 마운트, 패키지 헤더는 숨기고 앱 창 제목줄(크기 조절·접기) 사용. `pfdFeed()`가 10Hz로 GPS(`gs`, `spdNow`, `hdgNow`)·기울기(`att`)·주행 기록(`trip`)을 `updateTelemetry`로 전달, nativeBridge = `gpsStart/gpsStop`, `trip:reset`·`settings:change`(속도 경고=`gLimit`, 테마·HUD 반전=`pfdSet`) 연결. 패키지 내장 글꼴(3.6MB)은 넣지 않고 Noto Sans KR. 다른 자동차 스킨은 기존 속도계 유지
+- v5.4: 지도 창 버튼 TMAP 켜기 / TMAP 하단에 켜기(브리지 `openAppBottom`: LAUNCH_ADJACENT + 자유 창이면 아래쪽 절반 `setLaunchBounds`, 가로 화면이면 "landscape" 반환) / TMAP 옆 창. 실기기 분할 위치 확인 필요
 
 ## 4. 확인 대기 중
 

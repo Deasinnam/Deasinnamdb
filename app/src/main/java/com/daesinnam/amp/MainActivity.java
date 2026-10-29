@@ -3,6 +3,7 @@ package com.daesinnam.amp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -14,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Insets;
+import android.graphics.Rect;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -1011,6 +1013,31 @@ public class MainActivity extends Activity {
                 launch.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
                 try { startActivity(launch); } catch (Exception e) { MainActivity.this.openApp(pkg); }
             });
+        }
+
+        /**
+         * TMAP 등을 화면 아래쪽에 띄워 이 앱과 위아래로 나눠 봅니다.
+         * 분할 화면에서는 세로 화면이면 아래, 가로 화면이면 안드로이드가 오른쪽에 붙입니다.
+         * DeX·자유 창에서는 화면 아래쪽 절반 크기로 엽니다.
+         * 반환: "bottom" | "landscape" | "missing"
+         */
+        @JavascriptInterface
+        public String openAppBottom(final String pkg) {
+            final Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (launch == null) {
+                main.post(() -> MainActivity.this.openApp(pkg));
+                return "missing";
+            }
+            final Rect full = new Rect();
+            if (Build.VERSION.SDK_INT >= 30) full.set(getWindowManager().getMaximumWindowMetrics().getBounds());
+            else { android.util.DisplayMetrics dm = new android.util.DisplayMetrics(); getWindowManager().getDefaultDisplay().getRealMetrics(dm); full.set(0, 0, dm.widthPixels, dm.heightPixels); }
+            main.post(() -> {
+                launch.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
+                ActivityOptions o = ActivityOptions.makeBasic();
+                o.setLaunchBounds(new Rect(full.left, full.top + full.height() / 2, full.right, full.bottom));
+                try { startActivity(launch, o.toBundle()); } catch (Exception e) { MainActivity.this.openApp(pkg); }
+            });
+            return full.width() > full.height() ? "landscape" : "bottom";
         }
 
         @JavascriptInterface
