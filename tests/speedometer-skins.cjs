@@ -113,14 +113,28 @@ async function main() {
     assert.equal(await page.locator('.brand .logo-img').isVisible(), false, 'Cockpit drops the KIA logo');
     assert.equal(await page.locator('.brand .af-img').isVisible(), true, 'Cockpit shows the Daesinnam One Air Force logo');
     assert.ok(await page.locator('.brand .af-img').evaluate(i => i.complete && i.naturalWidth > 0), 'Logo image decodes');
-    // 콕핏 스킨: 속도계 창만 높이 조절
-    assert.equal(await page.locator('#wGps > .grip').isVisible(), true);
+    // 콕핏 스킨: 속도계 창만 높이 조절(조절 버튼이 있음)
+    assert.equal(await page.locator('#gRz').isVisible(), true);
     for (const id of ['#wCtl','#wAtc','#wMain','#wEq','#wPl','#wVis']) assert.equal(await page.locator(id+' > .grip').isVisible(), false, id+' has no resize grip');
     assert.equal(await page.locator('#wMain').evaluate(el => getComputedStyle(el).clipPath), 'none', 'Cockpit panels are square-cornered plates, not cut corners');
     const r = sel => page.locator(sel).evaluate(el => {const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,width:b.width}});
     const st = await r('#wGps .gstats'), dl = await r('#dial'), body = await r('#wGps .gps');
     assert.ok(st.bottom <= dl.top, 'Cockpit: trip stats sit in one strip above the speedometer');
     assert.ok(dl.width >= body.width - 2, 'Cockpit: speedometer fills the window width');
+    // 속도계 크기 조절은 조절 버튼을 켰을 때만
+    assert.equal(await page.locator('#wGps > .grip').isVisible(), false, 'Grip hidden until resize mode');
+    await page.locator('#gRz').click();
+    assert.equal(await page.locator('#wGps > .grip').isVisible(), true);
+    const g0 = await page.locator('#wGps').evaluate(el => el.getBoundingClientRect().height);
+    await page.locator('#wGps > .grip').scrollIntoViewIfNeeded();
+    const gb = await page.locator('#wGps > .grip').boundingBox();
+    await page.mouse.move(gb.x+gb.width/2, gb.y+gb.height/2);await page.mouse.down();await page.mouse.move(gb.x+gb.width/2, gb.y+gb.height/2-120,{steps:6});await page.mouse.up();
+    const g1 = await page.locator('#wGps').evaluate(el => el.getBoundingClientRect().height);
+    assert.ok(g1 < g0 - 80, `Dragging in resize mode shrinks the window (${g0} -> ${g1})`);
+    await page.locator('#wGps > .grip').dblclick();
+    await page.locator('#gRz').click();
+    assert.equal(await page.locator('#wGps > .grip').isVisible(), false, 'Turning resize off hides the grip again');
+    assert.equal(await page.locator('#gRz').getAttribute('aria-pressed'), 'false');
     // 콕핏 창을 줄이면 속도계도 함께 작아지고, 늘리면 커짐
     const dialH = () => page.locator('#dial').evaluate(el => el.getBoundingClientRect().height);
     const fullH = await dialH();

@@ -897,6 +897,15 @@ input[type=range]:disabled{opacity:.35}
 .atcwarn b{font-family:"Barlow Condensed","Noto Sans KR",sans-serif;font-weight:700;font-size:clamp(16px,2.4vw,22px);letter-spacing:.08em;color:#ff3b30;text-shadow:0 0 10px #ff3b30aa;white-space:nowrap;line-height:1}
 .atcwarn span{font-size:12.5px;color:#ff6b5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @keyframes warnin{50%{border-color:#5a0f0a;box-shadow:none}}
+/* 속도계 창 크기 조절: 조절 버튼을 켰을 때만 손잡이가 나타나고 끌 수 있음(화면을 올리다 실수로 바뀌지 않게) */
+#wGps:not(.rz)>.grip{display:none!important}
+#wGps.rz{outline:2px dashed var(--accent);outline-offset:-3px}
+#wGps.rz>.grip{height:30px;margin-top:0;display:flex!important;align-items:center;justify-content:center;gap:10px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+#wGps.rz>.grip::before{width:70px;height:6px;opacity:1;background:var(--accent)}
+#wGps.rz>.grip::after{content:"끌어서 높이 조절 · 두 번 누르면 원래대로";font-size:12px;color:var(--accent)}
+#wGps.collapsed>.grip{display:none!important}
+.rzbtn.on{background:var(--accent)!important;border-color:var(--accent)!important}
+.rzbtn.on svg{fill:var(--hot-ink,#000)!important}
 /* 지도 */
 #wMap .body{display:flex;flex-direction:column;gap:10px}
 .mapask,.mapoff{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px dashed var(--frame-in);border-radius:4px;background:#0000002a}
@@ -1008,7 +1017,7 @@ html.driving body{overflow:hidden}
 
 <main class="app" id="app">
   <section class="win" id="wGps">
-    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><span class="groove"></span><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
       <div class="gps">
         <div class="gauge">
@@ -2404,12 +2413,17 @@ function applySizes(){const lock=skin==='carnival2';document.querySelectorAll('.
 document.querySelectorAll('.win').forEach(w=>{
   const gr=document.createElement('div');gr.className='grip';gr.title='끌어서 창 높이 조절 · 두 번 누르면 원래 높이';gr.setAttribute('role','separator');gr.setAttribute('aria-orientation','horizontal');w.appendChild(gr);
   let y0=0,h0=0,pid=null;
-  gr.addEventListener('pointerdown',e=>{e.preventDefault();pid=e.pointerId;gr.setPointerCapture(pid);y0=e.clientY;h0=w.getBoundingClientRect().height;w.classList.add('sizing')});
+  gr.addEventListener('pointerdown',e=>{if(w.id==='wGps'&&!w.classList.contains('rz'))return;e.preventDefault();pid=e.pointerId;gr.setPointerCapture(pid);y0=e.clientY;h0=w.getBoundingClientRect().height;w.classList.add('sizing')});
   gr.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;const h=Math.max(90,Math.round(h0+e.clientY-y0));w.style.height=h+'px';w.classList.add('sized')});
   const end=e=>{if(e.pointerId!==pid)return;pid=null;w.classList.remove('sizing');if(w.classList.contains('sized')){winH[w.id]=Math.round(w.getBoundingClientRect().height);store.set('winH',winH)}};
   gr.addEventListener('pointerup',end);gr.addEventListener('pointercancel',end);
-  gr.addEventListener('dblclick',()=>{delete winH[w.id];store.set('winH',winH);applySizes()});
+  gr.addEventListener('dblclick',()=>{if(w.id==='wGps'&&!w.classList.contains('rz'))return;delete winH[w.id];store.set('winH',winH);applySizes()});
 });
+let rzT=0;
+function gpsRz(on){const w=$('#wGps'),b=$('#gRz');w.classList.toggle('rz',on);b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'창 크기 조절 끄기':'창 크기 조절 켜기');
+  clearTimeout(rzT);if(on){toast('창 아래 손잡이를 끌어 높이를 바꾸세요. 다 되면 버튼을 다시 누르세요.');rzT=setTimeout(()=>gpsRz(false),15000)}}
+$('#gRz').onclick=e=>{e.stopPropagation();gpsRz(!$('#wGps').classList.contains('rz'))};
+$('#wGps').addEventListener('pointerup',()=>{if($('#wGps').classList.contains('rz')){clearTimeout(rzT);rzT=setTimeout(()=>gpsRz(false),15000)}});
 const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
 
