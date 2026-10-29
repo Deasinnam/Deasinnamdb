@@ -428,7 +428,7 @@ async function main() {
     // 관제탑 속도 주의: 50/100/120/150/180/200km/h 도달 시 빨간 글자
     const p8 = await context.newPage();
     p8.on('pageerror', error => errors.push(error.message));
-    await p8.addInitScript(() => {localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));
+    await p8.addInitScript(() => {if(!sessionStorage.getItem('p8')){sessionStorage.setItem('p8','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'))}
       window.g8={fix:true,perm:true,enabled:true,provider:'gps',speed:5,bearing:0,azimuth:-1,acc:3,alt:10,satsUsed:9,satsSeen:12,lat:37,lon:127,ts:1000};
       window.AndroidBridge={gpsStatus:()=>JSON.stringify(g8),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
     await p8.goto(origin);
@@ -461,6 +461,21 @@ async function main() {
     assert.equal(await p8.evaluate(() => pfd.getVisualState().theme), (hr>=19||hr<6)?'night':'day', 'Auto follows the app night hours');
     assert.equal(await p8.locator('#pfdHost [data-role="themeText"]').textContent(), '테마 자동');
     assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_pfdSet')).sceneMotion), true);
+    // PFD v1.2 에어포스: 하단 목록에서 고르면 디자인만 바뀌고(주야간·기록 유지), 저장되고, 콕핏으로 되돌림
+    assert.deepEqual(await p8.locator('#pfdHost [data-role="mode"] option').allTextContents(), ['콕핏 PFD','에어포스','심플 HUD']);
+    const d0 = await p8.evaluate(() => pfd.getVisualState().distanceMeters);
+    await p8.locator('#pfdHost [data-role="mode"]').selectOption('airforce');
+    assert.equal(await p8.evaluate(() => pfd.root.classList.contains('pfd-airforce')), true);
+    assert.equal(await p8.locator('#pfdHost .pfd-header').isVisible(), true, 'Air force shows the DAESINNAM ONE header');
+    assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_pfdSet')).skin), 'airforce');
+    assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_pfdSet')).theme), 'auto', 'Design switch keeps the day/night choice');
+    assert.ok(await p8.evaluate(() => pfd.getVisualState().distanceMeters) >= d0, 'Scene keeps going');
+    await p8.reload();
+    await p8.waitForFunction(() => window.pfd && pfd.settings.skin === 'airforce', null, {timeout:3000});
+    await p8.locator('#pfdHost [data-role="mode"]').selectOption('pfd');
+    assert.equal(await p8.evaluate(() => pfd.settings.skin), 'cockpit');
+    assert.equal(await p8.locator('#pfdHost .pfd-header').isVisible(), false);
+    await p8.waitForFunction(() => pfd.getState().valid, null, {timeout:3000});
     await p8.evaluate(() => {g8.speed=0;g8.ts+=1000});
     await p8.waitForFunction(() => !pfd.getVisualState().moving, null, {timeout:3000});
     await p8.evaluate(() => {g8.speed=5;g8.ts+=1000});
@@ -514,7 +529,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: Daesinnam PFD v1.1 (speed-linked clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
