@@ -368,6 +368,30 @@ async function main() {
     await p7.locator('#dkGuardCover').click();await p7.locator('#dkSosButton').click();
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
     await p7.close();
+    // 창 순서: 설정에서 바꾸고 되돌리기
+    const pa = await context.newPage();
+    pa.on('pageerror', error => errors.push(error.message));
+    await pa.addInitScript(() => {if(sessionStorage.getItem('pa'))return;sessionStorage.setItem('pa','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
+    await pa.goto(origin);
+    const ty = sel => pa.locator(sel).evaluate(el => el.getBoundingClientRect().top);
+    assert.ok(await ty('#wGps') < await ty('#wAtc'));
+    await pa.locator('#setBtn').click();
+    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','지도','플레이어','재생 화면','이퀄라이저','재생 목록']);
+    await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
+    await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
+    assert.deepEqual((await pa.locator('#ordList li b').allTextContents()).slice(0,3), ['관제탑','속도계','조종 패널']);
+    await pa.locator('#setClose').click();
+    assert.ok(await ty('#wAtc') < await ty('#wGps'), 'Tower now above the speedometer');
+    await pa.reload();
+    assert.ok(await ty('#wAtc') < await ty('#wGps'), 'Order survives reload');
+    await pa.locator('#skin').selectOption('blue');
+    assert.ok(await ty('#wMain') < await ty('#wPl'), 'Other skins keep their own order');
+    await pa.locator('#skin').selectOption('carnival2');
+    await pa.locator('#setBtn').click();
+    await pa.locator('#ordReset').click();
+    await pa.locator('#setClose').click();
+    assert.ok(await ty('#wGps') < await ty('#wAtc'), 'Reset restores the default layout');
+    await pa.close();
     // 시각화 효과 10종: 고를 때마다 다른 화면, 다시 열어도 유지, 캔버스를 누르면 다음 효과
     const p9 = await context.newPage();
     p9.on('pageerror', error => errors.push(error.message));
@@ -435,7 +459,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

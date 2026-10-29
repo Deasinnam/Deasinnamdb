@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v5.1** (versionCode 31) |
+| 최신 버전 | **v5.2** (versionCode 32) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -50,6 +50,7 @@
 - v4.9: 조종 콘솔 제목 한글화(EMERGENCY만 영문), 안내·연락처 요약·하단 메시지 줄 제거(결과는 토스트), MUTE를 + 옆으로(데스크톱 높이 약 317px). 관제탑 속도 주의(`atcSpeedTick`, 50/100/120/150/180/200km/h, 빨간 `#atcWarn`)
 - v5.0: 콕핏 스킨 전체를 조종 콘솔의 무광 올리브·연두(#a7e29a/#a8f08f)·앰버(#f3bc65)로 재색칠, 스코프·속도계 정보 녹색. 시각화 10종(`visMode` 0~9, `drawVisFx`, 선택 `#visSel`)
 - v5.1: 속도계 창 크기 조절 버튼(`#gRz`, `#wGps.rz`일 때만 손잡이 표시·동작, 15초 미조작 시 자동 해제)
+- v5.2: 설정 → 창 순서(`#secOrder`, 저장 키 `winOrder_K/G/N`). 사용자 순서가 있으면 `.app.CO`로 grid-template-areas 대신 `order` 흐름 배치
 
 ## 4. 확인 대기 중
 
