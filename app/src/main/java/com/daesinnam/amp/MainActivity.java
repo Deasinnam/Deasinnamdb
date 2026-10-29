@@ -52,6 +52,11 @@ import android.webkit.WebViewClient;
 import androidx.media3.common.Player;
 import androidx.media3.session.SessionToken;
 import androidx.webkit.WebViewAssetLoader;
+import androidx.window.java.layout.WindowInfoTrackerCallbackAdapter;
+import androidx.window.layout.DisplayFeature;
+import androidx.window.layout.FoldingFeature;
+import androidx.window.layout.WindowInfoTracker;
+import androidx.window.layout.WindowLayoutInfo;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -94,6 +99,9 @@ public class MainActivity extends Activity {
     private GpsTracker gps;
     // D1 DASHCAM: 블랙박스 와이파이(앱 전용) 연결
     private CamLink cam;
+    // 갤럭시 Z 폴드: 접힘 상태(플렉스 모드)와 접히는 선 위치를 화면에 알림
+    private WindowInfoTrackerCallbackAdapter foldTracker;
+    private final androidx.core.util.Consumer<WindowLayoutInfo> foldListener = this::onFoldLayout;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
 
@@ -511,13 +519,43 @@ public class MainActivity extends Activity {
         super.onStart();
         if (gpsWanted) gps.start();
         if (attWanted) gps.attStart();
+        try {
+            if (foldTracker == null) foldTracker = new WindowInfoTrackerCallbackAdapter(WindowInfoTracker.getOrCreate(this));
+            foldTracker.addWindowLayoutInfoListener(this, main::post, foldListener);
+        } catch (Throwable ignored) {}
     }
 
     @Override
     protected void onStop() {
         gps.stop(); // 화면에 안 보일 때는 GPS를 꺼서 배터리를 아낍니다.
         gps.attStop();
+        try { if (foldTracker != null) foldTracker.removeWindowLayoutInfoListener(foldListener); } catch (Throwable ignored) {}
         super.onStop();
+    }
+
+    /** 접히는 선 정보 → 화면(CSS px, 웹 화면 기준 좌표). 반쯤 접힘 + 가로 선이면 탁상(플렉스) 모드 */
+    private void onFoldLayout(WindowLayoutInfo info) {
+        if (web == null) return;
+        JSONObject o = new JSONObject();
+        try {
+            o.put("half", false);
+            float d = getResources().getDisplayMetrics().density;
+            int[] loc = new int[2];
+            web.getLocationInWindow(loc);
+            for (DisplayFeature f : info.getDisplayFeatures()) {
+                if (!(f instanceof FoldingFeature)) continue;
+                FoldingFeature ff = (FoldingFeature) f;
+                Rect b = ff.getBounds();
+                o.put("half", ff.getState() == FoldingFeature.State.HALF_OPENED);
+                o.put("horiz", ff.getOrientation() == FoldingFeature.Orientation.HORIZONTAL);
+                o.put("top", Math.round((b.top - loc[1]) / d));
+                o.put("bottom", Math.round((b.bottom - loc[1]) / d));
+                o.put("left", Math.round((b.left - loc[0]) / d));
+                o.put("right", Math.round((b.right - loc[0]) / d));
+                break;
+            }
+        } catch (Exception ignored) {}
+        js("window.__foldPosture && window.__foldPosture(" + o + ")");
     }
 
     private void startGps() {
@@ -615,7 +653,7 @@ public class MainActivity extends Activity {
     // ---------------------------------------------------------------- 외부 앱
 
     private static boolean notifSupported() {
-        return "full".equals(BuildConfig.FLAVOR);
+        return "full".equals(BuildConfig.FLAVOR_edition);
     }
 
     private boolean hasNotifAccess() {
@@ -926,7 +964,8 @@ public class MainActivity extends Activity {
                 o.put("artV", artVersion);
                 o.put("notifSupported", notifSupported());
                 o.put("spotifyRx", SpotifyInfo.lastUpdate > 0);
-                o.put("edition", BuildConfig.FLAVOR);
+                o.put("edition", BuildConfig.FLAVOR_edition);
+                o.put("device", BuildConfig.FLAVOR_device);
                 o.put("version", BuildConfig.VERSION_NAME);
                 MediaController c = ctrl;
                 o.put("seekable", c != null);
@@ -1384,6 +1423,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void speak(final String text) {
             main.post(() -> MainActivity.this.speak(text));
+        }
+
+        /** "phone" 또는 "fold"(갤럭시 Z 폴드 판) */
+        @JavascriptInterface
+        public String deviceProfile() {
+            return BuildConfig.FLAVOR_device;
         }
 
         // ---------- D1 DASHCAM

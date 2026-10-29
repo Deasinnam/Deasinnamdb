@@ -580,6 +580,28 @@ input[type=range]:disabled{opacity:.35}
 :root[data-skin="carnival2"] #wGps.sized .gps{grid-template-rows:auto minmax(0,1fr);min-height:0;overflow:hidden}
 :root[data-skin="carnival2"] #wGps.sized .gauge{min-height:0}
 :root[data-skin="carnival2"] #wGps.sized .dial{min-height:60px}
+
+/* ---------- 갤럭시 Z 폴드 화면 맞춤 ---------- */
+:root[data-fold] .top{flex-wrap:nowrap;gap:8px;padding-block:8px 4px;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+:root[data-fold] .brand{flex:none;margin-right:0;padding:6px 10px!important;width:auto!important}
+:root[data-fold] .brand .word .tag{display:none}
+:root[data-fold] .brand .mark{width:30px;height:auto}
+:root[data-fold] .tools{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:6px 8px;gap:6px}
+:root[data-fold] .tools::-webkit-scrollbar{display:none}
+:root[data-fold] .tools>*{flex:none}
+:root[data-fold][data-skin="carnival2"] .brand{padding:0!important}
+:root[data-fold][data-skin="carnival2"] .brand .af-img{width:auto!important;height:52px;max-width:none}
+:root[data-fold="cover"][data-skin="carnival2"] .brand .af-img,:root[data-fold="flex"][data-skin="carnival2"] .brand .af-img{height:42px}
+:root[data-fold="coverL"][data-skin="carnival2"] .brand .af-img{height:36px}
+:root[data-fold] .app{gap:10px;padding-block:4px 16px;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+:root[data-fold="cover"] .bar,:root[data-fold="coverL"] .bar{height:28px}
+/* 왼쪽 속도계 고정 + 오른쪽 창들 */
+.app.FS{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:none!important;grid-auto-flow:row dense;align-items:start}
+:root[data-fold="coverL"] .app.FS{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)!important}
+.app.FS>.win{grid-area:auto!important;grid-column:2!important}
+.app.FS>#wGps{grid-column:1!important;grid-row:1/span 40!important;position:sticky;top:8px}
+:root:not([data-skin="carnival2"]) .app.FS>#wGps{position:static}
+:root[data-fold="flex"] #wGps{position:sticky;top:6px;z-index:5}
 /* D1 DASHCAM: 블랙박스 실시간 화면 */
 #wCam{grid-area:cam;display:none}
 .app.G #wCam{display:flex}
@@ -1356,6 +1378,10 @@ html.driving body{overflow:hidden}
       <ol class="ordlist" id="ordList"></ol>
       <div class="row"><span><b>기본 배치로 되돌리기</b><small>원래 정해진 배치로 돌아가요.</small></span><button class="pill" id="ordReset">되돌리기</button></div>
     </section>
+    <section id="secFold">
+      <h3>폴드 화면 맞춤</h3>
+      <div class="row"><span><b>갤럭시 Z 폴드 배치</b><small id="foldNote">접었을 때(외부 화면)와 펼쳤을 때(내부 화면) 비율에 맞춰 창 배치를 바꿔요. 자동은 폴드 판에서 켜져요.</small></span><select class="sel" id="sFold" aria-label="폴드 화면 맞춤"><option value="auto">자동</option><option value="on">켜기</option><option value="off">끄기</option></select></div>
+    </section>
     <section id="secSos">
       <h3>SOS 긴급 연락처</h3>
       <div class="row"><span><b>연락처에서 고르기</b><small>콕핏 스킨의 SOS 버튼을 누르면 이 번호로 바로 전화를 걸어요. 번호는 이 기기에만 저장돼요.</small></span><button class="pill" id="sSosPick">고르기</button></div>
@@ -1776,9 +1802,32 @@ function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documen
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
 $('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if(k==='carnival2'&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
-function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',skin==='carnival2');if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
+/* ---------- 갤럭시 Z 폴드 화면 맞춤 ----------
+ * cover: 접었을 때 외부 화면 세로(약 21:9) — 머리글을 한 줄로 줄이고 속도계가 첫 화면을 채움
+ * coverL: 외부 화면 가로 — 왼쪽 속도계 고정, 오른쪽에 나머지 창
+ * inner: 펼쳤을 때 내부 화면(거의 정사각형) — 왼쪽 속도계 고정 + 오른쪽 창 / 일반 스킨은 2열
+ * flex: 반쯤 접어 세운 탁상 모드 — 접히는 선 위쪽에 속도계, 아래쪽에 나머지 */
+const DEVICE=(()=>{try{return NB&&NB.deviceProfile?NB.deviceProfile():'phone'}catch(e){return 'phone'}})();
+let foldPost=null,foldH=0;
+function foldOn(){const m=store.get('foldUi','auto');return m==='on'||(m==='auto'&&DEVICE==='fold')}
+function foldKind(){if(!foldOn())return '';const w=window.innerWidth,h=window.innerHeight,r=w/h;
+  if(foldPost&&foldPost.half&&foldPost.horiz&&foldPost.top>160&&foldPost.top<h-120)return 'flex';
+  if(r<.62)return 'cover';if(r>1.65&&h<560)return 'coverL';if(r>=.72&&r<=1.45&&Math.min(w,h)>=560)return 'inner';return ''}
+const FOLD_NAME={cover:'외부 화면(세로)',coverL:'외부 화면(가로)',inner:'내부 화면',flex:'탁상 모드(반쯤 접힘)'};
+window.__foldPosture=p=>{foldPost=p||null;layout()};
+function layout(){const w=window.innerWidth,fk=foldKind(),root=document.documentElement;
+  if(fk)root.dataset.fold=fk;else delete root.dataset.fold;
+  let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;
+  if(layoutMode==='auto'&&(fk==='inner'||fk==='coverL'))n=2;
+  if(fk==='cover'||fk==='flex')n=1;
+  appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',skin==='carnival2');
+  const split=isCar()&&(fk==='inner'||fk==='coverL');appEl.classList.toggle('FS',split);
+  const th=(document.querySelector('.top')||{}).offsetHeight||0,ih=window.innerHeight;
+  foldH=!fk||skin!=='carnival2'?0:fk==='flex'?Math.max(200,foldPost.top-th-14):fk==='cover'?Math.max(380,ih-th-14):Math.max(280,ih-th-22);
+  if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}
+  if(typeof applySizes==='function')try{applySizes()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
-window.addEventListener('resize',layout);
+window.addEventListener('resize',layout);setTimeout(layout,400);
 
 /* ---------- local audio graph ---------- */
 const audio=new Audio(); audio.preload='metadata';
@@ -2898,7 +2947,9 @@ $('#ordList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const 
   if(j<0||j>=o.length)return;[o[i],o[j]]=[o[j],o[i]];store.set('winOrder_'+winKind(),o);applyWinOrder();renderWinOrder();
   const nb=$('#ordList').querySelector(`li[data-id="${id}"] button[data-d="${b.dataset.d}"]`);if(nb&&!nb.disabled)nb.focus()};
 $('#ordReset').onclick=()=>{store.set('winOrder_'+winKind(),null);applyWinOrder();renderWinOrder();toast('창 배치를 기본으로 되돌렸어요.')};
-function openSettings(){renderWinOrder();$('#settings').hidden=false;syncSettings();clearInterval(setTimer);setTimer=setInterval(syncSettings,1000)}
+function foldUi(){$('#sFold').value=store.get('foldUi','auto');const fk=foldKind();$('#foldNote').textContent='접었을 때(외부 화면)와 펼쳤을 때(내부 화면) 비율에 맞춰 창 배치를 바꿔요. 자동은 폴드 판에서 켜져요. 지금: '+(fk?FOLD_NAME[fk]+' 배치':foldOn()?'일반 배치(맞는 화면 비율 아님)':'꺼짐')}
+$('#sFold').onchange=e=>{store.set('foldUi',e.target.value);layout();foldUi()};
+function openSettings(){renderWinOrder();foldUi();$('#settings').hidden=false;syncSettings();clearInterval(setTimer);setTimer=setInterval(syncSettings,1000)}
 function closeSettings(){$('#settings').hidden=true;clearInterval(setTimer)}
 let setTimer=0;
 function syncSettings(){
@@ -2930,7 +2981,7 @@ $('#sDriveNow').onclick=()=>{closeSettings();drive(true);driveSuppress=false};
 
 /* ---------- 창 높이 조절 ---------- */
 let winH=store.get('winH',{});
-function applySizes(){const lock=skin==='carnival2';document.querySelectorAll('.win').forEach(w=>{const h=lock&&w.id!=='wGps'?0:winH[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h)})}
+function applySizes(){const lock=skin==='carnival2';document.querySelectorAll('.win').forEach(w=>{const h=w.id==='wGps'?(winH.wGps||foldH):lock?0:winH[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h)})}
 document.querySelectorAll('.win').forEach(w=>{
   const gr=document.createElement('div');gr.className='grip';gr.title='끌어서 창 높이 조절 · 두 번 누르면 원래 높이';gr.setAttribute('role','separator');gr.setAttribute('aria-orientation','horizontal');w.appendChild(gr);
   let y0=0,h0=0,pid=null;
