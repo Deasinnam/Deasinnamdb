@@ -111,8 +111,8 @@ async function main() {
     assert.equal(await page.locator('#gStyle').inputValue(), 'cockpit');
     assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
     assert.equal(await page.locator('.brand .logo-img').isVisible(), false, 'Cockpit drops the KIA logo');
-    assert.equal(await page.locator('.brand .af').isVisible(), true);
-    assert.match(await page.locator('.brand .af').textContent(), /대신남 원 에어포스/);
+    assert.equal(await page.locator('.brand .af-img').isVisible(), true, 'Cockpit shows the Daesinnam One Air Force logo');
+    assert.ok(await page.locator('.brand .af-img').evaluate(i => i.complete && i.naturalWidth > 0), 'Logo image decodes');
     // 콕핏 스킨: 속도계 창만 높이 조절
     assert.equal(await page.locator('#wGps > .grip').isVisible(), true);
     for (const id of ['#wCtl','#wAtc','#wMain','#wEq','#wPl','#wVis']) assert.equal(await page.locator(id+' > .grip').isVisible(), false, id+' has no resize grip');

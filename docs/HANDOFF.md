@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v4.7** (versionCode 27) |
+| 최신 버전 | **v4.8** (versionCode 28) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -46,6 +46,7 @@
 - v4.5: 콕핏 스킨 상단을 KIA 로고 대신 "대신남 원 에어포스" 휘장(`.brand .af`, 인라인 SVG)으로, 콕핏 스킨에서는 `#wGps`만 높이 조절(`applySizes`가 나머지 저장 높이를 무시)
 - v4.6: PFD에 나침반·기울기 센서(`GpsTracker.attStart/attStop/attitude` → 회전 행렬, JS `attPoll`, 기준 자세 `attRef`, "수평 맞춤"), 구름(진행 방향 앞에서 다가옴, 속도 비례, 선회 시 옆으로), 하늘 주간/야간/자동(`gSky`, 달·별·어두운 구름). 진행 방향은 센서 우선. 실기기에서 거치 방향별 기울기 부호·나침반 방향 확인 필요
 - v4.7: COCKPIT CONTROL을 사용자가 준 `Daesinnam_Cockpit_Claude_Package`(cockpit.html)로 교체. CSS는 `.dsn` 범위·컨테이너 쿼리로 이식, id는 `dk` 접두사, 패키지의 `CockpitNative` 계약은 기존 `AndroidBridge`(cockpitState에 volume·wifiSupported 추가, setSystemVolume, setWifi, setBluetooth, sosCall)로 어댑터 연결. 내장 한글 글꼴(3.6MB)은 넣지 않고 앱의 Noto Sans KR 사용. SOS는 패키지의 "전화 화면 열기" 대신 이전 요청대로 바로 전화. `window.Cockpit`·`cockpit:command` 이벤트 제공
+- v4.8: 조종 콘솔 압축(레버·덮개·노브 `zoom:.66`, 데스크톱 높이 약 395px), LIFT TO ARM 덮개 노란 경고 커버, 폰에서 EMERGENCY 가운데 줄. 콕핏 스킨 상단 로고를 사용자 제공 이미지(`.brand .af-img`, WebP 1200px 인라인)로 교체
 
 ## 4. 확인 대기 중
 
