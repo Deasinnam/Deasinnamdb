@@ -19,29 +19,3 @@
 #wGps.sized #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
 #wGps.sized #pfdHost .pfd-canvas-wrap{flex:1;min-height:90px;height:auto!important;aspect-ratio:auto!important}
 :root[data-skin="carnival2"] #wGps.sized>.body{display:flex;flex-direction:column;overflow:hidden}
-
-/* 갤럭시 Z 폴드 화면 맞춤: 패키지는 화면 전체 너비로 크기를 정하므로, 반쪽 창·낮은 화면에 맞춰 덮어씀 */
-:root[data-fold] #pfdHost .dsn-pfd{padding:8px}
-:root[data-fold] #pfdHost .pfd-header{gap:10px;padding-left:8px}
-:root[data-fold] #pfdHost .pfd-status-code{display:none}
-:root[data-fold="cover"] #pfdHost .pfd-metrics,:root[data-fold="flex"] #pfdHost .pfd-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-:root[data-fold="cover"] #pfdHost .pfd-metric,:root[data-fold="flex"] #pfdHost .pfd-metric{padding:7px 8px}
-:root[data-fold="cover"] #pfdHost .pfd-metric-value,:root[data-fold="flex"] #pfdHost .pfd-metric-value{font-size:20px}
-:root[data-fold="cover"] #pfdHost .pfd-metric-label{font-size:10.5px}
-:root[data-fold="inner"] #pfdHost .pfd-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-:root[data-fold="inner"] #pfdHost .pfd-metric{padding:8px 10px}
-:root[data-fold="inner"] #pfdHost .pfd-metric-value{font-size:24px}
-:root[data-fold="inner"] #pfdHost .pfd-tools,:root[data-fold="cover"] #pfdHost .pfd-tools{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-:root[data-fold="inner"] #pfdHost .pfd-tool,:root[data-fold="cover"] #pfdHost .pfd-tool{font-size:12px;gap:6px;min-height:42px}
-/* 외부 화면 가로·탁상 모드: 높이가 낮으므로 숫자·버튼을 한 줄씩 */
-:root[data-fold="coverL"] #pfdHost .dsn-pfd,:root[data-fold="flex"] #pfdHost .dsn-pfd{padding:6px}
-:root[data-fold="coverL"] #pfdHost .pfd-metrics,:root[data-fold="flex"] #pfdHost .pfd-metrics{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
-:root[data-fold="coverL"] #pfdHost .pfd-metric,:root[data-fold="flex"] #pfdHost .pfd-metric{padding:4px 6px}
-:root[data-fold="coverL"] #pfdHost .pfd-metric-label,:root[data-fold="flex"] #pfdHost .pfd-metric-label{font-size:9.5px}
-:root[data-fold="coverL"] #pfdHost .pfd-metric-value,:root[data-fold="flex"] #pfdHost .pfd-metric-value{font-size:16px}
-:root[data-fold="coverL"] #pfdHost .pfd-flight-meta,:root[data-fold="flex"] #pfdHost .pfd-flight-meta{height:24px;font-size:10px}
-:root[data-fold="coverL"] #pfdHost .pfd-tools,:root[data-fold="flex"] #pfdHost .pfd-tools{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
-:root[data-fold="coverL"] #pfdHost .pfd-tool,:root[data-fold="flex"] #pfdHost .pfd-tool{min-height:30px;font-size:10px;gap:0;padding:0 4px}
-:root[data-fold="coverL"] #pfdHost button.pfd-tool>span,:root[data-fold="flex"] #pfdHost button.pfd-tool>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-:root[data-fold="coverL"] #pfdHost .pfd-tool svg,:root[data-fold="flex"] #pfdHost .pfd-tool svg{width:16px;height:16px}
-:root[data-fold="coverL"] #pfdHost .pfd-status-line,:root[data-fold="flex"] #pfdHost .pfd-status-line{display:none}

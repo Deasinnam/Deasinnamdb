@@ -415,51 +415,6 @@ async function main() {
     await pa.locator('#setClose').click();
     assert.ok(await ty('#wGps') < await ty('#wAtc'), 'Reset restores the default layout');
     await pa.close();
-    // 갤럭시 Z 폴드 판: 외부 화면(세로·가로), 내부 화면, 탁상 모드, 설정으로 끄기, 일반 판은 그대로
-    for (const prof of ['fold','phone']) {
-      const fc = await browser.newContext({viewport:{width:384,height:854}});
-      await fc.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
-      const pf = await fc.newPage();
-      pf.on('pageerror', error => errors.push(error.message));
-      await pf.addInitScript(p => {if(!sessionStorage.getItem('pf')){sessionStorage.setItem('pf','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'))}
-        window.AndroidBridge={deviceProfile:()=>p,gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps(){},stopGps(){},keepScreenOn(){}}}, prof);
-      await pf.goto(origin);
-      const fold = () => pf.evaluate(() => document.documentElement.dataset.fold || '');
-      const box = sel => pf.locator(sel).evaluate(el => {const r=el.getBoundingClientRect();return {x:r.left,y:r.top,w:r.width,h:r.height,b:r.bottom}});
-      if (prof === 'phone') {
-        assert.equal(await fold(), '', 'Phone build keeps the normal layout');
-        await pf.setViewportSize({width:832,height:750});
-        assert.equal(await fold(), '');
-        await fc.close(); continue;
-      }
-      assert.equal(await fold(), 'cover');
-      let g = await box('#wGps');
-      assert.ok(g.b <= 854 + 1 && g.h > 600, 'Cover: speedometer fills the first screen ' + JSON.stringify(g));
-      assert.ok((await box('.top')).h < 90, 'Cover: header is one compact row');
-      await pf.setViewportSize({width:832,height:750});
-      await pf.waitForFunction(() => document.documentElement.dataset.fold === 'inner');
-      g = await box('#wGps'); const c = await box('#wCtl');
-      assert.ok(c.x > g.x + g.w - 1 && Math.abs(c.y - g.y) < 4, 'Inner: speedometer left, control panel right');
-      assert.ok(g.b <= 750 + 1, 'Inner: speedometer fits the screen');
-      assert.ok(await pf.evaluate(() => document.getElementById('app').classList.contains('FS')));
-      await pf.setViewportSize({width:854,height:384});
-      await pf.waitForFunction(() => document.documentElement.dataset.fold === 'coverL');
-      g = await box('#wGps'); assert.ok(g.b <= 384 + 1 && g.w > 400, 'Cover landscape: speedometer on the left fits ' + JSON.stringify(g));
-      await pf.setViewportSize({width:832,height:750});
-      await pf.evaluate(() => window.__foldPosture({half:true,horiz:true,top:375,bottom:375,left:0,right:832}));
-      assert.equal(await fold(), 'flex');
-      g = await box('#wGps'); assert.ok(g.b <= 375 + 2, 'Tabletop: speedometer above the hinge ' + JSON.stringify(g));
-      await pf.evaluate(() => window.__foldPosture({half:false,horiz:true,top:375,bottom:375,left:0,right:832}));
-      assert.equal(await fold(), 'inner');
-      await pf.locator('#setBtn').click();
-      assert.match(await pf.locator('#foldNote').textContent(), /지금: 내부 화면/);
-      await pf.locator('#sFold').selectOption('off');
-      assert.equal(await fold(), '', 'Setting can turn fold layout off');
-      await pf.locator('#setClose').click();
-      await pf.reload();
-      assert.equal(await fold(), '', 'Off survives reload');
-      await fc.close();
-    }
     // D1 DASHCAM: 자동차 스킨에만 보이고, 연결 → 실시간 화면(/cam/frame.jpg) → 카메라 찾기 결과, 인터넷은 모바일 데이터 표시
     const pc = await context.newPage();
     pc.on('pageerror', error => errors.push(error.message));
@@ -631,7 +586,7 @@ async function main() {
     await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
     await p6.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: Galaxy Z Fold cover/inner/tabletop layouts · D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

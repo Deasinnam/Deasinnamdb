@@ -64,7 +64,7 @@ jobs:
           AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleLitePhoneRelease assembleFullPhoneRelease assembleLiteFoldRelease assembleFullFoldRelease
+          ./gradlew --no-daemon assembleLiteRelease assembleFullRelease
           rm -f "$AMP_KEYSTORE_FILE"
 
       - uses: actions/upload-artifact@v5
@@ -77,12 +77,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/litePhone/release/*.apk DaesinnamAmp.apk
-          cp app/build/outputs/apk/fullPhone/release/*.apk DaesinnamAmp-full.apk
-          cp app/build/outputs/apk/liteFold/release/*.apk DaesinnamAmp-GalaxyZFold8Ultra.apk
-          cp app/build/outputs/apk/fullFold/release/*.apk DaesinnamAmp-GalaxyZFold8Ultra-full.apk
+          cp app/build/outputs/apk/lite/release/app-lite-release.apk DaesinnamAmp.apk
+          cp app/build/outputs/apk/full/release/app-full-release.apk DaesinnamAmp-full.apk
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest DaesinnamAmp.apk DaesinnamAmp-full.apk DaesinnamAmp-GalaxyZFold8Ultra.apk DaesinnamAmp-GalaxyZFold8Ultra-full.apk \
+          gh release create latest DaesinnamAmp.apk DaesinnamAmp-full.apk \
             --target "$GITHUB_SHA" \
             --title "Daesinnam Amp (최신 빌드)" \
-            --notes "DaesinnamAmp.apk: 일반 설치용(권장). DaesinnamAmp-full.apk: 모든 앱의 곡 정보까지 지원하지만 Play 프로텍트가 설치를 막을 수 있습니다. DaesinnamAmp-GalaxyZFold8Ultra(-full).apk: 갤럭시 Z 폴드7·폴드8 울트라용(외부·내부 화면 맞춤 배치). 빌드 번호 ${{ github.run_number }}"
+            --notes "DaesinnamAmp.apk: 일반 설치용(권장). DaesinnamAmp-full.apk: 모든 앱의 곡 정보까지 지원하지만 Play 프로텍트가 설치를 막을 수 있습니다. 빌드 번호 ${{ github.run_number }}"

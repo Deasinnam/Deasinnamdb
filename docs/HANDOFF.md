@@ -8,7 +8,7 @@
 |---|---|
 | 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
 | 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v6.1** (versionCode 41) |
+| 최신 버전 | **v6.2** (versionCode 42) |
 | APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
 | APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
 | 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
@@ -60,7 +60,8 @@
 - v5.9: 배포 준비 — KIA 로고 이미지 삭제, 스킨 표시 이름 "대신남 자동차 모드"/"대신남 자동차 모드 · 콕핏"(내부 키 carnival/carnival2는 저장값 호환 위해 유지), 제목 Daesinnam Car Mode. 설정에 오픈소스 라이선스(`#secOss`, 전문 4종). OSM 출처를 "© OpenStreetMap contributors"(링크)로
 
 - v6.0: **D1 DASHCAM** 창(`#wCam`, 자동차 스킨 공통, 콕핏은 관제탑 아래·그 외는 속도계 아래, 창 순서 이름 "블랙박스"). 네이티브 `CamLink.java`: 카메라 와이파이에 앱 전용 연결(`WifiNetworkSpecifier`, 인터넷 없음 요청, 이미 연결된 인터넷 없는 와이파이 우선 재사용), 카메라 소켓만 `Network.bindSocket()`/`getSocketFactory()` — `bindProcessToNetwork`는 쓰지 않아 인터넷은 모바일 데이터 유지. JHCMD 실시간(UDP 20000 명령, 10900 수신, 1초 하트비트, JPEG 재조립) → `/cam/frame.jpg`(shouldInterceptRequest). "카메라 찾기"는 JHCMD·RTSP 554/8554·HTTP 80/8080·TCP 포트 몇 개를 확인해 결과 표시. 브리지: camState/camConnect/camDisconnect/camProbe/camLive/openWifiSettings. 권한: ACCESS/CHANGE_NETWORK_STATE, NEARBY_WIFI_DEVICES(neverForLocation, 13+), 10~12는 정확한 위치. 기본 SSID 패턴 `Car-Cam*`, 설정에서 이름·비밀번호 저장
-- v6.1: **기종별 판** — flavor 차원 `device`(phone/fold) 추가 → APK 4개(DaesinnamAmp, -full, -GalaxyZFold8Ultra, -GalaxyZFold8Ultra-full). 패키지 이름·서명 같아서 서로 덮어 설치됨. `BuildConfig.FLAVOR`는 두 차원이라 `FLAVOR_edition`/`FLAVOR_device`로 바꿈. 브리지 `deviceProfile()`. 화면: `data-fold` = cover(외부 세로, 비율<0.62: 머리글 한 줄·속도계가 첫 화면 채움), coverL(외부 가로), inner(내부, 0.72~1.45: 자동차 스킨은 `.app.FS` 왼쪽 속도계 고정+오른쪽 창, 그 외 2열), flex(androidx.window FoldingFeature 반쯤 접힘+가로 선 → 선 위에 속도계). 콕핏 스킨만 속도계 높이를 화면에 맞춤(`foldH`), PFD 패키지 크기는 pfd-amp.css에서 덮어씀. 설정 "폴드 화면 맞춤"(자동/켜기/끄기, `foldUi`). 버그 수정: 크기 조절한 속도계에서 콕핏이 아닌 스킨에도 PFD가 보이던 문제
+
+- v6.1(폴드7·폴드8 울트라 전용 판, flavor `device`)은 사용자가 별로라고 해서 v6.2에서 통째로 되돌림. **새 기능은 v6.0 내용을 기준으로 얹을 것**(기종별 판 다시 만들지 말 것). v6.2에서 남긴 것: 크기 조절한 속도계에서 콕핏이 아닌 스킨에도 PFD가 보이던 버그 수정(pfd-amp.css), versionCode를 올려 6.1 위에 덮어 설치되게 함
 
 ## 4. 확인 대기 중
 
