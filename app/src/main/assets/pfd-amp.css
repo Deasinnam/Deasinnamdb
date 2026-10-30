@@ -7,6 +7,7 @@
 /* 콕핏 스킨 속도계: 제목줄·접기·크기 조절은 앱 창 것을 씀 */
 #pfdHost{display:none}
 :root[data-skin="carnival2"] #pfdHost{display:block}
+:root[data-skin="tablet"] #pfdHost{display:block}
 :root[data-skin="carnival2"] #wGps .body>.gps,:root[data-skin="carnival2"] #wGps .body>.gctl,:root[data-skin="carnival2"] #wGps .body>.gmsg{display:none!important}
 :root[data-skin="carnival2"] #wGps>.body{padding:6px}
 #pfdHost .pfd-header{display:none}

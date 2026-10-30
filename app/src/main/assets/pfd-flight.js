@@ -29,7 +29,7 @@
   const rwNumFor = hdg => { if (!fin(hdg)) return 33; const n = Math.round(((hdg % 360) + 360) % 360 / 10) % 36; return n === 0 ? 36 : n; };
   const pad2 = n => String(n).padStart(2, '0');
   const recip = n => { const r = (n + 18) % 36; return r === 0 ? 36 : r; };
-  const active = () => H.skin === 'carnival2';
+  const active = () => (H.skin === 'carnival2' || H.skin === 'tablet');
 
   function newDeparture() { F.rwS = -120; F.rwLen = 3200; F.rolled = 0; F.rwNum = rwNumFor(P.display && P.display.headingDeg); }
 
@@ -410,7 +410,7 @@
     try { P.updateTelemetry({ source: 'demo', fixValid: true, speedKmh: v, headingDeg: S.hdg, altitudeM: 32 + F.alt, accuracyM: 3, timestampMs: Date.now() }); } catch (e) {}
   }
   const oFeed = A.feed;
-  A.feed = function () { if (F.sim) { if (H.skin === 'carnival2') simStep(); return; } return oFeed.apply(this, arguments); };
+  A.feed = function () { if (F.sim) { if ((H.skin === 'carnival2' || H.skin === 'tablet')) simStep(); return; } return oFeed.apply(this, arguments); };
   setInterval(() => { if (F.sim && document.hidden === false) simStep(); }, 100);
 
   window.AmpFlight = {

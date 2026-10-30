@@ -1090,6 +1090,16 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** 태블릿 가로모드 밝기 손잡이: 이 앱 창의 화면 밝기(10~100%). 음수면 시스템 밝기로 되돌림 */
+        @JavascriptInterface
+        public void setScreenBrightness(final int pct) {
+            main.post(() -> {
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.screenBrightness = pct < 0 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE : Math.max(10, Math.min(100, pct)) / 100f;
+                getWindow().setAttributes(lp);
+            });
+        }
+
         // ---------- 표준 플레이어 조작 (화면 → 플레이어)
 
         @JavascriptInterface

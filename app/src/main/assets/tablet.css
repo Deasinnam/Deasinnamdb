@@ -1,0 +1,194 @@
+/* 대신남 태블릿 가로모드 — 조종석 콘셉트 스킨 (독립 모듈)
+ * 이 파일과 tablet.js, index.html의 스킨 목록 한 줄만 지우면 완전히 빠집니다. 다른 스킨에는 영향 없음. */
+#tabCk{display:none}
+:root[data-skin="tablet"] body{background:#07090a}
+:root[data-skin="tablet"] .top,:root[data-skin="tablet"] #app{display:none!important}
+:root[data-skin="tablet"] #tabCk{display:grid}
+#tabCk{--g:#4be38a;--g2:#7dffb0;--gd:#1d5c38;--ink:#e6ebe8;--mut:#8d9894;--pan:#14181b;--pan2:#0c0f11;--bez:#1c2125;--edge:#050607;--red:#e5372a;
+  position:fixed;inset:0;z-index:5;grid-template-rows:auto minmax(0,1fr) auto auto auto;gap:0;overflow:hidden;color:var(--ink);
+  font-family:"Barlow Condensed","Rajdhani","Noto Sans KR",sans-serif;letter-spacing:.06em;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(#ffffff06 1px,transparent 1.3px) 0 0/4px 4px,linear-gradient(180deg,#1a1e21,#101315 40%,#0b0d0f);
+  padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);filter:brightness(var(--tk-dim,1))}
+#tabCk *{box-sizing:border-box}
+#tabCk button{font-family:inherit;color:inherit;cursor:pointer}
+/* 나사 */
+#tabCk .sc{position:relative}
+#tabCk .sc::before,#tabCk .sc::after{content:"";position:absolute;width:11px;height:11px;border-radius:50%;top:7px;left:7px;pointer-events:none;
+  background:radial-gradient(circle at 40% 35%,#c9ced3 0 22%,#5e656c 45%,#1b1f22 70%,transparent 74%);box-shadow:0 1px 0 #ffffff12}
+#tabCk .sc::after{left:auto;right:7px}
+/* 상단 */
+.tk-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;height:52px;padding:0 18px 0 46px;border-bottom:1px solid #000;
+  background:linear-gradient(180deg,#22272b,#15191c);box-shadow:inset 0 -1px 0 #ffffff0d}
+.tk-brand{font-size:22px;font-weight:600;letter-spacing:.2em;color:#c9cfcc;white-space:nowrap}
+.tk-stat{display:flex;gap:6px;padding:6px 14px;border:1px solid #000;border-radius:6px;background:#0a0c0d;box-shadow:inset 0 1px 4px #000}
+.tk-stat span{display:flex;align-items:center;gap:10px;padding:0 14px;font-size:15px;color:var(--mut);letter-spacing:.14em}
+.tk-stat i{width:22px;height:9px;border-radius:2px;background:#2a3330}
+.tk-stat .on{color:var(--ink)}.tk-stat .on i{background:var(--g);box-shadow:0 0 8px var(--g)}
+.tk-stat .warn i{background:#f3bc65;box-shadow:0 0 8px #f3bc65}
+.tk-right{justify-self:end;display:flex;align-items:center;gap:12px}
+.tk-time{font-family:"Share Tech Mono",monospace;font-size:22px;color:var(--ink);letter-spacing:.04em}
+.tk-time small{font-family:"Barlow Condensed",sans-serif;font-size:13px;color:var(--mut);margin-left:8px;letter-spacing:.14em}
+.tk-skin{height:30px;max-width:170px;border:1px solid #000;border-radius:4px;background:#0a0c0d;color:#c9cfcc;font:600 13px "Noto Sans KR",sans-serif;padding:0 6px}
+/* 본 화면 */
+.tk-main{display:grid;grid-template-columns:72px minmax(0,1.02fr) minmax(0,1.38fr) 72px minmax(0,1fr);gap:10px;padding:10px 12px;min-height:0}
+.tk-side{display:flex;flex-direction:column;gap:10px;justify-content:center}
+.tk-key{flex:1;max-height:112px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px solid #000;border-radius:8px;
+  background:linear-gradient(180deg,#2a2f33,#16191c);box-shadow:inset 0 1px 0 #ffffff1a,inset 0 -3px 0 #0a0c0d,0 3px 6px #000a;font-size:15px;font-weight:600;color:#d7dcda;letter-spacing:.08em}
+.tk-key::before{content:"";width:22px;height:6px;border-radius:3px;background:#2b3431}
+.tk-key.on::before{background:var(--g);box-shadow:0 0 8px var(--g)}
+.tk-key:active{transform:translateY(1px)}
+.tk-key small{font-size:18px;line-height:0}
+.tk-panel{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;padding:12px;border:1px solid #000;border-radius:10px;
+  background:linear-gradient(180deg,#1d2225,#121518);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #2a2f33,0 8px 20px #000c}
+.tk-glass{position:relative;flex:1;min-height:0;border-radius:6px;border:1px solid #000;overflow:hidden;background:var(--pan2);box-shadow:inset 0 0 0 1px #2a3130,inset 0 8px 20px #000}
+.tk-h{display:flex;align-items:center;justify-content:space-between;margin:2px 4px 8px;font-size:19px;font-weight:600;letter-spacing:.16em;color:#dfe4e1}
+.tk-h em{font-style:normal;font-size:13px;color:var(--g);letter-spacing:.12em}
+/* 지도 */
+#tkMap{position:absolute;inset:0;background:linear-gradient(#ffffff08 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,#ffffff08 1px,transparent 1px) 0 0/40px 40px,#0b1013}
+#tkMap .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) contrast(.95) saturate(.55)}
+#tkMap .leaflet-control-attribution{background:#000a;color:#8d9894;font-size:9px}
+#tkMap .leaflet-control-attribution a{color:#a9b4b0}
+.tk-me{width:44px;height:44px;margin:-22px 0 0 -22px}
+.tk-me svg{width:44px;height:44px;filter:drop-shadow(0 0 6px #4be38a)}
+.tk-card{position:absolute;z-index:500;border:1px solid #000;border-radius:8px;background:#0a0d0fe6;box-shadow:0 4px 12px #000a;padding:10px 14px}
+.tk-c1{left:10px;top:10px;display:flex;align-items:center;gap:12px}
+.tk-c1 .ar{width:42px;height:42px}
+.tk-c1 b{display:block;font-size:30px;line-height:1;font-weight:600;color:#fff}
+.tk-c1 span{display:block;font-size:15px;color:#c9cfcc;margin-top:4px;font-family:"Noto Sans KR",sans-serif;letter-spacing:0}
+.tk-c2{left:10px;bottom:10px}
+.tk-c2 b{font-size:24px;font-weight:600;color:#fff;margin-right:14px}
+.tk-c2 span{display:block;font-size:14px;color:#a9b4b0;margin-top:2px}
+.tk-c3{right:10px;bottom:10px;width:46px;height:46px;padding:0;display:grid;place-items:center;font-size:20px;color:#fff}
+.tk-north{position:absolute;z-index:500;right:10px;top:10px;width:44px;height:44px;border-radius:50%;border:1px solid #000;background:#0a0d0fe6;display:grid;place-items:center;font-size:12px;color:#fff}
+.tk-north svg{width:22px;height:22px}
+.tk-follow{position:absolute;z-index:500;right:10px;top:62px;font-size:12px;padding:6px 10px}
+/* 목록·시스템(왼쪽 패널 다른 탭) */
+.tk-list{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;padding:6px;margin:0;list-style:none}
+.tk-list li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:46px;padding:0 10px;border-radius:5px;color:#c9cfcc;font-family:"Noto Sans KR",sans-serif;font-size:14px;letter-spacing:0;cursor:pointer}
+.tk-list li:nth-child(odd){background:#ffffff06}
+.tk-list li.cur{color:var(--g2);background:#4be38a14}
+.tk-list li .n{font-family:"Share Tech Mono",monospace;color:var(--mut)}
+.tk-list li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-list .empty{display:block;text-align:center;padding:30px 10px;cursor:default;color:var(--mut);line-height:1.7}
+.tk-sys{position:absolute;inset:0;overflow:auto;padding:10px 14px;font-family:"Noto Sans KR",sans-serif;letter-spacing:0}
+.tk-sys .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;border-bottom:1px solid #ffffff0d;font-size:14px}
+.tk-sys .row b{display:block;font-size:15px;color:#e6ebe8}.tk-sys .row small{display:block;color:var(--mut);font-size:12px}
+.tk-btn{height:36px;padding:0 14px;border:1px solid #000;border-radius:5px;background:linear-gradient(180deg,#2e3438,#191d20);box-shadow:inset 0 1px 0 #ffffff1a;font:600 14px "Noto Sans KR",sans-serif;letter-spacing:0;color:#e6ebe8;white-space:nowrap}
+.tk-btn.on{color:#06140c;background:linear-gradient(180deg,#8dffbc,#4be38a 55%,#279a58)}
+/* PFD */
+.tk-pfd .tk-glass{background:#071019}
+#tkPfd{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* 오디오 */
+.tk-audio .tk-glass{display:flex;flex-direction:column;align-items:stretch;justify-content:space-evenly;padding:12px 16px 14px;gap:6px;background:linear-gradient(180deg,#0b0e10,#080a0b)}
+.tk-src{text-align:center;font-size:16px;letter-spacing:.2em;color:#c9cfcc}
+#tkWave{width:100%;flex:1 1 60px;min-height:44px;max-height:150px}
+.tk-cov{flex:0 1 auto;align-self:center;height:min(30vh,100%);max-height:320px;min-height:0;aspect-ratio:1;border-radius:6px;border:1px solid #000;background:#0f1416 center/cover no-repeat;box-shadow:0 6px 16px #000a}
+.tk-cov.empty{background:#0f1416 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%234be38a' fill-opacity='.25' d='M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9z'/%3E%3C/svg%3E") center/40% no-repeat}
+@media (max-height:860px){.tk-cov{display:none}}
+.tk-tt{text-align:center;font-size:clamp(22px,2.6vw,34px);font-weight:600;letter-spacing:.06em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"Barlow Condensed","Noto Sans KR",sans-serif}
+.tk-ar{text-align:center;font-size:clamp(14px,1.4vw,18px);color:#c9cfcc;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"Noto Sans KR",sans-serif;letter-spacing:.02em}
+.tk-seek{position:relative;height:28px;margin-top:6px;touch-action:none;cursor:pointer}
+.tk-seek::before{content:"";position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;background:#2b3330}
+.tk-seek i{position:absolute;left:0;top:12px;height:4px;border-radius:2px;background:var(--g);box-shadow:0 0 6px var(--g)}
+.tk-seek b{position:absolute;top:6px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #0008}
+.tk-times{display:flex;justify-content:space-between;font-family:"Share Tech Mono",monospace;font-size:15px;color:#c9cfcc}
+.tk-tr{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:12px;margin-top:6px}
+.tk-tr button{height:clamp(48px,7vh,66px);border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#2a3034,#15191c);box-shadow:inset 0 1px 0 #ffffff1a,inset 0 -3px 0 #0a0c0d,0 3px 6px #000a;display:grid;place-items:center}
+.tk-tr svg{width:28px;height:28px;fill:var(--g)}.tk-tr .pp svg{fill:#fff;width:32px;height:32px}
+/* 출발 전 점검 */
+.tk-check{display:flex;align-items:center;gap:clamp(14px,3vw,46px);margin:0 12px;padding:0 26px;height:50px;border:1px solid #000;border-radius:8px;background:#0a0c0d;box-shadow:inset 0 1px 4px #000,0 0 0 1px #2a2f33}
+.tk-check>b{font-size:20px;font-weight:600;letter-spacing:.14em;color:#e6ebe8;margin-right:auto;white-space:nowrap}
+.tk-check span{display:flex;align-items:center;gap:10px;font-size:17px;letter-spacing:.12em;color:var(--mut);white-space:nowrap}
+.tk-check span i{width:22px;height:22px;border-radius:3px;border:1px solid #2b3330;background:#111;display:grid;place-items:center}
+.tk-check span.ok{color:var(--g)}.tk-check span.ok i{background:var(--g);border-color:var(--g)}
+.tk-check span.ok i::after{content:"";width:9px;height:5px;border:3px solid #06140c;border-top:0;border-right:0;transform:translateY(-2px) rotate(-45deg)}
+.tk-check em{font-style:normal;font-size:14px;color:var(--mut);padding-left:22px;border-left:1px solid #2b3330;white-space:nowrap}
+/* 조작부 */
+.tk-ctrl{display:grid;grid-template-columns:1.3fr 1fr .85fr 1fr .9fr .9fr;gap:10px;padding:10px 12px;height:clamp(150px,23vh,230px)}
+.tk-mod{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;border:1px solid #000;border-radius:10px;min-width:0;
+  background:radial-gradient(#ffffff05 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,#22272a,#141719);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #2a2f33}
+.tk-mod>h4{margin:0;font-size:18px;font-weight:600;letter-spacing:.16em;color:#dfe4e1}
+.tk-mod .row{display:flex;align-items:center;justify-content:center;gap:14px;flex:1;min-height:0}
+/* 손잡이 */
+.tk-knob{position:relative;width:var(--ks,120px);height:var(--ks,120px);touch-action:none;cursor:grab;flex:none}
+.tk-knob svg.ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.tk-knob .cap{position:absolute;inset:16%;border-radius:50%;background:repeating-conic-gradient(from 0deg,#2a2f33 0 4deg,#1a1d20 4deg 8deg);box-shadow:0 6px 12px #000c,inset 0 2px 0 #ffffff22;transform:rotate(var(--a,0deg))}
+.tk-knob .cap::before{content:"";position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle at 40% 30%,#4a5056,#1b1f22 70%);box-shadow:inset 0 1px 0 #ffffff26}
+.tk-knob .cap::after{content:"";position:absolute;left:50%;top:5%;width:4px;height:22%;margin-left:-2px;border-radius:2px;background:#e6ebe8;box-shadow:0 0 4px #fff8}
+.tk-val{font-family:"Share Tech Mono",monospace;font-size:clamp(28px,3.4vw,44px);color:#fff;min-width:2.2ch}
+.tk-mm{display:flex;justify-content:space-between;width:var(--ks,120px);font-size:13px;color:var(--mut);margin-top:-8px}
+/* 토글 스위치 */
+.tk-tog{position:relative;width:64px;height:96px;border:0;background:none;padding:0;flex:none}
+.tk-tog::before{content:"";position:absolute;left:12px;top:30px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#d9dde1,#6b7279 55%,#2b3034);box-shadow:0 3px 6px #000}
+.tk-tog::after{content:"";position:absolute;left:24px;top:2px;width:16px;height:50px;border-radius:8px;background:linear-gradient(90deg,#8c939a,#f2f4f6 45%,#9aa1a8);box-shadow:0 2px 4px #000;transform-origin:50% 48px;transition:transform .18s}
+.tk-tog[aria-checked="false"]::after{transform:translateY(46px) rotate(180deg)}
+.tk-tog[data-unknown="true"]::after{opacity:.55}
+.tk-lab{display:flex;flex-direction:column;justify-content:space-between;height:80px;font-size:16px;color:var(--mut);letter-spacing:.12em}
+.tk-lab .on{color:var(--g)}
+.tk-ico{width:30px;height:30px;fill:none;stroke:var(--g);stroke-width:2}
+.tk-ico.off{stroke:#4b5552}
+.tk-note{font-family:"Noto Sans KR",sans-serif;font-size:11px;color:var(--mut);letter-spacing:0;text-align:center}
+/* SOS */
+.tk-sosw{position:relative;width:min(100%,150px);flex:1;max-height:150px;display:flex;align-items:center;justify-content:center}
+.tk-sosb{width:100%;height:100%;max-height:120px;border:1px solid #000;border-radius:8px;background:linear-gradient(180deg,#ff5b4b,#c81d10 55%,#7c0d05);color:#fff;font-size:30px;font-weight:700;letter-spacing:.1em;box-shadow:inset 0 2px 0 #ffffff55,0 4px 10px #000a}
+.tk-cover{position:absolute;inset:-6px -8px;border:6px solid #f3c623;border-image:repeating-linear-gradient(-45deg,#f3c623 0 8px,#151515 8px 16px) 6;background:linear-gradient(160deg,#ffffff40,#ffffff0a 45%,#ffffff26);display:grid;place-items:end center;padding-bottom:8px;
+  transform-origin:50% 0;transition:transform .35s cubic-bezier(.3,1.4,.6,1);box-shadow:0 6px 12px #000c;z-index:2}
+.tk-cover b{padding:3px 8px;border-radius:3px;background:#0a0c0dcc;color:#ffcf3a;font-size:12px;letter-spacing:.16em}
+.tk-sosw.open .tk-cover{transform:perspective(500px) rotateX(78deg) translateY(-10px);pointer-events:none}
+.tk-mod .cap2{font-size:13px;color:var(--mut);letter-spacing:.14em}
+/* 주행 모드 */
+.tk-dm{width:min(100%,150px);flex:1;max-height:120px;border:1px solid #000;border-radius:8px;background:linear-gradient(180deg,#2a3034,#15191c);box-shadow:inset 0 1px 0 #ffffff1a,0 3px 6px #000a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:16px;letter-spacing:.14em}
+.tk-dm::before{content:"";width:24px;height:6px;border-radius:3px;background:var(--g);box-shadow:0 0 8px var(--g)}
+.tk-dm svg{width:34px;height:34px;fill:#e6ebe8}
+.tk-dm.easy{color:#06140c;background:linear-gradient(180deg,#8dffbc,#4be38a 55%,#279a58)}.tk-dm.easy svg{fill:#06140c}
+/* 하단 탭 */
+.tk-tabs{display:grid;grid-template-columns:repeat(3,1fr) 1fr;height:58px;border-top:1px solid #000;background:linear-gradient(180deg,#191d20,#0f1214)}
+.tk-tabs button{display:flex;align-items:center;justify-content:center;gap:14px;border:0;border-right:1px solid #000;background:none;font-size:20px;font-weight:600;letter-spacing:.14em;color:#c9cfcc;position:relative}
+.tk-tabs button svg{width:28px;height:28px;fill:#c9cfcc}
+.tk-tabs button.on{color:var(--g)}.tk-tabs button.on svg{fill:var(--g)}
+.tk-tabs button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:4px;height:3px;border-radius:2px;background:var(--g);box-shadow:0 0 8px var(--g)}
+.tk-tabs .ver{display:flex;align-items:center;justify-content:flex-end;padding-right:18px;font-size:12px;color:#6c7673;letter-spacing:.14em}
+/* 작은 화면·세로: 한 줄로 쌓고 스크롤 */
+@media (max-width:1000px),(orientation:portrait){
+  #tabCk{overflow-y:auto;grid-template-rows:auto auto auto auto auto}
+  .tk-top{grid-template-columns:1fr auto;padding-left:18px;height:auto;min-height:52px}
+  .tk-stat{grid-column:1/-1;order:3;justify-self:center;margin-bottom:8px}
+  .tk-main{grid-template-columns:56px minmax(0,1fr);grid-auto-rows:auto}
+  .tk-main .tk-side.L{grid-row:1}.tk-main .tk-left{grid-row:1;height:52vh;min-height:300px}
+  .tk-main .tk-pfd{grid-column:1/-1;height:46vh;min-height:280px}
+  .tk-main .tk-side.R{grid-row:3;grid-column:1}.tk-main .tk-audio{grid-row:3;grid-column:2;min-height:340px}
+  .tk-check{flex-wrap:wrap;height:auto;padding:10px 16px;gap:10px 20px}
+  .tk-ctrl{grid-template-columns:repeat(2,minmax(0,1fr));height:auto}.tk-mod{min-height:170px}
+  .tk-tabs{position:sticky;bottom:0}
+  .tk-tabs .ver{display:none}.tk-tabs{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-height:700px) and (min-width:1001px) and (orientation:landscape){
+  .tk-ctrl{height:150px}.tk-check{height:42px}.tk-tabs{height:48px}.tk-top{height:44px}
+  .tk-knob{--ks:96px!important}
+}
+
+/* ---------- 대신남 원 기능을 옮겨 왔을 때(지도 창·PFD·콕핏 시계) ---------- */
+.tk-appmap{position:absolute;inset:0;display:flex;flex-direction:column;overflow:auto}
+.tk-appmap[hidden]{display:none}
+#tabCk #wMap{display:flex!important;flex:1;min-height:0;margin:0;border:0;border-radius:0;background:none!important;box-shadow:none!important;clip-path:none!important;height:auto!important}
+#tabCk #wMap>.bar,#tabCk #wMap>.grip{display:none!important}
+#tabCk #wMap>.body,#tabCk #wMap.collapsed>.body{display:flex!important;flex:1;min-height:0;padding:8px;flex-direction:column;gap:8px}
+#tabCk #wMap .mapbox{min-height:160px}
+#tabCk #wMap .mapctl{gap:6px}#tabCk #wMap .mapctl .pill{height:34px;font-size:14px;padding:0 10px}
+#tabCk #pfdHost{position:absolute;inset:0;display:flex!important;flex-direction:column}
+#tabCk #pfdHost .dsn-pfd{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0;padding:0;border:0;border-radius:0;box-shadow:none;background:none}
+#tabCk #pfdHost [data-role="content"]{flex:1;display:flex;flex-direction:column;min-height:0}
+#tabCk #pfdHost .pfd-metrics,#tabCk #pfdHost .pfd-header,#tabCk #pfdHost .pfd-tools,#tabCk #pfdHost .pfd-af-hardware,#tabCk #pfdHost .pfd-bolt{display:none!important}
+#tabCk #pfdHost .pfd-glass{flex:1;display:flex;flex-direction:column;min-height:0;margin:0}
+#tabCk #pfdHost .pfd-canvas-wrap{flex:1;height:auto!important;aspect-ratio:auto!important;min-height:120px}
+#tabCk .tk-right .clock{margin:0;gap:6px}
+#tabCk .tk-right .clock>div,#tabCk .tk-right .clock>button{padding:3px 10px 3px 4px;border:1px solid #000;border-radius:6px;background:#0a0c0d;box-shadow:inset 0 1px 4px #000}
+:root[data-skin="tablet"] .tk-top{height:auto;min-height:52px}
+:root[data-skin="tablet"][data-clock="analog"] .clock>div,:root[data-skin="tablet"][data-clock="analog"] .clock>button{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:8px;align-items:center}
+:root[data-skin="tablet"][data-clock="analog"] .clock .ck-dial{display:block;grid-row:1/3;width:clamp(50px,7.4vh,84px);height:clamp(50px,7.4vh,84px)}
+:root[data-skin="tablet"][data-clock="analog"] .clock b{display:none}
+:root[data-skin="tablet"] .clock small{grid-column:2;font-size:11px;letter-spacing:.14em;color:#8d9894}
+:root[data-skin="tablet"] .clock em{grid-column:2;font-style:normal;font-size:13px;color:#4be38a;font-family:"Share Tech Mono",monospace}
+:root[data-skin="tablet"] .clock b{font-family:"Share Tech Mono",monospace;font-size:22px;color:#e6ebe8}
+:root[data-skin="tablet"][data-clock="analog"] .clock .ck-world.off b{display:block;grid-column:2;font-size:13px}
+:root[data-skin="tablet"] #clkNow{cursor:pointer}
