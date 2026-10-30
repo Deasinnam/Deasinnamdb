@@ -64,7 +64,7 @@ jobs:
           AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleLiteRelease
+          ./gradlew --no-daemon assembleLiteRelease assembleFullRelease
           rm -f "$AMP_KEYSTORE_FILE"
 
       - uses: actions/upload-artifact@v5
@@ -78,9 +78,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp app/build/outputs/apk/lite/release/app-lite-release.apk DaesinnamOne-V1.apk
+          cp app/build/outputs/apk/full/release/app-full-release.apk DaesinnamOne-V1-full.apk
           gh release delete one-v1 --yes --cleanup-tag || true
-          gh release create one-v1 DaesinnamOne-V1.apk \
+          gh release create one-v1 DaesinnamOne-V1.apk DaesinnamOne-V1-full.apk \
             --target "$GITHUB_SHA" \
             --prerelease \
             --title "대신남 원 Ver1 (독립 설치판)" \
-            --notes "기존 Daesinnam Amp·데모판과 따로 설치되는 대신남 원 Ver1입니다(패키지 com.daesinnam.one.v1). 백업과 비교 테스트용. 콕핏 아날로그 시계, PFD 활주로 이륙·착륙 장면. 빌드 번호 ${{ github.run_number }}"
+            --notes "기존 Daesinnam Amp·데모판과 따로 설치되는 대신남 원 Ver1입니다(패키지 com.daesinnam.one.v1). DaesinnamOne-V1-full.apk는 알림 접근으로 모든 앱의 곡 정보까지 지원하는 풀버전(일반판과 같은 앱이라 서로 덮어 설치). 백업과 비교 테스트용. 콕핏 아날로그 시계, PFD 활주로 이륙·착륙 장면. 빌드 번호 ${{ github.run_number }}"

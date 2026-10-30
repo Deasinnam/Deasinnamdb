@@ -3,6 +3,7 @@
 이 브랜치(`daesinnam-one-v1`)는 백업과 비교 테스트를 위한 **대신남 원 Ver1**입니다. 패키지 이름이 `com.daesinnam.one.v1`이라 기존 Daesinnam Amp, 데모판과 함께 따로 설치되고 앱 이름은 **대신남 원 Ver1**로 보입니다. 처음 열면 콕핏 스킨입니다.
 
 - 받기: https://github.com/Deasinnam/Deasinnamdb/releases/download/one-v1/DaesinnamOne-V1.apk
+- 풀버전 받기: https://github.com/Deasinnam/Deasinnamdb/releases/download/one-v1/DaesinnamOne-V1-full.apk (알림 접근 권한으로 모든 앱의 곡 정보·앨범 아트·탐색 지원, Play 프로텍트가 막을 수 있음. 일반판과 같은 앱이라 서로 덮어 설치됨)
 - 콕핏 시계: 로고 옆 시계를 조종석 계기 같은 둥근 아날로그로 볼 수 있습니다(기본). 시계를 누르거나 설정 → 시계 → 시계 모양에서 디지털과 바꿉니다.
 - PFD 비행 장면(`pfd-flight.js`, 패키지 원본은 그대로):
   - 앱을 켜고 관제탑이 점검·이륙 허가를 하는 동안 활주로 위에 서 있습니다.
