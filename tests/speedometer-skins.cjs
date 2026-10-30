@@ -641,8 +641,61 @@ async function main() {
       assert.match(await p9.locator('#clkCity').textContent(), /뉴욕/, 'World city remembered');
       await p9.close();
     }
+    // 태블릿 가로모드(독립 스킨): 기존 화면은 숨기고 조종석 화면, 다른 스킨으로 가면 원래대로
+    {
+      const pt = await context.newPage();
+      pt.on('pageerror', error => errors.push('tablet: '+error.message));
+      await pt.setViewportSize({width:1280,height:800});
+      await pt.addInitScript(() => {if(sessionStorage.getItem('pt'))return;sessionStorage.setItem('pt','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('tablet'));});
+      await pt.goto(origin);
+      await pt.locator('#tabCk').waitFor();
+      assert.equal(await pt.locator('#tabCk').isVisible(), true, 'Tablet cockpit shown');
+      assert.equal(await pt.locator('header.top').isVisible(), false); assert.equal(await pt.locator('#app').isVisible(), false);
+      const fits = await pt.evaluate(() => {const r=document.querySelector('.tk-tabs').getBoundingClientRect();return r.bottom<=innerHeight+1&&document.querySelector('#tabCk').scrollHeight<=innerHeight+1});
+      assert.ok(fits, 'Landscape tablet layout fits one screen');
+      await pt.waitForFunction(() => /\d/.test(document.querySelector('#tkC1v').textContent));
+      const px = await pt.locator('#tkPfd').evaluate(c => {const g=c.getContext('2d').getImageData(Math.round(c.width/2),Math.round(c.height*.3),1,1).data;return g[2]>g[0]});
+      assert.ok(px, 'PFD sky drawn');
+      await pt.locator('.tk-tabs [data-t="audio"]').click();
+      assert.equal(await pt.locator('#tkList').isVisible(), true); assert.match(await pt.locator('#tkList').textContent(), /비어|01/);
+      await pt.locator('.tk-tabs [data-t="system"]').click();
+      assert.equal(await pt.locator('#tkSys').isVisible(), true);
+      await pt.locator('.tk-tabs [data-t="nav"]').click();
+      // 볼륨 손잡이(웹: 플레이어 볼륨)
+      const kb = await pt.locator('#tkVol').boundingBox();
+      await pt.mouse.move(kb.x+kb.width*.2, kb.y+kb.height*.8);await pt.mouse.down();
+      await pt.mouse.move(kb.x+kb.width*.15, kb.y+kb.height*.5,{steps:4});await pt.mouse.move(kb.x+kb.width*.3, kb.y+kb.height*.15,{steps:4});await pt.mouse.up();
+      await pt.waitForTimeout(150);
+      const v = +(await pt.locator('#vol').inputValue());
+      assert.ok(v < 70 && v > 5, 'Volume knob drives the player volume ('+v+')');
+      assert.equal(await pt.locator('#tkVolV').textContent(), String(v));
+      // SOS: 덮개를 올려야 누를 수 있음
+      await pt.evaluate(() => document.querySelector('#tkSos').click());
+      assert.equal(await pt.locator('#tkSosW').evaluate(el => el.classList.contains('open')), false);
+      await pt.locator('#tkCover').click();
+      assert.equal(await pt.locator('#tkSosW').evaluate(el => el.classList.contains('open')), true, 'Cover lifts');
+      await pt.locator('#tkSos').click();
+      assert.equal(await pt.locator('#settings').isVisible(), true, 'No SOS number -> opens settings');
+      await pt.locator('#setClose').click();
+      // 와이파이 스위치(웹: 시연), 주행 모드
+      const w0 = await pt.locator('#tkWifi').getAttribute('aria-checked');
+      await pt.locator('#tkWifi').click();await pt.waitForTimeout(400);
+      assert.notEqual(await pt.locator('#tkWifi').getAttribute('aria-checked'), w0, 'WiFi lever toggles');
+      await pt.locator('#tkDm').click();
+      assert.equal(await pt.locator('#drive').isVisible(), true, 'Drive mode opens easy mode');
+      await pt.evaluate(() => AmpTk.drive(false));
+      // 밝기 손잡이(웹: 화면 어둡게)
+      await pt.locator('#tkBri').focus();for(let i=0;i<4;i++)await pt.keyboard.press('ArrowDown');
+      assert.match(await pt.locator('#tkBriV').textContent(), /^(7[0-9]|8[0-9])%$/);
+      // 다른 스킨으로 돌아가면 기존 화면 그대로
+      await pt.locator('#tkSkin').selectOption('blue');
+      assert.equal(await pt.locator('#tabCk').isVisible(), false);
+      assert.equal(await pt.locator('#app').isVisible(), true, 'Existing skins unaffected');
+      assert.equal(await pt.locator('#wMain').isVisible(), true);
+      await pt.close();
+    }
     assert.deepEqual(errors, []);
-    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, tablet landscape cockpit skin, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

@@ -1786,7 +1786,7 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['drive','대신남 드라이브']];
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드']];
 const CAR_SKINS=['carnival','carnival2','drive'];const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
@@ -2852,6 +2852,15 @@ window.AmpHost={
   gpsStart(){gpsStart()},gpsStop(){gpsStop(true)},
   load(k,d){return store.get(k,d)},save(k,v){store.set(k,v)}
 };
+/* 태블릿 가로모드(tablet.js) 연결 창구: 읽기·호출만 하고 기존 동작은 바꾸지 않음 */
+window.AmpTk={
+  get gs(){return gs},get gpsOn(){return gpsOn},get spdNow(){return spdNow},get hdgNow(){return hdgNow},get gLimit(){return gLimit},
+  get trip(){return trip},get att(){return att},get mode(){return mode},get list(){return list},get cur(){return cur},
+  get driveOn(){return driveOn},get sos(){return sos},get hudOn(){return hudOn},get wave(){return typeof W!=='undefined'?W:null},
+  gpsStart(){gpsStart()},gpsStop(u){gpsStop(u)},attWant(o){attWant(o)},attPoll(){attPoll()},attLevel(){attLevel()},
+  setSkin(k){setSkin(k)},playIndex(i){playIndex(i)},toggle(){toggle()},prev(){prev()},next(){next()},setMode(m){setMode(m)},
+  drive(o){drive(o);if(!o)driveSuppress=true},sndPress(o){sndPress(o)},sndAlarm(){sndAlarm()},openSettings(){openSettings()},toast(t){toast(t)}
+};
 /* ---------- D1 DASHCAM: 블랙박스 실시간 화면 ---------- */
 (function(){
   const HAS_CAM=!!(NB&&NB.camState);
@@ -3205,6 +3214,9 @@ if(!restored)(async()=>{
 </script>
 <script src="pfd/pfd.js"></script>
 <script src="pfd-amp.js"></script>
+<!-- 대신남 태블릿 가로모드(독립 모듈): 지우려면 아래 두 줄과 스킨 목록의 tablet 한 줄을 지우면 됩니다 -->
+<link rel="stylesheet" href="tablet.css">
+<script src="tablet.js"></script>
 
 </body>
 </html>
