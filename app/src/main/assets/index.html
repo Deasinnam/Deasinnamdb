@@ -919,11 +919,13 @@ input[type=range]:disabled{opacity:.35}
 .atcwarn span{font-size:12.5px;color:#ff6b5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @keyframes warnin{50%{border-color:#5a0f0a;box-shadow:none}}
 /* 속도계 창 크기 조절: 조절 버튼을 켰을 때만 손잡이가 나타나고 끌 수 있음(화면을 올리다 실수로 바뀌지 않게) */
-#wGps:not(.rz)>.grip{display:none!important}
-#wGps.rz{outline:2px dashed var(--accent);outline-offset:-3px}
-#wGps.rz>.grip{height:30px;margin-top:0;display:flex!important;align-items:center;justify-content:center;gap:10px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
-#wGps.rz>.grip::before{width:70px;height:6px;opacity:1;background:var(--accent)}
-#wGps.rz>.grip::after{content:"끌어서 높이 조절 · 두 번 누르면 원래대로";font-size:12px;color:var(--accent)}
+.win.rzw:not(.rz)>.grip{display:none!important}
+.win:not(.rzw)>.bar .rzbtn{display:none}
+.win.rz{outline:2px dashed var(--accent);outline-offset:-3px}
+.win.rz>.grip{height:30px;margin-top:0;display:flex!important;align-items:center;justify-content:center;gap:10px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.win.rz>.grip::before{width:70px;height:6px;opacity:1;background:var(--accent)}
+.win.rz>.grip::after{content:"끌어서 높이 조절 · 두 번 누르면 원래대로";font-size:12px;color:var(--accent)}
+.win.collapsed .rzbtn{display:none}
 #wGps.collapsed>.grip{display:none!important}
 .rzbtn.on{background:var(--accent)!important;border-color:var(--accent)!important}
 .rzbtn.on svg{fill:var(--hot-ink,#000)!important}
@@ -2102,7 +2104,7 @@ function flags(){
 }
 $('#tShuf').onclick=()=>{shuffle=!shuffle;store.set('shuf',shuffle);flags()};
 $('#tRep').onclick=()=>{repeat={off:'all',all:'one',one:'off'}[repeat];store.set('rep',repeat);flags()};
-document.querySelectorAll('.wbtn').forEach(b=>b.onclick=()=>{$('#'+b.dataset.col).classList.toggle('collapsed')});
+document.querySelectorAll('.wbtn[data-col]').forEach(b=>b.onclick=()=>{$('#'+b.dataset.col).classList.toggle('collapsed')});
 
 document.addEventListener('dragover',e=>{e.preventDefault();$('#pl').classList.add('drop')});
 document.addEventListener('dragleave',e=>{if(e.target===document.documentElement)$('#pl').classList.remove('drop')});
@@ -2304,7 +2306,7 @@ const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
 function hav(a,b,c,d){const R=6371000,t=Math.PI/180,x=(c-a)*t,y=(d-b)*t;const h=Math.sin(x/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function gpsStart(){if(!HAS_GPS)return;try{NB.startGps()}catch(e){}gpsOn=true;store.set('gpsOn',true);clearInterval(gpsTimer);gpsTimer=setInterval(pollGps,250);gpsUi()}
 function gpsStop(user){if(HAS_GPS){try{NB.stopGps()}catch(e){}}gpsOn=false;if(user)store.set('gpsOn',false);clearInterval(gpsTimer);spdNow=0;gpsUi()}
-function gpsSkinChanged(){if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
+function gpsSkinChanged(){const ckOpt=$('#gStyle option[value="cockpit"]');if(ckOpt){ckOpt.hidden=ckOpt.disabled=skin!=='carnival2'}try{if(skin!=='carnival2'&&gStyle==='cockpit')setGStyle(store.get('gStyleCar','carbon'))}catch(e){/* 시작 중에는 아래 boot에서 처리 */}if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
 function pollGps(){
   if(!gpsOn)return;let s;try{s=JSON.parse(NB.gpsStatus())}catch(e){return}gs=s;
   if(s.fix){
@@ -2320,7 +2322,7 @@ function pollGps(){
     spdNow=v>0.5?v*3.6:0;
     hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
-  if(typeof att!=='undefined'&&att.hdg>=0)hdgNow=att.hdg;
+  if(typeof att!=='undefined'&&att.on&&att.hdg>=0)hdgNow=att.hdg;
   gpsUi();mapUpdate(false);driveAutoTick();
 }
 function gpsUi(){
@@ -2351,9 +2353,9 @@ $('#hud').classList.toggle('mirror',store.get('hudMirror',true));
 $('#gLimit').value=String(gLimit);$('#gLimit').onchange=e=>{gLimit=+e.target.value;store.set('gLimit',gLimit)};
 const angDiff=(a,b)=>((b-a+540)%360)-180;
 function drawGps(){
-  const gv=isCar()&&!$('#wGps').classList.contains('collapsed')&&!document.hidden;attWant(gv);
+  const gv=isCar()&&!$('#wGps').classList.contains('collapsed')&&!document.hidden;attWant(gv&&skin==='carnival2'); // 자세·나침반 센서는 콕핏 스킨에서만
   if(!gv)return;
-  attPoll();if(att.hdg>=0)hdgNow=att.hdg;
+  attPoll();if(att.on&&att.hdg>=0)hdgNow=att.hdg;
   if(typeof atcSpeedTick==='function')atcSpeedTick(spdNow);
   const AP=window.AmpPfd;if(skin==='carnival2'&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
@@ -2369,7 +2371,7 @@ function drawGps(){
 const GMAX=200,GA0=Math.PI*.75,GA1=Math.PI*2.25;
 const gA=v=>GA0+(GA1-GA0)*Math.max(0,Math.min(1,v/GMAX));
 let gStyle=store.get('gStyle','carbon');
-function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
+function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';if(k==='cockpit'&&skin!=='carnival2')k=store.get('gStyleCar','carbon');if(k!=='cockpit')store.set('gStyleCar',k);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
 $('#gStyle').onchange=e=>setGStyle(e.target.value);
 const RJ='Rajdhani,"Barlow Condensed",sans-serif';
 function ring(g,x,y,r,lw,col){g.lineWidth=lw;g.strokeStyle=col;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.stroke()}
@@ -2929,22 +2931,30 @@ $('#sBt').onclick=()=>{try{NB.setCarAutoplay($('#sCarAuto').checked||true);$('#s
 $('#sDriveNow').onclick=()=>{closeSettings();drive(true);driveSuppress=false};
 
 /* ---------- 창 높이 조절 ---------- */
-let winH=store.get('winH',{});
-function applySizes(){const lock=skin==='carnival2';document.querySelectorAll('.win').forEach(w=>{const h=lock&&w.id!=='wGps'?0:winH[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h)})}
+// 자동차·드라이브·콕핏 스킨은 기존처럼 손잡이로 바로 조절, 나머지 스킨은 기본 크기로 고정하고 창 위쪽 버튼을 눌렀을 때만 조절
+let winH=store.get('winH',{}),winHN=store.get('winHN',{});
+const sizeMap=()=>isCar()?winH:winHN;
+function saveSizes(){store.set('winH',winH);store.set('winHN',winHN)}
+const needRz=w=>w.id==='wGps'||!isCar();
+function applySizes(){const lock=skin==='carnival2',m=sizeMap();document.querySelectorAll('.win').forEach(w=>{const h=lock&&w.id!=='wGps'?0:m[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h);w.classList.toggle('rzw',needRz(w));if(!needRz(w)&&w.classList.contains('rz'))winRz(w,false)})}
 document.querySelectorAll('.win').forEach(w=>{
   const gr=document.createElement('div');gr.className='grip';gr.title='끌어서 창 높이 조절 · 두 번 누르면 원래 높이';gr.setAttribute('role','separator');gr.setAttribute('aria-orientation','horizontal');w.appendChild(gr);
   let y0=0,h0=0,pid=null;
-  gr.addEventListener('pointerdown',e=>{if(w.id==='wGps'&&!w.classList.contains('rz'))return;e.preventDefault();pid=e.pointerId;gr.setPointerCapture(pid);y0=e.clientY;h0=w.getBoundingClientRect().height;w.classList.add('sizing')});
+  gr.addEventListener('pointerdown',e=>{if(needRz(w)&&!w.classList.contains('rz'))return;e.preventDefault();pid=e.pointerId;gr.setPointerCapture(pid);y0=e.clientY;h0=w.getBoundingClientRect().height;w.classList.add('sizing')});
   gr.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;const h=Math.max(90,Math.round(h0+e.clientY-y0));w.style.height=h+'px';w.classList.add('sized')});
-  const end=e=>{if(e.pointerId!==pid)return;pid=null;w.classList.remove('sizing');if(w.classList.contains('sized')){winH[w.id]=Math.round(w.getBoundingClientRect().height);store.set('winH',winH)}};
+  const end=e=>{if(e.pointerId!==pid)return;pid=null;w.classList.remove('sizing');if(w.classList.contains('sized')){sizeMap()[w.id]=Math.round(w.getBoundingClientRect().height);saveSizes()}};
   gr.addEventListener('pointerup',end);gr.addEventListener('pointercancel',end);
-  gr.addEventListener('dblclick',()=>{if(w.id==='wGps'&&!w.classList.contains('rz'))return;delete winH[w.id];store.set('winH',winH);applySizes()});
+  gr.addEventListener('dblclick',()=>{if(needRz(w)&&!w.classList.contains('rz'))return;delete sizeMap()[w.id];saveSizes();applySizes()});
+  // 창 위쪽 크기 조절 버튼 (속도계 창은 원래 있음)
+  const bar=w.querySelector(':scope>.bar'),col=bar&&bar.querySelector('[data-col]');
+  if(bar&&col&&!bar.querySelector('.rzbtn')){const b=document.createElement('button');b.className='wbtn rzbtn';b.setAttribute('aria-pressed','false');b.setAttribute('aria-label','창 크기 조절 켜기');b.title='창 크기 조절';b.innerHTML='<svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg>';bar.insertBefore(b,col)}
+  const rb=bar&&bar.querySelector('.rzbtn');if(rb)rb.addEventListener('click',e=>{e.stopPropagation();winRz(w,!w.classList.contains('rz'))});
+  w.addEventListener('pointerup',()=>{if(w.classList.contains('rz')){clearTimeout(rzT[w.id]);rzT[w.id]=setTimeout(()=>winRz(w,false),15000)}});
 });
-let rzT=0;
-function gpsRz(on){const w=$('#wGps'),b=$('#gRz');w.classList.toggle('rz',on);b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'창 크기 조절 끄기':'창 크기 조절 켜기');
-  clearTimeout(rzT);if(on){toast('창 아래 손잡이를 끌어 높이를 바꾸세요. 다 되면 버튼을 다시 누르세요.');rzT=setTimeout(()=>gpsRz(false),15000)}}
-$('#gRz').onclick=e=>{e.stopPropagation();gpsRz(!$('#wGps').classList.contains('rz'))};
-$('#wGps').addEventListener('pointerup',()=>{if($('#wGps').classList.contains('rz')){clearTimeout(rzT);rzT=setTimeout(()=>gpsRz(false),15000)}});
+const rzT={};
+function winRz(w,on){const b=w.querySelector(':scope>.bar .rzbtn');w.classList.toggle('rz',on);if(b){b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'창 크기 조절 끄기':'창 크기 조절 켜기')}
+  clearTimeout(rzT[w.id]);if(on){toast('창 아래 손잡이를 끌어 높이를 바꾸세요. 다 되면 버튼을 다시 누르세요.');rzT[w.id]=setTimeout(()=>winRz(w,false),15000)}}
+function gpsRz(on){winRz($('#wGps'),on)}
 const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
 

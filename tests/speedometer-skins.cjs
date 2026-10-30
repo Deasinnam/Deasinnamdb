@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require('playwright');
 const assets = path.resolve(__dirname, '../app/src/main/assets');
-const themes = ['carbon', 'neon', 'classic', 'minimal', 'tactical', 'cockpit'];
+const themes = ['carbon', 'neon', 'classic', 'minimal', 'tactical'];
 
 async function main() {
   const server = http.createServer(async (req, res) => {
@@ -30,7 +30,7 @@ async function main() {
       return route.continue();
     });
     const page = await context.newPage(), errors = [];
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await page.addInitScript(() => {
       localStorage.setItem('dna_skin2', JSON.stringify('carnival'));
       window.gpsCalls = {starts:0,stops:0};
@@ -44,7 +44,8 @@ async function main() {
     });
     await page.goto(origin);
     await page.locator('#gStyle').waitFor();
-    assert.equal(await page.locator('#gStyle option').count(), themes.length);
+    assert.equal(await page.locator('#gStyle option:not([disabled])').count(), themes.length, 'Car mode offers the five car designs only');
+    assert.equal(await page.locator('#gStyle option[value="cockpit"]').evaluate(o => o.disabled), true, 'Cockpit PFD is not offered in car mode');
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon');
     const top = sel => page.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await top('#wGps') < await top('#wMain'), 'Speedometer sits above the main player window');
@@ -229,9 +230,8 @@ async function main() {
     assert.equal(await page.locator('#dkControlDeck').isVisible(), false);
     await page.locator('#dkCollapseButton').click();
     await page.locator('#skin').selectOption('carnival');
-    await page.locator('#gStyle').selectOption('cockpit');
-    await page.waitForTimeout(150);
-    await page.locator('#gStyle').selectOption('carbon');
+    assert.notEqual(await page.locator('#wGps').getAttribute('data-gs'), 'cockpit', 'Leaving the cockpit skin drops the PFD');
+    assert.equal(await page.locator('#gStyle option[value="cockpit"]').evaluate(o => o.disabled), true);
     assert.equal(await page.locator('#spdBox').evaluate(el => el.style.left), '', 'Leaving the PFD resets the readout position');
     // 지도 창: 처음엔 사용 여부를 묻고 속도계 바로 아래, 사용 안 함이면 접혀서 맨 아래로
     await page.setViewportSize({width:1024,height:768});
@@ -278,7 +278,7 @@ async function main() {
     await p2.close();
     // 저장되는 플레이리스트 · 설정 · 간편 모드 · 차 연결
     const p3 = await context.newPage();
-    p3.on('pageerror', error => errors.push(error.message));
+    p3.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p3.addInitScript(() => {
       window.AndroidBridge = {pickAudio(){}, takeCarAutoplay:() => false, adjustVolume(){window.__vol=(window.__vol||0)+1}, keepScreenOn(){}, onPlayState(){}, onNowPlaying(){}, onArt(){},
         carStatus:() => JSON.stringify({autoplay:false,carName:'',btPerm:true,autoLaunch:false,connected:['MY CAR'],lastKey:'다음 곡',lastKeyAt:Date.now()}),
@@ -316,7 +316,7 @@ async function main() {
     await p3.close();
     // 저장된 곡은 안드로이드 표준 플레이어(Media3)로 재생: 큐 전달·버튼 명령·현재 곡 동기화
     const p4 = await context.newPage();
-    p4.on('pageerror', error => errors.push(error.message));
+    p4.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p4.addInitScript(() => {
       window.__nat = {connected:true,count:0,index:-1,mid:'',playing:false,pos:0,dur:0}; window.__cmds = [];
       window.AndroidBridge = {natAvailable:() => true, npState:() => JSON.stringify(window.__nat),
@@ -340,7 +340,7 @@ async function main() {
     const tctx = await browser.newContext({viewport:{width:820,height:1180}, hasTouch:true, isMobile:true});
     await tctx.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
     const p5 = await tctx.newPage();
-    p5.on('pageerror', error => errors.push(error.message));
+    p5.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p5.addInitScript(() => { localStorage.setItem('dna_skin2', JSON.stringify('carnival')); localStorage.setItem('dna_layout', JSON.stringify('1')); });
     await p5.goto(origin);
     await p5.locator('#eqgrid').scrollIntoViewIfNeeded();
@@ -359,7 +359,7 @@ async function main() {
     await tctx.close();
     // 조종 패널 + 앱 연결: 기기 상태가 기준(거짓 ON 없음), 볼륨은 기기 단계로 반올림된 값을 다시 읽음, SOS는 바로 전화
     const p7 = await context.newPage();
-    p7.on('pageerror', error => errors.push(error.message));
+    p7.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p7.addInitScript(() => {
       localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));localStorage.setItem('dna_sos', JSON.stringify({name:'가족',number:'01000000000'}));
       window.dev = {steps:15,level:6,wifi:false,hasBt:true,bt:null};window.log=[];
@@ -393,7 +393,7 @@ async function main() {
     await p7.close();
     // 창 순서: 설정에서 바꾸고 되돌리기
     const pa = await context.newPage();
-    pa.on('pageerror', error => errors.push(error.message));
+    pa.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await pa.addInitScript(() => {if(sessionStorage.getItem('pa'))return;sessionStorage.setItem('pa','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
     await pa.goto(origin);
     const ty = sel => pa.locator(sel).evaluate(el => el.getBoundingClientRect().top);
@@ -417,7 +417,7 @@ async function main() {
     await pa.close();
     // D1 DASHCAM: 자동차 스킨에만 보이고, 연결 → 실시간 화면(/cam/frame.jpg) → 카메라 찾기 결과, 인터넷은 모바일 데이터 표시
     const pc = await context.newPage();
-    pc.on('pageerror', error => errors.push(error.message));
+    pc.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     const jpg = Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAJABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDhKKKK4DzD/9k=','base64');
     let camHits = 0;
     await pc.route('**/cam/frame.jpg*', route => { camHits++; route.fulfill({status:200, contentType:'image/jpeg', body:jpg}); });
@@ -466,7 +466,7 @@ async function main() {
     await pc.close();
     // 시각화 효과 10종: 고를 때마다 다른 화면, 다시 열어도 유지, 캔버스를 누르면 다음 효과
     const p9 = await context.newPage();
-    p9.on('pageerror', error => errors.push(error.message));
+    p9.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
     await p9.goto(origin);
     assert.equal(await p9.locator('#visSel option').count(), 10);
@@ -484,7 +484,7 @@ async function main() {
     await p9.close();
     // 관제탑 속도 주의: 50/100/120/150/180/200km/h 도달 시 빨간 글자
     const p8 = await context.newPage();
-    p8.on('pageerror', error => errors.push(error.message));
+    p8.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p8.addInitScript(() => {if(!sessionStorage.getItem('p8')){sessionStorage.setItem('p8','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'))}
       window.g8={fix:true,perm:true,enabled:true,provider:'gps',speed:5,bearing:0,azimuth:-1,acc:3,alt:10,satsUsed:9,satsSeen:12,lat:37,lon:127,ts:1000};
       window.AndroidBridge={gpsStatus:()=>JSON.stringify(g8),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
@@ -554,39 +554,63 @@ async function main() {
     await p8.locator('#pfdHost [data-role="gps"]').click();
     await p8.waitForFunction(() => document.querySelector('#pfdHost [data-role="signalText"]').textContent === 'GPS OFF', null, {timeout:3000});
     await p8.close();
-    // 콕핏 PFD: 기울기·나침반 센서, 구름, 야간 하늘
-    const p6 = await context.newPage();
-    p6.on('pageerror', error => errors.push(error.message));
-    await p6.addInitScript(() => {
-      localStorage.clear();
-      localStorage.setItem('dna_skin2', JSON.stringify('carnival'));localStorage.setItem('dna_gStyle', JSON.stringify('cockpit'));localStorage.setItem('dna_gSky', JSON.stringify('day'));
-      window.attF = {ok:true,r:[1,0,0,0,1,0,0,0,1],srot:0,decl:0,compass:true};window.attCalls={start:0,stop:0};
-      window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
-        attStart:()=>attCalls.start++,attStop:()=>attCalls.stop++,attitude:()=>JSON.stringify(attF)};
-    });
-    await p6.goto(origin);
-    await p6.waitForFunction(() => window.__att && __att.ref && attCalls.start === 1, null, {timeout:5000});
-    // 오른쪽으로 20° 기울이고 동쪽(90°)을 향함
-    await p6.evaluate(() => {const t=20/180*Math.PI,c=Math.cos(t),s=Math.sin(t),y=Math.PI/2,cy=Math.cos(y),sy=Math.sin(y);
-      const Ry=[c,0,s,0,1,0,-s,0,c],Rz=[cy,sy,0,-sy,cy,0,0,0,1],m=[];for(let i=0;i<3;i++)for(let j=0;j<3;j++){let v=0;for(let k=0;k<3;k++)v+=Rz[i*3+k]*Ry[k*3+j];m.push(v)}attF.r=m});
-    await p6.waitForFunction(() => Math.abs(__att.bank-20) < 1 && Math.abs(__att.hdg-90) < 1);
-    await p6.waitForFunction(() => /^09\d° E/.test(document.querySelector('#gHdg').textContent), null, {timeout:5000});
-    const dayImg = await p6.locator('#gauge').evaluate(c => c.toDataURL());
-    await p6.locator('#gLevel').click();
-    await p6.waitForFunction(() => Math.abs(__att.bank) < 1, null, {timeout:3000});
-    await p6.locator('#gSky').selectOption('night');
-    await p6.waitForTimeout(300);
-    const px = await p6.locator('#gauge').evaluate(c => {const d=c.getContext('2d').getImageData(Math.round(c.width*.5),Math.round(c.height*.2),1,1).data;return d[0]+d[1]+d[2]});
-    assert.ok(px < 260, `Night sky is dark (${px})`);
-    assert.notEqual(await p6.locator('#gauge').evaluate(c => c.toDataURL()), dayImg);
-    assert.equal(await p6.locator('#gLevel').isVisible(), true);
-    await p6.locator('#gStyle').selectOption('carbon');
-    assert.equal(await p6.locator('#gLevel').isVisible(), false, 'Level/sky controls only for the PFD');
-    await p6.locator('#skin').selectOption('blue');
-    await p6.waitForFunction(() => attCalls.stop === 1, null, {timeout:3000});
-    await p6.close();
+    // 자동차·드라이브 스킨: 저장된 콕핏 PFD가 있어도 일반 속도계로, 자세 센서도 켜지 않음
+    for (const sk of ['carnival','drive']) {
+      const p6 = await context.newPage();
+      p6.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
+      await p6.addInitScript(k => {
+        localStorage.clear();
+        localStorage.setItem('dna_skin2', JSON.stringify(k));localStorage.setItem('dna_gStyle', JSON.stringify('cockpit'));
+        window.attCalls={start:0,stop:0};
+        window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
+          attStart:()=>attCalls.start++,attStop:()=>attCalls.stop++,attitude:()=>JSON.stringify({ok:false})};
+      }, sk);
+      await p6.goto(origin);
+      await p6.locator('#gStyle').waitFor();
+      await p6.waitForTimeout(400);
+      assert.equal(await p6.locator('#wGps').getAttribute('data-gs'), 'carbon', sk+': stored cockpit PFD falls back to the car gauge');
+      assert.equal(await p6.locator('#gStyle option[value="cockpit"]').evaluate(o => o.disabled), true, sk+': no cockpit PFD option');
+      assert.equal(await p6.locator('#gLevel').isVisible(), false, sk+': no PFD level control');
+      assert.equal(await p6.locator('#wCtl').isVisible(), false, sk+': no cockpit control panel');
+      assert.equal(await p6.locator('#wAtc').isVisible(), false, sk+': no tower window');
+      assert.equal(await p6.evaluate(() => attCalls.start), 0, sk+': attitude sensors stay off');
+      await p6.close();
+    }
+    // 일반 스킨: 기본 크기 고정, 창 위쪽 버튼을 눌러야 크기 조절
+    {
+      const p7 = await context.newPage();
+      p7.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
+      await p7.addInitScript(() => {if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('blue'));
+        localStorage.setItem('dna_winH', JSON.stringify({wPl:150}));});
+      await p7.setViewportSize({width:1024,height:900});
+      await p7.goto(origin);
+      await p7.locator('#wPl .rzbtn').waitFor();
+      assert.equal(await p7.locator('#wPl').evaluate(el => el.style.height), '', 'Car-mode sizes do not leak into normal skins');
+      for (const id of ['#wMain','#wVis','#wEq','#wPl']) {
+        assert.equal(await p7.locator(id+' > .grip').isVisible(), false, id+' grip hidden until resize button');
+        assert.equal(await p7.locator(id+' > .bar .rzbtn').isVisible(), true, id+' has a resize button on top');
+      }
+      const h0 = await p7.locator('#wPl').evaluate(el => el.getBoundingClientRect().height);
+      await p7.locator('#wPl .rzbtn').click();
+      assert.equal(await p7.locator('#wPl .rzbtn').getAttribute('aria-pressed'), 'true');
+      const g = p7.locator('#wPl > .grip');await g.scrollIntoViewIfNeeded();
+      const gb = await g.boundingBox();
+      await p7.mouse.move(gb.x+gb.width/2, gb.y+gb.height/2);await p7.mouse.down();
+      await p7.mouse.move(gb.x+gb.width/2, gb.y+gb.height/2+120, {steps:6});await p7.mouse.up();
+      const h1 = await p7.locator('#wPl').evaluate(el => el.getBoundingClientRect().height);
+      assert.ok(h1 > h0 + 80, `Resize mode grows the playlist (${h0} -> ${h1})`);
+      await p7.locator('#wPl .rzbtn').click();
+      assert.equal(await p7.locator('#wPl > .grip').isVisible(), false, 'Resize off hides the grip');
+      assert.equal(await p7.evaluate(() => JSON.parse(localStorage.getItem('dna_winHN')).wPl > 0), true, 'Normal-skin size is saved');
+      await p7.reload();await p7.locator('#wPl .rzbtn').waitFor();
+      assert.ok(Math.abs(await p7.locator('#wPl').evaluate(el => el.getBoundingClientRect().height) - h1) < 4, 'Size kept after reopening');
+      await p7.locator('#skin').selectOption('carnival');
+      assert.equal(await p7.locator('#wPl > .bar .rzbtn').isVisible(), false, 'Car mode keeps its own resizing (no button)');
+      assert.equal(await p7.locator('#wPl > .grip').isVisible(), true, 'Car mode grip stays direct');
+      await p7.close();
+    }
     assert.deepEqual(errors, []);
-    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, six live themes, PFD tilt/compass/clouds/night, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

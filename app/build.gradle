@@ -5,11 +5,12 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.daesinnam.amp'
+        // 데모판: 기존 앱(com.daesinnam.amp)과 패키지 이름이 달라 덮어쓰지 않고 따로 설치됩니다.
+        applicationId 'com.daesinnam.amp.demo'
         minSdk 26
         targetSdk 35
-        versionCode 42
-        versionName "6.2"
+        versionCode 43
+        versionName "6.3-demo"
     }
 
     buildFeatures { buildConfig true }
