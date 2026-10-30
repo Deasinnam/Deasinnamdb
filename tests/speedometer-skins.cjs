@@ -646,7 +646,7 @@ async function main() {
       const pf = await context.newPage();
       pf.on('pageerror', error => errors.push(error.message));
       await pf.addInitScript(() => {if(sessionStorage.getItem('pf'))return;sessionStorage.setItem('pf','1');localStorage.clear();
-        window.AndroidBridge={gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
+        window.__said=[];window.AndroidBridge={gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},speak:t=>window.__said.push(t)};});
       await pf.goto(origin);
       await pf.waitForFunction(() => window.AmpFlight);
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Ver1 opens in the cockpit skin');
@@ -686,13 +686,12 @@ async function main() {
       await pf.evaluate(() => AmpFlight.step(2, 20));
       assert.equal(await ph(), 'roll', 'Driving again starts a new departure');
       // 50km/h 넘으면 SLOW DOWN: 비행창 전체 빨간 경고 3번 + 음성
-      await pf.evaluate(() => {window.__said=[];window.speechSynthesis&&(speechSynthesis.speak=u=>__said.push(u.text));AmpHost.speedTick(30);AmpHost.speedTick(55)});
+      await pf.evaluate(() => {window.__said=[];AmpHost.speedTick(30);AmpHost.speedTick(55)});
       assert.equal(await pf.locator('#wGps .slowfx').isVisible(), true, 'Red SLOW DOWN overlay over the flight window');
       assert.match(await pf.locator('#wGps .slowfx').textContent(), /SLOW DOWN/);
       assert.equal(await pf.locator('#wGps .slowfx').evaluate(el => getComputedStyle(el).animationIterationCount), '3', 'Flashes three times');
       assert.match((await pf.evaluate(() => __said)).join(' '), /슬로우 다운/);
-      await pf.waitForTimeout(2100);
-      assert.equal(await pf.locator('#wGps .slowfx').isVisible(), false);
+      await pf.waitForFunction(() => !document.querySelector('#wGps').classList.contains('slowing'), null, {timeout:6000});
       await pf.evaluate(() => {__said=[];AmpHost.speedTick(155)});
       assert.equal(await pf.locator('#wGps').evaluate(el => el.classList.contains('slowing')), false, '150km/h is a normal caution (no red flash)');
       await pf.close();

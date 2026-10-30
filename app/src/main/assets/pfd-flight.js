@@ -46,13 +46,13 @@
     F.phase = 'approach';
     H.beep('roger');
     H.atcSay('대신남 원, 활주로 ' + pad2(F.rwNum) + ' 착륙을 허가합니다.');
-    kick(); return true;
+    kick(); renderBadge(true); return true;
   }
   function goAround() {
     if (F.phase !== 'approach') return false;
     F.phase = 'climb'; F.auto = false; F.liftAt = performance.now() + F.off;
     H.atcSay('대신남 원, 복행합니다. 다시 상승하세요.');
-    kick(); return true;
+    kick(); renderBadge(true); return true;
   }
 
   function update(now, vIn) {
