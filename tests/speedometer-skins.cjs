@@ -461,6 +461,14 @@ async function main() {
     await pc.waitForFunction(() => document.querySelector('#camImg').hidden);
     await pc.locator('#camConn').click();
     assert.deepEqual((await pc.evaluate(() => window.__camCalls)).filter(c=>c[0]==='connect').pop(), ['connect','Car-Cam c9e710',''], 'Saved SSID used');
+    // 폴드7처럼 휴대폰 전체가 블랙박스 와이파이에 붙은 경우: 이 앱은 모바일 데이터로 우회, 다른 앱 막힘 안내
+    await pc.evaluate(() => Object.assign(__cam,{via:'existing',sysCam:true,sysInternet:false,cellBound:true,internet:true,defaultNet:'mobile'}));
+    await pc.waitForFunction(() => /모바일 데이터로 우회/.test(document.querySelector('#camNet').textContent), null, {timeout:3000});
+    assert.match(await pc.locator('#camNet').textContent(), /다른 앱 인터넷\s*막힘/);
+    assert.equal(await pc.locator('#camNet .camwarn').isVisible(), true, 'Warns that the phone joined the dashcam Wi-Fi system-wide');
+    assert.match(await pc.locator('#camNet .camwarn').textContent(), /삭제/);
+    await pc.evaluate(() => Object.assign(__cam,{via:'request',sysCam:false,sysInternet:true,cellBound:false}));
+    await pc.waitForFunction(() => !document.querySelector('#camNet .camwarn'), null, {timeout:3000});
     await pc.locator('#skin').selectOption('blue');
     assert.ok(!(await pc.locator('#wCam').isVisible()), 'Dashcam hidden outside car skins');
     await pc.close();
@@ -609,8 +617,32 @@ async function main() {
       assert.equal(await p7.locator('#wPl > .grip').isVisible(), true, 'Car mode grip stays direct');
       await p7.close();
     }
+    // 로고 옆 시계: 서울 시간 + 해외 시간 하나
+    {
+      const p9 = await context.newPage();
+      p9.on('pageerror', error => errors.push(error.message));
+      await p9.addInitScript(() => {if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
+      await p9.clock.install({time: new Date('2026-10-30T13:05:00Z')});
+      await p9.goto(origin);
+      await p9.locator('#clkTime').waitFor();
+      await p9.clock.runFor(1500);
+      assert.equal(await p9.locator('#clkTime').textContent(), '22:05');
+      assert.match(await p9.locator('#clkDate').textContent(), /10\.30 \(금\)/);
+      const cb = await p9.locator('#clock').boundingBox(), bb = await p9.locator('.brand').boundingBox();
+      assert.ok(cb.x >= bb.x + bb.width - 2 && Math.abs((cb.y+cb.height/2)-(bb.y+bb.height/2)) < bb.height/2, 'Clock sits next to the logo');
+      assert.equal(await p9.locator('#clkWTime').textContent(), '+ 추가');
+      await p9.locator('#clkWorld').click();
+      assert.equal(await p9.locator('#settings').isVisible(), true, 'Tapping the world clock opens settings');
+      await p9.locator('#sWorld').selectOption('America/New_York');
+      await p9.clock.runFor(1100);
+      assert.equal(await p9.locator('#clkWTime').textContent(), '09:05');
+      assert.equal(await p9.locator('#clkDiff').textContent(), '−13h');
+      await p9.reload();await p9.clock.runFor(1500);
+      assert.match(await p9.locator('#clkCity').textContent(), /뉴욕/, 'World city remembered');
+      await p9.close();
+    }
     assert.deepEqual(errors, []);
-    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

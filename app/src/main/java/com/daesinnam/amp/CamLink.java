@@ -61,6 +61,14 @@ final class CamLink {
     private volatile String lastErr = "";
     private ConnectivityManager.NetworkCallback cb;
 
+    // 모바일 데이터 유지: 휴대폰 와이파이 설정으로 블랙박스에 붙어 기본 네트워크가 "인터넷 없는 와이파이"가 되면
+    // (갤럭시 폴드 등에서 인텔리전트 Wi-Fi가 넘겨 주지 않는 경우) 이 앱의 통신은 모바일 데이터로 돌립니다.
+    private ConnectivityManager.NetworkCallback cellCb, defCb;
+    private volatile Network cell;
+    private volatile Network sysDefault;
+    private volatile boolean sysDefaultOk = true, sysDefaultWifi = false;
+    private volatile boolean cellBound = false;
+
     // 통신 방식 찾기
     private volatile boolean probing = false;
     private volatile JSONArray probe = new JSONArray();
@@ -114,7 +122,7 @@ final class CamLink {
                     .build();
             cb = new ConnectivityManager.NetworkCallback() {
                 @Override public void onAvailable(Network n) { useNetwork(n, "request"); }
-                @Override public void onLost(Network n) { if (n.equals(net)) { net = null; state = "lost"; stopLive(); } }
+                @Override public void onLost(Network n) { if (n.equals(net)) { net = null; state = "lost"; stopLive(); rebind(); } }
                 @Override public void onUnavailable() { state = "unavailable"; lastErr = "카메라 와이파이를 찾지 못했거나 연결을 취소했습니다."; }
             };
             state = "requesting";
@@ -134,6 +142,61 @@ final class CamLink {
         net = null;
         state = "idle";
         via = "";
+        releaseMobile();
+    }
+
+    /** 카메라에 연결된 동안 모바일 데이터를 깨워 두고, 필요하면 이 앱의 기본 통신을 모바일 데이터로 묶습니다. */
+    private synchronized void keepMobile() {
+        try {
+            if (defCb == null && Build.VERSION.SDK_INT >= 24) {
+                defCb = new ConnectivityManager.NetworkCallback() {
+                    @Override public void onAvailable(Network n) { sysDefault = n; }
+                    @Override public void onCapabilitiesChanged(Network n, NetworkCapabilities c) {
+                        sysDefault = n;
+                        sysDefaultOk = c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+                        sysDefaultWifi = c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
+                        rebind();
+                    }
+                    @Override public void onLost(Network n) { if (n.equals(sysDefault)) { sysDefault = null; sysDefaultOk = false; sysDefaultWifi = false; rebind(); } }
+                };
+                cm.registerDefaultNetworkCallback(defCb);
+            }
+            if (cellCb == null) {
+                NetworkRequest r = new NetworkRequest.Builder()
+                        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                        .build();
+                cellCb = new ConnectivityManager.NetworkCallback() {
+                    @Override public void onAvailable(Network n) { cell = n; rebind(); }
+                    @Override public void onLost(Network n) { if (n.equals(cell)) { cell = null; rebind(); } }
+                };
+                cm.requestNetwork(r, cellCb);
+            }
+        } catch (Exception e) {
+            lastErr = "모바일 데이터 유지 실패: " + e.getMessage();
+        }
+        rebind();
+    }
+
+    /** 휴대폰 기본 네트워크가 인터넷이 안 되면 이 앱(지도·곡 정보·웹 화면)은 모바일 데이터로 통신합니다. 카메라 소켓은 따로 카메라 와이파이에 묶여 있습니다. */
+    private synchronized void rebind() {
+        boolean want = net != null && cell != null && !sysDefaultOk;
+        try {
+            if (want) {
+                if (cm.bindProcessToNetwork(cell)) cellBound = true;
+            } else if (cellBound) {
+                cm.bindProcessToNetwork(null);
+                cellBound = false;
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private synchronized void releaseMobile() {
+        if (cellBound) { try { cm.bindProcessToNetwork(null); } catch (Exception ignored) {} cellBound = false; }
+        if (cellCb != null) { try { cm.unregisterNetworkCallback(cellCb); } catch (Exception ignored) {} cellCb = null; }
+        if (defCb != null) { try { cm.unregisterNetworkCallback(defCb); } catch (Exception ignored) {} defCb = null; }
+        cell = null;
+        sysDefaultOk = true;
     }
 
     private void release() {
@@ -149,6 +212,7 @@ final class CamLink {
         state = "connected";
         String gw = gateway(n);
         if (!gw.isEmpty() && camIp.isEmpty()) camIp = gw;
+        keepMobile();
     }
 
     /** 인터넷이 없는 와이파이 중 카메라처럼 보이는 것(사설 대역 게이트웨이)을 찾습니다. */
@@ -222,8 +286,15 @@ final class CamLink {
             o.put("gateway", n == null ? "" : gateway(n));
             o.put("camIp", camIp);
             o.put("proto", proto);
-            o.put("internet", defaultHasInternet());
-            o.put("defaultNet", defaultKind());
+            // 휴대폰 전체(다른 앱) 기준 인터넷: 시스템 기본 네트워크
+            boolean sysOk = defCb != null ? sysDefaultOk : defaultHasInternet();
+            o.put("internet", sysOk || cellBound);
+            o.put("sysInternet", sysOk);
+            o.put("defaultNet", cellBound ? "mobile" : defaultKind());
+            // 휴대폰이 와이파이 설정으로 블랙박스에 직접 붙어 다른 앱 인터넷이 막힌 상태
+            o.put("sysCam", n != null && ("existing".equals(via) || (defCb != null && sysDefaultWifi && !sysDefaultOk)));
+            o.put("cellBound", cellBound);
+            o.put("cellReady", cell != null);
             o.put("probing", probing);
             o.put("probe", probe);
             o.put("live", live);
