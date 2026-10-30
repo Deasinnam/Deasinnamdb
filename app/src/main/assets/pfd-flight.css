@@ -1,0 +1,23 @@
+/* 대신남 원 Ver1 — PFD 비행 단계 안내와 착륙·복행·시연 버튼 */
+.flt{position:absolute;inset:0;pointer-events:none;z-index:2;font-family:"Barlow Condensed","Rajdhani","Noto Sans KR",sans-serif}
+.flt-badge{position:absolute;left:calc(clamp(67px,12%,175px) + 10px);top:46px;display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;max-width:52%;
+  padding:6px 12px 7px 10px;border:1px solid #2b3328;border-radius:4px;background:#020604cc;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff12}
+.flt-badge i{grid-row:1/3;width:10px;height:10px;border-radius:50%;background:#f3bc65;box-shadow:0 0 8px #f3bc65}
+.flt-badge b{font-weight:700;font-size:clamp(13px,1.5vw,18px);letter-spacing:.14em;color:#e7e9df;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flt-badge span{font-family:"Noto Sans KR",sans-serif;font-size:clamp(11px,1.1vw,13px);color:#a8f08f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flt-badge[data-ph="hold"] i{background:#ff6a4d;box-shadow:0 0 8px #ff6a4d;animation:fltBlink 1.2s steps(2) infinite}
+.flt-badge[data-ph="roll"] i,.flt-badge[data-ph="climb"] i{background:#a8f08f;box-shadow:0 0 8px #a8f08f}
+.flt-badge[data-ph="cruise"] i{background:#7fd0ff;box-shadow:0 0 8px #7fd0ff}
+.flt-badge[data-ph="approach"] i{background:#f3bc65;animation:fltBlink .8s steps(2) infinite}
+.flt-badge[data-ph="landed"] i,.flt-badge[data-ph="rollout"] i{background:#ffffff;box-shadow:0 0 8px #fff}
+@keyframes fltBlink{50%{opacity:.25}}
+.flt-btns{position:absolute;right:calc(clamp(67px,12%,175px) + 10px);top:46px;display:flex;gap:6px;pointer-events:auto}
+.flt-btns button{height:38px;min-width:64px;padding:0 14px;border:1px solid #000;border-radius:3px;font:700 16px/1 "Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.1em;color:#e7e9df;cursor:pointer;
+  background:linear-gradient(180deg,#3d4248,#191f1b);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #14171a,0 2px 6px #000a}
+.flt-btns .flt-land{color:#10180d;background:linear-gradient(180deg,#f7d08a,#f3bc65 55%,#b9822c);box-shadow:inset 0 1px 0 #fff8,0 0 14px #f3bc6566}
+.flt-btns .flt-ga{color:#fff;background:linear-gradient(180deg,#ff8a6e,#e0472b 55%,#9a2a14)}
+.flt-btns .flt-sim{min-width:52px;font-size:14px;opacity:.85}
+.flt-btns .flt-sim.on{color:#a8f08f;box-shadow:inset 0 -3px 0 #a8f08f,0 0 10px #a8f08f40}
+.flt-btns button[hidden]{display:none}
+@media (max-width:600px){.flt-badge{top:40px;max-width:60%}.flt-btns{top:auto;bottom:calc(clamp(43px,14.5%,66px) + 8px)}.flt-btns button{height:34px;min-width:54px;font-size:14px}}
+#pfdHost .pfd-canvas-wrap{position:relative}

@@ -72,15 +72,15 @@ jobs:
           name: DaesinnamAmp-apk
           path: app/build/outputs/apk/*/release/*.apk
 
-      - name: Releases에 데모 APK 올리기
-        if: github.ref == 'refs/heads/daesinnam-amp-demo'
+      - name: Releases에 대신남 원 Ver1 APK 올리기
+        if: github.ref == 'refs/heads/daesinnam-one-v1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/lite/release/app-lite-release.apk DaesinnamAmp-Demo.apk
-          gh release delete demo --yes --cleanup-tag || true
-          gh release create demo DaesinnamAmp-Demo.apk \
+          cp app/build/outputs/apk/lite/release/app-lite-release.apk DaesinnamOne-V1.apk
+          gh release delete one-v1 --yes --cleanup-tag || true
+          gh release create one-v1 DaesinnamOne-V1.apk \
             --target "$GITHUB_SHA" \
             --prerelease \
-            --title "Daesinnam Amp DEMO (별도 설치 데모판)" \
-            --notes "기존 Daesinnam Amp와 따로 설치되는 데모판입니다(패키지 com.daesinnam.amp.demo). 일반 스킨은 기본 크기 고정·창 위 버튼으로 크기 조절, 자동차·드라이브 스킨은 콕핏 PFD 기능 제외. 빌드 번호 ${{ github.run_number }}"
+            --title "대신남 원 Ver1 (독립 설치판)" \
+            --notes "기존 Daesinnam Amp·데모판과 따로 설치되는 대신남 원 Ver1입니다(패키지 com.daesinnam.one.v1). 백업과 비교 테스트용. 콕핏 아날로그 시계, PFD 활주로 이륙·착륙 장면. 빌드 번호 ${{ github.run_number }}"

@@ -281,6 +281,16 @@ button{cursor:pointer}
 :root[data-skin="carnival2"] .clock small{color:var(--ck-white)}
 :root[data-skin="carnival2"] .clock em{color:var(--ck-cyan)}
 @media (max-width:600px){.clock{width:100%;margin-right:0}.clock>*{flex:1}}
+/* 콕핏 아날로그 시계: 조종석 계기처럼 둥근 시계 */
+.clock .ck-dial{display:none}
+:root[data-skin="carnival2"][data-clock="analog"] .clock>div,:root[data-skin="carnival2"][data-clock="analog"] .clock>button{grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;padding:6px 12px 6px 6px}
+:root[data-skin="carnival2"][data-clock="analog"] .clock .ck-dial{display:block;grid-row:1/3;width:clamp(84px,8.6vw,112px);height:clamp(84px,8.6vw,112px)}
+:root[data-skin="carnival2"][data-clock="analog"] .clock b{display:none}
+:root[data-skin="carnival2"][data-clock="analog"] .clock small{grid-column:2;align-self:end;font-size:12px;letter-spacing:.18em}
+:root[data-skin="carnival2"][data-clock="analog"] .clock em{grid-column:2;align-self:start;font-size:14px;font-family:"Share Tech Mono",monospace}
+:root[data-skin="carnival2"][data-clock="analog"] .clock .ck-world.off .ck-dial{opacity:.35}
+:root[data-skin="carnival2"][data-clock="analog"] .clock .ck-world.off b{display:block;grid-column:2;font-size:14px}
+:root[data-skin="carnival2"] #clkNow{cursor:pointer}
 .brand .mark{flex:none;width:clamp(34px,4.2vw,48px);height:auto;fill:var(--logo-blue)}
 .brand .word{min-width:0;display:flex;flex-direction:column;gap:3px}
 .brand .wm{font-family:var(--f-logo);font-weight:900;font-size:clamp(22px,3.2vw,34px);line-height:.9;letter-spacing:-.01em;white-space:nowrap;color:var(--logo-word)}
@@ -609,6 +619,12 @@ input[type=range]:disabled{opacity:.35}
 .camtag .live{background:#b3141c;color:#fff;border-color:#ff5a5a}
 .camtag .live::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-right:5px;vertical-align:1px;animation:camblink 1s steps(2) infinite}
 @keyframes camblink{50%{opacity:0}}
+.slowfx{display:none}
+#wGps.slowing>.slowfx{display:grid;place-content:center;gap:6px;position:absolute;inset:0;z-index:20;pointer-events:none;text-align:center;border-radius:inherit;
+  background:radial-gradient(ellipse at center,#ff2a1acc 0%,#d40d00e6 60%,#8a0500f0 100%);box-shadow:inset 0 0 0 4px #ff6a5a,inset 0 0 60px #000a;animation:slowBlink .62s linear 3 both}
+#wGps.slowing>.slowfx b{font:800 clamp(34px,8vw,96px)/1 "Barlow Condensed","Rajdhani",sans-serif;letter-spacing:.12em;color:#fff;text-shadow:0 0 18px #ff9a8a,0 3px 0 #5a0000}
+#wGps.slowing>.slowfx span{font:700 clamp(14px,2vw,22px)/1.3 "Noto Sans KR",sans-serif;color:#fff2ee}
+@keyframes slowBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
 .camwarn{flex-basis:100%;display:grid;gap:6px;padding:10px 12px;border:1px solid #e0a23a;border-radius:6px;background:color-mix(in srgb,#e0a23a 12%,transparent);color:var(--lcd-hi,#fff);font-size:13px;line-height:1.5}
 .camwarn>b{color:#ffcf7a}.camwarn button{justify-self:start}
 .camnet{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
@@ -1063,8 +1079,8 @@ html.driving body{overflow:hidden}
     <div class="word"><div class="wm">DAESINNAM<em>AMP</em></div><div class="tag">MUSIC LAB · MP3 PLAYER</div></div>
   </div>
   <div class="clock" id="clock" aria-live="off">
-    <div class="ck-now"><small id="clkDate">--</small><b id="clkTime">--:--</b><em>서울</em></div>
-    <button class="ck-world" id="clkWorld" type="button" title="해외 시간 바꾸기"><small id="clkCity">해외 시간</small><b id="clkWTime">+ 추가</b><em id="clkDiff"></em></button>
+    <div class="ck-now" id="clkNow" title="콕핏 스킨에서 누르면 디지털·아날로그 전환"><canvas class="ck-dial" id="clkDialNow" width="256" height="256" aria-hidden="true"></canvas><small id="clkDate">--</small><b id="clkTime">--:--</b><em>서울</em></div>
+    <button class="ck-world" id="clkWorld" type="button" title="해외 시간 바꾸기"><canvas class="ck-dial" id="clkDialW" width="256" height="256" aria-hidden="true"></canvas><small id="clkCity">해외 시간</small><b id="clkWTime">+ 추가</b><em id="clkDiff"></em></button>
   </div>
   <div class="tools">
     <div class="seg" id="srcSeg" hidden><button data-src="local">내 음악</button><button data-src="ext">외부 앱</button></div>
@@ -1388,6 +1404,7 @@ html.driving body{overflow:hidden}
     <section id="secClock">
       <h3>시계</h3>
       <label class="row"><span><b>해외 시간</b><small>로고 옆 시계에 서울 시간과 함께 보여 줄 도시를 골라요.</small></span><select class="sel" id="sWorld"></select></label>
+      <label class="row"><span><b>시계 모양 (콕핏 스킨)</b><small>아날로그는 조종석 계기처럼 둥근 시계로 보여요. 시계를 눌러도 바뀌어요.</small></span><select class="sel" id="sClockStyle"><option value="digital">디지털</option><option value="analog">아날로그 (둥근 계기)</option></select></label>
     </section>
     <section>
       <h3>주행 중 간편 모드</h3>
@@ -1792,7 +1809,7 @@ const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
-let skin=store.get('skin2','blue'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local';
+let skin=store.get('skin2','carnival2'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local';
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 
 /* ---------- skin & layout ---------- */
@@ -2850,7 +2867,11 @@ window.AmpHost={
   setLimit(v){gLimit=v|0;store.set('gLimit',gLimit);const sel=$('#gLimit');if([...sel.options].some(o=>+o.value===gLimit))sel.value=String(gLimit)},
   resetTrip(){trip={dist:0,time:0,max:0};store.set('trip',trip);gpsUi()},
   gpsStart(){gpsStart()},gpsStop(){gpsStop(true)},
-  load(k,d){return store.get(k,d)},save(k,v){store.set(k,v)}
+  load(k,d){return store.get(k,d)},save(k,v){store.set(k,v)},
+  get atcDone(){return typeof atcDone!=='undefined'&&atcDone},
+  speedTick(v){try{atcSpeedTick(v,true)}catch(e){}},
+  atcSay(t){try{if(typeof atcSpeak==='function')atcSpeak(t)}catch(e){}},
+  beep(k){try{if(k==='takeoff'&&typeof sndTakeoff==='function')sndTakeoff();else if(typeof sndRoger==='function')sndRoger()}catch(e){}}
 };
 /* ---------- D1 DASHCAM: 블랙박스 실시간 화면 ---------- */
 (function(){
@@ -2932,6 +2953,44 @@ function clockTick(){const d=new Date();let h;try{h=tzParts(d,HOME_TZ)}catch(e){
   const dd=Date.UTC(+w.year,+w.month-1,+w.day)-Date.UTC(+h.year,+h.month-1,+h.day);
   $('#clkCity').textContent=name+(dd>0?' · 다음날':dd<0?' · 전날':'');$('#clkWTime').textContent=w.hour+':'+w.minute;
   $('#clkDiff').textContent=diff===0?'시차 없음':(diff>0?'+':'−')+(Math.abs(diff)%1?Math.abs(diff).toFixed(1):Math.abs(diff))+'h'}
+/* 아날로그(콕핏 계기) 시계 */
+let clockStyle=store.get('clockStyle','analog');
+function setClockStyle(v){clockStyle=v==='analog'?'analog':'digital';store.set('clockStyle',clockStyle);document.documentElement.dataset.clock=clockStyle;$('#sClockStyle').value=clockStyle;drawDials(true)}
+$('#sClockStyle').onchange=e=>setClockStyle(e.target.value);
+$('#clkNow').onclick=()=>{if(skin==='carnival2')setClockStyle(clockStyle==='analog'?'digital':'analog')};
+function tzHMS(d,tz){const f=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});const o={};f.formatToParts(d).forEach(p=>o[p.type]=p.value);return {h:+o.hour,m:+o.minute,s:+o.second+d.getMilliseconds()/1000}}
+const CITY3={'Asia/Seoul':'SEL','America/New_York':'NYC','America/Los_Angeles':'LAX','America/Chicago':'CHI','America/Toronto':'YYZ','America/Vancouver':'YVR','Pacific/Honolulu':'HNL','America/Sao_Paulo':'SAO','Europe/London':'LON','Europe/Paris':'PAR','Europe/Berlin':'BER','Europe/Rome':'ROM','Europe/Madrid':'MAD','Europe/Istanbul':'IST','Asia/Dubai':'DXB','Asia/Kolkata':'DEL','Asia/Bangkok':'BKK','Asia/Ho_Chi_Minh':'SGN','Asia/Singapore':'SIN','Asia/Manila':'MNL','Asia/Shanghai':'PEK','Asia/Hong_Kong':'HKG','Asia/Taipei':'TPE','Asia/Tokyo':'TYO','Australia/Sydney':'SYD','Pacific/Auckland':'AKL','Pacific/Guam':'GUM'};
+function drawDial(cv,t,code,night){const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
+  // 계기 장착판(모서리 나사)
+  const pl=ctx.createLinearGradient(-R,-R,R,R);pl.addColorStop(0,'#3a4236');pl.addColorStop(1,'#151a14');ctx.fillStyle=pl;ctx.beginPath();ctx.roundRect(-R+1,-R+1,S-2,S-2,S*.12);ctx.fill();
+  ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.stroke();
+  for(const [x,y] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const sx=x*R*.8,sy=y*R*.8,r=S*.035;const g=ctx.createRadialGradient(sx-r*.3,sy-r*.3,0,sx,sy,r);g.addColorStop(0,'#d9dee3');g.addColorStop(1,'#4c535b');ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fill();ctx.strokeStyle='#1a1d20';ctx.lineWidth=S*.008;ctx.beginPath();ctx.moveTo(sx-r*.7,sy-r*.7*(x*y));ctx.lineTo(sx+r*.7,sy+r*.7*(x*y));ctx.stroke()}
+  // 베젤
+  const bz=ctx.createLinearGradient(0,-R,0,R);bz.addColorStop(0,'#6b7468');bz.addColorStop(.5,'#22281f');bz.addColorStop(1,'#0b0e0a');ctx.fillStyle=bz;ctx.beginPath();ctx.arc(0,0,R*.9,0,7);ctx.fill();
+  ctx.fillStyle='#050705';ctx.beginPath();ctx.arc(0,0,R*.8,0,7);ctx.fill();
+  // 눈금
+  for(let i=0;i<60;i++){const a=i/60*Math.PI*2,big=i%5===0,r1=R*.77,r2=big?R*.64:R*.71;ctx.strokeStyle=big?'#eef2e6':'#9fa99a';ctx.lineWidth=big?S*.022:S*.009;ctx.beginPath();ctx.moveTo(Math.sin(a)*r1,-Math.cos(a)*r1);ctx.lineTo(Math.sin(a)*r2,-Math.cos(a)*r2);ctx.stroke()}
+  ctx.fillStyle='#eef2e6';ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let n=1;n<=12;n++){const a=n/12*Math.PI*2,big=n%3===0;ctx.font=`700 ${big?S*.13:S*.085}px "Barlow Condensed","Rajdhani",sans-serif`;ctx.fillText(String(n),Math.sin(a)*R*.5,-Math.cos(a)*R*.5+S*.004)}
+  ctx.font=`600 ${S*.07}px "Share Tech Mono",monospace`;ctx.fillStyle='#a8f08f';ctx.fillText(code,0,-R*.22);
+  ctx.font=`600 ${S*.05}px "Barlow Condensed",sans-serif`;ctx.fillStyle='#9fa99a';ctx.fillText(night?'NIGHT':'DAY',0,R*.27);
+  if(!t)return;
+  const hand=(ang,len,wid,col,tail,lume)=>{ctx.save();ctx.rotate(ang);ctx.fillStyle='#000a';ctx.beginPath();ctx.moveTo(-wid/2+S*.01,tail+S*.01);ctx.lineTo(-wid/2+S*.01,-len+wid+S*.01);ctx.lineTo(S*.01,-len+S*.01);ctx.lineTo(wid/2+S*.01,-len+wid+S*.01);ctx.lineTo(wid/2+S*.01,tail+S*.01);ctx.fill();
+    ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-wid/2,tail);ctx.lineTo(-wid/2,-len+wid);ctx.lineTo(0,-len);ctx.lineTo(wid/2,-len+wid);ctx.lineTo(wid/2,tail);ctx.closePath();ctx.fill();
+    if(lume){ctx.fillStyle='#a8f08f';ctx.fillRect(-wid*.22,-len*.86,wid*.44,len*.5)}ctx.restore()};
+  const sec=t.s,min=t.m+sec/60,hr=(t.h%12)+min/60;
+  hand(hr/12*Math.PI*2,R*.42,S*.05,'#e7e9df',R*.1,true);
+  hand(min/60*Math.PI*2,R*.66,S*.036,'#e7e9df',R*.12,true);
+  ctx.save();ctx.rotate(sec/60*Math.PI*2);ctx.strokeStyle='#f3bc65';ctx.lineWidth=S*.012;ctx.beginPath();ctx.moveTo(0,R*.2);ctx.lineTo(0,-R*.72);ctx.stroke();ctx.fillStyle='#f3bc65';ctx.beginPath();ctx.arc(0,R*.16,S*.025,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle='#1a1d20';ctx.beginPath();ctx.arc(0,0,S*.04,0,7);ctx.fill();ctx.fillStyle='#f3bc65';ctx.beginPath();ctx.arc(0,0,S*.018,0,7);ctx.fill();
+  // 유리 반사
+  const gl=ctx.createLinearGradient(-R*.6,-R*.8,R*.3,R*.2);gl.addColorStop(0,'#ffffff1f');gl.addColorStop(.45,'#ffffff05');gl.addColorStop(.46,'#ffffff00');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,0,R*.8,0,7);ctx.fill()}
+let dialT=0;
+function drawDials(force){const on=skin==='carnival2'&&clockStyle==='analog'&&!document.hidden;if(!on&&!force)return;if(!on)return;
+  const d=new Date();let a,b=null;try{a=tzHMS(d,HOME_TZ);if(worldTz)b=tzHMS(d,worldTz)}catch(e){return}
+  drawDial($('#clkDialNow'),a,'SEL',a.h>=19||a.h<6);drawDial($('#clkDialW'),b,worldTz?(CITY3[worldTz]||'UTC'):'— — —',b?(b.h>=19||b.h<6):false)}
+(function dialLoop(){drawDials();dialT=setTimeout(dialLoop,skin==='carnival2'&&clockStyle==='analog'?100:1000)})();
+setClockStyle(clockStyle);
 $('#clkWorld').onclick=()=>{openSettings();const r=$('#secClock');if(r){r.scrollIntoView({block:'center'});$('#sWorld').focus()}};
 clockTick();setInterval(clockTick,1000);
 /* ---------- 창 순서(설정) ---------- */
@@ -3173,14 +3232,24 @@ function atcSkip(){atcRun++;$('#atcLog').innerHTML='';
 
 // 관제탑 속도 주의: 50·100·120·150·180·200km/h에 처음 도달하면 빨간 글자로 경고(5km/h 아래로 내려가면 다시 경고 가능)
 const SPD_MARKS=[50,100,120,150,180,200],spdArmed=new Set(SPD_MARKS);let atcWarnT=0;
-function atcSpeedTick(v){if(skin!=='carnival2'||!gpsOn||!gs.fix)return;let hit=0;
+function atcSpeedTick(v,sim){if(skin!=='carnival2'||(!sim&&(!gpsOn||!gs.fix)))return;let hit=0;
   for(const m of SPD_MARKS){if(v>=m&&spdArmed.has(m)){spdArmed.delete(m);hit=m}else if(v<m-5)spdArmed.add(m)}
   if(hit)atcWarn(hit)}
 function atcWarn(m){const w=$('#atcWarn');w.querySelector('b').textContent='⚠ 속도 주의 · '+m+' km/h';
   w.querySelector('span').textContent='대신남 원, 시속 '+m+'km를 넘었습니다. '+(m>=120?'즉시 감속하십시오.':'속도에 주의하십시오.');
   w.hidden=false;w.style.animation='none';void w.offsetWidth;w.style.animation='';
   $('#atcSt').textContent='· 속도 주의';sndSquelch(0,.16);sndRoger(.2);sndRoger(.42);
-  clearTimeout(atcWarnT);atcWarnT=setTimeout(()=>{w.hidden=true;$('#atcSt').textContent=atcDone?'· 이륙 허가':'· 점검 중'},6000)}
+  clearTimeout(atcWarnT);atcWarnT=setTimeout(()=>{w.hidden=true;$('#atcSt').textContent=atcDone?'· 이륙 허가':'· 점검 중'},6000);
+  if(SLOW_MARKS.includes(m))slowDown(m)}
+// 50·100·120km/h: 관제탑 "슬로우 다운" 음성 + 비행창(속도계) 전체가 빨갛게 세 번 깜빡임
+const SLOW_MARKS=[50,100,120];
+function slowDown(m){const w=$('#wGps');if(!w)return;
+  let o=w.querySelector(':scope>.slowfx');if(!o){o=document.createElement('div');o.className='slowfx';o.setAttribute('role','alert');o.innerHTML='<b>SLOW DOWN</b><span></span>';w.appendChild(o)}
+  o.querySelector('span').textContent='관제탑 · 시속 '+m+'km 초과 · 감속하십시오';
+  w.classList.remove('slowing');void w.offsetWidth;w.classList.add('slowing');
+  [0,.62,1.24].forEach(t=>{sndRoger(t);sndRoger(t+.16)});
+  atcSpeak('슬로우 다운. 슬로우 다운. 대신남 원, 시속 '+m+'킬로미터를 넘었습니다. 감속하십시오.');
+  clearTimeout(slowDown.t);slowDown.t=setTimeout(()=>w.classList.remove('slowing'),2000)}
 $('#atcRun').onclick=()=>{fx();atcStart()};
 $('#atcSkip').onclick=atcSkip;
 // 콕핏 스킨에 들어올 때마다(앱 시작 포함) 점검을 한 번 진행
@@ -3205,6 +3274,8 @@ if(!restored)(async()=>{
 </script>
 <script src="pfd/pfd.js"></script>
 <script src="pfd-amp.js"></script>
+<script src="pfd-flight.js"></script>
+<link rel="stylesheet" href="pfd-flight.css">
 
 </body>
 </html>

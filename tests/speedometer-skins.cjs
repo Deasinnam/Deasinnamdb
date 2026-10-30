@@ -624,7 +624,7 @@ async function main() {
       await p9.addInitScript(() => {if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
       await p9.clock.install({time: new Date('2026-10-30T13:05:00Z')});
       await p9.goto(origin);
-      await p9.locator('#clkTime').waitFor();
+      await p9.locator('#clkTime').waitFor({state:'attached'});
       await p9.clock.runFor(1500);
       assert.equal(await p9.locator('#clkTime').textContent(), '22:05');
       assert.match(await p9.locator('#clkDate').textContent(), /10\.30 \(금\)/);
@@ -641,8 +641,64 @@ async function main() {
       assert.match(await p9.locator('#clkCity').textContent(), /뉴욕/, 'World city remembered');
       await p9.close();
     }
+    // 대신남 원 Ver1: 처음엔 콕핏 스킨·아날로그 시계, PFD는 활주로 대기 → 이륙 → 순항 → 착륙 → 도착
+    {
+      const pf = await context.newPage();
+      pf.on('pageerror', error => errors.push(error.message));
+      await pf.addInitScript(() => {if(sessionStorage.getItem('pf'))return;sessionStorage.setItem('pf','1');localStorage.clear();
+        window.AndroidBridge={gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
+      await pf.goto(origin);
+      await pf.waitForFunction(() => window.AmpFlight);
+      assert.equal(await pf.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Ver1 opens in the cockpit skin');
+      assert.equal(await pf.locator('#clkDialNow').isVisible(), true, 'Cockpit shows the round analog clock by default');
+      assert.equal(await pf.locator('#clkTime').isVisible(), false);
+      await pf.locator('#clkNow').click();
+      assert.equal(await pf.locator('#clkTime').isVisible(), true, 'Tapping the clock switches to digital');
+      await pf.locator('#clkNow').click();
+      assert.equal(await pf.evaluate(() => JSON.parse(localStorage.getItem('dna_clockStyle'))), 'analog');
+      const ph = () => pf.evaluate(() => AmpFlight.state.phase);
+      assert.equal(await ph(), 'hold', 'Stands on the runway at start');
+      assert.match(await pf.locator('.flt-badge').textContent(), /RWY/);
+      const img0 = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
+      await pf.evaluate(() => AmpFlight.step(2, 30));
+      assert.equal(await ph(), 'roll', 'Accelerating starts the takeoff roll');
+      await pf.evaluate(() => AmpFlight.step(4, 60));
+      assert.equal(await ph(), 'climb', 'Lifts off at speed');
+      await pf.evaluate(() => AmpFlight.step(1.5, 60));
+      assert.ok(await pf.evaluate(() => AmpFlight.state.pitch) > 3, 'Nose up while climbing '+JSON.stringify(await pf.evaluate(() => AmpFlight.state)));
+      assert.equal(await pf.locator('.flt-land').isVisible(), true, 'Land button while airborne');
+      await pf.evaluate(() => AmpFlight.step(30, 80));
+      assert.equal(await ph(), 'cruise');
+      const img1 = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
+      assert.notEqual(img0, img1, 'Runway view differs from cruise view');
+      await pf.locator('.flt-land').click();
+      assert.equal(await ph(), 'approach');
+      assert.equal(await pf.locator('.flt-ga').isVisible(), true, 'Go-around offered during approach');
+      const a0 = await pf.evaluate(() => AmpFlight.state.alt);
+      await pf.evaluate(() => AmpFlight.step(10, 70));
+      const s1 = await pf.evaluate(() => AmpFlight.state);
+      assert.ok(s1.rem > 0 && s1.alt < a0, 'Descends toward the runway with speed');
+      await pf.evaluate(() => AmpFlight.step(5, 0));
+      assert.equal(await pf.evaluate(() => AmpFlight.state.auto), true, 'Stopping the car finishes the landing automatically');
+      await pf.evaluate(() => AmpFlight.step(20, 0));
+      assert.equal(await ph(), 'landed', 'Touches down, rolls out and arrives');
+      assert.match(await pf.locator('.flt-badge').textContent(), /ARRIVED/);
+      await pf.evaluate(() => AmpFlight.step(2, 20));
+      assert.equal(await ph(), 'roll', 'Driving again starts a new departure');
+      // 50km/h 넘으면 SLOW DOWN: 비행창 전체 빨간 경고 3번 + 음성
+      await pf.evaluate(() => {window.__said=[];window.speechSynthesis&&(speechSynthesis.speak=u=>__said.push(u.text));AmpHost.speedTick(30);AmpHost.speedTick(55)});
+      assert.equal(await pf.locator('#wGps .slowfx').isVisible(), true, 'Red SLOW DOWN overlay over the flight window');
+      assert.match(await pf.locator('#wGps .slowfx').textContent(), /SLOW DOWN/);
+      assert.equal(await pf.locator('#wGps .slowfx').evaluate(el => getComputedStyle(el).animationIterationCount), '3', 'Flashes three times');
+      assert.match((await pf.evaluate(() => __said)).join(' '), /슬로우 다운/);
+      await pf.waitForTimeout(2100);
+      assert.equal(await pf.locator('#wGps .slowfx').isVisible(), false);
+      await pf.evaluate(() => {__said=[];AmpHost.speedTick(155)});
+      assert.equal(await pf.locator('#wGps').evaluate(el => el.classList.contains('slowing')), false, '150km/h is a normal caution (no red flash)');
+      await pf.close();
+    }
     assert.deepEqual(errors, []);
-    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, Ver1 analog cockpit clock + PFD takeoff/landing, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
