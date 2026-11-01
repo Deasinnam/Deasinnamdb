@@ -964,20 +964,20 @@ input[type=range]:disabled{opacity:.35}
 header.top{padding-top:28px!important}
 .app{padding-bottom:calc(24px + 40px)!important}
 #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 56px)!important}
-/* 콕핏 2: 왼쪽 세로 바로가기 */
+/* 콕핏 2: 세로 바로가기 — 따로 떠 있지 않고 스피드미터(또는 고른 창) 안 왼쪽에 들어감 */
 .ckrail{display:none}
-:root[data-ck2] .ckrail{display:flex;position:fixed;z-index:30;left:max(8px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);flex-direction:column;gap:8px;padding:8px 6px;
-  border:1px solid #000;border-radius:10px;background:linear-gradient(180deg,#2a3127,#1a1f1b);box-shadow:0 0 0 1px #54604e,0 8px 20px #000c;max-height:calc(100dvh - 120px);overflow-y:auto;scrollbar-width:none}
-.ckrail button{width:80px;min-height:60px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid #000;border-radius:6px;cursor:pointer;
-  background:linear-gradient(180deg,#3d4248,#191f1b);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #14171a;color:#c9d0d7;font:600 12.5px/1.1 "Noto Sans KR",sans-serif;letter-spacing:0}
-.ckrail button svg{width:24px;height:24px;fill:currentColor}
+:root[data-ck2] .win.hasrail>.ckrail{display:flex;position:absolute;z-index:3;left:8px;top:calc(var(--rail-top,40px));bottom:10px;width:84px;flex-direction:column;gap:6px;padding:6px 4px;
+  border:1px solid #000;border-radius:8px;background:linear-gradient(180deg,#2a3127,#1a1f1b);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #54604e;overflow-y:auto;scrollbar-width:none}
+:root[data-ck2] .win.hasrail>.ckrail::-webkit-scrollbar{display:none}
+:root[data-ck2] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:96px}
+.ckrail button{width:100%;min-height:54px;flex:1 0 auto;max-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid #000;border-radius:6px;cursor:pointer;
+  background:linear-gradient(180deg,#3d4248,#191f1b);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #14171a;color:#c9d0d7;font:600 12px/1.1 "Noto Sans KR",sans-serif;letter-spacing:0;padding:4px 2px}
+.ckrail button svg{width:22px;height:22px;fill:currentColor}
 .ckrail button.on{color:var(--ck-green,#a8f08f);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 var(--ck-green,#a8f08f),0 0 10px #a8f08f26}
-:root[data-ck2] .app,:root[data-ck2] .top{padding-left:calc(max(16px,env(safe-area-inset-left,0px)) + 100px)}
 @media (max-width:720px){
-  :root[data-ck2] .ckrail{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:8px;right:8px;transform:none;flex-direction:row;overflow-x:auto;max-height:none}
-  .ckrail button{width:66px;min-height:54px;font-size:11px}
-  :root[data-ck2] .app,:root[data-ck2] .top{padding-left:max(16px,env(safe-area-inset-left,0px))}
-  :root[data-ck2] .app{padding-bottom:110px!important}}
+  :root[data-ck2] .win.hasrail>.ckrail{position:static;width:auto;flex-direction:row;overflow-x:auto;overflow-y:hidden;margin:6px 8px 0}
+  :root[data-ck2] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:0}
+  .ckrail button{min-width:62px;flex:0 0 auto;min-height:50px;font-size:11px}}
 /* 콕핏 2 바로가기로 고른 창만 화면에 꽉 차게(스크롤 없이) */
 .app.FX>.win:not(.fx),.app.FX>#wExt{display:none!important}
 .app.FX{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))!important;grid-template-areas:none!important}
@@ -3352,7 +3352,12 @@ let ckWasOn=false;
 function cockpitSkin(){const on=isCk();if(on&&!ckWasOn){dk.refresh();setTimeout(()=>{if(isCk())atcStart()},500)}if(!on){atcRun++;dk.setGuard(false)}ckWasOn=on}
 /* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
 const FX_GROUPS={gps:['wGps'],cam:['wCam'],map:['wMap'],play:['wMain','wVis'],list:['wEq','wPl'],ctl:['wCtl','wAtc']};
-function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&f!=='all';
+const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
+function ckRailPlace(hostId){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));
+  if(skin!=='carnival3'||!hostId){ckRailHome.after(r);return}
+  const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
+  h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&f!=='all';ckRailPlace(skin==='carnival3'?(on?FX_GROUPS[f][0]:'wGps'):null);
   appEl.classList.toggle('FX',on);
   document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
   document.querySelectorAll('#ckRail button[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===(on?f:'all')));

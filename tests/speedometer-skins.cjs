@@ -739,6 +739,7 @@ async function main() {
       assert.equal(await pc2.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Cockpit 2 reuses the cockpit look');
       assert.equal(await pc2.evaluate(() => document.documentElement.dataset.ck2), '1');
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
+      assert.equal(await pc2.locator('#wGps > #ckRail').count(), 1, 'Rail sits inside the speedometer window');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
       for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['play',['wMain','wVis']],['list',['wEq','wPl']],['ctl',['wCtl','wAtc']]]) {
         await pc2.locator(`#ckRail [data-f="${f}"]`).click();
@@ -746,6 +747,7 @@ async function main() {
         assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');
         const fit = await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return r.bottom<=innerHeight+2&&r.top>=0}, ids[0]);
         assert.ok(fit, f+' fits the screen without scrolling');
+        assert.equal(await pc2.locator(`#${ids[0]} > #ckRail`).count(), 1, 'Rail moves into the chosen window');
       }
       await pc2.locator('#ckRail [data-f="all"]').click();
       assert.equal(await pc2.locator('#wEq').isVisible(), true, 'All windows back');
