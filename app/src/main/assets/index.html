@@ -960,6 +960,50 @@ input[type=range]:disabled{opacity:.35}
 .win.rz>.grip::after{content:"끌어서 높이 조절 · 두 번 누르면 원래대로";font-size:12px;color:var(--accent)}
 .win.collapsed .rzbtn{display:none}
 #wGps.collapsed>.grip{display:none!important}
+/* 위·아래 여유: 상태바(알림창 내리기)·하단 내비게이션 바와 터치가 겹치지 않게 */
+header.top{padding-top:28px!important}
+.app{padding-bottom:calc(24px + 40px)!important}
+#toast{bottom:calc(env(safe-area-inset-bottom,0px) + 56px)!important}
+/* 콕핏 2: 왼쪽 세로 바로가기 */
+.ckrail{display:none}
+:root[data-ck2] .ckrail{display:flex;position:fixed;z-index:30;left:max(8px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);flex-direction:column;gap:8px;padding:8px 6px;
+  border:1px solid #000;border-radius:10px;background:linear-gradient(180deg,#2a3127,#1a1f1b);box-shadow:0 0 0 1px #54604e,0 8px 20px #000c;max-height:calc(100dvh - 120px);overflow-y:auto;scrollbar-width:none}
+.ckrail button{width:80px;min-height:60px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid #000;border-radius:6px;cursor:pointer;
+  background:linear-gradient(180deg,#3d4248,#191f1b);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #14171a;color:#c9d0d7;font:600 12.5px/1.1 "Noto Sans KR",sans-serif;letter-spacing:0}
+.ckrail button svg{width:24px;height:24px;fill:currentColor}
+.ckrail button.on{color:var(--ck-green,#a8f08f);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 var(--ck-green,#a8f08f),0 0 10px #a8f08f26}
+:root[data-ck2] .app,:root[data-ck2] .top{padding-left:calc(max(16px,env(safe-area-inset-left,0px)) + 100px)}
+@media (max-width:720px){
+  :root[data-ck2] .ckrail{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:8px;right:8px;transform:none;flex-direction:row;overflow-x:auto;max-height:none}
+  .ckrail button{width:66px;min-height:54px;font-size:11px}
+  :root[data-ck2] .app,:root[data-ck2] .top{padding-left:max(16px,env(safe-area-inset-left,0px))}
+  :root[data-ck2] .app{padding-bottom:110px!important}}
+/* 콕핏 2 바로가기로 고른 창만 화면에 꽉 차게(스크롤 없이) */
+.app.FX>.win:not(.fx),.app.FX>#wExt{display:none!important}
+.app.FX{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))!important;grid-template-areas:none!important}
+.app.FX>.win.fx{grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;order:0!important;height:calc(100dvh - var(--fxTop,170px))!important;min-height:300px;align-self:stretch}
+.app.FX>.win.fx>.body{overflow:auto;min-height:0;display:flex;flex-direction:column}
+.app.FX>.win.fx>.grip,.app.FX>.win.fx .rzbtn{display:none!important}
+.app.FX>#wGps.fx #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
+.app.FX>#wGps.fx #pfdHost .dsn-pfd,.app.FX>#wGps.fx #pfdHost [data-role="content"],.app.FX>#wGps.fx #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
+.app.FX>#wGps.fx #pfdHost .pfd-canvas-wrap{flex:1;min-height:120px;height:auto!important;aspect-ratio:auto!important}
+.app.FX>#wGps.fx>.body{overflow:hidden}
+.app.FX>#wMap.fx .mapbox{flex:1}
+.app.FX>#wCtl.fx,.app.FX>#wAtc.fx{overflow-y:auto;overscroll-behavior:contain}.app.FX>#wCtl.fx>.dsn{flex:none}
+.app.FX>#wVis.fx .visbox{min-height:200px}
+/* 설정: 과속 경고 칩 */
+#settings .row.col{flex-direction:column;align-items:stretch;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips .pill{min-width:64px}
+/* 시계 옆 오늘의 날씨 */
+.clock .ck-wx{cursor:pointer}
+.clock .ck-wx i{grid-row:1/3;font-style:normal;font-size:clamp(26px,3vw,38px);line-height:1}
+.clock .ck-wx b{font-size:clamp(20px,2.2vw,28px)!important}
+.clock .ck-wx small{grid-column:2}
+:root[data-clock="analog"] .clock .ck-wx b{display:block!important;grid-column:2}
+.rzsteps{display:none;gap:4px}.win.rz>.bar .rzsteps{display:inline-flex}
+.rzsteps .wbtn{width:auto;min-width:30px;padding:0 8px;font:700 15px/1 "Barlow Condensed",sans-serif;color:var(--metal-ink)}
+:root[data-car] .rzsteps .wbtn{height:30px;min-width:40px;color:#141416}
+:root[data-skin="carnival2"] .rzsteps .wbtn{color:var(--ck-white)}
 .rzbtn.on{background:var(--accent)!important;border-color:var(--accent)!important}
 .rzbtn.on svg{fill:var(--hot-ink,#000)!important}
 /* 창 순서 사용자 지정: 정해진 배치 대신 순서대로 흘려 놓고, 넓은 창(속도계·조종 패널·관제탑·지도)은 한 줄 전체 */
@@ -1080,6 +1124,7 @@ html.driving body{overflow:hidden}
   </div>
   <div class="clock" id="clock" aria-live="off">
     <div class="ck-now" id="clkNow" title="콕핏 스킨에서 누르면 디지털·아날로그 전환"><canvas class="ck-dial" id="clkDialNow" width="256" height="256" aria-hidden="true"></canvas><small id="clkDate">--</small><b id="clkTime">--:--</b><em>서울</em></div>
+    <button class="ck-wx" id="clkWx" type="button" title="오늘의 날씨"><i id="wxIco">·</i><b id="wxT">--°</b><small id="wxS">날씨</small></button>
     <button class="ck-world" id="clkWorld" type="button" title="해외 시간 바꾸기"><canvas class="ck-dial" id="clkDialW" width="256" height="256" aria-hidden="true"></canvas><small id="clkCity">해외 시간</small><b id="clkWTime">+ 추가</b><em id="clkDiff"></em></button>
   </div>
   <div class="tools">
@@ -1094,6 +1139,16 @@ html.driving body{overflow:hidden}
   </div>
 </header>
 
+<nav class="ckrail" id="ckRail" aria-label="콕핏 2 바로가기">
+  <button data-f="all" class="on"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg><span>전체</span></button>
+  <button data-f="gps"><svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 0 0-9 9 9 9 0 0 0 2.2 5.9l1.5-1.3A7 7 0 1 1 19 13a7 7 0 0 1-1.7 4.6l1.5 1.3A9 9 0 0 0 12 4zm4.2 4.4-5.4 4.1a1.6 1.6 0 1 0 2.2 2.2z"/></svg><span>스피드미터</span></button>
+  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>DASHCAM</span></button>
+  <button data-f="map"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zm0 2.2 6 2v11.6l-6-2z"/></svg><span>지도</span></button>
+  <button data-f="play"><svg viewBox="0 0 24 24"><path d="M10 3v11.6A4 4 0 1 0 12 18V8h6V3z"/></svg><span>플레잉</span></button>
+  <button data-f="list"><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm14-3v6.6a2.5 2.5 0 1 0 2 2.4V12h2v-2z"/></svg><span>목록·EQ</span></button>
+  <button data-f="ctl"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4 1.5 5H18l-3.7 2.8 1.4 4.6L12 15.6l-3.7 2.8 1.4-4.6L6 11h4.5z"/></svg><span>조종·관제</span></button>
+  <button data-f="set"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.4zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>설정</span></button>
+</nav>
 <main class="app" id="app">
   <section class="win" id="wGps">
     <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
@@ -1401,6 +1456,17 @@ html.driving body{overflow:hidden}
       <div class="keyrow sosrow"><input id="sSosName" placeholder="이름 (예: 가족)" autocomplete="off"><input id="sSosNum" type="tel" inputmode="tel" placeholder="전화번호" autocomplete="off"><button class="pill on" id="sSosSave">저장</button></div>
       <p class="set-note" id="sSosSt"></p>
     </section>
+    <section id="secAtc">
+      <h3>관제탑 · 과속 경고</h3>
+      <label class="row"><span><b>관제탑 소리</b><small>이륙 허가·착륙·경고 음성과 무전 효과음을 켜거나 꺼요.</small></span><input type="checkbox" id="sAtcSound" class="sw" checked></label>
+      <div class="row col"><span><b>과속 경고 속도</b><small>고른 속도를 넘으면 관제탑이 "슬로우 다운"이라고 말하고 속도계가 빨갛게 세 번 깜빡여요. (5km/h 아래로 내려가면 다시 경고)</small></span>
+        <div class="chips" id="sSpdMarks"></div></div>
+    </section>
+    <section id="secWx">
+      <h3>날씨</h3>
+      <div class="row"><span><b>오늘의 날씨</b><small id="sWxNow">불러오는 중…</small></span><button class="pill" id="sWxRefresh">새로고침</button></div>
+      <label class="row"><span><b>속도계 날씨 효과</b><small>비가 오면 빗방울, 눈이 오면 눈과 활주로에 쌓이는 눈, 흐리면 흐린 하늘로 보여요. 확인용으로 직접 고를 수도 있어요.</small></span><select class="sel" id="sWxForce"><option value="auto">자동 (실제 날씨)</option><option value="clear">맑음</option><option value="cloudy">흐림</option><option value="rain">비</option><option value="snow">눈</option><option value="off">효과 끄기</option></select></label>
+    </section>
     <section id="secClock">
       <h3>시계</h3>
       <label class="row"><span><b>해외 시간</b><small>로고 옆 시계에 서울 시간과 함께 보여 줄 도시를 골라요.</small></span><select class="sel" id="sWorld"></select></label>
@@ -1408,6 +1474,7 @@ html.driving body{overflow:hidden}
     </section>
     <section>
       <h3>주행 중 간편 모드</h3>
+      <label class="row" id="sKeepRow"><span><b>앱을 닫아도 음악 계속</b><small>꺼 두면 최근 앱에서 이 앱을 닫을 때 음악·GPS·알림이 모두 함께 꺼져요.</small></span><input type="checkbox" id="sKeepPlay" class="sw"></label>
       <label class="row"><span><b>자동으로 켜기</b><small>운전 중에는 큰 버튼만 보이는 화면으로 바뀌어요.</small></span><select class="sel" id="sDriveAuto"><option value="off">끔</option><option value="car">차에 연결되면</option><option value="speed">시속 10km 이상 달리면 (GPS)</option><option value="both">둘 다</option></select></label>
       <div class="row"><span><b>지금 켜기</b><small>상단의 간편 모드 버튼으로도 켤 수 있어요.</small></span><button class="pill on" id="sDriveNow">간편 모드 켜기</button></div>
     </section>
@@ -1803,8 +1870,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드']];
-const CAR_SKINS=['carnival','carnival2','drive','tablet'];const isCk=()=>skin==='carnival2'||skin==='tablet';const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드']];
+const CAR_SKINS=['carnival','carnival2','carnival3','drive','tablet'];const isCp=()=>skin==='carnival2'||skin==='carnival3';const isCk=()=>isCp()||skin==='tablet';const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -1816,11 +1883,11 @@ let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
-function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':k==='carnival2'?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k==='carnival3'?'carnival2':k;if(k==='carnival3')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus(k==='carnival3'?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
-$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if(k==='carnival2'&&typeof setGStyle==='function')setGStyle('cockpit')};
+$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3')&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
-function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',skin==='carnival2');if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
+function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',isCp());if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
 window.addEventListener('resize',layout);
 
@@ -2348,7 +2415,7 @@ const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
 function hav(a,b,c,d){const R=6371000,t=Math.PI/180,x=(c-a)*t,y=(d-b)*t;const h=Math.sin(x/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function gpsStart(){if(!HAS_GPS)return;try{NB.startGps()}catch(e){}gpsOn=true;store.set('gpsOn',true);clearInterval(gpsTimer);gpsTimer=setInterval(pollGps,250);gpsUi()}
 function gpsStop(user){if(HAS_GPS){try{NB.stopGps()}catch(e){}}gpsOn=false;if(user)store.set('gpsOn',false);clearInterval(gpsTimer);spdNow=0;gpsUi()}
-function gpsSkinChanged(){const ckOpt=$('#gStyle option[value="cockpit"]');if(ckOpt){ckOpt.hidden=ckOpt.disabled=skin!=='carnival2'}try{if(skin!=='carnival2'&&gStyle==='cockpit')setGStyle(store.get('gStyleCar','carbon'))}catch(e){/* 시작 중에는 아래 boot에서 처리 */}if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
+function gpsSkinChanged(){const ckOpt=$('#gStyle option[value="cockpit"]');if(ckOpt){ckOpt.hidden=ckOpt.disabled=!isCp()}try{if(!isCp()&&gStyle==='cockpit')setGStyle(store.get('gStyleCar','carbon'))}catch(e){/* 시작 중에는 아래 boot에서 처리 */}if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
 function pollGps(){
   if(!gpsOn)return;let s;try{s=JSON.parse(NB.gpsStatus())}catch(e){return}gs=s;
   if(s.fix){
@@ -2413,7 +2480,7 @@ function drawGps(){
 const GMAX=200,GA0=Math.PI*.75,GA1=Math.PI*2.25;
 const gA=v=>GA0+(GA1-GA0)*Math.max(0,Math.min(1,v/GMAX));
 let gStyle=store.get('gStyle','carbon');
-function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';if(k==='cockpit'&&skin!=='carnival2')k=store.get('gStyleCar','carbon');if(k!=='cockpit')store.set('gStyleCar',k);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
+function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';if(k==='cockpit'&&!isCp())k=store.get('gStyleCar','carbon');if(k!=='cockpit')store.set('gStyleCar',k);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
 $('#gStyle').onchange=e=>setGStyle(e.target.value);
 const RJ='Rajdhani,"Barlow Condensed",sans-serif';
 function ring(g,x,y,r,lw,col){g.lineWidth=lw;g.strokeStyle=col;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.stroke()}
@@ -2828,7 +2895,7 @@ function drive(on){
   driveOn=on;$('#drive').hidden=!on;document.documentElement.classList.toggle('driving',on);
   if(NB&&NB.keepScreenOn){try{NB.keepScreenOn(on||hudOn)}catch(e){}}
   if(on)driveUi();
-  if(typeof dk!=='undefined'&&skin==='carnival2')dk.render();
+  if(typeof dk!=='undefined'&&isCp())dk.render();
 }
 function driveUi(){
   if(!driveOn)return;
@@ -3007,7 +3074,7 @@ $('#clkWorld').onclick=()=>{openSettings();const r=$('#secClock');if(r){r.scroll
 clockTick();setInterval(clockTick,1000);
 /* ---------- 창 순서(설정) ---------- */
 const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wEq:'이퀄라이저',wPl:'재생 목록'};
-function winKind(){return skin==='carnival2'?'K':isCar()?'G':'N'}
+function winKind(){return isCp()?'K':isCar()?'G':'N'}
 function winDefault(){return {K:['wGps','wCtl','wAtc','wCam','wMap','wMain','wVis','wEq','wPl'],G:['wGps','wCam','wMap','wMain','wVis','wEq','wPl'],N:['wMain','wVis','wEq','wPl']}[winKind()]}
 function winOrder(){const d=winDefault(),o=store.get('winOrder_'+winKind(),null);if(!Array.isArray(o))return null;const f=o.filter(id=>d.includes(id));d.forEach(id=>{if(!f.includes(id))f.push(id)});return f}
 function applyWinOrder(){const o=winOrder();appEl.classList.toggle('CO',!!o);
@@ -3057,7 +3124,7 @@ let winH=store.get('winH',{}),winHN=store.get('winHN',{});
 const sizeMap=()=>isCar()?winH:winHN;
 function saveSizes(){store.set('winH',winH);store.set('winHN',winHN)}
 const needRz=w=>w.id==='wGps'||!isCar();
-function applySizes(){const lock=skin==='carnival2',m=sizeMap();document.querySelectorAll('.win').forEach(w=>{const h=lock&&w.id!=='wGps'?0:m[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h);w.classList.toggle('rzw',needRz(w));if(!needRz(w)&&w.classList.contains('rz'))winRz(w,false)})}
+function applySizes(){const lock=isCp(),m=sizeMap();document.querySelectorAll('.win').forEach(w=>{const h=lock&&w.id!=='wGps'?0:m[w.id];w.style.height=h?h+'px':'';w.classList.toggle('sized',!!h);w.classList.toggle('rzw',needRz(w));if(!needRz(w)&&w.classList.contains('rz'))winRz(w,false)})}
 document.querySelectorAll('.win').forEach(w=>{
   const gr=document.createElement('div');gr.className='grip';gr.title='끌어서 창 높이 조절 · 두 번 누르면 원래 높이';gr.setAttribute('role','separator');gr.setAttribute('aria-orientation','horizontal');w.appendChild(gr);
   let y0=0,h0=0,pid=null;
@@ -3073,8 +3140,15 @@ document.querySelectorAll('.win').forEach(w=>{
   w.addEventListener('pointerup',()=>{if(w.classList.contains('rz')){clearTimeout(rzT[w.id]);rzT[w.id]=setTimeout(()=>winRz(w,false),15000)}});
 });
 const rzT={};
-function winRz(w,on){const b=w.querySelector(':scope>.bar .rzbtn');w.classList.toggle('rz',on);if(b){b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'창 크기 조절 끄기':'창 크기 조절 켜기')}
-  clearTimeout(rzT[w.id]);if(on){toast('창 아래 손잡이를 끌어 높이를 바꾸세요. 다 되면 버튼을 다시 누르세요.');rzT[w.id]=setTimeout(()=>winRz(w,false),15000)}}
+function rzStep(w,d){const r=w.getBoundingClientRect();let h=d===0?0:Math.max(140,Math.round(r.height+d));
+  if(!h){delete sizeMap()[w.id];saveSizes();applySizes()}else{w.style.height=h+'px';w.classList.add('sized');sizeMap()[w.id]=h;saveSizes()}
+  if(w.id==='wGps'){try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}}
+  clearTimeout(rzT[w.id]);rzT[w.id]=setTimeout(()=>winRz(w,false),15000)}
+function winRz(w,on){const b=w.querySelector(':scope>.bar .rzbtn');w.classList.toggle('rz',on);
+  let st=w.querySelector(':scope>.bar .rzsteps');
+  if(!st&&b){st=document.createElement('span');st.className='rzsteps';st.innerHTML='<button class="wbtn" data-d="-80" aria-label="창 낮게">−</button><button class="wbtn" data-d="80" aria-label="창 높게">+</button><button class="wbtn wide" data-d="0" aria-label="원래 높이">원래</button>';
+    st.addEventListener('click',e=>{const x=e.target.closest('button');if(!x)return;e.stopPropagation();rzStep(w,+x.dataset.d)});b.parentNode.insertBefore(st,b)}if(b){b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'창 크기 조절 끄기':'창 크기 조절 켜기')}
+  clearTimeout(rzT[w.id]);if(on){toast('위쪽 − / + 버튼이나 창 아래 손잡이로 높이를 바꾸세요. 다 되면 ↕를 다시 누르세요.');rzT[w.id]=setTimeout(()=>winRz(w,false),15000)}}
 function gpsRz(on){winRz($('#wGps'),on)}
 const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
@@ -3091,18 +3165,19 @@ function sndPress(on){const a=fx();if(!a)return;const t=a.currentTime;
   const g=fxEnv(a,t,on?.55:.3,.003,on?.16:.08);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.25);
   const n=fxNoise(a,.05),hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=on?1800:3200;const gn=fxEnv(a,t,on?.35:.25,.001,.03);n.connect(hp).connect(gn).connect(a.destination);n.start(t)}
 // 무전 스퀠치("치익")
-function sndSquelch(at=0,len=.14){const a=fx();if(!a)return;const t=a.currentTime+at,n=fxNoise(a,len+.05),bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1700;bp.Q.value=.8;
+function sndSquelch(at=0,len=.14){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,n=fxNoise(a,len+.05),bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1700;bp.Q.value=.8;
   const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16,t+.01);g.gain.setValueAtTime(.16,t+len*.7);g.gain.exponentialRampToValueAtTime(.0001,t+len);n.connect(bp).connect(g).connect(a.destination);n.start(t)}
-function sndRoger(at=0){const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator();o.type='square';o.frequency.value=1050;const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;
+function sndRoger(at=0){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator();o.type='square';o.frequency.value=1050;const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;
   const g=fxEnv(a,t,.06,.005,.07);o.connect(bp).connect(g).connect(a.destination);o.start(t);o.stop(t+.1)}
 // 이륙 허가: 무전 → 두 음 차임 → 엔진 스풀업
-function sndTakeoff(){const a=fx();if(!a)return;const t=a.currentTime;sndSquelch(0,.22);
+function sndTakeoff(){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime;sndSquelch(0,.22);
   [[784,.25],[659,.75]].forEach(([f,dt])=>{const o=a.createOscillator(),o2=a.createOscillator();o.frequency.value=f;o2.frequency.value=f*2;const g=fxEnv(a,t+dt,.22,.01,1.2),g2=fxEnv(a,t+dt,.05,.01,.6);o.connect(g).connect(a.destination);o2.connect(g2).connect(a.destination);o.start(t+dt);o2.start(t+dt);o.stop(t+dt+1.4);o2.stop(t+dt+1.4)});
   const s=t+1.6,L=6.5,n=fxNoise(a,L),lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.setValueAtTime(180,s);lp.frequency.exponentialRampToValueAtTime(3200,s+4);lp.frequency.exponentialRampToValueAtTime(900,s+L);
   const gn=a.createGain();gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.32,s+3.6);gn.gain.exponentialRampToValueAtTime(.0001,s+L);n.connect(lp).connect(gn).connect(a.destination);n.start(s);
   const w=a.createOscillator();w.type='sawtooth';w.frequency.setValueAtTime(160,s);w.frequency.exponentialRampToValueAtTime(2100,s+4.2);const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=6;bp.frequency.setValueAtTime(320,s);bp.frequency.exponentialRampToValueAtTime(4200,s+4.2);
   const gw=a.createGain();gw.gain.setValueAtTime(.0001,s);gw.gain.exponentialRampToValueAtTime(.05,s+3.4);gw.gain.exponentialRampToValueAtTime(.0001,s+L);w.connect(bp).connect(gw).connect(a.destination);w.start(s);w.stop(s+L)}
-function atcSpeak(text){try{if(NB&&NB.speak){NB.speak(text);return}}catch(e){}
+function atcOn(){return store.get('atcSound',true)!==false}
+function atcSpeak(text){if(!atcOn())return;try{if(NB&&NB.speak){NB.speak(text);return}}catch(e){}
   try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=1.05;speechSynthesis.cancel();speechSynthesis.speak(u)}}catch(e){}}
 
 // SOS 연락처: 앱 설정(SOS 긴급 연락처)과 조종 패널 설정이 같은 저장소를 씀
@@ -3146,7 +3221,7 @@ const dk=(()=>{
     const easy=typeof driveOn!=='undefined'&&driveOn;$i('dkModeSwitch').setAttribute('aria-checked',String(easy));$i('dkModeReadout').className='readout'+(easy?'':' off');$i('dkModeReadout').lastElementChild.textContent=easy?'EASY':'NORMAL';
     $i('dkConsole').style.setProperty('--brightness',st.brightness/100);
     $i('dkContactSummary').textContent=sos.number?(sos.name||'SOS 연락처')+' · '+sos.number.slice(0,3)+'···'+sos.number.slice(-4):'연락처 등록 필요'}
-  function refresh(){if(!isNative||skin!=='carnival2')return render();
+  function refresh(){if(!isNative||!isCp())return render();
     try{const o=native.getState();if(o.volume!=null){st.volumeKnown=true;if(!dragging)st.volume=clamp(o.volume)}
       for(const k of ['wifi','bluetooth']){if(st.pending[k]!=null&&o[k]===st.pending[k])delete st.pending[k];if(o[k]!==st[k]&&st[k]!==null&&o[k]!==null)sndPress(!!o[k]);st[k]=o[k]}
       st.wifiSupported=o.wifiSupported;st.bluetoothSupported=o.bluetoothSupported;
@@ -3201,7 +3276,7 @@ const dk=(()=>{
   if(isNative){$i('dkPlatformHelp').textContent='Android 기기 연결 모드입니다. 볼륨은 실제 기기 볼륨을 조절합니다. 와이파이·블루투스는 기기 상태를 읽어 표시하고, 직접 바꿀 수 없으면 시스템 설정을 엽니다.';msg('기기에 연결되었습니다. 설정 화면에서 돌아오면 상태를 갱신합니다.')}
   else msg('브라우저 시연 모드입니다. 스위치를 눌러 작동을 확인하세요.');
   msgLive=true;
-  setInterval(()=>{if(!document.hidden&&skin==='carnival2')refresh()},2000);
+  setInterval(()=>{if(!document.hidden&&isCp())refresh()},2000);
   return {refresh,render,setGuard,openSettings,state:st};
 })();
 window.Cockpit={version:1,refresh:dk.refresh,notify:t=>toast(t),getState:()=>({...dk.state,easy:driveOn,contactName:sos.name,contactPhone:sos.number,platform:NB&&NB.cockpitState?'android':'demo'})};
@@ -3243,7 +3318,10 @@ function atcSkip(){atcRun++;$('#atcLog').innerHTML='';
   $('#atcBar').style.width='100%';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true}
 
 // 관제탑 속도 주의: 50·100·120·150·180·200km/h에 처음 도달하면 빨간 글자로 경고(5km/h 아래로 내려가면 다시 경고 가능)
-const SPD_MARKS=[50,100,120,150,180,200],spdArmed=new Set(SPD_MARKS);let atcWarnT=0;
+const SPD_ALL=[50,60,80,100,110,120,130,150,180];
+let SPD_MARKS=(store.get('spdMarks',[120,150])||[]).filter(n=>SPD_ALL.includes(n)).sort((a,b)=>a-b),spdArmed=new Set(SPD_MARKS);let atcWarnT=0;
+function setSpdMarks(a){SPD_MARKS=[...new Set(a)].filter(n=>SPD_ALL.includes(n)).sort((x,y)=>x-y);store.set('spdMarks',SPD_MARKS);spdArmed=new Set(SPD_MARKS);renderSpdMarks()}
+function renderSpdMarks(){const box=$('#sSpdMarks');if(!box)return;box.innerHTML='';SPD_ALL.forEach(n=>{const b=document.createElement('button');b.type='button';b.className='pill'+(SPD_MARKS.includes(n)?' on':'');b.textContent=n+'km';b.setAttribute('aria-pressed',String(SPD_MARKS.includes(n)));b.onclick=()=>setSpdMarks(SPD_MARKS.includes(n)?SPD_MARKS.filter(x=>x!==n):[...SPD_MARKS,n]);box.appendChild(b)})}
 function atcSpeedTick(v,sim){if(!isCk()||(!sim&&(!gpsOn||!gs.fix)))return;let hit=0;
   for(const m of SPD_MARKS){if(v>=m&&spdArmed.has(m)){spdArmed.delete(m);hit=m}else if(v<m-5)spdArmed.add(m)}
   if(hit)atcWarn(hit)}
@@ -3252,9 +3330,8 @@ function atcWarn(m){const w=$('#atcWarn');w.querySelector('b').textContent='⚠ 
   w.hidden=false;w.style.animation='none';void w.offsetWidth;w.style.animation='';
   $('#atcSt').textContent='· 속도 주의';sndSquelch(0,.16);sndRoger(.2);sndRoger(.42);
   clearTimeout(atcWarnT);atcWarnT=setTimeout(()=>{w.hidden=true;$('#atcSt').textContent=atcDone?'· 이륙 허가':'· 점검 중'},6000);
-  if(SLOW_MARKS.includes(m))slowDown(m)}
-// 50·100·120km/h: 관제탑 "슬로우 다운" 음성 + 비행창(속도계) 전체가 빨갛게 세 번 깜빡임
-const SLOW_MARKS=[50,100,120];
+  slowDown(m)}
+// 설정한 과속 경고 속도(기본 120·150km/h): 관제탑 "슬로우 다운" 음성 + 비행창(속도계) 전체가 빨갛게 세 번 깜빡임
 function slowDown(m){const w=skin==='tablet'?(document.querySelector('#tabCk .tk-pfd')||$('#wGps')):$('#wGps');if(!w)return;
   let o=w.querySelector(':scope>.slowfx');if(!o){o=document.createElement('div');o.className='slowfx';o.setAttribute('role','alert');o.innerHTML='<b>SLOW DOWN</b><span></span>';w.appendChild(o)}
   o.querySelector('span').textContent='관제탑 · 시속 '+m+'km 초과 · 감속하십시오';
@@ -3263,10 +3340,50 @@ function slowDown(m){const w=skin==='tablet'?(document.querySelector('#tabCk .tk
   atcSpeak('슬로우 다운. 슬로우 다운. 대신남 원, 시속 '+m+'킬로미터를 넘었습니다. 감속하십시오.');
   clearTimeout(slowDown.t);slowDown.t=setTimeout(()=>w.classList.remove('slowing'),2000)}
 $('#atcRun').onclick=()=>{fx();atcStart()};
+renderSpdMarks();
+$('#sAtcSound').checked=atcOn();$('#sAtcSound').onchange=e=>{store.set('atcSound',e.target.checked);if(!e.target.checked){try{window.speechSynthesis&&speechSynthesis.cancel()}catch(x){}}toast(e.target.checked?'관제탑 소리를 켰어요.':'관제탑 소리를 껐어요.')};
+// 앱을 닫으면(최근 앱에서 밀어 닫기) 음악·GPS까지 끄기 — 기본. 켜 두면 음악은 계속
+$('#sKeepPlay').checked=store.get('keepPlay',false);
+function syncKeepPlay(){try{if(NB&&NB.setKeepPlaying)NB.setKeepPlaying(!!store.get('keepPlay',false))}catch(e){}}
+$('#sKeepPlay').onchange=e=>{store.set('keepPlay',e.target.checked);syncKeepPlay()};syncKeepPlay();
 $('#atcSkip').onclick=atcSkip;
 // 콕핏 스킨에 들어올 때마다(앱 시작 포함) 점검을 한 번 진행
 let ckWasOn=false;
 function cockpitSkin(){const on=isCk();if(on&&!ckWasOn){dk.refresh();setTimeout(()=>{if(isCk())atcStart()},500)}if(!on){atcRun++;dk.setGuard(false)}ckWasOn=on}
+/* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
+const FX_GROUPS={gps:['wGps'],cam:['wCam'],map:['wMap'],play:['wMain','wVis'],list:['wEq','wPl'],ctl:['wCtl','wAtc']};
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&f!=='all';
+  appEl.classList.toggle('FX',on);
+  document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
+  document.querySelectorAll('#ckRail button[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===(on?f:'all')));
+  if(skin==='carnival3')store.set('ckFocus',f);
+  if(on){const top=appEl.getBoundingClientRect().top+window.scrollY;document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
+    setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
+$('#ckRail').addEventListener('click',e=>{const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
+window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
+
+/* ---------- 오늘의 날씨(Open-Meteo, 키 없음) → 시계 옆 표시 + 속도계 비·눈·흐림 효과 ---------- */
+const WX={kind:'clear',code:null,temp:null,hi:null,lo:null,at:0,place:''};
+window.AmpWx={get kind(){const f=store.get('wxForce','auto');return f==='auto'?WX.kind:f==='off'?'off':f},get data(){return WX}};
+function wxKind(c){if(c==null)return 'clear';if([71,73,75,77,85,86].includes(c))return 'snow';if([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(c))return 'rain';if([45,48].includes(c))return 'fog';if([2,3].includes(c))return 'cloudy';return 'clear'}
+function wxText(c){const m={0:'맑음',1:'대체로 맑음',2:'구름 조금',3:'흐림',45:'안개',48:'안개',51:'이슬비',53:'이슬비',55:'이슬비',56:'어는 이슬비',57:'어는 이슬비',61:'비',63:'비',65:'강한 비',66:'어는 비',67:'어는 비',71:'눈',73:'눈',75:'많은 눈',77:'싸락눈',80:'소나기',81:'소나기',82:'강한 소나기',85:'눈 소나기',86:'눈 소나기',95:'뇌우',96:'뇌우·우박',99:'뇌우·우박'};return m[c]||'—'}
+function wxIcon(k,day){return {snow:'❄️',rain:'🌧️',fog:'🌫️',cloudy:'☁️',clear:day===false?'🌙':'☀️'}[k]||'·'}
+function wxRender(){const f=store.get('wxForce','auto'),k=window.AmpWx.kind;
+  $('#wxIco').textContent=wxIcon(k==='off'?WX.kind:k,WX.day);$('#wxT').textContent=WX.temp==null?'--°':Math.round(WX.temp)+'°';
+  $('#wxS').textContent=(f!=='auto'&&f!=='off'?'시험: ':'')+(f==='auto'||f==='off'?wxText(WX.code):{clear:'맑음',cloudy:'흐림',rain:'비',snow:'눈'}[f])+(WX.hi!=null?' · '+Math.round(WX.hi)+'/'+Math.round(WX.lo)+'°':'');
+  $('#sWxNow').textContent=WX.code==null?'날씨를 아직 불러오지 못했어요 (인터넷·위치 확인)':(WX.place?WX.place+' · ':'')+wxText(WX.code)+' '+Math.round(WX.temp)+'° (최고 '+Math.round(WX.hi)+'° · 최저 '+Math.round(WX.lo)+'°)';
+  $('#sWxForce').value=f}
+async function wxFetch(){let lat=37.5665,lon=126.978,place='서울';
+  if(gs&&gs.fix&&isFinite(gs.lat)){lat=gs.lat;lon=gs.lon;place='현재 위치';store.set('wxLoc',[lat,lon])}else{const l=store.get('wxLoc',null);if(l){lat=l[0];lon=l[1];place='마지막 위치'}}
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`);
+    if(!r.ok)throw 0;const j=await r.json();const c=j.current||{};WX.code=c.weather_code;WX.temp=c.temperature_2m;WX.day=c.is_day!==0;WX.hi=j.daily.temperature_2m_max[0];WX.lo=j.daily.temperature_2m_min[0];WX.kind=wxKind(WX.code);WX.at=Date.now();WX.place=place;store.set('wxLast',{...WX})}
+  catch(e){const o=store.get('wxLast',null);if(o&&Date.now()-o.at<6*3600e3)Object.assign(WX,o)}
+  wxRender()}
+{const o=store.get('wxLast',null);if(o&&Date.now()-o.at<6*3600e3)Object.assign(WX,o)}
+$('#clkWx').onclick=()=>{openSettings();const r=$('#secWx');if(r)r.scrollIntoView({block:'center'})};
+$('#sWxRefresh').onclick=()=>{$('#sWxNow').textContent='불러오는 중…';wxFetch()};
+$('#sWxForce').onchange=e=>{store.set('wxForce',e.target.value);wxRender()};
+wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
 applySizes();setGStyle(gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
 if(LIB){$('#addDir').hidden=false;$('#plHint').textContent='음악 파일이나 폴더를 고르면 목록이 저장돼서, 앱을 다시 켜도 그대로 남고 마지막 곡과 위치부터 이어서 들을 수 있어요. 폴더로 추가하면 새로 넣은 곡도 다시 추가하기 쉬워요.'}

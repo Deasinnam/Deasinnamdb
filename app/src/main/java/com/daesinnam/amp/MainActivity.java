@@ -1090,6 +1090,12 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** 설정: 최근 앱에서 앱을 닫아도 음악을 계속 재생할지(기본 false = 모두 끔) */
+        @JavascriptInterface
+        public void setKeepPlaying(final boolean keep) {
+            getSharedPreferences("app", MODE_PRIVATE).edit().putBoolean("keepPlay", keep).apply();
+        }
+
         /** 태블릿 가로모드 밝기 손잡이: 이 앱 창의 화면 밝기(10~100%). 음수면 시스템 밝기로 되돌림 */
         @JavascriptInterface
         public void setScreenBrightness(final int pct) {

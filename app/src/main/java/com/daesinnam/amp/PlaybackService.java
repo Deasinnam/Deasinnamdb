@@ -318,6 +318,15 @@ public class PlaybackService extends Service {
         return b.build();
     }
 
+    /** 최근 앱에서 앱을 닫으면 외부 앱 연동·웹 재생 알림도 함께 끝냅니다(설정에서 음악 계속을 켠 경우 제외). */
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        boolean keep = getSharedPreferences("app", MODE_PRIVATE).getBoolean("keepPlay", false);
+        if (keep && own && NowPlaying.playing) return;
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        stopSelf();
+    }
+
     @Override
     public void onDestroy() {
         running = false;

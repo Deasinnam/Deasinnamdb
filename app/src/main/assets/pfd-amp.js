@@ -139,7 +139,7 @@
 
   /* ---------- 2. 앱 데이터 → 패키지 ---------- */
   function feed() {
-    if (!(H.skin === 'carnival2' || H.skin === 'tablet')) return;
+    if (!['carnival2', 'carnival3', 'tablet'].includes(H.skin)) return;
     const now = performance.now();
     if (now - lastFeed < 100) return;
     lastFeed = now;

@@ -8,7 +8,7 @@
   position:fixed;inset:0;z-index:5;grid-template-rows:auto minmax(0,1fr) auto auto auto;gap:0;overflow:hidden;color:var(--ink);
   font-family:"Barlow Condensed","Rajdhani","Noto Sans KR",sans-serif;letter-spacing:.06em;user-select:none;-webkit-user-select:none;
   background:radial-gradient(#ffffff06 1px,transparent 1.3px) 0 0/4px 4px,linear-gradient(180deg,#1a1e21,#101315 40%,#0b0d0f);
-  padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);filter:brightness(var(--tk-dim,1))}
+  padding:calc(env(safe-area-inset-top,0px) + 12px) env(safe-area-inset-right,0px) calc(env(safe-area-inset-bottom,0px) + 22px) env(safe-area-inset-left,0px);filter:brightness(var(--tk-dim,1))}
 #tabCk *{box-sizing:border-box}
 #tabCk button{font-family:inherit;color:inherit;cursor:pointer}
 /* 나사 */

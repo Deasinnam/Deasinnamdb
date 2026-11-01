@@ -19,17 +19,18 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
   const fin = v => typeof v === 'number' && Number.isFinite(v);
   const angleDelta = (a, b) => ((b - a + 540) % 360) - 180;
-  const EYE = 4, CRUISE = 380, TAN_G = Math.tan(3 * Math.PI / 180), VR = 40, VR_HI = 70, RW_W = 45, TD = 300;
+  const EYE = 4, CRUISE = 380, TAN_G = Math.tan(3 * Math.PI / 180), VR = 5, VR_HI = 70, RW_W = 45, TD = 300;
 
   const F = {
     phase: 'hold', alt: 0, pitch: 0, bank: 0, rwS: -120, rwLen: 3200, rwNum: 33, rolled: 0,
     rem: 0, D0: 0, K: 10, auto: false, autoRate: 0, vAuto: 0, slowT: 0, stopT: 0, tdAt: 0, liftAt: 0,
-    hdgPrev: null, lastT: 0, sim: null, v: 0, wz: 0, off: 0
+    hdgPrev: null, lastT: 0, sim: null, v: 0, wz: 0, off: 0, rollT: 0, snow: 0, snowInit: false
   };
   const rwNumFor = hdg => { if (!fin(hdg)) return 33; const n = Math.round(((hdg % 360) + 360) % 360 / 10) % 36; return n === 0 ? 36 : n; };
   const pad2 = n => String(n).padStart(2, '0');
   const recip = n => { const r = (n + 18) % 36; return r === 0 ? 36 : r; };
-  const active = () => (H.skin === 'carnival2' || H.skin === 'tablet');
+  const wxKind = () => { const W = window.AmpWx; const k = W ? W.kind : 'clear'; return k || 'clear'; };
+  const active = () => ['carnival2', 'carnival3', 'tablet'].includes(H.skin);
 
   function newDeparture() { F.rwS = -120; F.rwLen = 3200; F.rolled = 0; F.rwNum = rwNumFor(P.display && P.display.headingDeg); }
 
@@ -66,13 +67,16 @@
       case 'hold':
       case 'landed':
         F.alt = 0;
-        if (v > 3) { if (F.phase === 'landed') newDeparture(); F.phase = 'roll'; F.stopT = 0; }
+        if (v > 3) { if (F.phase === 'landed') newDeparture(); F.phase = 'roll'; F.stopT = 0; F.rollT = 0; F.rolled = 0; }
         break;
       case 'roll': {
-        const adv = vEff / 3.6 * (1.4 + vEff / 45) * dt;
-        F.rwS -= adv; F.rolled += adv;
+        // 5km/h만 넘으면 이륙: 활주는 실제 비행기처럼 몇 초 만에 빨라지는 모습으로 보여 줌
+        F.rollT += vEff >= 3 ? dt : 0;
+        const vis = vEff >= 3 ? Math.max(vEff, Math.min(150, 30 + F.rollT * 26)) : vEff;
+        const adv = vis / 3.6 * 1.6 * dt;
+        F.rwS -= adv; F.rolled += adv; F.v = vis;
         if (F.rwS + F.rwLen < 900) F.rwLen += 1500;
-        if ((vEff >= VR && F.rolled >= 180) || vEff >= VR_HI) {
+        if ((vEff >= VR && F.rolled >= 150) || vEff >= VR_HI) {
           F.phase = 'climb'; F.liftAt = now; H.beep('takeoff');
         }
         if (vEff < 1) { F.stopT += dt; if (F.stopT > 2.5) F.phase = 'hold'; } else F.stopT = 0;
@@ -114,6 +118,7 @@
       }
     }
     { const moved = rw0 - F.rwS; if (moved > 0 && moved < 800) F.wz += moved; }
+    { const k = wxKind(); if (k === 'snow') { if (!F.snowInit) { F.snowInit = true; F.snow = Math.max(F.snow, .55); } F.snow = Math.min(.85, F.snow + dt * .02); } else { F.snowInit = false; F.snow = Math.max(0, F.snow - dt * .01); } }
     // 기수 각도(시각 효과)
     let tp = 0;
     const sinceLift = (now - F.liftAt) / 1000;
@@ -191,6 +196,9 @@
     if (!night) { // 지평선 아지랑이
       c.globalAlpha = .55; const g = c.createLinearGradient(0, 0, 0, h * .07); g.addColorStop(0, '#c9d6de'); g.addColorStop(1, '#c9d6de00'); c.fillStyle = g; c.fillRect(-w * 2, 0, w * 4, h * .07); c.globalAlpha = 1;
     }
+    if (F.snow > .01) { // 쌓인 눈: 땅 전체가 하얗게
+      c.globalAlpha = F.snow * (night ? .55 : .85); c.fillStyle = night ? '#6a7686' : '#eef2f6'; c.fillRect(-w * 2, 0, w * 4, h * 3); c.globalAlpha = 1;
+    }
     if (!showRw) { c.restore(); return; }
 
     const ink = night ? '#c7cfd6' : '#f3f2ec', inkA = night ? .42 : .93;
@@ -238,6 +246,12 @@
     gtext(pad2(recip(F.rwNum)), rwE - 50, true);
 
 
+    if (F.snow > .01) { // 활주로·유도로에 쌓인 눈, 바퀴 자국만 드러남
+      const sn = night ? '#7c8899' : '#f4f7fa';
+      quad(-RW_W / 2 - 8, RW_W / 2 + 8, F.rwS, rwE, sn, Math.min(.92, F.snow * 1.05));
+      quad(173.5, 196.5, F.rwS + 180, rwE - 180, sn, F.snow * .8);
+      for (const x of [-7, 7]) quad(x - 2.2, x + 2.2, F.rwS, rwE, night ? '#2a2f36' : '#6b7077', F.snow * .55);
+    }
     // 5) 건물(먼 것부터) — 지평선 위로 솟으므로 땅 클립 밖에서 그림
     c.restore(); c.save();
     const bld = [{ z: F.rwS + 1150, kind: 'tower' }, { z: F.rwS + 660, kind: 'terminal' }, { z: F.rwS + 520, kind: 'hangar' }, { z: F.rwS + 1450, kind: 'hangar2' }];
@@ -330,8 +344,67 @@
     dp.pitchDeg = sp + F.pitch + shake + cal.pitch;
     dp.rollDeg = sr + F.bank + cal.roll;
     try { return oDrawHorizon.call(this, c, x, y, w, h, valid); }
-    finally { d.pitchDeg = save[0]; d.rollDeg = save[1]; dp.pitchDeg = save[2]; dp.rollDeg = save[3]; }
+    finally {
+      d.pitchDeg = save[0]; d.rollDeg = save[1]; dp.pitchDeg = save[2]; dp.rollDeg = save[3];
+      try { drawWeather(c, x, w, h, sp + F.pitch + shake, sr + F.bank, !this.day); } catch (e) {}
+    }
   };
+
+  /* ---------- 날씨 효과: 흐림(회색 하늘)·비(빗줄기와 유리 물방울)·눈(눈송이, 속도가 빠르면 앞에서 흩날림) ---------- */
+  const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+  const drops = Array.from({ length: 170 }, () => ({ x: rnd(), y: rnd(), l: .5 + rnd(), s: .8 + rnd() * .6 }));
+  const beads = Array.from({ length: 26 }, () => ({ x: rnd(), y: rnd(), r: .4 + rnd(), v: rnd() * .02 }));
+  const flakes = Array.from({ length: 190 }, () => ({ x: rnd(), y: rnd(), r: .4 + rnd(), p: rnd() * 6.28 }));
+  let wxT = 0;
+  function drawWeather(c, x, w, h, pitch, roll, night) {
+    const k = wxKind(); if (k === 'off' || k === 'clear') { wxT = 0; return; }
+    const now = performance.now() / 1000, dt = wxT ? clamp(now - wxT, 0, .1) : 0; wxT = now;
+    const v = F.v || 0, cx = x + w / 2, cy = h * .53, ppd = h / 58;
+    c.save(); c.beginPath(); c.rect(x, 0, w, h); c.clip();
+    // 흐린 하늘(지평선 기준으로 기울기 반영)
+    const ov = { cloudy: .62, fog: .66, rain: .68, snow: .5 }[k] || 0, U = Math.max(h, w * .5) / 250;
+    if (ov) {
+      c.save(); c.translate(cx, cy); c.rotate(-roll * Math.PI / 180); c.translate(0, pitch * ppd);
+      const g = c.createLinearGradient(0, -h * 1.1, 0, 0);
+      if (night) { g.addColorStop(0, 'rgba(16,20,26,' + ov + ')'); g.addColorStop(1, 'rgba(40,46,54,' + ov + ')'); }
+      else { g.addColorStop(0, 'rgba(120,128,138,' + ov + ')'); g.addColorStop(1, 'rgba(196,202,206,' + (ov * 1.1) + ')'); }
+      c.fillStyle = g; c.fillRect(-w * 2, -h * 3, w * 4, h * 3);
+      c.fillStyle = 'rgba(30,34,38,' + (ov * .3) + ')'; c.fillRect(-w * 2, 0, w * 4, h * 3);
+      if (k === 'fog') { const f = c.createLinearGradient(0, -h * .2, 0, h * .2); f.addColorStop(0, 'rgba(210,214,218,0)'); f.addColorStop(.5, 'rgba(210,214,218,.55)'); f.addColorStop(1, 'rgba(210,214,218,0)'); c.fillStyle = f; c.fillRect(-w * 2, -h * .2, w * 4, h * .4); }
+      c.restore();
+    }
+    if (k === 'rain') {
+      const sl = .12 + v / 260, fall = 1.5 + v / 90;
+      c.strokeStyle = night ? 'rgba(180,200,230,.62)' : 'rgba(235,242,250,.78)'; c.lineWidth = Math.max(1.2, U * 1.1); c.beginPath();
+      for (const d of drops) {
+        d.y += fall * d.s * dt; d.x -= sl * fall * d.s * dt * .35;
+        if (d.y > 1.05 || d.x < -.05) { d.y = -.05 - rnd() * .2; d.x = rnd() * 1.1; }
+        const L = (.05 + v / 2200) * h * d.l, px = x + d.x * w, py = d.y * h;
+        c.moveTo(px, py); c.lineTo(px - sl * L * .5, py + L);
+      }
+      c.stroke();
+      // 유리에 맺혀 흘러내리는 물방울
+      for (const b of beads) {
+        b.y += (b.v + v / 4000) * dt * 6; if (b.y > 1.05) { b.y = -.02; b.x = rnd(); }
+        const r = (2.5 + b.r * 3.5) * U, px = x + b.x * w, py = b.y * h;
+        const gr = c.createRadialGradient(px - r * .3, py - r * .3, 0, px, py, r);
+        gr.addColorStop(0, 'rgba(255,255,255,.75)'); gr.addColorStop(.6, 'rgba(200,215,230,.28)'); gr.addColorStop(1, 'rgba(200,215,230,0)');
+        c.fillStyle = gr; c.beginPath(); c.arc(px, py, r, 0, 6.29); c.fill();
+      }
+    } else if (k === 'snow') {
+      const warp = v / 60;
+      c.fillStyle = night ? 'rgba(220,228,240,.85)' : 'rgba(255,255,255,.92)';
+      for (const f of flakes) {
+        f.p += dt * 1.3;
+        f.y += (.05 + f.r * .05) * dt + (f.y - .45) * warp * dt * .9;
+        f.x += Math.sin(f.p) * .012 * dt + (f.x - .5) * warp * dt * .9;
+        if (f.y > 1.05 || f.y < -.1 || f.x < -.1 || f.x > 1.1) { if (warp > .6) { f.x = .5 + (rnd() - .5) * .2; f.y = .45 + (rnd() - .5) * .15; } else { f.x = rnd(); f.y = -.05; } }
+        const r = (.45 + f.r * .95) * U * (1 + Math.abs(f.y - .45) * warp * .8);
+        c.beginPath(); c.arc(x + f.x * w, f.y * h, r, 0, 6.29); c.fill();
+      }
+    }
+    c.restore();
+  }
 
   /* ---------- 화면 위 안내·버튼 ---------- */
   const wrap = P.els && P.els.canvasWrap;
@@ -354,7 +427,7 @@
     const rw = 'RWY ' + pad2(F.rwNum), ph = F.phase;
     let b = '', s = '';
     if (ph === 'hold') { if (H.atcDone) { b = 'LINE UP · ' + rw; s = '이륙 허가 · 속도를 내면 이륙해요'; } else { b = 'HOLD · ' + rw; s = '관제탑 이륙 허가 대기 중'; } }
-    else if (ph === 'roll') { b = F.v >= VR - 8 ? 'V1 · ROTATE' : 'TAKEOFF ROLL'; s = '이륙 활주 · ' + Math.round(F.v) + ' km/h'; }
+    else if (ph === 'roll') { b = F.rolled >= 90 ? 'V1 · ROTATE' : 'TAKEOFF ROLL'; s = '이륙 활주 · ' + Math.round(F.v) + ' km/h'; }
     else if (ph === 'climb') { b = 'CLIMB'; s = '상승 중 · ' + Math.round(F.alt) + ' m'; }
     else if (ph === 'cruise') { b = 'CRUISE'; s = '순항 · 도착이 가까우면 착륙을 누르세요'; }
     else if (ph === 'approach') { b = (F.alt < 14 ? 'FLARE · ' : 'APPROACH · ') + rw; s = (F.auto ? '자동 착륙 · ' : '활주로까지 ') + (F.rem >= 1000 ? (F.rem / 1000).toFixed(1) + ' km' : Math.round(F.rem) + ' m') + ' · 고도 ' + Math.round(F.alt) + ' m'; }
@@ -373,6 +446,7 @@
   function needAnim() {
     if (!active() || !P.canRender || !P.canRender()) return false;
     if (F.auto || F.sim) return true;
+    { const k = wxKind(); if (k === 'rain' || k === 'snow' || (F.snow > .01 && k !== 'snow')) return true; }
     if (Math.abs(F.pitch) > .05 && F.phase !== 'cruise') return true;
     if (F.phase === 'approach' || F.phase === 'rollout') return true;
     return !P.day && F.alt < 260;
@@ -410,11 +484,11 @@
     try { P.updateTelemetry({ source: 'demo', fixValid: true, speedKmh: v, headingDeg: S.hdg, altitudeM: 32 + F.alt, accuracyM: 3, timestampMs: Date.now() }); } catch (e) {}
   }
   const oFeed = A.feed;
-  A.feed = function () { if (F.sim) { if ((H.skin === 'carnival2' || H.skin === 'tablet')) simStep(); return; } return oFeed.apply(this, arguments); };
+  A.feed = function () { if (F.sim) { if (active()) simStep(); return; } return oFeed.apply(this, arguments); };
   setInterval(() => { if (F.sim && document.hidden === false) simStep(); }, 100);
 
   window.AmpFlight = {
-    get state() { return { phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
+    get state() { return { snow: F.snow, wx: wxKind(), phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
     step(sec, v) { const n = Math.max(1, Math.round(sec / .05)); let t = performance.now() + F.off; F.lastT = t; for (let i = 0; i < n; i++) { t += 50; update(t, v); } F.off += n * 50; renderBadge(true); return this.state; },
     land, goAround, sim, redraw() { try { P.draw(); } catch (e) {} }
   };

@@ -113,7 +113,7 @@ async function main() {
     assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
     assert.equal(await page.locator('.brand .logo-img').count(), 0, 'No third-party car-maker logo in the app');
     assert.equal(await page.evaluate(() => /카니발|KIA|Carnival/i.test(document.body.innerText + [...document.querySelectorAll('#skin option')].map(o=>o.textContent).join(''))), false, 'No Kia/Carnival names on screen');
-    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏']);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 2']);
     // 설정 → 오픈소스 라이선스
     await page.locator('#setBtn').click();
     assert.match(await page.locator('#secOss').textContent(), /Apache License 2\.0[\s\S]*Leaflet[\s\S]*jsmediatags[\s\S]*OpenStreetMap contributors/);
@@ -547,11 +547,12 @@ async function main() {
     await p8.waitForTimeout(500);
     assert.equal(await p8.locator('#atcWarn').isVisible(), false);
     await p8.evaluate(() => {g8.speed=14.2;g8.ts+=1000});
-    await p8.waitForFunction(() => !document.querySelector('#atcWarn').hidden, null, {timeout:3000});
-    assert.match(await p8.locator('#atcWarn').textContent(), /속도 주의 · 50 km\/h/);
+    await p8.waitForTimeout(500);
+    assert.equal(await p8.locator('#atcWarn').isVisible(), false, 'No tower warning at 50 km/h any more');
     assert.equal(await p8.locator('#atcWarn b').evaluate(el => getComputedStyle(el).color), 'rgb(255, 59, 48)', 'Warning is red');
     await p8.evaluate(() => {g8.speed=34;g8.ts+=1000});
     await p8.waitForFunction(() => /120 km/.test(document.querySelector('#atcWarn').textContent), null, {timeout:3000});
+    assert.match(await p8.locator('#atcWarn').textContent(), /속도 주의 · 120 km\/h/);
     await p8.waitForFunction(() => pfd.getState().telemetry.maxSpeedKmh > 100, null, {timeout:3000});
     await p8.locator('#pfdHost [data-role="reset"]').click();
     assert.equal(await p8.evaluate(() => JSON.parse(localStorage.getItem('dna_trip')).max), 0, 'PFD reset clears the app trip record');
@@ -662,9 +663,9 @@ async function main() {
       const img0 = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
       await pf.evaluate(() => AmpFlight.step(2, 30));
       assert.equal(await ph(), 'roll', 'Accelerating starts the takeoff roll');
-      await pf.evaluate(() => AmpFlight.step(4, 60));
-      assert.equal(await ph(), 'climb', 'Lifts off at speed');
-      await pf.evaluate(() => AmpFlight.step(1.5, 60));
+      await pf.evaluate(() => AmpFlight.step(4, 6));
+      assert.equal(await ph(), 'climb', 'Lifts off once moving at 5 km/h');
+      await pf.evaluate(() => AmpFlight.step(1.5, 30));
       assert.ok(await pf.evaluate(() => AmpFlight.state.pitch) > 3, 'Nose up while climbing '+JSON.stringify(await pf.evaluate(() => AmpFlight.state)));
       assert.equal(await pf.locator('.flt-land').isVisible(), true, 'Land button while airborne');
       await pf.evaluate(() => AmpFlight.step(30, 80));
@@ -685,16 +686,79 @@ async function main() {
       assert.match(await pf.locator('.flt-badge').textContent(), /ARRIVED/);
       await pf.evaluate(() => AmpFlight.step(2, 20));
       assert.equal(await ph(), 'roll', 'Driving again starts a new departure');
-      // 50km/h 넘으면 SLOW DOWN: 비행창 전체 빨간 경고 3번 + 음성
+      // 과속 경고: 기본 120·150km/h만(50km/h는 없음). 120을 넘으면 SLOW DOWN 빨간 경고 3번 + 음성
       await pf.evaluate(() => {window.__said=[];AmpHost.speedTick(30);AmpHost.speedTick(55)});
+      assert.equal(await pf.locator('#wGps').evaluate(el => el.classList.contains('slowing')), false, 'No warning at 50 km/h');
+      await pf.evaluate(() => {window.__said=[];AmpHost.speedTick(110);AmpHost.speedTick(125)});
       assert.equal(await pf.locator('#wGps .slowfx').isVisible(), true, 'Red SLOW DOWN overlay over the flight window');
       assert.match(await pf.locator('#wGps .slowfx').textContent(), /SLOW DOWN/);
       assert.equal(await pf.locator('#wGps .slowfx').evaluate(el => getComputedStyle(el).animationIterationCount), '3', 'Flashes three times');
       assert.match((await pf.evaluate(() => __said)).join(' '), /슬로우 다운/);
       await pf.waitForFunction(() => !document.querySelector('#wGps').classList.contains('slowing'), null, {timeout:6000});
       await pf.evaluate(() => {__said=[];AmpHost.speedTick(155)});
-      assert.equal(await pf.locator('#wGps').evaluate(el => el.classList.contains('slowing')), false, '150km/h is a normal caution (no red flash)');
+      assert.equal(await pf.locator('#wGps').evaluate(el => el.classList.contains('slowing')), true, '150 km/h also warns');
+      await pf.waitForFunction(() => !document.querySelector('#wGps').classList.contains('slowing'), null, {timeout:6000});
+      // 설정: 경고 속도 고르기, 관제탑 소리 끄기
+      await pf.locator('#setBtn').click();
+      assert.deepEqual(await pf.locator('#sSpdMarks .pill.on').allTextContents(), ['120km','150km']);
+      await pf.locator('#sSpdMarks .pill:text-is("80km")').click();
+      await pf.locator('#sSpdMarks .pill:text-is("150km")').click();
+      assert.deepEqual(await pf.evaluate(() => JSON.parse(localStorage.getItem('dna_spdMarks'))), [80,120]);
+      await pf.locator('#sAtcSound').uncheck();
+      await pf.locator('#setClose').click();
+      await pf.evaluate(() => {__said=[];AmpHost.speedTick(60);AmpHost.speedTick(85)});
+      assert.equal(await pf.locator('#wGps').evaluate(el => el.classList.contains('slowing')), true, 'User-chosen 80 km/h warns');
+      assert.deepEqual(await pf.evaluate(() => __said), [], 'Tower voice off');
+      // 날씨 효과: 눈 → 활주로에 쌓임, 비·흐림
+      await pf.evaluate(() => {localStorage.setItem('dna_wxForce', JSON.stringify('snow'))});
+      assert.equal(await pf.evaluate(() => AmpWx.kind), 'snow');
+      const before = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
+      await pf.evaluate(() => AmpFlight.step(3, 0));
+      assert.ok(await pf.evaluate(() => AmpFlight.state.snow) > .5, 'Snow builds up on the runway');
+      const snowy = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
+      assert.notEqual(before, snowy);
+      for (const k of ['rain','cloudy']) { await pf.evaluate(k2 => localStorage.setItem('dna_wxForce', JSON.stringify(k2)), k); assert.equal(await pf.evaluate(() => AmpWx.kind), k); await pf.evaluate(() => AmpFlight.redraw()); }
+      assert.match(await pf.locator('#clkWx').textContent(), /°/);
+      // 속도계 높이: − / + 버튼으로 조절(끌지 않아도 됨)
+      await pf.locator('#gRz').click();
+      const h0 = await pf.locator('#wGps').evaluate(el => el.getBoundingClientRect().height);
+      await pf.locator('#wGps .rzsteps [data-d="-80"]').click();await pf.locator('#wGps .rzsteps [data-d="-80"]').click();
+      const h1 = await pf.locator('#wGps').evaluate(el => el.getBoundingClientRect().height);
+      assert.ok(h1 < h0 - 120, `Speedometer shrinks with the − button (${h0} -> ${h1})`);
+      await pf.locator('#wGps .rzsteps [data-d="0"]').click();
       await pf.close();
+    }
+    // 콕핏 2: 왼쪽 세로 바로가기로 창만 골라 꽉 차게
+    {
+      const pc2 = await context.newPage();
+      pc2.on('pageerror', error => errors.push('ck2: '+error.message));
+      await pc2.setViewportSize({width:1280,height:800});
+      await pc2.addInitScript(() => {if(sessionStorage.getItem('c2'))return;sessionStorage.setItem('c2','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival3'));localStorage.setItem('dna_mapPref', JSON.stringify('on'));});
+      await pc2.goto(origin);
+      await pc2.locator('#ckRail').waitFor();
+      assert.equal(await pc2.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Cockpit 2 reuses the cockpit look');
+      assert.equal(await pc2.evaluate(() => document.documentElement.dataset.ck2), '1');
+      assert.equal(await pc2.locator('#ckRail').isVisible(), true);
+      assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
+      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['play',['wMain','wVis']],['list',['wEq','wPl']],['ctl',['wCtl','wAtc']]]) {
+        await pc2.locator(`#ckRail [data-f="${f}"]`).click();
+        const vis = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id));
+        assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');
+        const fit = await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return r.bottom<=innerHeight+2&&r.top>=0}, ids[0]);
+        assert.ok(fit, f+' fits the screen without scrolling');
+      }
+      await pc2.locator('#ckRail [data-f="all"]').click();
+      assert.equal(await pc2.locator('#wEq').isVisible(), true, 'All windows back');
+      await pc2.locator('#ckRail [data-f="set"]').click();
+      assert.equal(await pc2.locator('#settings').isVisible(), true);
+      await pc2.locator('#setClose').click();
+      await pc2.locator('#ckRail [data-f="gps"]').click();
+      await pc2.reload();await pc2.locator('#ckRail').waitFor();
+      assert.equal(await pc2.locator('#wEq').isVisible(), false, 'Chosen view remembered');
+      await pc2.locator('#skin').selectOption('carnival2');
+      assert.equal(await pc2.locator('#ckRail').isVisible(), false, 'Rail only in cockpit 2');
+      assert.equal(await pc2.locator('#wEq').isVisible(), true, 'Cockpit 1 shows all windows');
+      await pc2.close();
     }
     // 태블릿 가로모드(독립 스킨): 기존 화면은 숨기고 조종석 화면, 다른 스킨으로 가면 원래대로
     {

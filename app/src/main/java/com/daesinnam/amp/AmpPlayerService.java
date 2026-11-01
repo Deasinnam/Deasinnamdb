@@ -152,8 +152,14 @@ public class AmpPlayerService extends MediaSessionService {
 
     @Override
     public void onTaskRemoved(@Nullable Intent rootIntent) {
-        // 최근 앱에서 지워도, 재생 중이면 계속 재생합니다. 멈춰 있으면 서비스를 끝냅니다.
-        if (player == null || !player.getPlayWhenReady() || player.getMediaItemCount() == 0) stopSelf();
+        // 최근 앱에서 앱을 닫으면: 기본은 음악까지 모두 끄고 알림도 지웁니다.
+        // 설정의 "앱을 닫아도 음악 계속"을 켰고 재생 중일 때만 계속 재생합니다.
+        boolean keep = getSharedPreferences("app", MODE_PRIVATE).getBoolean("keepPlay", false);
+        if (keep && player != null && player.getPlayWhenReady() && player.getMediaItemCount() > 0) return;
+        savePosition();
+        if (player != null) { player.pause(); player.stop(); }
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        stopSelf();
     }
 
     @Override
