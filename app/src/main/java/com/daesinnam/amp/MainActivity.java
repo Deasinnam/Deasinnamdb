@@ -1160,6 +1160,14 @@ public class MainActivity extends Activity {
         public void radioVolume(final double v) { main.post(() -> radio.volume((float) v)); }
 
         /** 배터리 잔량·충전 여부(절전 모드 자동 판단용) */
+        /** 앱 정보 화면(⋮ → 제한된 설정 허용이 있는 곳) */
+        @JavascriptInterface
+        public void openAppInfo() {
+            main.post(() -> {
+                try { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))); } catch (Exception ignored) {}
+            });
+        }
+
         @JavascriptInterface
         public String battery() {
             try {

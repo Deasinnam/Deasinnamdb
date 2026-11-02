@@ -1009,7 +1009,7 @@ header.top{padding-top:28px!important}
 .app.FX>#wVis.fx .visbox{min-height:200px}
 /* 설정: 과속 경고 칩 */
 #settings .row.col{flex-direction:column;align-items:stretch;gap:8px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.pwr-now{display:block;margin-top:6px;font-size:12px;color:#9da69d}.chips .pill{min-width:64px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.permbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pwr-now{display:block;margin-top:6px;font-size:12px;color:#9da69d}.chips .pill{min-width:64px}
 /* 시계 옆 오늘의 날씨 */
 .clock .ck-wx{cursor:pointer}
 :root[data-clock="analog"][data-skin="carnival2"] .clock .ck-wx i,:root[data-clock="analog"][data-skin="tablet"] .clock .ck-wx i{display:none}
@@ -1551,11 +1551,11 @@ html.driving body{overflow:hidden}
         <summary><span>권한 설정</span><em id="xPermSum">확인 중</em></summary>
         <ul class="perm">
           <li id="rowFull" hidden><div><b>YouTube Music 곡 정보 · 앨범 아트</b><small>지금 쓰는 <b>기본판</b>은 Play 프로텍트 정책 때문에 다른 앱의 곡 정보를 읽을 수 없어요. YouTube Music 정보를 보려면 full 판을 설치하세요. 설치 방법은 아래 안내를 참고하세요.</small></div><button class="pill on" id="xFull">full 판 받기</button></li>
-          <li id="rowNotif"><div><b>곡 정보 · 재생 조작 (모든 앱)</b><small>다른 앱의 곡 제목, 앨범 아트, 재생 위치를 보여 주고 조작하려면 알림 접근 권한이 필요해요.</small></div><button class="pill" id="xNotif">설정 열기</button></li>
+          <li id="rowNotif"><div><b>곡 정보 · 재생 조작 (모든 앱)</b><small>다른 앱의 곡 제목, 앨범 아트, 재생 위치를 보여 주고 조작하려면 알림 접근 권한이 필요해요.</small></div><span class="permbtns"><button class="pill" id="xNotif">설정 열기</button><button class="pill" id="xAppInfo">앱 정보</button></span></li>
           <li id="rowSpotify"><div><b>Spotify 곡 정보 <span id="xSpRx"></span></b><small>Spotify 앱 → 설정 → <b>기기 브로드캐스트 상태</b>를 켜고 곡을 한 번 넘기면 곡 제목, 재생 시간, 앨범 아트가 여기에 표시돼요. YouTube Music 곡 정보는 full 판에서만 볼 수 있어요. 재생·다음·이전 버튼은 모든 앱에서 동작해요.</small></div><button class="pill" data-pkg="com.spotify.music">Spotify 열기</button></li>
           <li><div><b>사운드 시각화</b><small>재생 중인 소리를 실시간으로 분석만 하고, 녹음하거나 저장하지 않아요.</small></div><button class="pill" id="xMic">허용</button></li>
         </ul>
-        <p class="hint"><span id="hintNotif"><b>알림 접근이 켜지지 않을 때</b> ① [설정 열기]에서 Daesinnam Amp 스위치를 한 번 눌러 "제한된 설정" 안내가 뜨게 합니다. ② 설정 → 애플리케이션 → Daesinnam Amp → 오른쪽 위 ⋮ → <b>제한된 설정 허용</b>. ③ 다시 [설정 열기]에서 스위치를 켭니다.<br></span><span id="hintFull" hidden><b>full 판 설치</b> ① Play 스토어 → 프로필 → Play 프로텍트 → 톱니바퀴 → "Play 프로텍트로 앱 검사" 끄기 ② [full 판 받기]로 받아 설치(지금 앱 위에 덮어 설치) ③ Play 프로텍트 다시 켜기 ④ 이 화면의 알림 접근 안내 따르기.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
+        <p class="hint"><span id="hintNotif"><b>"앱의 액세스가 거부됨" / "제한된 설정"이 뜰 때</b> — 스토어가 아닌 APK로 설치한 앱이라 안드로이드가 알림 접근을 막아 둔 상태예요(앱 문제 아님). ① [설정 열기]에서 스위치를 한 번 눌러 거부 안내를 띄운 뒤 닫기. ② [앱 정보] → 오른쪽 위 <b>⋮</b> → <b>제한된 설정 허용</b> → 화면 잠금 확인. ③ 다시 [설정 열기]에서 스위치를 켭니다. <b>⋮ 메뉴에 "제한된 설정 허용"이 없으면</b> 삼성 <b>자동 차단기</b>가 켜져 있는 거예요: 설정 → 보안 및 개인정보 보호 → 자동 차단기를 잠시 끄고 ②부터 다시 하세요(끝나면 다시 켜도 돼요). 회사·학교 관리 태블릿은 관리자가 막아 두면 허용할 수 없어요. 알림 접근이 없어도 음악 재생·EQ·라디오·조작 버튼은 그대로 쓸 수 있어요.<br></span><span id="hintFull" hidden><b>full 판 설치</b> ① Play 스토어 → 프로필 → Play 프로텍트 → 톱니바퀴 → "Play 프로텍트로 앱 검사" 끄기 ② [full 판 받기]로 받아 설치(지금 앱 위에 덮어 설치) ③ Play 프로텍트 다시 켜기 ④ 이 화면의 알림 접근 안내 따르기.<br></span>EQ는 재생 앱이 오디오 효과 연결을 보내 주면 그 앱에 바로 적용되고, 아니면 기기 전체(전역) EQ로 적용돼요. 위의 EQ 상태에서 실제 연결 결과를 확인할 수 있어요.</p>
       </details>
     </div>
   </section>
@@ -2089,7 +2089,7 @@ function pollExt(){
   $('#xSrc').textContent='곡 정보: '+(s.notif?'알림 접근으로 모든 앱에서 받는 중':(s.spotifyRx?'Spotify 방송으로 받는 중':(ns?'알림 접근이 꺼져 있어 받을 수 없어요':'기본판이라 Spotify 방송만 받을 수 있어요(아직 수신 없음)')));
   seek.disabled=!s.seekable;
   $('#xSpRx').textContent=s.spotifyRx?'· 수신 중':'· 아직 수신 안 됨';$('#xSpRx').style.color=s.spotifyRx?'var(--led1)':'var(--led4)';
-  const n=$('#xNotif');n.textContent=s.notif?'허용됨':'설정 열기';n.classList.toggle('ok',!!s.notif);n.classList.toggle('on',!s.notif);
+  const n=$('#xNotif');n.textContent=s.notif?'허용됨':'설정 열기';n.classList.toggle('ok',!!s.notif);n.classList.toggle('on',!s.notif);$('#xAppInfo').hidden=!!s.notif;
   const m=$('#xMic');m.textContent=s.mic?'허용됨':'허용';m.classList.toggle('ok',!!s.mic);m.classList.toggle('on',!s.mic);
   /* 필요한 권한이 모두 허용되면 권한 안내를 접어 둡니다(사용자가 다시 펼칠 수 있음). */
   const allOk=!!s.mic&&(s.notifSupported===false||!!s.notif),pb=$('#xPerm'),ps=$('#xPermSum');
@@ -2125,7 +2125,7 @@ if(HAS_EXT){
   $('#srcSeg').hidden=false;
   document.querySelectorAll('#srcSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.src));
   document.querySelectorAll('[data-pkg]').forEach(b=>b.onclick=()=>{try{NB.openApp(b.dataset.pkg)}catch(e){}});
-  $('#xNotif').onclick=()=>{try{NB.openNotificationAccess()}catch(e){}};
+  $('#xNotif').onclick=()=>{try{NB.openNotificationAccess()}catch(e){}};$('#xAppInfo').onclick=()=>{try{NB.openAppInfo()}catch(e){toast('설정 → 애플리케이션에서 이 앱을 찾아 주세요.')}};
   $('#xMic').onclick=()=>{try{NB.requestMic()}catch(e){}};
   $('#xFull').onclick=()=>{try{NB.openUrl('https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk')}catch(e){}};
 }
