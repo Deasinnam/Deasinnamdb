@@ -34,6 +34,7 @@ var A = {
       mk = new naver.maps.Marker({ position: map.getCenter(), map: map }); cb(); },
     pos: function(d){ var p = new naver.maps.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); },
     resize: function(s){ map.setSize(new naver.maps.Size(s.w, s.h)); },
+    zoom: function(d){ map.setZoom(map.getZoom() + d, true); },
     fail: '네이버 지도 프로그램을 불러오지 못했어요. Client ID와 인터넷 연결을 확인하세요.'
   },
   kakao: {
@@ -44,6 +45,7 @@ var A = {
       mk = new kakao.maps.Marker({ position: map.getCenter(), map: map }); cb(); }); },
     pos: function(d){ var p = new kakao.maps.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); },
     resize: function(){ map.relayout(); },
+    zoom: function(d){ map.setLevel(map.getLevel() - d, { animate: true }); },
     fail: '카카오맵을 불러오지 못했어요. JavaScript 키, [플랫폼 → Web]의 사이트 도메인(' + HOST + '), [카카오맵] 사용 설정을 확인하세요.'
   },
   tmap: {
@@ -52,6 +54,7 @@ var A = {
       mk = new Tmapv2.Marker({ position: map.getCenter(), map: map }); cb(); },
     pos: function(d){ var p = new Tmapv2.LatLng(d.lat, d.lon); mk.setPosition(p); if (d.follow) map.setCenter(p); },
     resize: function(s){ map.resize(s.w, s.h); },
+    zoom: function(d){ map.setZoom(map.getZoom() + d); },
     fail: 'TMAP 지도 프로그램을 불러오지 못했어요. 앱 키와 인터넷 연결을 확인하세요.'
   }
 }[P];
@@ -65,7 +68,9 @@ function init(){
   } catch (e) { post({ ok: false, err: '지도를 만들지 못했어요: ' + e }); }
 }
 window.addEventListener('resize', function(){ if (ok) try { A.resize(sz()); } catch (e) {} });
-window.addEventListener('message', function(e){ var d = e.data; if (!d || d.t !== 'pos') return; last = d; if (ok) try { A.pos(d); } catch (x) {} });
+window.addEventListener('message', function(e){ var d = e.data; if (!d) return;
+  if (d.t === 'zoom') { if (ok && A.zoom) try { A.zoom(d.d); } catch (x) {} return; }
+  if (d.t !== 'pos') return; last = d; if (ok) try { A.pos(d); } catch (x) {} });
 window.addEventListener('load', init);
 </script>
 </body>

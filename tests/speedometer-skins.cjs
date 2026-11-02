@@ -741,14 +741,22 @@ async function main() {
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
       assert.equal(await pc2.locator('#wGps > #ckRail').count(), 1, 'Rail sits inside the speedometer window');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
-      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['play',['wMain','wVis']],['list',['wEq','wPl']],['ctl',['wCtl','wAtc']]]) {
+      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['play',['wMain','wVis']],['list',['wPl','wEq']],['ctl',['wCtl','wAtc']]]) {
         await pc2.locator(`#ckRail [data-f="${f}"]`).click();
         const vis = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id));
         assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');
         const fit = await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return r.bottom<=innerHeight+2&&r.top>=0}, ids[0]);
         assert.ok(fit, f+' fits the screen without scrolling');
-        assert.equal(await pc2.locator(`#${ids[0]} > #ckRail`).count(), 1, 'Rail moves into the chosen window');
+        assert.equal(await pc2.locator(ids.length>1?'#app > #ckRail.inapp':`#${ids[0]} > #ckRail`).count(), 1, 'Rail inside the window, or beside both stacked windows');
       }
+      // 플레잉·목록·조종관제는 위아래로 나눔
+      for (const f of ['play','list','ctl']) {
+        await pc2.locator(`#ckRail [data-f="${f}"]`).click();
+        const rs = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win.fx')].map(w => {const r=w.getBoundingClientRect();return [r.left,r.top,r.bottom]}).sort((a,b)=>a[1]-b[1]));
+        assert.equal(rs.length, 2); assert.ok(Math.abs(rs[0][0]-rs[1][0]) < 2 && rs[1][1] >= rs[0][2] - 1, f+' stacked top/bottom');
+      }
+      await pc2.locator('#ckRail [data-f="map"]').click();
+      assert.equal(await pc2.locator('#mapZoomIn').isVisible(), true, 'Map zoom-in button'); assert.equal(await pc2.locator('#mapZoomOut').isVisible(), true);
       await pc2.locator('#ckRail [data-f="all"]').click();
       assert.equal(await pc2.locator('#wEq').isVisible(), true, 'All windows back');
       await pc2.locator('#ckRail [data-f="set"]').click();
@@ -826,8 +834,41 @@ async function main() {
       assert.equal(await pt.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit skin still shows its PFD');
       await pt.close();
     }
+    // 인터넷 라디오: 목록 검색·재생·즐겨찾기·다이얼
+    {
+      const pr = await context.newPage();
+      pr.on('pageerror', error => errors.push('radio: '+error.message));
+      await pr.route('**/json/stations/search**', route => route.fulfill({status:200, contentType:'application/json', headers:{'Access-Control-Allow-Origin':'*'},
+        body: JSON.stringify([{stationuuid:'a1',name:'KBS Cool FM',url_resolved:'https://stream.example/cool',tags:'pop',codec:'AAC',bitrate:128,countrycode:'KR'},{stationuuid:'b2',name:'SBS Power FM',url_resolved:'https://stream.example/power',tags:'talk',codec:'MP3',bitrate:128,countrycode:'KR'}])}));
+      await pr.addInitScript(() => {if(sessionStorage.getItem('pr'))return;sessionStorage.setItem('pr','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival3'));
+        HTMLMediaElement.prototype.play = function(){window.__rdSrc=this.src;return Promise.resolve()};});
+      await pr.goto(origin);
+      await pr.locator('#radioBtn').click();
+      await pr.waitForFunction(() => document.querySelectorAll('#rdList li[data-i]').length === 2);
+      assert.match(await pr.locator('#rdList').textContent(), /89\.1/, 'Seoul FM frequency shown');
+      await pr.locator('#rdList li[data-i="0"]').click();
+      await pr.waitForFunction(() => AmpRadio.state.playing);
+      assert.equal(await pr.evaluate(() => window.__rdSrc), 'https://stream.example/cool');
+      assert.match(await pr.locator('#rdFreq').textContent(), /89\.1/);
+      await pr.locator('#rdFav').click();
+      await pr.locator('#rdList li[data-i="1"] button').click();
+      assert.equal(await pr.locator('#rdPresets button').count(), 2, 'Two favourites as presets');
+      await pr.locator('#rdNext').click();
+      await pr.waitForFunction(() => AmpRadio.state.cur && AmpRadio.state.cur.id === 'b2');
+      // 다이얼을 89.1 근처로 끌면 그 방송으로
+      const sb = await pr.locator('#rdScale').boundingBox();
+      const xf = f => sb.x + sb.width*(.04 + (f-87.5)/20.5*.92);
+      await pr.mouse.move(xf(100), sb.y+sb.height/2);await pr.mouse.down();await pr.mouse.move(xf(89.2), sb.y+sb.height/2,{steps:5});await pr.mouse.up();
+      await pr.waitForFunction(() => AmpRadio.state.cur && AmpRadio.state.cur.id === 'a1');
+      await pr.locator('#rdPlay').click();
+      assert.equal(await pr.evaluate(() => AmpRadio.state.playing), false, 'Stop');
+      await pr.reload();
+      await pr.locator('#ckRail [data-f="radio"]').click();
+      assert.equal(await pr.locator('#rdPresets button').count(), 2, 'Favourites remembered');
+      await pr.close();
+    }
     assert.deepEqual(errors, []);
-    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, tablet landscape cockpit skin with Ver1 PFD/map/clock, Ver1 analog cockpit clock + PFD takeoff/landing, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
+    console.log('PASS: D1 Dashcam live/probe/full screen · Daesinnam PFD v1.2 (air force design, clouds/city, night, heading yaw) in cockpit, five car themes, no cockpit PFD in car/drive skins, fixed normal-skin sizes with resize buttons, logo clock + world time, internet radio, stacked cockpit-2 views, tablet landscape cockpit skin with Ver1 PFD/map/clock, Ver1 analog cockpit clock + PFD takeoff/landing, cockpit skin, cockpit resize, package control console, SOS guard+call, two-line tower, tower speed cautions, 10 visualizer effects, window order settings, TMAP bottom split, GPS continuity, HUD/limit, no-fix state, persistence, 3 responsive sizes, map placement, drive skin, permission folding, saved playlist, settings, drive mode, car connect, native player hand-off and touch EQ drag');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

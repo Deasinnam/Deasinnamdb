@@ -194,6 +194,9 @@ public class MainActivity extends Activity {
                 if ("appassets.androidplatform.net".equals(u.getHost()) && "/cam/frame.jpg".equals(u.getPath())) {
                     return camFrame();
                 }
+                if ("appassets.androidplatform.net".equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/tts/")) {
+                    return ttsFile(u.getLastPathSegment());
+                }
                 return loader.shouldInterceptRequest(u);
             }
         });
@@ -566,26 +569,73 @@ public class MainActivity extends Activity {
     }
 
     // ---------- 콕핏 스킨: 관제탑 음성
+    // 관제탑 무전: TTS를 파일로 만들어 화면(Web Audio)에서 무전기 소리(대역 제한·찌그러짐·잡음·스퀠치)로 재생합니다.
     private TextToSpeech tts;
     private boolean ttsReady;
-    private String ttsPending;
+    private final java.util.ArrayList<Runnable> ttsQueue = new java.util.ArrayList<>();
+
+    private void withTts(Runnable r) {
+        if (tts != null && ttsReady) { r.run(); return; }
+        ttsQueue.add(r);
+        if (tts != null) return;
+        tts = new TextToSpeech(getApplicationContext(), status -> {
+            ttsReady = status == TextToSpeech.SUCCESS;
+            if (ttsReady) {
+                tts.setLanguage(Locale.KOREAN);
+                // 가장 자연스러운 한국어 목소리(품질이 높은 것)를 고릅니다.
+                try {
+                    android.speech.tts.Voice best = null;
+                    for (android.speech.tts.Voice v : tts.getVoices()) {
+                        if (v.getLocale() == null || !"ko".equals(v.getLocale().getLanguage())) continue;
+                        if (v.getFeatures() != null && v.getFeatures().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)) continue;
+                        if (best == null || v.getQuality() > best.getQuality()
+                                || (v.getQuality() == best.getQuality() && v.isNetworkConnectionRequired() && !best.isNetworkConnectionRequired())) best = v;
+                    }
+                    if (best != null) tts.setVoice(best);
+                } catch (Exception ignored) {}
+                tts.setSpeechRate(1.0f);
+                tts.setPitch(0.96f);
+                tts.setOnUtteranceProgressListener(new android.speech.tts.UtteranceProgressListener() {
+                    @Override public void onStart(String id) {}
+                    @Override public void onDone(String id) { if (id != null && id.startsWith("rd")) js("window.__ttsFile && window.__ttsFile('" + id + "', true)"); }
+                    @Override public void onError(String id) { if (id != null && id.startsWith("rd")) js("window.__ttsFile && window.__ttsFile('" + id + "', false)"); }
+                });
+            }
+            java.util.ArrayList<Runnable> q = new java.util.ArrayList<>(ttsQueue);
+            ttsQueue.clear();
+            if (ttsReady) for (Runnable x : q) x.run();
+        });
+    }
 
     private void speak(String text) {
-        if (tts == null) {
-            ttsPending = text;
-            tts = new TextToSpeech(getApplicationContext(), status -> {
-                ttsReady = status == TextToSpeech.SUCCESS;
-                if (ttsReady) {
-                    tts.setLanguage(Locale.KOREAN);
-                    tts.setSpeechRate(1.05f);
-                    if (ttsPending != null) tts.speak(ttsPending, TextToSpeech.QUEUE_FLUSH, null, "atc");
-                }
-                ttsPending = null;
-            });
-            return;
+        withTts(() -> tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "atc"));
+    }
+
+    private java.io.File ttsDir() {
+        java.io.File d = new java.io.File(getCacheDir(), "tts");
+        if (!d.exists()) d.mkdirs();
+        return d;
+    }
+
+    private void speakToFile(String text, String id) {
+        withTts(() -> {
+            java.io.File[] old = ttsDir().listFiles();
+            if (old != null) for (java.io.File f : old) if (System.currentTimeMillis() - f.lastModified() > 60000) f.delete();
+            int r = tts.synthesizeToFile(text, new Bundle(), new java.io.File(ttsDir(), id + ".wav"), id);
+            if (r != TextToSpeech.SUCCESS) js("window.__ttsFile && window.__ttsFile('" + id + "', false)");
+        });
+    }
+
+    private WebResourceResponse ttsFile(String name) {
+        java.util.Map<String, String> h = new java.util.HashMap<>();
+        h.put("Cache-Control", "no-store");
+        try {
+            if (name == null || !name.matches("rd[0-9a-z]+\\.wav")) throw new java.io.FileNotFoundException();
+            java.io.File f = new java.io.File(ttsDir(), name);
+            return new WebResourceResponse("audio/wav", null, 200, "OK", h, new java.io.FileInputStream(f));
+        } catch (Exception e) {
+            return new WebResourceResponse("audio/wav", null, 404, "Not Found", h, new java.io.ByteArrayInputStream(new byte[0]));
         }
-        if (ttsReady) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "atc");
-        else ttsPending = text;
     }
 
     private BluetoothAdapter btAdapter() {
@@ -1088,6 +1138,14 @@ public class MainActivity extends Activity {
                 if (on || playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
+        }
+
+        /** 관제탑 무전 음성: 파일로 만든 뒤 window.__ttsFile(id, ok)로 알려 줍니다. id는 rd로 시작 */
+        @JavascriptInterface
+        public boolean ttsToFile(final String text, final String id) {
+            if (text == null || id == null || !id.matches("rd[0-9a-z]+")) return false;
+            main.post(() -> speakToFile(text, id));
+            return true;
         }
 
         /** 설정: 최근 앱에서 앱을 닫아도 음악을 계속 재생할지(기본 false = 모두 끔) */
