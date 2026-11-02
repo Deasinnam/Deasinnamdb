@@ -94,6 +94,7 @@ public class MainActivity extends Activity {
     private GpsTracker gps;
     // D1 DASHCAM: 블랙박스 와이파이(앱 전용) 연결
     private CamLink cam;
+    private RadioPlayer radio;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
 
@@ -164,6 +165,7 @@ public class MainActivity extends Activity {
         listenerCn = new ComponentName(this, MediaListener.class);
         gps = new GpsTracker(this);
         cam = new CamLink(this);
+        radio = new RadioPlayer(this);
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#05070D"));
@@ -653,6 +655,7 @@ public class MainActivity extends Activity {
         stopViz();
         gps.stop();
         cam.disconnect();
+        if (radio != null) radio.release();
         ExternalEq.I.setActive(false);
         stopService(new Intent(this, PlaybackService.class));
         if (web != null) {
@@ -1139,6 +1142,19 @@ public class MainActivity extends Activity {
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
         }
+
+        /** 인터넷 라디오(표준 플레이어: HLS·http·재생목록 지원) */
+        @JavascriptInterface
+        public void radioPlay(final String url) { main.post(() -> radio.play(url)); }
+
+        @JavascriptInterface
+        public void radioStop() { main.post(() -> radio.stop()); }
+
+        @JavascriptInterface
+        public void radioVolume(final double v) { main.post(() -> radio.volume((float) v)); }
+
+        @JavascriptInterface
+        public String radioState() { return radio == null ? "{}" : radio.status(); }
 
         /** 관제탑 무전 음성: 파일로 만든 뒤 window.__ttsFile(id, ok)로 알려 줍니다. id는 rd로 시작 */
         @JavascriptInterface

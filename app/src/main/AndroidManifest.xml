@@ -56,7 +56,8 @@
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="true"
         android:supportsRtl="true"
-        android:resizeableActivity="true">
+        android:resizeableActivity="true"
+        android:usesCleartextTraffic="true">
 
         <!-- 삼성 DeX: 휴대폰 화면과 외부 디스플레이를 오가도 앱이 다시 시작되지 않게 합니다. -->
         <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />

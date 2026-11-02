@@ -306,18 +306,18 @@ html,body{max-width:100%;overflow-x:hidden}
 .seg button+button{border-left:1px solid var(--edge)}
 .seg button.on{background:linear-gradient(180deg,var(--hot-a),var(--hot-b) 50%,var(--hot-c));color:var(--hot-ink)}
 
-.app{max-width:2000px;margin:0 auto;display:grid;gap:14px;grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "vis" "eq" "pl";padding-block:8px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.app.L2{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"main eq" "vis pl"}
-.app.L3{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);grid-template-areas:"main eq pl" "vis vis pl"}
-#wMain{grid-area:main}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}#wGps{grid-area:gps}
+.app{max-width:2000px;margin:0 auto;display:grid;gap:14px;grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "vis" "radio" "eq" "pl";padding-block:8px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app.L2{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"main radio" "vis eq" "vis pl"}
+.app.L3{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);grid-template-areas:"main radio pl" "main eq pl" "vis vis pl"}
+#wMain{grid-area:main}#wRadio{grid-area:radio}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}#wGps{grid-area:gps}
 /* 자동차 스킨: 가운데에 GPS 속도계 창 */
-.app.G{grid-template-areas:"gps" "cam" "map" "main" "vis" "eq" "pl"}
-.app.L2.G{grid-template-areas:"gps gps" "cam cam" "map map" "main eq" "vis pl"}
-.app.L3.G{grid-template-areas:"gps gps pl" "cam cam pl" "map map pl" "main eq pl" "vis vis pl"}
+.app.G{grid-template-areas:"gps" "cam" "map" "main" "vis" "radio" "eq" "pl"}
+.app.L2.G{grid-template-areas:"gps gps" "cam cam" "map map" "main radio" "vis eq" "vis pl"}
+.app.L3.G{grid-template-areas:"gps gps pl" "cam cam pl" "map map pl" "main radio pl" "main eq pl" "vis vis pl"}
 /* 지도를 쓰지 않으면 맨 아래로 */
-.app.G.MO{grid-template-areas:"gps" "cam" "main" "vis" "eq" "pl" "map"}
-.app.L2.G.MO{grid-template-areas:"gps gps" "cam cam" "main eq" "vis pl" "map map"}
-.app.L3.G.MO{grid-template-areas:"gps gps pl" "cam cam pl" "main eq pl" "vis vis pl" "map map map"}
+.app.G.MO{grid-template-areas:"gps" "cam" "main" "vis" "radio" "eq" "pl" "map"}
+.app.L2.G.MO{grid-template-areas:"gps gps" "cam cam" "main radio" "vis eq" "vis pl" "map map"}
+.app.L3.G.MO{grid-template-areas:"gps gps pl" "cam cam pl" "main radio pl" "main eq pl" "vis vis pl" "map map map"}
 #wMap{grid-area:map;display:none}
 .app.G #wMap{display:flex}
 #wGps{display:none}
@@ -642,12 +642,12 @@ input[type=range]:disabled{opacity:.35}
 /* 콕핏 스킨 전용 창: 조종 패널 · 관제탑 */
 #wCtl{grid-area:ctl;display:none}#wAtc{grid-area:atc;display:none}
 .app.G.K #wCtl,.app.G.K #wAtc{display:flex}
-.app.G.K{grid-template-areas:"gps" "ctl" "atc" "cam" "map" "main" "vis" "eq" "pl"}
-.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "map map" "main eq" "vis pl"}
-.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "map map pl" "main eq pl" "vis vis pl"}
-.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "cam" "main" "vis" "eq" "pl" "map"}
-.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "main eq" "vis pl" "map map"}
-.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "main eq pl" "vis vis pl" "map map map"}
+.app.G.K{grid-template-areas:"gps" "ctl" "atc" "cam" "map" "main" "vis" "radio" "eq" "pl"}
+.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "map map" "main radio" "vis eq" "vis pl"}
+.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "map map pl" "main radio pl" "main eq pl" "vis vis pl"}
+.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "cam" "main" "vis" "radio" "eq" "pl" "map"}
+.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "main radio" "vis eq" "vis pl" "map map"}
+.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "main radio pl" "main eq pl" "vis vis pl" "map map map"}
 /* 관제탑: 데이터링크 화면에 출발 전 점검을 차례로 띄움 */
 #wAtc .body{display:flex;flex-direction:column;gap:10px}
 .atcrow{display:flex;gap:12px;align-items:stretch}
@@ -1019,11 +1019,7 @@ header.top{padding-top:28px!important}
 
 .rzsteps{display:none;gap:4px}
 /* 인터넷 라디오 */
-#radio{position:fixed;inset:0;z-index:60;background:#000a;display:grid;place-items:center;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px calc(env(safe-area-inset-bottom,0px) + 24px)}
-#radio[hidden]{display:none}
-.rd-card{width:min(760px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #000;border-radius:12px;
-  background:radial-gradient(#ffffff06 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,#2a3127,#161a17);box-shadow:0 0 0 1px #54604e,0 18px 40px #000c;color:#e7e9df;font-family:"Noto Sans KR",sans-serif}
-.rd-head{display:flex;align-items:center;gap:10px}.rd-head b{font:700 22px "Barlow Condensed",sans-serif;letter-spacing:.24em}.rd-head span{flex:1;color:#a8f08f;font-size:13px}
+.rd-body{display:flex;flex-direction:column;gap:10px}
 .rd-tuner{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid #000;border-radius:8px;background:#070a06;box-shadow:inset 0 0 0 1px #2b3328,inset 0 8px 20px #000}
 .rd-disp{display:grid;gap:2px;text-align:center}.rd-disp small{font:600 16px "Share Tech Mono",monospace;color:#f3bc65;letter-spacing:.1em}
 .rd-disp b{font:700 clamp(20px,4.6vw,30px)/1.2 "Noto Sans KR",sans-serif;color:#a8f08f;text-shadow:0 0 10px #a8f08f55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1038,7 +1034,9 @@ header.top{padding-top:28px!important}
 .rd-presets button.on{box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #a8f08f,0 0 10px #a8f08f26;color:#a8f08f}
 .rd-presets .empty{grid-column:1/-1;color:#9da69d;font-size:13px}
 .rd-search{display:flex;gap:8px;flex-wrap:wrap}.rd-search input{flex:1 1 180px;min-width:0;height:40px;padding:0 12px;border:1px solid #54604e;border-radius:6px;background:#0a0d10;color:#e7e9df;font:15px "Noto Sans KR",sans-serif}
-.rd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:42vh;overflow:auto;overscroll-behavior:contain}
+.rd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;height:220px;overflow:auto;overscroll-behavior:contain}
+.app.FX>#wRadio.fx .rd-list{flex:1;height:auto;max-height:none;min-height:80px}
+.app.FX>#wRadio.fx{order:-1!important}
 .rd-list li{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;min-height:52px;padding:4px 8px;border-radius:6px;background:#ffffff06;cursor:pointer}
 .rd-list li.on{background:#a8f08f14;color:#a8f08f}.rd-list li img,.rd-list li i{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#0a0d10;display:grid;place-items:center;font-style:normal}
 .rd-list li b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rd-list li small{display:block;font-size:12px;color:#9da69d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1421,6 +1419,28 @@ html.driving body{overflow:hidden}
     </div>
   </section>
 
+  <section class="win" id="wRadio">
+    <div class="bar"><span class="t">Radio</span><span class="s" id="rdSt">대기</span><span class="groove"></span><button class="wbtn" data-col="wRadio" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="body rd-body">
+    <div class="rd-tuner">
+      <div class="rd-disp"><small id="rdFreq">FM --.-</small><b id="rdName">방송국을 고르세요</b><span id="rdInfo">아래 목록에서 고르거나 다이얼을 돌려 주파수를 맞추세요</span></div>
+      <canvas id="rdScale" aria-label="FM 다이얼 (끌어서 주파수 맞추기)" role="slider" tabindex="0"></canvas>
+      <div class="rd-ctl">
+        <button class="pill" id="rdPrev" aria-label="이전 방송">◀◀</button>
+        <button class="pill on" id="rdPlay">▶ 재생</button>
+        <button class="pill" id="rdNext" aria-label="다음 방송">▶▶</button>
+        <button class="pill" id="rdFav">☆ 즐겨찾기</button>
+        <label class="rd-vol">VOL<input type="range" id="rdVol" min="0" max="100" value="80"></label>
+      </div>
+    </div>
+    <div class="rd-sec"><b>즐겨찾기</b><span class="rd-hint">길게 누르면 지워요</span></div>
+    <div class="rd-presets" id="rdPresets"></div>
+    <div class="rd-sec"><b>방송 찾기</b></div>
+    <div class="rd-search"><input id="rdQ" placeholder="방송 이름 (예: KBS, MBC, SBS, jazz)" autocomplete="off"><select class="sel" id="rdCountry"><option value="KR">한국</option><option value="">전 세계</option></select><button class="pill on" id="rdGo">검색</button></div>
+    <ul class="rd-list" id="rdList"></ul>
+    <p class="hint">방송 목록은 공개 인터넷 라디오 목록(radio-browser.info)을 씁니다. 방송사 사정(해외 차단·인증)으로 재생되지 않는 방송도 있어요. 주파수는 서울 기준입니다.</p>
+    </div>
+  </section>
   <section class="win" id="wEq">
     <div class="bar"><span class="t">Equalizer</span><span class="s" id="eqSrc"></span><span class="groove"></span><button class="wbtn" data-col="wEq" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
@@ -1480,28 +1500,6 @@ html.driving body{overflow:hidden}
   <div class="dv-sub"><button class="dv-s" id="dvVolDn">볼륨 −</button><button class="dv-s" id="dvSrc">내 음악</button><button class="dv-s" id="dvVolUp">볼륨 +</button></div>
 </div>
 
-<div id="radio" hidden role="dialog" aria-label="인터넷 라디오">
-  <div class="rd-card">
-    <div class="rd-head"><b>RADIO</b><span id="rdSt">대기</span><button class="pill" id="rdClose">닫기</button></div>
-    <div class="rd-tuner">
-      <div class="rd-disp"><small id="rdFreq">FM --.-</small><b id="rdName">방송국을 고르세요</b><span id="rdInfo">아래 목록에서 고르거나 다이얼을 돌려 주파수를 맞추세요</span></div>
-      <canvas id="rdScale" aria-label="FM 다이얼 (끌어서 주파수 맞추기)" role="slider" tabindex="0"></canvas>
-      <div class="rd-ctl">
-        <button class="pill" id="rdPrev" aria-label="이전 방송">◀◀</button>
-        <button class="pill on" id="rdPlay">▶ 재생</button>
-        <button class="pill" id="rdNext" aria-label="다음 방송">▶▶</button>
-        <button class="pill" id="rdFav">☆ 즐겨찾기</button>
-        <label class="rd-vol">VOL<input type="range" id="rdVol" min="0" max="100" value="80"></label>
-      </div>
-    </div>
-    <div class="rd-sec"><b>즐겨찾기</b><span class="rd-hint">길게 누르면 지워요</span></div>
-    <div class="rd-presets" id="rdPresets"></div>
-    <div class="rd-sec"><b>방송 찾기</b></div>
-    <div class="rd-search"><input id="rdQ" placeholder="방송 이름 (예: KBS, MBC, SBS, jazz)" autocomplete="off"><select class="sel" id="rdCountry"><option value="KR">한국</option><option value="">전 세계</option></select><button class="pill on" id="rdGo">검색</button></div>
-    <ul class="rd-list" id="rdList"></ul>
-    <p class="hint">방송 목록은 공개 인터넷 라디오 목록(radio-browser.info)을 씁니다. 방송사 사정(해외 차단·인증)으로 재생되지 않는 방송도 있어요. 주파수는 서울 기준입니다.</p>
-  </div>
-</div>
 <div id="settings" hidden role="dialog" aria-label="설정">
   <div class="set-card">
     <div class="set-head"><b>설정</b><button class="pill" id="setClose">닫기</button></div>
@@ -3145,9 +3143,9 @@ setClockStyle(clockStyle);
 $('#clkWorld').onclick=()=>{openSettings();const r=$('#secClock');if(r){r.scrollIntoView({block:'center'});$('#sWorld').focus()}};
 clockTick();setInterval(clockTick,1000);
 /* ---------- 창 순서(설정) ---------- */
-const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wEq:'이퀄라이저',wPl:'재생 목록'};
+const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wRadio:'라디오',wEq:'이퀄라이저',wPl:'재생 목록'};
 function winKind(){return isCp()?'K':isCar()?'G':'N'}
-function winDefault(){return {K:['wGps','wCtl','wAtc','wCam','wMap','wMain','wVis','wEq','wPl'],G:['wGps','wCam','wMap','wMain','wVis','wEq','wPl'],N:['wMain','wVis','wEq','wPl']}[winKind()]}
+function winDefault(){return {K:['wGps','wCtl','wAtc','wCam','wMap','wMain','wVis','wRadio','wEq','wPl'],G:['wGps','wCam','wMap','wMain','wVis','wRadio','wEq','wPl'],N:['wMain','wVis','wRadio','wEq','wPl']}[winKind()]}
 function winOrder(){const d=winDefault(),o=store.get('winOrder_'+winKind(),null);if(!Array.isArray(o))return null;const f=o.filter(id=>d.includes(id));d.forEach(id=>{if(!f.includes(id))f.push(id)});return f}
 function applyWinOrder(){const o=winOrder();appEl.classList.toggle('CO',!!o);
   document.querySelectorAll('#app>.win').forEach(w=>w.style.order='');
@@ -3454,14 +3452,16 @@ const RD_FREQ=[[/cool\s*fm|kbs\s*2\s*fm|쿨\s*fm/i,89.1],[/happy\s*fm|kbs\s*2\s*
   [/fm\s*4\s*u|mbc\s*fm4u/i,91.9],[/mbc\s*(표준|standard)|mbc\s*radio/i,95.9],[/power\s*fm|파워\s*fm/i,107.7],[/love\s*fm|러브\s*fm/i,103.5],[/cbs\s*(music|음악)/i,93.9],[/cbs\s*(표준|standard)/i,98.1],
   [/ebs/i,104.5],[/tbs\s*eFM|tbs\s*efm/i,101.3],[/tbs/i,95.1],[/bbs|불교방송/i,101.9],[/pbc|평화방송/i,105.3],[/febc|극동방송/i,106.9],[/ytn/i,94.5],[/ifm|경인/i,90.7],[/국방|kfn/i,100.5],[/afn|eagle/i,102.7]];
 const rdFreqOf=st=>{const n=(st.name||'')+' '+(st.tags||'');for(const [re,f] of RD_FREQ)if(re.test(n))return f;return st.freq||null};
-let rdFavs=store.get('rdFavs',[]),rdList=[],rdCur=store.get('rdLast',null),rdPlaying=false,rdTune=null;
+const RD_BLOCK=/평양|pyongyang|조선중앙|조선의\s*소리|voice\s*of\s*korea|dprk|north\s*korea|kcbs|kctv|朝鮮/i;
+let rdFavs=(store.get('rdFavs',[])||[]).filter(x=>!RD_BLOCK.test(x.name||'')),rdList=[],rdCur=store.get('rdLast',null),rdPlaying=false,rdTune=null;
 const rdAudio=new Audio();rdAudio.preload='none';rdAudio.volume=store.get('rdVol',80)/100;
-function rdSay(t){$('#rdSt').textContent=t}
+function rdSay(t){rdSt0=t;$('#rdSt').textContent=t}
 async function rdApi(path){let last;for(const s of RD_SERVERS){try{const r=await fetch(s+path,{headers:{'Accept':'application/json'}});if(r.ok)return await r.json();last=r.status}catch(e){last=e}}throw last}
+function rdOk(o){return o&&o.url&&(o.cc||'').toUpperCase()!=='KP'&&!RD_BLOCK.test((o.name||'')+' '+(o.tags||''))}
 function rdNorm(o){return {id:o.stationuuid||o.id||o.url,name:(o.name||'').trim()||'이름 없음',url:o.url_resolved||o.url,fav:o.favicon||o.fav||'',tags:(o.tags||'').split(',').slice(0,3).join(' · '),codec:o.codec||'',br:o.bitrate||0,cc:o.countrycode||o.cc||''}}
 async function rdSearch(q){const cc=$('#rdCountry').value,ul=$('#rdList');ul.innerHTML='<li class="msg">찾는 중…</li>';
   const qs=new URLSearchParams({hidebroken:'true',order:'votes',reverse:'true',limit:'80'});if(cc)qs.set('countrycode',cc);if(q)qs.set('name',q);
-  try{rdList=(await rdApi('/json/stations/search?'+qs)).map(rdNorm).filter(s=>s.url);rdRenderList()}
+  try{rdList=(await rdApi('/json/stations/search?'+qs)).map(rdNorm).filter(rdOk);rdRenderList()}
   catch(e){ul.innerHTML='<li class="msg">방송 목록을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.</li>'}}
 function rdRenderList(){const ul=$('#rdList');ul.innerHTML='';if(!rdList.length){ul.innerHTML='<li class="msg">찾은 방송이 없어요.</li>';return}
   rdList.forEach((st,i)=>{const li=document.createElement('li');li.dataset.i=i;if(rdCur&&rdCur.id===st.id)li.className='on';const f=rdFreqOf(st);
@@ -3479,11 +3479,20 @@ function rdShow(){const st=rdCur,f=st&&rdFreqOf(st);$('#rdName').textContent=st?
   $('#rdPlay').textContent=rdPlaying?'■ 정지':'▶ 재생';$('#rdPlay').classList.toggle('on',!rdPlaying);
   $('#rdFav').textContent=st&&rdFavs.some(x=>x.id===st.id)?'★ 즐겨찾기':'☆ 즐겨찾기';rdRenderFavs();rdDraw()}
 function rdBridge(st){try{if(NB&&NB.onPlayState)NB.onPlayState(st?'playing':'stopped',st?st.name:'',st?'RADIO':'')}catch(e){}}
+// 앱에서는 안드로이드 표준 플레이어(HLS·http·재생목록 지원)로, 웹 미리보기에서는 audio 태그로 재생
+const RD_NATIVE=!!(NB&&NB.radioPlay);let rdPoll=0,rdSt0='';
+function rdFail(){rdPlaying=false;clearInterval(rdPoll);rdSay('재생할 수 없어요');toast('이 방송은 지금 재생할 수 없어요(방송사 차단·주소 변경). 다른 방송을 골라 주세요.');rdShow();rdRenderList()}
 async function rdPlay(st){if(!st)return;rdCur=st;store.set('rdLast',st);try{pause()}catch(e){}
-  rdSay('연결 중…');rdPlaying=true;rdShow();rdAudio.src=st.url;
-  try{await rdAudio.play();rdSay('ON AIR');setTimeout(()=>rdBridge(st),250)}catch(e){rdPlaying=false;rdSay('재생할 수 없어요');toast('이 방송은 지금 재생할 수 없어요. 다른 방송을 골라 주세요.')}
+  rdSay('연결 중…');rdPlaying=true;rdShow();rdRenderList();
+  if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.radioPlay(st.url)}catch(e){return rdFail()}
+    const t0=Date.now();clearInterval(rdPoll);rdPoll=setInterval(()=>{let o={};try{o=JSON.parse(NB.radioState())}catch(e){}
+      if(o.state==='playing'){if(rdSt0!=='ON AIR'){rdSay('ON AIR');rdBridge(st)}}else if(o.state==='buffering'||o.state==='resolving')rdSay('버퍼링…');
+      else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000))rdFail()},500);return}
+  rdAudio.src=st.url;
+  try{await rdAudio.play();rdSay('ON AIR');setTimeout(()=>rdBridge(st),250)}catch(e){rdFail()}
   rdShow();rdRenderList()}
-function radioStop(){if(!rdPlaying&&rdAudio.paused)return;rdAudio.pause();rdAudio.removeAttribute('src');try{rdAudio.load()}catch(e){}rdPlaying=false;rdSay('대기');rdBridge(null);rdShow()}
+function radioStop(){if(!rdPlaying&&rdAudio.paused&&!RD_NATIVE)return;clearInterval(rdPoll);if(RD_NATIVE){try{NB.radioStop()}catch(e){}}rdAudio.pause();rdAudio.removeAttribute('src');try{rdAudio.load()}catch(e){}if(!rdPlaying)return;rdPlaying=false;rdSay('대기');rdBridge(null);rdShow();rdRenderList()}
+const rdVolV=()=>(+$('#rdVol').value||80)/100;
 rdAudio.addEventListener('error',()=>{if(rdPlaying){rdPlaying=false;rdSay('끊김');rdShow()}});
 rdAudio.addEventListener('waiting',()=>rdPlaying&&rdSay('버퍼링…'));rdAudio.addEventListener('playing',()=>rdSay('ON AIR'));
 function rdPool(){const seen=new Set(),out=[];for(const s of [...rdFavs,...rdList])if(!seen.has(s.id)){seen.add(s.id);out.push(s)}return out}
@@ -3509,19 +3518,20 @@ $('#rdList').addEventListener('click',e=>{const li=e.target.closest('li[data-i]'
 $('#rdPlay').onclick=()=>{if(rdPlaying)radioStop();else if(rdCur)rdPlay(rdCur);else if(rdFavs[0])rdPlay(rdFavs[0]);else if(rdList[0])rdPlay(rdList[0])};
 $('#rdPrev').onclick=()=>rdStep(-1);$('#rdNext').onclick=()=>rdStep(1);
 $('#rdFav').onclick=()=>{if(!rdCur)return;const k=rdFavs.findIndex(x=>x.id===rdCur.id);if(k>=0)rdFavs.splice(k,1);else rdFavs.push(rdCur);store.set('rdFavs',rdFavs);rdShow();rdRenderList()};
-$('#rdVol').value=String(Math.round(rdAudio.volume*100));$('#rdVol').oninput=e=>{rdAudio.volume=e.target.value/100;store.set('rdVol',+e.target.value)};
+$('#rdVol').value=String(Math.round(rdAudio.volume*100));$('#rdVol').value=String(store.get('rdVol',80));$('#rdVol').oninput=e=>{rdAudio.volume=e.target.value/100;store.set('rdVol',+e.target.value);if(RD_NATIVE)try{NB.radioVolume(e.target.value/100)}catch(x){}};
 $('#rdGo').onclick=()=>rdSearch($('#rdQ').value.trim());$('#rdQ').addEventListener('keydown',e=>{if(e.key==='Enter')rdSearch(e.target.value.trim())});
 $('#rdCountry').onchange=()=>rdSearch($('#rdQ').value.trim());
-let rdLoaded=false;function openRadio(){$('#radio').hidden=false;rdShow();if(!rdLoaded){rdLoaded=true;rdSearch('')}requestAnimationFrame(rdDraw)}
-$('#radioBtn').onclick=openRadio;$('#rdClose').onclick=()=>{$('#radio').hidden=true};
-$('#radio').addEventListener('click',e=>{if(e.target.id==='radio')$('#radio').hidden=true});
-window.addEventListener('resize',()=>{if(!$('#radio').hidden)rdDraw()});
+let rdLoaded=false;function rdEnsure(){rdShow();if(!rdLoaded){rdLoaded=true;rdSearch('')}requestAnimationFrame(rdDraw)}
+function openRadio(){const w=$('#wRadio');w.classList.remove('collapsed');if(skin==='carnival3'){ckFocus('radio')}else w.scrollIntoView({block:'start',behavior:'smooth'});rdEnsure()}
+new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))rdEnsure()}).observe($('#wRadio'));
+$('#radioBtn').onclick=openRadio;
+window.addEventListener('resize',rdDraw);new ResizeObserver(()=>rdDraw()).observe($('#rdScale'));
 // 핸들·이어폰 버튼: 라디오를 듣는 중이면 재생/정지·이전/다음 방송
-{const o=window.__ctl;window.__ctl=c=>{if(rdPlaying||(c==='toggle'&&rdCur&&!rdAudio.paused)){if(c==='next')rdStep(1);else if(c==='prev')rdStep(-1);else radioStop();return}return o&&o(c)}}
+{const o=window.__ctl;window.__ctl=c=>{if(rdPlaying){if(c==='next')rdStep(1);else if(c==='prev')rdStep(-1);else radioStop();return}return o&&o(c)}}
 window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,get state(){return {playing:rdPlaying,cur:rdCur,favs:rdFavs.length,list:rdList.length}}};
 
 /* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
-const FX_GROUPS={gps:['wGps'],cam:['wCam'],map:['wMap'],play:['wMain','wVis'],list:['wPl','wEq'],ctl:['wCtl','wAtc']};
+const FX_GROUPS={gps:['wGps'],cam:['wCam'],map:['wMap'],play:['wMain','wVis'],list:['wPl','wEq'],ctl:['wCtl','wAtc'],radio:['wRadio','wEq']};
 const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
 function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
   if(skin!=='carnival3'||!hostId){ckRailHome.after(r);return}
@@ -3535,7 +3545,7 @@ function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&
   if(skin==='carnival3')store.set('ckFocus',f);
   if(on){const top=appEl.getBoundingClientRect().top+window.scrollY;document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
-$('#ckRail').addEventListener('click',e=>{const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}if(b.dataset.f==='radio'){openRadio();return}ckFocus(b.dataset.f)});
+$('#ckRail').addEventListener('click',e=>{const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
 window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
 
 /* ---------- 오늘의 날씨(Open-Meteo, 키 없음) → 시계 옆 표시 + 속도계 비·눈·흐림 효과 ---------- */
