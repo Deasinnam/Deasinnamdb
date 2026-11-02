@@ -852,19 +852,19 @@ async function main() {
       assert.match(await pr.locator('#rdFreq').textContent(), /89\.1/);
       await pr.locator('#rdFav').click();
       await pr.locator('#rdList li[data-i="1"] button').click();
-      assert.equal(await pr.locator('#rdPresets button').count(), 2, 'Two favourites as presets');
+      assert.equal(await pr.locator('#rdPresets button.set').count(), 2, 'Two favourites as presets');
       await pr.locator('#rdNext').click();
       await pr.waitForFunction(() => AmpRadio.state.cur && AmpRadio.state.cur.id === 'b2');
       // 다이얼을 89.1 근처로 끌면 그 방송으로
       const sb = await pr.locator('#rdScale').boundingBox();
-      const xf = f => sb.x + sb.width*(.04 + (f-87.5)/20.5*.92);
+      const xf = f => sb.x + sb.width*(.035 + (f-87.5)/20.5*.93);
       await pr.mouse.move(xf(100), sb.y+sb.height/2);await pr.mouse.down();await pr.mouse.move(xf(89.2), sb.y+sb.height/2,{steps:5});await pr.mouse.up();
       await pr.waitForFunction(() => AmpRadio.state.cur && AmpRadio.state.cur.id === 'a1');
       await pr.locator('#rdPlay').click();
       assert.equal(await pr.evaluate(() => AmpRadio.state.playing), false, 'Stop');
       await pr.reload();
       await pr.locator('#ckRail [data-f="radio"]').click();
-      assert.equal(await pr.locator('#rdPresets button').count(), 2, 'Favourites remembered');
+      assert.equal(await pr.locator('#rdPresets button.set').count(), 2, 'Favourites remembered');
       await pr.close();
     }
     assert.deepEqual(errors, []);
