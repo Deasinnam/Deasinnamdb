@@ -834,6 +834,18 @@ async function main() {
       assert.equal(await pt.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit skin still shows its PFD');
       await pt.close();
     }
+    // 2단 화면(태블릿 세로): 플레이어와 라디오는 각각 한 줄 전체
+    {
+      const pl2 = await context.newPage();
+      await pl2.addInitScript(() => {localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('blue'));});
+      await pl2.goto(origin);
+      const r = await pl2.evaluate(() => ['wMain','wRadio','wEq'].map(id => {const q=document.getElementById(id).getBoundingClientRect();return [Math.round(q.x),Math.round(q.width),Math.round(q.y)]}));
+      assert.ok(await pl2.evaluate(() => document.getElementById('app').classList.contains('L2')), 'Two-column layout at 1470px');
+      assert.equal(r[0][0], r[1][0], 'Player and radio start at the same column');
+      assert.equal(r[0][1], r[1][1], 'Player and radio span the same full width');
+      assert.ok(r[1][2] > r[0][2] && r[2][2] > r[1][2], 'Player, then radio, then EQ');
+      await pl2.close();
+    }
     // 인터넷 라디오: 목록 검색·재생·즐겨찾기·다이얼
     {
       const pr = await context.newPage();
@@ -865,6 +877,13 @@ async function main() {
       await pr.reload();
       await pr.locator('#ckRail [data-f="radio"]').click();
       assert.equal(await pr.locator('#rdPresets button.set').count(), 2, 'Favourites remembered');
+      // 배터리 설정: 절전 모드 항상 켜기/끄기
+      await pr.evaluate(() => { document.getElementById('settings').hidden = false; });
+      await pr.locator('#sPwr button[data-v="on"]').click();
+      assert.equal(await pr.evaluate(() => window.AmpPwr.saver), true, 'Battery saver on');
+      await pr.locator('#sPwr button[data-v="off"]').click();
+      assert.equal(await pr.evaluate(() => window.AmpPwr.saver), false, 'Battery saver off');
+      await pr.evaluate(() => { document.getElementById('settings').hidden = true; });
       await pr.close();
     }
     assert.deepEqual(errors, []);

@@ -136,6 +136,12 @@
   };
   applyTheme();
   setInterval(applyTheme, 60000);
+  // 절전 모드: 비행 계기를 30fps로(사용자가 고른 품질은 그대로 저장)
+  setInterval(() => {
+    if (!P || !P.settings) return;
+    const want = (window.AmpPwr && window.AmpPwr.saver) ? 'balanced' : ((H.load('pfdSet', {}) || {}).sceneQuality === 'balanced' ? 'balanced' : 'high');
+    if (P.settings.sceneQuality !== want) P.settings.sceneQuality = want;
+  }, 2000);
 
   /* ---------- 2. 앱 데이터 → 패키지 ---------- */
   function feed() {

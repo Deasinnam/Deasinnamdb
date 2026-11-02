@@ -97,6 +97,8 @@ public class MainActivity extends Activity {
     private RadioPlayer radio;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
+    private boolean screenOnPlay = true; // 재생 중 화면 켜 두기(앱 설정: 자동이면 차량 스킨에서만)
+    private boolean started = false;
 
     // 내 음악 표준 플레이어(Media3)와의 연결
     private ListenableFuture<androidx.media3.session.MediaController> natFuture;
@@ -107,7 +109,7 @@ public class MainActivity extends Activity {
         @Override
         public void run() {
             natSnap = buildNatSnap();
-            main.postDelayed(this, 200);
+            if (started) main.postDelayed(this, 200);
         }
     };
 
@@ -151,7 +153,7 @@ public class MainActivity extends Activity {
             if (!extMode) return;
             refreshSessions();
             if (resumed && viz == null) startViz();
-            main.postDelayed(this, 700);
+            main.postDelayed(this, resumed ? 700 : 3000); // 화면이 안 보일 땐 천천히
         }
     };
 
@@ -514,12 +516,16 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        started = true;
+        if (nat != null) { main.removeCallbacks(natTick); main.post(natTick); } // 화면에 다시 보이면 상태 읽기 재개
         if (gpsWanted) gps.start();
         if (attWanted) gps.attStart();
     }
 
     @Override
     protected void onStop() {
+        started = false;
+        main.removeCallbacks(natTick); // 화면이 꺼져 있을 땐 0.2초마다 상태 읽기를 멈춤(재생은 서비스가 계속)
         gps.stop(); // 화면에 안 보일 때는 GPS를 꺼서 배터리를 아낍니다.
         gps.attStop();
         super.onStop();
@@ -932,7 +938,7 @@ public class MainActivity extends Activity {
             NowPlaying.playing = "playing".equals(state);
             main.post(() -> {
                 playing = NowPlaying.playing;
-                if (playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                if (playing && screenOnPlay) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else if (!hudOn) getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                 Intent i = new Intent(MainActivity.this, PlaybackService.class);
@@ -1138,7 +1144,7 @@ public class MainActivity extends Activity {
         public void keepScreenOn(final boolean on) {
             main.post(() -> {
                 hudOn = on;
-                if (on || playing) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                if (on || (playing && screenOnPlay)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
         }
@@ -1152,6 +1158,28 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void radioVolume(final double v) { main.post(() -> radio.volume((float) v)); }
+
+        /** 배터리 잔량·충전 여부(절전 모드 자동 판단용) */
+        @JavascriptInterface
+        public String battery() {
+            try {
+                Intent b = registerReceiver(null, new android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+                int lv = b == null ? -1 : b.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1), sc = b == null ? 100 : b.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100);
+                int st = b == null ? -1 : b.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1);
+                boolean chg = st == android.os.BatteryManager.BATTERY_STATUS_CHARGING || st == android.os.BatteryManager.BATTERY_STATUS_FULL;
+                return "{\"pct\":" + (lv < 0 ? 100 : Math.round(lv * 100f / Math.max(1, sc))) + ",\"chg\":" + chg + "}";
+            } catch (Exception e) { return "{\"pct\":100,\"chg\":true}"; }
+        }
+
+        /** 재생 중 화면을 켜 둘지(앱 설정) */
+        @JavascriptInterface
+        public void setScreenOnPlay(final boolean on) {
+            main.post(() -> {
+                screenOnPlay = on;
+                if (hudOn || (playing && on)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            });
+        }
 
         @JavascriptInterface
         public String radioState() { return radio == null ? "{}" : radio.status(); }

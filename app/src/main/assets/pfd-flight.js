@@ -443,21 +443,26 @@
 
   /* ---------- 정지 화면에서도 움직이는 것(자동 착륙·등화 깜빡임·기수 움직임) ---------- */
   let loopT = 0;
-  function needAnim() {
-    if (!active() || !P.canRender || !P.canRender()) return false;
-    if (F.auto || F.sim) return true;
-    { const k = wxKind(); if (k === 'rain' || k === 'snow' || (F.snow > .01 && k !== 'snow')) return true; }
-    if (Math.abs(F.pitch) > .05 && F.phase !== 'cruise') return true;
-    if (F.phase === 'approach' || F.phase === 'rollout') return true;
-    return !P.day && F.alt < 260;
+  // 다시 그릴 간격(ms). 0이면 움직일 것이 없음 — 배터리를 위해 필요한 만큼만 그림
+  function animGap() {
+    if (!active() || !P.canRender || !P.canRender()) return 0;
+    const sv = !!(window.AmpPwr && window.AmpPwr.saver);
+    if (F.auto || F.sim) return sv ? 95 : 45;
+    if (Math.abs(F.pitch) > .05 && F.phase !== 'cruise') return sv ? 95 : 45;
+    if (F.phase === 'approach' || F.phase === 'rollout') return sv ? 95 : 45;
+    { const k = wxKind(); if (k === 'rain' || k === 'snow' || (F.snow > .01 && k !== 'snow')) return sv ? 160 : 60; }
+    return !P.day && F.alt < 260 ? (sv ? 600 : 300) : 0; // 밤 활주로 등화 깜빡임만 있을 땐 느리게
   }
+  function needAnim() { return animGap() > 0; }
   function kick() { if (!loopT) loopT = requestAnimationFrame(loop); }
   let lastDraw = 0;
   function loop(t) {
     loopT = 0;
-    if (needAnim()) {
-      if (P.frame === null && t - lastDraw > 45) { lastDraw = t; try { P.draw(); } catch (e) {} }
-      loopT = requestAnimationFrame(loop);
+    const gap = animGap();
+    if (gap) {
+      if (P.frame === null && t - lastDraw > gap * .8) { lastDraw = t; try { P.draw(); } catch (e) {} }
+      if (gap >= 250) { loopT = -1; setTimeout(() => { loopT = 0; kick(); }, gap); } // 느린 움직임은 화면 주사율마다 깨어나지 않게
+      else loopT = requestAnimationFrame(loop);
     } else renderBadge();
   }
   setInterval(() => { if (needAnim()) kick(); else if (active()) renderBadge(); }, 500);
