@@ -3652,6 +3652,7 @@ $('#radioBtn').onclick=openRadio;
 window.addEventListener('resize',rdDraw);new ResizeObserver(()=>{rdDraw();rdSigDraw()}).observe($('#rdScale'));
 // 핸들·이어폰 버튼: 라디오를 듣는 중이면 재생/정지·이전/다음 방송
 {const o=window.__ctl;window.__ctl=c=>{if(rdPlaying){if(c==='next')rdStep(1);else if(c==='prev')rdStep(-1);else radioStop();return}return o&&o(c)}}
+rdShow();rdSay('대기'); // 처음부터 프리셋 칸·표시를 그려 두어 나중에 화면이 밀리지 않게
 window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,get state(){return {playing:rdPlaying,cur:rdCur,favs:rdFavs.length,list:rdList.length}}};
 
 /* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
