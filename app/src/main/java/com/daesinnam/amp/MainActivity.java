@@ -1175,8 +1175,15 @@ public class MainActivity extends Activity {
                 int lv = b == null ? -1 : b.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1), sc = b == null ? 100 : b.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100);
                 int st = b == null ? -1 : b.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1);
                 boolean chg = st == android.os.BatteryManager.BATTERY_STATUS_CHARGING || st == android.os.BatteryManager.BATTERY_STATUS_FULL;
-                return "{\"pct\":" + (lv < 0 ? 100 : Math.round(lv * 100f / Math.max(1, sc))) + ",\"chg\":" + chg + "}";
+                int tp = b == null ? Integer.MIN_VALUE : b.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, Integer.MIN_VALUE);
+                return "{\"pct\":" + (lv < 0 ? 100 : Math.round(lv * 100f / Math.max(1, sc))) + ",\"chg\":" + chg + (tp == Integer.MIN_VALUE ? "" : ",\"temp\":" + (tp / 10.0)) + "}";
             } catch (Exception e) { return "{\"pct\":100,\"chg\":true}"; }
+        }
+
+        /** 태블릿 모드 2: 가로 화면으로 고정(끄면 원래대로 자동 회전) */
+        @JavascriptInterface
+        public void setLandscape(final boolean on) {
+            main.post(() -> setRequestedOrientation(on ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER));
         }
 
         /** 재생 중 화면을 켜 둘지(앱 설정) */

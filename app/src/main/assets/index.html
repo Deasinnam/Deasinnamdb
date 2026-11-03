@@ -2127,8 +2127,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['carnival4','대신남 자동차 모드 · 콕핏 3'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드']];
-const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','drive','tablet'];const isCk2=()=>skin==='carnival3'||skin==='carnival4';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||skin==='tablet';const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['carnival4','대신남 자동차 모드 · 콕핏 3'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
+const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -2141,7 +2141,7 @@ let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
 function setSkin(k){setSkin0(k);try{pwrApply()}catch(e){}}
-function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4')?'carnival2':k;if(k==='carnival3'||k==='carnival4')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus(k==='carnival3'?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4')?'carnival2':k;if(k==='carnival3'||k==='carnival4')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus(k==='carnival3'?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
 $('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4')&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
@@ -2789,7 +2789,7 @@ function drawGps(){
   if(!gv)return;
   attPoll();if(att.on&&att.hdg>=0)hdgNow=att.hdg;
   if(typeof atcSpeedTick==='function')atcSpeedTick(spdNow);
-  const AP=window.AmpPfd;if(isCk()&&(skin==='tablet'||gStyle==='cockpit')&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
+  const AP=window.AmpPfd;if(isCk()&&(isTab()||gStyle==='cockpit')&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -3689,7 +3689,7 @@ function atcWarn(m){const w=$('#atcWarn');w.querySelector('b').textContent='⚠ 
   clearTimeout(atcWarnT);atcWarnT=setTimeout(()=>{w.hidden=true;$('#atcSt').textContent=atcDone?'· 이륙 허가':'· 점검 중'},6000);
   slowDown(m)}
 // 설정한 과속 경고 속도(기본 120·150km/h): 관제탑 "슬로우 다운" 음성 + 비행창(속도계) 전체가 빨갛게 세 번 깜빡임
-function slowDown(m){const w=skin==='tablet'?(document.querySelector('#tabCk .tk-pfd')||$('#wGps')):$('#wGps');if(!w)return;
+function slowDown(m){const w=isTab()?(document.querySelector('#tabCk .tk-pfd')||$('#wGps')):$('#wGps');if(!w)return;
   let o=w.querySelector(':scope>.slowfx');if(!o){o=document.createElement('div');o.className='slowfx';o.setAttribute('role','alert');o.innerHTML='<b>SLOW DOWN</b><span></span>';w.appendChild(o)}
   o.querySelector('span').textContent='관제탑 · 시속 '+m+'km 초과 · 감속하십시오';
   w.classList.remove('slowing');void w.offsetWidth;w.classList.add('slowing');

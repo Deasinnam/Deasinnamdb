@@ -197,3 +197,122 @@
 :root[data-skin="tablet"] .clock b{font-family:"Share Tech Mono",monospace;font-size:22px;color:#e6ebe8}
 :root[data-skin="tablet"][data-clock="analog"] .clock .ck-world.off b{display:block;grid-column:2;font-size:13px}
 :root[data-skin="tablet"] #clkNow{cursor:pointer}
+
+/* ===================== 태블릿 가로모드 2: 금속 조종석(가로 전용) ===================== */
+.tk-emb,.tk-rot{display:none}
+#tabCk.v2{--g:#f5b84a;--g2:#ffd27a;--ink:#eef2f4;--mut:#9aa3a9;--pan2:#0c1923;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 10px) calc(env(safe-area-inset-bottom,0px) + 16px) calc(env(safe-area-inset-left,0px) + 10px);
+  background:
+    radial-gradient(14px 10px at 99.2% 22%,#8f2c22cc 60%,transparent 62%),radial-gradient(10px 22px at 99.4% 31%,#7d261dcc 60%,transparent 62%),
+    radial-gradient(18px 12px at 98.9% 46%,#9a3326bb 60%,transparent 62%),radial-gradient(9px 9px at 0.6% 12%,#8a2b21bb 60%,transparent 62%),
+    radial-gradient(60% 40% at 20% 0%,#ffffff12,transparent 70%),
+    radial-gradient(40% 30% at 85% 90%,#00000040,transparent 70%),
+    repeating-linear-gradient(90deg,#ffffff05 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(0deg,#00000010 0 1px,transparent 1px 5px),
+    linear-gradient(180deg,#6a6e71,#54585b 30%,#45494c 70%,#3a3d40);
+  box-shadow:inset 0 0 0 2px #2a2d30,inset 0 0 0 6px #7a7e81,inset 0 0 0 8px #232629,inset 0 0 40px #0008}
+#tabCk.v2 .sc::before,#tabCk.v2 .sc::after{width:12px;height:12px;background:radial-gradient(circle at 40% 35%,#e6e9ec 0 20%,#7a8086 45%,#23272a 70%,transparent 74%)}
+/* 상단 명판 */
+#tabCk.v2 .tk-top{height:56px;margin:0 6px;border:1px solid #1e2124;border-radius:8px 8px 4px 4px;padding:0 18px 0 40px;
+  background:repeating-linear-gradient(90deg,#ffffff06 0 1px,transparent 1px 3px),linear-gradient(180deg,#7b7f82,#5a5e61 55%,#4a4e51);box-shadow:inset 0 1px 0 #ffffff40,inset 0 -2px 0 #0006,0 3px 8px #0008}
+#tabCk.v2 .tk-brand{font-style:italic;font-weight:700;font-size:24px;letter-spacing:.16em;color:#f0f3f5;text-shadow:0 1px 0 #000a;display:flex;align-items:center;gap:16px;
+  padding:6px 18px;border-radius:4px;background:linear-gradient(180deg,#3a3e41,#2a2d30);box-shadow:inset 0 1px 3px #000c,0 1px 0 #ffffff26;justify-self:start}
+#tabCk.v2 .tk-brand::after{content:"";width:46px;height:12px;background:repeating-linear-gradient(-60deg,#e9edf0 0 4px,transparent 4px 9px)}
+#tabCk.v2 .tk-stat{background:#15181a;border-color:#000;box-shadow:inset 0 2px 6px #000,0 1px 0 #ffffff26;padding:8px 18px}
+#tabCk.v2 .tk-stat span{color:#c9ced2}
+#tabCk.v2 .tk-stat i{width:20px;height:12px;border-radius:3px;background:#3a3020;box-shadow:inset 0 1px 2px #000}
+#tabCk.v2 .tk-stat .on i{background:radial-gradient(circle at 50% 35%,#ffe7a8,#f5b84a 60%,#c27a1c);box-shadow:0 0 10px #f5b84a}
+#tabCk.v2 .tk-emb{display:inline-flex;align-items:center;gap:12px;font-size:15px;letter-spacing:.16em;color:#eef2f4;white-space:nowrap}
+#tabCk.v2 .tk-emb svg{width:58px;height:26px;color:#d7dce0}
+#tabCk.v2 .tk-time{font-size:18px}
+#tabCk.v2 .tk-skin{background:#1e2124;color:#e6e9ec;max-width:150px}
+/* 패널: 두꺼운 금속 테 + 남색 유리 */
+#tabCk.v2 .tk-main{gap:10px;padding:10px 6px}
+#tabCk.v2 .tk-panel{padding:14px;border:1px solid #1e2124;border-radius:12px;
+  background:repeating-linear-gradient(90deg,#ffffff05 0 1px,transparent 1px 3px),linear-gradient(180deg,#75797c,#585c5f 40%,#45494c);
+  box-shadow:inset 0 1px 0 #ffffff45,inset 0 -2px 0 #0007,0 0 0 2px #2a2d30,0 8px 18px #0009}
+#tabCk.v2 .tk-glass{border:2px solid #121416;border-radius:8px;background:#0c1923;box-shadow:inset 0 0 0 1px #2c4558,inset 0 10px 26px #000c}
+#tabCk.v2 .tk-h{position:absolute;z-index:6;left:26px;right:26px;top:20px;margin:0;font-size:22px;letter-spacing:.12em;color:#e8f2fa;pointer-events:none}
+#tabCk.v2 .tk-h em{color:#8fd3ff}
+#tabCk.v2 .tk-left .tk-glass{padding-top:0}
+#tabCk.v2 .tk-left .tk-h{display:none}
+#tabCk.v2 .tk-left .tk-glass::before{content:"MAP PREVIEW";position:absolute;z-index:450;left:0;right:0;top:0;height:44px;padding:10px 16px;font-size:21px;letter-spacing:.1em;color:#e8f2fa;background:linear-gradient(180deg,#0c1923,#0c1923e0 70%,transparent);pointer-events:none}
+#tabCk.v2 #tkMap{top:44px}
+#tabCk.v2 #tkMap .leaflet-tile-pane{filter:invert(.9) hue-rotate(195deg) brightness(.78) contrast(1.05) saturate(.45)}
+#tabCk.v2 .leaflet-overlay-pane path{stroke:#6fd3ff}
+#tabCk.v2 .tk-me svg{filter:drop-shadow(0 0 6px #6fd3ff)}#tabCk.v2 .tk-me circle{fill:#6fd3ff22;stroke:#6fd3ff}#tabCk.v2 .tk-me path{fill:#9fdcff}
+#tabCk.v2 .tk-c1{top:54px}#tabCk.v2 .tk-north{top:54px}
+#tabCk.v2 .tk-card,#tabCk.v2 .tk-north{background:#0b1620e8;border-color:#2c4558}
+#tabCk.v2 .tk-pfd .tk-glass{background:#0b1824}
+/* 옆 버튼: 짙은 금속 + 주황 램프 */
+#tabCk.v2 .tk-key{border:1px solid #111;border-radius:7px;background:linear-gradient(180deg,#3d4144,#26292c);box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -3px 0 #121416,0 0 0 2px #50545799,0 3px 6px #000a;color:#e8ecef;font-size:16px}
+#tabCk.v2 .tk-key::before{width:26px;height:8px;background:#4a3a20;box-shadow:inset 0 1px 2px #000}
+#tabCk.v2 .tk-key.on::before{background:radial-gradient(circle at 50% 30%,#ffe7a8,#f5b84a 60%,#c27a1c);box-shadow:0 0 10px #f5b84a}
+/* 오디오 */
+#tabCk.v2 .tk-audio .tk-glass{background:#0c1923;padding-top:50px}
+#tabCk.v2 .tk-audio .tk-h{left:28px;right:28px}
+#tabCk.v2 .tk-audio .tk-h span::after{content:"";display:inline-block;width:26px;height:16px;margin-left:12px;vertical-align:-2px;
+  background:linear-gradient(#bfe3ff,#bfe3ff) 0 100%/3px 40% no-repeat,linear-gradient(#bfe3ff,#bfe3ff) 6px 100%/3px 80% no-repeat,linear-gradient(#bfe3ff,#bfe3ff) 12px 100%/3px 55% no-repeat,linear-gradient(#bfe3ff,#bfe3ff) 18px 100%/3px 100% no-repeat,linear-gradient(#bfe3ff,#bfe3ff) 24px 100%/3px 65% no-repeat;float:right}
+#tabCk.v2 .tk-audio .tk-h em{display:none}
+#tabCk.v2 .tk-src,#tabCk.v2 .tk-cov{display:none}
+#tabCk.v2 .tk-tt{font-size:clamp(24px,2.6vw,34px);letter-spacing:.1em;color:#e8f2fa}
+#tabCk.v2 .tk-ar{color:#c9dbe8}
+#tabCk.v2 .tk-seek::before{background:#24394a}#tabCk.v2 .tk-seek i{background:#8fd3ff;box-shadow:0 0 6px #8fd3ff}#tabCk.v2 .tk-seek b{background:#e8f2fa}
+#tabCk.v2 .tk-times{color:#d6e6f2}
+#tabCk.v2 .tk-tr button{background:linear-gradient(180deg,#1c2e3c,#122230);border-color:#07111a;box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #08131c,0 3px 6px #000a}
+#tabCk.v2 .tk-tr svg,#tabCk.v2 .tk-tr .pp svg{fill:#d6ecff}
+/* 출발 전 점검 띠 */
+#tabCk.v2 .tk-check{margin:0 6px;height:52px;border:1px solid #1e2124;border-radius:6px;background:linear-gradient(180deg,#2a2d30,#1d2023);box-shadow:inset 0 2px 6px #000c,0 0 0 2px #6a6e7155}
+#tabCk.v2 .tk-check>b{display:flex;align-items:center;gap:22px}
+#tabCk.v2 .tk-check>b::after{content:"";width:36px;height:12px;background:repeating-linear-gradient(-60deg,#9aa3a9 0 4px,transparent 4px 9px)}
+#tabCk.v2 .tk-check span{color:#d7dce0}
+#tabCk.v2 .tk-check span i{width:24px;height:14px;border-radius:3px;border:1px solid #000;background:#3a3020}
+#tabCk.v2 .tk-check span.ok{color:#eef2f4}
+#tabCk.v2 .tk-check span.ok i{background:radial-gradient(circle at 50% 35%,#ffe7a8,#f5b84a 60%,#c27a1c);border-color:#000;box-shadow:0 0 10px #f5b84a}
+#tabCk.v2 .tk-check span.ok i::after{display:none}
+/* 조작부: 리벳 박힌 금속 판 */
+#tabCk.v2 .tk-ctrl{padding:10px 6px}
+#tabCk.v2 .tk-mod{border:1px solid #1a1d20;border-radius:10px;
+  background:repeating-linear-gradient(90deg,#ffffff05 0 1px,transparent 1px 3px),radial-gradient(70% 60% at 30% 20%,#ffffff10,transparent 70%),linear-gradient(180deg,#3e4245,#2c2f32);
+  box-shadow:inset 0 1px 0 #ffffff26,inset 0 0 0 3px #5a5e6155,0 0 0 2px #1e2124,0 4px 10px #0008}
+#tabCk.v2 .tk-mod>h4{color:#eef2f4;font-size:19px}
+#tabCk.v2 .tk-knob .cap{background:repeating-conic-gradient(from 0deg,#5a5f63 0 4deg,#2e3235 4deg 8deg)}
+#tabCk.v2 .tk-knob .cap::before{background:radial-gradient(circle at 40% 30%,#8a9095,#3a3e41 60%,#1e2124)}
+#tabCk.v2 .tk-ico{stroke:#d7dce0}
+#tabCk.v2 .tk-dm{background:linear-gradient(180deg,#2a2d30,#1a1c1e);border-color:#000;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 3px #50545799}
+#tabCk.v2 .tk-dm::before{background:radial-gradient(circle at 50% 30%,#ffe7a8,#f5b84a 60%,#c27a1c);box-shadow:0 0 10px #f5b84a}
+#tabCk.v2 .tk-sosb{background:linear-gradient(180deg,#d8443a,#a8241b 55%,#6e120c);box-shadow:inset 0 2px 0 #ffffff40,inset 0 -6px 0 #00000040,0 4px 10px #000a}
+#tabCk.v2 .tk-cover{border:5px solid #8e9398;border-image:none;border-radius:8px;background:linear-gradient(180deg,#c9372dcc,#8f1f17cc);box-shadow:inset 0 2px 0 #ffffff40,0 6px 12px #000c}
+#tabCk.v2 .tk-cover b{background:none;color:#fff;font-size:22px;letter-spacing:.12em}
+/* 하단 탭 */
+#tabCk.v2 .tk-tabs{margin:0 6px;border:1px solid #1e2124;border-radius:6px;background:linear-gradient(180deg,#2d3033,#1f2225);box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #6a6e7155}
+#tabCk.v2 .tk-tabs button{color:#d7dce0}#tabCk.v2 .tk-tabs button svg{fill:#d7dce0}
+#tabCk.v2 .tk-tabs button.on{color:#eef2f4}#tabCk.v2 .tk-tabs button.on svg{fill:#eef2f4}
+#tabCk.v2 .tk-tabs button.on::after{left:18%;right:18%;bottom:6px;height:4px;background:#f5b84a;box-shadow:0 0 10px #f5b84a}
+#tabCk.v2 .tk-tabs .ver{color:#9aa3a9}
+/* 가로 전용: 세로로 들면 안내만 */
+@media (orientation:portrait){
+  #tabCk.v2 .tk-rot{display:flex;position:fixed;inset:0;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#1b1e21f2;color:#eef2f4;font-family:"Noto Sans KR",sans-serif;text-align:center}
+  #tabCk.v2 .tk-rot b{font-size:26px;color:#f5b84a}#tabCk.v2 .tk-rot span{font-size:16px;color:#c9ced2}
+  #tabCk.v2 .tk-rot::before{content:"";width:64px;height:40px;border:3px solid #f5b84a;border-radius:8px;margin-bottom:8px}
+}
+@media (max-height:760px) and (orientation:landscape){#tabCk.v2 .tk-top{height:46px}#tabCk.v2 .tk-brand{font-size:19px;padding:4px 12px}#tabCk.v2 .tk-emb{font-size:12px}#tabCk.v2 .tk-h{font-size:18px;top:18px}#tabCk.v2 .tk-left .tk-glass::before{font-size:17px;height:38px;padding:8px 14px}#tabCk.v2 #tkMap{top:38px}}
+#tabCk.v2 .tk-appmap{top:44px}
+@media (max-height:760px) and (orientation:landscape){#tabCk.v2 .tk-appmap{top:38px}}
+
+/* SOS 덮개: 빨간 덮개에 SOS + 줄무늬, 아래 LIFT TO OPEN */
+#tabCk.v2 .tk-cover{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0}
+#tabCk.v2 .tk-cover::before{content:"SOS";font-size:34px;font-weight:700;letter-spacing:.06em;color:#fff;text-shadow:0 2px 0 #0006}
+#tabCk.v2 .tk-cover b{font-size:0;padding:0;width:44px;height:10px;background:repeating-linear-gradient(-60deg,#ffffffaa 0 4px,transparent 4px 9px)}
+#tabCk.v2 .tk-sosw{margin-bottom:10px}
+#tabCk.v2 #wMap .mapctl .pill{color:#e8ecef;background:linear-gradient(180deg,#3d4144,#26292c);border-color:#111;box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -3px 0 #121416}
+#tabCk.v2 #wMap .mapctl .pill.on{color:#ffd27a;box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -3px 0 #f5b84a}
+/* 폭이 좁은 가로 화면에서도 한 화면에 */
+#tabCk.v2{grid-template-columns:minmax(0,1fr)}
+#tabCk.v2 .tk-top{grid-template-columns:auto minmax(0,1fr) auto;min-width:0}
+#tabCk.v2 .tk-stat{justify-self:center;min-width:0;overflow:hidden}
+#tabCk.v2 .tk-right{min-width:0}
+@media (max-width:1500px){#tabCk.v2 .tk-emb{font-size:0;gap:0}#tabCk.v2 .tk-time small{display:none}#tabCk.v2 .tk-stat span{padding:0 8px;font-size:14px}}
+@media (max-width:1200px){#tabCk.v2 .tk-brand{font-size:18px;padding:4px 10px}#tabCk.v2 .tk-brand::after{width:30px}#tabCk.v2 .tk-stat{padding:6px 8px}}
+#tabCk.v2 .tk-ctrl,#tabCk.v2 .tk-main{min-width:0}
+@media (orientation:portrait){#tabCk.v2 .tk-rot{z-index:100000;background:#1b1e21}}

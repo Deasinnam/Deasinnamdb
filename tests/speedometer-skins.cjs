@@ -791,6 +791,34 @@ async function main() {
       assert.equal(await pc2.locator('#wEq').isVisible(), true, 'Cockpit 1 shows all windows');
       await pc2.close();
     }
+    // 태블릿 가로모드 2: 같은 기능 + 금속 조종석 디자인, 가운데는 SPEED MATE(PFD 대신)
+    {
+      const pt2 = await context.newPage();
+      pt2.on('pageerror', error => errors.push('tablet2: '+error.message));
+      await pt2.setViewportSize({width:1600,height:1000});
+      await pt2.addInitScript(() => {if(sessionStorage.getItem('pt2'))return;sessionStorage.setItem('pt2','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('tablet2'));});
+      await pt2.goto(origin);
+      await pt2.locator('#tabCk').waitFor();
+      assert.equal(await pt2.evaluate(() => [document.documentElement.dataset.skin, document.documentElement.dataset.tk2, document.getElementById('tabCk').classList.contains('v2')].join()), 'tablet,1,true');
+      assert.equal(await pt2.locator('#app').isVisible(), false, 'App windows hidden');
+      assert.equal(await pt2.locator('#tabCk #pfdHost').count(), 0, 'Tablet 2 draws its own speed display, not the PFD');
+      assert.equal(await pt2.locator('#tkPfd').isVisible(), true, 'SPEED MATE canvas shown');
+      assert.equal(await pt2.locator('#tabCk .tk-emb').isVisible(), true);
+      assert.equal(await pt2.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'No sideways scroll');
+      await pt2.locator('#tabCk [data-k="setup"]').click();
+      assert.equal(await pt2.locator('#tkSys').isVisible(), true, 'SETUP opens system settings');
+      await pt2.locator('#tabCk [data-k="list"]').click();
+      assert.equal(await pt2.locator('#tkList').isVisible(), true, 'LIST opens the playlist');
+      await pt2.locator('#tabCk .tk-tabs [data-t="nav"]').click();
+      await pt2.locator('#tkSkin').selectOption('tablet');
+      assert.equal(await pt2.evaluate(() => document.getElementById('tabCk').classList.contains('v2')), false, 'Back to tablet 1');
+      await pt2.locator('#tkSkin').selectOption('tablet2');
+      assert.equal(await pt2.evaluate(() => document.getElementById('tabCk').classList.contains('v2')), true);
+      await pt2.locator('#tkSkin').selectOption('carnival2');
+      assert.equal(await pt2.locator('#tabCk').isVisible(), false, 'Leaves the tablet screen');
+      assert.equal(await pt2.locator('#wGps #pfdHost').count(), 1, 'PFD back in the speedometer window');
+      await pt2.close();
+    }
     // 태블릿 가로모드(독립 스킨): 기존 화면은 숨기고 조종석 화면, 다른 스킨으로 가면 원래대로
     {
       const pt = await context.newPage();

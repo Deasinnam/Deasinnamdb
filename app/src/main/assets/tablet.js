@@ -20,6 +20,11 @@
   const readWave = () => { const w = G(() => H.wave); return w && w.length ? w : null; };
   const svg = (p, vb = '0 0 24 24') => `<svg viewBox="${vb}" aria-hidden="true"><path d="${p}"/></svg>`;
   const native = !!(NBx && NBx.cockpitState);
+  // 태블릿 모드 2(data-tk2): 같은 기능, 금속 조종석 디자인 + 벡터 속도계(SPEED MATE), 가로 전용
+  const isV2 = () => document.documentElement.dataset.tk2 === '1';
+  let v2 = false;
+  const knobDraws = [];
+  const ACC = () => v2 ? '#f5b84a' : '#4be38a';
 
   /* ---------- 화면 만들기 ---------- */
   const root = document.createElement('div');
@@ -29,7 +34,7 @@
   <header class="tk-top sc">
     <div class="tk-brand">DAESINNAM ONE</div>
     <div class="tk-stat" role="status"><span data-s="gps"><i></i>GPS</span><span data-s="audio"><i></i>AUDIO</span><span data-s="bt"><i></i>BT</span><span data-s="wifi"><i></i>WIFI</span></div>
-    <div class="tk-right"><span class="tk-time" id="tkTime">--:--<small></small></span><select class="tk-skin" id="tkSkin" aria-label="스킨"></select></div>
+    <div class="tk-right"><span class="tk-emb" aria-hidden="true"><svg viewBox="0 0 64 28"><path d="M2 14 22 4h20l20 10-20 10H22z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M22 4 32 14 22 24M42 4 32 14l10 10M14 14h36" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="32" cy="14" r="3.2" fill="currentColor"/></svg>COCKPIT / CONCEPT 02</span><span class="tk-time" id="tkTime">--:--<small></small></span><select class="tk-skin" id="tkSkin" aria-label="스킨"></select></div>
   </header>
   <main class="tk-main">
     <nav class="tk-side L" aria-label="지도 조작">
@@ -79,7 +84,8 @@
     <button data-t="audio" role="tab">${svg('M10 3v11.6A4 4 0 1 0 12 18V8h6V3z')}AUDIO</button>
     <button data-t="system" role="tab">${svg('M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z')}SYSTEM</button>
     <div class="ver" id="tkVer">TABLET LANDSCAPE · CONCEPT 01</div>
-  </footer>`;
+  </footer>
+  <div class="tk-rot" role="alert"><b>가로 모드 전용</b><span>기기를 가로로 돌려 주세요</span></div>`;
   document.body.appendChild(root);
   const $ = s => root.querySelector(s);
 
@@ -98,10 +104,10 @@
   const appClock = () => !!(H.appClock && document.getElementById('clock'));
   let useMap = false, usePfd = false;
   function borrowAll() {
-    usePfd = appPfd() && borrow(document.getElementById('pfdHost'), root.querySelector('.tk-pfd .tk-glass'));
+    usePfd = !v2 && appPfd() && borrow(document.getElementById('pfdHost'), root.querySelector('.tk-pfd .tk-glass'));
     if (usePfd) { $('#tkPfd').hidden = true; setTimeout(() => { try { window.AmpPfd.panel.resize(); } catch (e) {} }, 60); }
     useMap = appMap() && borrow(document.getElementById('wMap'), $('#tkAppMap'));
-    if (appClock() && borrow(document.getElementById('clock'), root.querySelector('.tk-right'), $('#tkSkin'))) $('#tkTime').hidden = true;
+    if (!v2 && appClock() && borrow(document.getElementById('clock'), root.querySelector('.tk-right'), $('#tkSkin'))) $('#tkTime').hidden = true;
     root.classList.toggle('appmap', useMap); root.classList.toggle('apppfd', usePfd);
   }
   function returnAll() {
@@ -132,12 +138,21 @@
       if (NBx && NBx.keepScreenOn) try { NBx.keepScreenOn(!!G(() => H.hudOn)); } catch (e) {}
     }
   }
-  new MutationObserver(() => activate(isOn())).observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin'] });
+  function sync() {
+    const want = isOn(), nv = isV2();
+    if (on && want && nv !== v2) activate(false); // 모드 1 ↔ 2 전환: 빌려 온 화면을 돌려놓고 다시
+    v2 = nv; root.classList.toggle('v2', v2);
+    $('#tkVer').textContent = v2 ? 'TABLET LANDSCAPE 2 · CONCEPT 02' : 'TABLET LANDSCAPE · CONCEPT 01';
+    activate(want);
+    knobDraws.forEach(f => f());
+    try { if (NBx && NBx.setLandscape) NBx.setLandscape(on && v2); } catch (e) {}
+  }
+  new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin', 'data-tk2'] });
 
   function fillSkinSelect() {
     const sel = $('#tkSkin'), src = document.getElementById('skin');
     if (!src) return;
-    sel.innerHTML = src.innerHTML; sel.value = 'tablet';
+    sel.innerHTML = src.innerHTML; sel.value = v2 ? 'tablet2' : 'tablet';
   }
   $('#tkSkin').onchange = e => { const v = e.target.value; if (has('setSkin')) H.setSkin(v); };
 
@@ -307,6 +322,93 @@
     if (hk) { c.textAlign = 'left'; c.fillText(card(disp.hdg), W * .03, H * .975); }
   }
 
+  /* ---------- 태블릿 모드 2: SPEED MATE(벡터 속도계) ---------- */
+  let bat = { pct: null, temp: null, chg: false }, batAt = 0;
+  function batRead() {
+    try { if (NBx && NBx.battery) { const o = JSON.parse(NBx.battery()); bat = { pct: fin(o.pct) ? o.pct : null, temp: fin(o.temp) ? o.temp : null, chg: !!o.chg }; return; } } catch (e) {}
+    try { navigator.getBattery && navigator.getBattery().then(b => { bat.pct = Math.round(b.level * 100); bat.chg = b.charging; }); } catch (e) {}
+  }
+  let mate = { spd: 0, hdg: 0, pitch: 0, bank: 0 };
+  function drawMate(T) {
+    if (performance.now() - batAt > 30000) { batAt = performance.now(); batRead(); }
+    const { w: W, h: H, d } = sizeCanvas(pfd), c = pg, k = .18;
+    if (T.spd != null) mate.spd += (T.spd - mate.spd) * k;
+    if (T.hdg != null) mate.hdg = (mate.hdg + ((T.hdg - mate.hdg + 540) % 360 - 180) * k + 360) % 360;
+    mate.pitch += ((T.pitch || 0) - mate.pitch) * k; mate.bank += ((T.bank || 0) - mate.bank) * k;
+    const known = T.spd != null, hk = T.hdg != null;
+    const LN = '#cfe9ff', HI = '#e8f5ff', DIM = '#5d7d96', f = (s, wt = 600) => `${wt} ${Math.round(s * d)}px "Barlow Condensed","Rajdhani",Arial,sans-serif`;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H);
+    let g = c.createRadialGradient(W / 2, H * .45, 0, W / 2, H * .45, Math.max(W, H) * .75); g.addColorStop(0, '#13283a'); g.addColorStop(.6, '#0b1824'); g.addColorStop(1, '#060d14');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const S = Math.min(W, H * 1.15), u = S / 100, cx = W / 2;
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    // 위쪽 방향 테이프: 숫자 + 눈금 + 양끝이 아래로 꺾인 선
+    const ty = H * .135, tw = W * .5;
+    c.strokeStyle = LN; c.lineWidth = 1.3 * d;
+    c.beginPath(); c.moveTo(W * .03, H * .2); c.lineTo(W * .1, ty); c.lineTo(cx - tw / 2 - W * .05, ty); c.moveTo(cx + tw / 2 + W * .05, ty); c.lineTo(W * .9, ty); c.lineTo(W * .97, H * .2); c.stroke();
+    c.save(); c.beginPath(); c.rect(cx - tw / 2, ty - 6 * u, tw, 9 * u); c.clip();
+    c.beginPath(); c.moveTo(cx - tw / 2, ty); c.lineTo(cx + tw / 2, ty); c.stroke();
+    if (hk) for (let n = Math.floor((mate.hdg - 40) / 5) * 5; n <= mate.hdg + 40; n += 5) {
+      const x = cx + (n - mate.hdg) * tw / 70, m = ((n % 360) + 360) % 360, big = m % 15 === 0;
+      c.beginPath(); c.moveTo(x, ty); c.lineTo(x, ty - (big ? 3.4 : 1.8) * u); c.stroke();
+    }
+    c.restore();
+    c.fillStyle = HI; c.beginPath(); c.moveTo(cx, ty - 2 * u); c.lineTo(cx - 1.8 * u, ty + 1.2 * u); c.lineTo(cx + 1.8 * u, ty + 1.2 * u); c.closePath(); c.fill();
+    c.font = f(Math.max(14, 5 * u / d)); c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillStyle = HI;
+    c.fillText(hk ? String(Math.round(mate.hdg) % 360).padStart(3, '0') + '°' : '---°', cx, ty - 3.4 * u);
+    // 기어 칸 + 큰 속도
+    const sy = H * .34, moving = known && mate.spd > 3;
+    const gw = 9 * u, gh = 8 * u, gx = cx - 22 * u - gw, gy = sy - gh / 2;
+    c.strokeStyle = LN; c.lineWidth = 1.6 * d; c.beginPath(); c.roundRect ? c.roundRect(gx, gy, gw, gh, 1.6 * u) : c.rect(gx, gy, gw, gh); c.stroke();
+    c.font = f(Math.max(16, 6 * u / d)); c.textBaseline = 'middle'; c.fillStyle = HI; c.fillText(!known ? 'N' : moving ? 'D' : 'P', gx + gw / 2, sy + .3 * u);
+    const lim = G(() => H.gLimit) || 0, over = known && lim > 0 && mate.spd > lim;
+    c.font = f(Math.max(40, 17 * u / d), 700); c.fillStyle = over ? '#ff6a55' : '#f2f8ff'; c.shadowColor = over ? '#ff6a55' : '#8fd3ff'; c.shadowBlur = 10 * d;
+    c.fillText(known ? String(Math.round(mate.spd)) : '—', cx, sy); c.shadowBlur = 0;
+    c.font = f(Math.max(14, 4.4 * u / d)); c.textAlign = 'left'; c.fillStyle = LN; c.fillText('km/h', cx + 13 * u, sy + 2.6 * u);
+    // 왼쪽 BATT(연료 자리) · 오른쪽 TEMP(냉각수 자리) 막대
+    const bar = (x, label, val, top, bot, right, icon) => {
+      const y0 = H * .53, y1 = H * .86, n = 12, hh = (y1 - y0) / n;
+      c.font = f(Math.max(12, 3.4 * u / d)); c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = LN; c.fillText(label, x, H * .43);
+      icon(x, H * .475);
+      c.strokeStyle = DIM; c.lineWidth = 1.2 * d; c.strokeRect(x - 2.6 * u, y0 - .6 * u, 5.2 * u, y1 - y0 + 1.2 * u);
+      const lit = val == null ? 0 : Math.round(clamp(val, 0, 1) * n);
+      for (let i = 0; i < n; i++) { const y = y1 - (i + 1) * hh; c.fillStyle = i < lit ? (right && i >= 10 ? '#ff7a5c' : (!right && i < 2 ? '#ffb15c' : '#8fd3ff')) : '#17293a'; c.fillRect(x - 1.8 * u, y + hh * .18, 3.6 * u, hh * .64); }
+      c.font = f(Math.max(12, 3.6 * u / d)); c.fillStyle = LN; c.textAlign = right ? 'right' : 'left'; c.textBaseline = 'middle';
+      const lx = right ? x - 4.6 * u : x + 4.6 * u; c.fillText(top, lx, y0 + hh * .5); c.fillText(bot, lx, y1 - hh * .5);
+    };
+    const xl = W * .08, xr = W * .92;
+    bar(xl, 'BATT', bat.pct == null ? null : bat.pct / 100, 'F', 'E', false, (x, y) => { c.strokeStyle = LN; c.lineWidth = 1.4 * d; c.strokeRect(x - 1.6 * u, y - 2.2 * u, 3.2 * u, 4.4 * u); c.fillStyle = LN; c.fillRect(x - .7 * u, y - 2.9 * u, 1.4 * u, .7 * u); if (bat.chg) { c.beginPath(); c.moveTo(x + .3 * u, y - 1.6 * u); c.lineTo(x - .8 * u, y + .2 * u); c.lineTo(x + .2 * u, y + .2 * u); c.lineTo(x - .3 * u, y + 1.7 * u); c.stroke(); } });
+    bar(xr, 'TEMP', bat.temp == null ? null : (bat.temp - 20) / 30, 'H', 'C', true, (x, y) => { c.strokeStyle = LN; c.lineWidth = 1.4 * d; c.beginPath(); c.moveTo(x, y - 2.6 * u); c.lineTo(x, y + 1 * u); c.stroke(); c.beginPath(); c.arc(x, y + 1.8 * u, 1 * u, 0, 7); c.stroke(); c.beginPath(); c.moveTo(x - 2.4 * u, y + 3.4 * u); c.quadraticCurveTo(x - 1.2 * u, y + 2.6 * u, x, y + 3.4 * u); c.quadraticCurveTo(x + 1.2 * u, y + 4.2 * u, x + 2.4 * u, y + 3.4 * u); c.stroke(); });
+    // 가운데 HUD: 렌즈 테두리 + 활주로 원근선 + 기수 화살표 + 아래 기울기 눈금 (기기 자세에 따라 기울어짐)
+    const hy = H * .7, hw = Math.min(W * .21, 30 * u), hh = H * .26;
+    c.strokeStyle = LN; c.lineWidth = 1.4 * d;
+    c.beginPath(); c.moveTo(cx - hw * .62, hy - hh * .92); c.lineTo(cx - hw * .9, hy - hh * .92); c.quadraticCurveTo(cx - hw * 1.18, hy - hh * .2, cx - hw * .95, hy + hh * .78); c.stroke();
+    c.beginPath(); c.moveTo(cx + hw * .62, hy - hh * .92); c.lineTo(cx + hw * .9, hy - hh * .92); c.quadraticCurveTo(cx + hw * 1.18, hy - hh * .2, cx + hw * .95, hy + hh * .78); c.stroke();
+    c.beginPath(); c.moveTo(cx - hw * 1.5, hy + hh * .78); c.lineTo(cx - hw * 1.2, hy + hh * .78); c.lineTo(cx - hw * 1.05, hy + hh * .62); c.moveTo(cx + hw * 1.5, hy + hh * .78); c.lineTo(cx + hw * 1.2, hy + hh * .78); c.lineTo(cx + hw * 1.05, hy + hh * .62); c.stroke();
+    c.beginPath(); c.moveTo(cx - hw * 1.45, H * .53); c.lineTo(cx - hw * 1.2, H * .49); c.lineTo(cx - hw * .7, H * .49); c.moveTo(cx + hw * 1.45, H * .53); c.lineTo(cx + hw * 1.2, H * .49); c.lineTo(cx + hw * .7, H * .49); c.stroke();
+    c.save(); c.beginPath(); c.rect(cx - hw * 1.05, hy - hh * .9, hw * 2.1, hh * 1.65); c.clip();
+    c.translate(cx, hy); c.rotate(-mate.bank * Math.PI / 180); c.translate(0, clamp(mate.pitch, -15, 15) * u * .6);
+    // 위쪽 꺾쇠 두 개
+    c.beginPath(); c.moveTo(-hw * .55, -hh * .5); c.lineTo(-hw * .35, -hh * .68); c.lineTo(-hw * .15, -hh * .68); c.moveTo(hw * .55, -hh * .5); c.lineTo(hw * .35, -hh * .68); c.lineTo(hw * .15, -hh * .68);
+    c.moveTo(-hw * .55, -hh * .5); c.lineTo(-hw * .35, -hh * .32); c.moveTo(hw * .55, -hh * .5); c.lineTo(hw * .35, -hh * .32); c.stroke();
+    // 가운데 점선 + 활주로 선(달리면 점선이 흐름)
+    const run = (performance.now() / 1000 * (known ? mate.spd : 0) / 30) % 1;
+    c.setLineDash([2 * u, 3 * u]); c.lineDashOffset = -run * 5 * u;
+    c.beginPath(); c.moveTo(0, -hh * .55); c.lineTo(0, -hh * .1); c.stroke();
+    c.lineWidth = 2.2 * d; c.setLineDash([3.2 * u, 3 * u]);
+    for (const sgn of [-1, 1]) for (const k2 of [.32, .78]) { c.beginPath(); c.moveTo(sgn * hw * k2 * .18, -hh * .06); c.lineTo(sgn * hw * k2, hh * .62); c.stroke(); }
+    c.setLineDash([]); c.restore();
+    c.fillStyle = '#9fdcff'; c.beginPath(); c.moveTo(cx, hy + hh * .06); c.lineTo(cx + 3.4 * u, hy + hh * .36); c.lineTo(cx, hy + hh * .27); c.lineTo(cx - 3.4 * u, hy + hh * .36); c.closePath(); c.fill();
+    // 아래 기울기 눈금(호)
+    const ay = hy + hh * .25, ar = hh * .62; c.strokeStyle = LN; c.lineWidth = 1.4 * d;
+    c.beginPath(); c.arc(cx, ay, ar, Math.PI * .62, Math.PI * .38, true); c.stroke();
+    for (let a = -30; a <= 30; a += 10) { const an = Math.PI / 2 + a * Math.PI / 180, r1 = ar, r2 = ar - (a % 30 === 0 ? 2.6 : 1.6) * u; c.beginPath(); c.moveTo(cx + Math.cos(an) * r1, ay + Math.sin(an) * r1); c.lineTo(cx + Math.cos(an) * r2, ay + Math.sin(an) * r2); c.stroke(); }
+    const ba = Math.PI / 2 - clamp(mate.bank, -35, 35) * Math.PI / 180; c.lineWidth = 2.4 * d; c.beginPath(); c.moveTo(cx + Math.cos(ba) * (ar - 4 * u), ay + Math.sin(ba) * (ar - 4 * u)); c.lineTo(cx + Math.cos(ba) * (ar + .5 * u), ay + Math.sin(ba) * (ar + .5 * u)); c.stroke();
+    c.font = f(Math.max(11, 2.8 * u / d)); c.fillStyle = DIM; c.textAlign = 'right'; c.textBaseline = 'bottom';
+    c.fillText(T.demo ? 'SENSOR DEMO' : !T.gps ? 'GPS OFF' : !T.fix ? 'NO FIX' : 'GPS LIVE', W * .97, H * .985);
+    if (hk) { c.textAlign = 'left'; c.fillText(card(mate.hdg), W * .03, H * .985); }
+  }
+
   /* ---------- 오디오 ---------- */
   const wv = $('#tkWave'), wg = wv.getContext('2d'), WN = 96, wbars = new Float32Array(WN);
   function audioState() {
@@ -333,7 +435,7 @@
     const bw = W / WN, mid = H / 2;
     for (let i = 0; i < WN; i++) {
       const v = Math.max(.03, wbars[i]), h = v * H * .46, x = i * bw + bw * .25, past = i / WN <= A.frac;
-      c.fillStyle = past ? '#4be38a' : '#2b6b45';
+      c.fillStyle = past ? (v2 ? '#bfe3ff' : '#4be38a') : (v2 ? '#36536a' : '#2b6b45');
       c.fillRect(x, mid - h, Math.max(1, bw * .5), h * 2);
     }
   }
@@ -459,9 +561,12 @@
     for (let i = 0; i <= 30; i++) { const a = (-135 + i * 9) * Math.PI / 180, r1 = 46, r2 = i % 5 ? 42 : 39; ticks += `<line data-i="${i}" x1="${50 + Math.sin(a) * r1}" y1="${50 - Math.cos(a) * r1}" x2="${50 + Math.sin(a) * r2}" y2="${50 - Math.cos(a) * r2}" stroke-width="${i % 5 ? 1.6 : 2.6}" stroke-linecap="round"/>`; }
     ring.innerHTML = ticks;
     const lines = [...ring.querySelectorAll('line')];
+    knobDraws.push(() => { if (lastV != null) draw(lastV); });
+    let lastV = null;
     const draw = v => {
+      lastV = v;
       const f = (v - min) / (max - min); el.style.setProperty('--a', (-135 + f * 270) + 'deg'); el.setAttribute('aria-valuenow', String(Math.round(v)));
-      lines.forEach((l, i) => l.setAttribute('stroke', v == null ? '#3a4441' : i / 30 <= f + 1e-6 ? '#4be38a' : '#3a4441'));
+      lines.forEach((l, i) => l.setAttribute('stroke', v == null ? '#3a4441' : i / 30 <= f + 1e-6 ? ACC() : '#3a4441'));
     };
     let pid = null, last = 0;
     const fromPt = (x, y) => { const r = el.getBoundingClientRect(), a = Math.atan2(x - (r.left + r.width / 2), -(y - (r.top + r.height / 2))) * 180 / Math.PI; return clamp(a, -135, 135); };
@@ -599,7 +704,7 @@
       if (!on) return;
       if (!document.hidden) {
         const T = tele();
-        if (!usePfd) drawPfd(T);
+        if (v2) drawMate(T); else if (!usePfd) drawPfd(T);
         const A = renderAudio();
         if (t - slowAt > 250) { slowAt = t; status(T, A); if (tab === 'nav' && !useMap) mapTick(T); else if (tab === 'audio') renderList(); }
       }
@@ -607,5 +712,5 @@
     });
   }
   window.AmpTablet = { get on() { return on; }, setTab, get tab() { return tab; }, tele, get map() { return map; } };
-  activate(isOn());
+  sync();
 })();
