@@ -399,7 +399,7 @@ async function main() {
     const ty = sel => pa.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await ty('#wGps') < await ty('#wAtc'));
     await pa.locator('#setBtn').click();
-    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','블랙박스','지도','플레이어','재생 화면','라디오','이퀄라이저','재생 목록']);
+    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','지도','플레이어','재생 화면','라디오','이퀄라이저','재생 목록','블랙박스']);
     await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
     await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
     assert.deepEqual((await pa.locator('#ordList li b').allTextContents()).slice(0,3), ['관제탑','속도계','조종 패널']);
@@ -431,8 +431,9 @@ async function main() {
         camProbe:()=>{c.probe=[{what:'JHCMD (UDP 20000 → 10900)',ip:'192.168.29.1',ok:true,note:'영상 조각 42개 수신'},{what:'RTSP (TCP 554)',ip:'192.168.29.1',ok:false,note:'닫힘'}]}};});
     await pc.goto(origin);
     const camTop = await pc.locator('#wCam').evaluate(el => el.getBoundingClientRect().top);
-    assert.ok(camTop > await pc.locator('#wAtc').evaluate(el => el.getBoundingClientRect().top), 'Dashcam sits after the tower');
-    assert.ok(camTop < await pc.locator('#wMap').evaluate(el => el.getBoundingClientRect().top), 'and before the map');
+    const lastTop = await pc.evaluate(() => Math.max(...[...document.querySelectorAll('#app>.win')].filter(w=>w.offsetParent&&w.id!=='wCam').map(w=>w.getBoundingClientRect().top)));
+    assert.ok(camTop > lastTop, 'Dashcam sits at the very bottom');
+    assert.match(await pc.locator('#wCam .camcompat').textContent(), /호환 기종/);
     assert.equal(await pc.locator('#wCam .bar .t').textContent(), 'D1 Dashcam');
     assert.match(await pc.locator('#camNet').textContent(), /인터넷\s*모바일 데이터/);
     assert.ok(await pc.locator('#camLiveBtn').isDisabled());
@@ -477,11 +478,11 @@ async function main() {
     p9.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
     await p9.goto(origin);
-    assert.equal(await p9.locator('#visSel option').count(), 10);
+    assert.equal(await p9.locator('#visSel option').count(), 20);
     const visImgs = new Set();
-    for (let m = 0; m < 10; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
-    assert.ok(visImgs.size >= 9, `Effects render differently (${visImgs.size}/10)`);
-    await p9.locator('#visSel').selectOption('9');
+    for (let m = 0; m < 20; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
+    assert.ok(visImgs.size >= 18, `Effects render differently (${visImgs.size}/20)`);
+    await p9.locator('#visSel').selectOption('19');
     await p9.locator('#wVis .vstep[data-d="1"]').click();
     assert.equal(await p9.locator('#visSel').inputValue(), '0', 'Next wraps around');
     await p9.locator('#visSel').selectOption('5');
@@ -741,25 +742,23 @@ async function main() {
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
       assert.equal(await pc2.locator('#wGps > #ckRail').count(), 1, 'Rail sits inside the speedometer window');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
-      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['play',['wMain','wVis']],['list',['wPl','wEq']],['ctl',['wCtl','wAtc']]]) {
+      assert.deepEqual(await pc2.locator('#ckRail button').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio'], 'Five rail buttons');
+      const sizes = [];
+      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['radio',['wRadio']]]) {
         await pc2.locator(`#ckRail [data-f="${f}"]`).click();
         const vis = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id));
         assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');
         const fit = await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return r.bottom<=innerHeight+2&&r.top>=0}, ids[0]);
         assert.ok(fit, f+' fits the screen without scrolling');
-        assert.equal(await pc2.locator(ids.length>1?'#app > #ckRail.inapp':`#${ids[0]} > #ckRail`).count(), 1, 'Rail inside the window, or beside both stacked windows');
+        assert.equal(await pc2.locator(`#${ids[0]} > #ckRail`).count(), 1, 'Rail inside the window');
+        sizes.push(await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]}, ids[0]));
       }
-      // 플레잉·목록·조종관제는 위아래로 나눔
-      for (const f of ['play','list','ctl']) {
-        await pc2.locator(`#ckRail [data-f="${f}"]`).click();
-        const rs = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win.fx')].map(w => {const r=w.getBoundingClientRect();return [r.left,r.top,r.bottom]}).sort((a,b)=>a[1]-b[1]));
-        assert.equal(rs.length, 2); assert.ok(Math.abs(rs[0][0]-rs[1][0]) < 2 && rs[1][1] >= rs[0][2] - 1, f+' stacked top/bottom');
-      }
+      for (const z of sizes) assert.deepEqual(z, sizes[0], 'Every rail view has the same size as the speedometer view');
       await pc2.locator('#ckRail [data-f="map"]').click();
       assert.equal(await pc2.locator('#mapZoomIn').isVisible(), true, 'Map zoom-in button'); assert.equal(await pc2.locator('#mapZoomOut').isVisible(), true);
       await pc2.locator('#ckRail [data-f="all"]').click();
       assert.equal(await pc2.locator('#wEq').isVisible(), true, 'All windows back');
-      await pc2.locator('#ckRail [data-f="set"]').click();
+      await pc2.locator('#setBtn').click();
       assert.equal(await pc2.locator('#settings').isVisible(), true);
       await pc2.locator('#setClose').click();
       await pc2.locator('#ckRail [data-f="gps"]').click();
@@ -832,6 +831,12 @@ async function main() {
       assert.equal(await pt.locator('header.top #clock').count(), 1, 'Clock returned to the header');
       await pt.locator('#skin').selectOption('carnival2');
       assert.equal(await pt.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit skin still shows its PFD');
+      // 콕핏 스킨에서도 기존 속도계 디자인 선택 가능
+      await pt.locator('#gStyleBar').selectOption('neon');
+      assert.equal(await pt.locator('#wGps #pfdHost').isVisible(), false, 'PFD hidden when a classic design is chosen');
+      assert.equal(await pt.locator('#wGps #gauge').isVisible(), true, 'Classic speedometer shown in the cockpit skin');
+      await pt.locator('#gStyleBar').selectOption('cockpit');
+      assert.equal(await pt.locator('#wGps #pfdHost canvas').isVisible(), true, 'Back to the PFD');
       await pt.close();
     }
     // 2단 화면(태블릿 세로): 플레이어와 라디오는 각각 한 줄 전체
@@ -851,12 +856,13 @@ async function main() {
       const pr = await context.newPage();
       pr.on('pageerror', error => errors.push('radio: '+error.message));
       await pr.route('**/json/stations/search**', route => route.fulfill({status:200, contentType:'application/json', headers:{'Access-Control-Allow-Origin':'*'},
-        body: JSON.stringify([{stationuuid:'a1',name:'KBS Cool FM',url_resolved:'https://stream.example/cool',tags:'pop',codec:'AAC',bitrate:128,countrycode:'KR'},{stationuuid:'b2',name:'SBS Power FM',url_resolved:'https://stream.example/power',tags:'talk',codec:'MP3',bitrate:128,countrycode:'KR'}])}));
-      await pr.addInitScript(() => {if(sessionStorage.getItem('pr'))return;sessionStorage.setItem('pr','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival3'));
-        HTMLMediaElement.prototype.play = function(){window.__rdSrc=this.src;return Promise.resolve()};});
+        body: JSON.stringify([{stationuuid:'a1',name:'KBS Cool FM',url_resolved:'https://stream.example/cool',tags:'pop',codec:'AAC',bitrate:128,countrycode:'KR'},{stationuuid:'b2',name:'SBS Power FM',url_resolved:'https://stream.example/power',tags:'talk',codec:'MP3',bitrate:128,countrycode:'KR'},{stationuuid:'m4',name:'MBC FM4U',url_resolved:'https://stream.example/mbc',tags:'pop',codec:'AAC',bitrate:128,countrycode:'KR'}])}));
+      await pr.addInitScript(() => {HTMLMediaElement.prototype.play = function(){window.__rdSrc=this.src;return Promise.resolve()};if(sessionStorage.getItem('pr'))return;sessionStorage.setItem('pr','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival3'));});
       await pr.goto(origin);
       await pr.locator('#radioBtn').click();
-      await pr.waitForFunction(() => document.querySelectorAll('#rdList li[data-i]').length === 2);
+      await pr.waitForFunction(() => document.querySelectorAll('#rdList li[data-i]').length === 3);
+      assert.equal(await pr.locator('#rdListBox').isVisible(), true, 'Station list open when there are no favourites');
+      assert.ok(await pr.locator('#rdList li[data-o]').count() >= 10, 'Official Korean stations listed');
       assert.match(await pr.locator('#rdList').textContent(), /89\.1/, 'Seoul FM frequency shown');
       await pr.locator('#rdList li[data-i="0"]').click();
       await pr.waitForFunction(() => AmpRadio.state.playing);
@@ -877,6 +883,18 @@ async function main() {
       await pr.reload();
       await pr.locator('#ckRail [data-f="radio"]').click();
       assert.equal(await pr.locator('#rdPresets button.set').count(), 2, 'Favourites remembered');
+      await pr.locator('#rdPresetTg').click();
+      assert.equal(await pr.locator('#rdPresetBox').isVisible(), false, 'Favourites fold away');
+      await pr.locator('#rdPresetTg').click();
+      assert.equal(await pr.locator('#rdPresetBox').isVisible(), true);
+      // 주파수만 맞춰도 공식 방송(MBC FM4U 91.9)을 찾음
+      await pr.evaluate(() => AmpRadio.stop());
+      await pr.evaluate(() => { const b=document.getElementById('rdKnob'); b.focus(); });
+      for (let k = 0; k < 28; k++) await pr.keyboard.press('ArrowUp'); // 89.1 → 91.9
+      await pr.waitForFunction(() => AmpRadio.state.cur && AmpRadio.state.cur.id === 'kr-mbcfm4u', null, {timeout:5000});
+      await pr.waitForFunction(() => window.__rdSrc === 'https://stream.example/mbc', null, {timeout:5000}); // 웹에선 공식 주소 대신 같은 방송의 다른 주소로
+      await pr.waitForFunction(() => /MBC FM4U/.test(document.getElementById('marqText').textContent), null, {timeout:3000});
+      assert.equal(await pr.locator('#tCur').textContent(), 'LIVE', 'Player display shows the radio station');
       // 배터리 설정: 절전 모드 항상 켜기/끄기
       await pr.evaluate(() => { document.getElementById('settings').hidden = false; });
       await pr.locator('#sPwr button[data-v="on"]').click();

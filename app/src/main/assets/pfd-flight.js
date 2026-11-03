@@ -30,7 +30,7 @@
   const pad2 = n => String(n).padStart(2, '0');
   const recip = n => { const r = (n + 18) % 36; return r === 0 ? 36 : r; };
   const wxKind = () => { const W = window.AmpWx; const k = W ? W.kind : 'clear'; return k || 'clear'; };
-  const active = () => ['carnival2', 'carnival3', 'tablet'].includes(H.skin);
+  const active = () => ['carnival2', 'carnival3', 'tablet'].includes(H.skin) && (H.skin === 'tablet' || !H.gStyle || H.gStyle === 'cockpit'); // 콕핏 스킨에서 기존 속도계를 고르면 비행 화면은 쉼
 
   function newDeparture() { F.rwS = -120; F.rwLen = 3200; F.rolled = 0; F.rwNum = rwNumFor(P.display && P.display.headingDeg); }
 

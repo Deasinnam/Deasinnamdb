@@ -6,15 +6,16 @@
 
 /* 콕핏 스킨 속도계: 제목줄·접기·크기 조절은 앱 창 것을 씀 */
 #pfdHost{display:none}
-:root[data-skin="carnival2"] #pfdHost{display:block}
+:root[data-skin="carnival2"] #wGps[data-gs="cockpit"] #pfdHost{display:block}
 :root[data-skin="tablet"] #pfdHost{display:block}
-:root[data-skin="carnival2"] #wGps .body>.gps,:root[data-skin="carnival2"] #wGps .body>.gctl,:root[data-skin="carnival2"] #wGps .body>.gmsg{display:none!important}
+/* 콕핏 스킨에서도 기존 속도계 디자인을 고를 수 있음: PFD를 고른 때만 기존 계기를 숨김 */
+:root[data-skin="carnival2"] #wGps[data-gs="cockpit"] .body>.gps,:root[data-skin="carnival2"] #wGps[data-gs="cockpit"] .body>.gctl,:root[data-skin="carnival2"] #wGps[data-gs="cockpit"] .body>.gmsg{display:none!important}
 :root[data-skin="carnival2"] #wGps>.body{padding:6px}
 #pfdHost .pfd-header{display:none}
 #pfdHost .pfd-airforce .pfd-header{display:flex}
 #pfdHost .pfd-airforce .pfd-collapse{display:none}
 #pfdHost .dsn-pfd{min-width:0}
-:root[data-skin="carnival2"] #wGps.sized #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
+:root[data-skin="carnival2"] #wGps.sized[data-gs="cockpit"] #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
 #wGps.sized #pfdHost .dsn-pfd{flex:1;min-height:0;display:flex;flex-direction:column}
 #wGps.sized #pfdHost [data-role="content"]{flex:1;min-height:0;display:flex;flex-direction:column}
 #wGps.sized #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}

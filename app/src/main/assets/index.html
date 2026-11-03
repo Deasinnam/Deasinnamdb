@@ -311,13 +311,13 @@ html,body{max-width:100%;overflow-x:hidden}
 .app.L3{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);grid-template-areas:"main radio pl" "main eq pl" "vis vis pl"}
 #wMain{grid-area:main}#wRadio{grid-area:radio}#wVis{grid-area:vis}#wEq{grid-area:eq}#wPl,#wExt{grid-area:pl}#wGps{grid-area:gps}
 /* 자동차 스킨: 가운데에 GPS 속도계 창 */
-.app.G{grid-template-areas:"gps" "cam" "map" "main" "vis" "radio" "eq" "pl"}
-.app.L2.G{grid-template-areas:"gps gps" "cam cam" "map map" "main main" "radio radio" "vis eq" "vis pl"}
-.app.L3.G{grid-template-areas:"gps gps pl" "cam cam pl" "map map pl" "main radio pl" "main eq pl" "vis vis pl"}
+.app.G{grid-template-areas:"gps" "map" "main" "vis" "radio" "eq" "pl" "cam"}
+.app.L2.G{grid-template-areas:"gps gps" "map map" "main main" "radio radio" "vis eq" "vis pl" "cam cam"}
+.app.L3.G{grid-template-areas:"gps gps pl" "map map pl" "main radio pl" "main eq pl" "vis vis pl" "cam cam cam"}
 /* 지도를 쓰지 않으면 맨 아래로 */
-.app.G.MO{grid-template-areas:"gps" "cam" "main" "vis" "radio" "eq" "pl" "map"}
-.app.L2.G.MO{grid-template-areas:"gps gps" "cam cam" "main main" "radio radio" "vis eq" "vis pl" "map map"}
-.app.L3.G.MO{grid-template-areas:"gps gps pl" "cam cam pl" "main radio pl" "main eq pl" "vis vis pl" "map map map"}
+.app.G.MO{grid-template-areas:"gps" "main" "vis" "radio" "eq" "pl" "map" "cam"}
+.app.L2.G.MO{grid-template-areas:"gps gps" "main main" "radio radio" "vis eq" "vis pl" "map map" "cam cam"}
+.app.L3.G.MO{grid-template-areas:"gps gps pl" "main radio pl" "main eq pl" "vis vis pl" "map map map" "cam cam cam"}
 #wMap{grid-area:map;display:none}
 .app.G #wMap{display:flex}
 #wGps{display:none}
@@ -608,6 +608,8 @@ input[type=range]:disabled{opacity:.35}
 :root[data-skin="carnival2"] #wGps.sized .gps{grid-template-rows:auto minmax(0,1fr);min-height:0;overflow:hidden}
 :root[data-skin="carnival2"] #wGps.sized .gauge{min-height:0}
 :root[data-skin="carnival2"] #wGps.sized .dial{min-height:60px}
+:root[data-skin="carnival2"] .app.FX>#wGps.fx .gps{grid-template-rows:auto minmax(0,1fr);min-height:0;overflow:hidden}
+:root[data-skin="carnival2"] .app.FX>#wGps.fx .gauge{min-height:0}:root[data-skin="carnival2"] .app.FX>#wGps.fx .dial{min-height:60px}
 /* D1 DASHCAM: 블랙박스 실시간 화면 */
 #wCam{grid-area:cam;display:none}
 .app.G #wCam{display:flex}
@@ -642,12 +644,12 @@ input[type=range]:disabled{opacity:.35}
 /* 콕핏 스킨 전용 창: 조종 패널 · 관제탑 */
 #wCtl{grid-area:ctl;display:none}#wAtc{grid-area:atc;display:none}
 .app.G.K #wCtl,.app.G.K #wAtc{display:flex}
-.app.G.K{grid-template-areas:"gps" "ctl" "atc" "cam" "map" "main" "vis" "radio" "eq" "pl"}
-.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "map map" "main main" "radio radio" "vis eq" "vis pl"}
-.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "map map pl" "main radio pl" "main eq pl" "vis vis pl"}
-.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "cam" "main" "vis" "radio" "eq" "pl" "map"}
-.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "cam cam" "main main" "radio radio" "vis eq" "vis pl" "map map"}
-.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "cam cam pl" "main radio pl" "main eq pl" "vis vis pl" "map map map"}
+.app.G.K{grid-template-areas:"gps" "ctl" "atc" "map" "main" "vis" "radio" "eq" "pl" "cam"}
+.app.L2.G.K{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "map map" "main main" "radio radio" "vis eq" "vis pl" "cam cam"}
+.app.L3.G.K{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "map map pl" "main radio pl" "main eq pl" "vis vis pl" "cam cam cam"}
+.app.G.K.MO{grid-template-areas:"gps" "ctl" "atc" "main" "vis" "radio" "eq" "pl" "map" "cam"}
+.app.L2.G.K.MO{grid-template-areas:"gps gps" "ctl ctl" "atc atc" "main main" "radio radio" "vis eq" "vis pl" "map map" "cam cam"}
+.app.L3.G.K.MO{grid-template-areas:"gps gps pl" "ctl ctl pl" "atc atc pl" "main radio pl" "main eq pl" "vis vis pl" "map map map" "cam cam cam"}
 /* 관제탑: 데이터링크 화면에 출발 전 점검을 차례로 띄움 */
 #wAtc .body{display:flex;flex-direction:column;gap:10px}
 .atcrow{display:flex;gap:12px;align-items:stretch}
@@ -1000,7 +1002,7 @@ header.top{padding-top:28px!important}
 .app.FX>#wEq.fx .eqgrid{min-height:120px}.app.FX>#wPl.fx .pl{flex:1;max-height:none;min-height:60px}
 .app.FX>#wVis.fx .body{grid-template-columns:minmax(120px,22%) minmax(0,1fr)}.app.FX>#wVis.fx .visbox{min-height:120px}
 .app.FX>.win.fx>.grip,.app.FX>.win.fx .rzbtn{display:none!important}
-.app.FX>#wGps.fx #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
+.app.FX>#wGps.fx[data-gs="cockpit"] #pfdHost{flex:1;min-height:0;display:flex;flex-direction:column}
 .app.FX>#wGps.fx #pfdHost .dsn-pfd,.app.FX>#wGps.fx #pfdHost [data-role="content"],.app.FX>#wGps.fx #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
 .app.FX>#wGps.fx #pfdHost .pfd-canvas-wrap{flex:1;min-height:120px;height:auto!important;aspect-ratio:auto!important}
 .app.FX>#wGps.fx>.body{overflow:hidden}
@@ -1009,7 +1011,7 @@ header.top{padding-top:28px!important}
 .app.FX>#wVis.fx .visbox{min-height:200px}
 /* 설정: 과속 경고 칩 */
 #settings .row.col{flex-direction:column;align-items:stretch;gap:8px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.permbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pwr-now{display:block;margin-top:6px;font-size:12px;color:#9da69d}.chips .pill{min-width:64px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.gsbar{display:none;height:28px;max-width:150px;margin-left:8px;padding:0 6px;font-size:13px}:root[data-skin="carnival2"] .gsbar{display:inline-block}.camcompat{margin:2px 0 0;font-size:12px;line-height:1.5;color:var(--muted,#9da69d)}.camcompat b{margin-right:6px;color:var(--ck-white,#e7e9df)}.permbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pwr-now{display:block;margin-top:6px;font-size:12px;color:#9da69d}.chips .pill{min-width:64px}
 /* 시계 옆 오늘의 날씨 */
 .clock .ck-wx{cursor:pointer}
 :root[data-clock="analog"][data-skin="carnival2"] .clock .ck-wx i,:root[data-clock="analog"][data-skin="tablet"] .clock .ck-wx i{display:none}
@@ -1021,7 +1023,7 @@ header.top{padding-top:28px!important}
 /* 인터넷 라디오 — 콕핏 무전기(Radio / Communication) 패널 */
 #wRadio{--rg:#a8f08f;--ra:#f3bc65;--rk:#e7e9df;--rm:#9da69d;--rl:#2b3328}
 .rd-body{display:flex;flex-direction:column;gap:10px;container-type:inline-size}
-#wRadio .bar .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wRadio .bar .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:flex-start!important;min-width:0;flex:0 1 auto}#wRadio .bar .t>span{overflow:hidden;text-overflow:ellipsis;min-width:0}#wRadio .bar .s{flex:none}
 .rd-link{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.rd-link::before{content:"";width:8px;height:8px;border-radius:50%;background:#56605a}
 #wRadio[data-st="on"] .rd-link{color:var(--rg)}#wRadio[data-st="on"] .rd-link::before{background:var(--rg);box-shadow:0 0 8px var(--rg)}
 #wRadio[data-st="busy"] .rd-link{color:var(--ra)}#wRadio[data-st="busy"] .rd-link::before{background:var(--ra);animation:fltBlink .8s steps(2) infinite}
@@ -1089,13 +1091,35 @@ header.top{padding-top:28px!important}
 @container (max-width:780px){.rd-top{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"d d" "s t"}.rd-disp{grid-area:d;padding:12px 14px 66px}.rd-sig{grid-area:s}.rd-tune{grid-area:t}
   .rd-stby{top:auto;bottom:10px;right:50%;transform:translateX(50%);flex-direction:row;gap:8px}.rd-stby b{font-size:20px}
   .rd-ctl{grid-template-columns:repeat(2,minmax(0,1fr))}.rd-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.rd-hint{margin-left:0}.rd-drag{display:none}}
-.rd-search{display:flex;gap:8px;flex-wrap:wrap}.rd-search input{flex:1 1 180px;min-width:0;height:40px;padding:0 12px;border:1px solid #54604e;border-radius:6px;background:#0a0d10;color:#e7e9df;font:15px "Noto Sans KR",sans-serif}
+.rd-search{display:flex;gap:8px;flex-wrap:wrap}
+/* 슬림 라디오 */
+.rd-body{gap:6px}.rd-panel{gap:6px;padding:6px;border-radius:8px}
+.rd-top{grid-template-columns:minmax(118px,.8fr) minmax(0,2.7fr) minmax(112px,.75fr);gap:6px}
+.rd-sig{padding:4px 6px 5px;gap:1px}#rdSig{height:64px}.rd-lamps{font-size:10px}.rd-sig .rd-lbl{font-size:10px}
+.rd-disp{padding:6px 96px 6px 10px;gap:0}.rd-seg{height:clamp(36px,5.4cqw,54px)}
+#rdName{font-size:clamp(14px,1.9cqw,19px);line-height:1.2}#rdStat{font-size:12px}#rdInfo{font-size:11px;color:var(--ra)}
+.rd-stby{min-width:72px;padding:4px 8px;right:8px}.rd-stby b{font-size:18px}.rd-stby small{font-size:10px}
+.rd-tune{flex-direction:row;align-items:center;justify-content:center;gap:8px;padding:6px}.rd-tune .rd-lbl{display:none}
+.rd-knob{width:clamp(54px,6.6cqw,70px)}.rd-knob::before{inset:14%}
+.rd-step{flex-direction:column;width:auto;gap:3px}.rd-step small{font-size:10px}.rd-sq{width:34px;height:26px;font-size:17px}
+.rd-scalebox{padding:2px 8px 0}#rdScale{height:42px}.rd-drag{display:none}
+.rd-key{height:36px;font-size:13px;gap:6px}.rd-key svg{width:16px;height:16px}.rd-vol{min-height:36px}
+.rd-tg{width:100%;margin:0;padding:6px 2px;border:0;border-bottom:1px solid #ffffff10;background:none;color:inherit;cursor:pointer;text-align:left;align-items:center}
+.rd-chev{margin-left:auto;width:26px;height:22px;border-radius:4px;background:#ffffff0d;position:relative;flex:none}
+.rd-chev::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-right:2px solid var(--rk);border-bottom:2px solid var(--rk);transform:translate(-50%,-70%) rotate(45deg);transition:transform .2s}
+.rd-tg[aria-expanded="false"] .rd-chev::after{transform:translate(-50%,-30%) rotate(-135deg)}
+.rd-tg .rd-hint{margin-left:12px}
+.rd-fold{display:flex;flex-direction:column;gap:8px}.rd-fold[hidden]{display:none}
+.rd-list li.off{border-left:3px solid var(--ra)}.rd-list li .ofc{font-size:10.5px;font-weight:700;color:var(--ra);margin-left:6px;letter-spacing:.06em}
+@container (max-width:780px){.rd-top{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"d t"}.rd-sig{display:none}.rd-disp{padding:6px 8px}
+  .rd-stby{position:static;transform:none;flex-direction:row;gap:6px;margin-top:3px;padding:2px 8px}.rd-stby b{font-size:15px}
+  .rd-ctl{grid-template-columns:repeat(4,minmax(0,1fr))}.rd-ctl .kt{display:none}.rd-key{padding:0}.rd-vol{grid-column:1/-1;min-height:34px}.rd-tg .rd-hint{display:none}
+  .rd-presets{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.rd-presets button{min-height:44px;padding:4px 8px;column-gap:6px}.rd-presets button>em{font-size:14px}.rd-presets button>span,.rd-presets button>small{font-size:11.5px}}
+.rd-search input{flex:1 1 180px;min-width:0;height:40px;padding:0 12px;border:1px solid #54604e;border-radius:6px;background:#0a0d10;color:#e7e9df;font:15px "Noto Sans KR",sans-serif}
 .rd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;height:220px;overflow:auto;overscroll-behavior:contain}
-.app.FX>#wRadio.fx .rd-list{flex:1;height:auto;max-height:none;min-height:80px}
-.app.FX>#wRadio.fx{order:-1!important;height:calc((100dvh - var(--fxTop,170px) - 14px) * .66)!important}
-.app.FX>#wRadio.fx~#wEq.fx{height:calc((100dvh - var(--fxTop,170px) - 14px) * .34)!important;min-height:240px}
+.app.FX>#wRadio.fx #rdListBox{flex:1;min-height:0}.app.FX>#wRadio.fx .rd-list{flex:1;height:auto;max-height:none;min-height:80px}
 .app.FX>#wRadio.fx .hint{display:none}
-@media (max-width:720px){.rd-tt{display:none}.app.FX>#wRadio.fx,.app.FX>#wRadio.fx~#wEq.fx{height:auto!important}.app.FX>#wRadio.fx>.body{overflow:visible}.app.FX>#wRadio.fx .rd-list{flex:none;height:260px}}
+.rd-t2{display:none}@media (max-width:720px){.rd-tt{display:none}.rd-t2{display:inline}}
 .rd-list li{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;min-height:52px;padding:4px 8px;border-radius:6px;background:#ffffff06;cursor:pointer}
 .rd-list li.on{background:#a8f08f14;color:#a8f08f}.rd-list li img,.rd-list li i{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#0a0d10;display:grid;place-items:center;font-style:normal}
 .rd-list li b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rd-list li small{display:block;font-size:12px;color:#9da69d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1243,17 +1267,13 @@ html.driving body{overflow:hidden}
 <nav class="ckrail" id="ckRail" aria-label="콕핏 2 바로가기">
   <button data-f="all" class="on"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg><span>전체</span></button>
   <button data-f="gps"><svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 0 0-9 9 9 9 0 0 0 2.2 5.9l1.5-1.3A7 7 0 1 1 19 13a7 7 0 0 1-1.7 4.6l1.5 1.3A9 9 0 0 0 12 4zm4.2 4.4-5.4 4.1a1.6 1.6 0 1 0 2.2 2.2z"/></svg><span>스피드미터</span></button>
-  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>DASHCAM</span></button>
   <button data-f="map"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zm0 2.2 6 2v11.6l-6-2z"/></svg><span>지도</span></button>
-  <button data-f="play"><svg viewBox="0 0 24 24"><path d="M10 3v11.6A4 4 0 1 0 12 18V8h6V3z"/></svg><span>플레잉</span></button>
-  <button data-f="list"><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm14-3v6.6a2.5 2.5 0 1 0 2 2.4V12h2v-2z"/></svg><span>목록·EQ</span></button>
-  <button data-f="ctl"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4 1.5 5H18l-3.7 2.8 1.4 4.6L12 15.6l-3.7 2.8 1.4-4.6L6 11h4.5z"/></svg><span>조종·관제</span></button>
+  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>DASHCAM</span></button>
   <button data-f="radio"><svg viewBox="0 0 24 24"><path d="M4 8h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zm2.5-1L17 3l.7 1.8L9.6 8zM8 11a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm7 1v1.6h4V12zm0 3v1.6h4V15z"/></svg><span>라디오</span></button>
-  <button data-f="set"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.4zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>설정</span></button>
 </nav>
 <main class="app" id="app">
   <section class="win" id="wGps">
-    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><select class="sel gsbar" id="gStyleBar" aria-label="속도계 디자인"><option value="cockpit">콕핏 PFD</option><option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option></select><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
       <div id="pfdHost"></div>
       <div class="gps">
@@ -1397,6 +1417,7 @@ html.driving body{overflow:hidden}
         <p class="hint">이름 끝에 *를 붙이거나 비워 두면 Car-Cam으로 시작하는 와이파이를 찾아요. 비밀번호는 이 기기에만 저장돼요.</p>
         <ul class="camprobe" id="camProbeList"></ul>
       </details>
+      <p class="camcompat"><b>호환 기종</b> 휴대폰과 와이파이로 직접 연결되는 블랙박스 — D1 DASHCAM 등 JHCMD 방식(와이파이 이름 Car-Cam…), RTSP(554)·HTTP 영상(80/8080)을 내보내는 기종. 클라우드 로그인·전용 앱 인증이 필요한 기종은 지원하지 않아요.</p>
     </div>
   </section>
 
@@ -1473,13 +1494,13 @@ html.driving body{overflow:hidden}
       <div class="art"><div class="cover" id="cover"></div><div><div class="tt" id="npTitle">—</div><div class="ar" id="npArtist"></div></div></div>
       <div class="visbox">
         <canvas id="vis" aria-label="사운드 시각화. 탭하면 모드 변경"></canvas>
-        <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option><option value="1">MIRROR</option><option value="2">SCOPE</option><option value="3">AREA</option><option value="4">RING</option><option value="5">RADAR</option><option value="6">WAVES</option><option value="7">DOTS</option><option value="8">PULSE</option><option value="9">VU METER</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
+        <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option><option value="1">MIRROR</option><option value="2">SCOPE</option><option value="3">AREA</option><option value="4">RING</option><option value="5">RADAR</option><option value="6">WAVES</option><option value="7">DOTS</option><option value="8">PULSE</option><option value="9">VU METER</option><option value="10">CITY</option><option value="11">FLAME</option><option value="12">STARS</option><option value="13">SPIRAL</option><option value="14">WATERFALL</option><option value="15">TUNNEL</option><option value="16">FLOWER</option><option value="17">BLOCKS 3D</option><option value="18">LISSAJOUS</option><option value="19">ECG</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
       </div>
     </div>
   </section>
 
   <section class="win" id="wRadio">
-    <div class="bar"><span class="t">Radio<span class="rd-tt">&nbsp;/ Communication</span></span><span class="s rd-link" id="rdSt">대기</span><span class="groove"></span><span class="rd-com">COM 01</span><button class="wbtn" data-col="wRadio" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="bar"><span class="t"><span class="rd-tt">Radio / Communication</span><span class="rd-t2">Radio</span></span><span class="s rd-link" id="rdSt">대기</span><span class="groove"></span><span class="rd-com">COM 01</span><button class="wbtn" data-col="wRadio" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body rd-body">
     <div class="rd-panel">
       <div class="rd-top">
@@ -1497,19 +1518,21 @@ html.driving body{overflow:hidden}
       </div>
       <div class="rd-cell rd-scalebox"><small class="rd-drag">드래그하여 주파수 조절</small><canvas id="rdScale" aria-label="FM 다이얼 (끌어서 주파수 맞추기)" role="slider" tabindex="0"></canvas></div>
       <div class="rd-ctl">
-        <button type="button" class="rd-key" id="rdPrev"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>이전 방송</button>
-        <button type="button" class="rd-key hot" id="rdPlay"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>재생</button>
-        <button type="button" class="rd-key" id="rdNext"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>다음 방송</button>
-        <button type="button" class="rd-key" id="rdFav"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2L12 16.9 6.4 20l1.3-6.2L3 9.5l6.3-.7z"/></svg>즐겨찾기</button>
+        <button type="button" class="rd-key" id="rdPrev"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg><span class="kt">이전 방송</span></button>
+        <button type="button" class="rd-key hot" id="rdPlay"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg><span class="kt">재생</span></button>
+        <button type="button" class="rd-key" id="rdNext"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg><span class="kt">다음 방송</span></button>
+        <button type="button" class="rd-key" id="rdFav"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2L12 16.9 6.4 20l1.3-6.2L3 9.5l6.3-.7z"/></svg><span class="kt">즐겨찾기</span></button>
         <label class="rd-vol"><span>VOL</span><input type="range" id="rdVol" min="0" max="100" value="80"><b id="rdVolN">80</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2"/></svg></label>
       </div>
     </div>
-    <div class="rd-sec"><b>PRESET CHANNELS</b><span>/ 즐겨찾기</span><em class="rd-hint">빈 칸을 누르면 지금 방송을 저장 · 길게 누르면 지워요</em></div>
-    <div class="rd-presets" id="rdPresets"></div>
-    <div class="rd-sec"><b>STATION LIST</b><span>/ 방송 찾기</span></div>
+    <button type="button" class="rd-sec rd-tg" id="rdPresetTg" aria-expanded="true" aria-controls="rdPresetBox"><b>PRESET CHANNELS</b><span>/ 즐겨찾기</span><em class="rd-hint">빈 칸을 누르면 지금 방송 저장 · 길게 누르면 지움</em><i class="rd-chev" aria-hidden="true"></i></button>
+    <div class="rd-fold" id="rdPresetBox"><div class="rd-presets" id="rdPresets"></div></div>
+    <button type="button" class="rd-sec rd-tg" id="rdListTg" aria-expanded="false" aria-controls="rdListBox"><b>STATION LIST</b><span>/ 방송 찾기</span><i class="rd-chev" aria-hidden="true"></i></button>
+    <div class="rd-fold" id="rdListBox" hidden>
     <div class="rd-search"><input id="rdQ" placeholder="방송 이름 (예: KBS, MBC, SBS, jazz)" autocomplete="off"><select class="sel" id="rdCountry"><option value="KR">한국</option><option value="">전 세계</option></select><button class="pill on" id="rdGo">검색</button></div>
     <ul class="rd-list" id="rdList"></ul>
-    <p class="hint">방송 목록은 공개 인터넷 라디오 목록(radio-browser.info)을 씁니다. 방송사 사정(해외 차단·인증)으로 재생되지 않는 방송도 있어요. 주파수는 서울 기준입니다.</p>
+    <p class="hint">KBS·MBC·SBS·CBS·EBS는 방송사 공식 주소로 먼저 연결하고, 안 되면 공개 인터넷 라디오 목록(radio-browser.info)의 다른 주소로 자동으로 넘어가요. 해외 차단 등으로 재생되지 않는 방송도 있어요. 주파수는 서울 기준입니다.</p>
+    </div>
     </div>
   </section>
   <section class="win" id="wEq">
@@ -2456,10 +2479,12 @@ function frame(now){
   for(let i=0;i<11;i++){let v=0;if(live){if(i===0){let s=0;for(let k=0;k<W.length;k+=2){const d=(W[k]-128)/128;s+=d*d}v=Math.min(1,Math.sqrt(s/(W.length/2))*2.6)}else{const f=BANDS[i-1];v=Math.pow(band(f/1.3,f*1.3),1.25)*1.08}}eqLv[i]=Math.max(v,eqLv[i]*.88)}
   drawVis(live);drawMini();drawEqLed();drawGps();
   let d=0,t=0,has=false;
-  if(mode==='ext'){has=!!ext.title;d=(ext.dur||0)/1000;t=extPos()}
+  if(rdPlaying&&rdCur)rdLcd();
+  else if(mode==='ext'){has=!!ext.title;d=(ext.dur||0)/1000;t=extPos()}
   else if(natL()&&cur>=0){has=true;d=(nat.dur||0)/1000||list[cur].duration||0;t=natPos()}
   else if(cur>=0){has=true;d=audio.duration||list[cur].duration||0;t=audio.currentTime}
-  if(has){$('#time').textContent=showRemain&&d?'-'+lcdFmt(d-t):lcdFmt(t);
+  if(rdPlaying&&rdCur){}
+  else if(has){$('#time').textContent=showRemain&&d?'-'+lcdFmt(d-t):lcdFmt(t);
     if(!seeking){seek.value=d?t/d*1000:0;setP(seek);$('#tCur').textContent=fmt(t);$('#tDur').textContent=fmt(d)}}
   else{$('#time').textContent='00:00';if(!seeking){seek.value=0;setP(seek)}$('#tCur').textContent='0:00';$('#tDur').textContent='0:00'}
   if(driveOn)driveUi();
@@ -2528,6 +2553,7 @@ function drawVisFx(g,w,h,d,live){
     const R=Math.hypot(w,h)/2;vfx.pulse=vfx.pulse.filter(p=>(p.r+=R*.012*(1+b),p.a-=.012)>0&&p.r<R);
     for(const p of vfx.pulse){g.globalAlpha=p.a;g.strokeStyle=p.c;g.lineWidth=(2+p.a*4)*d;g.beginPath();g.arc(cx,cy,p.r,0,7);g.stroke()}
     g.globalAlpha=1;const gr=g.createRadialGradient(cx,cy,0,cx,cy,Math.min(w,h)*.3);gr.addColorStop(0,L4);gr.addColorStop(.4,L3);gr.addColorStop(1,'transparent');g.globalAlpha=.25+b*.6;g.fillStyle=gr;g.beginPath();g.arc(cx,cy,Math.min(w,h)*(.12+b*.18),0,7);g.fill();g.globalAlpha=1;return}
+  if(visMode>=10){drawVisFx2(g,w,h,d,live,t,wv);return}
   // 9. VU METER: 좌우 아날로그 바늘
   let l=0,r=0;if(live&&W){for(let i=0;i<W.length;i++){const v=Math.abs(W[i]-128)/128;if(i%2)r+=v*v;else l+=v*v}l=Math.min(1,Math.sqrt(l/(W.length/2))*3.2);r=Math.min(1,Math.sqrt(r/(W.length/2))*3.2)}
   vfx.vuL+=(l-vfx.vuL)*(l>vfx.vuL?.35:.08);vfx.vuR+=(r-vfx.vuR)*(r>vfx.vuR?.35:.08);
@@ -2539,6 +2565,62 @@ function drawVisFx(g,w,h,d,live){
     const a=A0+(A1-A0)*v;g.strokeStyle=L4;g.lineWidth=2*d;g.shadowColor=L3;g.shadowBlur=6*d;g.beginPath();g.moveTo(px,py);g.lineTo(px+Math.cos(a)*R*.95,py+Math.sin(a)*R*.95);g.stroke();g.shadowBlur=0;
     g.fillStyle=C.fg;g.font=`600 ${Math.max(10,mh*.13)}px ${RJ}`;g.textAlign='left';g.textBaseline='top';g.fillText('VU · '+lab,x0+10*d,y0+8*d)})
 }
+/* 시각화 효과 10~19 */
+const vfx2={stars:[],hist:[],ecg:[],ecgX:0,lastB:0,beat:0};
+function drawVisFx2(g,w,h,d,live,t,wv){
+  const cx=w/2,cy=h/2,L1=C.l1,L2=C.l2,L3=C.l3,L4=C.l4,lv=visLevel(0,1),bass=visLevel(0,.12),col=v=>v>.75?L4:v>.5?L3:v>.25?L2:L1;
+  if(visMode===10){ // CITY: 막대가 빌딩, 창문 불빛이 소리에 맞춰 켜짐
+    const n=Math.max(14,Math.floor(w/(26*d))),bw=w/n;g.fillStyle=C.grid;g.fillRect(0,h-3*d,w,3*d);
+    for(let i=0;i<n;i++){const k=Math.floor(i/n*N),base=.18+((i*37)%11)/30,v=Math.max(base,bars[k]),bh=v*h*.9,x=i*bw+1*d,y=h-3*d-bh;
+      g.fillStyle=C.off;g.fillRect(x,y,bw-2*d,bh);g.strokeStyle=C.edge;g.lineWidth=1;g.strokeRect(x,y,bw-2*d,bh);
+      const rows=Math.floor(bh/(9*d)),lit=Math.round(bars[k]*rows);for(let r=0;r<rows;r++)for(let c=0;c<2;c++){g.fillStyle=r<lit?col(r/rows):(((i+r+c)%5)?'transparent':L1);g.fillRect(x+3*d+c*(bw-2*d)/2.2,h-3*d-(r+1)*9*d+3*d,Math.max(2,(bw-2*d)/3.2),4*d)}}
+    g.fillStyle=L4;g.globalAlpha=.8;g.beginPath();g.arc(w*.86,h*.18,Math.min(w,h)*.06*(1+bass*.4),0,7);g.fill();g.globalAlpha=1;return}
+  if(visMode===11){ // FLAME: 아래에서 위로 타오르는 불꽃 기둥
+    const n=Math.max(20,Math.floor(w/(10*d))),bw=w/n;
+    for(let i=0;i<n;i++){const k=Math.floor(i/n*N),v=Math.max(.12+Math.sin(t*6+i)*.05,bars[k]),fh=v*h*.95,x=i*bw;
+      const gr=g.createLinearGradient(0,h,0,h-fh);gr.addColorStop(0,L4);gr.addColorStop(.35,L3);gr.addColorStop(.7,L2);gr.addColorStop(1,'transparent');g.fillStyle=gr;
+      g.beginPath();g.moveTo(x,h);g.quadraticCurveTo(x+bw*.1,h-fh*.6,x+bw/2+Math.sin(t*9+i*1.7)*bw*.6,h-fh);g.quadraticCurveTo(x+bw*.9,h-fh*.6,x+bw,h);g.fill()}return}
+  if(visMode===12){ // STARS: 가운데서 날아오는 별, 소리가 크면 빨라짐
+    while(vfx2.stars.length<160)vfx2.stars.push({x:(Math.random()-.5)*2,y:(Math.random()-.5)*2,z:Math.random()*1+.05});
+    const sp=.006+lv*.05+bass*.03;g.fillStyle=C.off;g.globalAlpha=.25;g.fillRect(0,0,w,h);g.globalAlpha=1;
+    for(const st of vfx2.stars){const pz=st.z;st.z-=sp;if(st.z<=.02){st.x=(Math.random()-.5)*2;st.y=(Math.random()-.5)*2;st.z=1;continue}
+      const sx=cx+st.x/st.z*w*.25,sy=cy+st.y/st.z*h*.25,px=cx+st.x/pz*w*.25,py=cy+st.y/pz*h*.25;g.strokeStyle=col(1-st.z);g.lineWidth=(1.2+(1-st.z)*2.4)*d;g.beginPath();g.moveTo(px,py);g.lineTo(sx,sy);g.stroke()}
+    g.fillStyle=L3;g.beginPath();g.arc(cx,cy,(2+bass*6)*d,0,7);g.fill();return}
+  if(visMode===13){ // SPIRAL: 스펙트럼이 회전하는 나선
+    const R=Math.min(w,h)*.48;g.lineCap='round';
+    for(let i=0;i<N*3;i++){const k=i%N,v=bars[k],a=i*.21+t*.6,r=R*(i/(N*3))*.9+4*d;g.fillStyle=col(v);g.globalAlpha=.35+v*.65;g.beginPath();g.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.8,(1.5+v*5)*d,0,7);g.fill()}
+    g.globalAlpha=1;g.lineCap='butt';return}
+  if(visMode===14){ // WATERFALL: 시간에 따라 흘러내리는 스펙트럼(위가 지금)
+    const n=Math.max(24,Math.floor(w/(8*d)));const row=[];for(let i=0;i<n;i++)row.push(bars[Math.floor(i/n*N)]||0);vfx2.hist.unshift(row);
+    const rows=Math.max(10,Math.floor(h/(5*d)));if(vfx2.hist.length>rows)vfx2.hist.length=rows;const cw=w/n,rh=h/rows;
+    for(let r=0;r<rows;r++){const R=vfx2.hist[r];for(let i=0;i<n;i++){const v=R?R[i]:0;g.fillStyle=v>.06?col(v):C.off;g.globalAlpha=R?Math.max(.15,1-r/rows):.3;g.fillRect(i*cw,r*rh,cw-1,rh-1)}}g.globalAlpha=1;return}
+  if(visMode===15){ // TUNNEL: 저음에 맞춰 다가오는 사각 터널
+    const k=12,ph=(t*(.4+bass*1.6))%1;g.lineWidth=2*d;
+    for(let i=k;i>=0;i--){const z=(i+1-ph)/k,s=Math.pow(1-z,2)*.98+.02,ww=w*s,hh=h*s,v=bars[Math.floor((i/k)*(N-1))];g.strokeStyle=col(Math.max(v,1-z));g.globalAlpha=Math.min(1,.2+(1-z));
+      g.strokeRect(cx-ww/2,cy-hh/2,ww,hh)}
+    g.globalAlpha=1;g.strokeStyle=C.grid;g.lineWidth=1*d;for(const [a,b] of [[0,0],[w,0],[0,h],[w,h]]){g.beginPath();g.moveTo(cx,cy);g.lineTo(a,b);g.stroke()}return}
+  if(visMode===16){ // FLOWER: 꽃잎처럼 피는 방사형 스펙트럼
+    const R=Math.min(w,h)*.46,pet=8;for(let L=3;L>=1;L--){g.beginPath();for(let i=0;i<=360;i+=3){const a=i*Math.PI/180+t*.2*L,k=Math.floor((i%(360/pet))/(360/pet)*N),v=bars[k]||0,r=R*(.18+.22*L/3+v*.45*L/3)*(1+.12*Math.sin(a*pet));
+      const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;i?g.lineTo(x,y):g.moveTo(x,y)}g.closePath();g.globalAlpha=.25+L*.18;g.fillStyle=[L1,L2,L3][L-1];g.fill();g.globalAlpha=1;g.strokeStyle=L4;g.lineWidth=1*d;g.stroke()}
+    g.fillStyle=L4;g.beginPath();g.arc(cx,cy,R*(.06+bass*.08),0,7);g.fill();return}
+  if(visMode===17){ // BLOCKS 3D: 비스듬히 본 입체 막대
+    const n=16,bw=w/(n+3),dep=bw*.45;for(let i=0;i<n;i++){const v=Math.max(.04,bars[Math.floor(i/n*N)]),bh=v*h*.78,x=bw*(i+1),y=h-8*d-bh;
+      g.fillStyle=col(v);g.globalAlpha=.95;g.fillRect(x,y,bw*.8,bh);g.globalAlpha=.6;g.beginPath();g.moveTo(x,y);g.lineTo(x+dep,y-dep);g.lineTo(x+bw*.8+dep,y-dep);g.lineTo(x+bw*.8,y);g.fill();
+      g.globalAlpha=.35;g.beginPath();g.moveTo(x+bw*.8,y);g.lineTo(x+bw*.8+dep,y-dep);g.lineTo(x+bw*.8+dep,h-8*d-dep);g.lineTo(x+bw*.8,h-8*d);g.fill()}
+    g.globalAlpha=1;g.strokeStyle=C.edge;g.lineWidth=1*d;g.beginPath();g.moveTo(0,h-8*d);g.lineTo(w,h-8*d);g.stroke();return}
+  if(visMode===18){ // LISSAJOUS: 좌우 채널 X-Y 스코프
+    g.strokeStyle=C.grid;g.lineWidth=1*d;g.beginPath();g.moveTo(cx,0);g.lineTo(cx,h);g.moveTo(0,cy);g.lineTo(w,cy);g.stroke();
+    const R=Math.min(w,h)*.44;g.strokeStyle=L3;g.shadowColor=L4;g.shadowBlur=10*d;g.lineWidth=1.6*d;g.beginPath();
+    for(let i=0;i<256;i++){let x,y;if(live&&W){x=(W[(i*2)%W.length]-128)/128;y=(W[(i*2+1)%W.length]-128)/128}else{const a=i/256*Math.PI*2;x=Math.sin(a*3+t)*.6;y=Math.sin(a*2)*.6}
+      const px=cx+x*R*1.4,py=cy+y*R;i?g.lineTo(px,py):g.moveTo(px,py)}g.stroke();g.shadowBlur=0;return}
+  // 19. ECG: 심전도처럼 흐르는 박동선, 저음이 들어오면 큰 파형
+  const step=3*d;if(bass-vfx2.lastB>.08&&bass>.3)vfx2.beat=1;vfx2.lastB=bass;
+  for(let k=0;k<2;k++){vfx2.ecgX=(vfx2.ecgX+step)%w;const b=vfx2.beat,ph=1-b;let y=cy+Math.sin(t*2+vfx2.ecgX/40)*2*d;
+    if(b>0){y=cy-Math.sin(ph*Math.PI*3)*(h*.38)*b;vfx2.beat=Math.max(0,b-.08)}else if(Math.random()<.004)vfx2.beat=.6;vfx2.ecg[Math.floor(vfx2.ecgX/step)]=y}
+  g.strokeStyle=C.grid;g.lineWidth=1;for(let x=0;x<w;x+=20*d){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}for(let y=0;y<h;y+=20*d){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}
+  g.strokeStyle=L4;g.shadowColor=L3;g.shadowBlur=8*d;g.lineWidth=2*d;g.beginPath();let first=true;const head=Math.floor(vfx2.ecgX/step);
+  for(let i=0;i<Math.ceil(w/step);i++){if(Math.abs(i-head)<4){first=true;continue}const y=vfx2.ecg[i];if(y==null){first=true;continue}const x=i*step;first?g.moveTo(x,y):g.lineTo(x,y);first=false}
+  g.stroke();g.shadowBlur=0}
 function drawMini(){
   const c=cv.mini,g=cx.mini,w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const n=19,gap=Math.max(1,2*d),bw=(w-gap*(n-1))/n;
@@ -2550,7 +2632,7 @@ function drawEqLed(){
   for(let i=0;i<11;i++){const x=i*cw+cw/2-bw/2;ledColumn(g,x,bw,h-4*d,h-8*d,eqLv[i],Math.max(3,5*d),Math.max(1,2*d),null,C.off)}
   g.fillStyle=C.edge;g.fillRect(cw*.12,h/2,w-cw*.24,1);
 }
-const VIS_N=10;if(!(visMode>=0&&visMode<VIS_N))visMode=0;
+const VIS_N=20;if(!(visMode>=0&&visMode<VIS_N))visMode=0;
 const syncVis=()=>{$('#visSel').value=String(visMode)};
 const setVis=m=>{visMode=((m%VIS_N)+VIS_N)%VIS_N;store.set('vis',visMode);syncVis()};
 $('#visSel').onchange=e=>setVis(+e.target.value);$('#visSel').onclick=e=>e.stopPropagation();
@@ -2567,7 +2649,7 @@ const dirName=d=>DIRS[Math.round(((d%360)+360)%360/22.5)%16];
 function hav(a,b,c,d){const R=6371000,t=Math.PI/180,x=(c-a)*t,y=(d-b)*t;const h=Math.sin(x/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function gpsStart(){if(!HAS_GPS)return;try{NB.startGps()}catch(e){}gpsOn=true;store.set('gpsOn',true);clearInterval(gpsTimer);gpsTimer=setInterval(pollGps,250);gpsUi()}
 function gpsStop(user){if(HAS_GPS){try{NB.stopGps()}catch(e){}}gpsOn=false;if(user)store.set('gpsOn',false);clearInterval(gpsTimer);spdNow=0;gpsUi()}
-function gpsSkinChanged(){const ckOpt=$('#gStyle option[value="cockpit"]');if(ckOpt){ckOpt.hidden=ckOpt.disabled=!isCp()}try{if(!isCp()&&gStyle==='cockpit')setGStyle(store.get('gStyleCar','carbon'))}catch(e){/* 시작 중에는 아래 boot에서 처리 */}if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
+function gpsSkinChanged(){const ckOpt=$('#gStyle option[value="cockpit"]');if(ckOpt){ckOpt.hidden=ckOpt.disabled=!isCp()}try{if(isCp())setGStyle(store.get('gStyleCk','cockpit'));else if(gStyle==='cockpit')setGStyle(store.get('gStyleCar','carbon'))}catch(e){/* 시작 중에는 아래 boot에서 처리 */}if(isCar()){if(store.get('gpsOn',false)&&!gpsOn)gpsStart()}else if(gpsOn)gpsStop(false);if(hudOn&&!isCar())hud(false);if(typeof mapSkinChanged==='function')mapSkinChanged()}
 function pollGps(){
   if(!gpsOn)return;let s;try{s=JSON.parse(NB.gpsStatus())}catch(e){return}gs=s;
   if(s.fix){
@@ -2618,7 +2700,7 @@ function drawGps(){
   if(!gv)return;
   attPoll();if(att.on&&att.hdg>=0)hdgNow=att.hdg;
   if(typeof atcSpeedTick==='function')atcSpeedTick(spdNow);
-  const AP=window.AmpPfd;if(isCk()&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
+  const AP=window.AmpPfd;if(isCk()&&(skin==='tablet'||gStyle==='cockpit')&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -2632,8 +2714,8 @@ function drawGps(){
 const GMAX=200,GA0=Math.PI*.75,GA1=Math.PI*2.25;
 const gA=v=>GA0+(GA1-GA0)*Math.max(0,Math.min(1,v/GMAX));
 let gStyle=store.get('gStyle','carbon');
-function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';if(k==='cockpit'&&!isCp())k=store.get('gStyleCar','carbon');if(k!=='cockpit')store.set('gStyleCar',k);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
-$('#gStyle').onchange=e=>setGStyle(e.target.value);
+function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';if(k==='cockpit'&&!isCp())k=store.get('gStyleCar','carbon');if(isCp())store.set('gStyleCk',k);else if(k!=='cockpit')store.set('gStyleCar',k);{const gb=$('#gStyleBar');if(gb)gb.value=k}setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)}catch(e){}window.dispatchEvent(new Event('resize'))},60);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
+$('#gStyle').onchange=e=>setGStyle(e.target.value);$('#gStyleBar').onchange=e=>setGStyle(e.target.value);
 const RJ='Rajdhani,"Barlow Condensed",sans-serif';
 function ring(g,x,y,r,lw,col){g.lineWidth=lw;g.strokeStyle=col;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.stroke()}
 function tick(g,x,y,a,r1,r2,lw,col){g.lineWidth=lw;g.strokeStyle=col;g.beginPath();g.moveTo(x+Math.cos(a)*r1,y+Math.sin(a)*r1);g.lineTo(x+Math.cos(a)*r2,y+Math.sin(a)*r2);g.stroke()}
@@ -3084,7 +3166,7 @@ $('#driveBtn').onclick=()=>{drive(true);driveSuppress=false};
 
 /* ---------- 콕핏 스킨 PFD 연결용 창구: pfd-amp.js가 이 값만 읽고 씁니다 ---------- */
 window.AmpHost={
-  get skin(){return skin},get gpsOn(){return gpsOn},get gs(){return gs},get spdNow(){return spdNow},get hdgNow(){return hdgNow},
+  get skin(){return skin},get gStyle(){return gStyle},get gpsOn(){return gpsOn},get gs(){return gs},get spdNow(){return spdNow},get hdgNow(){return hdgNow},
   get trip(){return trip},get att(){return att},get gLimit(){return gLimit},
   setLimit(v){gLimit=v|0;store.set('gLimit',gLimit);const sel=$('#gLimit');if([...sel.options].some(o=>+o.value===gLimit))sel.value=String(gLimit)},
   resetTrip(){trip={dist:0,time:0,max:0};store.set('trip',trip);gpsUi()},
@@ -3230,7 +3312,7 @@ clockTick();setInterval(clockTick,1000);
 /* ---------- 창 순서(설정) ---------- */
 const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wRadio:'라디오',wEq:'이퀄라이저',wPl:'재생 목록'};
 function winKind(){return isCp()?'K':isCar()?'G':'N'}
-function winDefault(){return {K:['wGps','wCtl','wAtc','wCam','wMap','wMain','wVis','wRadio','wEq','wPl'],G:['wGps','wCam','wMap','wMain','wVis','wRadio','wEq','wPl'],N:['wMain','wVis','wRadio','wEq','wPl']}[winKind()]}
+function winDefault(){return {K:['wGps','wCtl','wAtc','wMap','wMain','wVis','wRadio','wEq','wPl','wCam'],G:['wGps','wMap','wMain','wVis','wRadio','wEq','wPl','wCam'],N:['wMain','wVis','wRadio','wEq','wPl']}[winKind()]}
 function winOrder(){const d=winDefault(),o=store.get('winOrder_'+winKind(),null);if(!Array.isArray(o))return null;const f=o.filter(id=>d.includes(id));d.forEach(id=>{if(!f.includes(id))f.push(id)});return f}
 function applyWinOrder(){const o=winOrder();appEl.classList.toggle('CO',!!o);
   document.querySelectorAll('#app>.win').forEach(w=>w.style.order='');
@@ -3536,7 +3618,23 @@ const RD_SERVERS=['https://de1.api.radio-browser.info','https://de2.api.radio-br
 const RD_FREQ=[[/cool\s*fm|kbs\s*2\s*fm|쿨\s*fm/i,89.1],[/happy\s*fm|kbs\s*2\s*(radio|라디오)|해피/i,106.1],[/kbs\s*1\s*fm|클래식\s*fm|classic\s*fm/i,93.1],[/kbs\s*1\s*(radio|라디오)|kbs\s*1r/i,97.3],
   [/fm\s*4\s*u|mbc\s*fm4u/i,91.9],[/mbc\s*(표준|standard)|mbc\s*radio/i,95.9],[/power\s*fm|파워\s*fm/i,107.7],[/love\s*fm|러브\s*fm/i,103.5],[/cbs\s*(music|음악)/i,93.9],[/cbs\s*(표준|standard)/i,98.1],
   [/ebs/i,104.5],[/tbs\s*eFM|tbs\s*efm/i,101.3],[/tbs/i,95.1],[/bbs|불교방송/i,101.9],[/pbc|평화방송/i,105.3],[/febc|극동방송/i,106.9],[/ytn/i,94.5],[/ifm|경인/i,90.7],[/국방|kfn/i,100.5],[/afn|eagle/i,102.7]];
-const rdFreqOf=st=>{const n=(st.name||'')+' '+(st.tags||'');for(const [re,f] of RD_FREQ)if(re.test(n))return f;return st.freq||null};
+const rdFreqOf=st=>{if(st&&st.ofc)return st.freq;const n=(st.name||'')+' '+(st.tags||'');for(const [re,f] of RD_FREQ)if(re.test(n))return f;return st.freq||null};
+// 방송사 공식 주소(서울). api: 는 재생할 때마다 임시 주소를 새로 받아 옴 — 안 되면 공개 목록의 다른 주소로 자동 전환
+const RD_KR=[
+  ['kbs1r','KBS 1라디오',97.3,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/21','KBS 1Radio'],
+  ['kbs2r','KBS 해피FM',106.1,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/22','KBS Happy FM'],
+  ['kbs1fm','KBS 클래식FM',93.1,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/24','KBS Classic FM'],
+  ['kbs2fm','KBS 쿨FM',89.1,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/25','KBS Cool FM'],
+  ['mbcsfm','MBC 표준FM',95.9,'api:https://sminiplay.imbc.com/aacplay.ashx?agent=webapp&channel=sfm','MBC Standard FM'],
+  ['mbcfm4u','MBC FM4U',91.9,'api:https://sminiplay.imbc.com/aacplay.ashx?agent=webapp&channel=mfm','MBC FM4U'],
+  ['sbslove','SBS 러브FM',103.5,'api:https://apis.sbs.co.kr/play-api/1.0/livestream/lovepc/lovefm?protocol=hls&ssl=Y','SBS Love FM'],
+  ['sbspower','SBS 파워FM',107.7,'api:https://apis.sbs.co.kr/play-api/1.0/livestream/powerpc/powerfm?protocol=hls&ssl=Y','SBS Power FM'],
+  ['cbsmusic','CBS 음악FM',93.9,'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8','CBS Music FM'],
+  ['cbsstd','CBS 표준FM',98.1,'https://m-aac.cbs.co.kr/mweb_cbs981/_definst_/cbs981.stream/playlist.m3u8','CBS Standard FM'],
+  ['ebsfm','EBS FM',104.5,'https://ebsonair.ebs.co.kr/fmradiofamilypc/familypc1m/playlist.m3u8','EBS FM']
+].map(([id,name,freq,url,q])=>({id:'kr-'+id,name,freq,url,q,tags:'방송사 공식',codec:'',br:0,cc:'KR',fav:'',ofc:true}));
+// 공식 주소가 없는 서울 FM: 공개 목록에서 찾을 이름
+const RD_Q={95.1:'TBS',101.3:'TBS eFM',101.9:'BBS',105.3:'PBC',106.9:'FEBC',94.5:'YTN',90.7:'iFM',100.5:'국군방송',102.7:'AFN'};
 const RD_BLOCK=/평양|pyongyang|조선중앙|조선의\s*소리|voice\s*of\s*korea|dprk|north\s*korea|kcbs|kctv|朝鮮/i;
 let rdFavs=(store.get('rdFavs',[])||[]).filter(x=>!RD_BLOCK.test(x.name||'')),rdList=[],rdCur=store.get('rdLast',null),rdPlaying=false,rdTune=null;
 const rdAudio=new Audio();rdAudio.preload='none';rdAudio.volume=store.get('rdVol',80)/100;
@@ -3549,8 +3647,14 @@ function rdNorm(o){return {id:o.stationuuid||o.id||o.url,name:(o.name||'').trim(
 async function rdSearch(q){const cc=$('#rdCountry').value,ul=$('#rdList');ul.innerHTML='<li class="msg">찾는 중…</li>';
   const qs=new URLSearchParams({hidebroken:'true',order:'votes',reverse:'true',limit:'80'});if(cc)qs.set('countrycode',cc);if(q)qs.set('name',q);
   try{rdList=(await rdApi('/json/stations/search?'+qs)).map(rdNorm).filter(rdOk);rdRenderList()}
-  catch(e){ul.innerHTML='<li class="msg">방송 목록을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.</li>'}}
-function rdRenderList(){const ul=$('#rdList');ul.innerHTML='';if(!rdList.length){ul.innerHTML='<li class="msg">찾은 방송이 없어요.</li>';return}
+  catch(e){rdList=[];rdRenderList();const m=ul.querySelector('.msg');if(m)m.textContent='공개 목록을 불러오지 못했어요. 위 공식 방송은 들을 수 있어요.'}}
+function rdOfcShown(){const q=($('#rdQ').value||'').trim().toLowerCase(),cc=$('#rdCountry').value;if(cc&&cc!=='KR')return [];return RD_KR.filter(s=>!q||(s.name+' '+s.q).toLowerCase().includes(q))}
+function rdRenderList(){const ul=$('#rdList');ul.innerHTML='';
+  rdOfcShown().forEach(st=>{const li=document.createElement('li');li.dataset.o=st.id;li.className='off'+(rdCur&&rdCur.id===st.id?' on':'');
+    li.innerHTML='<i>📻</i><div><b></b><small></small></div><em></em><button aria-label="즐겨찾기"></button>';li.querySelector('b').textContent=st.name;
+    const o=document.createElement('span');o.className='ofc';o.textContent='공식';li.querySelector('b').appendChild(o);li.querySelector('small').textContent='방송사 공식 스트림 · 안 되면 다른 주소로 자동 전환';
+    li.querySelector('em').textContent=st.freq.toFixed(1);li.querySelector('button').textContent=rdFavs.some(x=>x.id===st.id)?'★':'☆';ul.appendChild(li)});
+  if(!rdList.length){const m=document.createElement('li');m.className='msg';m.textContent=rdOfcShown().length?'공개 목록에서 더 찾은 방송이 없어요.':'찾은 방송이 없어요.';ul.appendChild(m);return}
   rdList.forEach((st,i)=>{const li=document.createElement('li');li.dataset.i=i;if(rdCur&&rdCur.id===st.id)li.className='on';const f=rdFreqOf(st);
     li.innerHTML='<i>📻</i><div><b></b><small></small></div><em></em><button aria-label="즐겨찾기"></button>';
     if(st.fav){const im=new Image();im.alt='';im.referrerPolicy='no-referrer';im.onload=()=>li.firstChild.replaceWith(im);im.src=st.fav}
@@ -3577,30 +3681,46 @@ function rdNextSt(){const pool=rdFavs.length?rdFavs:rdList;if(!pool.length)retur
 function rdShow(){const st=rdCur,f=rdTune!=null?rdTune:(st&&rdFreqOf(st));
   $('#rdFreq').innerHTML=rdSegSvg(f?f.toFixed(1):(st?'---':'--'));$('#wRadio').querySelector('.rd-band').textContent=f||!st?'FM':'NET';
   $('#rdName').textContent=rdTune!=null?'주파수 맞추는 중':st?st.name:'방송국을 고르세요';
-  $('#rdInfo').textContent=st&&rdTune==null?[st.tags,st.codec&&(st.codec+(st.br?' '+st.br+'kbps':''))].filter(Boolean).join(' · '):'';
-  const pb=$('#rdPlay');pb.innerHTML=rdPlaying?'<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>일시정지':'<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>재생';pb.classList.toggle('hot',rdPlaying);
+  $('#rdInfo').textContent=st&&rdTune==null?(rdNow?'♪ '+rdNow:[st.tags,st.codec&&(st.codec+(st.br?' '+st.br+'kbps':''))].filter(Boolean).join(' · ')):'';
+  const pb=$('#rdPlay');pb.innerHTML=rdPlaying?'<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><span class="kt">일시정지</span>':'<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg><span class="kt">재생</span>';pb.setAttribute('aria-label',rdPlaying?'일시정지':'재생');pb.classList.toggle('hot',rdPlaying);
   $('#rdFav').classList.toggle('fav',!!(st&&rdFavs.some(x=>x.id===st.id)));
   const ns=rdNextSt(),nf=ns&&rdFreqOf(ns);$('#rdStbyF').textContent=ns?(nf?nf.toFixed(1):'NET'):'--.-';$('#rdStby').disabled=!ns;$('#rdStby').title=ns?ns.name:'';
   const k=$('#rdKnob');k.setAttribute('aria-valuenow',f?f.toFixed(1):'');k.style.setProperty('--rot',((f||87.5)*120%360)+'deg');
   rdLamps();rdRenderFavs();rdDraw()}
-function rdBridge(st){try{if(NB&&NB.onPlayState)NB.onPlayState(st?'playing':'stopped',st?st.name:'',st?'RADIO':'')}catch(e){}}
+function rdBridge(st){try{if(NB&&NB.onPlayState)NB.onPlayState(st?'playing':'stopped',st?(rdNow||st.name):'',st?(rdNow?'RADIO · '+st.name:'RADIO'):'')}catch(e){}}
 // 앱에서는 안드로이드 표준 플레이어(HLS·http·재생목록 지원)로, 웹 미리보기에서는 audio 태그로 재생
 const RD_NATIVE=!!(NB&&NB.radioPlay);let rdPoll=0,rdSt0='';
-function rdFail(){rdPlaying=false;clearInterval(rdPoll);rdSay('재생할 수 없어요');toast('이 방송은 지금 재생할 수 없어요(방송사 차단·주소 변경). 다른 방송을 골라 주세요.');rdShow();rdRenderList()}
-async function rdPlay(st){if(!st)return;rdCur=st;store.set('rdLast',st);try{pause()}catch(e){}
-  rdSay('연결 중…');rdPlaying=true;rdShow();rdRenderList();
-  if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.radioPlay(st.url)}catch(e){return rdFail()}
-    const t0=Date.now();clearInterval(rdPoll);rdPoll=setInterval(()=>{let o={};try{o=JSON.parse(NB.radioState())}catch(e){}
-      if(o.state==='playing'){if(rdSt0!=='ON AIR'){rdSay('ON AIR');rdBridge(st)}}else if(o.state==='buffering'||o.state==='resolving')rdSay('버퍼링…');
-      else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000))rdFail()},500);return}
-  rdAudio.src=st.url;
-  try{await rdAudio.play();rdSay('ON AIR');setTimeout(()=>rdBridge(st),250)}catch(e){rdFail()}
-  rdShow();rdRenderList()}
-function radioStop(){if(!rdPlaying&&rdAudio.paused&&!RD_NATIVE)return;clearInterval(rdPoll);if(RD_NATIVE){try{NB.radioStop()}catch(e){}}rdAudio.pause();rdAudio.removeAttribute('src');try{rdAudio.load()}catch(e){}if(!rdPlaying)return;rdPlaying=false;rdSay('대기');rdBridge(null);rdShow();rdRenderList()}
+function rdFail(){rdPlaying=false;rdTry=null;clearInterval(rdPoll);try{updateMeta()}catch(e){}rdSay('재생할 수 없어요');toast('이 방송은 지금 재생할 수 없어요(방송사 차단·주소 변경). 다른 방송을 골라 주세요.');rdShow();rdRenderList()}
+// 재생: 같은 방송의 다른 주소(공식 → 공개 목록)를 차례로 시도, 모두 안 될 때만 실패 안내
+let rdTry=null,rdT0=0,rdNow='';
+function rdCands(st){const out=[],seen=new Set(),f=rdFreqOf(st),add=s=>{if(s&&s.url&&!seen.has(s.url)&&rdOk(s)){seen.add(s.url);out.push(s)}};
+  add(st);if(f)for(const s of [...RD_KR,...rdFavs,...rdList])if(rdFreqOf(s)===f)add(s);return out}
+async function rdMore(){const t=rdTry;if(!t||t.searched)return false;t.searched=true;const base=t.base,f=rdFreqOf(base);
+  const q=base.q||RD_Q[f]||(base.name||'').replace(/\s*(fm|라디오|radio)\s*$/i,'').trim();if(!q)return false;
+  try{const r=(await rdApi('/json/stations/search?'+new URLSearchParams({name:q,hidebroken:'true',order:'votes',reverse:'true',limit:'8'}))).map(rdNorm).filter(rdOk);
+    if(t!==rdTry)return false;const toks=q.toLowerCase().split(/\s+/).filter(Boolean),same=x=>{const n=(x.name||'').toLowerCase().replace(/\s+/g,'');return toks.every(k=>n.includes(k))};const seen=new Set(t.list.map(s=>s.url));let n=0;for(const s of r)if(!seen.has(s.url)&&same(s)){t.list.push(s);n++}return n>0}catch(e){return false}}
+async function rdNextCand(){const t=rdTry;if(!t||!rdPlaying)return;t.i++;if(t.i>=t.list.length&&!(await rdMore()))return rdFail();if(t!==rdTry)return;
+  rdSay('다른 주소로 연결 중…');rdStart(t.list[t.i])}
+function rdStart(s){const t=rdTry;if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.radioPlay(s.url)}catch(e){return rdNextCand()}
+    const t0=Date.now();clearInterval(rdPoll);rdPoll=setInterval(()=>{if(t!==rdTry)return clearInterval(rdPoll);let o={};try{o=JSON.parse(NB.radioState())}catch(e){}
+      if(o.state==='playing'){if(rdSt0!=='ON AIR'){rdSay('ON AIR');rdT0=rdT0||Date.now();rdBridge(rdCur)}const ti=(o.title||'').trim();if(ti!==rdNow){rdNow=ti;rdShow();rdBridge(rdCur)}}
+      else if(o.state==='buffering'||o.state==='resolving')rdSay(o.retry?'다시 연결 중…':'버퍼링…');
+      else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);rdNextCand()}},500);return}
+  if(/^api:/.test(s.url))return rdNextCand(); // 웹 미리보기는 방송사 주소를 직접 받을 수 없어 공개 목록 주소로
+  rdAudio.src=s.url;rdAudio.play().then(()=>{if(t!==rdTry)return;rdSay('ON AIR');rdT0=rdT0||Date.now();setTimeout(()=>rdBridge(rdCur),250);rdShow()}).catch(()=>{if(t===rdTry)rdNextCand()})}
+function rdPlay(st){if(!st)return;rdCur=st;store.set('rdLast',st);try{pause()}catch(e){}
+  rdTry={base:st,list:rdCands(st),i:0,searched:false};rdT0=0;rdNow='';
+  rdSay('연결 중…');rdPlaying=true;rdShow();rdRenderList();rdStart(rdTry.list[0])}
+// 플레이어 화면(LCD)에 지금 듣는 라디오 표시
+function rdLcd(){const f=rdFreqOf(rdCur);$('#time').textContent=lcdFmt(rdT0?(Date.now()-rdT0)/1000:0);
+  setMarquee('📻 '+(f?'FM '+f.toFixed(1)+' · ':'')+rdCur.name+(rdNow?'  ♪ '+rdNow:(rdSt0==='ON AIR'?'  · ON AIR':'  · 연결 중')));
+  if(!seeking){seek.value=0;setP(seek)}$('#tCur').textContent='LIVE';$('#tDur').textContent='RADIO';
+  const k=$('#kbps');const kb=(rdCur.br?rdCur.br+' kbps':'LIVE kbps');if(k.textContent!==kb)k.textContent=kb}
+function radioStop(){if(!rdPlaying&&rdAudio.paused&&!RD_NATIVE)return;rdTry=null;clearInterval(rdPoll);if(RD_NATIVE){try{NB.radioStop()}catch(e){}}rdAudio.pause();rdAudio.removeAttribute('src');try{rdAudio.load()}catch(e){}if(!rdPlaying)return;rdPlaying=false;rdNow='';rdSay('대기');rdBridge(null);rdShow();rdRenderList();try{updateMeta()}catch(e){}}
 const rdVolV=()=>(+$('#rdVol').value||80)/100;
-rdAudio.addEventListener('error',()=>{if(rdPlaying){rdPlaying=false;rdSay('끊김');rdShow()}});
+rdAudio.addEventListener('error',()=>{if(rdPlaying&&rdTry&&!RD_NATIVE)rdNextCand()}); // 끊기면 같은 방송의 다른 주소로
 rdAudio.addEventListener('waiting',()=>rdPlaying&&rdSay('버퍼링…'));rdAudio.addEventListener('playing',()=>rdSay('ON AIR'));
-function rdPool(){const seen=new Set(),out=[];for(const s of [...rdFavs,...rdList])if(!seen.has(s.id)){seen.add(s.id);out.push(s)}return out}
+function rdPool(){const seen=new Set(),out=[];for(const s of [...rdFavs,...RD_KR,...rdList])if(!seen.has(s.id)){seen.add(s.id);out.push(s)}return out}
 function rdStep(d){const pool=rdFavs.length?rdFavs:rdList;if(!pool.length)return;let i=pool.findIndex(s=>rdCur&&s.id===rdCur.id);i=(i+d+pool.length)%pool.length;rdPlay(pool[i])}
 // FM 다이얼: 87.5~108MHz, 저장·목록의 방송 표시, 끌어서 맞추면 가장 가까운 방송으로
 function rdDraw(){const cv=$('#rdScale');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
@@ -3622,8 +3742,9 @@ function rdSigDraw(){const cv=$('#rdSig');if(!cv||!cv.offsetWidth)return;const d
   const cx=W/2,cy=H*.6,r=Math.min(W*.42,H*.5),a=v=>Math.PI*(1+v/100);g.lineCap='butt';
   g.lineWidth=3*d;g.strokeStyle='#4d5a49';g.beginPath();g.arc(cx,cy,r,a(0),a(80));g.stroke();g.strokeStyle='#f3bc65';g.beginPath();g.arc(cx,cy,r,a(80),a(100));g.stroke();
   g.textAlign='center';g.textBaseline='middle';g.font=`600 ${9.5*d}px "Share Tech Mono",monospace`;
-  for(let v=0;v<=100;v+=10){const an=a(v),big=v%20===0;g.strokeStyle=v>=80?'#f3bc65':'#9da69d';g.lineWidth=(big?1.6:1)*d;g.beginPath();g.moveTo(cx+Math.cos(an)*(r-(big?9:6)*d),cy+Math.sin(an)*(r-(big?9:6)*d));g.lineTo(cx+Math.cos(an)*r,cy+Math.sin(an)*r);g.stroke();
-    if(big){g.fillStyle=v>=80?'#f3bc65':'#c9d0c4';g.fillText(String(v),cx+Math.cos(an)*(r-19*d),cy+Math.sin(an)*(r-19*d))}}
+  const small=r<46*d;if(small)g.font=`600 ${8.5*d}px "Share Tech Mono",monospace`;
+  for(let v=0;v<=100;v+=10){const an=a(v),big=small?v%50===0:v%20===0;g.strokeStyle=v>=80?'#f3bc65':'#9da69d';g.lineWidth=(big?1.6:1)*d;g.beginPath();g.moveTo(cx+Math.cos(an)*(r-(big?9:6)*d),cy+Math.sin(an)*(r-(big?9:6)*d));g.lineTo(cx+Math.cos(an)*r,cy+Math.sin(an)*r);g.stroke();
+    if(big){g.fillStyle=v>=80?'#f3bc65':'#c9d0c4';g.fillText(String(v),cx+Math.cos(an)*(r-(small?12:19)*d),cy+Math.sin(an)*(r-(small?12:19)*d))}}
   const na=a(rdLvl);g.strokeStyle='#e7e9df';g.lineWidth=2*d;g.shadowColor='#a8f08f';g.shadowBlur=6*d;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(na)*(r-4*d),cy+Math.sin(na)*(r-4*d));g.stroke();g.shadowBlur=0;
   g.fillStyle='#2b3328';g.beginPath();g.arc(cx,cy,4.5*d,0,7);g.fill();
   const n=12,bw=W*.8/n,lit=Math.round(rdLvl/100*n);for(let i=0;i<n;i++){const h=(4+i*1.4)*d,x0=W*.1+i*bw,y0=H-2*d-h;g.fillStyle=i<lit?(i>=10?'#f3bc65':'#a8f08f'):'#232a22';g.fillRect(x0,y0,bw*.62,h)}}
@@ -3632,10 +3753,10 @@ function rdSigTick(){if(document.hidden)return;const st=rdPlaying?(rdSt0==='ON A
 function rdSigRun(on){rdSigOn=on;clearInterval(rdSigTm);if(on){rdSigDraw();rdSigTm=setInterval(rdSigTick,110)}}
 // 주파수 맞추기: 다이얼·노브·± 버튼 공통(가장 가까운 저장/목록 방송, 없으면 서울 FM 표로 찾아봄)
 let rdTuneTm=0;
-async function rdTuneTo(f){rdTune=null;let best=null,bd=.6;
+async function rdTuneTo(f){rdTune=null;let best=null,bd=.35;
   for(const st of rdPool()){const sf=rdFreqOf(st);if(sf&&Math.abs(sf-f)<bd){bd=Math.abs(sf-f);best=st}}
-  if(!best){const hit=RD_FREQ.find(([,ff])=>Math.abs(ff-f)<.3);if(hit){rdSay('방송을 찾는 중…');try{const q=hit[0].source.split('|')[0].replace(/\\s\*/g,' ').replace(/[\\()]/g,'');const r=(await rdApi('/json/stations/search?'+new URLSearchParams({name:q,countrycode:'KR',hidebroken:'true',order:'votes',reverse:'true',limit:'5'}))).map(rdNorm).filter(rdOk);if(r[0])best=r[0]}catch(x){}}}
-  if(best)rdPlay(best);else{rdSay('이 주파수에는 방송이 없어요');rdShow()}}
+  if(!best){const k=Object.keys(RD_Q).map(Number).find(ff=>Math.abs(ff-f)<.3);if(k){rdSay('방송을 찾는 중…');try{const r=(await rdApi('/json/stations/search?'+new URLSearchParams({name:RD_Q[k],countrycode:'KR',hidebroken:'true',order:'votes',reverse:'true',limit:'5'}))).map(rdNorm).filter(rdOk);if(r[0]){best=r[0];best.freq=k}}catch(x){}}}
+  if(best)rdPlay(best);else{rdSay('대기');$('#rdStat').textContent='FM '+f.toFixed(1)+' — 이 주파수에는 인터넷 방송이 없어요';rdShow()}}
 function rdNudge(n){const base=rdTune!=null?rdTune:((rdCur&&rdFreqOf(rdCur))||87.5);rdTune=Math.max(87.5,Math.min(108,Math.round((base+n*.1)*10)/10));rdShow();
   clearTimeout(rdTuneTm);rdTuneTm=setTimeout(()=>rdTuneTo(rdTune),750)}
 (function(){const cv=$('#rdScale');let pid=null;const fAt=cx=>{const r=cv.getBoundingClientRect();return Math.max(87.5,Math.min(108,87.5+((cx-r.left)/r.width-.035)/.93*20.5))};
@@ -3651,7 +3772,7 @@ function rdNudge(n){const base=rdTune!=null?rdTune:((rdCur&&rdFreqOf(rdCur))||87
   k.addEventListener('wheel',e=>{e.preventDefault();rdNudge(e.deltaY<0?1:-1)},{passive:false});
   k.addEventListener('keydown',e=>{const s={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];if(s){rdNudge(s);e.preventDefault()}});
   $('#rdUp').onclick=()=>rdNudge(1);$('#rdDn').onclick=()=>rdNudge(-1);$('#rdStby').onclick=()=>{const n=rdNextSt();if(n)rdPlay(n)}})();
-$('#rdList').addEventListener('click',e=>{const li=e.target.closest('li[data-i]');if(!li)return;const st=rdList[+li.dataset.i];
+$('#rdList').addEventListener('click',e=>{const li=e.target.closest('li[data-i],li[data-o]');if(!li)return;const st=li.dataset.o?RD_KR.find(x=>x.id===li.dataset.o):rdList[+li.dataset.i];if(!st)return;
   if(e.target.closest('button')){const k=rdFavs.findIndex(x=>x.id===st.id);if(k>=0)rdFavs.splice(k,1);else rdFavs.push(st);store.set('rdFavs',rdFavs);rdRenderList();rdShow();return}rdPlay(st)});
 $('#rdPlay').onclick=()=>{if(rdPlaying)radioStop();else if(rdCur)rdPlay(rdCur);else if(rdFavs[0])rdPlay(rdFavs[0]);else if(rdList[0])rdPlay(rdList[0])};
 $('#rdPrev').onclick=()=>rdStep(-1);$('#rdNext').onclick=()=>rdStep(1);
@@ -3659,6 +3780,9 @@ $('#rdFav').onclick=()=>{if(!rdCur)return;const k=rdFavs.findIndex(x=>x.id===rdC
 $('#rdVol').value=String(Math.round(rdAudio.volume*100));$('#rdVol').value=String(store.get('rdVol',80));$('#rdVolN').textContent=$('#rdVol').value;$('#rdVol').oninput=e=>{$('#rdVolN').textContent=e.target.value;rdAudio.volume=e.target.value/100;store.set('rdVol',+e.target.value);if(RD_NATIVE)try{NB.radioVolume(e.target.value/100)}catch(x){}};
 $('#rdGo').onclick=()=>rdSearch($('#rdQ').value.trim());$('#rdQ').addEventListener('keydown',e=>{if(e.key==='Enter')rdSearch(e.target.value.trim())});
 $('#rdCountry').onchange=()=>rdSearch($('#rdQ').value.trim());
+function rdFold(tg,box,key,def){const b=$('#'+tg),x=$('#'+box),set=o=>{x.hidden=!o;b.setAttribute('aria-expanded',String(o))};set(store.get(key,def));
+  b.onclick=()=>{const o=x.hidden;set(o);store.set(key,o);if(o&&box==='rdListBox')rdEnsure()}}
+rdFold('rdPresetTg','rdPresetBox','rdPresetOpen',true);rdFold('rdListTg','rdListBox','rdListOpen',!rdFavs.length);
 let rdLoaded=false;function rdEnsure(){rdShow();if(!rdLoaded){rdLoaded=true;rdSearch('')}requestAnimationFrame(rdDraw)}
 function openRadio(){const w=$('#wRadio');w.classList.remove('collapsed');if(skin==='carnival3'){ckFocus('radio')}else w.scrollIntoView({block:'start',behavior:'smooth'});rdEnsure()}
 new IntersectionObserver(es=>{const v=es.some(e=>e.isIntersecting);if(v)rdEnsure();rdSigRun(v)}).observe($('#wRadio'));
@@ -3670,16 +3794,18 @@ rdShow();rdSay('대기'); // 처음부터 프리셋 칸·표시를 그려 두어
 window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,get state(){return {playing:rdPlaying,cur:rdCur,favs:rdFavs.length,list:rdList.length}}};
 
 /* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
-const FX_GROUPS={gps:['wGps'],cam:['wCam'],map:['wMap'],play:['wMain','wVis'],list:['wPl','wEq'],ctl:['wCtl','wAtc'],radio:['wRadio','wEq']};
+// 콕핏 2 바로가기: 모두 한 창씩, 스피드미터와 같은 크기(바꿔도 화면 크기가 그대로)
+const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio']};
 const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
 function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
   if(skin!=='carnival3'||!hostId){ckRailHome.after(r);return}
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
   const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
   h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
-function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&f!=='all';ckRailPlace(skin==='carnival3'?(on?FX_GROUPS[f][0]:'wGps'):null,on&&FX_GROUPS[f].length>1);
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&f!=='all';
   appEl.classList.toggle('FX',on);if(on)document.documentElement.style.setProperty('--fxN',String(FX_GROUPS[f].length));
   document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
+  ckRailPlace(skin==='carnival3'?(on?FX_GROUPS[f][0]:'wGps'):null,on&&FX_GROUPS[f].length>1); // 창이 보인 뒤에 위치를 재야 제목줄 높이가 맞음
   document.querySelectorAll('#ckRail button[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===(on?f:'all')));
   if(skin==='carnival3')store.set('ckFocus',f);
   if(on){const top=appEl.getBoundingClientRect().top+window.scrollY;document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
@@ -3746,7 +3872,7 @@ function pwrApply(){const m=store.get('pwrMode','auto'),low=!!(pwrBat&&!pwrBat.c
 $('#sPwr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('pwrMode',b.dataset.v);pwrApply()};
 $('#sScr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('scrMode',b.dataset.v);pwrApply()};
 pwrRead();setInterval(pwrRead,60e3);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pwrRead()});
-applySizes();setGStyle(gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
+applySizes();setGStyle(isCp()?store.get('gStyleCk','cockpit'):gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
 if(LIB){$('#addDir').hidden=false;$('#plHint').textContent='음악 파일이나 폴더를 고르면 목록이 저장돼서, 앱을 다시 켜도 그대로 남고 마지막 곡과 위치부터 이어서 들을 수 있어요. 폴더로 추가하면 새로 넣은 곡도 다시 추가하기 쉬워요.'}
 const restored=restorePlaylist();
