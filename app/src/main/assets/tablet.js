@@ -34,7 +34,7 @@
   <header class="tk-top sc">
     <div class="tk-brand">DAESINNAM ONE</div>
     <div class="tk-stat" role="status"><span data-s="gps"><i></i>GPS</span><span data-s="audio"><i></i>AUDIO</span><span data-s="bt"><i></i>BT</span><span data-s="wifi"><i></i>WIFI</span></div>
-    <div class="tk-right"><span class="tk-emb" aria-hidden="true"><svg viewBox="0 0 64 28"><path d="M2 14 22 4h20l20 10-20 10H22z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M22 4 32 14 22 24M42 4 32 14l10 10M14 14h36" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="32" cy="14" r="3.2" fill="currentColor"/></svg>COCKPIT / CONCEPT 02</span><span class="tk-time" id="tkTime">--:--<small></small></span><select class="tk-skin" id="tkSkin" aria-label="스킨"></select></div>
+    <div class="tk-right"><span class="tk-emb" aria-hidden="true"><svg viewBox="0 0 64 28"><path d="M2 14 22 4h20l20 10-20 10H22z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M22 4 32 14 22 24M42 4 32 14l10 10M14 14h36" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="32" cy="14" r="3.2" fill="currentColor"/></svg>COCKPIT / CONCEPT 02</span><button class="tk-rev" id="tkRev" aria-label="후진 멜로디" title="후진 멜로디">R</button><span class="tk-time" id="tkTime">--:--<small></small></span><select class="tk-skin" id="tkSkin" aria-label="스킨"></select></div>
   </header>
   <main class="tk-main">
     <nav class="tk-side L" aria-label="지도 조작">
@@ -154,6 +154,8 @@
     if (!src) return;
     sel.innerHTML = src.innerHTML; sel.value = v2 ? 'tablet2' : 'tablet';
   }
+  $('#tkRev').onclick = () => { if (window.AmpRev) window.AmpRev.toggle(); setTimeout(() => $('#tkRev').classList.toggle('on', !!(window.AmpRev && window.AmpRev.on)), 30); };
+  setInterval(() => $('#tkRev').classList.toggle('on', !!(window.AmpRev && window.AmpRev.on)), 1000);
   $('#tkSkin').onchange = e => { const v = e.target.value; if (has('setSkin')) H.setSkin(v); };
 
   /* ---------- 탭: NAV(지도) · AUDIO(재생 목록) · SYSTEM ---------- */

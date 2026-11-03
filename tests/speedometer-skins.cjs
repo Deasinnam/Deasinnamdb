@@ -778,6 +778,13 @@ async function main() {
       await pc2.locator('#ckRail [data-f="gps"]').click();
       await pc2.reload();await pc2.locator('#ckRail').waitFor();
       assert.equal(await pc2.locator('#wEq').isVisible(), false, 'Chosen view remembered');
+      // 후진 멜로디: R 버튼 → 후진 표시 + 연주, 다시 누르면 멈춤
+      await pc2.locator('#revBtn').click();
+      assert.equal(await pc2.evaluate(() => window.AmpRev.on), true, 'Reverse melody on');
+      assert.equal(await pc2.locator('#revFx').isVisible(), true, 'Reverse banner shown');
+      await pc2.locator('#revFx').click();
+      assert.equal(await pc2.evaluate(() => window.AmpRev.on), false, 'Tap the banner to stop');
+      assert.equal(await pc2.locator('#revFx').isVisible(), false);
       // 콕핏 3: 콕핏 2와 같은 기능, 밝은 우주선 조종석 색
       await pc2.locator('#skin').selectOption('carnival4');
       assert.equal(await pc2.evaluate(() => [document.documentElement.dataset.skin, document.documentElement.dataset.ck2, document.documentElement.dataset.ck3].join()), 'carnival2,1,1');

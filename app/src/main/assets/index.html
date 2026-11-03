@@ -1035,7 +1035,15 @@ header.top{padding-top:28px!important}
 .app.FX>#wVis.fx .visbox{min-height:200px}
 /* 설정: 과속 경고 칩 */
 #settings .row.col{flex-direction:column;align-items:stretch;gap:8px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.gsbar{display:none;height:28px;max-width:150px;margin-left:8px;padding:0 6px;font-size:13px}:root[data-skin="carnival2"] .gsbar{display:inline-block}.camcompat{margin:2px 0 0;font-size:12px;line-height:1.5;color:var(--muted,#9da69d)}.camcompat b{margin-right:6px;color:var(--ck-white,#e7e9df)}.permbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pwr-now{display:block;margin-top:6px;font-size:12px;color:#9da69d}.chips .pill{min-width:64px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.rev-btn b{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:4px;border-radius:4px;background:#ff5b4b;color:#fff;font-size:13px}
+:root:not([data-car]) .rev-btn{display:none}.rev-btn.on{color:#fff!important;background:linear-gradient(180deg,#e0472b,#9a2a14)!important;box-shadow:0 0 14px #ff5b4b88!important}
+#revFx{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);z-index:100001;transform:translateX(-50%);display:flex;align-items:center;gap:16px;padding:12px 26px 12px 14px;border:2px solid #000;border-radius:12px;cursor:pointer;
+  background:linear-gradient(#1a0d0bee,#1a0d0bee) padding-box,repeating-linear-gradient(-45deg,#f3c623 0 10px,#151515 10px 20px) border-box;border-color:transparent;border-width:6px;color:#fff;font:700 22px "Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.08em;box-shadow:0 8px 24px #000c;animation:revPulse 1s ease-in-out infinite}
+#revFx[hidden]{display:none}
+#revFx i{display:grid;place-items:center;width:52px;height:52px;border-radius:10px;background:#ff3b30;font:800 34px "Barlow Condensed",sans-serif;font-style:normal;box-shadow:0 0 18px #ff3b30aa}
+#revFx small{display:block;font:500 13px "Noto Sans KR",sans-serif;letter-spacing:0;color:#f3c623}
+@keyframes revPulse{50%{box-shadow:0 8px 24px #000c,0 0 0 6px #ff3b3044}}.gsbar{display:none;height:28px;max-width:150px;margin-left:8px;padding:0 6px;font-size:13px}:root[data-skin="carnival2"] .gsbar{display:inline-block}.camcompat{margin:2px 0 0;font-size:12px;line-height:1.5;color:var(--muted,#9da69d)}.camcompat b{margin-right:6px;color:var(--ck-white,#e7e9df)}.permbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pwr-now{display:block;margin-top:6px;font-size:12px;color:#9da69d}.chips .pill{min-width:64px}
 /* 시계 옆 오늘의 날씨 */
 .clock .ck-wx{cursor:pointer}
 :root[data-clock="analog"][data-skin="carnival2"] .clock .ck-wx i,:root[data-clock="analog"][data-skin="tablet"] .clock .ck-wx i{display:none}
@@ -1352,7 +1360,7 @@ html.driving body{overflow:hidden}
     </select></label>
     <button class="pill" id="driveBtn" title="운전 중 큰 버튼 화면">간편 모드</button>
     <button class="pill" id="setBtn" aria-label="설정"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-4px;fill:currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.4 2.7h4l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg> 설정</button>
-    <button class="pill" id="radioBtn" title="인터넷 라디오">📻 라디오</button>
+    <button class="pill" id="radioBtn" title="인터넷 라디오">📻 라디오</button><button class="pill rev-btn" id="revBtn" title="후진 멜로디 켜기/끄기" aria-pressed="false"><b>R</b> 후진</button>
     <button class="pill on" id="addTop">+ 음악 추가</button>
   </div>
 </header>
@@ -1715,6 +1723,12 @@ html.driving body{overflow:hidden}
       <label class="row"><span><b>관제탑 소리</b><small>이륙 허가·착륙·경고 음성과 무전 효과음을 켜거나 꺼요.</small></span><input type="checkbox" id="sAtcSound" class="sw" checked></label>
       <div class="row col"><span><b>과속 경고 속도</b><small>고른 속도를 넘으면 관제탑이 "슬로우 다운"이라고 말하고 속도계가 빨갛게 세 번 깜빡여요. (5km/h 아래로 내려가면 다시 경고)</small></span>
         <div class="chips" id="sSpdMarks"></div></div>
+    </section>
+    <section id="secRev">
+      <h3>후진 멜로디</h3>
+      <label class="row"><span><b>후진할 때 "엘리제를 위하여" 연주</b><small>상단 [R 후진] 버튼(태블릿 화면은 오른쪽 위 R)을 누르면 후진 표시와 함께 멜로디가 반복돼요. 다시 누르거나, 앞으로 시속 15km 넘게 달리거나, 1분이 지나면 꺼져요.</small></span><input type="checkbox" id="sRevOn" class="sw" checked></label>
+      <label class="row"><span><b>자동 감지 (실험)</b><small>휴대폰을 차 앞쪽을 보게 거치했을 때, GPS 진행 방향이 휴대폰 방향과 반대이면 후진으로 보고 자동으로 켜요. 휴대폰은 차의 기어(R)를 직접 알 수 없어서 거치 방향·나침반 상태에 따라 틀릴 수 있어요.</small></span><input type="checkbox" id="sRevAuto" class="sw"></label>
+      <div class="row col"><span><b>멜로디 소리 크기</b></span><div class="chips" id="sRevVol"><button type="button" class="pill" data-v="0.25">작게</button><button type="button" class="pill" data-v="0.5">보통</button><button type="button" class="pill" data-v="0.85">크게</button><button type="button" class="pill" id="sRevTest">들어 보기</button></div></div>
     </section>
     <section id="secPwr">
       <h3>배터리</h3>
@@ -2759,6 +2773,7 @@ function pollGps(){
     hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
   if(typeof att!=='undefined'&&att.on&&att.hdg>=0)hdgNow=att.hdg;
+  try{if(s.fix)revAutoTick(s,spdNow/3.6)}catch(e){}
   gpsUi();mapUpdate(false);driveAutoTick();
 }
 function gpsUi(){
@@ -3513,6 +3528,35 @@ function sndTakeoff(){if(!atcOn())return;const a=fx();if(!a)return;const t=a.cur
   const w=a.createOscillator();w.type='sawtooth';w.frequency.setValueAtTime(160,s);w.frequency.exponentialRampToValueAtTime(2100,s+4.2);const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=6;bp.frequency.setValueAtTime(320,s);bp.frequency.exponentialRampToValueAtTime(4200,s+4.2);
   const gw=a.createGain();gw.gain.setValueAtTime(.0001,s);gw.gain.exponentialRampToValueAtTime(.05,s+3.4);gw.gain.exponentialRampToValueAtTime(.0001,s+L);w.connect(bp).connect(gw).connect(a.destination);w.start(s);w.stop(s+L)}
 function atcOn(){return store.get('atcSound',true)!==false}
+/* ---------- 후진 멜로디: "엘리제를 위하여"(베토벤, 저작권 만료 곡)를 앱이 직접 연주 ---------- */
+const REV_SONG=(()=>{const N={C4:261.63,E4:329.63,'G#4':415.3,A4:440,B4:493.88,C5:523.25,D5:587.33,'D#5':622.25,E5:659.25};
+  const a=[['E5',1],['D#5',1],['E5',1],['D#5',1],['E5',1],['B4',1],['D5',1],['C5',1],['A4',2],[0,1],['C4',1],['E4',1],['A4',1],['B4',2],[0,1],['E4',1],['G#4',1],['B4',1],['C5',2],[0,1],['E4',1]];
+  const b=[['E5',1],['D#5',1],['E5',1],['D#5',1],['E5',1],['B4',1],['D5',1],['C5',1],['A4',2],[0,1],['C4',1],['E4',1],['A4',1],['B4',2],[0,1],['E4',1],['C5',1],['B4',1],['A4',3],[0,4]];
+  return [...a,...b].map(([n,d])=>[n?N[n]:0,d])})();
+const rev={on:false,t0:0,tm:0,src:'',autoT:0,offT:0};
+let revNodes=[];
+function revVol(){return +store.get('revVol',0.5)||0.5}
+function revPlayOnce(){const a=fx();if(!a)return 0;const U=.17,v=revVol();let t=a.currentTime+.05;const out=a.createGain();out.gain.value=v;out.connect(a.destination);revNodes.push(out);
+  for(const [f,d] of REV_SONG){if(f){for(const [mul,type,g] of [[1,'triangle',.55],[2,'sine',.18],[3,'sine',.06]]){const o=a.createOscillator(),e=a.createGain();o.type=type;o.frequency.value=f*mul;
+        e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(g,t+.012);e.gain.exponentialRampToValueAtTime(.0008,t+Math.max(.32,d*U*1.6));o.connect(e);e.connect(out);o.start(t);o.stop(t+Math.max(.36,d*U*1.7))}}
+    t+=d*U}
+  return (t-a.currentTime)*1000}
+function revLoop(){if(!rev.on)return;const ms=revPlayOnce();rev.tm=setTimeout(revLoop,Math.max(1200,ms+600))}
+function revSet(on,src){on=!!on;if(on&&store.get('revOn',true)===false)return;if(on===rev.on)return;rev.on=on;rev.src=src||'';clearTimeout(rev.tm);
+  let el=document.getElementById('revFx');if(!el){el=document.createElement('div');el.id='revFx';el.setAttribute('role','alert');el.innerHTML='<i>R</i><div>후진 중<small>누르면 멈춰요</small></div>';el.onclick=()=>revSet(false);document.body.appendChild(el)}
+  el.hidden=!on;$('#revBtn').classList.toggle('on',on);$('#revBtn').setAttribute('aria-pressed',String(on));
+  if(on){rev.t0=Date.now();revLoop();{const ci=document.getElementById('camImg');if(isCk2()&&ci&&!ci.hidden)ckFocus('cam')}} // 블랙박스 화면이 켜져 있으면 그 화면으로
+  else{for(const n of revNodes){try{n.gain.cancelScheduledValues(0);n.gain.setValueAtTime(0,fx().currentTime);n.disconnect()}catch(e){}}revNodes=[]}}
+// 앞으로 시속 15km 넘게 달리거나 1분이 지나면 자동으로 끔
+setInterval(()=>{if(!rev.on)return;if(Date.now()-rev.t0>60000||(spdNow>15&&rev.src!=='test'))revSet(false)},1000);
+// 자동 감지(실험): GPS 진행 방향과 휴대폰(차 앞) 방향이 반대 → 후진
+function revAutoTick(s,v){if(!store.get('revAuto',false)||!store.get('revOn',true))return;const kmh=v*3.6,now=Date.now();
+  const dev=(typeof att!=='undefined'&&att.on&&att.hdg>=0)?att.hdg:(s.azimuth>=0?s.azimuth:-1);
+  if(!(s.fix&&s.bearing>=0&&dev>=0&&kmh>=1.5&&kmh<=15)){rev.autoT=0;if(rev.on&&rev.src==='auto'&&(kmh>15||kmh<.5)){if(!rev.offT)rev.offT=now;if(now-rev.offT>2500)revSet(false)}return}
+  const diff=Math.abs(((s.bearing-dev)%360+540)%360-180);
+  if(diff>140){rev.offT=0;if(!rev.autoT)rev.autoT=now;if(!rev.on&&now-rev.autoT>2500)revSet(true,'auto')}
+  else{rev.autoT=0;if(rev.on&&rev.src==='auto'&&diff<60){if(!rev.offT)rev.offT=now;if(now-rev.offT>2000)revSet(false)}}}
+window.AmpRev={toggle(){revSet(!rev.on,'button')},set:revSet,get on(){return rev.on}};
 // 관제탑 무전: 앱에서는 TTS를 파일로 받아 무전기 소리(300~3000Hz 대역, 찌그러짐, 잡음, 스퀠치)로 재생
 const ttsWait={};let radioSrc=null;
 window.__ttsFile=(id,ok)=>{const f=ttsWait[id];if(f){delete ttsWait[id];f(!!ok)}};
@@ -3973,6 +4017,11 @@ function pwrApply(){const m=store.get('pwrMode','auto'),low=!!(pwrBat&&!pwrBat.c
   try{NB&&NB.setScreenOnPlay&&NB.setScreenOnPlay(on)}catch(e){}}
 $('#sPwr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('pwrMode',b.dataset.v);pwrApply()};
 $('#sScr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('scrMode',b.dataset.v);pwrApply()};
+$('#revBtn').onclick=()=>window.AmpRev.toggle();
+$('#sRevOn').checked=store.get('revOn',true)!==false;$('#sRevOn').onchange=e=>{store.set('revOn',e.target.checked);if(!e.target.checked)revSet(false)};
+$('#sRevAuto').checked=!!store.get('revAuto',false);$('#sRevAuto').onchange=e=>{store.set('revAuto',e.target.checked);if(e.target.checked){try{attWant(true)}catch(x){}toast('자동 감지를 켰어요. 휴대폰이 차 앞쪽을 보게 거치돼 있어야 해요.')}};
+function revVolUi(){const v=revVol();document.querySelectorAll('#sRevVol button[data-v]').forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.v-v)<.01))}revVolUi();
+$('#sRevVol').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='sRevTest'){if(rev.on)revSet(false);else revSet(true,'test');return}store.set('revVol',+b.dataset.v);revVolUi()};
 pwrRead();setInterval(pwrRead,60e3);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pwrRead()});
 applySizes();setGStyle(isCp()?store.get('gStyleCk','cockpit'):gStyle);setSkin(skin);mapApply();layout();gpsUi();flags();syncOn();syncVis();renderList();setMode(mode);requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{readSkin();drawCurve()});
