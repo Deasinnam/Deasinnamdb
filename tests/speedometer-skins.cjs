@@ -754,6 +754,20 @@ async function main() {
         sizes.push(await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]}, ids[0]));
       }
       for (const z of sizes) assert.deepEqual(z, sizes[0], 'Every rail view has the same size as the speedometer view');
+      // 높이 조절: 제목줄 ↕ 버튼을 눌렀을 때만, 모든 보기에 같이 적용
+      await pc2.locator('#ckRail [data-f="gps"]').click();
+      assert.equal(await pc2.locator('#wGps > .grip').isVisible(), false, 'No resize handle until the ↕ button is pressed');
+      const fh0 = await pc2.locator('#wGps').evaluate(el => el.getBoundingClientRect().height);
+      await pc2.locator('#wGps > .bar .rzbtn').click();
+      await pc2.locator('#wGps .rzsteps [data-d="-80"]').click();
+      const fh1 = await pc2.locator('#wGps').evaluate(el => el.getBoundingClientRect().height);
+      assert.ok(Math.abs(fh1 - (fh0 - 80)) < 3, `Focus view shrinks by one step (${fh0} -> ${fh1})`);
+      await pc2.locator('#ckRail [data-f="radio"]').click();
+      assert.ok(Math.abs(await pc2.locator('#wRadio').evaluate(el => el.getBoundingClientRect().height) - fh1) < 3, 'Same height in every rail view');
+      await pc2.locator('#wRadio > .bar .rzbtn').click();
+      await pc2.locator('#wRadio .rzsteps [data-d="0"]').click();
+      assert.ok(Math.abs(await pc2.locator('#wRadio').evaluate(el => el.getBoundingClientRect().height) - fh0) < 3, 'Back to full screen height');
+      await pc2.locator('#wRadio > .bar .rzbtn').click();
       await pc2.locator('#ckRail [data-f="map"]').click();
       assert.equal(await pc2.locator('#mapZoomIn').isVisible(), true, 'Map zoom-in button'); assert.equal(await pc2.locator('#mapZoomOut').isVisible(), true);
       await pc2.locator('#ckRail [data-f="all"]').click();
