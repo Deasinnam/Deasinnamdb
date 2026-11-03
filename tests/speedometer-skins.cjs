@@ -113,7 +113,7 @@ async function main() {
     assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
     assert.equal(await page.locator('.brand .logo-img').count(), 0, 'No third-party car-maker logo in the app');
     assert.equal(await page.evaluate(() => /카니발|KIA|Carnival/i.test(document.body.innerText + [...document.querySelectorAll('#skin option')].map(o=>o.textContent).join(''))), false, 'No Kia/Carnival names on screen');
-    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 2']);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 2','대신남 자동차 모드 · 콕핏 3']);
     // 설정 → 오픈소스 라이선스
     await page.locator('#setBtn').click();
     assert.match(await page.locator('#secOss').textContent(), /Apache License 2\.0[\s\S]*Leaflet[\s\S]*jsmediatags[\s\S]*OpenStreetMap contributors/);
@@ -778,6 +778,14 @@ async function main() {
       await pc2.locator('#ckRail [data-f="gps"]').click();
       await pc2.reload();await pc2.locator('#ckRail').waitFor();
       assert.equal(await pc2.locator('#wEq').isVisible(), false, 'Chosen view remembered');
+      // 콕핏 3: 콕핏 2와 같은 기능, 밝은 우주선 조종석 색
+      await pc2.locator('#skin').selectOption('carnival4');
+      assert.equal(await pc2.evaluate(() => [document.documentElement.dataset.skin, document.documentElement.dataset.ck2, document.documentElement.dataset.ck3].join()), 'carnival2,1,1');
+      assert.equal(await pc2.locator('#ckRail').isVisible(), true, 'Cockpit 3 has the side rail');
+      await pc2.locator('#ckRail [data-f="radio"]').click();
+      assert.deepEqual(await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id)), ['wRadio'], 'Cockpit 3 rail focuses one window');
+      assert.equal(await pc2.evaluate(() => getComputedStyle(document.getElementById('wRadio')).getPropertyValue('--rg').trim()), '#ffb14d', 'Cockpit 3 colours');
+      await pc2.locator('#ckRail [data-f="all"]').click();
       await pc2.locator('#skin').selectOption('carnival2');
       assert.equal(await pc2.locator('#ckRail').isVisible(), false, 'Rail only in cockpit 2');
       assert.equal(await pc2.locator('#wEq').isVisible(), true, 'Cockpit 1 shows all windows');

@@ -1248,6 +1248,75 @@ html.driving body{overflow:hidden}
 #hud.over b{color:#ff3b30;text-shadow:0 0 34px #ff3b30}
 #hud .hudbtn{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));display:flex;gap:8px;opacity:.55}
 @media (prefers-reduced-motion:reduce){.marquee span{animation:none;padding-left:0}}
+
+/* ===== 대신남 자동차 모드 · 콕핏 3: 우주 전투기 조종석 느낌(콕핏 2와 기능 같음, 더 밝은 건메탈 + 주황·하늘색 표시) ===== */
+:root[data-ck3]{
+  --bg:#141b24; --bg-glow:#2c3a4c; --panel:#4a545f; --panel-2:#56616d; --edge:#0b0f14; --frame-hi:#ffffff26; --frame-in:#8b96a2;
+  --bar-a:#5a6571; --bar-b:#46505b; --bar-text:#f4f6f8; --groove:#ff9f43;
+  --metal-a:#6d7884; --metal-b:#56616d; --metal-c:#2e353d; --metal-d:#46505b; --metal-ink:#f4f6f8;
+  --hot-a:#ffe0b8; --hot-b:#ffb14d; --hot-c:#b8601c; --hot-ink:#1a0f05;
+  --lcd:#07101a; --lcd-edge:#2a3b4d; --lcd-text:#ffb14d; --lcd-text-2:#7fd8ff; --lcd-dim:#5a4630; --lcd-fg:#eef3f7; --lcd-glow:#ffb14d88;
+  --led1:#8a3f12; --led2:#e0741f; --led3:#ffb14d; --led4:#ffe6c4; --peak:#ff4d3d; --led-off:#ffffff10; --grid:#16283a;
+  --text:#f4f6f8; --muted:#c3cbd3; --accent:#ff9f43; --track:#1a0f05;
+  --copper:#ff9f43; --copper-hi:#ffe0b8; --gv-c:#ffb14d;
+  --ck-green:#ffb14d; --ck-cyan:#7fd8ff; --ck-mag:#ff7a3d; --ck-amber:#ff7a3d; --ck-yel:#ffcf4d; --ck-white:#f4f6f8;
+}
+/* 밝은 우주: 성운 + 별 두 겹 */
+:root[data-ck3] body{background:
+  radial-gradient(1.2px 1.2px at 12% 18%,#ffffffd0 50%,transparent 51%) 0 0/230px 230px,
+  radial-gradient(1px 1px at 63% 72%,#ffffffa0 50%,transparent 51%) 0 0/230px 230px,
+  radial-gradient(1.4px 1.4px at 38% 44%,#cfe8ffd0 50%,transparent 51%) 0 0/340px 340px,
+  radial-gradient(1px 1px at 82% 9%,#ffe6c4b0 50%,transparent 51%) 0 0/340px 340px,
+  radial-gradient(60% 45% at 85% -5%,#3f6aa688 0%,transparent 70%),
+  radial-gradient(45% 35% at 5% 8%,#a4522c55 0%,transparent 70%),
+  radial-gradient(70% 50% at 50% 110%,#26456e66 0%,transparent 70%),
+  linear-gradient(180deg,#1d2836,#121821 60%,#0f141c);background-attachment:fixed}
+/* 건메탈 판넬: 패널 이음선 + 나사 */
+:root[data-ck3] .win{border:1px solid #0b0f14;
+  background:
+    radial-gradient(circle at 50% 50%,#eef1f4 0 1.6px,#7d8792 2.2px 3.4px,#1b2128 3.8px 4.4px,transparent 4.8px) 4px 5px/12px 12px no-repeat,
+    radial-gradient(circle at 50% 50%,#eef1f4 0 1.6px,#7d8792 2.2px 3.4px,#1b2128 3.8px 4.4px,transparent 4.8px) calc(100% - 4px) 5px/12px 12px no-repeat,
+    radial-gradient(circle at 50% 50%,#eef1f4 0 1.6px,#7d8792 2.2px 3.4px,#1b2128 3.8px 4.4px,transparent 4.8px) 4px calc(100% - 4px)/12px 12px no-repeat,
+    radial-gradient(circle at 50% 50%,#eef1f4 0 1.6px,#7d8792 2.2px 3.4px,#1b2128 3.8px 4.4px,transparent 4.8px) calc(100% - 4px) calc(100% - 4px)/12px 12px no-repeat,
+    linear-gradient(180deg,#646f7b,#4e5863 45%,#3b444e);
+  box-shadow:inset 0 1px 0 #ffffff3a,inset 0 0 0 1px #00000070,0 0 0 1px #8b96a2,0 12px 28px #0009}
+/* 제목줄: 왼쪽에 주황·흰 표식 띠 */
+:root[data-ck3] .bar{padding-left:34px;border-bottom:2px solid #00000066;box-shadow:0 1px 0 #ffffff26;
+  background:repeating-linear-gradient(-45deg,#ff9f43 0 5px,#f4f6f8 5px 10px) 16px center/12px 16px no-repeat}
+:root[data-ck3] .bar .t{color:#ffffff;text-shadow:0 1px 0 #0008}
+:root[data-ck3] .bar .s{color:var(--ck-cyan)}
+:root[data-ck3] .groove{background:linear-gradient(90deg,#ff9f43aa,#ffffff22 40%,transparent)}
+:root[data-ck3] .wbtn{background:linear-gradient(180deg,#8a95a1,#56616d);box-shadow:inset 0 1px 0 #ffffff4a}
+/* 디스플레이 유리: 짙은 남색 + 하늘색 테 */
+:root[data-ck3] .lcd,:root[data-ck3] .visbox,:root[data-ck3] .eqgrid,:root[data-ck3] .pl,:root[data-ck3] .now,:root[data-ck3] #curve{
+  background:radial-gradient(120% 90% at 30% 0%,#0f1f30 0%,#07101a 60%);
+  box-shadow:inset 0 0 0 1px #2a3b4d,inset 0 10px 24px #000,0 0 0 3px #1b2632,0 0 0 4px #7fd8ff55}
+:root[data-ck3] .time{color:#ffb14d;text-shadow:0 0 12px #ffb14d77}
+:root[data-ck3] .marquee{color:#7fd8ff}
+/* 버튼: 밝은 금속 + 주황 표시등 */
+:root[data-ck3] .tog,:root[data-ck3] .pill,:root[data-ck3] .seg button{color:#f4f6f8;background:linear-gradient(180deg,#7a8591,#4e5863);box-shadow:inset 0 1px 0 #ffffff40,inset 0 -3px 0 #2a3038}
+:root[data-ck3] .tog.on,:root[data-ck3] .pill.on,:root[data-ck3] .seg button.on{color:#ffcf8a;text-shadow:0 0 8px #ff9f4399;background:linear-gradient(180deg,#4e5863,#2e353d);box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -3px 0 #ff9f43,0 0 12px #ff9f4333}
+:root[data-ck3] .tb{background:linear-gradient(180deg,#7a8591,#4e5863 50%,#3b444e);box-shadow:inset 0 1px 0 #ffffff40,inset 0 -2px 0 #0008,0 0 0 2px #232a32,0 3px 6px #0009}
+:root[data-ck3] .tb.hot{box-shadow:inset 0 1px 0 #ffffff40,inset 0 -4px 0 #ff9f43,0 0 0 2px #232a32,0 0 14px #ff9f4355}
+:root[data-ck3] .tb.hot svg{fill:#ffb14d;filter:drop-shadow(0 0 5px #ff9f43)}
+:root[data-ck3] .sel{background:#0b1623;color:#7fd8ff;border-color:#8b96a2}
+:root[data-ck3] .vmode button.on{color:#7fd8ff;box-shadow:inset 0 -2px 0 #7fd8ff}
+/* 측면 버튼: 밝은 판, 고른 버튼은 주황 불 */
+:root[data-ck3] .ckrail button{color:#eef2f5;background:linear-gradient(180deg,#7a8591,#4e5863);box-shadow:inset 0 1px 0 #ffffff40,inset 0 -3px 0 #2a3038}
+:root[data-ck3] .ckrail button.on{color:#ffcf8a;background:linear-gradient(180deg,#4e5863,#2e353d);box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -3px 0 #ff9f43,0 0 12px #ff9f4344}
+:root[data-ck3] .ckrail.inapp,:root[data-ck3] .win.hasrail>.ckrail{background:linear-gradient(180deg,#3b444e,#2a3038);box-shadow:inset 0 0 0 1px #8b96a255}
+/* 라디오: 주황 숫자 + 하늘색 대기 주파수 */
+:root[data-ck3] #wRadio{--rg:#ffb14d;--ra:#7fd8ff;--rdot:#4f86a8;--rbg:#1a1206;--rl:#2a3b4d}
+:root[data-ck3] .rd-panel{background:linear-gradient(180deg,#2e353d,#1b2128);box-shadow:inset 0 1px 0 #ffffff26,0 2px 10px #0008}
+:root[data-ck3] .rd-disp{background:radial-gradient(120% 90% at 50% 40%,#1a1408,#07090c 70%)}
+:root[data-ck3] .rd-seg .g{fill:#ffb14d12}
+:root[data-ck3] .rd-key{background:linear-gradient(180deg,#6d7884,#46505b);box-shadow:inset 0 1px 0 #ffffff3a,inset 0 -3px 0 #232a32,0 2px 6px #0007}
+:root[data-ck3] .rd-key.hot{color:#ffcf8a;background:linear-gradient(180deg,#4e5863,#2e353d);box-shadow:inset 0 0 0 1px #ff9f4388,inset 0 -3px 0 #ff9f43,0 0 12px #ff9f4333}
+:root[data-ck3] .rd-sq{background:linear-gradient(180deg,#6d7884,#46505b)}
+:root[data-ck3] .rd-presets button{background:linear-gradient(180deg,#56616d,#3b444e)}
+:root[data-ck3] .rd-presets button.on{background:linear-gradient(180deg,#3b2a14,#1f160a);box-shadow:inset 0 0 0 1px #ff9f43,0 0 12px #ff9f4333}
+:root[data-ck3] .rd-sec b{color:#ffffff}
+:root[data-ck3] .rd-mhz{color:#ffcf8a}:root[data-ck3] .rd-hint,:root[data-ck3] .rd-drag{color:#aab4be}:root[data-ck3] .rd-sec span{color:#c3cbd3}
 </style>
 <!-- 대신남 PFD 패키지: pfd/ 폴더는 받은 파일을 그대로 덮어씁니다. 앱 쪽 연결·수정은 pfd-amp.* -->
 <link rel="stylesheet" href="pfd/pfd.css">
@@ -2058,8 +2127,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드']];
-const CAR_SKINS=['carnival','carnival2','carnival3','drive','tablet'];const isCp=()=>skin==='carnival2'||skin==='carnival3';const isCk=()=>isCp()||skin==='tablet';const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['carnival4','대신남 자동차 모드 · 콕핏 3'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드']];
+const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','drive','tablet'];const isCk2=()=>skin==='carnival3'||skin==='carnival4';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||skin==='tablet';const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -2072,9 +2141,9 @@ let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
 function setSkin(k){setSkin0(k);try{pwrApply()}catch(e){}}
-function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=k==='carnival3'?'carnival2':k;if(k==='carnival3')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus(k==='carnival3'?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4')?'carnival2':k;if(k==='carnival3'||k==='carnival4')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus(k==='carnival3'?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
-$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3')&&typeof setGStyle==='function')setGStyle('cockpit')};
+$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4')&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
 function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',isCp());if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
@@ -3749,31 +3818,32 @@ rdAudio.addEventListener('waiting',()=>rdPlaying&&rdSay('버퍼링…'));rdAudio
 function rdPool(){const seen=new Set(),out=[];for(const s of [...rdFavs,...RD_KR,...rdList])if(!seen.has(s.id)){seen.add(s.id);out.push(s)}return out}
 function rdStep(d){const pool=rdFavs.length?rdFavs:rdList;if(!pool.length)return;let i=pool.findIndex(s=>rdCur&&s.id===rdCur.id);i=(i+d+pool.length)%pool.length;rdPlay(pool[i])}
 // FM 다이얼: 87.5~108MHz, 저장·목록의 방송 표시, 끌어서 맞추면 가장 가까운 방송으로
-function rdDraw(){const cv=$('#rdScale');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
+const rdCols=()=>{const cs=getComputedStyle($('#wRadio')),v=(n,d)=>cs.getPropertyValue(n).trim()||d;return {g:v('--rg','#a8f08f'),a:v('--ra','#f3bc65'),bg:v('--rbg','#0d1a0b'),d:v('--rdot','#5f8f55')}};
+function rdDraw(){const RC=rdCols();const cv=$('#rdScale');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
   const x=f=>W*.035+(f-87.5)/(108-87.5)*W*.93;g.clearRect(0,0,W,H);
   g.strokeStyle='#3b4439';g.lineWidth=d;g.beginPath();g.moveTo(x(87.5),H*.62);g.lineTo(x(108),H*.62);g.stroke();
   g.textAlign='center';g.font=`600 ${11*d}px "Share Tech Mono",monospace`;g.fillStyle='#c9d0c4';
   for(let k=0;k<=102;k++){const f=87.6+k*.2;const big=Math.abs(f-Math.round(f/2)*2)<.01,mid=!big&&Math.abs(f-Math.round(f))<.01;
     g.strokeStyle=big?'#c9d0c4':mid?'#7d877a':'#454e43';g.lineWidth=(big?1.5:1)*d;g.beginPath();g.moveTo(x(f),H*.62);g.lineTo(x(f),H*(big?.32:mid?.42:.5));g.stroke();
     if(big)g.fillText(String(Math.round(f)),x(f),H*.93)}
-  for(const st of rdPool()){const f=rdFreqOf(st);if(!f)continue;const fav=rdFavs.some(s=>s.id===st.id);g.fillStyle=fav?'#f3bc65':'#5f8f55';g.beginPath();g.arc(x(f),H*.72,(fav?3.2:2.4)*d,0,7);g.fill()}
-  const cf=rdTune!=null?rdTune:(rdCur&&rdFreqOf(rdCur));if(cf){const cx=x(cf);g.strokeStyle='#a8f08f';g.fillStyle='#a8f08f';g.lineWidth=2.2*d;g.shadowColor='#a8f08f';g.shadowBlur=8*d;
+  for(const st of rdPool()){const f=rdFreqOf(st);if(!f)continue;const fav=rdFavs.some(s=>s.id===st.id);g.fillStyle=fav?RC.a:RC.d;g.beginPath();g.arc(x(f),H*.72,(fav?3.2:2.4)*d,0,7);g.fill()}
+  const cf=rdTune!=null?rdTune:(rdCur&&rdFreqOf(rdCur));if(cf){const cx=x(cf);g.strokeStyle=RC.g;g.fillStyle=RC.g;g.lineWidth=2.2*d;g.shadowColor=RC.g;g.shadowBlur=8*d;
     g.beginPath();g.moveTo(cx,H*.27);g.lineTo(cx,H*.68);g.stroke();g.shadowBlur=0;
     g.font=`700 ${12*d}px "Share Tech Mono",monospace`;const lb=cf.toFixed(1),tw=g.measureText(lb).width+8*d,bx=Math.max(1,Math.min(W-tw-1,cx-tw/2));
-    g.fillStyle='#0d1a0b';g.fillRect(bx,1,tw,H*.22);g.strokeRect(bx,1,tw,H*.22);g.fillStyle='#a8f08f';g.textBaseline='middle';g.fillText(lb,bx+tw/2,1+H*.11);g.textBaseline='alphabetic'}}
+    g.fillStyle=RC.bg;g.fillRect(bx,1,tw,H*.22);g.strokeRect(bx,1,tw,H*.22);g.fillStyle=RC.g;g.textBaseline='middle';g.fillText(lb,bx+tw/2,1+H*.11);g.textBaseline='alphabetic'}}
 // 신호 세기 계기(바늘 + 막대) — 재생 상태를 보여 주는 표시
 let rdLvl=0,rdLvlT=0,rdSigOn=false,rdSigTm=0;
 function rdLamps(){const on=rdPlaying&&rdSt0==='ON AIR';$('#rdStereo').classList.toggle('on',on);$('#rdRds').classList.toggle('on',on&&!!rdCur)}
-function rdSigDraw(){const cv=$('#rdSig');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
+function rdSigDraw(){const RC=rdCols();const cv=$('#rdSig');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
   const cx=W/2,cy=H*.6,r=Math.min(W*.42,H*.5),a=v=>Math.PI*(1+v/100);g.lineCap='butt';
-  g.lineWidth=3*d;g.strokeStyle='#4d5a49';g.beginPath();g.arc(cx,cy,r,a(0),a(80));g.stroke();g.strokeStyle='#f3bc65';g.beginPath();g.arc(cx,cy,r,a(80),a(100));g.stroke();
+  g.lineWidth=3*d;g.strokeStyle='#4d5a49';g.beginPath();g.arc(cx,cy,r,a(0),a(80));g.stroke();g.strokeStyle=RC.a;g.beginPath();g.arc(cx,cy,r,a(80),a(100));g.stroke();
   g.textAlign='center';g.textBaseline='middle';g.font=`600 ${9.5*d}px "Share Tech Mono",monospace`;
   const small=r<46*d;if(small)g.font=`600 ${8.5*d}px "Share Tech Mono",monospace`;
-  for(let v=0;v<=100;v+=10){const an=a(v),big=small?v%50===0:v%20===0;g.strokeStyle=v>=80?'#f3bc65':'#9da69d';g.lineWidth=(big?1.6:1)*d;g.beginPath();g.moveTo(cx+Math.cos(an)*(r-(big?9:6)*d),cy+Math.sin(an)*(r-(big?9:6)*d));g.lineTo(cx+Math.cos(an)*r,cy+Math.sin(an)*r);g.stroke();
-    if(big){g.fillStyle=v>=80?'#f3bc65':'#c9d0c4';g.fillText(String(v),cx+Math.cos(an)*(r-(small?12:19)*d),cy+Math.sin(an)*(r-(small?12:19)*d))}}
-  const na=a(rdLvl);g.strokeStyle='#e7e9df';g.lineWidth=2*d;g.shadowColor='#a8f08f';g.shadowBlur=6*d;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(na)*(r-4*d),cy+Math.sin(na)*(r-4*d));g.stroke();g.shadowBlur=0;
+  for(let v=0;v<=100;v+=10){const an=a(v),big=small?v%50===0:v%20===0;g.strokeStyle=v>=80?RC.a:'#9da69d';g.lineWidth=(big?1.6:1)*d;g.beginPath();g.moveTo(cx+Math.cos(an)*(r-(big?9:6)*d),cy+Math.sin(an)*(r-(big?9:6)*d));g.lineTo(cx+Math.cos(an)*r,cy+Math.sin(an)*r);g.stroke();
+    if(big){g.fillStyle=v>=80?RC.a:'#c9d0c4';g.fillText(String(v),cx+Math.cos(an)*(r-(small?12:19)*d),cy+Math.sin(an)*(r-(small?12:19)*d))}}
+  const na=a(rdLvl);g.strokeStyle='#e7e9df';g.lineWidth=2*d;g.shadowColor=RC.g;g.shadowBlur=6*d;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(na)*(r-4*d),cy+Math.sin(na)*(r-4*d));g.stroke();g.shadowBlur=0;
   g.fillStyle='#2b3328';g.beginPath();g.arc(cx,cy,4.5*d,0,7);g.fill();
-  const n=12,bw=W*.8/n,lit=Math.round(rdLvl/100*n);for(let i=0;i<n;i++){const h=(4+i*1.4)*d,x0=W*.1+i*bw,y0=H-2*d-h;g.fillStyle=i<lit?(i>=10?'#f3bc65':'#a8f08f'):'#232a22';g.fillRect(x0,y0,bw*.62,h)}}
+  const n=12,bw=W*.8/n,lit=Math.round(rdLvl/100*n);for(let i=0;i<n;i++){const h=(4+i*1.4)*d,x0=W*.1+i*bw,y0=H-2*d-h;g.fillStyle=i<lit?(i>=10?RC.a:RC.g):'#232a22';g.fillRect(x0,y0,bw*.62,h)}}
 function rdSigTick(){if(document.hidden)return;const st=rdPlaying?(rdSt0==='ON AIR'?'on':'busy'):'off';rdLvlT=st==='on'?70+Math.sin(Date.now()/900)*6+Math.random()*7:st==='busy'?18+Math.random()*16:0;
   const nv=rdLvl+(rdLvlT-rdLvl)*.25;if(Math.abs(nv-rdLvl)>.05||rdLvl>0){rdLvl=Math.abs(nv)<.05?0:nv;rdSigDraw()}}
 function rdSigRun(on){rdSigOn=on;clearInterval(rdSigTm);if(on){rdSigDraw();rdSigTm=setInterval(rdSigTick,110)}}
@@ -3810,7 +3880,7 @@ function rdFold(tg,box,key,def){const b=$('#'+tg),x=$('#'+box),set=o=>{x.hidden=
   b.onclick=()=>{const o=x.hidden;set(o);store.set(key,o);if(o&&box==='rdListBox')rdEnsure()}}
 rdFold('rdPresetTg','rdPresetBox','rdPresetOpen',true);rdFold('rdListTg','rdListBox','rdListOpen',!rdFavs.length);
 let rdLoaded=false;function rdEnsure(){rdShow();if(!rdLoaded){rdLoaded=true;rdSearch('')}requestAnimationFrame(rdDraw)}
-function openRadio(){const w=$('#wRadio');w.classList.remove('collapsed');if(skin==='carnival3'){ckFocus('radio')}else w.scrollIntoView({block:'start',behavior:'smooth'});rdEnsure()}
+function openRadio(){const w=$('#wRadio');w.classList.remove('collapsed');if(isCk2()){ckFocus('radio')}else w.scrollIntoView({block:'start',behavior:'smooth'});rdEnsure()}
 new IntersectionObserver(es=>{const v=es.some(e=>e.isIntersecting);if(v)rdEnsure();rdSigRun(v)}).observe($('#wRadio'));
 $('#radioBtn').onclick=openRadio;
 window.addEventListener('resize',rdDraw);{const ro=new ResizeObserver(()=>{rdDraw();rdSigDraw()});ro.observe($('#rdScale'));ro.observe($('#rdSig'))}
@@ -3824,16 +3894,16 @@ window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,get state(){return {p
 const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio']};
 const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
 function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
-  if(skin!=='carnival3'||!hostId){ckRailHome.after(r);return}
+  if(!isCk2()||!hostId){ckRailHome.after(r);return}
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
   const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
   h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
-function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=skin==='carnival3'&&f!=='all';
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=isCk2()&&f!=='all';
   appEl.classList.toggle('FX',on);if(on)document.documentElement.style.setProperty('--fxN',String(FX_GROUPS[f].length));
   document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
-  ckRailPlace(skin==='carnival3'?(on?FX_GROUPS[f][0]:'wGps'):null,on&&FX_GROUPS[f].length>1); // 창이 보인 뒤에 위치를 재야 제목줄 높이가 맞음
+  ckRailPlace(isCk2()?(on?FX_GROUPS[f][0]:'wGps'):null,on&&FX_GROUPS[f].length>1); // 창이 보인 뒤에 위치를 재야 제목줄 높이가 맞음
   document.querySelectorAll('#ckRail button[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===(on?f:'all')));
-  if(skin==='carnival3')store.set('ckFocus',f);
+  if(isCk2())store.set('ckFocus',f);
   if(on){const top=appEl.getBoundingClientRect().top+window.scrollY;document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
 $('#ckRail').addEventListener('click',e=>{const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
