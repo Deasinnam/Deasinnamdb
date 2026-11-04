@@ -482,11 +482,11 @@ async function main() {
     p9.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
     await p9.goto(origin);
-    assert.equal(await p9.locator('#visSel option').count(), 20);
+    assert.equal(await p9.locator('#visSel option').count(), 30);
     const visImgs = new Set();
-    for (let m = 0; m < 20; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
-    assert.ok(visImgs.size >= 18, `Effects render differently (${visImgs.size}/20)`);
-    await p9.locator('#visSel').selectOption('19');
+    for (let m = 0; m < 30; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
+    assert.ok(visImgs.size >= 27, `Effects render differently (${visImgs.size}/30)`);
+    await p9.locator('#visSel').selectOption('29');
     await p9.locator('#wVis .vstep[data-d="1"]').click();
     assert.equal(await p9.locator('#visSel').inputValue(), '0', 'Next wraps around');
     await p9.locator('#visSel').selectOption('5');
@@ -839,7 +839,7 @@ async function main() {
       await pt2.locator('#tkSpd').selectOption('mate');
       assert.equal(await pt2.locator('#tkPfd').isVisible(), true, 'Back to SPEED MATE');
       assert.equal(await pt2.locator('#tabCk #tkVisW #vis').isVisible(), true, 'App visualizer in the audio panel');
-      assert.equal(await pt2.locator('#tabCk #visSel option').count(), 20, 'All 20 effects');
+      assert.equal(await pt2.locator('#tabCk #visSel option').count(), 30, 'All 30 effects');
       const dn0 = await pt2.locator('#tkDN').textContent(); await pt2.locator('#tkDN').click();
       assert.notEqual(await pt2.locator('#tkDN').textContent(), dn0, 'Map day/night switch');
       await pt2.locator('#tabCk [data-k="setup"]').click();

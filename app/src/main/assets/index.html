@@ -1606,7 +1606,7 @@ html.driving body{overflow:hidden}
       <div class="art"><div class="cover" id="cover"></div><div><div class="tt" id="npTitle">—</div><div class="ar" id="npArtist"></div></div></div>
       <div class="visbox">
         <canvas id="vis" aria-label="사운드 시각화. 탭하면 모드 변경"></canvas>
-        <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option><option value="1">MIRROR</option><option value="2">SCOPE</option><option value="3">AREA</option><option value="4">RING</option><option value="5">RADAR</option><option value="6">WAVES</option><option value="7">DOTS</option><option value="8">PULSE</option><option value="9">VU METER</option><option value="10">CITY</option><option value="11">FLAME</option><option value="12">STARS</option><option value="13">SPIRAL</option><option value="14">WATERFALL</option><option value="15">TUNNEL</option><option value="16">FLOWER</option><option value="17">BLOCKS 3D</option><option value="18">LISSAJOUS</option><option value="19">ECG</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
+        <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option><option value="1">MIRROR</option><option value="2">SCOPE</option><option value="3">AREA</option><option value="4">RING</option><option value="5">RADAR</option><option value="6">WAVES</option><option value="7">DOTS</option><option value="8">PULSE</option><option value="9">VU METER</option><option value="10">CITY</option><option value="11">FLAME</option><option value="12">STARS</option><option value="13">SPIRAL</option><option value="14">WATERFALL</option><option value="15">TUNNEL</option><option value="16">FLOWER</option><option value="17">BLOCKS 3D</option><option value="18">LISSAJOUS</option><option value="19">ECG</option><option value="20">PLASMA</option><option value="21">HELIX</option><option value="22">CODE RAIN</option><option value="23">SUNBURST</option><option value="24">MOUNTAINS</option><option value="25">KALEIDO</option><option value="26">BOUNCE</option><option value="27">GRID WARP</option><option value="28">FIREWORKS</option><option value="29">ORBIT</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
       </div>
     </div>
   </section>
@@ -2673,6 +2673,7 @@ function drawVisFx(g,w,h,d,live){
     const R=Math.hypot(w,h)/2;vfx.pulse=vfx.pulse.filter(p=>(p.r+=R*.012*(1+b),p.a-=.012)>0&&p.r<R);
     for(const p of vfx.pulse){g.globalAlpha=p.a;g.strokeStyle=p.c;g.lineWidth=(2+p.a*4)*d;g.beginPath();g.arc(cx,cy,p.r,0,7);g.stroke()}
     g.globalAlpha=1;const gr=g.createRadialGradient(cx,cy,0,cx,cy,Math.min(w,h)*.3);gr.addColorStop(0,L4);gr.addColorStop(.4,L3);gr.addColorStop(1,'transparent');g.globalAlpha=.25+b*.6;g.fillStyle=gr;g.beginPath();g.arc(cx,cy,Math.min(w,h)*(.12+b*.18),0,7);g.fill();g.globalAlpha=1;return}
+  if(visMode>=20){drawVisFx3(g,w,h,d,live,t,wv);return}
   if(visMode>=10){drawVisFx2(g,w,h,d,live,t,wv);return}
   // 9. VU METER: 좌우 아날로그 바늘
   let l=0,r=0;if(live&&W){for(let i=0;i<W.length;i++){const v=Math.abs(W[i]-128)/128;if(i%2)r+=v*v;else l+=v*v}l=Math.min(1,Math.sqrt(l/(W.length/2))*3.2);r=Math.min(1,Math.sqrt(r/(W.length/2))*3.2)}
@@ -2741,6 +2742,48 @@ function drawVisFx2(g,w,h,d,live,t,wv){
   g.strokeStyle=L4;g.shadowColor=L3;g.shadowBlur=8*d;g.lineWidth=2*d;g.beginPath();let first=true;const head=Math.floor(vfx2.ecgX/step);
   for(let i=0;i<Math.ceil(w/step);i++){if(Math.abs(i-head)<4){first=true;continue}const y=vfx2.ecg[i];if(y==null){first=true;continue}const x=i*step;first?g.moveTo(x,y):g.lineTo(x,y);first=false}
   g.stroke();g.shadowBlur=0}
+/* 시각화 효과 20~29 */
+const vfx3={rain:[],balls:[],fw:[],lastB:0};
+function drawVisFx3(g,w,h,d,live,t,wv){
+  const cx=w/2,cy=h/2,L1=C.l1,L2=C.l2,L3=C.l3,L4=C.l4,lv=visLevel(0,1),bass=visLevel(0,.12),col=v=>v>.75?L4:v>.5?L3:v>.25?L2:L1,R=Math.min(w,h);
+  if(visMode===20){ // PLASMA: 소리에 따라 커지는 빛 덩어리
+    g.globalCompositeOperation='lighter';for(let k=0;k<6;k++){const v=visLevel(k/6,(k+1)/6),x=cx+Math.sin(t*(.5+k*.13)+k*2)*w*.32,y=cy+Math.cos(t*(.4+k*.11)+k)*h*.3,r=R*(.18+v*.35+.04*Math.sin(t*2+k));
+      const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,[L4,L3,L2,L3,L4,L2][k]);gr.addColorStop(1,'transparent');g.globalAlpha=.35+v*.4;g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2)}
+    g.globalCompositeOperation='source-over';g.globalAlpha=1;return}
+  if(visMode===21){ // HELIX: 두 가닥 나선, 가로대 길이가 소리
+    const n=Math.max(24,Math.floor(w/(14*d)));for(let i=0;i<n;i++){const x=(i+.5)/n*w,ph=i*.42+t*2,a=Math.sin(ph),b=Math.sin(ph+Math.PI),v=bars[Math.floor(i/n*N)]||0,amp=h*(.18+v*.22);
+      g.strokeStyle=col(v);g.globalAlpha=.35+v*.6;g.lineWidth=1.5*d;g.beginPath();g.moveTo(x,cy+a*amp);g.lineTo(x,cy+b*amp);g.stroke();g.globalAlpha=1;
+      g.fillStyle=a>0?L4:L2;g.beginPath();g.arc(x,cy+a*amp,(2+Math.abs(Math.cos(ph))*2)*d,0,7);g.fill();g.fillStyle=b>0?L3:L1;g.beginPath();g.arc(x,cy+b*amp,(2+Math.abs(Math.cos(ph))*2)*d,0,7);g.fill()}return}
+  if(visMode===22){ // CODE RAIN: 떨어지는 숫자 줄기
+    const cw=12*d,cols=Math.floor(w/cw);while(vfx3.rain.length<cols)vfx3.rain.push({y:Math.random()*h,s:.6+Math.random()});g.font=`600 ${11*d}px "Share Tech Mono",monospace`;g.textAlign='center';
+    for(let i=0;i<cols;i++){const r=vfx3.rain[i],v=bars[Math.floor(i/cols*N)]||0;r.y+=(1.6+v*7+lv*3)*d*r.s;if(r.y>h+60*d){r.y=-Math.random()*h*.5;r.s=.6+Math.random()}
+      for(let k=0;k<8;k++){const y=r.y-k*13*d;if(y<0||y>h)continue;g.globalAlpha=(1-k/8)*(.35+v*.65);g.fillStyle=k===0?L4:col(v*.8+.1);g.fillText(String.fromCharCode(48+((i*7+k*3+Math.floor(t*6))%42)),i*cw+cw/2,y)}}
+    g.globalAlpha=1;return}
+  if(visMode===23){ // SUNBURST: 회전하는 빛살
+    const n=36,r0=R*.1;g.save();g.translate(cx,cy);g.rotate(t*.25);for(let i=0;i<n;i++){const v=bars[Math.floor(i/n*N)]||0,a=i/n*Math.PI*2,r1=r0+R*(.12+v*.42);g.fillStyle=col(v);g.globalAlpha=.4+v*.6;
+      g.beginPath();g.moveTo(Math.cos(a-.05)*r0,Math.sin(a-.05)*r0);g.lineTo(Math.cos(a)*r1,Math.sin(a)*r1);g.lineTo(Math.cos(a+.05)*r0,Math.sin(a+.05)*r0);g.fill()}g.restore();g.globalAlpha=1;
+    g.fillStyle=L4;g.beginPath();g.arc(cx,cy,r0*(.8+bass*.5),0,7);g.fill();return}
+  if(visMode===24){ // MOUNTAINS: 겹겹이 산등성이
+    for(let L=0;L<4;L++){const base=h*(.45+L*.15),ofs=t*(8+L*10)*d;g.beginPath();g.moveTo(0,h);for(let x=0;x<=w;x+=6*d){const k=Math.floor(((x+ofs)/w*N*1.5)%N),v=bars[Math.abs(k)]||0;
+        g.lineTo(x,base-(Math.sin((x+ofs)/(60*d)+L)*.5+.5)*h*.12-v*h*(.3-L*.05))}g.lineTo(w,h);g.closePath();g.fillStyle=[L1,L2,L3,L4][3-L];g.globalAlpha=.35+L*.18;g.fill()}g.globalAlpha=1;return}
+  if(visMode===25){ // KALEIDO: 거울 조각 8개
+    g.save();g.translate(cx,cy);for(let k=0;k<8;k++){g.save();g.rotate(k*Math.PI/4+t*.15);if(k%2)g.scale(1,-1);
+      for(let i=0;i<12;i++){const v=bars[Math.floor(i/12*N)]||0,rr=R*(.08+i*.035),a=.2+Math.sin(t+i)*.1;g.fillStyle=col(v);g.globalAlpha=.25+v*.6;g.beginPath();g.arc(Math.cos(a)*rr,Math.sin(a)*rr,(2+v*8)*d,0,7);g.fill()}g.restore()}
+    g.restore();g.globalAlpha=1;return}
+  if(visMode===26){ // BOUNCE: 대역마다 공이 튀어 오름
+    const n=12;while(vfx3.balls.length<n)vfx3.balls.push({y:0,v:0});const bw=w/n,fl=h-6*d;g.fillStyle=C.grid;g.fillRect(0,fl,w,2*d);
+    for(let i=0;i<n;i++){const b=vfx3.balls[i],e=visLevel(i/n,(i+1)/n);if(b.y<=0&&(e>.3||Math.random()<.01))b.v=(6+e*16+Math.random()*2)*d;b.v-=.55*d;b.y=Math.max(0,b.y+b.v);if(b.y===0)b.v=0;
+      const x=(i+.5)*bw,r=Math.min(bw*.3,14*d);g.fillStyle=col(Math.min(1,b.y/(h*.6)+e*.4));g.beginPath();g.arc(x,fl-r-b.y,r,0,7);g.fill();g.globalAlpha=.25;g.beginPath();g.ellipse(x,fl,r*(1-Math.min(.7,b.y/h)),r*.25,0,0,7);g.fill();g.globalAlpha=1}return}
+  if(visMode===27){ // GRID WARP: 파형으로 일렁이는 격자
+    g.strokeStyle=L2;g.lineWidth=1*d;const st=22*d;for(let y=st/2;y<h;y+=st){g.beginPath();for(let x=0;x<=w;x+=8*d){const yy=y+wv(x/w*512+y)*h*.18+Math.sin(x/(50*d)+t*2+y)*3*d;x?g.lineTo(x,yy):g.moveTo(x,yy)}g.globalAlpha=.6;g.stroke()}
+    g.strokeStyle=L3;for(let x=st/2;x<w;x+=st){g.beginPath();for(let y=0;y<=h;y+=8*d){const xx=x+wv(y/h*512+x)*w*.06+Math.cos(y/(50*d)+t*2)*3*d;y?g.lineTo(xx,y):g.moveTo(xx,y)}g.globalAlpha=.45;g.stroke()}g.globalAlpha=1;return}
+  if(visMode===28){ // FIREWORKS: 저음이 들어오면 터짐
+    if((bass-vfx3.lastB>.08&&bass>.3)||Math.random()<.025){const x=w*(.15+Math.random()*.7),y=h*(.15+Math.random()*.45),c0=[L2,L3,L4][Math.floor(Math.random()*3)];for(let k=0;k<36;k++){const a=k/36*Math.PI*2,sp=(1.5+Math.random()*2.5)*d*(1+bass);vfx3.fw.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,c:c0})}}
+    vfx3.lastB=bass;vfx3.fw=vfx3.fw.filter(p=>(p.l-=.016)>0).slice(-700);for(const p of vfx3.fw){p.x+=p.vx;p.y+=p.vy;p.vy+=.04*d;p.vx*=.985;g.globalAlpha=p.l;g.fillStyle=p.c;g.fillRect(p.x,p.y,2.2*d,2.2*d)}g.globalAlpha=1;return}
+  // 29. ORBIT: 대역마다 행성이 다른 궤도를 돎
+  g.fillStyle=L4;g.beginPath();g.arc(cx,cy,R*(.05+bass*.06),0,7);g.fill();
+  for(let i=0;i<8;i++){const v=visLevel(i/8,(i+1)/8),rr=R*(.1+i*.05),a=t*(1.2-i*.12)+i;g.strokeStyle=C.grid;g.lineWidth=1;g.beginPath();g.ellipse(cx,cy,rr*1.4,rr*.9,0,0,7);g.stroke();
+    g.fillStyle=col(v);g.beginPath();g.arc(cx+Math.cos(a)*rr*1.4,cy+Math.sin(a)*rr*.9,(2.5+v*7)*d,0,7);g.fill()}}
 function drawMini(){
   const c=cv.mini,g=cx.mini,w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const n=19,gap=Math.max(1,2*d),bw=(w-gap*(n-1))/n;
@@ -2752,7 +2795,7 @@ function drawEqLed(){
   for(let i=0;i<11;i++){const x=i*cw+cw/2-bw/2;ledColumn(g,x,bw,h-4*d,h-8*d,eqLv[i],Math.max(3,5*d),Math.max(1,2*d),null,C.off)}
   g.fillStyle=C.edge;g.fillRect(cw*.12,h/2,w-cw*.24,1);
 }
-const VIS_N=20;if(!(visMode>=0&&visMode<VIS_N))visMode=0;
+const VIS_N=30;if(!(visMode>=0&&visMode<VIS_N))visMode=0;
 const syncVis=()=>{$('#visSel').value=String(visMode)};
 const setVis=m=>{visMode=((m%VIS_N)+VIS_N)%VIS_N;store.set('vis',visMode);syncVis()};
 $('#visSel').onchange=e=>setVis(+e.target.value);$('#visSel').onclick=e=>e.stopPropagation();

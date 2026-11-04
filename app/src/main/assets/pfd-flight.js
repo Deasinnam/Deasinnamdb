@@ -331,6 +331,36 @@
     oDrawGround.call(this, c, w, h, night, speed, quality);
     drawAirport(c, w, h, night, quality);
   };
+  // 정차 중에도 살아 있는 하늘: 구름은 늘 천천히 흐르고(달리면 속도만큼 더 빨리), 밤 불빛·별은 제자리에서 은은하게 깜빡임
+  const IDLE_CLOUD = 3.2;                      // 정차 중 구름이 흘러가는 빠르기(장면 거리 m/초)
+  const idleT = () => performance.now() / 1000;
+  const oDrawSky = sc.drawSky;
+  sc.drawSky = function (c, w, h, night, quality) {
+    const d0 = this.distanceMeters;
+    this.distanceMeters = d0 + idleT() * IDLE_CLOUD; // 구름만 덧붙인 거리로(땅·도시 불빛 위치는 그대로)
+    try { oDrawSky.call(this, c, w, h, night, quality); } finally { this.distanceMeters = d0; }
+    if (night && this.stars) { // 밝은 별 몇 개가 반짝
+      const t = idleT(); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = '#dbe8ff';
+      for (let i = 0; i < this.stars.length; i += 7) { const st = this.stars[i], a = Math.max(0, Math.sin(t * (1.1 + (i % 5) * .37) + i)) * .35 * st.alpha; if (a < .02) continue;
+        c.globalAlpha = a; c.beginPath(); c.arc(st.x * w, -st.y * h, st.size * 1.6, 0, Math.PI * 2); c.fill(); }
+      c.restore();
+    }
+  };
+  const oDrawGround2 = sc.drawGround;
+  sc.drawGround = function (c, w, h, night, speed, quality) {
+    oDrawGround2.call(this, c, w, h, night, speed, quality);
+    if (!night || !this.lightDraw || !this.lightDraw.length) return;
+    // 도시 불빛·가로등이 제자리에서 살짝 일렁임(정차해도 화면이 멈춰 보이지 않게)
+    const t = idleT(); c.save(); c.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < this.lightDraw.length; i += 2) {
+      const p = this.lightDraw[i]; if (!(p.yy > 0) || p.depth > 900) continue;
+      const a = (.5 + .5 * Math.sin(t * (1.6 + (i % 7) * .23) + i * 1.7)) * .22 * Math.min(1, (900 - p.depth) / 200);
+      const r = Math.min(9, Math.max(1.2, p.scale * p.size * .55));
+      c.globalAlpha = a; c.fillStyle = p.color ? '#a9d4ff' : (p.lamp ? '#ffd79a' : '#ffc874');
+      c.beginPath(); c.arc(p.xx, p.yy - (p.lamp ? Math.min(p.scale * 2.6, h * .26) : 0), r, 0, Math.PI * 2); c.fill();
+    }
+    c.restore();
+  };
   const oDrawHorizon = P.drawHorizon;
   P.drawHorizon = function (c, x, y, w, h, valid) {
     if (!active()) return oDrawHorizon.call(this, c, x, y, w, h, valid);
@@ -451,7 +481,7 @@
     if (Math.abs(F.pitch) > .05 && F.phase !== 'cruise') return sv ? 95 : 45;
     if (F.phase === 'approach' || F.phase === 'rollout') return sv ? 95 : 45;
     { const k = wxKind(); if (k === 'rain' || k === 'snow' || (F.snow > .01 && k !== 'snow')) return sv ? 160 : 60; }
-    return !P.day && F.alt < 260 ? (sv ? 600 : 300) : 0; // 밤 활주로 등화 깜빡임만 있을 땐 느리게
+    return sv ? 250 : 100; // 정차 중에도 구름이 흐르고 밤 불빛이 일렁이도록 천천히 다시 그림(초당 10번, 절전 4번)
   }
   function needAnim() { return animGap() > 0; }
   function kick() { if (!loopT) loopT = requestAnimationFrame(loop); }
@@ -461,7 +491,7 @@
     const gap = animGap();
     if (gap) {
       if (P.frame === null && t - lastDraw > gap * .8) { lastDraw = t; try { P.draw(); } catch (e) {} }
-      if (gap >= 250) { loopT = -1; setTimeout(() => { loopT = 0; kick(); }, gap); } // 느린 움직임은 화면 주사율마다 깨어나지 않게
+      if (gap >= 100) { loopT = -1; setTimeout(() => { loopT = 0; kick(); }, gap); } // 느린 움직임은 화면 주사율마다 깨어나지 않게
       else loopT = requestAnimationFrame(loop);
     } else renderBadge();
   }
