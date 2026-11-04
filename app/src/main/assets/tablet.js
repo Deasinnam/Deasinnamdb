@@ -45,6 +45,7 @@
       <div class="tk-glass">
         <div id="tkMap"></div>
         <div class="tk-card tk-c1" id="tkC1"><svg class="ar" viewBox="0 0 24 24"><path fill="#fff" d="M12 2 20 21 12 16.5 4 21z"/></svg><div><b id="tkC1v">— km/h</b><span id="tkC1s">위치를 찾는 중</span></div></div>
+        <button class="tk-dn" id="tkDN" aria-label="지도 주간·야간 바꾸기"></button>
         <div class="tk-north" id="tkNorth" title="북쪽 위로"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2 18 20 12 16 6 20z"/></svg></div>
         <div class="tk-card tk-c2" id="tkC2"><div><b id="tkTripT">0 min</b><b id="tkTripD">0.0 km</b></div><span id="tkTripS">주행 기록</span></div>
         <button class="tk-card tk-c3" id="tkMenu" aria-label="내비 앱 열기">${svg('M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z')}</button>
@@ -53,7 +54,7 @@
         <div class="tk-sys" id="tkSys" hidden></div>
       </div>
     </section>
-    <section class="tk-panel tk-pfd sc"><div class="tk-glass"><canvas id="tkPfd" role="img" aria-label="속도·고도·방향 계기"></canvas></div></section>
+    <section class="tk-panel tk-pfd sc"><div class="tk-glass"><canvas id="tkPfd" role="img" aria-label="속도·고도·방향 계기"></canvas><select class="tk-spdsel" id="tkSpd" aria-label="속도계 디자인"></select></div></section>
     <nav class="tk-side R" aria-label="오디오 조작">
       <button class="tk-key" data-k="audio">AUDIO</button><button class="tk-key" data-k="source">SOURCE</button>
       <button class="tk-key" data-k="list">LIST</button><button class="tk-key" data-k="setup">SETUP</button>
@@ -63,7 +64,7 @@
         <div class="tk-srcbar" id="tkSrcBar" role="group" aria-label="음원 연동"><button data-src="local">내 음악</button><button data-src="ytm">YouTube Music</button><button data-src="spotify">Spotify</button><button data-src="radio">라디오</button></div>
         <div class="tk-src" id="tkSrc">LOCAL AUDIO</div>
         <div class="tk-cov" id="tkCov"></div>
-        <canvas id="tkWave"></canvas>
+        <canvas id="tkWave"></canvas><div class="tk-visw" id="tkVisW" hidden></div>
         <div class="tk-tt" id="tkTt">—</div><div class="tk-ar" id="tkAr">&nbsp;</div>
         <div class="tk-seek" id="tkSeek" role="slider" aria-label="재생 위치" tabindex="0"><i></i><b></b></div>
         <div class="tk-times"><span id="tkCur">0:00</span><span id="tkDur">0:00</span></div>
@@ -103,16 +104,39 @@
   const appPfd = () => !!(H.appPfd && window.AmpPfd && window.AmpPfd.ready && document.getElementById('pfdHost'));
   const appMap = () => !!(H.appMap && document.getElementById('wMap'));
   const appClock = () => !!(H.appClock && document.getElementById('clock'));
-  let useMap = false, usePfd = false;
+  let useMap = false, usePfd = false, useVis = false;
+  /* ---------- 가운데 속도계: SPEED MATE · 콕핏 PFD · 기존 속도계 디자인 5종 ---------- */
+  const SPD_OPTS = [['mate', 'SPEED MATE'], ['pfd', '콕핏 PFD'], ['carbon', '카본 세그먼트'], ['neon', '네온 링'], ['classic', '클래식 아날로그'], ['minimal', '미니멀 디지털'], ['tactical', '택티컬 그린']];
+  const GAUGES = ['carbon', 'neon', 'classic', 'minimal', 'tactical'];
+  let spd = 'mate', cb = null;
+  function centerReturn() {
+    if (cb) { cb.parent.insertBefore(cb.el, cb.next && cb.next.parentNode === cb.parent ? cb.next : null); cb = null; }
+    window.__tkGauge = false; usePfd = false; root.classList.remove('gauge');
+  }
+  function centerBorrow(el) { const g = root.querySelector('.tk-pfd .tk-glass'); cb = { el, parent: el.parentNode, next: el.nextSibling }; g.insertBefore(el, $('#tkSpd')); }
+  function applySpd() {
+    centerReturn(); $('#tkPfd').hidden = false;
+    if (spd === 'pfd' && appPfd()) { centerBorrow(document.getElementById('pfdHost')); usePfd = true; $('#tkPfd').hidden = true; }
+    else if (GAUGES.includes(spd) && document.getElementById('wGps')) {
+      // 기존 속도계 창째로 가져와 계기만 크게 보여 줌
+      centerBorrow(document.getElementById('wGps')); window.__tkGauge = true; root.classList.add('gauge'); $('#tkPfd').hidden = true;
+      if (has('gaugeStyle')) H.gaugeStyle(spd);
+    }
+    $('#tkSpd').value = spd;
+    setTimeout(() => { try { window.AmpPfd && window.AmpPfd.panel.resize(); } catch (e) {} dispatchEvent(new Event('resize')); }, 80);
+  }
+  function setSpd(k) { spd = SPD_OPTS.some(o => o[0] === k) ? k : (v2 ? 'mate' : 'pfd'); store.set(v2 ? 'spd2' : 'spd1', spd); if (on) applySpd(); }
   function borrowAll() {
-    usePfd = !v2 && appPfd() && borrow(document.getElementById('pfdHost'), root.querySelector('.tk-pfd .tk-glass'));
-    if (usePfd) { $('#tkPfd').hidden = true; setTimeout(() => { try { window.AmpPfd.panel.resize(); } catch (e) {} }, 60); }
+    applySpd();
+    const vb = document.querySelector('#wVis .visbox');
+    useVis = !!vb && borrow(vb, $('#tkVisW')); $('#tkVisW').hidden = !useVis; $('#tkWave').hidden = useVis;
     useMap = appMap() && borrow(document.getElementById('wMap'), $('#tkAppMap'));
     if (!v2 && appClock() && borrow(document.getElementById('clock'), root.querySelector('.tk-right'), $('#tkSkin'))) $('#tkTime').hidden = true;
     root.classList.toggle('appmap', useMap); root.classList.toggle('apppfd', usePfd);
   }
   function returnAll() {
-    giveBack(); $('#tkTime').hidden = false; $('#tkPfd').hidden = false;
+    centerReturn(); if (has('gaugeRestore')) try { H.gaugeRestore(); } catch (e) {}
+    giveBack(); useVis = false; $('#tkVisW').hidden = true; $('#tkWave').hidden = false; $('#tkTime').hidden = false; $('#tkPfd').hidden = false;
     if (usePfd) setTimeout(() => { try { window.AmpPfd.panel.resize(); } catch (e) {} }, 60);
     useMap = usePfd = false; root.classList.remove('appmap', 'apppfd');
   }
@@ -143,9 +167,11 @@
     const want = isOn(), nv = isV2();
     if (on && want && nv !== v2) activate(false); // 모드 1 ↔ 2 전환: 빌려 온 화면을 돌려놓고 다시
     v2 = nv; root.classList.toggle('v2', v2);
+    spd = store.get(v2 ? 'spd2' : 'spd1', v2 ? 'mate' : 'pfd');
     $('#tkVer').textContent = v2 ? 'TABLET LANDSCAPE 2 · CONCEPT 02' : 'TABLET LANDSCAPE · CONCEPT 01';
     activate(want);
     fit();
+    try { syncDN(); } catch (e) {}
     knobDraws.forEach(f => f());
     try { if (NBx && NBx.setLandscape) NBx.setLandscape(on && v2); } catch (e) {}
   }
@@ -173,6 +199,12 @@
   }
   $('#tkRev').onclick = () => { if (window.AmpRev) window.AmpRev.toggle(); setTimeout(() => $('#tkRev').classList.toggle('on', !!(window.AmpRev && window.AmpRev.on)), 30); };
   setInterval(() => $('#tkRev').classList.toggle('on', !!(window.AmpRev && window.AmpRev.on)), 1000);
+  $('#tkSpd').innerHTML = SPD_OPTS.map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
+  $('#tkSpd').onchange = e => setSpd(e.target.value);
+  // 지도 주간·야간
+  function nightNow() { return useMap ? !!G(() => H.mapNight) : store.get('night', true); }
+  function syncDN() { const n = nightNow(); $('#tkDN').textContent = n ? '☾ 야간' : '☀ 주간'; $('#tkDN').classList.toggle('day', !n); $('#tkMap').classList.toggle('day', !n); }
+  $('#tkDN').onclick = () => { if (useMap) { if (has('mapNightToggle')) H.mapNightToggle(); } else store.set('night', !store.get('night', true)); syncDN(); };
   $('#tkSkin').onchange = e => { const v = e.target.value; if (has('setSkin')) H.setSkin(v); };
 
   /* ---------- 탭: NAV(지도) · AUDIO(재생 목록) · SYSTEM ---------- */
@@ -183,6 +215,7 @@
     const nav = tab === 'nav';
     ['#tkMap', '#tkC1', '#tkC2', '#tkMenu', '#tkNorth'].forEach(s => { const v = nav && !useMap; $(s).hidden = !v; $(s).style.display = v ? '' : 'none'; });
     $('#tkAppMap').hidden = !(nav && useMap);
+    $('#tkDN').hidden = !nav;
     $('#tkList').hidden = tab !== 'audio'; $('#tkSys').hidden = tab !== 'system';
     $('#tkLeftT').textContent = nav ? 'MAP' : tab === 'audio' ? 'PLAYLIST' : 'SYSTEM';
     root.querySelector('[data-k="map"]').classList.toggle('on', nav);
@@ -506,7 +539,7 @@
       $('#tkCov').style.backgroundImage = bg || ''; $('#tkCov').classList.toggle('empty', !bg || bg === 'none');
       if (tab === 'audio') renderList();
     }
-    drawWave(A);
+    if (!useVis) drawWave(A);
     return A;
   }
   root.querySelector('.tk-tr').addEventListener('click', e => {
@@ -756,7 +789,7 @@
       if (!on) return;
       if (!document.hidden) {
         const T = tele();
-        if (v2) drawMate(T); else if (!usePfd) drawPfd(T);
+        if (spd === 'mate') drawMate(T); else if (spd === 'pfd' && !usePfd) drawPfd(T);
         const A = renderAudio();
         if (t - slowAt > 250) { slowAt = t; status(T, A); if (tab === 'nav' && !useMap) mapTick(T); else if (tab === 'audio') renderList(); }
       }

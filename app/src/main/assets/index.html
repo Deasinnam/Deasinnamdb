@@ -2808,7 +2808,7 @@ function drawGps(){
   if(!gv)return;
   attPoll();if(att.on&&att.hdg>=0)hdgNow=att.hdg;
   if(typeof atcSpeedTick==='function')atcSpeedTick(spdNow);
-  const AP=window.AmpPfd;if(isCk()&&(isTab()||gStyle==='cockpit')&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
+  const AP=window.AmpPfd;if(isCk()&&(isTab()?!window.__tkGauge:gStyle==='cockpit')&&AP&&AP.ready){spdDisp=spdNow;if(hdgNow>=0)hdgDisp=hdgNow;AP.feed();return}
   spdDisp+=(spdNow-spdDisp)*.18;if(Math.abs(spdNow-spdDisp)<.05)spdDisp=spdNow;
   if(hdgNow>=0)hdgDisp=(hdgDisp+angDiff(hdgDisp,hdgNow)*.15+360)%360;
   const hasFix=gpsOn&&gs.fix,over=gLimit>0&&spdDisp>gLimit;
@@ -3297,7 +3297,9 @@ window.AmpTk={
   setSkin(k){setSkin(k)},playIndex(i){playIndex(i)},toggle(){toggle()},prev(){prev()},next(){next()},setMode(m){setMode(m)},
   drive(o){drive(o);if(!o)driveSuppress=true},sndPress(o){sndPress(o)},sndAlarm(){sndAlarm()},openSettings(){openSettings()},toast(t){toast(t)},
   mapRefresh(){try{if(mapObj)mapObj.invalidateSize();mapUpdate(true)}catch(e){}},
-  mapZoom(d){return mapZoom(d)}
+  mapZoom(d){return mapZoom(d)},
+  gaugeStyle(k){gStyle=k;$('#wGps').dataset.gs=k;const b=$('#spdBox');b.style.left='';b.style.width=''},gaugeRestore(){setGStyle(isCp()?store.get('gStyleCk','cockpit'):store.get('gStyle','carbon'))},
+  get mapNight(){return mapNight},mapNightToggle(){$('#mapNight').click()}
 };
 /* ---------- D1 DASHCAM: 블랙박스 실시간 화면 ---------- */
 (function(){

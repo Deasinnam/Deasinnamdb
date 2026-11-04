@@ -831,6 +831,17 @@ async function main() {
       assert.equal(await pt2.locator('#tkSrcBar [data-src="radio"]').evaluate(b => b.classList.contains('on')), true, 'Radio source lit');
       await pt2.locator('#tkSrcBar [data-src="local"]').click();
       assert.equal(await pt2.evaluate(() => window.AmpRadio.state.playing), false, 'Choosing my music stops the radio');
+      // 가운데 속도계: 기존 디자인 모두 선택 가능, 음악 효과 20종, 지도 주간·야간
+      assert.equal(await pt2.locator('#tkSpd option').count(), 7, 'SPEED MATE + PFD + 5 classic designs');
+      await pt2.locator('#tkSpd').selectOption('neon');
+      assert.equal(await pt2.locator('#tabCk .tk-pfd #wGps #gauge').isVisible(), true, 'Classic neon gauge in the centre');
+      assert.equal(await pt2.evaluate(() => document.getElementById('wGps').dataset.gs), 'neon');
+      await pt2.locator('#tkSpd').selectOption('mate');
+      assert.equal(await pt2.locator('#tkPfd').isVisible(), true, 'Back to SPEED MATE');
+      assert.equal(await pt2.locator('#tabCk #tkVisW #vis').isVisible(), true, 'App visualizer in the audio panel');
+      assert.equal(await pt2.locator('#tabCk #visSel option').count(), 20, 'All 20 effects');
+      const dn0 = await pt2.locator('#tkDN').textContent(); await pt2.locator('#tkDN').click();
+      assert.notEqual(await pt2.locator('#tkDN').textContent(), dn0, 'Map day/night switch');
       await pt2.locator('#tabCk [data-k="setup"]').click();
       assert.equal(await pt2.locator('#tkSys').isVisible(), true, 'SETUP opens system settings');
       await pt2.locator('#tabCk [data-k="list"]').click();
@@ -843,6 +854,8 @@ async function main() {
       await pt2.locator('#tkSkin').selectOption('carnival2');
       assert.equal(await pt2.locator('#tabCk').isVisible(), false, 'Leaves the tablet screen');
       assert.equal(await pt2.locator('#wGps #pfdHost').count(), 1, 'PFD back in the speedometer window');
+      assert.equal(await pt2.locator('#app > #wGps').count(), 1, 'Speedometer window back in the app');
+      assert.equal(await pt2.locator('#wVis .visbox').count(), 1, 'Visualizer back in the app');
       await pt2.close();
     }
     // 태블릿 가로모드(독립 스킨): 기존 화면은 숨기고 조종석 화면, 다른 스킨으로 가면 원래대로

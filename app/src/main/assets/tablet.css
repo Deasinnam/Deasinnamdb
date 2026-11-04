@@ -327,3 +327,28 @@
 .tk-cov{height:calc(var(--tvh,1vh)*14)!important;max-height:170px}
 .tk-audio .tk-tt,.tk-audio .tk-ar,.tk-audio .tk-times,.tk-audio .tk-tr,.tk-audio .tk-seek,.tk-audio .tk-src{flex:none}
 .tk-srcbar button{white-space:normal;line-height:1.05;font-size:13px;text-overflow:clip}
+
+/* 가운데 속도계 디자인 선택 */
+.tk-spdsel{position:absolute;z-index:30;left:8px;top:8px;height:28px;max-width:150px;padding:0 6px;border:1px solid #000;border-radius:5px;background:#0a0d0fdd;color:#e6ebe8;font:600 13px "Noto Sans KR",sans-serif;opacity:.85}
+.tk-spdsel:focus,.tk-spdsel:hover{opacity:1}
+#tabCk.v2 .tk-spdsel{background:#0b1620e6;border-color:#2c4558;color:#cfe9ff}
+/* 기존 속도계 창을 가운데로 가져왔을 때: 계기만 크게 */
+#tabCk .tk-pfd #wGps{position:absolute;inset:0;display:flex!important;flex-direction:column;margin:0;border:0;border-radius:0;height:auto!important;clip-path:none!important;box-shadow:none!important}
+#tabCk #wGps>.bar,#tabCk #wGps>.grip,#tabCk #wGps .gctl,#tabCk #wGps .gmsg,#tabCk #wGps #pfdHost,#tabCk #wGps .ckrail{display:none!important}
+#tabCk #wGps>.body,#tabCk #wGps.collapsed>.body{display:flex!important;flex:1;min-height:0;padding:44px 10px 10px;flex-direction:column;overflow:hidden}
+#tabCk #wGps .gps{display:grid!important;flex:1;min-height:0;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr);gap:8px}
+#tabCk #wGps .gstats{order:-1;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px}
+#tabCk #wGps .gstats div{padding:3px 6px;min-width:0}#tabCk #wGps .gstats small{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#tabCk #wGps .gstats b{font-size:17px!important}
+#tabCk #wGps .gauge{min-height:0}#tabCk #wGps .dial{min-height:0!important;flex:1}
+/* 지도 주간·야간 */
+.tk-dn{position:absolute;z-index:520;right:10px;top:10px;height:34px;padding:0 12px;border:1px solid #000;border-radius:6px;background:#0a0d0fe6;color:#ffd27a;font:600 14px "Noto Sans KR",sans-serif;box-shadow:0 2px 8px #0008}
+.tk-dn.day{color:#0a0d0f;background:linear-gradient(180deg,#fff3d6,#f5c86a)}
+#tabCk.v2 .tk-dn{top:6px;height:32px}
+#tabCk .tk-north{top:54px}#tabCk.v2 .tk-north{top:92px}
+#tkMap.day .leaflet-tile-pane{filter:none!important}
+/* 음악 효과: 앱의 시각화 20종을 그대로 */
+.tk-visw{position:relative;flex:1 1 70px;min-height:60px;max-height:170px;display:flex}
+.tk-visw[hidden]{display:none}
+#tabCk .tk-visw .visbox{position:relative;flex:1;min-height:0;margin:0;border-radius:6px;overflow:hidden}
+#tabCk .tk-visw #vis{width:100%;height:100%;display:block}
+#tabCk .tk-visw .vmode{position:absolute;right:6px;top:6px;z-index:2}
