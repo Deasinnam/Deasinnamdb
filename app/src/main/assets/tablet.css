@@ -310,3 +310,20 @@
 @media (orientation:portrait){#tabCk.v2 .tk-rot{z-index:100000;background:#1b1e21}}
 .tk-rev{width:40px;height:32px;border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#3a3f43,#202427);color:#ff6a55;font:800 18px "Barlow Condensed",sans-serif;box-shadow:inset 0 1px 0 #ffffff22}
 .tk-rev.on{color:#fff;background:linear-gradient(180deg,#e0472b,#9a2a14);box-shadow:0 0 12px #ff5b4b88}
+
+/* 음원 연동 버튼(내 음악 · YouTube Music · Spotify · 라디오) */
+.tk-srcbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;flex:none}
+.tk-srcbar button{height:38px;padding:0 4px;border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#2a3034,#15191c);box-shadow:inset 0 1px 0 #ffffff1a,inset 0 -3px 0 #0a0c0d;
+  font:600 14px "Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.04em;color:#c9cfcc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-srcbar button.on{color:var(--g2);box-shadow:inset 0 1px 0 #ffffff1a,inset 0 -3px 0 var(--g),0 0 10px color-mix(in srgb,var(--g) 30%,transparent)}
+#tabCk.v2 .tk-srcbar button{background:linear-gradient(180deg,#1c2e3c,#122230);border-color:#07111a;color:#c9dbe8}
+#tabCk.v2 .tk-srcbar button.on{color:#ffd27a;box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #f5b84a,0 0 10px #f5b84a44}
+/* 지도는 통으로: 지도 아래 버튼·설정 숨김(확대·축소·내 위치는 옆 키로) */
+#tabCk #wMap .mapctl,#tabCk #wMap #mapKeyBox,#tabCk #wMap #mapWrap>.hint,#tabCk #wMap .camnet{display:none!important}
+#tabCk #wMap>.body,#tabCk #wMap.collapsed>.body{padding:0!important;gap:0!important}
+#tabCk #wMap #mapWrap{flex:1;min-height:0;display:flex;flex-direction:column}
+#tabCk #wMap #mapWrap[hidden]{display:none}
+#tabCk #wMap .mapbox{flex:1;min-height:0;border:0;border-radius:0}
+.tk-cov{height:calc(var(--tvh,1vh)*14)!important;max-height:170px}
+.tk-audio .tk-tt,.tk-audio .tk-ar,.tk-audio .tk-times,.tk-audio .tk-tr,.tk-audio .tk-seek,.tk-audio .tk-src{flex:none}
+.tk-srcbar button{white-space:normal;line-height:1.05;font-size:13px;text-overflow:clip}

@@ -60,6 +60,7 @@
     </nav>
     <section class="tk-panel tk-audio sc"><div class="tk-h"><span>AUDIO</span><em id="tkAuSt"></em></div>
       <div class="tk-glass">
+        <div class="tk-srcbar" id="tkSrcBar" role="group" aria-label="음원 연동"><button data-src="local">내 음악</button><button data-src="ytm">YouTube Music</button><button data-src="spotify">Spotify</button><button data-src="radio">라디오</button></div>
         <div class="tk-src" id="tkSrc">LOCAL AUDIO</div>
         <div class="tk-cov" id="tkCov"></div>
         <canvas id="tkWave"></canvas>
@@ -429,8 +430,38 @@
 
   /* ---------- 오디오 ---------- */
   const wv = $('#tkWave'), wg = wv.getContext('2d'), WN = 96, wbars = new Float32Array(WN);
+  // 음원 연동: 내 음악 · YouTube Music · Spotify(외부 앱 연동) · 라디오(앱 안에서 재생)
+  const PKG = { ytm: 'com.google.android.apps.youtube.music', spotify: 'com.spotify.music' };
+  const R = () => window.AmpRadio;
+  const radioOn = () => !!G(() => R().state.playing);
+  function curSrc() {
+    if (radioOn()) return 'radio';
+    if (G(() => H.mode) === 'ext') { const a = String(G(() => H.ext.app) || ''); return /spotify/i.test(a) ? 'spotify' : /youtube/i.test(a) ? 'ytm' : store.get('src', 'ytm'); }
+    return 'local';
+  }
+  function useSrc(k) {
+    store.set('src', k); lastAu = '';
+    if (k === 'radio') {
+      try { if (G(() => H.mode) === 'ext' && has('setMode')) H.setMode('local'); } catch (e) {}
+      if (R()) { if (!radioOn()) R().resume(); } else say('라디오를 쓸 수 없어요.');
+      return;
+    }
+    if (radioOn()) try { R().stop(); } catch (e) {}
+    if (k === 'local') { if (has('setMode')) H.setMode('local'); return; }
+    const hasExt = !!(NBx && NBx.extStatus);
+    if (!hasExt) { say((k === 'ytm' ? 'YouTube Music' : 'Spotify') + ' 연동은 휴대폰 앱에서 쓸 수 있어요.'); return; }
+    if (has('setMode')) H.setMode('ext');
+    const a = String(G(() => H.ext.app) || ''), same = k === 'spotify' ? /spotify/i.test(a) : /youtube/i.test(a);
+    if (same) { if (!G(() => H.ext.playing) && has('toggle')) H.toggle(); }
+    else { try { NBx.openApp(PKG[k]); } catch (e) {} say((k === 'ytm' ? 'YouTube Music' : 'Spotify') + '을 열었어요. 곡을 재생하면 여기 곡 정보와 조작 버튼이 연결돼요.'); }
+  }
+  $('#tkSrcBar').addEventListener('click', e => { const b = e.target.closest('button[data-src]'); if (b) useSrc(b.dataset.src); });
   function audioState() {
     const el = id => document.getElementById(id);
+    if (radioOn()) {
+      const st = G(() => R().state) || {}, c = st.cur || {}, t = st.t0 ? (Date.now() - st.t0) / 1000 : 0;
+      return { title: st.now || c.name || 'RADIO', artist: (st.freq ? 'FM ' + st.freq.toFixed(1) : 'NET') + ' · ' + (c.name || '') + (st.onAir ? '' : ' · 연결 중'), frac: 0, cur: fmt(t), dur: 'LIVE', playing: true, mode: 'radio' };
+    }
     const title = (el('npTitle') && el('npTitle').textContent.trim()) || '—';
     const artist = (el('npArtist') && el('npArtist').textContent.trim()) || '';
     const seek = el('seek'), cur = el('tCur'), dur = el('tDur');
@@ -460,13 +491,14 @@
   let lastAu = '';
   function renderAudio() {
     const A = audioState();
-    const key = A.title + '|' + A.artist + '|' + A.cur + '|' + A.dur + '|' + A.playing + '|' + A.mode;
+    const key = A.title + '|' + A.artist + '|' + A.cur + '|' + A.dur + '|' + A.playing + '|' + A.mode + '|' + curSrc();
     $('#tkSeek i').style.width = (A.frac * 100) + '%'; $('#tkSeek b').style.left = (A.frac * 100) + '%';
     if (key !== lastAu) {
       lastAu = key;
       $('#tkTt').textContent = A.title; $('#tkAr').textContent = A.artist || ' ';
       $('#tkCur').textContent = A.cur; $('#tkDur').textContent = A.dur;
-      $('#tkSrc').textContent = A.mode === 'ext' ? 'EXTERNAL APP' : 'LOCAL AUDIO';
+      $('#tkSrc').textContent = A.mode === 'radio' ? 'FM RADIO' : A.mode === 'ext' ? (String(G(() => H.ext.app) || 'EXTERNAL APP')).toUpperCase() : 'LOCAL AUDIO';
+      const cs = curSrc(); root.querySelectorAll('#tkSrcBar button').forEach(b => b.classList.toggle('on', b.dataset.src === cs));
       $('#tkAuSt').textContent = A.playing ? 'PLAYING' : 'PAUSED';
       $('#tkPP').innerHTML = A.playing ? svg('M6 4h4v16H6zM14 4h4v16h-4z') : svg('M7 4l13 8-13 8z');
       root.querySelector('[data-k="audio"]').classList.toggle('on', A.playing);
@@ -479,7 +511,10 @@
   }
   root.querySelector('.tk-tr').addEventListener('click', e => {
     const b = e.target.closest('button[data-a]'); if (!b) return;
-    const fn = b.dataset.a; if (has(fn)) try { H[fn](); } catch (x) {}
+    const fn = b.dataset.a;
+    if (radioOn()) { try { fn === 'toggle' ? R().stop() : R().step(fn === 'next' ? 1 : -1); } catch (x) {} setTimeout(() => { lastAu = ''; }, 150); return; }
+    if (fn === 'toggle' && store.get('src', '') === 'radio' && G(() => H.mode) !== 'ext') { useSrc('radio'); return; }
+    if (has(fn)) try { H[fn](); } catch (x) {}
     setTimeout(() => { lastAu = ''; }, 150);
   });
   // 재생 위치: 기존 seek 슬라이더에 값 넣고 이벤트 보내기
@@ -557,11 +592,10 @@
     if (k === 'map') { setTab('nav'); follow = true; b.classList.add('on'); const p = pos(); if (map && p) map.setView([p.lat, p.lon], Math.max(map.getZoom(), 15)); }
     else if (k === 'zin' || k === 'zout') { setTab('nav'); if (map) k === 'zin' ? map.zoomIn() : map.zoomOut(); }
     else if (k === 'dest') openNavi();
-    else if (k === 'audio') { if (has('toggle')) H.toggle(); setTimeout(() => { lastAu = ''; }, 150); }
-    else if (k === 'source') {
-      const m = G(() => H.mode), hasExt = !!(NBx && NBx.extStatus);
-      if (!hasExt) { say('외부 앱 연동은 휴대폰 앱에서 쓸 수 있어요.'); return; }
-      if (has('setMode')) H.setMode(m === 'ext' ? 'local' : 'ext'); lastAu = '';
+    else if (k === 'audio') { if (radioOn()) try { R().stop(); } catch (x) {} else if (has('toggle')) H.toggle(); setTimeout(() => { lastAu = ''; }, 150); }
+    else if (k === 'source') { // 내 음악 → YouTube Music → Spotify → 라디오 순서로
+      const order = ['local', 'ytm', 'spotify', 'radio'], i = order.indexOf(curSrc());
+      const nx = order[(i + 1) % order.length]; useSrc(nx); say({ local: '내 음악', ytm: 'YouTube Music', spotify: 'Spotify', radio: '라디오' }[nx]);
     } else if (k === 'list') setTab(tab === 'audio' ? 'nav' : 'audio');
     else if (k === 'setup') setTab(tab === 'system' ? 'nav' : 'system');
   });

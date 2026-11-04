@@ -820,6 +820,17 @@ async function main() {
       assert.ok(await pt2.evaluate(() => {const t=document.getElementById('tabCk'),r=document.querySelector('#tabCk .tk-tabs').getBoundingClientRect(),c=document.querySelector('#tabCk .tk-ctrl').getBoundingClientRect();
         return t.classList.contains('fit')&&r.bottom<=innerHeight+1&&c.bottom<=r.top+1&&t.scrollHeight<=t.clientHeight+1}), 'Small tablet screen: whole design scaled to fit, controls above the tabs');
       await pt2.setViewportSize({width:1600,height:1000}); await pt2.waitForTimeout(200);
+      // 지도는 통으로(지도 아래 버튼 없음), 음원 연동 버튼 4개
+      assert.equal(await pt2.locator('#tabCk #wMap .mapctl').isVisible(), false, 'No buttons under the tablet map');
+      assert.deepEqual(await pt2.locator('#tkSrcBar button').allTextContents(), ['내 음악','YouTube Music','Spotify','라디오']);
+      await pt2.evaluate(() => { HTMLMediaElement.prototype.play = function(){ window.__tkRd = this.src; return Promise.resolve(); }; });
+      await pt2.evaluate(() => window.AmpRadio.play({id:'c',name:'CBS 음악FM',freq:93.9,ofc:true,url:'https://stream.example/cbs'}));
+      await pt2.evaluate(() => window.AmpRadio.stop());
+      await pt2.locator('#tkSrcBar [data-src="radio"]').click();
+      await pt2.waitForFunction(() => window.AmpRadio.state.playing && /CBS/.test(document.getElementById('tkTt').textContent), null, {timeout:3000});
+      assert.equal(await pt2.locator('#tkSrcBar [data-src="radio"]').evaluate(b => b.classList.contains('on')), true, 'Radio source lit');
+      await pt2.locator('#tkSrcBar [data-src="local"]').click();
+      assert.equal(await pt2.evaluate(() => window.AmpRadio.state.playing), false, 'Choosing my music stops the radio');
       await pt2.locator('#tabCk [data-k="setup"]').click();
       assert.equal(await pt2.locator('#tkSys').isVisible(), true, 'SETUP opens system settings');
       await pt2.locator('#tabCk [data-k="list"]').click();
