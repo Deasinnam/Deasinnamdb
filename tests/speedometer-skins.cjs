@@ -366,7 +366,7 @@ async function main() {
       window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
         cockpitState:()=>JSON.stringify({volume:Math.round(dev.level*100/dev.steps),wifiSupported:true,wifi:dev.wifi,hasBt:dev.hasBt,...(dev.bt===null?{}:{bt:dev.bt})}),
         setSystemVolume:p=>{dev.level=Math.round(p*dev.steps/100);log.push('vol:'+p)},
-        setWifi:w=>{log.push('wifi:'+w);return 'panel'},openApp:k=>log.push('open:'+k),openAppSide:k=>log.push('side:'+k),openAppBottom:k=>{log.push('bottom:'+k);return 'bottom'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
+        setWifi:w=>{log.push('wifi:'+w);return 'panel'},openApp:k=>log.push('open:'+k),openAppSide:k=>{log.push('side:'+k);return 'rotated'},openAppBottom:k=>{log.push('bottom:'+k);return 'bottom'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
     });
     await p7.goto(origin);
     await p7.waitForFunction(() => document.querySelector('#dkPlatformText').textContent === 'ANDROID LINK');
@@ -390,6 +390,10 @@ async function main() {
     const tl = await p7.evaluate(() => log.filter(x => /^(open|bottom|side):/.test(x)));
     assert.deepEqual(tl, ['bottom:com.skt.tmap.ku','open:com.skt.tmap.ku']);
     assert.match(await p7.locator('#toast').textContent(), /아래쪽/);
+    // 옆 창: 세로 화면이면 가로로 돌린 뒤 좌우로 붙인다고 안내
+    await p7.locator('#wMap [data-tmap="side"]').click();
+    assert.ok((await p7.evaluate(() => log)).includes('side:com.skt.tmap.ku'), 'Side launch requested');
+    assert.match(await p7.locator('#toast').textContent(), /가로/);
     await p7.close();
     // 창 순서: 설정에서 바꾸고 되돌리기
     const pa = await context.newPage();

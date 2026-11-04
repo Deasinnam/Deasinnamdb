@@ -3162,7 +3162,9 @@ document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{const k=b.dat
       if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
       else{toast(r==='landscape'?'TMAP을 함께 띄웠어요. 가로 화면에서는 안드로이드가 오른쪽에 붙여요. 세로로 돌리면 위아래로 나뉘어요.':'TMAP을 아래쪽에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
         setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)}}
-    else if(k==='side'&&NB.openAppSide)NB.openAppSide(TMAP_PKG);
+    else if(k==='side'&&NB.openAppSide){const r=NB.openAppSide(TMAP_PKG);
+      if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
+      else toast(r==='rotated'?'옆 창은 가로 화면에서만 좌우로 나뉘어서, 화면을 가로로 돌린 뒤 TMAP을 오른쪽에 붙여요. 분할을 끝내면 원래대로 돌아가요.':'TMAP을 오른쪽 옆 창으로 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.')}
     else NB.openApp(TMAP_PKG)}catch(e){}});
 if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
 

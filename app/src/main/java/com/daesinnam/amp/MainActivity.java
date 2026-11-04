@@ -97,6 +97,8 @@ public class MainActivity extends Activity {
     private RadioPlayer radio;
     private volatile boolean gpsWanted = false;
     private boolean hudOn = false;
+    private boolean landLock = false;   // 태블릿 모드 2: 가로 고정
+    private boolean sideLock = false;   // TMAP 옆 창: 좌우로 나누려고 잠시 가로로 돌림
     private boolean screenOnPlay = true; // 재생 중 화면 켜 두기(앱 설정: 자동이면 차량 스킨에서만)
     private boolean started = false;
 
@@ -511,6 +513,16 @@ public class MainActivity extends Activity {
         main.post(() -> {
             if (web != null) web.evaluateJavascript("window.__ctl && window.__ctl('" + cmd + "')", null);
         });
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean inMulti, android.content.res.Configuration cfg) {
+        super.onMultiWindowModeChanged(inMulti, cfg);
+        // 옆 창 분할이 끝나면 회전 설정을 원래대로(태블릿 모드 2면 가로 고정 유지)
+        if (!inMulti && sideLock) {
+            sideLock = false;
+            setRequestedOrientation(landLock ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+        }
     }
 
     @Override
@@ -1095,18 +1107,39 @@ public class MainActivity extends Activity {
             main.post(() -> MainActivity.this.openApp(pkg));
         }
 
-        /** DeX·분할 화면에서 다른 앱(TMAP 등)을 이 앱 옆 창으로 엽니다. 전체 화면일 때는 그냥 열립니다. */
+        /**
+         * TMAP 등을 이 앱 옆(좌우)에 띄웁니다.
+         * 안드로이드 분할 화면은 세로 화면이면 무조건 위아래로 나누므로, 세로일 때는 먼저 가로로 돌린 뒤 붙입니다.
+         * (분할이 끝나면 원래 회전 설정으로 돌아감) DeX·자유 창에서는 화면 오른쪽 절반 크기로 엽니다.
+         * 반환: "side" | "rotated" | "missing"
+         */
         @JavascriptInterface
-        public void openAppSide(final String pkg) {
-            main.post(() -> {
-                Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
-                if (launch == null) {
-                    MainActivity.this.openApp(pkg);
-                    return;
-                }
+        public String openAppSide(final String pkg) {
+            final Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (launch == null) {
+                main.post(() -> MainActivity.this.openApp(pkg));
+                return "missing";
+            }
+            final Rect full = new Rect();
+            if (Build.VERSION.SDK_INT >= 30) full.set(getWindowManager().getMaximumWindowMetrics().getBounds());
+            else { android.util.DisplayMetrics dm = new android.util.DisplayMetrics(); getWindowManager().getDefaultDisplay().getRealMetrics(dm); full.set(0, 0, dm.widthPixels, dm.heightPixels); }
+            final boolean portrait = full.width() < full.height() && !isInMultiWindowMode();
+            final Runnable go = () -> {
                 launch.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
-                try { startActivity(launch); } catch (Exception e) { MainActivity.this.openApp(pkg); }
+                Rect now = new Rect();
+                if (Build.VERSION.SDK_INT >= 30) now.set(getWindowManager().getMaximumWindowMetrics().getBounds()); else now.set(full);
+                ActivityOptions o = ActivityOptions.makeBasic();
+                o.setLaunchBounds(new Rect(now.left + now.width() / 2, now.top, now.right, now.bottom));
+                try { startActivity(launch, o.toBundle()); } catch (Exception e) { MainActivity.this.openApp(pkg); }
+            };
+            main.post(() -> {
+                if (portrait) {
+                    sideLock = true;
+                    setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                    main.postDelayed(go, 700); // 화면이 가로로 돈 뒤에 붙여야 좌우로 나뉨
+                } else go.run();
             });
+            return portrait ? "rotated" : "side";
         }
 
         /**
@@ -1183,7 +1216,7 @@ public class MainActivity extends Activity {
         /** 태블릿 모드 2: 가로 화면으로 고정(끄면 원래대로 자동 회전) */
         @JavascriptInterface
         public void setLandscape(final boolean on) {
-            main.post(() -> setRequestedOrientation(on ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER));
+            main.post(() -> { landLock = on; if (!sideLock) setRequestedOrientation(on ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER); });
         }
 
         /** 재생 중 화면을 켜 둘지(앱 설정) */
