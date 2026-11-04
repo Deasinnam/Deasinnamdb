@@ -18,9 +18,10 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: 속도계 디자인과 GPS 연동 확인
+      - name: 화면 테스트 (web/src → app.js 묶기 확인 포함)
         run: |
           npm ci
+          npm run check
           npx playwright install --with-deps chromium
           npm test
 

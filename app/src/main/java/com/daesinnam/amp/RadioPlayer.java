@@ -16,7 +16,12 @@ import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.common.audio.AudioProcessor;
+import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.audio.AudioSink;
+import androidx.media3.exoplayer.audio.DefaultAudioSink;
+import androidx.media3.exoplayer.audio.TeeAudioProcessor;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 
 import org.json.JSONObject;
@@ -41,6 +46,8 @@ final class RadioPlayer {
     private final Context ctx;
     private final Handler main = new Handler(Looper.getMainLooper());
     private ExoPlayer p;
+    /** 라디오 소리(PCM)로 음악 효과(시각화)를 그립니다 — 마이크 권한 없이, 내 음악과 같은 방식 */
+    static final SpectrumTap TAP = new SpectrumTap();
     private volatile String state = "idle"; // idle | resolving | buffering | playing | error
     private volatile String err = "";
     private volatile String url = "";
@@ -58,8 +65,16 @@ final class RadioPlayer {
         DefaultHttpDataSource.Factory http = new DefaultHttpDataSource.Factory()
                 .setUserAgent(UA).setAllowCrossProtocolRedirects(true)
                 .setConnectTimeoutMs(12000).setReadTimeoutMs(15000);
-        p = new ExoPlayer.Builder(ctx)
-                .setMediaSourceFactory(new DefaultMediaSourceFactory(new DefaultDataSource.Factory(ctx, http)))
+        DefaultRenderersFactory renderers = new DefaultRenderersFactory(ctx) {
+            @Override
+            protected AudioSink buildAudioSink(@NonNull Context c, boolean floatOutput, boolean audioTrackPlaybackParams) {
+                return new DefaultAudioSink.Builder(c)
+                        .setAudioProcessors(new AudioProcessor[]{new TeeAudioProcessor(TAP)})
+                        .build();
+            }
+        };
+        p = new ExoPlayer.Builder(ctx, renderers)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(new DefaultDataSource.Factory(ctx, new RadioHttpDataSource.Maker(http, UA))))
                 .setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
                 .setHandleAudioBecomingNoisy(true)
                 .setWakeMode(C.WAKE_MODE_NETWORK)
@@ -196,22 +211,16 @@ final class RadioPlayer {
     }
 
     private static String resolvePlaylist(String u) {
-        try {
-            HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
-            c.setRequestProperty("User-Agent", UA);
-            c.setConnectTimeout(8000);
-            c.setReadTimeout(8000);
-            c.setInstanceFollowRedirects(true);
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(c.getInputStream()))) {
-                String line;
-                for (int n = 0; n < 200 && (line = r.readLine()) != null; n++) {
-                    line = line.trim();
-                    int eq = line.indexOf('=');
-                    if (line.toLowerCase(Locale.ROOT).startsWith("file") && eq > 0) line = line.substring(eq + 1).trim();
-                    if (line.startsWith("http://") || line.startsWith("https://")) return line;
-                }
-            }
-        } catch (Exception ignored) {}
+        String body = RadioHttpDataSource.getText(u, UA, 64000); // http 재생목록도 라디오 전용 읽기로
+        if (body == null) return null;
+        int n = 0;
+        for (String line : body.split("\n")) {
+            if (n++ > 200) break;
+            line = line.trim();
+            int eq = line.indexOf('=');
+            if (line.toLowerCase(Locale.ROOT).startsWith("file") && eq > 0) line = line.substring(eq + 1).trim();
+            if (line.startsWith("http://") || line.startsWith("https://")) return line;
+        }
         return null;
     }
 

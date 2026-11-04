@@ -82,7 +82,21 @@ public class MainActivity extends Activity {
     private String[] pendingCam;
     private String pendingCall;
     private boolean attWanted;
-    private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
+    // 보안: 앱 화면은 앱 전용 주소(.invalid는 실제 인터넷에 없는 이름)에서, 외부 지도 SDK는 지도 키에 등록한
+    // 기존 주소(appassets.androidplatform.net)의 map.html에서만 돌립니다. 출처가 달라 지도 코드는 앱 화면과 기능에 손댈 수 없습니다.
+    static final String APP_HOST = "app.daesinnam.invalid";
+    static final String MAP_HOST = "appassets.androidplatform.net";
+    private static final String START_URL = "https://" + APP_HOST + "/assets/index.html";
+    private static final String MIGRATE_URL = "https://" + MAP_HOST + "/assets/migrate.html";
+    /** 앱 기능(AndroidBridge) 열쇠: 앱 화면(최상위 문서)에만 심어 줍니다. 지도 등 다른 프레임은 몰라서 부를 수 없습니다. */
+    static final String NBT = newToken();
+    private static String newToken() {
+        byte[] b = new byte[24];
+        new java.security.SecureRandom().nextBytes(b);
+        StringBuilder sb = new StringBuilder();
+        for (byte x : b) sb.append(String.format(java.util.Locale.ROOT, "%02x", x));
+        return sb.toString();
+    }
 
     static WeakReference<MainActivity> current = new WeakReference<>(null);
 
@@ -189,6 +203,11 @@ public class MainActivity extends Activity {
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
+                .setDomain(APP_HOST)
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
+        final WebViewAssetLoader mapLoader = new WebViewAssetLoader.Builder()
+                .setDomain(MAP_HOST)
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
                 .build();
 
@@ -196,16 +215,25 @@ public class MainActivity extends Activity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri u = request.getUrl();
-                if ("appassets.androidplatform.net".equals(u.getHost()) && ("/media".equals(u.getPath()) || "/art".equals(u.getPath()))) {
-                    return MediaLibrary.serve(MainActivity.this, u, request.getRequestHeaders());
+                String host = u.getHost(), path = u.getPath() == null ? "" : u.getPath();
+                if (MAP_HOST.equals(host)) {
+                    // 지도 주소에서는 지도 페이지와 (처음 한 번) 설정 옮기기 페이지만 엽니다. 음악 파일·블랙박스 화면 등은 주지 않습니다.
+                    if ("/assets/map.html".equals(path)) return mapLoader.shouldInterceptRequest(u);
+                    if ("/assets/migrate.html".equals(path) && request.isForMainFrame()) return pageWithToken("migrate.html");
+                    return denied();
                 }
-                if ("appassets.androidplatform.net".equals(u.getHost()) && "/cam/frame.jpg".equals(u.getPath())) {
-                    return camFrame();
+                if (!APP_HOST.equals(host)) return null; // 일반 인터넷 주소
+                if ("/media".equals(path) || "/art".equals(path)) return MediaLibrary.serve(MainActivity.this, u, request.getRequestHeaders());
+                if ("/cam/frame.jpg".equals(path)) return camFrame();
+                if (path.startsWith("/tts/")) return ttsFile(u.getLastPathSegment());
+                if (path.endsWith(".html") || path.endsWith(".htm")) {
+                    // 앱 화면은 최상위 문서로만(다른 프레임 안에 앱 화면을 띄워 같은 출처로 들어오는 것을 막음).
+                    // 지도 페이지 등 다른 html은 앱 주소에서 열지 않습니다.
+                    if (request.isForMainFrame() && "/assets/index.html".equals(path)) return pageWithToken("index.html");
+                    return denied();
                 }
-                if ("appassets.androidplatform.net".equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/tts/")) {
-                    return ttsFile(u.getLastPathSegment());
-                }
-                return loader.shouldInterceptRequest(u);
+                WebResourceResponse r = loader.shouldInterceptRequest(u);
+                return r != null ? r : denied(); // 앱 주소는 인터넷으로 나가지 않음
             }
         });
 
@@ -228,9 +256,14 @@ public class MainActivity extends Activity {
             }
         });
 
-        web.addJavascriptInterface(new Bridge(), "AndroidBridge");
+        web.addJavascriptInterface(new Gate(new Bridge()), "AndroidBridge");
 
-        if (savedInstanceState != null) web.restoreState(savedInstanceState);
+        SharedPreferences ap = getSharedPreferences("app", MODE_PRIVATE);
+        if (!ap.getBoolean("origin2", false)) {
+            // 1.15: 앱 화면 주소가 바뀌어 이전 주소에 저장된 설정·재생목록·즐겨찾기를 한 번 옮깁니다.
+            web.loadUrl(MIGRATE_URL);
+            main.postDelayed(() -> { if (!getSharedPreferences("app", MODE_PRIVATE).getBoolean("origin2", false)) finishMigrate(null); }, 6000);
+        } else if (savedInstanceState != null && NBT.equals(savedInstanceState.getString("nbt"))) web.restoreState(savedInstanceState);
         else web.loadUrl(START_URL);
 
         connectPlayer();
@@ -326,14 +359,191 @@ public class MainActivity extends Activity {
         js("window.__camConnect && window.__camConnect(" + JSONObject.quote(r) + ")");
     }
 
+    // ---------- 보안: 앱 화면에 열쇠 심기, 막힌 주소
+    private WebResourceResponse denied() {
+        return new WebResourceResponse("text/plain", "utf-8", 403, "Forbidden", null, new java.io.ByteArrayInputStream(new byte[0]));
+    }
+
+    private WebResourceResponse pageWithToken(String asset) {
+        try (java.io.InputStream in = getAssets().open(asset)) {
+            java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream();
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = in.read(buf)) > 0) b.write(buf, 0, n);
+            String html = b.toString("UTF-8").replace("\"__NBT__\"", "\"" + NBT + "\"");
+            java.util.Map<String, String> h = new java.util.HashMap<>();
+            h.put("Cache-Control", "no-store");
+            h.put("Referrer-Policy", "strict-origin-when-cross-origin");
+            return new WebResourceResponse("text/html", "utf-8", 200, "OK", h, new java.io.ByteArrayInputStream(html.getBytes("UTF-8")));
+        } catch (Exception e) {
+            return denied();
+        }
+    }
+
+    /** 설정 옮기기 끝: 옮길 내용을 파일에 두고 앱 화면을 엶 */
+    private void finishMigrate(String json) {
+        try {
+            if (json != null && json.length() > 2) {
+                try (java.io.FileOutputStream o = openFileOutput("ls-migrate.json", MODE_PRIVATE)) { o.write(json.getBytes("UTF-8")); }
+            }
+        } catch (Exception ignored) {}
+        getSharedPreferences("app", MODE_PRIVATE).edit().putBoolean("origin2", true).apply();
+        if (web != null) web.loadUrl(START_URL);
+    }
+
+    private String takeMigrate() {
+        java.io.File f = new java.io.File(getFilesDir(), "ls-migrate.json");
+        if (!f.exists()) return "";
+        String s = "";
+        try (java.io.FileInputStream in = new java.io.FileInputStream(f)) {
+            java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream();
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = in.read(buf)) > 0) b.write(buf, 0, n);
+            s = b.toString("UTF-8");
+        } catch (Exception ignored) {}
+        //noinspection ResultOfMethodCallIgnored
+        f.delete();
+        // 옛 주소의 사본은 지도 프레임과 같은 출처라 지웁니다(지도 SDK가 읽지 못하게).
+        main.post(() -> { try { android.webkit.WebStorage.getInstance().deleteOrigin("https://" + MAP_HOST); } catch (Exception ignored) {} });
+        return s;
+    }
+
+    /**
+     * 화면에 드러나는 앱 기능은 이것 하나: 열쇠(NBT)가 맞을 때만 Bridge의 기능을 이름으로 불러 줍니다.
+     * (안드로이드는 addJavascriptInterface 객체를 지도 iframe을 포함한 모든 프레임에 넣으므로, 열쇠로 앱 화면만 쓰게 합니다.)
+     * 돌려주는 값: s글자 · b1/b0 · n숫자 · z(null) · u(없음) · e오류
+     */
+    private final class Gate {
+        private final Object target;
+        private final java.util.HashMap<String, java.lang.reflect.Method> map = new java.util.HashMap<>();
+        private final String names;
+
+        Gate(Object target) {
+            this.target = target;
+            StringBuilder sb = new StringBuilder();
+            for (java.lang.reflect.Method m : target.getClass().getDeclaredMethods()) {
+                if (!m.isAnnotationPresent(JavascriptInterface.class)) continue;
+                m.setAccessible(true);
+                map.put(m.getName(), m);
+                if (sb.length() > 0) sb.append(',');
+                sb.append(m.getName());
+            }
+            names = sb.toString();
+        }
+
+        @JavascriptInterface
+        public String methods(String tok) {
+            return NBT.equals(tok) ? names : "";
+        }
+
+        @JavascriptInterface
+        public String call(String tok, String name, String args) {
+            if (!NBT.equals(tok)) return "eDenied";
+            java.lang.reflect.Method m = map.get(name);
+            if (m == null) return "eNo method " + name;
+            try {
+                Class<?>[] ps = m.getParameterTypes();
+                org.json.JSONArray a = args == null || args.isEmpty() ? new org.json.JSONArray() : new org.json.JSONArray(args);
+                Object[] v = new Object[ps.length];
+                for (int i = 0; i < ps.length; i++) {
+                    Object x = i < a.length() ? a.opt(i) : null;
+                    if (x == JSONObject.NULL) x = null;
+                    Class<?> t = ps[i];
+                    if (t == String.class) v[i] = x == null ? null : String.valueOf(x);
+                    else if (t == boolean.class) v[i] = x instanceof Boolean ? (Boolean) x : x instanceof Number ? ((Number) x).doubleValue() != 0 : (x instanceof String && !((String) x).isEmpty());
+                    else if (t == int.class) v[i] = x instanceof Number ? ((Number) x).intValue() : x instanceof String ? (int) parseNum((String) x) : 0;
+                    else if (t == long.class) v[i] = x instanceof Number ? ((Number) x).longValue() : x instanceof String ? (long) parseNum((String) x) : 0L;
+                    else if (t == double.class) v[i] = x instanceof Number ? ((Number) x).doubleValue() : x instanceof String ? parseNum((String) x) : 0d;
+                    else if (t == float.class) v[i] = x instanceof Number ? ((Number) x).floatValue() : x instanceof String ? (float) parseNum((String) x) : 0f;
+                    else v[i] = null;
+                }
+                Object r = m.invoke(target, v);
+                if (r == null) return m.getReturnType() == void.class ? "u" : "z"; // z = null
+                if (r instanceof String) return "s" + r;
+                if (r instanceof Boolean) return (Boolean) r ? "b1" : "b0";
+                if (r instanceof Number) return "n" + r;
+                return "s" + r;
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                Throwable c = e.getCause();
+                return "e" + (c != null ? c : e);
+            } catch (Exception e) {
+                return "e" + e;
+            }
+        }
+
+        private double parseNum(String s) {
+            try { return Double.parseDouble(s.trim()); } catch (Exception e) { return 0; }
+        }
+    }
+
     // ---------- 콕핏 스킨 SOS: 정해 둔 연락처로 바로 전화
     private void placeCall(String number, boolean direct) {
         Uri u = Uri.parse("tel:" + Uri.encode(number));
+        callArmed = true; // 앱에서 건 전화: 끝나면 앱으로 돌아옵니다.
+        callAt = SystemClock.elapsedRealtime();
+        main.removeCallbacks(callTick);
+        main.postDelayed(callTick, 1500);
+        // 전화 앱 화면을 이 앱 위에 열지 않고 통신 서비스로 바로 겁니다. 통화가 끝나면 통화 화면이 닫히고 이 앱이 다시 보입니다.
+        if (direct && checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                android.telecom.TelecomManager tm = getSystemService(android.telecom.TelecomManager.class);
+                if (tm != null) { tm.placeCall(u, new Bundle()); return; }
+            } catch (Exception ignored) {}
+        }
         try {
             startActivity(new Intent(direct ? Intent.ACTION_CALL : Intent.ACTION_DIAL, u));
         } catch (Exception e) {
             try { startActivity(new Intent(Intent.ACTION_DIAL, u)); } catch (Exception ignored) {}
         }
+    }
+
+    // ---------- 통화가 끝나면 통화 화면을 치우고 이 앱으로 돌아오기
+    // 앱이 보이던 중에 전화가 오거나(받은 전화) 앱에서 건 전화일 때만 돌아옵니다. 통화 상태는 오디오 모드로 확인(전화 권한 불필요).
+    private boolean callArmed = false, callSeen = false;
+    private long callAt = 0, stopAt = 0;
+    private static boolean inCallMode(int m) {
+        return m == AudioManager.MODE_IN_CALL || m == AudioManager.MODE_IN_COMMUNICATION || m == AudioManager.MODE_RINGTONE
+                || m == 4 /* MODE_CALL_SCREENING */;
+    }
+    private final Runnable callTick = new Runnable() {
+        @Override
+        public void run() {
+            if (started && resumed && !callSeen) { callArmed = false; return; } // 이미 앱이 보이면 할 일 없음
+            AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+            int m = am == null ? AudioManager.MODE_NORMAL : am.getMode();
+            long now = SystemClock.elapsedRealtime();
+            if (inCallMode(m)) {
+                // 앱이 화면에 있다가 통화 때문에 가려진 경우(가려진 지 6초 안에 통화 시작)
+                if (!callArmed && stopAt > 0 && now - stopAt < 6000) callArmed = true;
+                if (callArmed) callSeen = true;
+            } else if (callSeen) {
+                callSeen = false;
+                callArmed = false;
+                main.postDelayed(MainActivity.this::returnAfterCall, 900); // "통화 종료" 표시를 잠깐 보여 준 뒤
+                return;
+            } else if (callArmed && now - callAt > 60000) {
+                callArmed = false; // 전화가 연결되지 않음
+                return;
+            } else if (!callArmed && now - stopAt > 8000) {
+                return; // 통화 때문에 가려진 것이 아님
+            }
+            main.postDelayed(this, 1000);
+        }
+    };
+
+    private void returnAfterCall() {
+        if (started && resumed) return;
+        if (!getSharedPreferences("app", MODE_PRIVATE).getBoolean("callReturn", true)) return;
+        try {
+            Intent i = new Intent(this, MainActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        } catch (Exception ignored) {}
+        try {
+            android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
+            if (am != null) am.moveTaskToFront(getTaskId(), 0);
+        } catch (Exception ignored) {}
     }
 
     /** 연락처 앱에서 고른 번호 하나만 읽습니다(연락처 전체 읽기 권한 없이). */
@@ -539,6 +749,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         started = false;
+        stopAt = SystemClock.elapsedRealtime();
+        main.removeCallbacks(callTick);
+        main.postDelayed(callTick, 1200); // 통화 화면 때문에 가려졌는지 확인
         main.removeCallbacks(natTick); // 화면이 꺼져 있을 땐 0.2초마다 상태 읽기를 멈춤(재생은 서비스가 계속)
         gps.stop(); // 화면에 안 보일 때는 GPS를 꺼서 배터리를 아낍니다.
         gps.attStop();
@@ -588,6 +801,7 @@ public class MainActivity extends Activity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         if (web != null) web.saveState(out);
+        out.putString("nbt", NBT); // 같은 열쇠일 때만(앱이 다시 시작되지 않았을 때만) 화면 상태를 되살림
     }
 
     // ---------- 콕핏 스킨: 관제탑 음성
@@ -1351,6 +1565,16 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** 라디오 소리의 주파수 막대·파형(npFft와 같은 형식) */
+        @JavascriptInterface
+        public String radioFft() { return RadioPlayer.TAP.fft(); }
+
+        @JavascriptInterface
+        public String radioWave() { return RadioPlayer.TAP.wave(); }
+
+        @JavascriptInterface
+        public int radioRate() { return RadioPlayer.TAP.sampleRate; }
+
         @JavascriptInterface
         public String radioState() { return radio == null ? "{}" : radio.status(); }
 
@@ -1366,6 +1590,24 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setKeepPlaying(final boolean keep) {
             getSharedPreferences("app", MODE_PRIVATE).edit().putBoolean("keepPlay", keep).apply();
+        }
+
+        /** 1.15 주소 변경: 이전 주소의 저장 내용(migrate.html에서) 받기 */
+        @JavascriptInterface
+        public void migrateSave(final String json) {
+            main.post(() -> { if (!getSharedPreferences("app", MODE_PRIVATE).getBoolean("origin2", false)) finishMigrate(json); });
+        }
+
+        /** 새 주소의 앱 화면이 시작할 때 한 번: 옮길 내용(JSON, 없으면 빈 글자) */
+        @JavascriptInterface
+        public String migrateTake() {
+            return takeMigrate();
+        }
+
+        /** 설정: 통화가 끝나면 통화 화면을 닫고 이 앱으로 돌아오기(기본 true) */
+        @JavascriptInterface
+        public void setCallReturn(final boolean on) {
+            getSharedPreferences("app", MODE_PRIVATE).edit().putBoolean("callReturn", on).apply();
         }
 
         /** 태블릿 가로모드 밝기 손잡이: 이 앱 창의 화면 밝기(10~100%). 음수면 시스템 밝기로 되돌림 */

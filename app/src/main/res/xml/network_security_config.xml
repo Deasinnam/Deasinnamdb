@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 암호화되지 않은 http 통신은 기본으로 막습니다.
+     - 지도 그림(타일)을 http로 보내는 지도 서버만 예외로 둡니다.
+     - 인터넷 라디오의 http 방송은 라디오 재생기 전용 읽기(RadioHttpDataSource)로만 받습니다.
+     - 블랙박스(D1 DASHCAM)는 와이파이 소켓으로 직접 연결하므로 이 설정과 관계없습니다. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">tmap.co.kr</domain>
+        <domain includeSubdomains="true">sktelecom.com</domain>
+        <domain includeSubdomains="true">sk.com</domain>
+        <domain includeSubdomains="true">daumcdn.net</domain>
+        <domain includeSubdomains="true">kakao.com</domain>
+        <domain includeSubdomains="true">pstatic.net</domain>
+        <domain includeSubdomains="true">naver.net</domain>
+    </domain-config>
+</network-security-config>

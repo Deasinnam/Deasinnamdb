@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>설정 옮기는 중</title>
+<style>html,body{margin:0;height:100%;background:#0b0f14;color:#cfd8dc;font:15px system-ui,sans-serif;display:flex;align-items:center;justify-content:center}</style>
+</head>
+<body>
+<p>업데이트: 설정과 재생목록을 옮기는 중이에요…</p>
+<script>
+/* 1.15 한 번만: 앱 화면 주소가 바뀌어 이전 주소(이 페이지와 같은 주소)에 저장된 설정을 앱으로 넘깁니다. */
+(function () {
+  var T = "__NBT__", G = window.AndroidBridge, d = {};
+  try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); d[k] = localStorage.getItem(k); } } catch (e) {}
+  try { if (G && G.call && T.length > 20) G.call(T, 'migrateSave', JSON.stringify([JSON.stringify(d)])); } catch (e) {}
+})();
+</script>
+</body>
+</html>

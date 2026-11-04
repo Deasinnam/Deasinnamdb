@@ -6,7 +6,7 @@
  */
 (function () {
   'use strict';
-  const NBx = window.AndroidBridge || null;
+  const NBx = window.__AmpNB || window.AndroidBridge || null;
   const H = window.AmpTk || {};                       // index.html이 내준 읽기·호출 창구
   const has = n => typeof H[n] === 'function';
   const G = expr => { try { return expr(); } catch (e) { return undefined; } };
@@ -233,9 +233,7 @@
   function loadJs(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
   function leaflet() {
     if (window.L && window.L.map) return Promise.resolve();
-    const CDN = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
-    return loadCss('leaflet/leaflet.css').catch(() => loadCss(CDN + 'leaflet.min.css'))
-      .then(() => loadJs('leaflet/leaflet.js').catch(() => loadJs(CDN + 'leaflet.min.js')));
+    return loadCss('leaflet/leaflet.css').then(() => loadJs('leaflet/leaflet.js')); // 앱에 함께 넣은 파일만
   }
   function mapInit() {
     if (map || mapLoading) return;

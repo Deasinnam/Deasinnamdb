@@ -1,6 +1,10 @@
 {
   "name": "daesinnam-amp-ui-checks",
   "private": true,
-  "scripts": {"test": "node tests/speedometer-skins.cjs"},
+  "scripts": {
+    "build": "node tools/build-web.cjs",
+    "check": "node tools/build-web.cjs --check",
+    "test": "node tools/build-web.cjs && node tests/run.cjs"
+  },
   "devDependencies": {"playwright": "1.62.1"}
 }
