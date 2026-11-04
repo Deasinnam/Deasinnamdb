@@ -72,12 +72,12 @@
   </main>
   <div class="tk-check sc" id="tkCheck"><b>PRE-DRIVE CHECK</b><span data-c="gps"><i></i>GPS READY</span><span data-c="audio"><i></i>AUDIO READY</span><span data-c="bt"><i></i>BT CONNECTED</span><em id="tkCheckNote"></em></div>
   <div class="tk-ctrl">
-    <div class="tk-mod sc"><h4>VOLUME</h4><div class="row"><div class="tk-knob" id="tkVol" style="--ks:clamp(92px,13vh,130px)" role="slider" aria-label="볼륨" aria-valuemin="0" aria-valuemax="100" tabindex="0"><svg class="ring" viewBox="0 0 100 100"></svg><div class="cap"></div></div><span class="tk-val" id="tkVolV">—</span></div></div>
+    <div class="tk-mod sc"><h4>VOLUME</h4><div class="row"><div class="tk-knob" id="tkVol" style="--ks:clamp(92px,calc(var(--tvh,1vh)*13),130px)" role="slider" aria-label="볼륨" aria-valuemin="0" aria-valuemax="100" tabindex="0"><svg class="ring" viewBox="0 0 100 100"></svg><div class="cap"></div></div><span class="tk-val" id="tkVolV">—</span></div></div>
     <div class="tk-mod sc"><h4>WIFI</h4><div class="row"><svg class="tk-ico" id="tkWifiI" viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r="1.2" fill="currentColor"/></svg><button class="tk-tog" id="tkWifi" role="switch" aria-checked="false" aria-label="와이파이"></button><div class="tk-lab"><span data-on>ON</span><span data-off>OFF</span></div></div><div class="tk-note" id="tkWifiN"></div></div>
     <div class="tk-mod sc"><div class="tk-sosw" id="tkSosW"><button class="tk-sosb" id="tkSos" aria-label="SOS 전화">SOS</button><button class="tk-cover" id="tkCover" aria-label="SOS 덮개 열기"><b>LIFT</b></button></div><div class="cap2" id="tkSosN">LIFT TO OPEN</div></div>
     <div class="tk-mod sc"><h4>BT</h4><div class="row"><div class="tk-lab"><span data-on>ON</span><span data-off>OFF</span></div><button class="tk-tog" id="tkBt" role="switch" aria-checked="false" aria-label="블루투스"></button><svg class="tk-ico" id="tkBtI" viewBox="0 0 24 24"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg></div><div class="tk-note" id="tkBtN"></div></div>
     <div class="tk-mod sc"><h4>DRIVE MODE</h4><button class="tk-dm" id="tkDm">${svg('M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm2.2-1h9.6l-1-3H8.2zM7.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm9 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z')}<span id="tkDmT">NORMAL</span></button></div>
-    <div class="tk-mod sc"><h4>BRIGHTNESS</h4><div class="row"><div class="tk-knob" id="tkBri" style="--ks:clamp(70px,10vh,96px)" role="slider" aria-label="화면 밝기" aria-valuemin="10" aria-valuemax="100" tabindex="0"><svg class="ring" viewBox="0 0 100 100"></svg><div class="cap"></div></div></div><div class="cap2" id="tkBriV">100%</div></div>
+    <div class="tk-mod sc"><h4>BRIGHTNESS</h4><div class="row"><div class="tk-knob" id="tkBri" style="--ks:clamp(70px,calc(var(--tvh,1vh)*10),96px)" role="slider" aria-label="화면 밝기" aria-valuemin="10" aria-valuemax="100" tabindex="0"><svg class="ring" viewBox="0 0 100 100"></svg><div class="cap"></div></div></div><div class="cap2" id="tkBriV">100%</div></div>
   </div>
   <footer class="tk-tabs" role="tablist">
     <button class="on" data-t="nav" role="tab">${svg('M12 2 20 21 12 16.5 4 21z')}NAV</button>
@@ -144,9 +144,25 @@
     v2 = nv; root.classList.toggle('v2', v2);
     $('#tkVer').textContent = v2 ? 'TABLET LANDSCAPE 2 · CONCEPT 02' : 'TABLET LANDSCAPE · CONCEPT 01';
     activate(want);
+    fit();
     knobDraws.forEach(f => f());
     try { if (NBx && NBx.setLandscape) NBx.setLandscape(on && v2); } catch (e) {}
   }
+  // 가로 화면: 1600×1000 기준 디자인을 화면에 맞춰 통째로 축소 → 어떤 해상도에서도 같은 배치
+  const BASE_W = 1600, BASE_H = 1000;
+  function fit() {
+    const st = root.style, land = innerWidth >= innerHeight;
+    if (!on || !land) { root.classList.remove('fit'); ['width', 'height', 'transform', 'transformOrigin', 'inset', 'left', 'top'].forEach(k => st[k] = ''); st.removeProperty('--tvh'); return; }
+    const sc = Math.min(1.5, innerWidth / BASE_W, innerHeight / BASE_H); // 작은 화면은 줄이고 큰 화면은 1.5배까지 키움
+    root.classList.add('fit');
+    st.inset = 'auto'; st.left = '0'; st.top = '0';
+    st.width = (innerWidth / sc) + 'px'; st.height = (innerHeight / sc) + 'px';
+    st.transformOrigin = '0 0'; st.transform = Math.abs(sc - 1) > .001 ? 'scale(' + sc + ')' : '';
+    st.setProperty('--tvh', (innerHeight / sc / 100) + 'px'); // 기준 화면 높이의 1%
+    if (map) setTimeout(() => map.invalidateSize(), 60);
+    setTimeout(() => { try { has('mapRefresh') && H.mapRefresh(); } catch (e) {} }, 120);
+  }
+  addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200));
   new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin', 'data-tk2'] });
 
   function fillSkinSelect() {

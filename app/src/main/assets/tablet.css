@@ -82,9 +82,9 @@
 .tk-audio .tk-glass{display:flex;flex-direction:column;align-items:stretch;justify-content:space-evenly;padding:12px 16px 14px;gap:6px;background:linear-gradient(180deg,#0b0e10,#080a0b)}
 .tk-src{text-align:center;font-size:16px;letter-spacing:.2em;color:#c9cfcc}
 #tkWave{width:100%;flex:1 1 60px;min-height:44px;max-height:150px}
-.tk-cov{flex:0 1 auto;align-self:center;height:min(30vh,100%);max-height:320px;min-height:0;aspect-ratio:1;border-radius:6px;border:1px solid #000;background:#0f1416 center/cover no-repeat;box-shadow:0 6px 16px #000a}
+.tk-cov{flex:0 1 auto;align-self:center;height:min(calc(var(--tvh,1vh)*30),100%);max-height:320px;min-height:0;aspect-ratio:1;border-radius:6px;border:1px solid #000;background:#0f1416 center/cover no-repeat;box-shadow:0 6px 16px #000a}
 .tk-cov.empty{background:#0f1416 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%234be38a' fill-opacity='.25' d='M9 3v10.55A4 4 0 1 0 11 17V7h6V3H9z'/%3E%3C/svg%3E") center/40% no-repeat}
-@media (max-height:860px){.tk-cov{display:none}}
+@media (max-height:860px){#tabCk:not(.fit) .tk-cov{display:none}}
 .tk-tt{text-align:center;font-size:clamp(22px,2.6vw,34px);font-weight:600;letter-spacing:.06em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"Barlow Condensed","Noto Sans KR",sans-serif}
 .tk-ar{text-align:center;font-size:clamp(14px,1.4vw,18px);color:#c9cfcc;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"Noto Sans KR",sans-serif;letter-spacing:.02em}
 .tk-seek{position:relative;height:28px;margin-top:6px;touch-action:none;cursor:pointer}
@@ -93,7 +93,7 @@
 .tk-seek b{position:absolute;top:6px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #0008}
 .tk-times{display:flex;justify-content:space-between;font-family:"Share Tech Mono",monospace;font-size:15px;color:#c9cfcc}
 .tk-tr{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:12px;margin-top:6px}
-.tk-tr button{height:clamp(48px,7vh,66px);border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#2a3034,#15191c);box-shadow:inset 0 1px 0 #ffffff1a,inset 0 -3px 0 #0a0c0d,0 3px 6px #000a;display:grid;place-items:center}
+.tk-tr button{height:clamp(48px,calc(var(--tvh,1vh)*7),66px);border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#2a3034,#15191c);box-shadow:inset 0 1px 0 #ffffff1a,inset 0 -3px 0 #0a0c0d,0 3px 6px #000a;display:grid;place-items:center}
 .tk-tr svg{width:28px;height:28px;fill:var(--g)}.tk-tr .pp svg{fill:#fff;width:32px;height:32px}
 /* 출발 전 점검 */
 .tk-check{display:flex;align-items:center;gap:clamp(14px,3vw,46px);margin:0 12px;padding:0 26px;height:50px;border:1px solid #000;border-radius:8px;background:#0a0c0d;box-shadow:inset 0 1px 4px #000,0 0 0 1px #2a2f33}
@@ -104,7 +104,7 @@
 .tk-check span.ok i::after{content:"";width:9px;height:5px;border:3px solid #06140c;border-top:0;border-right:0;transform:translateY(-2px) rotate(-45deg)}
 .tk-check em{font-style:normal;font-size:14px;color:var(--mut);padding-left:22px;border-left:1px solid #2b3330;white-space:nowrap}
 /* 조작부 */
-.tk-ctrl{display:grid;grid-template-columns:1.3fr 1fr .85fr 1fr .9fr .9fr;gap:10px;padding:10px 12px;height:clamp(150px,23vh,230px)}
+.tk-ctrl{display:grid;grid-template-columns:1.3fr 1fr .85fr 1fr .9fr .9fr;gap:10px;padding:10px 12px;height:clamp(150px,calc(var(--tvh,1vh)*23),230px)}
 .tk-mod{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;border:1px solid #000;border-radius:10px;min-width:0;
   background:radial-gradient(#ffffff05 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,#22272a,#141719);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #2a2f33}
 .tk-mod>h4{margin:0;font-size:18px;font-weight:600;letter-spacing:.16em;color:#dfe4e1}
@@ -149,7 +149,7 @@
 .tk-tabs button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:4px;height:3px;border-radius:2px;background:var(--g);box-shadow:0 0 8px var(--g)}
 .tk-tabs .ver{display:flex;align-items:center;justify-content:flex-end;padding-right:18px;font-size:12px;color:#6c7673;letter-spacing:.14em}
 /* 작은 화면·세로: 한 줄로 쌓고 스크롤 */
-@media (max-width:1000px),(orientation:portrait){
+@media (orientation:portrait){ /* 가로는 tablet.js가 화면 크기에 맞춰 통째로 축소(fit) */
   #tabCk{overflow-y:auto;grid-template-rows:auto auto auto auto auto}
   .tk-top{grid-template-columns:1fr auto;padding-left:18px;height:auto;min-height:52px}
   .tk-top{grid-template-columns:minmax(0,1fr)!important;justify-items:start}
@@ -159,17 +159,13 @@
   .tk-right .clock{flex-wrap:wrap;min-width:0;max-width:100%}
   .tk-top{padding:8px 10px!important}.tk-right .clock>*{flex:1 1 calc(50% - 6px);min-width:0}.tk-right{width:100%}
   .tk-main{grid-template-columns:56px minmax(0,1fr);grid-auto-rows:auto}
-  .tk-main .tk-side.L{grid-row:1}.tk-main .tk-left{grid-row:1;height:52vh;min-height:300px}
-  .tk-main .tk-pfd{grid-column:1/-1;height:46vh;min-height:280px}
+  .tk-main .tk-side.L{grid-row:1}.tk-main .tk-left{grid-row:1;height:calc(var(--tvh,1vh)*52);min-height:300px}
+  .tk-main .tk-pfd{grid-column:1/-1;height:calc(var(--tvh,1vh)*46);min-height:280px}
   .tk-main .tk-side.R{grid-row:3;grid-column:1}.tk-main .tk-audio{grid-row:3;grid-column:2;min-height:340px}
   .tk-check{flex-wrap:wrap;height:auto;padding:10px 16px;gap:10px 20px}
   .tk-ctrl{grid-template-columns:repeat(2,minmax(0,1fr));height:auto}.tk-mod{min-height:170px}
   .tk-tabs{position:sticky;bottom:0}
   .tk-tabs .ver{display:none}.tk-tabs{grid-template-columns:repeat(3,1fr)}
-}
-@media (max-height:700px) and (min-width:1001px) and (orientation:landscape){
-  .tk-ctrl{height:150px}.tk-check{height:42px}.tk-tabs{height:48px}.tk-top{height:44px}
-  .tk-knob{--ks:96px!important}
 }
 
 /* ---------- 대신남 원 기능을 옮겨 왔을 때(지도 창·PFD·콕핏 시계) ---------- */
@@ -190,7 +186,7 @@
 #tabCk .tk-right .clock>div,#tabCk .tk-right .clock>button{padding:3px 10px 3px 4px;border:1px solid #000;border-radius:6px;background:#0a0c0d;box-shadow:inset 0 1px 4px #000}
 :root[data-skin="tablet"] .tk-top{height:auto;min-height:52px}
 :root[data-skin="tablet"][data-clock="analog"] .clock>div,:root[data-skin="tablet"][data-clock="analog"] .clock>button{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:8px;align-items:center}
-:root[data-skin="tablet"][data-clock="analog"] .clock .ck-dial{display:block;grid-row:1/3;width:clamp(50px,7.4vh,84px);height:clamp(50px,7.4vh,84px)}
+:root[data-skin="tablet"][data-clock="analog"] .clock .ck-dial{display:block;grid-row:1/3;width:clamp(50px,calc(var(--tvh,1vh)*7.4),84px);height:clamp(50px,calc(var(--tvh,1vh)*7.4),84px)}
 :root[data-skin="tablet"][data-clock="analog"] .clock b{display:none}
 :root[data-skin="tablet"] .clock small{grid-column:2;font-size:11px;letter-spacing:.14em;color:#8d9894}
 :root[data-skin="tablet"] .clock em{grid-column:2;font-style:normal;font-size:13px;color:#4be38a;font-family:"Share Tech Mono",monospace}
@@ -296,9 +292,7 @@
   #tabCk.v2 .tk-rot b{font-size:26px;color:#f5b84a}#tabCk.v2 .tk-rot span{font-size:16px;color:#c9ced2}
   #tabCk.v2 .tk-rot::before{content:"";width:64px;height:40px;border:3px solid #f5b84a;border-radius:8px;margin-bottom:8px}
 }
-@media (max-height:760px) and (orientation:landscape){#tabCk.v2 .tk-top{height:46px}#tabCk.v2 .tk-brand{font-size:19px;padding:4px 12px}#tabCk.v2 .tk-emb{font-size:12px}#tabCk.v2 .tk-h{font-size:18px;top:18px}#tabCk.v2 .tk-left .tk-glass::before{font-size:17px;height:38px;padding:8px 14px}#tabCk.v2 #tkMap{top:38px}}
 #tabCk.v2 .tk-appmap{top:44px}
-@media (max-height:760px) and (orientation:landscape){#tabCk.v2 .tk-appmap{top:38px}}
 
 /* SOS 덮개: 빨간 덮개에 SOS + 줄무늬, 아래 LIFT TO OPEN */
 #tabCk.v2 .tk-cover{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0}
@@ -312,8 +306,6 @@
 #tabCk.v2 .tk-top{grid-template-columns:auto minmax(0,1fr) auto;min-width:0}
 #tabCk.v2 .tk-stat{justify-self:center;min-width:0;overflow:hidden}
 #tabCk.v2 .tk-right{min-width:0}
-@media (max-width:1500px){#tabCk.v2 .tk-emb{font-size:0;gap:0}#tabCk.v2 .tk-time small{display:none}#tabCk.v2 .tk-stat span{padding:0 8px;font-size:14px}}
-@media (max-width:1200px){#tabCk.v2 .tk-brand{font-size:18px;padding:4px 10px}#tabCk.v2 .tk-brand::after{width:30px}#tabCk.v2 .tk-stat{padding:6px 8px}}
 #tabCk.v2 .tk-ctrl,#tabCk.v2 .tk-main{min-width:0}
 @media (orientation:portrait){#tabCk.v2 .tk-rot{z-index:100000;background:#1b1e21}}
 .tk-rev{width:40px;height:32px;border:1px solid #000;border-radius:6px;background:linear-gradient(180deg,#3a3f43,#202427);color:#ff6a55;font:800 18px "Barlow Condensed",sans-serif;box-shadow:inset 0 1px 0 #ffffff22}

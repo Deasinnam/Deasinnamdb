@@ -816,6 +816,10 @@ async function main() {
       assert.equal(await pt2.locator('#tkPfd').isVisible(), true, 'SPEED MATE canvas shown');
       assert.equal(await pt2.locator('#tabCk .tk-emb').isVisible(), true);
       assert.equal(await pt2.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'No sideways scroll');
+      await pt2.setViewportSize({width:960,height:600}); await pt2.waitForTimeout(300);
+      assert.ok(await pt2.evaluate(() => {const t=document.getElementById('tabCk'),r=document.querySelector('#tabCk .tk-tabs').getBoundingClientRect(),c=document.querySelector('#tabCk .tk-ctrl').getBoundingClientRect();
+        return t.classList.contains('fit')&&r.bottom<=innerHeight+1&&c.bottom<=r.top+1&&t.scrollHeight<=t.clientHeight+1}), 'Small tablet screen: whole design scaled to fit, controls above the tabs');
+      await pt2.setViewportSize({width:1600,height:1000}); await pt2.waitForTimeout(200);
       await pt2.locator('#tabCk [data-k="setup"]').click();
       assert.equal(await pt2.locator('#tkSys').isVisible(), true, 'SETUP opens system settings');
       await pt2.locator('#tabCk [data-k="list"]').click();
@@ -840,7 +844,7 @@ async function main() {
       await pt.locator('#tabCk').waitFor();
       assert.equal(await pt.locator('#tabCk').isVisible(), true, 'Tablet cockpit shown');
       assert.equal(await pt.locator('header.top').isVisible(), false); assert.equal(await pt.locator('#app').isVisible(), false);
-      const fits = await pt.evaluate(() => {const r=document.querySelector('.tk-tabs').getBoundingClientRect();return r.bottom<=innerHeight+1&&document.querySelector('#tabCk').scrollHeight<=innerHeight+1});
+      const fits = await pt.evaluate(() => {const r=document.querySelector('.tk-tabs').getBoundingClientRect();const t=document.querySelector('#tabCk');return r.bottom<=innerHeight+1&&t.scrollHeight<=t.clientHeight+1&&t.getBoundingClientRect().right<=innerWidth+1});
       assert.ok(fits, 'Landscape tablet layout fits one screen');
       // 대신남 원 Ver1 기능을 그대로: 콕핏 PFD(비행 장면)·지도 창·아날로그 시계가 이 화면 안으로
       assert.equal(await pt.locator('#tabCk .tk-pfd #pfdHost').count(), 1, 'Ver1 PFD shown in the center panel');
