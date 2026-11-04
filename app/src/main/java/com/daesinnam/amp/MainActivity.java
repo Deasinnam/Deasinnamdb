@@ -21,6 +21,8 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.audiofx.Visualizer;
+import android.media.MediaDescription;
+import android.media.browse.MediaBrowser;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
@@ -904,6 +906,91 @@ public class MainActivity extends Activity {
         } catch (Exception ignored) {}
     }
 
+    /** 특정 음악 앱(YouTube Music·Spotify)을 앱 화면을 열지 않고 재생: 활성 세션 → 미디어 버튼 → 마지막 플레이어 순서 */
+    private void startMediaApp(String pkg) {
+        try {
+            if (hasNotifAccess()) {
+                for (MediaController c : msm.getActiveSessions(listenerCn)) {
+                    if (pkg.isEmpty() ? !getPackageName().equals(c.getPackageName()) : pkg.equals(c.getPackageName())) {
+                        c.getTransportControls().play();
+                        ctrl = c;
+                        return;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        if (!pkg.isEmpty()) {
+            try {
+                for (int a : new int[]{KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP}) {
+                    Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON).setPackage(pkg);
+                    i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(a, KeyEvent.KEYCODE_MEDIA_PLAY));
+                    sendBroadcast(i);
+                }
+                return;
+            } catch (Exception ignored) {}
+        }
+        sendMediaKey("play"); // 시스템이 마지막으로 소리 낸 앱에 재생 신호
+    }
+
+    /* ---------- 외부 음악 앱 둘러보기(자동차 화면용 MediaBrowser) ---------- */
+    private MediaBrowser browser;
+    private String browserPkg = "";
+    private void browse(final String pkg, final String parent) {
+        final Runnable fail = () -> js("window.__extBrowse && window.__extBrowse(" + JSONObject.quote("{\"pkg\":" + JSONObject.quote(pkg) + ",\"ok\":false}") + ")");
+        try {
+            if (browser != null && browserPkg.equals(pkg) && browser.isConnected()) { subscribe(pkg, parent.isEmpty() ? browser.getRoot() : parent); return; }
+            if (browser != null) { try { browser.disconnect(); } catch (Exception ignored) {} browser = null; }
+            Intent q = new Intent("android.media.browse.MediaBrowserService").setPackage(pkg);
+            List<android.content.pm.ResolveInfo> rs = getPackageManager().queryIntentServices(q, 0);
+            if (rs == null || rs.isEmpty()) { fail.run(); return; }
+            ComponentName cn = new ComponentName(pkg, rs.get(0).serviceInfo.name);
+            browserPkg = pkg;
+            Bundle hints = new Bundle();
+            hints.putBoolean("android.service.media.extra.RECENT", false);
+            browser = new MediaBrowser(this, cn, new MediaBrowser.ConnectionCallback() {
+                @Override public void onConnected() { subscribe(pkg, parent.isEmpty() ? browser.getRoot() : parent); }
+                @Override public void onConnectionFailed() { fail.run(); }
+                @Override public void onConnectionSuspended() { fail.run(); }
+            }, hints);
+            browser.connect();
+        } catch (Exception e) { fail.run(); }
+    }
+    private void subscribe(final String pkg, final String id) {
+        try {
+            browser.subscribe(id, new MediaBrowser.SubscriptionCallback() {
+                @Override public void onChildrenLoaded(String parentId, List<MediaBrowser.MediaItem> children) {
+                    try {
+                        JSONObject o = new JSONObject(); o.put("pkg", pkg); o.put("ok", true); o.put("parent", parentId);
+                        org.json.JSONArray a = new org.json.JSONArray();
+                        for (MediaBrowser.MediaItem it : children) {
+                            if (a.length() >= 200) break;
+                            MediaDescription d = it.getDescription(); JSONObject x = new JSONObject();
+                            x.put("id", it.getMediaId()); x.put("title", String.valueOf(d.getTitle() == null ? "" : d.getTitle()));
+                            x.put("sub", String.valueOf(d.getSubtitle() == null ? "" : d.getSubtitle()));
+                            x.put("play", it.isPlayable()); x.put("folder", it.isBrowsable()); a.put(x);
+                        }
+                        o.put("items", a);
+                        js("window.__extBrowse && window.__extBrowse(" + JSONObject.quote(o.toString()) + ")");
+                    } catch (Exception ignored) {}
+                }
+                @Override public void onError(String parentId) {
+                    js("window.__extBrowse && window.__extBrowse(" + JSONObject.quote("{\"pkg\":" + JSONObject.quote(pkg) + ",\"ok\":false}") + ")");
+                }
+            });
+        } catch (Exception e) {
+            js("window.__extBrowse && window.__extBrowse(" + JSONObject.quote("{\"pkg\":" + JSONObject.quote(pkg) + ",\"ok\":false}") + ")");
+        }
+    }
+    private void browsePlay(String pkg, String mediaId) {
+        try {
+            if (browser != null && browser.isConnected() && browserPkg.equals(pkg)) {
+                MediaController c = new MediaController(this, browser.getSessionToken());
+                c.getTransportControls().playFromMediaId(mediaId, null);
+                ctrl = c;
+            }
+        } catch (Exception ignored) {}
+    }
+
     private int systemVolume() {
         int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         return max > 0 ? Math.round(am.getStreamVolume(AudioManager.STREAM_MUSIC) * 100f / max) : 0;
@@ -1084,6 +1171,41 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        /** 음악 앱을 화면 전환 없이 재생(pkg 비우면 마지막으로 쓰던 음악) */
+        @JavascriptInterface
+        public void mediaPlay(final String pkg) { main.post(() -> startMediaApp(pkg == null ? "" : pkg)); }
+
+        /** 외부 앱의 지금 재생 목록(대기열): {pkg, items:[{id,title,sub,cur}]} */
+        @JavascriptInterface
+        public String extQueue() {
+            try {
+                MediaController c = ctrl; JSONObject o = new JSONObject(); org.json.JSONArray a = new org.json.JSONArray();
+                if (c != null) {
+                    o.put("pkg", c.getPackageName());
+                    List<android.media.session.MediaSession.QueueItem> q = c.getQueue();
+                    PlaybackState st = c.getPlaybackState(); long act = st == null ? -1 : st.getActiveQueueItemId();
+                    if (q != null) for (android.media.session.MediaSession.QueueItem it : q) {
+                        if (a.length() >= 200) break;
+                        MediaDescription d = it.getDescription(); JSONObject x = new JSONObject();
+                        x.put("id", it.getQueueId()); x.put("title", String.valueOf(d.getTitle() == null ? "" : d.getTitle()));
+                        x.put("sub", String.valueOf(d.getSubtitle() == null ? "" : d.getSubtitle())); x.put("cur", it.getQueueId() == act); a.put(x);
+                    }
+                }
+                o.put("items", a);
+                return o.toString();
+            } catch (Exception e) { return "{\"items\":[]}"; }
+        }
+
+        @JavascriptInterface
+        public void extPlayQueue(final double id) { main.post(() -> { try { if (ctrl != null) ctrl.getTransportControls().skipToQueueItem((long) id); } catch (Exception ignored) {} }); }
+
+        /** 둘러보기: 결과는 window.__extBrowse(json)로 돌려줌 */
+        @JavascriptInterface
+        public void extBrowse(final String pkg, final String parent) { main.post(() -> browse(pkg, parent == null ? "" : parent)); }
+
+        @JavascriptInterface
+        public void extBrowsePlay(final String pkg, final String mediaId) { main.post(() -> browsePlay(pkg, mediaId)); }
 
         @JavascriptInterface
         public void setExtEq(String json) {

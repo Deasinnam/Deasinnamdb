@@ -1036,6 +1036,15 @@ header.top{padding-top:28px!important}
 /* 설정: 과속 경고 칩 */
 #settings .row.col{flex-direction:column;align-items:stretch;gap:8px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+.xpick{list-style:none;margin:8px 0 0;padding:0;max-height:340px;overflow:auto;overscroll-behavior:contain;border:1px solid var(--lcd-edge,#2b3328);border-radius:6px;background:#0000002a}
+.xpick .xp-head,#tkList .xp-head{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;padding:6px;background:#0b0e10f0;border-bottom:1px solid #ffffff12}
+.xp-head span{display:flex;gap:4px}.xp-head button,.xp-open{height:32px;padding:0 10px;border:1px solid #000;border-radius:5px;background:linear-gradient(180deg,#3a3f43,#1d2124);color:#c9cfcc;font:600 13px "Noto Sans KR",sans-serif;cursor:pointer}
+.xp-head button.on{color:#06140c;background:linear-gradient(180deg,#d6f0c8,#a7e29a)}
+.xp-it{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center;min-height:48px;padding:4px 10px;border-bottom:1px solid #ffffff08;cursor:pointer;color:inherit}
+.xp-it .n{font-family:"Share Tech Mono",monospace;color:#8d9894}.xp-it b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xp-it small{display:block;font-size:12px;color:#8d9894;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xp-it.cur{background:#a7e29a1a}.xp-it.cur b{color:#a7e29a}.xp-it.dir .n{color:#f3bc65}
+.xp-empty{padding:18px 12px;text-align:center;color:#9da69d;font-size:13px;line-height:1.6}.xp-empty small{color:#7d867d}.xp-open{margin-top:8px}
+#camImg{transform:scale(var(--cfx,1),var(--cfy,1));transition:transform .2s}
 .rev-btn b{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:4px;border-radius:4px;background:#ff5b4b;color:#fff;font-size:13px}
 :root:not([data-car]) .rev-btn{display:none}.rev-btn.on{color:#fff!important;background:linear-gradient(180deg,#e0472b,#9a2a14)!important;box-shadow:0 0 14px #ff5b4b88!important}
 #revFx{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);z-index:100001;transform:translateX(-50%);display:flex;align-items:center;gap:16px;padding:12px 26px 12px 14px;border:2px solid #000;border-radius:12px;cursor:pointer;
@@ -1510,6 +1519,8 @@ html.driving body{overflow:hidden}
         <button class="pill" id="camProbeBtn" disabled>카메라 찾기</button>
         <button class="pill" id="camFull" disabled>전체 화면</button>
         <button class="pill" id="camWifi">와이파이 설정</button>
+        <button class="pill" id="camFlipH" aria-pressed="false" title="화면 좌우 반전">⇆ 좌우 반전</button>
+        <button class="pill" id="camFlipV" aria-pressed="false" title="화면 상하 반전">⇅ 상하 반전</button>
       </div>
       <div class="camnet" id="camNet"></div>
       <details class="permbox mapkey" id="camSetBox"><summary><span>블랙박스 와이파이</span><em id="camSsidSum">Car-Cam</em></summary>
@@ -1668,9 +1679,10 @@ html.driving body{overflow:hidden}
     <div class="body ext">
       <div class="now"><small>지금 소리를 내는 앱</small><b id="xApp">없음</b><span id="xEq">EQ: 꺼짐</span><span id="xSrc">곡 정보: 확인 중</span><span id="xVer"></span></div>
       <div class="launch">
-        <button class="tb" data-pkg="com.google.android.apps.youtube.music">YouTube Music 열기</button>
-        <button class="tb" data-pkg="com.spotify.music">Spotify 열기</button>
+        <button class="tb" data-xstart="com.google.android.apps.youtube.music">YouTube Music</button>
+        <button class="tb" data-xstart="com.spotify.music">Spotify</button>
       </div>
+      <ul class="xpick" id="xPick" aria-label="외부 앱 선곡"></ul>
       <details class="permbox" id="xPerm" open>
         <summary><span>권한 설정</span><em id="xPermSum">확인 중</em></summary>
         <ul class="perm">
@@ -1702,6 +1714,7 @@ html.driving body{overflow:hidden}
       <h3>차량 연결</h3>
       <label class="row"><span><b>차에 연결되면 이어서 재생</b><small>블루투스로 차에 연결되면 마지막 곡을 이어서 틀어요.</small></span><input type="checkbox" id="sCarAuto" class="sw"></label>
       <label class="row"><span><b>자동 재생할 기기</b><small>차에 연결된 상태에서 고르면 그 차에서만 동작해요.</small></span><select class="sel" id="sCarName"><option value="">모든 블루투스 오디오 기기</option></select></label>
+      <label class="row"><span><b>차에 연결되면 틀 음원</b><small>마지막에 듣던 것을 고르면 내 음악·YouTube Music·Spotify·라디오 중 마지막으로 쓰던 걸 이어서 틀어요. YouTube Music·Spotify는 앱 화면을 열지 않고 재생해요.</small></span><select class="sel" id="sCarSrc"><option value="auto">마지막에 듣던 것</option><option value="local">내 음악</option><option value="ytm">YouTube Music</option><option value="spotify">Spotify</option><option value="radio">라디오</option></select></label>
       <label class="row"><span><b>연결되면 GPS 켜기</b><small>자동차 스킨에서 속도계와 지도를 바로 켜요.</small></span><input type="checkbox" id="sCarGps" class="sw" checked></label>
       <div class="row"><span><b>블루투스 권한</b><small>연결된 기기 이름을 확인하는 데 필요해요.</small></span><button class="pill" id="sBt">확인 중</button></div>
       <div class="row"><span><b>앱이 꺼져 있어도 자동으로 열기</b><small>"다른 앱 위에 표시"를 허용하면 앱이 꺼져 있어도 차에 타면 바로 열려요. 허용하지 않으면 "차량 연결됨" 알림을 눌러 시작해요.</small></span><button class="pill" id="sLaunch">확인 중</button></div>
@@ -2229,7 +2242,7 @@ function pollExt(){
   updateMeta();state();
 }
 const extPos=()=>{let p=ext.pos||0;if(ext.playing)p+=performance.now()-extT;return Math.min(p,ext.dur||p)/1000};
-function setMode(m){
+function setMode(m){try{store.set('lastSrc',m==='ext'?'ext':'local')}catch(e){}
   if(m==='ext'&&!HAS_EXT)m='local';
   mode=m;store.set('mode',m);
   document.querySelectorAll('#srcSeg button').forEach(b=>b.classList.toggle('on',b.dataset.src===m));
@@ -3230,7 +3243,12 @@ const HAS_CAR=!!(NB&&NB.carStatus);
 window.__carConnected=name=>{
   try{NB.takeCarAutoplay&&NB.takeCarAutoplay()}catch(e){}
   toast('차량에 연결됐어요'+(name?' · '+name:'')+' · 이어서 재생해요');
-  if(mode==='ext'){X('play')}else{if(cur<0&&list.length)cur=0;if(cur>=0)play()}
+  // 고른 음원(또는 마지막에 듣던 음원)을 이어서 재생 — YouTube Music·Spotify는 화면 전환 없이
+  let src=store.get('carSrc','auto');if(src==='auto')src=store.get('lastSrc',mode==='ext'?'ext':'local');
+  const PKX={ytm:'com.google.android.apps.youtube.music',spotify:'com.spotify.music'};
+  if(src==='radio'&&window.AmpRadio)window.AmpRadio.resume();
+  else if(src==='ext'||PKX[src]){if(mode!=='ext')setMode('ext');try{NB.mediaPlay(PKX[src]||store.get('extPkg',''))}catch(e){X('play')}}
+  else{if(mode==='ext')setMode('local');if(cur<0&&list.length)cur=0;if(cur>=0)play()}
   if(isCar()&&store.get('carGps',true)&&!gpsOn)gpsStart();
   const da=store.get('driveAuto','car');if(da==='car'||da==='both')drive(true);
   return true;
@@ -3288,6 +3306,48 @@ window.AmpHost={
   beep(k){try{if(k==='takeoff'&&typeof sndTakeoff==='function')sndTakeoff();else if(typeof sndRoger==='function')sndRoger()}catch(e){}}
 };
 /* 태블릿 가로모드(tablet.js) 연결 창구: 읽기·호출만 하고 기존 동작은 바꾸지 않음 */
+/* 블랙박스 화면 반전(좌우·상하): 거꾸로 달린 카메라·후방 카메라용, 이 기기에 기억 */
+(function(){const img=$('#camImg'),bh=$('#camFlipH'),bv=$('#camFlipV');if(!img||!bh)return;
+  const apply=()=>{const h=!!store.get('camFlipH',false),v=!!store.get('camFlipV',false);img.style.setProperty('--cfx',h?-1:1);img.style.setProperty('--cfy',v?-1:1);
+    bh.classList.toggle('on',h);bh.setAttribute('aria-pressed',String(h));bv.classList.toggle('on',v);bv.setAttribute('aria-pressed',String(v))};
+  bh.onclick=()=>{store.set('camFlipH',!store.get('camFlipH',false));apply()};bv.onclick=()=>{store.set('camFlipV',!store.get('camFlipV',false));apply()};apply()})();
+/* ---------- 외부 음악 앱 선곡: 앱을 열지 않고 이 앱 안에서 대기열·둘러보기 ---------- */
+window.AmpExt=(()=>{
+  const PK={ytm:'com.google.android.apps.youtube.music',spotify:'com.spotify.music'},NAME={[PK.ytm]:'YouTube Music',[PK.spotify]:'Spotify'};
+  const ok=!!(NB&&NB.extQueue);let view=store.get('xpView','queue'),crumbs=[],bitems=null,bok=null,bpkg='',loading=false;const subs=new Set();
+  window.__extBrowse=s=>{let o={};try{o=JSON.parse(s)}catch(e){}loading=false;bok=!!o.ok;bitems=o.items||[];bpkg=o.pkg||bpkg;if(o.ok&&o.parent&&!crumbs.length)crumbs=[{id:o.parent,t:'처음'}];subs.forEach(f=>{try{f()}catch(e){}})};
+  const curPkg=()=>(ext&&ext.pkg&&NAME[ext.pkg]?ext.pkg:null)||store.get('extPkg',PK.ytm);
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function start(pkg){store.set('extPkg',pkg);store.set('lastSrc','ext');try{if(window.AmpRadio&&AmpRadio.state.playing)AmpRadio.stop()}catch(e){}
+    if(mode!=='ext')setMode('ext');try{NB.mediaPlay(pkg)}catch(e){}if(bpkg!==pkg){bitems=null;crumbs=[]}toast((NAME[pkg]||'음악 앱')+'을 이 앱 안에서 재생해요. 아래 목록에서 곡을 고르세요.')}
+  function queue(){try{return JSON.parse(NB.extQueue())}catch(e){return {items:[]}}}
+  function render(ul){if(!ul)return;const st=ul.scrollTop,pk=curPkg(),nm=NAME[pk]||'외부 앱';let h='<li class="xp-head"><span class="xp-apps">'+
+      Object.values(PK).map(p=>'<button data-xapp="'+p+'" class="'+(p===pk?'on':'')+'">'+NAME[p]+'</button>').join('')+'</span><span class="xp-tabs"><button data-xv="queue" class="'+(view==='queue'?'on':'')+'">대기열</button><button data-xv="browse" class="'+(view==='browse'?'on':'')+'">둘러보기</button></span></li>';
+    if(!ok)h+='<li class="xp-empty">YouTube Music·Spotify 선곡은 휴대폰 앱에서 쓸 수 있어요.</li>';
+    else if(view==='queue'){const q=queue(),it=q.items||[];
+      if(!it.length)h+='<li class="xp-empty">'+esc(nm)+'에서 받은 재생 목록이 없어요. 위에서 앱을 눌러 재생을 시작하거나 [둘러보기]를 써 보세요.<br><small>곡 정보는 알림 접근 권한이 있어야 받아요.</small></li>';
+      else it.forEach((x,i)=>{h+='<li class="xp-it'+(x.cur?' cur':'')+'" data-q="'+x.id+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><span class="nm"><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span></li>'})}
+    else{if(bitems===null||bpkg!==pk){if(!loading){loading=true;bpkg=pk;bitems=null;crumbs=[];try{NB.extBrowse(pk,'')}catch(e){loading=false;bok=false;bitems=[]}}h+='<li class="xp-empty">'+esc(nm)+' 목록을 불러오는 중…</li>'}
+      else if(!bok)h+='<li class="xp-empty">'+esc(nm)+'은(는) 다른 앱에서 둘러보기를 막아 두었어요. [대기열]에서 고르거나 앱을 열어 고르세요.<br><button class="xp-open" data-xopen="'+pk+'">'+esc(nm)+' 열기</button></li>';
+      else{if(crumbs.length>1)h+='<li class="xp-it back" data-xback="1"><span class="n">◀</span><span class="nm"><b>'+esc(crumbs[crumbs.length-1].t)+'</b><small>위로</small></span></li>';
+        if(!bitems.length)h+='<li class="xp-empty">비어 있어요.</li>';
+        bitems.forEach(x=>{h+='<li class="xp-it'+(x.folder?' dir':'')+'" '+(x.folder?'data-xf':'data-xm')+'="'+esc(x.id)+'" data-t="'+esc(x.title)+'"><span class="n">'+(x.folder?'▸':'♪')+'</span><span class="nm"><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span></li>'})}}
+    ul.innerHTML=h;ul.scrollTop=st}
+  function bind(ul){if(!ul||ul.__xp)return;ul.__xp=1;ul.addEventListener('click',e=>{const b=e.target.closest('[data-xv],[data-xapp],[data-q],[data-xf],[data-xm],[data-xback],[data-xopen]');if(!b)return;e.stopPropagation();
+      if(b.dataset.xv){view=b.dataset.xv;store.set('xpView',view)}
+      else if(b.dataset.xapp)start(b.dataset.xapp);
+      else if(b.dataset.q!=null){try{NB.extPlayQueue(+b.dataset.q)}catch(x){}}
+      else if(b.dataset.xf!=null){crumbs.push({id:b.dataset.xf,t:b.dataset.t||''});loading=true;bitems=[];try{NB.extBrowse(curPkg(),b.dataset.xf)}catch(x){}}
+      else if(b.dataset.xback){crumbs.pop();const c=crumbs[crumbs.length-1];loading=true;try{NB.extBrowse(curPkg(),c?c.id:'')}catch(x){}}
+      else if(b.dataset.xm!=null){try{NB.extBrowsePlay(curPkg(),b.dataset.xm)}catch(x){}toast('선택한 곡을 틀어요.')}
+      else if(b.dataset.xopen){try{NB.openApp(b.dataset.xopen)}catch(x){}}
+      setTimeout(()=>render(ul),60)});subs.add(()=>render(ul))}
+  return {PK,NAME,start,render,bind,ok,get view(){return view}};
+})();
+// 큰 화면(외부 앱 창): 앱 버튼은 앱을 열지 않고 이 앱 안에서 선곡
+document.querySelectorAll('[data-xstart]').forEach(b=>b.onclick=()=>{AmpExt.start(b.dataset.xstart);AmpExt.render($('#xPick'))});
+AmpExt.bind($('#xPick'));
+setInterval(()=>{const w=$('#wExt');if(mode==='ext'&&w&&!w.hidden&&!w.classList.contains('collapsed')&&!document.hidden&&AmpExt.view==='queue')AmpExt.render($('#xPick'))},2000);
 window.AmpTk={
   get gs(){return gs},get gpsOn(){return gpsOn},get spdNow(){return spdNow},get hdgNow(){return hdgNow},get gLimit(){return gLimit},
   get trip(){return trip},get att(){return att},get mode(){return mode},get list(){return list},get cur(){return cur},
@@ -3461,6 +3521,7 @@ $('#setBtn').onclick=openSettings;$('#setClose').onclick=closeSettings;
 $('#settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings()});
 $('#sDriveAuto').onchange=e=>store.set('driveAuto',e.target.value);
 $('#sCarGps').onchange=e=>store.set('carGps',e.target.checked);
+$('#sCarSrc').value=store.get('carSrc','auto');$('#sCarSrc').onchange=e=>store.set('carSrc',e.target.value);
 $('#sCarAuto').onchange=e=>{try{NB.setCarAutoplay(e.target.checked)}catch(x){}};
 $('#sCarName').onchange=e=>{try{NB.setCarName(e.target.value)}catch(x){}};
 $('#sLaunch').onclick=()=>{try{NB.requestAutoLaunch()}catch(e){}};
@@ -3772,8 +3833,8 @@ const RD_KR=[
   ['kbs2r','KBS 해피FM',106.1,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/22','KBS Happy FM'],
   ['kbs1fm','KBS 클래식FM',93.1,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/24','KBS Classic FM'],
   ['kbs2fm','KBS 쿨FM',89.1,'api:https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/25','KBS Cool FM'],
-  ['mbcsfm','MBC 표준FM',95.9,'api:https://sminiplay.imbc.com/aacplay.ashx?agent=webapp&channel=sfm','MBC Standard FM'],
-  ['mbcfm4u','MBC FM4U',91.9,'api:https://sminiplay.imbc.com/aacplay.ashx?agent=webapp&channel=mfm','MBC FM4U'],
+  ['mbcsfm','MBC 표준FM',95.9,'api:https://sminiplay.imbc.com/aacplay.ashx?agent=webapp&channel=sfm|https://sminiplay.imbc.com/aacplay.ashx?agent=android&channel=sfm&protocol=M3U8|https://miniplay.imbc.com/WebHLS.ashx?channel=sfm&protocol=M3U8&agent=android&androidversion=24','MBC Standard FM'],
+  ['mbcfm4u','MBC FM4U',91.9,'api:https://sminiplay.imbc.com/aacplay.ashx?agent=webapp&channel=mfm|https://sminiplay.imbc.com/aacplay.ashx?agent=android&channel=mfm&protocol=M3U8|https://miniplay.imbc.com/WebHLS.ashx?channel=mfm&protocol=M3U8&agent=android&androidversion=24','MBC FM4U'],
   ['sbslove','SBS 러브FM',103.5,'api:https://apis.sbs.co.kr/play-api/1.0/livestream/lovepc/lovefm?protocol=hls&ssl=Y','SBS Love FM'],
   ['sbspower','SBS 파워FM',107.7,'api:https://apis.sbs.co.kr/play-api/1.0/livestream/powerpc/powerfm?protocol=hls&ssl=Y','SBS Power FM'],
   ['cbsmusic','CBS 음악FM',93.9,'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8','CBS Music FM'],
@@ -3837,7 +3898,7 @@ function rdShow(){const st=rdCur,f=rdTune!=null?rdTune:(rdNoSig!=null?rdNoSig:(s
 function rdBridge(st){try{if(NB&&NB.onPlayState)NB.onPlayState(st?'playing':'stopped',st?(rdNow||st.name):'',st?(rdNow?'RADIO · '+st.name:'RADIO'):'')}catch(e){}}
 // 앱에서는 안드로이드 표준 플레이어(HLS·http·재생목록 지원)로, 웹 미리보기에서는 audio 태그로 재생
 const RD_NATIVE=!!(NB&&NB.radioPlay);let rdPoll=0,rdSt0='';
-function rdFail(){rdPlaying=false;rdTry=null;clearInterval(rdPoll);try{updateMeta()}catch(e){}rdSay('재생할 수 없어요');toast('이 방송은 지금 재생할 수 없어요(방송사 차단·주소 변경). 다른 방송을 골라 주세요.');rdShow();rdRenderList()}
+function rdFail(){const why=rdTry&&rdTry.err;rdPlaying=false;rdTry=null;clearInterval(rdPoll);try{updateMeta()}catch(e){}rdSay('재생할 수 없어요');toast('이 방송은 지금 재생할 수 없어요'+(why?' ('+why+')':'')+'. 다른 방송을 골라 주세요.');rdShow();rdRenderList()}
 // 재생: 같은 방송의 다른 주소(공식 → 공개 목록)를 차례로 시도, 모두 안 될 때만 실패 안내
 let rdTry=null,rdT0=0,rdNow='';
 function rdCands(st){const out=[],seen=new Set(),f=rdFreqOf(st),add=s=>{if(s&&s.url&&!seen.has(s.url)&&rdOk(s)){seen.add(s.url);out.push(s)}};
@@ -3852,10 +3913,10 @@ function rdStart(s){const t=rdTry;if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.
     const t0=Date.now();clearInterval(rdPoll);rdPoll=setInterval(()=>{if(t!==rdTry)return clearInterval(rdPoll);let o={};try{o=JSON.parse(NB.radioState())}catch(e){}
       if(o.state==='playing'){if(rdSt0!=='ON AIR'){rdSay('ON AIR');rdT0=rdT0||Date.now();rdBridge(rdCur)}const ti=(o.title||'').trim();if(ti!==rdNow){rdNow=ti;rdShow();rdBridge(rdCur)}}
       else if(o.state==='buffering'||o.state==='resolving')rdSay(o.retry?'다시 연결 중…':'버퍼링…');
-      else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);rdNextCand()}},500);return}
+      else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);if(t)t.err=(o.err==='API'?'방송사 주소 받기 실패':o.err?'재생 오류 '+o.err:'응답 없음')+(/^api:/.test(s.url)?' · 공식 주소':' · 공개 목록 주소');rdNextCand()}},500);return}
   if(/^api:/.test(s.url))return rdNextCand(); // 웹 미리보기는 방송사 주소를 직접 받을 수 없어 공개 목록 주소로
   rdAudio.src=s.url;rdAudio.play().then(()=>{if(t!==rdTry)return;rdSay('ON AIR');rdT0=rdT0||Date.now();setTimeout(()=>rdBridge(rdCur),250);rdShow()}).catch(()=>{if(t===rdTry)rdNextCand()})}
-function rdPlay(st){if(!st)return;rdNoSig=null;rdCur=st;store.set('rdLast',st);try{pause()}catch(e){}
+function rdPlay(st){if(!st)return;store.set('lastSrc','radio');rdNoSig=null;rdCur=st;store.set('rdLast',st);try{pause()}catch(e){}
   rdTry={base:st,list:rdCands(st),i:0,searched:false};rdT0=0;rdNow='';
   rdSay('연결 중…');rdPlaying=true;rdShow();rdRenderList();rdStart(rdTry.list[0])}
 // 플레이어 화면(LCD)에 지금 듣는 라디오 표시

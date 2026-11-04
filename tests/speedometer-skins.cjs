@@ -940,6 +940,41 @@ async function main() {
       assert.ok(r[1][2] > r[0][2] && r[2][2] > r[1][2], 'Player, then radio, then EQ');
       await pl2.close();
     }
+    // 외부 음악 앱 선곡(앱을 열지 않고) · 차 연결 시 고른 음원 재생 · 블랙박스 화면 반전
+    {
+      const px = await context.newPage();
+      px.on('pageerror', error => errors.push('extpick: '+error.message));
+      await px.addInitScript(() => {if(!sessionStorage.getItem('px')){sessionStorage.setItem('px','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival'));}
+        window.xl=[];
+        window.AndroidBridge={extStatus:()=>JSON.stringify({notif:true,notifSupported:true,mic:true,pkg:'com.spotify.music',app:'Spotify',title:'Song A',artist:'Band',playing:true,dur:200000,pos:1000,eq:{}}),
+          extCmd:(c)=>xl.push('cmd:'+c),setExtEq:()=>{},mediaPlay:p=>xl.push('play:'+p),openApp:p=>xl.push('open:'+p),
+          extQueue:()=>JSON.stringify({pkg:'com.spotify.music',items:[{id:11,title:'Song A',sub:'Band',cur:true},{id:12,title:'Song B',sub:'Band'}]}),
+          extPlayQueue:id=>xl.push('q:'+id),extBrowse:(pkg,par)=>{xl.push('browse:'+pkg+':'+par);setTimeout(()=>window.__extBrowse(JSON.stringify({pkg,ok:true,parent:par||'root',items:par?[{id:'t1',title:'Track 1',sub:'',play:true}]:[{id:'pl',title:'My Playlist',sub:'',folder:true}]})),10)},
+          extBrowsePlay:(pkg,id)=>xl.push('bplay:'+id),takeCarAutoplay:()=>false,carStatus:()=>'{}'};});
+      await px.goto(origin);
+      await px.evaluate(() => document.querySelector('#srcSeg button[data-src="ext"]').click());
+      await px.locator('#wExt [data-xstart="com.spotify.music"]').click();
+      assert.ok((await px.evaluate(() => xl)).includes('play:com.spotify.music'), 'Starts Spotify in the background');
+      assert.ok(!(await px.evaluate(() => xl)).some(x => /^open:/.test(x)), 'Does not open the Spotify app');
+      await px.waitForFunction(() => document.querySelectorAll('#xPick [data-q]').length === 2);
+      await px.locator('#xPick [data-q="12"]').click();
+      assert.ok((await px.evaluate(() => xl)).includes('q:12'), 'Pick a queued song in-app');
+      await px.locator('#xPick [data-xv="browse"]').click();
+      await px.waitForFunction(() => document.querySelector('#xPick [data-xf="pl"]'));
+      await px.locator('#xPick [data-xf="pl"]').click();
+      await px.waitForFunction(() => document.querySelector('#xPick [data-xm="t1"]'));
+      await px.locator('#xPick [data-xm="t1"]').click();
+      assert.ok((await px.evaluate(() => xl)).includes('bplay:t1'), 'Play from browse in-app');
+      // 차 연결: 고른 음원(YouTube Music)을 화면 전환 없이 재생
+      await px.evaluate(() => { localStorage.setItem('dna_carSrc', JSON.stringify('ytm')); window.__carConnected('MyCar'); });
+      assert.ok((await px.evaluate(() => xl)).includes('play:com.google.android.apps.youtube.music'), 'Car connect plays YouTube Music');
+      // 블랙박스 화면 반전
+      await px.evaluate(() => document.getElementById('camFlipH').click());
+      assert.equal(await px.evaluate(() => getComputedStyle(document.getElementById('camImg')).getPropertyValue('--cfx').trim()), '-1', 'Mirror left-right');
+      await px.evaluate(() => document.getElementById('camFlipV').click());
+      assert.equal(await px.evaluate(() => getComputedStyle(document.getElementById('camImg')).getPropertyValue('--cfy').trim()), '-1', 'Flip upside down');
+      await px.close();
+    }
     // 인터넷 라디오: 목록 검색·재생·즐겨찾기·다이얼
     {
       const pr = await context.newPage();

@@ -352,3 +352,5 @@
 #tabCk .tk-visw .visbox{position:relative;flex:1;min-height:0;margin:0;border-radius:6px;overflow:hidden}
 #tabCk .tk-visw #vis{width:100%;height:100%;display:block}
 #tabCk .tk-visw .vmode{position:absolute;right:6px;top:6px;z-index:2}
+#tkList .xp-it{color:#c9cfcc;font-family:"Noto Sans KR",sans-serif;letter-spacing:0}#tkList .xp-empty{list-style:none}#tkList .xp-head button{font-size:13px}
+#tabCk.v2 #tkList .xp-head button.on{color:#1a0f05;background:linear-gradient(180deg,#ffe0b8,#f5b84a)}

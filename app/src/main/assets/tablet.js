@@ -483,10 +483,9 @@
     if (k === 'local') { if (has('setMode')) H.setMode('local'); return; }
     const hasExt = !!(NBx && NBx.extStatus);
     if (!hasExt) { say((k === 'ytm' ? 'YouTube Music' : 'Spotify') + ' 연동은 휴대폰 앱에서 쓸 수 있어요.'); return; }
-    if (has('setMode')) H.setMode('ext');
-    const a = String(G(() => H.ext.app) || ''), same = k === 'spotify' ? /spotify/i.test(a) : /youtube/i.test(a);
-    if (same) { if (!G(() => H.ext.playing) && has('toggle')) H.toggle(); }
-    else { try { NBx.openApp(PKG[k]); } catch (e) {} say((k === 'ytm' ? 'YouTube Music' : 'Spotify') + '을 열었어요. 곡을 재생하면 여기 곡 정보와 조작 버튼이 연결돼요.'); }
+    // 앱 화면을 열지 않고 백그라운드로 재생 시작 → 왼쪽 창에 그 앱의 대기열·둘러보기를 띄워 이 앱 안에서 선곡
+    if (window.AmpExt) window.AmpExt.start(PKG[k]); else if (has('setMode')) H.setMode('ext');
+    setTab('audio');
   }
   $('#tkSrcBar').addEventListener('click', e => { const b = e.target.closest('button[data-src]'); if (b) useSrc(b.dataset.src); });
   function audioState() {
@@ -568,7 +567,14 @@
 
   /* ---------- 재생 목록(AUDIO 탭) ---------- */
   let lastList = '';
+  let extListAt = 0;
   function renderList(force) {
+    if (G(() => H.mode) === 'ext' && window.AmpExt) { // 외부 앱: 이 앱 안에서 선곡
+      const ul = $('#tkList'); window.AmpExt.bind(ul);
+      if (force || lastList !== 'ext' || (performance.now() - extListAt > 2000 && window.AmpExt.view === 'queue')) { extListAt = performance.now(); lastList = 'ext'; window.AmpExt.render(ul); }
+      $('#tkLeftT').textContent = 'MUSIC'; $('#tkLeftS').textContent = String(G(() => H.ext.app) || ''); return;
+    }
+    if (lastList === 'ext') lastList = '';
     const L0 = G(() => H.list) || [], ci = G(() => H.cur);
     const key = L0.length + ':' + ci + ':' + (L0[0] && L0[0].title);
     if (!force && key === lastList) return; lastList = key;

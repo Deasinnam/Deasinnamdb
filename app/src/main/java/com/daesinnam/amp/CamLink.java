@@ -180,7 +180,9 @@ final class CamLink {
 
     /** 휴대폰 기본 네트워크가 인터넷이 안 되면 이 앱(지도·곡 정보·웹 화면)은 모바일 데이터로 통신합니다. 카메라 소켓은 따로 카메라 와이파이에 묶여 있습니다. */
     private synchronized void rebind() {
-        boolean want = net != null && cell != null && !sysDefaultOk;
+        // 카메라 와이파이에 연결된 동안에는 '인터넷 됨' 판정과 상관없이 이 앱의 통신(지도·라디오·곡 정보·웹 화면)을 항상 모바일 데이터로.
+        // (삼성 기기는 카메라 와이파이를 잠시 '인터넷 됨'으로 보거나 판정이 늦어 그 사이 데이터가 끊겼음) 카메라 소켓은 따로 카메라 와이파이에 묶여 있음.
+        boolean want = net != null && cell != null;
         try {
             if (want) {
                 if (cm.bindProcessToNetwork(cell)) cellBound = true;

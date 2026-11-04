@@ -36,7 +36,8 @@ import java.util.regex.Pattern;
  */
 @UnstableApi
 final class RadioPlayer {
-    private static final String UA = "Mozilla/5.0 (Linux; Android) DaesinnamOne/1.4 ExoPlayer";
+    // 방송사 CDN이 낯선 앱 이름을 막는 경우가 있어 일반 모바일 브라우저처럼 접속
+    private static final String UA = "Mozilla/5.0 (Linux; Android 14; SM-F966N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
     private final Context ctx;
     private final Handler main = new Handler(Looper.getMainLooper());
     private ExoPlayer p;
@@ -125,7 +126,7 @@ final class RadioPlayer {
                 String s = resolveApi(api);
                 main.post(() -> {
                     if (my != gen) return;
-                    if (s == null) { state = "error"; err = "API"; return; }
+                    if (s == null) { state = "error"; err = "API"; return; } // 방송사 주소 받기 실패
                     start(s, false);
                 });
             }, "radio-api").start();
@@ -152,14 +153,25 @@ final class RadioPlayer {
 
     private static final Pattern URL_RE = Pattern.compile("https?://[^\\s\"'<>]+");
 
-    /** 방송사 API 응답(글자·JSON)에서 실제 재생 주소(m3u8 우선)를 꺼냄 */
-    static String resolveApi(String api) {
+    /** 방송사 API 응답(글자·JSON)에서 실제 재생 주소(m3u8 우선)를 꺼냄. 주소 여러 개는 | 로 나눠 차례로 시도, 각 주소는 Referer 없이 → 있게 */
+    static String resolveApi(String apis) {
+        for (String api : apis.split("\\|")) {
+            api = api.trim();
+            if (api.isEmpty()) continue;
+            String r = resolveOne(api, false);
+            if (r == null) r = resolveOne(api, true);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    private static String resolveOne(String api, boolean withRef) {
         try {
             HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-            c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36");
+            c.setRequestProperty("User-Agent", UA);
             String host = new URL(api).getHost();
-            String ref = host.endsWith("imbc.com") ? "https://www.imbc.com/" : host.endsWith("kbs.co.kr") ? "https://onair.kbs.co.kr/" : host.endsWith("sbs.co.kr") ? "https://www.sbs.co.kr/" : null;
-            if (ref != null) c.setRequestProperty("Referer", ref);
+            String ref = host.endsWith("imbc.com") ? "https://mini.imbc.com/" : host.endsWith("kbs.co.kr") ? "https://onair.kbs.co.kr/" : host.endsWith("sbs.co.kr") ? "https://www.sbs.co.kr/" : null;
+            if (ref != null && withRef) c.setRequestProperty("Referer", ref);
             c.setConnectTimeout(8000);
             c.setReadTimeout(8000);
             c.setInstanceFollowRedirects(true);
