@@ -1,7 +1,14 @@
 // 지도(기본 지도·네이버·카카오·TMAP, TMAP 앱 열기)
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- 지도 (자동차 스킨: 속도계 아래) ---------- */
-const TMAP_PKG='com.skt.tmap.ku';
+const TMAP_PKG='com.skt.tmap.ku',NMAP_PKG='com.nhn.android.nmap';
+// 내비 앱을 화면 아래쪽 분할 창으로(TMAP·네이버 지도 공통)
+function appBelow(pkg,name){
+  if(!NB||!NB.openApp){toast(name+' 켜기는 안드로이드 앱에서 동작해요.');return}
+  try{if(!NB.openAppBottom){NB.openApp(pkg);return}const r=NB.openAppBottom(pkg);
+    if(r==='missing')toast(name+'이 설치되어 있지 않아 설치 화면을 열어요.');
+    else toast(r==='landscape'?name+'을 함께 띄웠어요. 가로 화면에서는 안드로이드가 오른쪽에 붙여요. 세로로 돌리면 위아래로 나뉘어요.':name+'을 아래쪽에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
+    return r}catch(e){}}
 let mapPref=store.get('mapPref',null),mapObj=null,mapMarker=null,mapEngine=null,tmapFrame=null,mapFollow=true,mapLastPush=0,mapLoading=false;
 let mapNight=store.get('mapNight',true);
 function loadLeaflet(){
@@ -95,10 +102,8 @@ syncKeyUi();
 document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{const k=b.dataset.tmap;
   if(!NB||!NB.openApp){toast('TMAP 켜기는 안드로이드 앱에서 동작해요.');return}
   try{
-    if(k==='bottom'&&NB.openAppBottom){const r=NB.openAppBottom(TMAP_PKG);
-      if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
-      else{toast(r==='landscape'?'TMAP을 함께 띄웠어요. 가로 화면에서는 안드로이드가 오른쪽에 붙여요. 세로로 돌리면 위아래로 나뉘어요.':'TMAP을 아래쪽에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
-        setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)}}
+    if(k==='bottom'&&NB.openAppBottom){const r=appBelow(TMAP_PKG,'TMAP');
+      if(r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)}
     else if(k==='side'&&NB.openAppSide){const r=NB.openAppSide(TMAP_PKG);
       if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
       else toast(r==='rotated'?'옆 창은 가로 화면에서만 좌우로 나뉘어서, 화면을 가로로 돌린 뒤 TMAP을 오른쪽에 붙여요. 분할을 끝내면 원래대로 돌아가요.':'TMAP을 오른쪽 옆 창으로 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.')}

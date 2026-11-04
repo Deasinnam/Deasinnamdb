@@ -123,6 +123,9 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
       await pf.goto(origin);
       await pf.waitForFunction(() => window.AmpFlight);
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Ver1 opens in the cockpit skin');
+      assert.equal(await pf.locator('#skin').inputValue(), 'carnival3', 'First run opens in cockpit 2');
+      assert.equal(await pf.evaluate(() => document.documentElement.dataset.ck2), '1');
+      assert.equal(await pf.locator('#ckRail button[data-f="all"]').evaluate(b => b.classList.contains('on')), true, 'All views by default');
       assert.equal(await pf.locator('#clkDialNow').isVisible(), true, 'Cockpit shows the round analog clock by default');
       assert.equal(await pf.locator('#clkTime').isVisible(), false);
       await pf.locator('#clkNow').click();
@@ -186,7 +189,7 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
       assert.equal(await pf.evaluate(() => AmpWx.kind), 'snow');
       const before = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
       await pf.evaluate(() => AmpFlight.step(3, 0));
-      assert.ok(await pf.evaluate(() => AmpFlight.state.snow) > .5, 'Snow builds up on the runway');
+      assert.ok(await pf.evaluate(() => AmpFlight.state.snow) > .2, 'Snow builds up on the runway (light cover)');
       const snowy = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
       assert.notEqual(before, snowy);
       for (const k of ['rain','cloudy']) { await pf.evaluate(k2 => localStorage.setItem('dna_wxForce', JSON.stringify(k2)), k); assert.equal(await pf.evaluate(() => AmpWx.kind), k); await pf.evaluate(() => AmpFlight.redraw()); }

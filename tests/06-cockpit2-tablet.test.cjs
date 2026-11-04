@@ -14,7 +14,14 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
       assert.equal(await pc2.locator('#wGps > #ckRail').count(), 1, 'Rail sits inside the speedometer window');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
-      assert.deepEqual(await pc2.locator('#ckRail button').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio'], 'Five rail buttons');
+      assert.deepEqual(await pc2.locator('#ckRail button[data-f]').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio'], 'Five view buttons');
+      assert.deepEqual(await pc2.locator('#ckRail button[data-open]').evaluateAll(bs => bs.map(b => b.dataset.open)), ['tmap','nmap'], 'TMAP / Naver Map open-below buttons');
+      for (const sel of ['#ckRail [data-open="tmap"]', '#ckRail [data-open="nmap"]']) {
+        const b = await pc2.locator(sel).boundingBox(), r = await pc2.locator('#ckRail').boundingBox();
+        assert.ok(b && b.height >= 24 && b.y + b.height <= r.y + r.height + 1, sel + ' fits inside the rail');
+      }
+      await pc2.locator('#ckRail [data-open="nmap"]').click();
+      assert.match(await pc2.locator('#toast').textContent(), /네이버 지도 켜기는 안드로이드 앱에서/, 'Web preview explains the app-only action');
       const sizes = [];
       for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['radio',['wRadio']]]) {
         await pc2.locator(`#ckRail [data-f="${f}"]`).click();
@@ -38,7 +45,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.ok(Math.abs(await pc2.locator('#wRadio').evaluate(el => el.getBoundingClientRect().height) - fh1) < 3, 'Same height in every rail view');
       await pc2.locator('#wRadio > .bar .rzbtn').click();
       await pc2.locator('#wRadio .rzsteps [data-d="0"]').click();
-      assert.ok(Math.abs(await pc2.locator('#wRadio').evaluate(el => el.getBoundingClientRect().height) - fh0) < 3, 'Back to full screen height');
+      { const hb = await pc2.locator('#wRadio').evaluate(el => el.getBoundingClientRect().height); assert.ok(Math.abs(hb - fh0) < 3, `Back to full screen height (${fh0} -> ${hb})`); }
       await pc2.locator('#wRadio > .bar .rzbtn').click();
       await pc2.locator('#ckRail [data-f="map"]').click();
       assert.equal(await pc2.locator('#mapZoomIn').isVisible(), true, 'Map zoom-in button'); assert.equal(await pc2.locator('#mapZoomOut').isVisible(), true);

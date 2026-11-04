@@ -22,7 +22,7 @@ const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
-let skin=store.get('skin2','carnival2'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local';
+let skin=store.get('skin2','carnival3'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 
 /* ---------- skin & layout ---------- */

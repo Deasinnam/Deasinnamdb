@@ -38,6 +38,13 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     await p7.locator('#wMap [data-tmap="side"]').click();
     assert.ok((await p7.evaluate(() => log)).includes('side:com.skt.tmap.ku'), 'Side launch requested');
     assert.match(await p7.locator('#toast').textContent(), /가로/);
+    // 콕핏 2 측면 버튼: TMAP·네이버 지도를 화면 아래쪽에 열기
+    await p7.locator('#skin').selectOption('carnival3');
+    await p7.locator('#ckRail [data-open="tmap"]').click();
+    await p7.locator('#ckRail [data-open="nmap"]').click();
+    const bl = await p7.evaluate(() => log.filter(x => /^bottom:/.test(x)));
+    assert.deepEqual(bl.slice(-2), ['bottom:com.skt.tmap.ku','bottom:com.nhn.android.nmap'], 'Rail opens TMAP and Naver Map below');
+    assert.match(await p7.locator('#toast').textContent(), /네이버 지도을? ?아래쪽|네이버 지도.*아래쪽/);
     await p7.close();
     // 창 순서: 설정에서 바꾸고 되돌리기
     const pa = await context.newPage();

@@ -118,7 +118,7 @@
       }
     }
     { const moved = rw0 - F.rwS; if (moved > 0 && moved < 800) F.wz += moved; }
-    { const k = wxKind(); if (k === 'snow') { if (!F.snowInit) { F.snowInit = true; F.snow = Math.max(F.snow, .55); } F.snow = Math.min(.85, F.snow + dt * .02); } else { F.snowInit = false; F.snow = Math.max(0, F.snow - dt * .01); } }
+    { const k = wxKind(); if (k === 'snow') { if (!F.snowInit) { F.snowInit = true; F.snow = Math.max(F.snow, .25); } F.snow = Math.min(.4, F.snow + dt * .02); } else { F.snowInit = false; F.snow = Math.max(0, F.snow - dt * .01); } }
     // 기수 각도(시각 효과)
     let tp = 0;
     const sinceLift = (now - F.liftAt) / 1000;
@@ -382,9 +382,9 @@
 
   /* ---------- 날씨 효과: 흐림(회색 하늘)·비(빗줄기와 유리 물방울)·눈(눈송이, 속도가 빠르면 앞에서 흩날림) ---------- */
   const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
-  const drops = Array.from({ length: 170 }, () => ({ x: rnd(), y: rnd(), l: .5 + rnd(), s: .8 + rnd() * .6 }));
-  const beads = Array.from({ length: 26 }, () => ({ x: rnd(), y: rnd(), r: .4 + rnd(), v: rnd() * .02 }));
-  const flakes = Array.from({ length: 190 }, () => ({ x: rnd(), y: rnd(), r: .4 + rnd(), p: rnd() * 6.28 }));
+  // 비·눈은 '내리고 있다'는 느낌만: 적은 수, 옅은 색(화면을 가리지 않게). 유리 물방울은 없음
+  const drops = Array.from({ length: 46 }, () => ({ x: rnd(), y: rnd(), l: .5 + rnd(), s: .8 + rnd() * .6 }));
+  const flakes = Array.from({ length: 48 }, () => ({ x: rnd(), y: rnd(), r: .4 + rnd(), p: rnd() * 6.28 }));
   let wxT = 0;
   function drawWeather(c, x, w, h, pitch, roll, night) {
     const k = wxKind(); if (k === 'off' || k === 'clear') { wxT = 0; return; }
@@ -392,7 +392,7 @@
     const v = F.v || 0, cx = x + w / 2, cy = h * .53, ppd = h / 58;
     c.save(); c.beginPath(); c.rect(x, 0, w, h); c.clip();
     // 흐린 하늘(지평선 기준으로 기울기 반영)
-    const ov = { cloudy: .62, fog: .66, rain: .68, snow: .5 }[k] || 0, U = Math.max(h, w * .5) / 250;
+    const ov = { cloudy: .62, fog: .66, rain: .26, snow: .18 }[k] || 0, U = Math.max(h, w * .5) / 250;
     if (ov) {
       c.save(); c.translate(cx, cy); c.rotate(-roll * Math.PI / 180); c.translate(0, pitch * ppd);
       const g = c.createLinearGradient(0, -h * 1.1, 0, 0);
@@ -405,7 +405,7 @@
     }
     if (k === 'rain') {
       const sl = .12 + v / 260, fall = 1.5 + v / 90;
-      c.strokeStyle = night ? 'rgba(180,200,230,.62)' : 'rgba(235,242,250,.78)'; c.lineWidth = Math.max(1.2, U * 1.1); c.beginPath();
+      c.strokeStyle = night ? 'rgba(180,200,230,.26)' : 'rgba(235,242,250,.34)'; c.lineWidth = Math.max(.8, U * .7); c.beginPath();
       for (const d of drops) {
         d.y += fall * d.s * dt; d.x -= sl * fall * d.s * dt * .35;
         if (d.y > 1.05 || d.x < -.05) { d.y = -.05 - rnd() * .2; d.x = rnd() * 1.1; }
@@ -413,23 +413,15 @@
         c.moveTo(px, py); c.lineTo(px - sl * L * .5, py + L);
       }
       c.stroke();
-      // 유리에 맺혀 흘러내리는 물방울
-      for (const b of beads) {
-        b.y += (b.v + v / 4000) * dt * 6; if (b.y > 1.05) { b.y = -.02; b.x = rnd(); }
-        const r = (2.5 + b.r * 3.5) * U, px = x + b.x * w, py = b.y * h;
-        const gr = c.createRadialGradient(px - r * .3, py - r * .3, 0, px, py, r);
-        gr.addColorStop(0, 'rgba(255,255,255,.75)'); gr.addColorStop(.6, 'rgba(200,215,230,.28)'); gr.addColorStop(1, 'rgba(200,215,230,0)');
-        c.fillStyle = gr; c.beginPath(); c.arc(px, py, r, 0, 6.29); c.fill();
-      }
     } else if (k === 'snow') {
       const warp = v / 60;
-      c.fillStyle = night ? 'rgba(220,228,240,.85)' : 'rgba(255,255,255,.92)';
+      c.fillStyle = night ? 'rgba(220,228,240,.42)' : 'rgba(255,255,255,.5)';
       for (const f of flakes) {
         f.p += dt * 1.3;
         f.y += (.05 + f.r * .05) * dt + (f.y - .45) * warp * dt * .9;
         f.x += Math.sin(f.p) * .012 * dt + (f.x - .5) * warp * dt * .9;
         if (f.y > 1.05 || f.y < -.1 || f.x < -.1 || f.x > 1.1) { if (warp > .6) { f.x = .5 + (rnd() - .5) * .2; f.y = .45 + (rnd() - .5) * .15; } else { f.x = rnd(); f.y = -.05; } }
-        const r = (.45 + f.r * .95) * U * (1 + Math.abs(f.y - .45) * warp * .8);
+        const r = (.4 + f.r * .7) * U * (1 + Math.abs(f.y - .45) * warp * .5);
         c.beginPath(); c.arc(x + f.x * w, f.y * h, r, 0, 6.29); c.fill();
       }
     }
