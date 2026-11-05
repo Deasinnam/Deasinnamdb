@@ -5,7 +5,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     const p7 = await context.newPage();
     p7.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p7.addInitScript(() => {
-      localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));localStorage.setItem('dna_sos', JSON.stringify({name:'가족',number:'01000000000'}));
+      localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'));localStorage.setItem('dna_sos', JSON.stringify({name:'가족',number:'01000000000'}));
       window.dev = {steps:15,level:6,wifi:false,hasBt:true,bt:null};window.log=[];
       window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
         cockpitState:()=>JSON.stringify({volume:Math.round(dev.level*100/dev.steps),wifiSupported:true,wifi:dev.wifi,hasBt:dev.hasBt,...(dev.bt===null?{}:{bt:dev.bt})}),
@@ -28,6 +28,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
     // 지도: TMAP 켜기 / 하단에 켜기(위아래 반씩) / 옆 창
     await p7.locator('#mapYes').click();
+    await p7.locator('#skin').selectOption('carnival', {force: true}); // 측면 버튼이 없는 스킨에서 지도 아래 버튼 줄
     assert.deepEqual(await p7.locator('#wMap .navrow').allInnerTexts().then(a => a.map(t => t.replace(/\s+/g,' ').trim())), ['TMAP 켜기 상단에 켜기 하단에 켜기 옆 창','네이버 지도 켜기 상단에 켜기 하단에 켜기 옆 창']);
     await p7.locator('#wMap [data-nav="tmap"][data-at="bottom"]').click();
     await p7.locator('#wMap [data-nav="tmap"][data-at="open"]').click();
@@ -47,7 +48,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     let nl = await p7.evaluate(() => log.filter(x => /^(top|bottom):/.test(x)));
     assert.deepEqual(nl.slice(-2), ['top:com.skt.tmap.ku','bottom:com.nhn.android.nmap']);
     // 측면 버튼: 누르면 위/아래 고르기, 고른 위치를 기억해 표시, 길게 누르면 바로 열기
-    await p7.locator('#skin').selectOption('carnival3', {force: true});
+    await p7.locator('#skin').selectOption('carnival5', {force: true});
     assert.equal(await p7.locator('#wMap .navrow').first().isVisible(), false, 'Cockpit 2: map-window app rows removed (side buttons instead)');
     assert.equal(await p7.locator('#ckRail [data-open="tmap"] em').textContent(), '▼ 아래');
     await p7.locator('#ckRail [data-open="tmap"]').click();
@@ -73,7 +74,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     // 창 순서: 설정에서 바꾸고 되돌리기
     const pa = await context.newPage();
     pa.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
-    await pa.addInitScript(() => {if(sessionStorage.getItem('pa'))return;sessionStorage.setItem('pa','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
+    await pa.addInitScript(() => {if(sessionStorage.getItem('pa'))return;sessionStorage.setItem('pa','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'));});
     await pa.goto(origin);
     const ty = sel => pa.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await ty('#wGps') < await ty('#wAtc'));
@@ -88,7 +89,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     assert.ok(await ty('#wAtc') < await ty('#wGps'), 'Order survives reload');
     await pa.locator('#skin').selectOption('blue', {force: true});
     assert.ok(await ty('#wMain') < await ty('#wPl'), 'Other skins keep their own order');
-    await pa.locator('#skin').selectOption('carnival2', {force: true});
+    await pa.locator('#skin').selectOption('carnival5', {force: true});
     await pa.locator('#setBtn').click();
     await pa.locator('#ordReset').click();
     await pa.locator('#setClose').click();
@@ -131,7 +132,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     {
       const p9 = await context.newPage();
       p9.on('pageerror', error => errors.push(error.message));
-      await p9.addInitScript(() => {if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
+      await p9.addInitScript(() => {if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival'));}); // 해외 시간은 콕핏이 아닌 스킨(콕핏은 나침반)
       await p9.clock.install({time: new Date('2026-10-30T13:05:00Z')});
       await p9.goto(origin);
       await p9.locator('#clkTime').waitFor({state:'attached'});

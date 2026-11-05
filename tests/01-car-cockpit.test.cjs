@@ -81,14 +81,14 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     await page.reload();
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon', 'Invalid saved theme has a safe fallback');
     // 대신남 자동차 모드 · 콕핏: 자동차 스킨으로 동작하고, 고르면 속도계가 콕핏 PFD로 바뀜
-    await page.locator('#skin').selectOption('carnival2', {force: true});
+    await page.locator('#skin').selectOption('carnival5', {force: true});
     assert.equal(await page.locator('html').getAttribute('data-car'), '1');
     assert.equal(await page.locator('#wGps').isVisible(), true);
     assert.equal(await page.locator('#gStyle').inputValue(), 'cockpit');
     assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
     assert.equal(await page.locator('.brand .logo-img').count(), 0, 'No third-party car-maker logo in the app');
     assert.equal(await page.evaluate(() => /카니발|KIA|Carnival/i.test(document.body.innerText + [...document.querySelectorAll('#skin option')].map(o=>o.textContent).join(''))), false, 'No Kia/Carnival names on screen');
-    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 2','대신남 자동차 모드 · 콕핏 3','대신남 자동차 모드 · 콕핏 수정판']);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 그레이']);
     // 설정 → 오픈소스 라이선스
     await page.locator('#setBtn').click();
     assert.match(await page.locator('#secOss').textContent(), /Apache License 2\.0[\s\S]*Leaflet[\s\S]*jsmediatags[\s\S]*OpenStreetMap contributors/);
@@ -235,10 +235,9 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     assert.equal(await page.locator('#wMap').evaluate(el => el.classList.contains('collapsed')), true, 'Unused map is folded');
     assert.equal(await page.locator('#mapOffMsg').count(), 1);
     assert.ok(await y('#wMap') > await y('#wPl'), 'Unused map moves to the bottom');
-    // 두 번째 자동차 스킨: 같은 구성, 다른 색, 대신남 로고
-    await page.locator('#skin').selectOption('drive', {force: true});
-    assert.equal(await page.locator('#wGps').isVisible(), true, 'Drive skin keeps the speedometer');
-    assert.equal(await page.locator('.brand .wm').isVisible(), true, 'Drive skin shows the Daesinnam logo');
-    assert.equal(await page.locator('.brand .logo-img').isVisible(), false);
-    assert.notEqual(await page.locator('#gauge').evaluate(c => c.toDataURL()), hashes[0], 'Drive skin recolors the gauge');
+    // 스킨 정리(1.18): 드라이브·콕핏 2 스킨 없음, 자동차 모드에는 블랙박스 창 없음
+    assert.equal(await page.locator('#skin option[value="drive"], #skin option[value="carnival2"], #skin option[value="carnival3"]').count(), 0, 'Removed skins are gone');
+    await page.locator('#skin').selectOption('carnival', {force: true});
+    assert.equal(await page.locator('#wCam').isVisible(), false, 'No dashcam in car mode');
+    assert.equal(await page.locator('#skinBtn').isVisible(), true, 'Skin button in every skin');
 });

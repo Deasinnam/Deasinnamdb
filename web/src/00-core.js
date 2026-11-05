@@ -16,15 +16,15 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['carnival4','대신남 자동차 모드 · 콕핏 3'],['carnival5','대신남 자동차 모드 · 콕핏 수정판'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
 const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
 let skin=store.get('skin2','carnival5'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
-// 1.17: 콕핏 2를 쓰던 기기는 한 번 '콕핏 수정판'으로 바꿈(스킨에서 언제든 콕핏 2로 되돌릴 수 있음)
-if(skin==='carnival3'&&!store.get('ckrSwitched',false)){skin='carnival5';store.set('skin2',skin);window.__ckrNote=1}store.set('ckrSwitched',true);
+// 1.18: 스킨 정리 — 콕핏·콕핏 2는 콕핏(예전 콕핏 수정판)으로, 드라이브는 자동차 모드로
+{const M={carnival2:'carnival5',carnival3:'carnival5',drive:'carnival'};if(M[skin]){skin=M[skin];store.set('skin2',skin);window.__skinNote=skin}}store.set('ckrSwitched',true);
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 
 /* ---------- skin & layout ---------- */

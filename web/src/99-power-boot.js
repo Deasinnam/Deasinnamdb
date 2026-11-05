@@ -41,4 +41,4 @@ if(!restored)(async()=>{
 $('#npAdd').onclick=()=>pickMusic(false);$('#npRadio').onclick=()=>{try{openRadio()}catch(e){}};
 function npEmptySync(){const has=(cur>=0&&list[cur])||rdPlaying||(mode==='ext'&&ext&&ext.title);$('#wVis').classList.toggle('np-empty',!has)}
 npEmptySync();setInterval(npEmptySync,1000);
-if(window.__ckrNote)setTimeout(()=>toast('새 스킨 "콕핏 수정판"을 적용했어요. 예전 화면은 설정 → 화면 · 스킨에서 "콕핏 2"를 고르세요.'),1800);
+if(window.__skinNote)setTimeout(()=>{const n=(SKINS.find(x=>x[0]===window.__skinNote)||[,''])[1];toast('스킨을 정리했어요. 지금은 "'+n+'" 스킨이에요. 위 [🎨 스킨]에서 바꿀 수 있어요.')},1800);

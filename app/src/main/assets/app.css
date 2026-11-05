@@ -1587,3 +1587,9 @@ html.driving body{overflow:hidden}
 .nhbox>#nhClose{align-self:flex-end;height:44px;padding:0 20px}
 @media (max-width:520px){.nhbox li{grid-template-columns:auto minmax(0,1fr)}.nhbox li .pill{grid-column:1/-1}}
 @media (max-width:600px){:root[data-ckr] .tools{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:6px}:root[data-ckr] .tools .pill,:root[data-ckr] .tools .seg button{height:46px;font-size:15px;letter-spacing:.02em;padding:0 4px}}
+
+/* 1.18: 모든 스킨에서 스킨은 [🎨 스킨] 버튼으로 바꿈(도구 줄의 스킨 고르기 칸은 숨김) */
+#skinBtn{display:inline-flex!important;align-items:center;justify-content:center}
+.tools .selw:has(#skin){display:none!important}
+/* 자동차 모드 스킨: 블랙박스 창 없음 */
+:root[data-skin="carnival"] #wCam{display:none!important}

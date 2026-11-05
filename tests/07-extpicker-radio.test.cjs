@@ -44,7 +44,7 @@ run('External music picker, car source, dashcam flip, internet radio, battery sa
       pr.on('pageerror', error => errors.push('radio: '+error.message));
       await pr.route('**/json/stations/search**', route => route.fulfill({status:200, contentType:'application/json', headers:{'Access-Control-Allow-Origin':'*'},
         body: JSON.stringify([{stationuuid:'a1',name:'KBS Cool FM',url_resolved:'https://stream.example/cool',tags:'pop',codec:'AAC',bitrate:128,countrycode:'KR'},{stationuuid:'b2',name:'SBS Power FM',url_resolved:'https://stream.example/power',tags:'talk',codec:'MP3',bitrate:128,countrycode:'KR'},{stationuuid:'m4',name:'MBC FM4U',url_resolved:'https://stream.example/mbc',tags:'pop',codec:'AAC',bitrate:128,countrycode:'KR'}])}));
-      await pr.addInitScript(() => {HTMLMediaElement.prototype.play = function(){window.__rdSrc=this.src;return Promise.resolve()};if(sessionStorage.getItem('pr'))return;sessionStorage.setItem('pr','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival3'));});
+      await pr.addInitScript(() => {HTMLMediaElement.prototype.play = function(){window.__rdSrc=this.src;return Promise.resolve()};if(sessionStorage.getItem('pr'))return;sessionStorage.setItem('pr','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'));});
       await pr.goto(origin);
       await pr.locator('#radioBtn').click();
       await pr.waitForFunction(() => document.querySelectorAll('#rdList li[data-i]').length === 3);

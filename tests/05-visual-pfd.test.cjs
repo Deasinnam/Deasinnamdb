@@ -4,7 +4,7 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
     // 시각화 효과 10종: 고를 때마다 다른 화면, 다시 열어도 유지, 캔버스를 누르면 다음 효과
     const p9 = await context.newPage();
     p9.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
-    await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'));});
+    await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'));});
     await p9.goto(origin);
     assert.equal(await p9.locator('#visSel option').count(), 30);
     const visImgs = new Set();
@@ -22,7 +22,7 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
     // 관제탑 속도 주의: 50/100/120/150/180/200km/h 도달 시 빨간 글자
     const p8 = await context.newPage();
     p8.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
-    await p8.addInitScript(() => {if(!sessionStorage.getItem('p8')){sessionStorage.setItem('p8','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival2'))}
+    await p8.addInitScript(() => {if(!sessionStorage.getItem('p8')){sessionStorage.setItem('p8','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'))}
       window.g8={fix:true,perm:true,enabled:true,provider:'gps',speed:5,bearing:0,azimuth:-1,acc:3,alt:10,satsUsed:9,satsSeen:12,lat:37,lon:127,ts:1000};
       window.AndroidBridge={gpsStatus:()=>JSON.stringify(g8),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{}};});
     await p8.goto(origin);
@@ -93,7 +93,7 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
     await p8.waitForFunction(() => document.querySelector('#pfdHost [data-role="signalText"]').textContent === 'GPS OFF', null, {timeout:3000});
     await p8.close();
     // 자동차·드라이브 스킨: 저장된 콕핏 PFD가 있어도 일반 속도계로, 자세 센서도 켜지 않음
-    for (const sk of ['carnival','drive']) {
+    for (const sk of ['carnival']) {
       const p6 = await context.newPage();
       p6.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
       await p6.addInitScript(k => {

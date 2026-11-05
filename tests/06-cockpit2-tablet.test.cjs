@@ -6,7 +6,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       const pc2 = await context.newPage();
       pc2.on('pageerror', error => errors.push('ck2: '+error.message));
       await pc2.setViewportSize({width:1280,height:800});
-      await pc2.addInitScript(() => {if(sessionStorage.getItem('c2'))return;sessionStorage.setItem('c2','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival3'));localStorage.setItem('dna_mapPref', JSON.stringify('on'));});
+      await pc2.addInitScript(() => {if(sessionStorage.getItem('c2'))return;sessionStorage.setItem('c2','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'));localStorage.setItem('dna_mapPref', JSON.stringify('on'));});
       await pc2.goto(origin);
       await pc2.locator('#ckRail').waitFor();
       assert.equal(await pc2.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Cockpit 2 reuses the cockpit look');
@@ -75,9 +75,9 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.deepEqual(await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id)), ['wRadio'], 'Cockpit 3 rail focuses one window');
       assert.equal(await pc2.evaluate(() => getComputedStyle(document.getElementById('wRadio')).getPropertyValue('--rg').trim()), '#ffb14d', 'Cockpit 3 colours');
       await pc2.locator('#ckRail [data-f="all"]').click();
-      await pc2.locator('#skin').selectOption('carnival2', {force: true});
-      assert.equal(await pc2.locator('#ckRail').isVisible(), false, 'Rail only in cockpit 2');
-      assert.equal(await pc2.locator('#wEq').isVisible(), true, 'Cockpit 1 shows all windows');
+      await pc2.locator('#skin').selectOption('carnival', {force: true});
+      assert.equal(await pc2.locator('#ckRail').isVisible(), false, 'Rail only in the cockpit skins');
+      assert.equal(await pc2.locator('#wEq').isVisible(), true, 'Car mode shows all windows');
       await pc2.close();
     }
     // 태블릿 가로모드 2: 같은 기능 + 금속 조종석 디자인, 가운데는 SPEED MATE(PFD 대신)
@@ -129,7 +129,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pt2.evaluate(() => document.getElementById('tabCk').classList.contains('v2')), false, 'Back to tablet 1');
       await pt2.locator('#tkSkin').selectOption('tablet2');
       assert.equal(await pt2.evaluate(() => document.getElementById('tabCk').classList.contains('v2')), true);
-      await pt2.locator('#tkSkin').selectOption('carnival2');
+      await pt2.locator('#tkSkin').selectOption('carnival5');
       assert.equal(await pt2.locator('#tabCk').isVisible(), false, 'Leaves the tablet screen');
       assert.equal(await pt2.locator('#wGps #pfdHost').count(), 1, 'PFD back in the speedometer window');
       assert.equal(await pt2.locator('#app > #wGps').count(), 1, 'Speedometer window back in the app');
@@ -196,7 +196,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pt.locator('#wGps #pfdHost').count(), 1, 'PFD returned to the speedometer window');
       assert.equal(await pt.locator('#app > #wMap').count(), 1, 'Map window returned');
       assert.equal(await pt.locator('header.top #clock').count(), 1, 'Clock returned to the header');
-      await pt.locator('#skin').selectOption('carnival2', {force: true});
+      await pt.locator('#skin').selectOption('carnival5', {force: true});
       assert.equal(await pt.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit skin still shows its PFD');
       // 콕핏 스킨에서도 기존 속도계 디자인 선택 가능
       await pt.locator('#gStyleBar').selectOption('neon');
