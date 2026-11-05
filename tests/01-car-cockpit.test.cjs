@@ -163,7 +163,7 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     // 두 줄만 보이고, 두 줄 단위로 바뀌며 진행
     await page.evaluate(() => {window.__atcSpeed=2.5;document.getElementById('atcRun').click()}); // 관제탑 점검을 빠르게 처음부터(테스트 시간 단축)
     await page.evaluate(() => {window.__atcMax=0;window.__atcSeen='';new MutationObserver(()=>{const l=document.querySelector('#atcLog');__atcMax=Math.max(__atcMax,l.children.length);__atcSeen+=l.textContent}).observe(document.querySelector('#atcLog'),{childList:true,subtree:true,characterData:true})});
-    await page.waitForFunction(() => /안전벨트/.test(window.__atcSeen) && document.querySelectorAll('#atcLog li').length===2 && /브레이크/.test(window.__atcSeen), null, {timeout:20000});
+    await page.waitForFunction(() => /안전벨트/.test(window.__atcSeen) && window.__atcMax===2 && /브레이크/.test(window.__atcSeen), null, {timeout:20000}); // 관찰 기록으로 확인(부하가 커도 놓치지 않게)
     assert.equal(await page.evaluate(() => __atcMax), 2, 'Tower shows two lines at a time');
     assert.ok((await page.locator('#wAtc .atcscreen').boundingBox()).height < 70, 'Tower screen is two lines tall');
     await page.locator('#atcSkip').click();
