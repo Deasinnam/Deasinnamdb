@@ -22,6 +22,12 @@ run('External music picker, car source, dashcam flip, internet radio, battery sa
       await px.waitForFunction(() => /Song A/.test(document.getElementById('xPick').textContent), null, {timeout: 4000});
       await px.locator('#xPick [data-xapp="com.google.android.apps.youtube.music"]').click();
       assert.ok((await px.evaluate(() => xl)).includes('open:com.google.android.apps.youtube.music'), 'YouTube Music button switches app');
+      // 알림 접근 단계별 안내(제한된 설정 풀기)
+      await px.evaluate(() => document.getElementById('xNotifHelp').click());
+      assert.equal(await px.locator('#notifHelp').isVisible(), true, 'Restricted-settings guide opens');
+      assert.equal(await px.locator('#notifHelp li').count(), 3);
+      await px.locator('#nhClose').click();
+      assert.equal(await px.locator('#notifHelp').isVisible(), false);
       // 차 연결: 고른 음원(YouTube Music)을 화면 전환 없이 재생
       await px.evaluate(() => { localStorage.setItem('dna_carSrc', JSON.stringify('ytm')); window.__carConnected('MyCar'); });
       assert.ok((await px.evaluate(() => xl)).includes('play:com.google.android.apps.youtube.music'), 'Car connect plays YouTube Music');

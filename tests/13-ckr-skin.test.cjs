@@ -18,6 +18,26 @@ run('Revised cockpit skin', async ({context, origin, errors}) => {
   assert.ok((await p.locator('#driveBtn').boundingBox()).height >= 46, 'Big toolbar buttons');
   assert.ok((await p.locator('#wGps > .bar .wbtn').last().boundingBox()).width >= 44, 'Window buttons are finger-sized');
   assert.equal(await p.locator('#dkMuteButton').evaluate(b => b.scrollWidth <= b.clientWidth + 1), true, 'MUTE fits');
+  // 조종 패널은 너비와 관계없이 다섯 칸 한 줄
+  for (const w of [412, 600, 1000]) {
+    await p.setViewportSize({width: w, height: 900}); await p.waitForTimeout(300);
+    const tops = await p.evaluate(() => [...document.querySelectorAll('.dsn .modules>.module')].map(m => Math.round(m.getBoundingClientRect().top)));
+    assert.equal(new Set(tops).size, 1, 'Cockpit control in one row at ' + w + 'px');
+  }
+  await p.setViewportSize({width: 600, height: 900});
+  // 속도계 아래 버튼 글자가 칸 밖으로 나가지 않음
+  assert.ok((await p.evaluate(() => [...document.querySelectorAll('#pfdHost .pfd-tool')].filter(b => b.offsetParent).every(b => b.scrollWidth <= b.clientWidth + 1))), 'PFD buttons fit at 600px');
+  // 상단: 해외 시간 대신 나침반
+  assert.equal(await p.locator('#clkWorld').isVisible(), false);
+  assert.equal(await p.locator('#clkCmp').isVisible(), true, 'Compass dial in the clock row');
+  // 상단 스킨 버튼
+  await p.locator('#skinBtn').click();
+  assert.equal(await p.locator('#skinPick').isVisible(), true);
+  assert.equal(await p.locator('#skinPick button.on').getAttribute('data-k'), 'carnival5');
+  await p.locator('#skinPick button[data-k="carnival4"]').click();
+  assert.equal(await p.locator('#skin').inputValue(), 'carnival4', 'Skin changed from the top button');
+  assert.equal(await p.locator('#skinBtn').isVisible(), false, 'Skin button only in the revised cockpit');
+  await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival5'; s.dispatchEvent(new Event('change')); });
   // 설정에서 스킨 바꾸기 → 콕핏 2로 되돌림, 다시 켜도 다시 바뀌지 않음
   await p.locator('#setBtn').click();
   await p.locator('#sSkinSel').selectOption('carnival3');

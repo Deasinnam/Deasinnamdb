@@ -24,3 +24,7 @@ function sndTakeoff(){if(!atcOn())return;const a=fx();if(!a)return;const t=a.cur
   const w=a.createOscillator();w.type='sawtooth';w.frequency.setValueAtTime(160,s);w.frequency.exponentialRampToValueAtTime(2100,s+4.2);const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=6;bp.frequency.setValueAtTime(320,s);bp.frequency.exponentialRampToValueAtTime(4200,s+4.2);
   const gw=a.createGain();gw.gain.setValueAtTime(.0001,s);gw.gain.exponentialRampToValueAtTime(.05,s+3.4);gw.gain.exponentialRampToValueAtTime(.0001,s+L);w.connect(bp).connect(gw).connect(a.destination);w.start(s);w.stop(s+L)}
 function atcOn(){return store.get('atcSound',true)!==false}
+// 조종 패널 한 줄: 설계 너비(860px)보다 좁으면 모듈 줄을 통째로 줄임(다섯 칸 그대로)
+(function(){const d=document.querySelector('#dkControlDeck');if(!d)return;const BASE=860;
+  const fit=()=>{const w=d.parentElement?d.parentElement.clientWidth:0;if(!w)return;const z=w<BASE?Math.max(.38,w/BASE):1;const v=z===1?'':z.toFixed(3);if(d.style.zoom!==v)d.style.zoom=v};
+  new ResizeObserver(fit).observe(d.parentElement);fit()})();

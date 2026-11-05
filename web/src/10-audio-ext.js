@@ -88,7 +88,7 @@ if(HAS_EXT){
   $('#srcSeg').hidden=false;
   document.querySelectorAll('#srcSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.src));
   document.querySelectorAll('[data-pkg]').forEach(b=>b.onclick=()=>{try{NB.openApp(b.dataset.pkg)}catch(e){}});
-  $('#xNotif').onclick=()=>{try{NB.openNotificationAccess()}catch(e){}};$('#xAppInfo').onclick=()=>{try{NB.openAppInfo()}catch(e){toast('설정 → 애플리케이션에서 이 앱을 찾아 주세요.')}};
+  $('#xNotif').onclick=()=>{try{NB.openNotificationAccess()}catch(e){}}; // 96-skin-compass-notif.js에서 단계별 안내와 함께 다시 정함$('#xAppInfo').onclick=()=>{try{NB.openAppInfo()}catch(e){toast('설정 → 애플리케이션에서 이 앱을 찾아 주세요.')}};
   $('#xMic').onclick=()=>{try{NB.requestMic()}catch(e){}};
   $('#xFull').onclick=()=>{try{NB.openUrl('https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk')}catch(e){}};
 }

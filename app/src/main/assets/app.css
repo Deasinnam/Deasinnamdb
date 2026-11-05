@@ -1551,3 +1551,39 @@ html.driving body{overflow:hidden}
 :root[data-ckr] #wVis.np-empty .vmode{display:none}
 @media (max-width:600px){#app>.win>.bar .gsbar{display:none!important}}
 @container (max-width:520px){.rd-disp #rdName{font-size:17px!important}.rd-disp #rdStat{font-size:12px!important}}
+/* ---------- 조종 패널: 화면 너비와 관계없이 다섯 칸을 한 줄로 ----------
+   모듈 줄(deck)을 일정한 설계 너비로 그린 뒤 창 너비에 맞춰 통째로 줄입니다(zoom, 앱이 너비에 따라 값을 정함).
+   deck 자신을 dsn 컨테이너로 두어, 안쪽 크기 규칙은 줄이기 전 설계 너비 기준으로 적용됩니다. */
+.dsn .deck{container:dsn/inline-size}
+.dsn .modules{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+.dsn .modules>.module{grid-column:auto!important;grid-row:1!important}
+/* 콕핏 수정판: 상단 스킨 버튼, 해외 시간 대신 나침반 */
+#skinBtn,.clock .ck-cmp{display:none}
+:root[data-ckr] #skinBtn{display:inline-flex;align-items:center;justify-content:center}
+:root[data-ckr] .clock .ck-world{display:none!important}
+:root[data-ckr] .clock .ck-cmp{display:grid}
+.skinpick{position:fixed;z-index:60;width:min(320px,calc(100vw - 16px));max-height:min(70vh,520px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid #000;border-radius:8px;background:linear-gradient(180deg,#2e352c,#191f1b);box-shadow:0 0 0 1px #54604e,0 12px 30px #000c}
+.skinpick>b{font:600 15px "Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.14em;color:#f3bc65}
+.skinpick>div{display:flex;flex-direction:column;gap:6px}
+.skinpick .pill{height:44px;font-size:15px;text-align:left;padding:0 14px;justify-content:flex-start}
+.skinpick .pill.on{color:#a8f08f;box-shadow:inset 0 -3px 0 #a8f08f}
+/* 속도계 아래 버튼: 좁아도 글자가 칸 밖으로 나가지 않게(좁으면 아이콘 숨김) */
+#pfdHost .pfd-tool{min-width:0;overflow:hidden}
+#pfdHost .pfd-tool>span,#pfdHost .pfd-tool{white-space:nowrap;text-overflow:ellipsis}
+:root[data-ckr] #wGps #pfdHost .pfd-tool{font-size:clamp(12px,2.2cqw,15px);gap:6px;padding:6px 8px}
+@container (max-width:820px){#pfdHost .pfd-tool svg{display:none}#pfdHost .pfd-tool{gap:0;padding:6px 4px;justify-content:center}}
+/* 알림 접근 단계별 안내 */
+.nhelp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;background:#000a}
+.nhelp[hidden]{display:none}
+.nhbox{width:min(560px,100%);max-height:calc(100vh - 32px);overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid #000;border-radius:10px;background:linear-gradient(180deg,#2a3127,#151a14);box-shadow:0 0 0 1px #54604e,0 20px 50px #000;color:#e7e9df}
+.nhbox>b{font-size:18px;color:#f3bc65}.nhbox p{margin:0;font-size:14px;line-height:1.6;color:#c9d0c4}
+.nhbox ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:nh}
+.nhbox li{counter-increment:nh;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid #2b3328;border-radius:6px;background:#0a0f0a}
+.nhbox li::before{content:counter(nh);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#2b3328;color:#e7e9df;font-weight:700}
+.nhbox li.now{border-color:#a8f08f;box-shadow:0 0 0 1px #a8f08f55}.nhbox li.now::before{background:#a8f08f;color:#0b130a}
+.nhbox li span{display:flex;flex-direction:column;gap:3px}.nhbox li b{font-size:15px}.nhbox li small{font-size:13px;line-height:1.5;color:#b7c0b3}
+.nhbox li .pill{height:44px;font-size:14px;white-space:nowrap}
+.nhbox .nhnote{font-size:13px;color:#9fd18f}
+.nhbox>#nhClose{align-self:flex-end;height:44px;padding:0 20px}
+@media (max-width:520px){.nhbox li{grid-template-columns:auto minmax(0,1fr)}.nhbox li .pill{grid-column:1/-1}}
+@media (max-width:600px){:root[data-ckr] .tools{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:6px}:root[data-ckr] .tools .pill,:root[data-ckr] .tools .seg button{height:46px;font-size:15px;letter-spacing:.02em;padding:0 4px}}
