@@ -48,7 +48,7 @@ async function mapInit(){
   if(NB&&mapProv!=='osm'&&key){
     tmapFrame=document.createElement('iframe');tmapFrame.className='tmapframe';tmapFrame.title=PROV[mapProv];
     tmapFrame.src=`${MAP_PAGE}?p=${mapProv}&k=${encodeURIComponent(key)}`;tmapFrame.referrerPolicy='no-referrer';
-    box.appendChild(tmapFrame);mapEngine='frame';mapMsg(PROV[mapProv]+'를 불러오는 중…');mapLoading=false;mapUpdate(true);return;
+    box.appendChild(tmapFrame);mapEngine='frame';rtSync();mapMsg(PROV[mapProv]+'를 불러오는 중…');mapLoading=false;mapUpdate(true);return;
   }
   mapMsg('지도를 불러오는 중…');
   try{await loadLeaflet()}catch(e){mapLoading=false;mapMsg('지도를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 지도 끄기 → 지도 켜기를 눌러 주세요.');return}
@@ -59,9 +59,9 @@ async function mapInit(){
   mapMarker=L.marker([37.5665,126.978],{icon:L.divIcon({className:'me',html:'<i></i>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(mapObj);
   mapObj.on('dragstart',()=>{mapFollow=false;syncMapBtns()});
   new ResizeObserver(()=>mapObj&&mapObj.invalidateSize()).observe(box);
-  mapEngine='osm';mapLoading=false;$('#mSrc').textContent='· OpenStreetMap';mapMsg('');mapUpdate(true);
+  mapEngine='osm';mapLoading=false;$('#mSrc').textContent='· OpenStreetMap';mapMsg('');rtSync();mapUpdate(true);
 }
-function mapDestroy(){if(mapObj){mapObj.remove();mapObj=null;mapMarker=null}if(tmapFrame){tmapFrame.remove();tmapFrame=null}$('#mapbox').querySelectorAll('.leafhold').forEach(e=>e.remove());mapEngine=null;$('#mSrc').textContent=''}
+function mapDestroy(){if(mapObj){mapObj.remove();mapObj=null;mapMarker=null}if(tmapFrame){tmapFrame.remove();tmapFrame=null}$('#mapbox').querySelectorAll('.leafhold').forEach(e=>e.remove());mapEngine=null;$('#mSrc').textContent='';RT.layer=null;RT.destMk=null;rtSync()}
 function mapUpdate(force){
   if(mapPref!=='on'||!isCar()||!mapEngine)return;
   if(!gpsOn){mapMsg('속도계에서 GPS 켜기를 누르면 현재 위치를 따라가요.');return}
@@ -69,6 +69,7 @@ function mapUpdate(force){
   const now=performance.now();if(!force&&now-mapLastPush<900)return;mapLastPush=now;
   const mm=$('#mapMsg').textContent;if(!(mapEngine==='frame'&&/못했어요|실패/.test(mm)))mapMsg('');
   const lat=gs.lat,lon=gs.lon;
+  if(mapEngine==='osm')rtTick(lat,lon); // 길찾기 안내
   if(mapEngine==='osm'&&mapObj){mapMarker.setLatLng([lat,lon]);const el=mapMarker.getElement();if(el){const i=el.querySelector('i');if(i)i.style.transform=`rotate(${Math.round(hdgDisp)}deg)`}
     if(mapFollow){const z=spdNow>90?15:spdNow>40?16:17;mapObj.setView([lat,lon],force?z:mapObj.getZoom(),{animate:!force})}}
   if(mapEngine==='frame'&&tmapFrame&&tmapFrame.contentWindow)tmapFrame.contentWindow.postMessage({t:'pos',lat,lon,follow:mapFollow},'*');

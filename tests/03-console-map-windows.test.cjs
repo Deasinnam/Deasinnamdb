@@ -38,10 +38,8 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     await p7.locator('#wMap [data-nav="tmap"][data-at="side"]').click();
     assert.ok((await p7.evaluate(() => log)).includes('side:com.skt.tmap.ku'), 'Side launch requested');
     assert.match(await p7.locator('#toast').textContent(), /가로/);
-    // 콕핏 2 측면 버튼: TMAP·네이버 지도를 화면 아래쪽에 열기
-    await p7.locator('#skin').selectOption('carnival3');
+    // 지도 창(측면 버튼이 없는 스킨): 상단에 켜기 / 네이버 지도
     await p7.setViewportSize({width:900,height:1400}); // 세로 화면에서 위/아래 고르기
-    // 지도 창: 상단에 켜기 / 네이버 지도
     await p7.locator('#wMap [data-nav="tmap"][data-at="top"]').click();
     assert.match(await p7.locator('#toast').textContent(), /TMAP을 화면 위쪽/);
     await p7.locator('#wMap [data-nav="nmap"][data-at="bottom"]').click();
@@ -50,6 +48,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     assert.deepEqual(nl.slice(-2), ['top:com.skt.tmap.ku','bottom:com.nhn.android.nmap']);
     // 측면 버튼: 누르면 위/아래 고르기, 고른 위치를 기억해 표시, 길게 누르면 바로 열기
     await p7.locator('#skin').selectOption('carnival3');
+    assert.equal(await p7.locator('#wMap .navrow').first().isVisible(), false, 'Cockpit 2: map-window app rows removed (side buttons instead)');
     assert.equal(await p7.locator('#ckRail [data-open="tmap"] em').textContent(), '▼ 아래');
     await p7.locator('#ckRail [data-open="tmap"]').click();
     assert.equal(await p7.locator('#navPick').isVisible(), true, 'Tap shows the top/bottom chooser');

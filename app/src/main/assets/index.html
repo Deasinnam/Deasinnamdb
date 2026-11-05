@@ -242,6 +242,15 @@
       </div>
       <div id="mapWrap" hidden>
         <div class="mapbox" id="mapbox"><div class="mapmsg" id="mapMsg" hidden></div></div>
+        <div class="routebar" id="rtBar" hidden>
+          <div class="rtsearch" id="rtSearch"><input id="rtQ" type="search" placeholder="길찾기: 목적지 이름·주소 (예: 서울역, 강남구청)" enterkeyhint="search" autocomplete="off" aria-label="목적지"><button class="pill on" id="rtGo">길찾기</button></div>
+          <div class="rtmsg" id="rtMsg" hidden></div>
+          <ul class="rtres" id="rtRes" hidden></ul>
+          <div class="rtinfo" id="rtInfo" hidden>
+            <div class="rtnext"><b id="rtTurn">↑</b><span id="rtStep"></span><em id="rtStepD"></em></div>
+            <div class="rtsum"><span id="rtSum"></span><button class="pill" id="rtAll">전체 경로</button><button class="pill on" id="rtVoice">🔊 음성</button><button class="pill" id="rtStop">안내 끝</button></div>
+          </div>
+        </div>
         <div class="mapctl">
           <div class="navrow"><b>TMAP</b><button class="pill on" data-nav="tmap" data-at="open">켜기</button><button class="pill" data-nav="tmap" data-at="top">상단에 켜기</button><button class="pill" data-nav="tmap" data-at="bottom">하단에 켜기</button><button class="pill" data-nav="tmap" data-at="side">옆 창</button></div>
           <div class="navrow"><b>네이버 지도</b><button class="pill on" data-nav="nmap" data-at="open">켜기</button><button class="pill" data-nav="nmap" data-at="top">상단에 켜기</button><button class="pill" data-nav="nmap" data-at="bottom">하단에 켜기</button><button class="pill" data-nav="nmap" data-at="side">옆 창</button></div>

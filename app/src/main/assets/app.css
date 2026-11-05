@@ -1430,3 +1430,28 @@ html.driving body{overflow:hidden}
 @media (max-width:560px){.art{flex-wrap:wrap}.art .npctl{flex:1 1 100%;margin:0}
   #wVis>.body{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important}
   .app.FX>#wVis.fx>.body{display:grid}}
+
+/* 콕핏 2: TMAP·네이버 지도 열기는 측면 버튼에 있어서 지도 아래 줄은 숨김 */
+:root[data-ck2] #wMap .navrow{display:none!important}
+/* 무료 지도 길찾기 */
+.routebar{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.rtsearch{display:flex;gap:6px}
+.rtsearch input{flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid #000;border-radius:4px;background:#0a0f0a;color:var(--ck-white,#e7e9df);font-size:16px;box-shadow:inset 0 2px 6px #000}
+.rtsearch .pill{height:44px;padding:0 18px;font-size:16px}
+.rtmsg{font-size:13px;color:var(--muted)}
+.rtres{list-style:none;margin:0;padding:4px;border:1px solid #000;border-radius:4px;background:#070a06;max-height:240px;overflow-y:auto}
+.rtres li{display:flex;flex-direction:column;gap:2px;padding:9px 10px;border-radius:3px;cursor:pointer}
+.rtres li+li{border-top:1px solid #ffffff10}
+.rtres li:hover{background:#ffffff0c}
+.rtres li b{font-size:15px;color:var(--ck-green,#a8f08f)}
+.rtres li small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtres li.rthead{cursor:default;font-size:12px;color:var(--muted);padding:6px 10px}
+.rtinfo{display:flex;flex-direction:column;gap:6px}
+.rtnext{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 14px;border:1px solid #000;border-radius:5px;background:radial-gradient(120% 90% at 30% 0%,#10150f,#070a06);box-shadow:inset 0 0 0 1px #2b3328}
+.rtnext b{font-size:40px;line-height:1;color:var(--ck-green,#a8f08f);text-shadow:0 0 10px #a8f08f66;min-width:44px;text-align:center}
+.rtnext span{font-size:18px;font-weight:700;color:var(--ck-white,#e7e9df);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtnext em{font-style:normal;font-family:"Share Tech Mono",monospace;font-size:28px;color:#f3bc65}
+.rtsum{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.rtsum span{flex:1 1 200px;min-width:0;font-size:14px;color:var(--ck-white,#e7e9df)}
+.rtdest i{display:block;font-style:normal;font-size:26px;line-height:1;color:#f3bc65;text-shadow:0 0 3px #000,0 0 6px #000}
+.app.FX>#wMap.fx .routebar{flex:none}
