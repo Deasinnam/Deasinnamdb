@@ -1419,3 +1419,14 @@ html.driving body{overflow:hidden}
   :root[data-split="ck"] .ckrail button{min-height:40px;min-width:56px;font-size:10px;padding:2px}
   :root[data-split="ck"] .ckrail button svg{width:17px;height:17px}
 }
+
+/* NOW PLAYING 창: 이전 · 재생/일시정지 · 다음 */
+.art .npctl{display:flex;gap:6px;margin-top:4px}
+.art .npctl .tb{flex:1 1 0;min-width:0;max-width:none;height:46px}
+.art .npctl .tb svg{width:22px;height:22px}
+#npPlay .i-pause{display:none}#npPlay.hot .i-play{display:none}#npPlay.hot .i-pause{display:block}
+.app.FX>#wVis.fx .art .npctl .tb{height:clamp(46px,8vh,72px)}
+.app.FX>#wVis.fx .art .npctl .tb svg{width:clamp(22px,3.4vh,34px);height:clamp(22px,3.4vh,34px)}
+@media (max-width:560px){.art{flex-wrap:wrap}.art .npctl{flex:1 1 100%;margin:0}
+  #wVis>.body{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important}
+  .app.FX>#wVis.fx>.body{display:grid}}

@@ -155,6 +155,7 @@ function toggle(){if(rdSel())return rdPlaying?radioStop():rdResume();if(mode==='
 function stop(){if(rdSel())return radioStop();if(mode==='ext')return X('stop');if(natL())return N1('stop');audio.pause();audio.currentTime=0;state()}
 function next(){if(rdSel())return rdStep(1);if(mode==='ext')return X('next');if(natL())return N1('next');const n=nextIdx(1);if(n>=0)playIndex(n)}
 function prev(){if(rdSel())return rdStep(-1);if(mode==='ext')return X('prev');if(natL())return N1('prev');if(audio.currentTime>3){audio.currentTime=0;return}const n=shuffle?nextIdx(1):nextIdx(-1);if(n>=0)playIndex(n)}
+$('#npPrev').onclick=()=>prev();$('#npPlay').onclick=()=>toggle();$('#npNext').onclick=()=>next(); // NOW PLAYING 창의 재생 조작(라디오·외부 앱도 같은 버튼으로)
 $('#bPlay').onclick=play;$('#bPause').onclick=toggle;$('#bStop').onclick=stop;$('#bNext').onclick=next;$('#bPrev').onclick=prev;
 $('#bEject').onclick=()=>pickMusic(false);$('#add').onclick=()=>pickMusic(false);$('#addTop').onclick=()=>pickMusic(false);$('#addDir').onclick=()=>pickMusic(true);
 $('#file').onchange=e=>{addFiles(e.target.files);e.target.value=''};
@@ -173,6 +174,7 @@ function state(){
   const playing=rs?rdPlaying:mode==='ext'?!!ext.playing:nl?!!nat.playing:(!audio.paused&&cur>=0);
   const paused=rs?!rdPlaying:mode==='ext'?(!ext.playing&&!!ext.title):nl?(!nat.playing&&(nat.pos||0)>0):(!playing&&audio.currentTime>0&&cur>=0);
   $('#bPlay').classList.toggle('hot',playing);$('#bPause').classList.toggle('hot',paused);
+  {const n=$('#npPlay');n.classList.toggle('hot',playing);n.setAttribute('aria-label',playing?'일시정지':'재생')}
   $('#stPlay').classList.toggle('on',playing);$('#stPause').classList.toggle('on',paused);
   if(mode==='ext'||nl)return; // 표준 플레이어가 잠금 화면·알림·핸들 버튼을 직접 처리
   if('mediaSession' in navigator)navigator.mediaSession.playbackState=playing?'playing':'paused';

@@ -46,6 +46,16 @@ run('Radio through the main player buttons and visualizer', async ({context, ori
   await p.waitForFunction(() => AmpRadio.state.cur.id === 'a2');
   await p.locator('#bPrev').click();
   await p.waitForFunction(() => AmpRadio.state.cur.id === 'a1');
+  // NOW PLAYING 창의 재생 버튼도 같은 조작
+  assert.equal(await p.locator('#npPlay').evaluate(b => b.classList.contains('hot')), true, 'NOW PLAYING play lamp lit');
+  await p.locator('#npPlay').click();
+  assert.equal(await p.evaluate(() => AmpRadio.state.playing), false, 'NOW PLAYING pause stops radio');
+  await p.locator('#npPlay').click();
+  await p.waitForFunction(() => AmpRadio.state.playing);
+  await p.locator('#npNext').click();
+  await p.waitForFunction(() => AmpRadio.state.cur.id === 'a2');
+  await p.locator('#npPrev').click();
+  await p.waitForFunction(() => AmpRadio.state.cur.id === 'a1');
   // 핸들 버튼(재생/일시정지)도 라디오
   await p.evaluate(() => window.__ctl('toggle'));
   assert.equal(await p.evaluate(() => AmpRadio.state.playing), false, 'Steering toggle stops radio');
