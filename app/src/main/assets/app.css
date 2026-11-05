@@ -1455,3 +1455,12 @@ html.driving body{overflow:hidden}
 .rtsum span{flex:1 1 200px;min-width:0;font-size:14px;color:var(--ck-white,#e7e9df)}
 .rtdest i{display:block;font-style:normal;font-size:26px;line-height:1;color:#f3bc65;text-shadow:0 0 3px #000,0 0 6px #000}
 .app.FX>#wMap.fx .routebar{flex:none}
+/* 창 제목줄을 3초 눌러 옮기기 */
+#app>.win>.bar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#app>.win.lp>.bar{position:relative}
+#app>.win.lp>.bar::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--ck-green,var(--accent));box-shadow:0 0 8px var(--ck-green,var(--accent));animation:wrfill 3s linear forwards;pointer-events:none}
+@keyframes wrfill{0%,15%{width:0}100%{width:100%}}
+.app.WR{-webkit-user-select:none;user-select:none}
+.app.WR>.win:not(.wmove){box-shadow:inset 0 0 0 2px #ffffff2e!important;opacity:.82;transition:opacity .2s}
+.app.WR>.win.wmove{box-shadow:inset 0 0 0 3px var(--ck-green,var(--accent)),0 0 24px color-mix(in srgb,var(--ck-green,var(--accent)) 45%,transparent)!important;z-index:5;filter:brightness(1.12)}
+.app.WR>.win.wmove>.bar{background:color-mix(in srgb,var(--ck-green,var(--accent)) 22%,transparent)}
