@@ -14,7 +14,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
       assert.equal(await pc2.locator('#wGps > #ckRail').count(), 1, 'Rail sits inside the speedometer window');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
-      assert.deepEqual(await pc2.locator('#ckRail button[data-f]').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio'], 'Five view buttons');
+      assert.deepEqual(await pc2.locator('#ckRail button[data-f]').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio','vis'], 'Six view buttons (with NOW PLAYING)');
       assert.deepEqual(await pc2.locator('#ckRail button[data-open]').evaluateAll(bs => bs.map(b => b.dataset.open)), ['tmap','nmap'], 'TMAP / Naver Map open-below buttons');
       for (const sel of ['#ckRail [data-open="tmap"]', '#ckRail [data-open="nmap"]']) {
         const b = await pc2.locator(sel).boundingBox(), r = await pc2.locator('#ckRail').boundingBox();
@@ -25,7 +25,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       await pc2.locator('#navPick [data-at="bottom"]').click();
       assert.match(await pc2.locator('#toast').textContent(), /네이버 지도 켜기는 안드로이드 앱에서/, 'Web preview explains the app-only action');
       const sizes = [];
-      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['radio',['wRadio']]]) {
+      for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['radio',['wRadio']],['vis',['wVis']]]) {
         await pc2.locator(`#ckRail [data-f="${f}"]`).click();
         const vis = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id));
         assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');

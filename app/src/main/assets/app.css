@@ -1346,47 +1346,76 @@ html.driving body{overflow:hidden}
 :root[data-ck3] .rd-mhz{color:#ffcf8a}:root[data-ck3] .rd-hint,:root[data-ck3] .rd-drag{color:#aab4be}:root[data-ck3] .rd-sec span{color:#c3cbd3}
 
 /* ---------- 화면 분할(TMAP·네이버 지도 위·아래): 남은 칸에 스크롤 없이 ---------- */
-:root[data-split],:root[data-split] body{height:100%;overflow:hidden}
-:root[data-split] .top,:root[data-split] .ckrail,:root[data-split] .win>.grip{display:none!important}
-:root[data-split] .app{height:100dvh;max-width:none;margin:0;gap:6px;padding:6px max(6px,env(safe-area-inset-right,0px)) 6px max(6px,env(safe-area-inset-left,0px))!important;box-sizing:border-box;
+:root[data-split="grid"],:root[data-split="grid"] body{height:100%;overflow:hidden}
+:root[data-split="grid"] .top,:root[data-split="grid"] .ckrail,:root[data-split="grid"] .win>.grip{display:none!important}
+:root[data-split="grid"] .app{height:100dvh;max-width:none;margin:0;gap:6px;padding:6px max(6px,env(safe-area-inset-right,0px)) 6px max(6px,env(safe-area-inset-left,0px))!important;box-sizing:border-box;
   grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;grid-template-areas:"gps main"!important;overflow:hidden}
-:root[data-split] .app>.win{display:none!important}
-:root[data-split] .app>#wGps,:root[data-split] .app>#wMain{display:flex!important;height:auto!important;min-height:0!important;order:0!important;grid-row:1!important}
-:root[data-split] .app>#wGps{grid-area:gps!important}
-:root[data-split] .app>#wMain{grid-area:main!important}
-:root[data-split] .app>.win.collapsed>.body{display:block}
-:root[data-split] .win>.body{min-height:0;overflow:hidden}
-:root[data-split] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:0!important}
-:root[data-split] #wMain .subrow{display:none}
-:root[data-split] #wMain>.body{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:8px}
-:root[data-split] #wMain .transport{margin-top:6px}
-:root[data-split] #wMain .seek{margin-top:6px}
+:root[data-split="grid"] .app>.win{display:none!important}
+:root[data-split="grid"] .app>#wGps,:root[data-split="grid"] .app>#wMain{display:flex!important;height:auto!important;min-height:0!important;order:0!important;grid-row:1!important}
+:root[data-split="grid"] .app>#wGps{grid-area:gps!important}
+:root[data-split="grid"] .app>#wMain{grid-area:main!important}
+:root[data-split="grid"] .app>.win.collapsed>.body{display:block}
+:root[data-split="grid"] .win>.body{min-height:0;overflow:hidden}
+:root[data-split="grid"] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:0!important}
+:root[data-split="grid"] #wMain .subrow{display:none}
+:root[data-split="grid"] #wMain>.body{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:8px}
+:root[data-split="grid"] #wMain .transport{margin-top:6px}
+:root[data-split="grid"] #wMain .seek{margin-top:6px}
 /* 속도계가 없는 스킨: 플레이어 + 재생 화면 */
-:root[data-split] .app:not(.G){grid-template-areas:"main vis"!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
-:root[data-split] .app:not(.G)>#wGps{display:none!important}
-:root[data-split] .app:not(.G)>#wVis{display:flex!important;grid-area:vis!important;height:auto!important;min-height:0!important;grid-row:1!important}
+:root[data-split="grid"] .app:not(.G){grid-template-areas:"main vis"!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+:root[data-split="grid"] .app:not(.G)>#wGps{display:none!important}
+:root[data-split="grid"] .app:not(.G)>#wVis{display:flex!important;grid-area:vis!important;height:auto!important;min-height:0!important;grid-row:1!important}
 /* 좁은 화면(휴대폰 세로): 속도계 위, 아래에 한 줄 조작 */
 @media (max-width:639px){
-  :root[data-split] .app{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto!important;grid-template-areas:"gps" "main"!important}
-  :root[data-split] .app>#wMain{grid-row:2!important}
-  :root[data-split] #wMain>.bar,:root[data-split] #wMain .lcd,:root[data-split] #wMain .seek{display:none}
-  :root[data-split] #wMain>.body{padding:5px}
-  :root[data-split] #wMain .transport{margin:0;flex-wrap:nowrap}
-  :root[data-split] #wMain .tb{height:42px}
-  :root[data-split] .app:not(.G){grid-template-areas:"vis" "main"!important;grid-template-columns:minmax(0,1fr)!important}
-  :root[data-split] .app:not(.G)>#wVis{grid-row:1!important}
+  :root[data-split="grid"] .app{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto!important;grid-template-areas:"gps" "main"!important}
+  :root[data-split="grid"] .app>#wMain{grid-row:2!important}
+  :root[data-split="grid"] #wMain>.bar,:root[data-split="grid"] #wMain .lcd,:root[data-split="grid"] #wMain .seek{display:none}
+  :root[data-split="grid"] #wMain>.body{padding:5px}
+  :root[data-split="grid"] #wMain .transport{margin:0;flex-wrap:nowrap}
+  :root[data-split="grid"] #wMain .tb{height:42px}
+  :root[data-split="grid"] .app:not(.G){grid-template-areas:"vis" "main"!important;grid-template-columns:minmax(0,1fr)!important}
+  :root[data-split="grid"] .app:not(.G)>#wVis{grid-row:1!important}
 }
-:root[data-split] .app>#wGps,:root[data-split] .app>#wMain,:root[data-split] .app>#wVis{align-self:stretch!important}
-:root[data-split] #wMain #bEject{display:none}
+:root[data-split="grid"] .app>#wGps,:root[data-split="grid"] .app>#wMain,:root[data-split="grid"] .app>#wVis{align-self:stretch!important}
+:root[data-split="grid"] #wMain #bEject{display:none}
 /* 분할: 속도계는 계기 화면만 꽉 차게(기록 칸·아래 버튼 숨김) */
-:root[data-split] #wGps>.body{display:flex;flex-direction:column;padding:6px}
-:root[data-split] #wGps[data-gs="cockpit"] #pfdHost{flex:1;min-height:0;display:flex!important;flex-direction:column}
-:root[data-split] #wGps #pfdHost .dsn-pfd,:root[data-split] #wGps #pfdHost [data-role="content"],:root[data-split] #wGps #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
-:root[data-split] #wGps #pfdHost .pfd-canvas-wrap{flex:1;min-height:80px;height:auto!important;aspect-ratio:auto!important}
-:root[data-split] #wGps #pfdHost :is(.pfd-metrics,.pfd-tools,.pfd-status-line,.pfd-header){display:none!important}
-:root[data-split] #wGps #pfdHost .dsn-pfd{padding:4px}
-:root[data-split] #wGps .gps{flex:1;min-height:0}
-:root[data-split] #wGps .gstats{display:none}
-:root[data-split] #wGps .gps{grid-template-columns:minmax(0,1fr)!important}
-:root[data-split] #wGps .dial{min-height:0}
-:root[data-split] #wGps>.body>:not(#pfdHost):not(.gps){display:none}
+:root[data-split="grid"] #wGps>.body{display:flex;flex-direction:column;padding:6px}
+:root[data-split="grid"] #wGps[data-gs="cockpit"] #pfdHost{flex:1;min-height:0;display:flex!important;flex-direction:column}
+:root[data-split="grid"] #wGps #pfdHost .dsn-pfd,:root[data-split="grid"] #wGps #pfdHost [data-role="content"],:root[data-split="grid"] #wGps #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
+:root[data-split="grid"] #wGps #pfdHost .pfd-canvas-wrap{flex:1;min-height:80px;height:auto!important;aspect-ratio:auto!important}
+:root[data-split="grid"] #wGps #pfdHost :is(.pfd-metrics,.pfd-tools,.pfd-status-line,.pfd-header){display:none!important}
+:root[data-split="grid"] #wGps #pfdHost .dsn-pfd{padding:4px}
+:root[data-split="grid"] #wGps .gps{flex:1;min-height:0}
+:root[data-split="grid"] #wGps .gstats{display:none}
+:root[data-split="grid"] #wGps .gps{grid-template-columns:minmax(0,1fr)!important}
+:root[data-split="grid"] #wGps .dial{min-height:0}
+:root[data-split="grid"] #wGps>.body>:not(#pfdHost):not(.gps){display:none}
+
+/* 콕핏 2 분할: 측면 버튼이 있는 창 하나만 남은 칸에 꽉 차게(기본은 속도계) */
+:root[data-split="ck"],:root[data-split="ck"] body{height:100%;overflow:hidden}
+:root[data-split="ck"] .top,:root[data-split="ck"] .win>.grip{display:none!important}
+:root[data-split="ck"] .app{max-width:none;margin:0;padding:6px max(6px,env(safe-area-inset-right,0px)) 6px max(6px,env(safe-area-inset-left,0px))!important;overflow:hidden}
+:root[data-split="ck"] .app.FX>.win.fx{height:calc(100dvh - 12px)!important;min-height:0!important}
+:root[data-split="ck"] .app.FX.RL{height:calc(100dvh - 12px)}
+/* 콕핏 2 분할: 기록 칸·버튼을 얇게 해서 계기 화면을 넓게 */
+:root[data-split="ck"] #wGps #pfdHost .pfd-metrics{margin:0 2px 5px;gap:4px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-metric{padding:4px 8px 3px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-metric-label{font-size:10px;margin-bottom:1px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-metric-value{font-size:clamp(14px,2.2vw,22px);line-height:1.1}
+:root[data-split="ck"] #wGps #pfdHost .pfd-metric .pfd-sat{display:none}
+:root[data-split="ck"] #wGps #pfdHost .pfd-flight-meta{height:26px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-tools{margin:5px 2px 0;gap:5px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-tool{min-height:34px;padding:4px 6px;gap:6px;font-size:13px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-tool svg{width:18px;height:18px}
+:root[data-split="ck"] #wGps #pfdHost .pfd-status-line{display:none}
+:root[data-split="ck"] #wGps #pfdHost .dsn-pfd{padding:5px}
+:root[data-split="ck"] #wGps>.body{padding:6px}
+/* 휴대폰(좁은 칸): 기록 칸 숨기고 버튼은 한 줄로 밀어서 */
+@media (max-width:760px){
+  :root[data-split="ck"] #wGps #pfdHost .pfd-metrics{display:none}
+  :root[data-split="ck"] #wGps #pfdHost .pfd-tools{display:flex;overflow-x:auto;scrollbar-width:none}
+  :root[data-split="ck"] #wGps #pfdHost .pfd-tools>*{flex:0 0 auto}
+  :root[data-split="ck"] .win.hasrail>.ckrail{margin:4px 6px 0}
+  :root[data-split="ck"] .ckrail button{min-height:40px;min-width:56px;font-size:10px;padding:2px}
+  :root[data-split="ck"] .ckrail button svg{width:17px;height:17px}
+}

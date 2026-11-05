@@ -1964,14 +1964,14 @@ window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,resume:rdResume,step:
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
 // 콕핏 2 바로가기: 모두 한 창씩, 스피드미터와 같은 크기(바꿔도 화면 크기가 그대로)
-const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio']};
+const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio'],vis:['wVis']};
 const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
 function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
   if(!isCk2()||!hostId){ckRailHome.after(r);return}
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
   const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
   h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
-function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.documentElement.hasAttribute('data-split');if(split&&f!=='all'){SPLIT.prevFocus=f;f='all'} // 화면 분할 중엔 보기 전환을 미뤘다가 끝나면 되돌림
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.documentElement.getAttribute('data-split')==='ck';if(split&&quiet&&!SPLIT.set)f=SPLIT.f; /* 분할 중 자동 복원은 지금 보기 유지 */if(split&&f==='all')f='gps';if(split)SPLIT.f=f; // 화면 분할 중엔 한 창씩(전체 = 속도계), 고른 보기는 저장하지 않고 끝나면 원래 보기로
   const on=isCk2()&&f!=='all';
   appEl.classList.toggle('FX',on);if(on)document.documentElement.style.setProperty('--fxN',String(FX_GROUPS[f].length));
   document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
@@ -1981,7 +1981,7 @@ function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.document
   if(on){let top=0;for(let e=appEl;e;e=e.offsetParent)top+=e.offsetTop; /* 스크롤과 무관한 화면 위치 */document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
 $('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){if(o.__long){o.__long=false;return}navPick(o);return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
-window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
+window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(document.documentElement.getAttribute('data-split')==='ck'?SPLIT.f:store.get('ckFocus','all'),true)});
 
 
 // 콕핏 2 측면 [T맵]·[네이버지도]: 누르면 위/아래 고르기, 길게 누르면 마지막 위치로 바로 열기(가로 화면은 안드로이드가 옆에 붙임)
@@ -2010,15 +2010,18 @@ navLabels();
 // 화면 분할(TMAP·네이버 지도 위·아래): 이 앱은 남은 칸(약 40%)에 맞게 스크롤 없이 따로 배치
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- 분할 화면 배치: 넓으면 [속도계 | 플레이어], 좁으면 [속도계] + 아래 조작 줄 ---------- */
-const SPLIT={on:false,ratio:1,prevFocus:null};
+const SPLIT={on:false,ratio:1,f:'gps'};
 function splitWanted(){return SPLIT.on&&SPLIT.ratio<.8&&store.get('splitLayout',true)!==false&&!isTab()}
-function splitApply(){const want=splitWanted(),root=document.documentElement;
-  if(want===root.hasAttribute('data-split'))return;
-  root.toggleAttribute('data-split',want);
-  if(want){if(appEl.classList.contains('FX')||(isCk2()&&store.get('ckFocus','all')!=='all')){SPLIT.prevFocus=store.get('ckFocus','all');ckFocus('all',true)}
-    window.scrollTo(0,0)}
-  else if(SPLIT.prevFocus){const f=SPLIT.prevFocus;SPLIT.prevFocus=null;ckFocus(f,true)}
+// 콕핏 2(측면 버튼): 속도계 창 하나만 남은 칸에 꽉 차게, 측면 버튼으로 다른 보기로 바꿈("ck")
+// 그 밖의 스킨: [속도계 | 플레이어] 또는 [속도계] + 아래 조작 줄("grid")
+function splitApply(){const root=document.documentElement,want=splitWanted()?(isCk2()?'ck':'grid'):'',cur=root.getAttribute('data-split')||'';
+  if(want===cur)return;
+  if(want)root.setAttribute('data-split',want);else root.removeAttribute('data-split');
+  if(want==='ck'){SPLIT.set=true;SPLIT.f='gps';try{ckFocus('gps',true)}finally{SPLIT.set=false}window.scrollTo(0,0)} // 분할 첫 화면은 속도계 창
+  else if(cur==='ck'&&isCk2())ckFocus(store.get('ckFocus','all'),true); // 분할이 끝나면 원래 보기
+  if(want==='grid')window.scrollTo(0,0);
   setTimeout(()=>{window.dispatchEvent(new Event('resize'));try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}},80)}
+new MutationObserver(()=>splitApply()).observe(document.documentElement,{attributes:true,attributeFilter:['data-ck2']});
 window.__split=o=>{o=o||{};SPLIT.on=!!o.on;SPLIT.ratio=+o.ratio||1;splitApply()};
 window.AmpSplit={get on(){return document.documentElement.hasAttribute('data-split')},set:(on,ratio)=>window.__split({on,ratio:ratio==null?.4:ratio}),apply:splitApply};
 $('#sSplit').checked=store.get('splitLayout',true)!==false;

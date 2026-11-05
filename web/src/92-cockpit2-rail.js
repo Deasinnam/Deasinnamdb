@@ -2,14 +2,14 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- 콕핏 2: 세로 바로가기(고른 창만 꽉 차게, 전체로 돌아가기) ---------- */
 // 콕핏 2 바로가기: 모두 한 창씩, 스피드미터와 같은 크기(바꿔도 화면 크기가 그대로)
-const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio']};
+const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio'],vis:['wVis']};
 const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
 function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
   if(!isCk2()||!hostId){ckRailHome.after(r);return}
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
   const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
   h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
-function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.documentElement.hasAttribute('data-split');if(split&&f!=='all'){SPLIT.prevFocus=f;f='all'} // 화면 분할 중엔 보기 전환을 미뤘다가 끝나면 되돌림
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.documentElement.getAttribute('data-split')==='ck';if(split&&quiet&&!SPLIT.set)f=SPLIT.f; /* 분할 중 자동 복원은 지금 보기 유지 */if(split&&f==='all')f='gps';if(split)SPLIT.f=f; // 화면 분할 중엔 한 창씩(전체 = 속도계), 고른 보기는 저장하지 않고 끝나면 원래 보기로
   const on=isCk2()&&f!=='all';
   appEl.classList.toggle('FX',on);if(on)document.documentElement.style.setProperty('--fxN',String(FX_GROUPS[f].length));
   document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
@@ -19,7 +19,7 @@ function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.document
   if(on){let top=0;for(let e=appEl;e;e=e.offsetParent)top+=e.offsetTop; /* 스크롤과 무관한 화면 위치 */document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
 $('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){if(o.__long){o.__long=false;return}navPick(o);return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
-window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
+window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(document.documentElement.getAttribute('data-split')==='ck'?SPLIT.f:store.get('ckFocus','all'),true)});
 
 
 // 콕핏 2 측면 [T맵]·[네이버지도]: 누르면 위/아래 고르기, 길게 누르면 마지막 위치로 바로 열기(가로 화면은 안드로이드가 옆에 붙임)
