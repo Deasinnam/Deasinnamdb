@@ -980,6 +980,18 @@ header.top{padding-top:28px!important}
 .ckrail .ckdiv{flex:none;display:block;height:2px;margin:2px 6px;background:linear-gradient(90deg,transparent,#a8f08f55,transparent)}
 .ckrail button[data-open]{line-height:1.05;text-align:center;font-size:10.5px;color:#f3bc65}
 .ckrail button[data-open] svg{fill:#f3bc65}
+.ckrail button[data-open] em{display:block;font-style:normal;font-size:9.5px;opacity:.85;margin-top:1px;-webkit-touch-callout:none}
+.ckrail button[data-open]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* 측면 [T맵]·[네이버지도] 위/아래 고르기 */
+.navpick{position:fixed;z-index:60;display:flex;flex-direction:column;gap:8px;width:210px;padding:12px;border:1px solid #000;border-radius:8px;
+  background:linear-gradient(180deg,#2e352c,#191f1b);box-shadow:0 0 0 1px #54604e,0 12px 30px #000c;color:#e7e9df}
+.navpick b{font-family:"Barlow Condensed","Noto Sans KR",sans-serif;font-size:16px;letter-spacing:.06em;color:#f3bc65}
+.navpick .pill{height:44px;font-size:16px}
+.navpick .pill.on{color:#a8f08f;box-shadow:inset 0 -3px 0 #a8f08f}
+.navpick small{font-size:11.5px;line-height:1.45;color:#9da69d}
+/* 지도 창: 내비 앱 줄(TMAP · 네이버 지도) */
+.mapctl .navrow{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.mapctl .navrow b{min-width:78px;font-family:var(--f-tech,"Barlow Condensed"),sans-serif;font-size:14px;letter-spacing:.06em;color:var(--muted)}
 @media (max-width:760px){.ckrail .ckdiv{width:2px;height:auto;margin:6px 2px}}
 .ckrail button.on{color:var(--ck-green,#a8f08f);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 var(--ck-green,#a8f08f),0 0 10px #a8f08f26}
 @media (max-width:720px){

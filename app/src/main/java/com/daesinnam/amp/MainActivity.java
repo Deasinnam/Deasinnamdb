@@ -1486,6 +1486,13 @@ public class MainActivity extends Activity {
          */
         @JavascriptInterface
         public String openAppBottom(final String pkg) {
+            return openAppSplit(pkg, false);
+        }
+
+        /** 다른 앱(TMAP·네이버 지도)을 화면 위쪽(top) 또는 아래쪽 절반에 분할 창으로 엽니다. 이 앱은 나머지 절반으로 갑니다.
+         *  "missing" 설치 안 됨 · "landscape" 가로 화면(안드로이드가 좌우로 나눔) · "top"/"bottom" */
+        @JavascriptInterface
+        public String openAppSplit(final String pkg, final boolean top) {
             final Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
             if (launch == null) {
                 main.post(() -> MainActivity.this.openApp(pkg));
@@ -1497,10 +1504,11 @@ public class MainActivity extends Activity {
             main.post(() -> {
                 launch.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
                 ActivityOptions o = ActivityOptions.makeBasic();
-                o.setLaunchBounds(new Rect(full.left, full.top + full.height() / 2, full.right, full.bottom));
+                int mid = full.top + full.height() / 2;
+                o.setLaunchBounds(top ? new Rect(full.left, full.top, full.right, mid) : new Rect(full.left, mid, full.right, full.bottom));
                 try { startActivity(launch, o.toBundle()); } catch (Exception e) { MainActivity.this.openApp(pkg); }
             });
-            return full.width() > full.height() ? "landscape" : "bottom";
+            return full.width() > full.height() ? "landscape" : (top ? "top" : "bottom");
         }
 
         @JavascriptInterface

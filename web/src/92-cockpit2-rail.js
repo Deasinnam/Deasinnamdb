@@ -17,6 +17,29 @@ function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=isCk2()&&f!=='all';
   if(isCk2())store.set('ckFocus',f);
   if(on){let top=0;for(let e=appEl;e;e=e.offsetParent)top+=e.offsetTop; // 스크롤과 무관한 화면 위치document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
-$('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){o.dataset.open==='nmap'?appBelow(NMAP_PKG,'네이버 지도'):appBelow(TMAP_PKG,'TMAP');return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
+$('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){if(o.__long){o.__long=false;return}navPick(o);return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
 window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
 
+
+// 콕핏 2 측면 [T맵]·[네이버지도]: 누르면 위/아래 고르기, 길게 누르면 마지막 위치로 바로 열기(가로 화면은 안드로이드가 옆에 붙임)
+const navAt=id=>store.get('navAt_'+id,'bottom');
+function navLabels(){document.querySelectorAll('#ckRail button[data-open]').forEach(b=>{const em=b.querySelector('em');if(em)em.textContent=navAt(b.dataset.open)==='top'?'▲ 위':'▼ 아래'})}
+function navGo(id,at){store.set('navAt_'+id,at);navLabels();navPickClose();navOpen(id,at)}
+function navPickClose(){const p=$('#navPick');if(p){p.hidden=true;p.dataset.id=''}clearTimeout(navPickClose.t)}
+function navPick(btn){const id=btn.dataset.open,a=NAV[id],p=$('#navPick');
+  if(p.dataset.id===id&&!p.hidden){navPickClose();return}
+  if(innerWidth>innerHeight&&NB&&NB.openApp){navGo(id,navAt(id));return} // 가로 화면: 위/아래 구분이 없어 바로 엶
+  p.dataset.id=id;p.querySelector('b').textContent=a.name+' 열 위치';
+  p.querySelectorAll('button[data-at]').forEach(x=>x.classList.toggle('on',x.dataset.at===navAt(id)));
+  p.hidden=false;const r=btn.getBoundingClientRect(),pr=p.getBoundingClientRect();
+  p.style.left=Math.min(innerWidth-pr.width-8,r.right+8)+'px';p.style.top=Math.max(8,Math.min(innerHeight-pr.height-8,r.top+r.height/2-pr.height/2))+'px';
+  clearTimeout(navPickClose.t);navPickClose.t=setTimeout(navPickClose,8000)}
+$('#navPick').addEventListener('click',e=>{const b=e.target.closest('button[data-at]');if(b)navGo($('#navPick').dataset.id,b.dataset.at)});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#navPick,#ckRail button[data-open]'))navPickClose()},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')navPickClose()});
+document.querySelectorAll('#ckRail button[data-open]').forEach(b=>{let t=0,x0=0,y0=0;
+  b.addEventListener('pointerdown',e=>{clearTimeout(t);b.__long=false;x0=e.clientX;y0=e.clientY;t=setTimeout(()=>{b.__long=true;navPickClose();navGo(b.dataset.open,navAt(b.dataset.open));try{navigator.vibrate&&navigator.vibrate(30)}catch(x){}},550)});
+  b.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-x0,e.clientY-y0)>12)clearTimeout(t)}); // 손가락이 움직이면(스크롤) 취소
+  ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
+  b.addEventListener('contextmenu',e=>e.preventDefault())});
+navLabels();

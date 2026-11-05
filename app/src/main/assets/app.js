@@ -1005,12 +1005,20 @@ function drawTape(){
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- 지도 (자동차 스킨: 속도계 아래) ---------- */
 const TMAP_PKG='com.skt.tmap.ku',NMAP_PKG='com.nhn.android.nmap';
-// 내비 앱을 화면 아래쪽 분할 창으로(TMAP·네이버 지도 공통)
-function appBelow(pkg,name){
-  if(!NB||!NB.openApp){toast(name+' 켜기는 안드로이드 앱에서 동작해요.');return}
-  try{if(!NB.openAppBottom){NB.openApp(pkg);return}const r=NB.openAppBottom(pkg);
-    if(r==='missing')toast(name+'이 설치되어 있지 않아 설치 화면을 열어요.');
-    else toast(r==='landscape'?name+'을 함께 띄웠어요. 가로 화면에서는 안드로이드가 오른쪽에 붙여요. 세로로 돌리면 위아래로 나뉘어요.':name+'을 아래쪽에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
+// 내비 앱(TMAP·네이버 지도)을 화면 위쪽/아래쪽 분할 창·옆 창으로 열기 — 지도 창 버튼과 콕핏 2 측면 버튼 공통
+const NAV={tmap:{pkg:TMAP_PKG,name:'TMAP',josa:'을'},nmap:{pkg:NMAP_PKG,name:'네이버 지도',josa:'를'}};
+function navOpen(id,at){const a=NAV[id];if(!a)return;
+  if(!NB||!NB.openApp){toast(a.name+' 켜기는 안드로이드 앱에서 동작해요.');return}
+  try{
+    if(at==='open'){NB.openApp(a.pkg);return 'open'}
+    if(at==='side'){if(!NB.openAppSide){NB.openApp(a.pkg);return}const r=NB.openAppSide(a.pkg);
+      if(r==='missing')toast(a.name+'이 설치되어 있지 않아 설치 화면을 열어요.');
+      else toast(r==='rotated'?'옆 창은 가로 화면에서만 좌우로 나뉘어서, 화면을 가로로 돌린 뒤 '+a.name+a.josa+' 오른쪽에 붙여요. 분할을 끝내면 원래대로 돌아가요.':a.name+a.josa+' 오른쪽 옆 창으로 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');return r}
+    const top=at==='top';
+    const r=NB.openAppSplit?NB.openAppSplit(a.pkg,top):(top?(NB.openApp(a.pkg),'open'):NB.openAppBottom(a.pkg));
+    if(r==='missing')toast(a.name+'이 설치되어 있지 않아 설치 화면을 열어요.');
+    else if(r==='landscape')toast(a.name+a.josa+' 함께 띄웠어요. 가로 화면에서는 안드로이드가 옆에 붙여요. 세로로 돌리면 위아래로 나뉘어요.');
+    else if(r!=='open')toast(a.name+a.josa+' 화면 '+(top?'위쪽':'아래쪽')+'에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
     return r}catch(e){}}
 let mapPref=store.get('mapPref',null),mapObj=null,mapMarker=null,mapEngine=null,tmapFrame=null,mapFollow=true,mapLastPush=0,mapLoading=false;
 let mapNight=store.get('mapNight',true);
@@ -1102,16 +1110,9 @@ $('#tmapKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tmapKeySave'
 $('#tmapKeyDel').onclick=()=>{const sel=$('#mapProvSel').value;delete mapKeys[sel];store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(mapProv===sel?'osm':mapProv)};
 if(!NB)$('#mapKeyBox').hidden=true;
 syncKeyUi();
-document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{const k=b.dataset.tmap;
-  if(!NB||!NB.openApp){toast('TMAP 켜기는 안드로이드 앱에서 동작해요.');return}
-  try{
-    if(k==='bottom'&&NB.openAppBottom){const r=appBelow(TMAP_PKG,'TMAP');
-      if(r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)}
-    else if(k==='side'&&NB.openAppSide){const r=NB.openAppSide(TMAP_PKG);
-      if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
-      else toast(r==='rotated'?'옆 창은 가로 화면에서만 좌우로 나뉘어서, 화면을 가로로 돌린 뒤 TMAP을 오른쪽에 붙여요. 분할을 끝내면 원래대로 돌아가요.':'TMAP을 오른쪽 옆 창으로 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.')}
-    else NB.openApp(TMAP_PKG)}catch(e){}});
-if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
+document.querySelectorAll('#wMap [data-nav]').forEach(b=>b.onclick=()=>{const r=navOpen(b.dataset.nav,b.dataset.at);
+  if((b.dataset.at==='top'||b.dataset.at==='bottom')&&r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)});
+if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('#wMap .navrow').forEach(b=>b.hidden=true)}
 /* ===== 60-playlist-car-drive.js ===== */
 // 저장되는 재생목록, 알림, 차 연결 자동 재생, 주행 중 간편 모드
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
@@ -1978,8 +1979,32 @@ function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=isCk2()&&f!=='all';
   if(isCk2())store.set('ckFocus',f);
   if(on){let top=0;for(let e=appEl;e;e=e.offsetParent)top+=e.offsetTop; // 스크롤과 무관한 화면 위치document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
-$('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){o.dataset.open==='nmap'?appBelow(NMAP_PKG,'네이버 지도'):appBelow(TMAP_PKG,'TMAP');return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
+$('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){if(o.__long){o.__long=false;return}navPick(o);return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
 window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
+
+
+// 콕핏 2 측면 [T맵]·[네이버지도]: 누르면 위/아래 고르기, 길게 누르면 마지막 위치로 바로 열기(가로 화면은 안드로이드가 옆에 붙임)
+const navAt=id=>store.get('navAt_'+id,'bottom');
+function navLabels(){document.querySelectorAll('#ckRail button[data-open]').forEach(b=>{const em=b.querySelector('em');if(em)em.textContent=navAt(b.dataset.open)==='top'?'▲ 위':'▼ 아래'})}
+function navGo(id,at){store.set('navAt_'+id,at);navLabels();navPickClose();navOpen(id,at)}
+function navPickClose(){const p=$('#navPick');if(p){p.hidden=true;p.dataset.id=''}clearTimeout(navPickClose.t)}
+function navPick(btn){const id=btn.dataset.open,a=NAV[id],p=$('#navPick');
+  if(p.dataset.id===id&&!p.hidden){navPickClose();return}
+  if(innerWidth>innerHeight&&NB&&NB.openApp){navGo(id,navAt(id));return} // 가로 화면: 위/아래 구분이 없어 바로 엶
+  p.dataset.id=id;p.querySelector('b').textContent=a.name+' 열 위치';
+  p.querySelectorAll('button[data-at]').forEach(x=>x.classList.toggle('on',x.dataset.at===navAt(id)));
+  p.hidden=false;const r=btn.getBoundingClientRect(),pr=p.getBoundingClientRect();
+  p.style.left=Math.min(innerWidth-pr.width-8,r.right+8)+'px';p.style.top=Math.max(8,Math.min(innerHeight-pr.height-8,r.top+r.height/2-pr.height/2))+'px';
+  clearTimeout(navPickClose.t);navPickClose.t=setTimeout(navPickClose,8000)}
+$('#navPick').addEventListener('click',e=>{const b=e.target.closest('button[data-at]');if(b)navGo($('#navPick').dataset.id,b.dataset.at)});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#navPick,#ckRail button[data-open]'))navPickClose()},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')navPickClose()});
+document.querySelectorAll('#ckRail button[data-open]').forEach(b=>{let t=0,x0=0,y0=0;
+  b.addEventListener('pointerdown',e=>{clearTimeout(t);b.__long=false;x0=e.clientX;y0=e.clientY;t=setTimeout(()=>{b.__long=true;navPickClose();navGo(b.dataset.open,navAt(b.dataset.open));try{navigator.vibrate&&navigator.vibrate(30)}catch(x){}},550)});
+  b.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-x0,e.clientY-y0)>12)clearTimeout(t)}); // 손가락이 움직이면(스크롤) 취소
+  ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
+  b.addEventListener('contextmenu',e=>e.preventDefault())});
+navLabels();
 /* ===== 94-weather.js ===== */
 // 오늘의 날씨
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

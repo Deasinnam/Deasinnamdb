@@ -622,7 +622,7 @@
     if (useMap && (k === 'map' || k === 'zin' || k === 'zout' || k === 'dest')) {
       setTab('nav');
       if (k === 'map') { const f = document.getElementById('mapFollow'); if (f) f.click(); }
-      else if (k === 'dest') { const t = document.querySelector('#wMap [data-tmap="open"]'); if (t && !t.closest('[hidden]')) t.click(); else openNavi(); }
+      else if (k === 'dest') { const t = document.querySelector('#wMap [data-nav="tmap"][data-at="open"]'); if (t && !t.closest('[hidden]')) t.click(); else openNavi(); }
       else if (!(has('mapZoom') && H.mapZoom(k === 'zin' ? 1 : -1))) say('이 지도는 두 손가락으로 벌리거나 오므려 확대·축소하세요.');
       return;
     }

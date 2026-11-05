@@ -2,12 +2,20 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- 지도 (자동차 스킨: 속도계 아래) ---------- */
 const TMAP_PKG='com.skt.tmap.ku',NMAP_PKG='com.nhn.android.nmap';
-// 내비 앱을 화면 아래쪽 분할 창으로(TMAP·네이버 지도 공통)
-function appBelow(pkg,name){
-  if(!NB||!NB.openApp){toast(name+' 켜기는 안드로이드 앱에서 동작해요.');return}
-  try{if(!NB.openAppBottom){NB.openApp(pkg);return}const r=NB.openAppBottom(pkg);
-    if(r==='missing')toast(name+'이 설치되어 있지 않아 설치 화면을 열어요.');
-    else toast(r==='landscape'?name+'을 함께 띄웠어요. 가로 화면에서는 안드로이드가 오른쪽에 붙여요. 세로로 돌리면 위아래로 나뉘어요.':name+'을 아래쪽에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
+// 내비 앱(TMAP·네이버 지도)을 화면 위쪽/아래쪽 분할 창·옆 창으로 열기 — 지도 창 버튼과 콕핏 2 측면 버튼 공통
+const NAV={tmap:{pkg:TMAP_PKG,name:'TMAP',josa:'을'},nmap:{pkg:NMAP_PKG,name:'네이버 지도',josa:'를'}};
+function navOpen(id,at){const a=NAV[id];if(!a)return;
+  if(!NB||!NB.openApp){toast(a.name+' 켜기는 안드로이드 앱에서 동작해요.');return}
+  try{
+    if(at==='open'){NB.openApp(a.pkg);return 'open'}
+    if(at==='side'){if(!NB.openAppSide){NB.openApp(a.pkg);return}const r=NB.openAppSide(a.pkg);
+      if(r==='missing')toast(a.name+'이 설치되어 있지 않아 설치 화면을 열어요.');
+      else toast(r==='rotated'?'옆 창은 가로 화면에서만 좌우로 나뉘어서, 화면을 가로로 돌린 뒤 '+a.name+a.josa+' 오른쪽에 붙여요. 분할을 끝내면 원래대로 돌아가요.':a.name+a.josa+' 오른쪽 옆 창으로 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');return r}
+    const top=at==='top';
+    const r=NB.openAppSplit?NB.openAppSplit(a.pkg,top):(top?(NB.openApp(a.pkg),'open'):NB.openAppBottom(a.pkg));
+    if(r==='missing')toast(a.name+'이 설치되어 있지 않아 설치 화면을 열어요.');
+    else if(r==='landscape')toast(a.name+a.josa+' 함께 띄웠어요. 가로 화면에서는 안드로이드가 옆에 붙여요. 세로로 돌리면 위아래로 나뉘어요.');
+    else if(r!=='open')toast(a.name+a.josa+' 화면 '+(top?'위쪽':'아래쪽')+'에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
     return r}catch(e){}}
 let mapPref=store.get('mapPref',null),mapObj=null,mapMarker=null,mapEngine=null,tmapFrame=null,mapFollow=true,mapLastPush=0,mapLoading=false;
 let mapNight=store.get('mapNight',true);
@@ -99,14 +107,7 @@ $('#tmapKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tmapKeySave'
 $('#tmapKeyDel').onclick=()=>{const sel=$('#mapProvSel').value;delete mapKeys[sel];store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(mapProv===sel?'osm':mapProv)};
 if(!NB)$('#mapKeyBox').hidden=true;
 syncKeyUi();
-document.querySelectorAll('[data-tmap]').forEach(b=>b.onclick=()=>{const k=b.dataset.tmap;
-  if(!NB||!NB.openApp){toast('TMAP 켜기는 안드로이드 앱에서 동작해요.');return}
-  try{
-    if(k==='bottom'&&NB.openAppBottom){const r=appBelow(TMAP_PKG,'TMAP');
-      if(r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)}
-    else if(k==='side'&&NB.openAppSide){const r=NB.openAppSide(TMAP_PKG);
-      if(r==='missing')toast('TMAP이 설치되어 있지 않아 설치 화면을 열어요.');
-      else toast(r==='rotated'?'옆 창은 가로 화면에서만 좌우로 나뉘어서, 화면을 가로로 돌린 뒤 TMAP을 오른쪽에 붙여요. 분할을 끝내면 원래대로 돌아가요.':'TMAP을 오른쪽 옆 창으로 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.')}
-    else NB.openApp(TMAP_PKG)}catch(e){}});
-if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('[data-tmap]').forEach(b=>b.hidden=true)}
+document.querySelectorAll('#wMap [data-nav]').forEach(b=>b.onclick=()=>{const r=navOpen(b.dataset.nav,b.dataset.at);
+  if((b.dataset.at==='top'||b.dataset.at==='bottom')&&r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)});
+if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('#wMap .navrow').forEach(b=>b.hidden=true)}
 

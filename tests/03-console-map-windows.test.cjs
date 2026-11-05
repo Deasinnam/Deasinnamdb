@@ -10,7 +10,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
       window.AndroidBridge = {gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},
         cockpitState:()=>JSON.stringify({volume:Math.round(dev.level*100/dev.steps),wifiSupported:true,wifi:dev.wifi,hasBt:dev.hasBt,...(dev.bt===null?{}:{bt:dev.bt})}),
         setSystemVolume:p=>{dev.level=Math.round(p*dev.steps/100);log.push('vol:'+p)},
-        setWifi:w=>{log.push('wifi:'+w);return 'panel'},openApp:k=>log.push('open:'+k),openAppSide:k=>{log.push('side:'+k);return 'rotated'},openAppBottom:k=>{log.push('bottom:'+k);return 'bottom'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
+        setWifi:w=>{log.push('wifi:'+w);return 'panel'},openApp:k=>log.push('open:'+k),openAppSide:k=>{log.push('side:'+k);return 'rotated'},openAppBottom:k=>{log.push('bottom:'+k);return 'bottom'},openAppSplit:(k,top)=>{log.push((top?'top:':'bottom:')+k);return top?'top':'bottom'},setBluetooth:w=>{log.push('bt:'+w);return 'ask'},sosCall:n=>{log.push('call:'+n);return 'call'}};
     });
     await p7.goto(origin);
     await p7.waitForFunction(() => document.querySelector('#dkPlatformText').textContent === 'ANDROID LINK');
@@ -28,23 +28,48 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));
     // 지도: TMAP 켜기 / 하단에 켜기(위아래 반씩) / 옆 창
     await p7.locator('#mapYes').click();
-    assert.deepEqual(await p7.locator('#wMap [data-tmap]').allTextContents(), ['TMAP 켜기','TMAP 하단에 켜기','TMAP 옆 창']);
-    await p7.locator('#wMap [data-tmap="bottom"]').click();
-    await p7.locator('#wMap [data-tmap="open"]').click();
+    assert.deepEqual(await p7.locator('#wMap .navrow').allInnerTexts().then(a => a.map(t => t.replace(/\s+/g,' ').trim())), ['TMAP 켜기 상단에 켜기 하단에 켜기 옆 창','네이버 지도 켜기 상단에 켜기 하단에 켜기 옆 창']);
+    await p7.locator('#wMap [data-nav="tmap"][data-at="bottom"]').click();
+    await p7.locator('#wMap [data-nav="tmap"][data-at="open"]').click();
     const tl = await p7.evaluate(() => log.filter(x => /^(open|bottom|side):/.test(x)));
     assert.deepEqual(tl, ['bottom:com.skt.tmap.ku','open:com.skt.tmap.ku']);
     assert.match(await p7.locator('#toast').textContent(), /아래쪽/);
     // 옆 창: 세로 화면이면 가로로 돌린 뒤 좌우로 붙인다고 안내
-    await p7.locator('#wMap [data-tmap="side"]').click();
+    await p7.locator('#wMap [data-nav="tmap"][data-at="side"]').click();
     assert.ok((await p7.evaluate(() => log)).includes('side:com.skt.tmap.ku'), 'Side launch requested');
     assert.match(await p7.locator('#toast').textContent(), /가로/);
     // 콕핏 2 측면 버튼: TMAP·네이버 지도를 화면 아래쪽에 열기
     await p7.locator('#skin').selectOption('carnival3');
+    await p7.setViewportSize({width:900,height:1400}); // 세로 화면에서 위/아래 고르기
+    // 지도 창: 상단에 켜기 / 네이버 지도
+    await p7.locator('#wMap [data-nav="tmap"][data-at="top"]').click();
+    assert.match(await p7.locator('#toast').textContent(), /TMAP을 화면 위쪽/);
+    await p7.locator('#wMap [data-nav="nmap"][data-at="bottom"]').click();
+    assert.match(await p7.locator('#toast').textContent(), /네이버 지도를 화면 아래쪽/);
+    let nl = await p7.evaluate(() => log.filter(x => /^(top|bottom):/.test(x)));
+    assert.deepEqual(nl.slice(-2), ['top:com.skt.tmap.ku','bottom:com.nhn.android.nmap']);
+    // 측면 버튼: 누르면 위/아래 고르기, 고른 위치를 기억해 표시, 길게 누르면 바로 열기
+    await p7.locator('#skin').selectOption('carnival3');
+    assert.equal(await p7.locator('#ckRail [data-open="tmap"] em').textContent(), '▼ 아래');
     await p7.locator('#ckRail [data-open="tmap"]').click();
-    await p7.locator('#ckRail [data-open="nmap"]').click();
-    const bl = await p7.evaluate(() => log.filter(x => /^bottom:/.test(x)));
-    assert.deepEqual(bl.slice(-2), ['bottom:com.skt.tmap.ku','bottom:com.nhn.android.nmap'], 'Rail opens TMAP and Naver Map below');
-    assert.match(await p7.locator('#toast').textContent(), /네이버 지도을? ?아래쪽|네이버 지도.*아래쪽/);
+    assert.equal(await p7.locator('#navPick').isVisible(), true, 'Tap shows the top/bottom chooser');
+    assert.match(await p7.locator('#navPick b').textContent(), /TMAP/);
+    await p7.locator('#navPick [data-at="top"]').click();
+    assert.equal(await p7.locator('#navPick').isVisible(), false);
+    assert.equal(await p7.locator('#ckRail [data-open="tmap"] em').textContent(), '▲ 위', 'Remembers the chosen position');
+    nl = await p7.evaluate(() => log.filter(x => /^(top|bottom):/.test(x)));
+    assert.equal(nl[nl.length-1], 'top:com.skt.tmap.ku', 'Rail opens TMAP on top');
+    await p7.locator('#ckRail [data-open="nmap"]').scrollIntoViewIfNeeded();
+    const nb = await p7.locator('#ckRail [data-open="nmap"]').boundingBox();
+    await p7.mouse.move(nb.x+nb.width/2, nb.y+nb.height/2);await p7.mouse.down();await p7.waitForTimeout(800);await p7.mouse.up();
+    assert.equal(await p7.locator('#navPick').isVisible(), false, 'Long press skips the chooser');
+    nl = await p7.evaluate(() => log.filter(x => /^(top|bottom):/.test(x)));
+    assert.equal(nl[nl.length-1], 'bottom:com.nhn.android.nmap', 'Long press opens Naver Map at its last position');
+    // 가로 화면: 위/아래 구분이 없어 고르기 없이 바로 엶
+    await p7.setViewportSize({width:1470,height:1000});
+    await p7.locator('#ckRail [data-open="tmap"]').click();
+    assert.equal(await p7.locator('#navPick').isVisible(), false, 'Landscape opens directly');
+    assert.match(await p7.locator('#toast').textContent(), /TMAP을 화면 위쪽|옆에 붙여요/);
     await p7.close();
     // 창 순서: 설정에서 바꾸고 되돌리기
     const pa = await context.newPage();

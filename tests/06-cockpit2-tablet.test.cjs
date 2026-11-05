@@ -21,6 +21,8 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
         assert.ok(b && b.height >= 24 && b.y + b.height <= r.y + r.height + 1, sel + ' fits inside the rail');
       }
       await pc2.locator('#ckRail [data-open="nmap"]').click();
+      assert.equal(await pc2.locator('#navPick').isVisible(), true, 'Chooser opens');
+      await pc2.locator('#navPick [data-at="bottom"]').click();
       assert.match(await pc2.locator('#toast').textContent(), /네이버 지도 켜기는 안드로이드 앱에서/, 'Web preview explains the app-only action');
       const sizes = [];
       for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['radio',['wRadio']]]) {
