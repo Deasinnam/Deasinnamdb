@@ -15,7 +15,7 @@ run('Radio through the main player buttons and visualizer', async ({context, ori
     const wave = String.fromCharCode(...Array.from({length: 512}, (_, i) => 32 + 128 + Math.round(Math.sin(i / 8) * 90)));
     window.AndroidBridge = {
       radioPlay: u => rl.push('play:' + u), radioStop: () => rl.push('stop'), radioVolume: () => {},
-      radioState: () => JSON.stringify({state: 'playing', title: 'Morning Show'}),
+      radioState: () => JSON.stringify(window.__rs || {state: 'playing', title: 'Morning Show'}),
       radioFft: () => { window.__fft++; return fft; }, radioWave: () => wave, radioRate: () => 48000,
       takeCarAutoplay: () => false, setCallReturn: v => rl.push('callRet:' + v)
     };
@@ -61,6 +61,14 @@ run('Radio through the main player buttons and visualizer', async ({context, ori
   assert.equal(await p.evaluate(() => AmpRadio.state.playing), false, 'Steering toggle stops radio');
   await p.evaluate(() => window.__ctl('toggle'));
   assert.equal(await p.evaluate(() => AmpRadio.state.playing), true, 'Steering toggle resumes radio');
+  // 다른 앱(YouTube Music·Spotify)이 소리를 가져가면 라디오는 멈추고 다시 이어 틀지 않음
+  await p.evaluate(() => { rl.length = 0; window.__rs = {state: 'yielded', err: 'focus'}; });
+  await p.waitForFunction(() => !AmpRadio.state.playing, null, {timeout: 3000});
+  assert.match(await p.locator('#toast').textContent(), /다른 앱이 음악을 재생해서 라디오를 멈췄어요/);
+  await p.waitForTimeout(2500);
+  assert.ok(!(await p.evaluate(() => rl)).some(x => /^play:/.test(x)), 'Radio does not restart by itself');
+  await p.evaluate(() => { window.__rs = null; AmpRadio.play({id: 'a1', name: 'Alpha FM', url: 'https://s.example/a', freq: 89.1}); });
+  await p.waitForFunction(() => AmpRadio.state.playing);
   // 내 음악 곡을 고르면 라디오는 멈추고 플레이어는 다시 내 음악
   await p.waitForFunction(() => document.querySelectorAll('#pl li:not(.empty)').length > 0, null, {timeout: 30000});
   await p.evaluate(() => window.AmpTk.playIndex(0));

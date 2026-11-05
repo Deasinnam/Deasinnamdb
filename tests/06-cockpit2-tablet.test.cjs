@@ -68,14 +68,14 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pc2.evaluate(() => window.AmpRev.on), false, 'Tap the banner to stop');
       assert.equal(await pc2.locator('#revFx').isVisible(), false);
       // 콕핏 3: 콕핏 2와 같은 기능, 밝은 우주선 조종석 색
-      await pc2.locator('#skin').selectOption('carnival4');
+      await pc2.locator('#skin').selectOption('carnival4', {force: true});
       assert.equal(await pc2.evaluate(() => [document.documentElement.dataset.skin, document.documentElement.dataset.ck2, document.documentElement.dataset.ck3].join()), 'carnival2,1,1');
       assert.equal(await pc2.locator('#ckRail').isVisible(), true, 'Cockpit 3 has the side rail');
       await pc2.locator('#ckRail [data-f="radio"]').click();
       assert.deepEqual(await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id)), ['wRadio'], 'Cockpit 3 rail focuses one window');
       assert.equal(await pc2.evaluate(() => getComputedStyle(document.getElementById('wRadio')).getPropertyValue('--rg').trim()), '#ffb14d', 'Cockpit 3 colours');
       await pc2.locator('#ckRail [data-f="all"]').click();
-      await pc2.locator('#skin').selectOption('carnival2');
+      await pc2.locator('#skin').selectOption('carnival2', {force: true});
       assert.equal(await pc2.locator('#ckRail').isVisible(), false, 'Rail only in cockpit 2');
       assert.equal(await pc2.locator('#wEq').isVisible(), true, 'Cockpit 1 shows all windows');
       await pc2.close();
@@ -196,7 +196,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pt.locator('#wGps #pfdHost').count(), 1, 'PFD returned to the speedometer window');
       assert.equal(await pt.locator('#app > #wMap').count(), 1, 'Map window returned');
       assert.equal(await pt.locator('header.top #clock').count(), 1, 'Clock returned to the header');
-      await pt.locator('#skin').selectOption('carnival2');
+      await pt.locator('#skin').selectOption('carnival2', {force: true});
       assert.equal(await pt.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit skin still shows its PFD');
       // 콕핏 스킨에서도 기존 속도계 디자인 선택 가능
       await pt.locator('#gStyleBar').selectOption('neon');

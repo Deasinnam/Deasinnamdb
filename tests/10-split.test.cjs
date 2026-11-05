@@ -51,7 +51,7 @@ run('Split screen layout next to TMAP / Naver Map', async ({context, origin, err
   assert.equal(await p.evaluate(() => AmpSplit.on), false, 'Side-by-side split keeps the normal layout');
   // 측면 버튼이 없는 스킨: [속도계 | 플레이어]
   await p.evaluate(() => window.__split({on: false, ratio: 1}));
-  await p.locator('#skin').selectOption('carnival');
+  await p.locator('#skin').selectOption('carnival', {force: true});
   await p.setViewportSize({width: 900, height: 420});
   await p.evaluate(() => window.__split({on: true, ratio: .4}));
   assert.equal(await p.evaluate(() => document.documentElement.dataset.split), 'grid');

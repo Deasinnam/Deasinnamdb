@@ -567,9 +567,9 @@
   let lastList = '';
   let extListAt = 0;
   function renderList(force) {
-    if (G(() => H.mode) === 'ext' && window.AmpExt) { // 외부 앱: 이 앱 안에서 선곡
+    if (G(() => H.mode) === 'ext' && window.AmpExt) { // 외부 앱: 앱 열기 버튼 + 지금 재생 정보
       const ul = $('#tkList'); window.AmpExt.bind(ul);
-      if (force || lastList !== 'ext' || (performance.now() - extListAt > 2000 && window.AmpExt.view === 'queue')) { extListAt = performance.now(); lastList = 'ext'; window.AmpExt.render(ul); }
+      if (force || lastList !== 'ext' || (performance.now() - extListAt > 2000)) { extListAt = performance.now(); lastList = 'ext'; window.AmpExt.render(ul); }
       $('#tkLeftT').textContent = 'MUSIC'; $('#tkLeftS').textContent = String(G(() => H.ext.app) || ''); return;
     }
     if (lastList === 'ext') lastList = '';

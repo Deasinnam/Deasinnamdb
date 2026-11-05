@@ -56,7 +56,7 @@ run('D1 Dashcam live/probe/full screen, mobile data note', async ({browser, cont
     assert.match(await pc.locator('#camNet .camwarn').textContent(), /삭제/);
     await pc.evaluate(() => Object.assign(__cam,{via:'request',sysCam:false,sysInternet:true,cellBound:false}));
     await pc.waitForFunction(() => !document.querySelector('#camNet .camwarn'), null, {timeout:3000});
-    await pc.locator('#skin').selectOption('blue');
+    await pc.locator('#skin').selectOption('blue', {force: true});
     assert.ok(!(await pc.locator('#wCam').isVisible()), 'Dashcam hidden outside car skins');
     await pc.close();
 });

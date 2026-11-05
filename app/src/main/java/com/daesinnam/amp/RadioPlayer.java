@@ -83,10 +83,16 @@ final class RadioPlayer {
         p.addListener(new Player.Listener() {
             @Override public void onPlaybackStateChanged(int s) {
                 // 생방송이 끝났다고 나오면(방송사 임시 주소 만료 등) 새 주소로 다시 이음
-                if (s == Player.STATE_ENDED && !src.isEmpty() && retries < 4) { reconnect(); return; }
+                if (s == Player.STATE_ENDED && !src.isEmpty() && retries < 4 && p.getPlayWhenReady()) { reconnect(); return; }
                 sync();
             }
             @Override public void onIsPlayingChanged(boolean playing) { if (playing) retries = 0; sync(); }
+            // 다른 앱(YouTube Music·Spotify 등)이 소리를 가져가면 라디오는 완전히 멈추고, 다시 잇기도 하지 않음.
+            // (예전엔 멈춘 사이 방송 연결이 끊기면 자동으로 다시 이어 재생하면서 소리를 도로 가져와 그 앱이 중간에 멈췄음)
+            @Override public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
+                if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS) yieldAudio("focus");
+                else if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY) yieldAudio("noisy");
+            }
             @Override public void onMediaMetadataChanged(@NonNull MediaMetadata m) {
                 CharSequence t = m.title != null ? m.title : m.displayTitle;
                 if (t != null && t.length() > 0) title = t.toString().trim();
@@ -95,7 +101,7 @@ final class RadioPlayer {
                 // 주소에 m3u8이 없어도 HLS인 방송이 있어 한 번은 HLS로 다시 시도
                 if (!triedHls && !url.isEmpty()) { triedHls = true; start(url, true); return; }
                 // 잘 나오다 끊긴 경우(임시 주소 만료·순간 끊김)는 몇 번 새로 받아 다시 이음
-                if (!src.isEmpty() && retries < 4 && "playing".equals(lastGood)) { reconnect(); return; }
+                if (!src.isEmpty() && retries < 4 && "playing".equals(lastGood) && p.getPlayWhenReady()) { reconnect(); return; }
                 state = "error";
                 err = e.getErrorCodeName();
             }
@@ -104,18 +110,28 @@ final class RadioPlayer {
     }
 
     private String lastGood = "";
+
+    /** 다른 앱에 소리를 넘겨줌: 재생·다시 잇기를 모두 멈추고 상태를 "yielded"로(화면이 라디오를 멈춤으로 표시) */
+    private void yieldAudio(String why) {
+        gen++; // 기다리던 다시 잇기·주소 받기 취소
+        retries = 0;
+        if (p != null) { p.stop(); p.clearMediaItems(); }
+        state = "yielded";
+        err = why;
+    }
+
     private void reconnect() {
         retries++;
         state = "buffering";
         final int my = gen;
-        main.postDelayed(() -> { if (my == gen) open(src); }, 1200L * retries);
+        main.postDelayed(() -> { if (my == gen && !"yielded".equals(state)) open(src); }, 1200L * retries);
     }
 
     private void sync() {
         if (p == null) return;
         if (p.isPlaying()) { state = "playing"; lastGood = "playing"; }
         else if (p.getPlaybackState() == Player.STATE_BUFFERING) state = "buffering";
-        else if (!"error".equals(state) && !"resolving".equals(state) && p.getPlaybackState() == Player.STATE_IDLE) state = "idle";
+        else if (!"error".equals(state) && !"resolving".equals(state) && !"yielded".equals(state) && p.getPlaybackState() == Player.STATE_IDLE) state = "idle";
     }
 
     void play(String u) {

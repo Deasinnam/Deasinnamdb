@@ -19,13 +19,15 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['carnival4','대신남 자동차 모드 · 콕핏 3'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
-const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival2','대신남 자동차 모드 · 콕핏'],['carnival3','대신남 자동차 모드 · 콕핏 2'],['carnival4','대신남 자동차 모드 · 콕핏 3'],['carnival5','대신남 자동차 모드 · 콕핏 수정판'],['drive','대신남 드라이브'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
+const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
-let skin=store.get('skin2','carnival3'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
+let skin=store.get('skin2','carnival5'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
+// 1.17: 콕핏 2를 쓰던 기기는 한 번 '콕핏 수정판'으로 바꿈(스킨에서 언제든 콕핏 2로 되돌릴 수 있음)
+if(skin==='carnival3'&&!store.get('ckrSwitched',false)){skin='carnival5';store.set('skin2',skin);window.__ckrNote=1}store.set('ckrSwitched',true);
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
 
 /* ---------- skin & layout ---------- */
@@ -33,9 +35,9 @@ let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
 function setSkin(k){setSkin0(k);try{pwrApply()}catch(e){}}
-function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4')?'carnival2':k;if(k==='carnival3'||k==='carnival4')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus((k==='carnival3'||k==='carnival4')?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4'||k==='carnival5')?'carnival2':k;if(k==='carnival3'||k==='carnival4'||k==='carnival5')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='carnival5')document.documentElement.dataset.ckr='1';else delete document.documentElement.dataset.ckr;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus((k==='carnival3'||k==='carnival4'||k==='carnival5')?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
-$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4')&&typeof setGStyle==='function')setGStyle('cockpit')};
+$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5')&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
 function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',isCp());if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
@@ -1362,43 +1364,30 @@ window.AmpHost={
   const apply=()=>{const h=!!store.get('camFlipH',false),v=!!store.get('camFlipV',false);img.style.setProperty('--cfx',h?-1:1);img.style.setProperty('--cfy',v?-1:1);
     bh.classList.toggle('on',h);bh.setAttribute('aria-pressed',String(h));bv.classList.toggle('on',v);bv.setAttribute('aria-pressed',String(v))};
   bh.onclick=()=>{store.set('camFlipH',!store.get('camFlipH',false));apply()};bv.onclick=()=>{store.set('camFlipV',!store.get('camFlipV',false));apply()};apply()})();
-/* ---------- 외부 음악 앱 선곡: 앱을 열지 않고 이 앱 안에서 대기열·둘러보기 ---------- */
+/* ---------- 외부 음악 앱(YouTube Music·Spotify): 누르면 그 앱으로 전환해 곡을 고르고, 재생·정지·곡 넘김은 이 앱 플레이어로 ---------- */
 window.AmpExt=(()=>{
   const PK={ytm:'com.google.android.apps.youtube.music',spotify:'com.spotify.music'},NAME={[PK.ytm]:'YouTube Music',[PK.spotify]:'Spotify'};
-  const ok=!!(NB&&NB.extQueue);let view=store.get('xpView','queue'),crumbs=[],bitems=null,bok=null,bpkg='',loading=false;const subs=new Set();
-  window.__extBrowse=s=>{let o={};try{o=JSON.parse(s)}catch(e){}loading=false;bok=!!o.ok;bitems=o.items||[];bpkg=o.pkg||bpkg;if(o.ok&&o.parent&&!crumbs.length)crumbs=[{id:o.parent,t:'처음'}];subs.forEach(f=>{try{f()}catch(e){}})};
+  const subs=new Set();
   const curPkg=()=>(ext&&ext.pkg&&NAME[ext.pkg]?ext.pkg:null)||store.get('extPkg',PK.ytm);
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  function start(pkg){store.set('extPkg',pkg);store.set('lastSrc','ext');try{if(window.AmpRadio&&AmpRadio.state.playing)AmpRadio.stop()}catch(e){}
-    if(mode!=='ext')setMode('ext');try{NB.mediaPlay(pkg)}catch(e){}if(bpkg!==pkg){bitems=null;crumbs=[]}toast((NAME[pkg]||'음악 앱')+'을 이 앱 안에서 재생해요. 아래 목록에서 곡을 고르세요.')}
-  function queue(){try{return JSON.parse(NB.extQueue())}catch(e){return {items:[]}}}
-  function render(ul){if(!ul)return;const st=ul.scrollTop,pk=curPkg(),nm=NAME[pk]||'외부 앱';let h='<li class="xp-head"><span class="xp-apps">'+
-      Object.values(PK).map(p=>'<button data-xapp="'+p+'" class="'+(p===pk?'on':'')+'">'+NAME[p]+'</button>').join('')+'</span><span class="xp-tabs"><button data-xv="queue" class="'+(view==='queue'?'on':'')+'">대기열</button><button data-xv="browse" class="'+(view==='browse'?'on':'')+'">둘러보기</button></span></li>';
-    if(!ok)h+='<li class="xp-empty">YouTube Music·Spotify 선곡은 휴대폰 앱에서 쓸 수 있어요.</li>';
-    else if(view==='queue'){const q=queue(),it=q.items||[];
-      if(!it.length)h+='<li class="xp-empty">'+esc(nm)+'에서 받은 재생 목록이 없어요. 위에서 앱을 눌러 재생을 시작하거나 [둘러보기]를 써 보세요.<br><small>곡 정보는 알림 접근 권한이 있어야 받아요.</small></li>';
-      else it.forEach((x,i)=>{h+='<li class="xp-it'+(x.cur?' cur':'')+'" data-q="'+x.id+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><span class="nm"><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span></li>'})}
-    else{if(bitems===null||bpkg!==pk){if(!loading){loading=true;bpkg=pk;bitems=null;crumbs=[];try{NB.extBrowse(pk,'')}catch(e){loading=false;bok=false;bitems=[]}}h+='<li class="xp-empty">'+esc(nm)+' 목록을 불러오는 중…</li>'}
-      else if(!bok)h+='<li class="xp-empty">'+esc(nm)+'은(는) 다른 앱에서 둘러보기를 막아 두었어요. [대기열]에서 고르거나 앱을 열어 고르세요.<br><button class="xp-open" data-xopen="'+pk+'">'+esc(nm)+' 열기</button></li>';
-      else{if(crumbs.length>1)h+='<li class="xp-it back" data-xback="1"><span class="n">◀</span><span class="nm"><b>'+esc(crumbs[crumbs.length-1].t)+'</b><small>위로</small></span></li>';
-        if(!bitems.length)h+='<li class="xp-empty">비어 있어요.</li>';
-        bitems.forEach(x=>{h+='<li class="xp-it'+(x.folder?' dir':'')+'" '+(x.folder?'data-xf':'data-xm')+'="'+esc(x.id)+'" data-t="'+esc(x.title)+'"><span class="n">'+(x.folder?'▸':'♪')+'</span><span class="nm"><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span></li>'})}}
-    ul.innerHTML=h;ul.scrollTop=st}
-  function bind(ul){if(!ul||ul.__xp)return;ul.__xp=1;ul.addEventListener('click',e=>{const b=e.target.closest('[data-xv],[data-xapp],[data-q],[data-xf],[data-xm],[data-xback],[data-xopen]');if(!b)return;e.stopPropagation();
-      if(b.dataset.xv){view=b.dataset.xv;store.set('xpView',view)}
-      else if(b.dataset.xapp)start(b.dataset.xapp);
-      else if(b.dataset.q!=null){try{NB.extPlayQueue(+b.dataset.q)}catch(x){}}
-      else if(b.dataset.xf!=null){crumbs.push({id:b.dataset.xf,t:b.dataset.t||''});loading=true;bitems=[];try{NB.extBrowse(curPkg(),b.dataset.xf)}catch(x){}}
-      else if(b.dataset.xback){crumbs.pop();const c=crumbs[crumbs.length-1];loading=true;try{NB.extBrowse(curPkg(),c?c.id:'')}catch(x){}}
-      else if(b.dataset.xm!=null){try{NB.extBrowsePlay(curPkg(),b.dataset.xm)}catch(x){}toast('선택한 곡을 틀어요.')}
-      else if(b.dataset.xopen){try{NB.openApp(b.dataset.xopen)}catch(x){}}
-      setTimeout(()=>render(ul),60)});subs.add(()=>render(ul))}
-  return {PK,NAME,start,render,bind,ok,get view(){return view}};
+  function start(pkg){store.set('extPkg',pkg);store.set('lastSrc','ext');
+    try{radioStop()}catch(e){} // 라디오는 완전히 멈춰서 그 앱의 소리를 다시 빼앗지 않게
+    if(mode!=='ext')setMode('ext');
+    if(!NB||!NB.openApp){toast((NAME[pkg]||'음악 앱')+' 전환은 안드로이드 앱에서 동작해요.');return}
+    try{NB.openApp(pkg)}catch(e){}
+    toast((NAME[pkg]||'음악 앱')+'(으)로 전환해요. 곡을 고른 뒤 돌아오면 여기서 재생·정지·곡 넘김을 할 수 있어요.')}
+  function render(ul){if(!ul)return;const pk=curPkg(),has=!!(ext&&ext.title);
+    let h='<li class="xp-head"><span class="xp-apps">'+Object.values(PK).map(p=>'<button data-xapp="'+p+'" class="'+(p===pk?'on':'')+'">'+NAME[p]+' 열기</button>').join('')+'</span></li>';
+    h+=has?'<li class="xp-now"><small>지금 재생 · '+esc(ext.app||NAME[pk]||'')+'</small><b>'+esc(ext.title)+'</b><span>'+esc(ext.artist||'')+'</span></li>'
+      :'<li class="xp-empty">위 버튼을 누르면 그 앱으로 넘어가요. 곡을 고른 뒤 이 앱으로 돌아오면 재생·정지·곡 넘김을 여기서 할 수 있어요.</li>';
+    if(ul.__h!==h){ul.__h=h;ul.innerHTML=h}}
+  function bind(ul){if(!ul||ul.__xp)return;ul.__xp=1;ul.addEventListener('click',e=>{const b=e.target.closest('[data-xapp]');if(!b)return;e.stopPropagation();start(b.dataset.xapp);setTimeout(()=>render(ul),60)});subs.add(()=>render(ul))}
+  return {PK,NAME,start,render,bind,view:'now'};
 })();
-// 큰 화면(외부 앱 창): 앱 버튼은 앱을 열지 않고 이 앱 안에서 선곡
+// 외부 앱 창: 앱 버튼을 누르면 그 앱으로 전환해 선곡
 document.querySelectorAll('[data-xstart]').forEach(b=>b.onclick=()=>{AmpExt.start(b.dataset.xstart);AmpExt.render($('#xPick'))});
 AmpExt.bind($('#xPick'));
-setInterval(()=>{const w=$('#wExt');if(mode==='ext'&&w&&!w.hidden&&!w.classList.contains('collapsed')&&!document.hidden&&AmpExt.view==='queue')AmpExt.render($('#xPick'))},2000);
+setInterval(()=>{const w=$('#wExt');if(mode==='ext'&&w&&!w.hidden&&!w.classList.contains('collapsed')&&!document.hidden)AmpExt.render($('#xPick'))},2000);
 window.AmpTk={
   get gs(){return gs},get gpsOn(){return gpsOn},get spdNow(){return spdNow},get hdgNow(){return hdgNow},get gLimit(){return gLimit},
   get trip(){return trip},get att(){return att},get mode(){return mode},get list(){return list},get cur(){return cur},
@@ -2020,6 +2009,7 @@ async function rdNextCand(){const t=rdTry;if(!t||!rdPlaying)return;t.i++;if(t.i>
 function rdStart(s){const t=rdTry;if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.radioPlay(s.url)}catch(e){return rdNextCand()}
     const t0=Date.now();clearInterval(rdPoll);rdPoll=setInterval(()=>{if(t!==rdTry)return clearInterval(rdPoll);let o={};try{o=JSON.parse(NB.radioState())}catch(e){}
       if(o.state==='playing'){if(rdSt0!=='ON AIR'){rdSay('ON AIR');rdT0=rdT0||Date.now();rdBridge(rdCur)}const ti=(o.title||'').trim();if(ti!==rdNow){rdNow=ti;rdShow();rdBridge(rdCur)}}
+      else if(o.state==='yielded'){clearInterval(rdPoll);rdYield(o.err)}
       else if(o.state==='buffering'||o.state==='resolving')rdSay(o.retry?'다시 연결 중…':'버퍼링…');
       else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);if(t)t.err=(o.err==='API'?'방송사 주소 받기 실패':o.err?'재생 오류 '+o.err:'응답 없음')+(/^api:/.test(s.url)?' · 공식 주소':' · 공개 목록 주소');rdNextCand()}},500);return}
   if(/^api:/.test(s.url))return rdNextCand(); // 웹 미리보기는 방송사 주소를 직접 받을 수 없어 공개 목록 주소로
@@ -2032,6 +2022,11 @@ function rdLcd(){const f=rdFreqOf(rdCur);$('#time').textContent=lcdFmt(rdPlaying
   setMarquee('📻 '+(f?'FM '+f.toFixed(1)+' · ':'')+rdCur.name+(!rdPlaying?'  · 정지 (▶ 누르면 다시 들어요)':rdNow?'  ♪ '+rdNow:(rdSt0==='ON AIR'?'  · ON AIR':'  · 연결 중')));
   if(!seeking){seek.value=0;setP(seek)}$('#tCur').textContent='LIVE';$('#tDur').textContent='RADIO';
   const k=$('#kbps');const kb=(rdCur.br?rdCur.br+' kbps':'LIVE kbps');if(k.textContent!==kb)k.textContent=kb}
+// 다른 앱(YouTube Music·Spotify 등)이 소리를 가져감: 라디오는 멈춤으로 두고 다시 잇지 않음. 플레이어 버튼은 그 앱을 조작
+function rdYield(why){if(!rdPlaying)return;radioStop();
+  try{if(why!=='noisy'&&HAS_EXT){store.set('lastSrc','ext');if(mode!=='ext')setMode('ext')}}catch(e){}
+  try{state()}catch(e){}
+  toast(why==='noisy'?'이어폰·블루투스가 끊겨 라디오를 멈췄어요.':'다른 앱이 음악을 재생해서 라디오를 멈췄어요. 다시 들으려면 라디오 창의 재생을 누르세요.')}
 function radioStop(){if(!rdPlaying&&rdAudio.paused&&!RD_NATIVE)return;rdTry=null;clearInterval(rdPoll);if(RD_NATIVE){try{NB.radioStop()}catch(e){}}rdAudio.pause();rdAudio.removeAttribute('src');try{rdAudio.load()}catch(e){}if(!rdPlaying)return;rdPlaying=false;rdNow='';rdSay('대기');rdBridge(null);rdShow();rdRenderList();try{updateMeta();state()}catch(e){}}
 const rdVolV=()=>(+$('#rdVol').value||80)/100;
 rdAudio.addEventListener('error',()=>{if(rdPlaying&&rdTry&&!RD_NATIVE)rdNextCand()}); // 끊기면 같은 방송의 다른 주소로
@@ -2266,4 +2261,13 @@ if(!restored)(async()=>{
     renderList();if(mode==='local'){updateMeta();audio.src=list[cur].url}
   }catch(e){if(mode==='local')setMarquee('“+ 음악 추가”를 눌러 파일을 불러오세요')}
 })();
+// 설정의 스킨·화면 배치(위 도구 줄과 같은 값) — 콕핏 수정판은 도구 줄에서 이 둘을 숨기고 설정에서 고름
+(function(){const pairs=[['#sSkinSel','#skin'],['#sLayoutSel','#layout']];
+  for(const [a,b] of pairs){const s=$(a),o=$(b);if(!s||!o)continue;s.innerHTML=o.innerHTML;s.value=o.value;
+    s.onchange=()=>{o.value=s.value;o.dispatchEvent(new Event('change'))};o.addEventListener('change',()=>{s.value=o.value})}})();
+// NOW PLAYING 빈 화면: 곡·라디오·외부 앱이 없으면 안내와 버튼
+$('#npAdd').onclick=()=>pickMusic(false);$('#npRadio').onclick=()=>{try{openRadio()}catch(e){}};
+function npEmptySync(){const has=(cur>=0&&list[cur])||rdPlaying||(mode==='ext'&&ext&&ext.title);$('#wVis').classList.toggle('np-empty',!has)}
+npEmptySync();setInterval(npEmptySync,1000);
+if(window.__ckrNote)setTimeout(()=>toast('새 스킨 "콕핏 수정판"을 적용했어요. 예전 화면은 설정 → 화면 · 스킨에서 "콕핏 2"를 고르세요.'),1800);
 })();

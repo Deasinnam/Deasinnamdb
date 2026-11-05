@@ -1464,3 +1464,90 @@ html.driving body{overflow:hidden}
 .app.WR>.win:not(.wmove){box-shadow:inset 0 0 0 2px #ffffff2e!important;opacity:.82;transition:opacity .2s}
 .app.WR>.win.wmove{box-shadow:inset 0 0 0 3px var(--ck-green,var(--accent)),0 0 24px color-mix(in srgb,var(--ck-green,var(--accent)) 45%,transparent)!important;z-index:5;filter:brightness(1.12)}
 .app.WR>.win.wmove>.bar{background:color-mix(in srgb,var(--ck-green,var(--accent)) 22%,transparent)}
+/* 외부 앱: 앱 열기 버튼 + 지금 재생 */
+.xp-head .xp-apps{flex:1}.xp-head .xp-apps button{flex:1;height:48px;font-size:15px}
+.xpick .xp-now,#tkList .xp-now{list-style:none;display:flex;flex-direction:column;gap:3px;padding:14px 12px}
+.xp-now small{font-size:12px;color:#9da69d}.xp-now b{font-size:18px;color:var(--ck-green,#a8f08f);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xp-now span{font-size:14px;color:#c9cfcc}
+/* ---------- 화면 깨짐 수정(모든 스킨) ---------- */
+/* 1. 좁은 화면: 제목줄 버튼·측면 버튼 줄이 창 밖으로 밀리지 않게 */
+#app>.win{min-width:0;max-width:100%}
+#app>.win>.bar{min-width:0}
+#app>.win>.bar .t{flex:none}
+#app>.win>.bar .groove{min-width:0}
+#app>.win>.bar .gsbar{min-width:0;flex:0 1 auto;max-width:42%}
+#app>.win>.bar .wbtn{flex:none}
+.win.hasrail>.ckrail{min-width:0;max-width:100%}
+/* 2. 좁은 라디오 표시창: 주파수 숫자·FM·MHz가 칸 안에, 방송 이름은 두 줄까지 */
+.rd-fq{max-width:100%;min-width:0}
+.rd-disp #rdName{max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.2}
+@container (max-width:520px){.rd-disp .rd-seg{height:min(clamp(28px,14cqw,64px),13cqw)!important}.rd-disp :is(.rd-band,.rd-mhz){font-size:min(15px,4cqw)!important}.rd-fq{gap:6px!important}}
+/* 3. 조종 패널 MUTE가 잘리지 않게 */
+.dsn .volume-strip{gap:5px}
+.dsn .volume-strip .mute{min-width:0;padding:0 7px;font-size:13px;letter-spacing:.04em;flex:none}
+/* 4. 좁은 PFD: 시연 버튼은 아래 오른쪽 구석, 비행 단계 표시는 작게 */
+@container (max-width:520px){.flt-btns{top:auto!important;right:6px!important;bottom:calc(clamp(40px,14.5%,60px) + 4px)!important}.flt-btns button{height:30px!important;min-width:44px!important;padding:0 8px!important;font-size:12px!important}
+  .flt-badge{top:30px!important;left:calc(clamp(56px,14%,80px) + 4px)!important;padding:3px 8px!important;max-width:58%!important}.flt-badge b{font-size:11px!important;letter-spacing:.08em!important}.flt-badge span{font-size:10px!important}}
+
+/* =====================================================================
+   대신남 자동차 모드 · 콕핏 수정판 (data-ckr) — 콕핏 2와 같은 기능, 운전 중 읽기·누르기 좋게 다듬은 디자인
+   글꼴 3종(제목 Barlow Condensed · 숫자 Share Tech Mono · 본문 Noto Sans KR), 버튼 3단계(48·44·36px), 최소 글자 13px
+   강조색: 초록 = 켜짐·선택 · 호박색 = 주의·바깥 앱 · 빨강 = 비상
+   ===================================================================== */
+.npempty{display:none}
+#app>.win#wVis.np-empty .npempty{display:none}
+:root[data-ckr]{--muted:#b7c0b3;--f-tech:"Barlow Condensed","Noto Sans KR",sans-serif;--f-display:"Barlow Condensed","Noto Sans KR",sans-serif;--f-logo:"Barlow Condensed","Noto Sans KR",sans-serif;--ck-green:#a8f08f;--ck-white:#eef1e8}
+/* 머리: 스킨·화면 고르기는 설정으로, 도구 줄은 큰 버튼 4~5개만 */
+:root[data-ckr] .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;width:100%;padding:8px}
+:root[data-ckr] .tools .selw,:root[data-ckr] #addTop{display:none!important}
+:root[data-ckr] .tools .pill,:root[data-ckr] .tools .seg button{height:48px;font-size:17px;letter-spacing:.06em;padding:0 10px;white-space:nowrap}
+:root[data-ckr] .tools .seg{grid-column:span 2}
+:root[data-ckr] .tools .seg button{flex:1}
+@media (max-width:600px){
+  :root[data-ckr] .top{gap:8px}
+  :root[data-ckr] .brand .af-img{width:min(100%,360px);margin:0 auto}
+  :root[data-ckr] .brand{width:100%;display:flex;justify-content:center}
+  :root[data-ckr] .clock{flex-wrap:nowrap;gap:6px;width:100%}
+  :root[data-ckr] .clock>*{flex:1 1 0!important;min-width:0}
+  :root[data-ckr][data-clock="analog"] .clock>div,:root[data-ckr][data-clock="analog"] .clock>button{grid-template-columns:1fr!important;grid-template-rows:auto auto auto!important;justify-items:center;padding:6px 4px!important;row-gap:2px}
+  :root[data-ckr][data-clock="analog"] .clock .ck-dial{grid-row:auto!important;width:58px!important;height:58px!important}
+  :root[data-ckr][data-clock="analog"] .clock small,:root[data-ckr][data-clock="analog"] .clock em{grid-column:1!important;font-size:12px!important;letter-spacing:.04em!important;text-align:center}
+  :root[data-ckr] .clock .wx-s,:root[data-ckr] #wxS{display:none}
+  :root[data-ckr] .tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+  :root[data-ckr] #wMain #bEject{display:none}
+}
+/* 창 제목줄: 모든 창 같은 모양, 버튼은 손가락 크기 */
+:root[data-ckr] #app>.win>.bar{height:46px;padding:0 6px 0 16px}
+:root[data-ckr] #app>.win>.bar .t{font:600 17px/1 "Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.22em;color:var(--ck-white)}
+:root[data-ckr] #app>.win>.bar .s{font:500 13px/1 "Share Tech Mono",monospace}
+:root[data-ckr] #app>.win>.bar .wbtn{width:44px;height:36px;border-radius:4px}
+:root[data-ckr] #app>.win>.bar .wbtn svg{width:14px;height:14px}
+:root[data-ckr] #app>.win>.bar .gsbar{height:36px;font-size:15px}
+/* 조종 패널 머리도 같은 제목줄 모양으로 */
+:root[data-ckr] .dsn .squad-mark,:root[data-ckr] .dsn .eyebrow{display:none}
+:root[data-ckr] .dsn .console-header{min-height:46px;padding-top:0;padding-bottom:0;border-bottom:1px solid #00000099;box-shadow:0 1px 0 #ffffff12;margin-bottom:10px}
+:root[data-ckr] .dsn .brand-block h1{font:600 17px/1 "Barlow Condensed","Noto Sans KR",sans-serif!important;letter-spacing:.22em!important;color:var(--ck-white);margin:0}
+:root[data-ckr] .dsn .header-btn{min-width:44px;height:36px}
+/* 버튼 3단계: 창 안 주 버튼 44px */
+:root[data-ckr] #wMap .pill,:root[data-ckr] #wCam .pill,:root[data-ckr] #wAtc .pill,:root[data-ckr] .routebar .pill{height:44px;font-size:16px;padding:0 16px}
+:root[data-ckr] #wGps #pfdHost .pfd-tool{min-height:48px;font-size:15px}
+:root[data-ckr] #wRadio .rd-btns button,:root[data-ckr] #wRadio .rd-ctl button{min-height:44px;font-size:15px}
+/* 최소 글자 13px · 대비 */
+:root[data-ckr] #pfdHost .pfd-metric-label{font-size:13px;color:#c9d4c2}
+:root[data-ckr] #pfdHost .pfd-status-line{font-size:13px;color:#b7c0b3}
+:root[data-ckr] :is(.hint,.camcompat,#rdStat,#rdInfo,.rd-hint,.rd-drag,.xp-empty,.perm small,.plfoot .sum){font-size:13px!important;color:#b7c0b3}
+:root[data-ckr] .rd-sec span,:root[data-ckr] .rd-sec small{font-size:13px!important;color:#c3cbbf}
+:root[data-ckr] .rd-presets button:not(.set){color:#9fa99a}
+:root[data-ckr] .meta{font-size:14px}
+/* 블랙박스: 반전은 아이콘만, 연결 전 빈 화면은 낮게 */
+:root[data-ckr] #camFlipH .lbl,:root[data-ckr] #camFlipV .lbl{display:none}
+:root[data-ckr] #camFlipH,:root[data-ckr] #camFlipV{min-width:52px;font-size:20px;padding:0 10px}
+:root[data-ckr] #camView:has(#camImg[hidden]){aspect-ratio:auto!important;height:auto!important;min-height:140px;max-height:200px}
+/* 빈 상태: 재생 중인 곡이 없을 때 */
+:root[data-ckr] #wVis.np-empty .npempty{display:flex;position:absolute;inset:0;z-index:2;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center;background:#050805d9}
+:root[data-ckr] .npempty b{font-size:18px;color:var(--ck-white)}
+:root[data-ckr] .npempty span{font-size:14px;color:#b7c0b3}
+:root[data-ckr] .npempty div{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+:root[data-ckr] .npempty .pill{height:44px;font-size:16px;padding:0 16px}
+:root[data-ckr] #wVis.np-empty .vmode{display:none}
+@media (max-width:600px){#app>.win>.bar .gsbar{display:none!important}}
+@container (max-width:520px){.rd-disp #rdName{font-size:17px!important}.rd-disp #rdStat{font-size:12px!important}}

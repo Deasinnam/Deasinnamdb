@@ -218,8 +218,8 @@
         <button class="pill" id="camProbeBtn" disabled>카메라 찾기</button>
         <button class="pill" id="camFull" disabled>전체 화면</button>
         <button class="pill" id="camWifi">와이파이 설정</button>
-        <button class="pill" id="camFlipH" aria-pressed="false" title="화면 좌우 반전">⇆ 좌우 반전</button>
-        <button class="pill" id="camFlipV" aria-pressed="false" title="화면 상하 반전">⇅ 상하 반전</button>
+        <button class="pill" id="camFlipH" aria-pressed="false" title="화면 좌우 반전" aria-label="좌우 반전">⇆<span class="lbl"> 좌우 반전</span></button>
+        <button class="pill" id="camFlipV" aria-pressed="false" title="화면 상하 반전" aria-label="상하 반전">⇅<span class="lbl"> 상하 반전</span></button>
       </div>
       <div class="camnet" id="camNet"></div>
       <details class="permbox mapkey" id="camSetBox"><summary><span>블랙박스 와이파이</span><em id="camSsidSum">Car-Cam</em></summary>
@@ -312,6 +312,7 @@
     <div class="body">
       <div class="art"><div class="cover" id="cover"></div><div><div class="tt" id="npTitle">—</div><div class="ar" id="npArtist"></div></div><div class="npctl" role="group" aria-label="재생 조작"><button class="tb" id="npPrev" aria-label="이전"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button><button class="tb" id="npPlay" aria-label="재생 / 일시정지"><svg class="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button><button class="tb" id="npNext" aria-label="다음"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button></div></div>
       <div class="visbox">
+        <div class="npempty" id="npEmpty"><b>재생 중인 곡이 없어요</b><span>음악을 추가하거나 라디오를 틀어 보세요.</span><div><button class="pill on" id="npAdd">+ 음악 추가</button><button class="pill" id="npRadio">📻 라디오</button></div></div>
         <canvas id="vis" aria-label="사운드 시각화. 탭하면 모드 변경"></canvas>
         <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option><option value="1">MIRROR</option><option value="2">SCOPE</option><option value="3">AREA</option><option value="4">RING</option><option value="5">RADAR</option><option value="6">WAVES</option><option value="7">DOTS</option><option value="8">PULSE</option><option value="9">VU METER</option><option value="10">CITY</option><option value="11">FLAME</option><option value="12">STARS</option><option value="13">SPIRAL</option><option value="14">WATERFALL</option><option value="15">TUNNEL</option><option value="16">FLOWER</option><option value="17">BLOCKS 3D</option><option value="18">LISSAJOUS</option><option value="19">ECG</option><option value="20">PLASMA</option><option value="21">HELIX</option><option value="22">CODE RAIN</option><option value="23">SUNBURST</option><option value="24">MOUNTAINS</option><option value="25">KALEIDO</option><option value="26">BOUNCE</option><option value="27">GRID WARP</option><option value="28">FIREWORKS</option><option value="29">ORBIT</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
       </div>
@@ -466,6 +467,11 @@
       <h3>시계</h3>
       <label class="row"><span><b>해외 시간</b><small>로고 옆 시계에 서울 시간과 함께 보여 줄 도시를 골라요.</small></span><select class="sel" id="sWorld"></select></label>
       <label class="row"><span><b>시계 모양 (콕핏 스킨)</b><small>아날로그는 조종석 계기처럼 둥근 시계로 보여요. 시계를 눌러도 바뀌어요.</small></span><select class="sel" id="sClockStyle"><option value="digital">디지털</option><option value="analog">아날로그 (둥근 계기)</option></select></label>
+    </section>
+    <section id="secLook">
+      <h3>화면 · 스킨</h3>
+      <label class="row"><span><b>스킨</b><small>콕핏 수정판은 글씨·버튼을 키우고 창 모양을 하나로 맞춘 콕핏 2예요.</small></span><select class="sel" id="sSkinSel" aria-label="스킨"></select></label>
+      <label class="row"><span><b>화면 배치</b><small>자동은 화면 너비에 맞춰 1열·2열을 고릅니다.</small></span><select class="sel" id="sLayoutSel" aria-label="화면 배치"></select></label>
     </section>
     <section>
       <h3>주행 중 간편 모드</h3>

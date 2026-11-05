@@ -47,7 +47,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     let nl = await p7.evaluate(() => log.filter(x => /^(top|bottom):/.test(x)));
     assert.deepEqual(nl.slice(-2), ['top:com.skt.tmap.ku','bottom:com.nhn.android.nmap']);
     // 측면 버튼: 누르면 위/아래 고르기, 고른 위치를 기억해 표시, 길게 누르면 바로 열기
-    await p7.locator('#skin').selectOption('carnival3');
+    await p7.locator('#skin').selectOption('carnival3', {force: true});
     assert.equal(await p7.locator('#wMap .navrow').first().isVisible(), false, 'Cockpit 2: map-window app rows removed (side buttons instead)');
     assert.equal(await p7.locator('#ckRail [data-open="tmap"] em').textContent(), '▼ 아래');
     await p7.locator('#ckRail [data-open="tmap"]').click();
@@ -86,9 +86,9 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     assert.ok(await ty('#wAtc') < await ty('#wGps'), 'Tower now above the speedometer');
     await pa.reload();
     assert.ok(await ty('#wAtc') < await ty('#wGps'), 'Order survives reload');
-    await pa.locator('#skin').selectOption('blue');
+    await pa.locator('#skin').selectOption('blue', {force: true});
     assert.ok(await ty('#wMain') < await ty('#wPl'), 'Other skins keep their own order');
-    await pa.locator('#skin').selectOption('carnival2');
+    await pa.locator('#skin').selectOption('carnival2', {force: true});
     await pa.locator('#setBtn').click();
     await pa.locator('#ordReset').click();
     await pa.locator('#setClose').click();
@@ -122,7 +122,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
       assert.equal(await p7.evaluate(() => JSON.parse(localStorage.getItem('dna_winHN')).wPl > 0), true, 'Normal-skin size is saved');
       await p7.reload();await p7.locator('#wPl .rzbtn').waitFor();
       assert.ok(Math.abs(await p7.locator('#wPl').evaluate(el => el.getBoundingClientRect().height) - h1) < 4, 'Size kept after reopening');
-      await p7.locator('#skin').selectOption('carnival');
+      await p7.locator('#skin').selectOption('carnival', {force: true});
       assert.equal(await p7.locator('#wPl > .bar .rzbtn').isVisible(), false, 'Car mode keeps its own resizing (no button)');
       assert.equal(await p7.locator('#wPl > .grip').isVisible(), true, 'Car mode grip stays direct');
       await p7.close();

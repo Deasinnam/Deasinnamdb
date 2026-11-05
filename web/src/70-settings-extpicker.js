@@ -21,43 +21,30 @@ window.AmpHost={
   const apply=()=>{const h=!!store.get('camFlipH',false),v=!!store.get('camFlipV',false);img.style.setProperty('--cfx',h?-1:1);img.style.setProperty('--cfy',v?-1:1);
     bh.classList.toggle('on',h);bh.setAttribute('aria-pressed',String(h));bv.classList.toggle('on',v);bv.setAttribute('aria-pressed',String(v))};
   bh.onclick=()=>{store.set('camFlipH',!store.get('camFlipH',false));apply()};bv.onclick=()=>{store.set('camFlipV',!store.get('camFlipV',false));apply()};apply()})();
-/* ---------- 외부 음악 앱 선곡: 앱을 열지 않고 이 앱 안에서 대기열·둘러보기 ---------- */
+/* ---------- 외부 음악 앱(YouTube Music·Spotify): 누르면 그 앱으로 전환해 곡을 고르고, 재생·정지·곡 넘김은 이 앱 플레이어로 ---------- */
 window.AmpExt=(()=>{
   const PK={ytm:'com.google.android.apps.youtube.music',spotify:'com.spotify.music'},NAME={[PK.ytm]:'YouTube Music',[PK.spotify]:'Spotify'};
-  const ok=!!(NB&&NB.extQueue);let view=store.get('xpView','queue'),crumbs=[],bitems=null,bok=null,bpkg='',loading=false;const subs=new Set();
-  window.__extBrowse=s=>{let o={};try{o=JSON.parse(s)}catch(e){}loading=false;bok=!!o.ok;bitems=o.items||[];bpkg=o.pkg||bpkg;if(o.ok&&o.parent&&!crumbs.length)crumbs=[{id:o.parent,t:'처음'}];subs.forEach(f=>{try{f()}catch(e){}})};
+  const subs=new Set();
   const curPkg=()=>(ext&&ext.pkg&&NAME[ext.pkg]?ext.pkg:null)||store.get('extPkg',PK.ytm);
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  function start(pkg){store.set('extPkg',pkg);store.set('lastSrc','ext');try{if(window.AmpRadio&&AmpRadio.state.playing)AmpRadio.stop()}catch(e){}
-    if(mode!=='ext')setMode('ext');try{NB.mediaPlay(pkg)}catch(e){}if(bpkg!==pkg){bitems=null;crumbs=[]}toast((NAME[pkg]||'음악 앱')+'을 이 앱 안에서 재생해요. 아래 목록에서 곡을 고르세요.')}
-  function queue(){try{return JSON.parse(NB.extQueue())}catch(e){return {items:[]}}}
-  function render(ul){if(!ul)return;const st=ul.scrollTop,pk=curPkg(),nm=NAME[pk]||'외부 앱';let h='<li class="xp-head"><span class="xp-apps">'+
-      Object.values(PK).map(p=>'<button data-xapp="'+p+'" class="'+(p===pk?'on':'')+'">'+NAME[p]+'</button>').join('')+'</span><span class="xp-tabs"><button data-xv="queue" class="'+(view==='queue'?'on':'')+'">대기열</button><button data-xv="browse" class="'+(view==='browse'?'on':'')+'">둘러보기</button></span></li>';
-    if(!ok)h+='<li class="xp-empty">YouTube Music·Spotify 선곡은 휴대폰 앱에서 쓸 수 있어요.</li>';
-    else if(view==='queue'){const q=queue(),it=q.items||[];
-      if(!it.length)h+='<li class="xp-empty">'+esc(nm)+'에서 받은 재생 목록이 없어요. 위에서 앱을 눌러 재생을 시작하거나 [둘러보기]를 써 보세요.<br><small>곡 정보는 알림 접근 권한이 있어야 받아요.</small></li>';
-      else it.forEach((x,i)=>{h+='<li class="xp-it'+(x.cur?' cur':'')+'" data-q="'+x.id+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><span class="nm"><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span></li>'})}
-    else{if(bitems===null||bpkg!==pk){if(!loading){loading=true;bpkg=pk;bitems=null;crumbs=[];try{NB.extBrowse(pk,'')}catch(e){loading=false;bok=false;bitems=[]}}h+='<li class="xp-empty">'+esc(nm)+' 목록을 불러오는 중…</li>'}
-      else if(!bok)h+='<li class="xp-empty">'+esc(nm)+'은(는) 다른 앱에서 둘러보기를 막아 두었어요. [대기열]에서 고르거나 앱을 열어 고르세요.<br><button class="xp-open" data-xopen="'+pk+'">'+esc(nm)+' 열기</button></li>';
-      else{if(crumbs.length>1)h+='<li class="xp-it back" data-xback="1"><span class="n">◀</span><span class="nm"><b>'+esc(crumbs[crumbs.length-1].t)+'</b><small>위로</small></span></li>';
-        if(!bitems.length)h+='<li class="xp-empty">비어 있어요.</li>';
-        bitems.forEach(x=>{h+='<li class="xp-it'+(x.folder?' dir':'')+'" '+(x.folder?'data-xf':'data-xm')+'="'+esc(x.id)+'" data-t="'+esc(x.title)+'"><span class="n">'+(x.folder?'▸':'♪')+'</span><span class="nm"><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span></li>'})}}
-    ul.innerHTML=h;ul.scrollTop=st}
-  function bind(ul){if(!ul||ul.__xp)return;ul.__xp=1;ul.addEventListener('click',e=>{const b=e.target.closest('[data-xv],[data-xapp],[data-q],[data-xf],[data-xm],[data-xback],[data-xopen]');if(!b)return;e.stopPropagation();
-      if(b.dataset.xv){view=b.dataset.xv;store.set('xpView',view)}
-      else if(b.dataset.xapp)start(b.dataset.xapp);
-      else if(b.dataset.q!=null){try{NB.extPlayQueue(+b.dataset.q)}catch(x){}}
-      else if(b.dataset.xf!=null){crumbs.push({id:b.dataset.xf,t:b.dataset.t||''});loading=true;bitems=[];try{NB.extBrowse(curPkg(),b.dataset.xf)}catch(x){}}
-      else if(b.dataset.xback){crumbs.pop();const c=crumbs[crumbs.length-1];loading=true;try{NB.extBrowse(curPkg(),c?c.id:'')}catch(x){}}
-      else if(b.dataset.xm!=null){try{NB.extBrowsePlay(curPkg(),b.dataset.xm)}catch(x){}toast('선택한 곡을 틀어요.')}
-      else if(b.dataset.xopen){try{NB.openApp(b.dataset.xopen)}catch(x){}}
-      setTimeout(()=>render(ul),60)});subs.add(()=>render(ul))}
-  return {PK,NAME,start,render,bind,ok,get view(){return view}};
+  function start(pkg){store.set('extPkg',pkg);store.set('lastSrc','ext');
+    try{radioStop()}catch(e){} // 라디오는 완전히 멈춰서 그 앱의 소리를 다시 빼앗지 않게
+    if(mode!=='ext')setMode('ext');
+    if(!NB||!NB.openApp){toast((NAME[pkg]||'음악 앱')+' 전환은 안드로이드 앱에서 동작해요.');return}
+    try{NB.openApp(pkg)}catch(e){}
+    toast((NAME[pkg]||'음악 앱')+'(으)로 전환해요. 곡을 고른 뒤 돌아오면 여기서 재생·정지·곡 넘김을 할 수 있어요.')}
+  function render(ul){if(!ul)return;const pk=curPkg(),has=!!(ext&&ext.title);
+    let h='<li class="xp-head"><span class="xp-apps">'+Object.values(PK).map(p=>'<button data-xapp="'+p+'" class="'+(p===pk?'on':'')+'">'+NAME[p]+' 열기</button>').join('')+'</span></li>';
+    h+=has?'<li class="xp-now"><small>지금 재생 · '+esc(ext.app||NAME[pk]||'')+'</small><b>'+esc(ext.title)+'</b><span>'+esc(ext.artist||'')+'</span></li>'
+      :'<li class="xp-empty">위 버튼을 누르면 그 앱으로 넘어가요. 곡을 고른 뒤 이 앱으로 돌아오면 재생·정지·곡 넘김을 여기서 할 수 있어요.</li>';
+    if(ul.__h!==h){ul.__h=h;ul.innerHTML=h}}
+  function bind(ul){if(!ul||ul.__xp)return;ul.__xp=1;ul.addEventListener('click',e=>{const b=e.target.closest('[data-xapp]');if(!b)return;e.stopPropagation();start(b.dataset.xapp);setTimeout(()=>render(ul),60)});subs.add(()=>render(ul))}
+  return {PK,NAME,start,render,bind,view:'now'};
 })();
-// 큰 화면(외부 앱 창): 앱 버튼은 앱을 열지 않고 이 앱 안에서 선곡
+// 외부 앱 창: 앱 버튼을 누르면 그 앱으로 전환해 선곡
 document.querySelectorAll('[data-xstart]').forEach(b=>b.onclick=()=>{AmpExt.start(b.dataset.xstart);AmpExt.render($('#xPick'))});
 AmpExt.bind($('#xPick'));
-setInterval(()=>{const w=$('#wExt');if(mode==='ext'&&w&&!w.hidden&&!w.classList.contains('collapsed')&&!document.hidden&&AmpExt.view==='queue')AmpExt.render($('#xPick'))},2000);
+setInterval(()=>{const w=$('#wExt');if(mode==='ext'&&w&&!w.hidden&&!w.classList.contains('collapsed')&&!document.hidden)AmpExt.render($('#xPick'))},2000);
 window.AmpTk={
   get gs(){return gs},get gpsOn(){return gpsOn},get spdNow(){return spdNow},get hdgNow(){return hdgNow},get gLimit(){return gLimit},
   get trip(){return trip},get att(){return att},get mode(){return mode},get list(){return list},get cur(){return cur},

@@ -33,3 +33,12 @@ if(!restored)(async()=>{
     renderList();if(mode==='local'){updateMeta();audio.src=list[cur].url}
   }catch(e){if(mode==='local')setMarquee('“+ 음악 추가”를 눌러 파일을 불러오세요')}
 })();
+// 설정의 스킨·화면 배치(위 도구 줄과 같은 값) — 콕핏 수정판은 도구 줄에서 이 둘을 숨기고 설정에서 고름
+(function(){const pairs=[['#sSkinSel','#skin'],['#sLayoutSel','#layout']];
+  for(const [a,b] of pairs){const s=$(a),o=$(b);if(!s||!o)continue;s.innerHTML=o.innerHTML;s.value=o.value;
+    s.onchange=()=>{o.value=s.value;o.dispatchEvent(new Event('change'))};o.addEventListener('change',()=>{s.value=o.value})}})();
+// NOW PLAYING 빈 화면: 곡·라디오·외부 앱이 없으면 안내와 버튼
+$('#npAdd').onclick=()=>pickMusic(false);$('#npRadio').onclick=()=>{try{openRadio()}catch(e){}};
+function npEmptySync(){const has=(cur>=0&&list[cur])||rdPlaying||(mode==='ext'&&ext&&ext.title);$('#wVis').classList.toggle('np-empty',!has)}
+npEmptySync();setInterval(npEmptySync,1000);
+if(window.__ckrNote)setTimeout(()=>toast('새 스킨 "콕핏 수정판"을 적용했어요. 예전 화면은 설정 → 화면 · 스킨에서 "콕핏 2"를 고르세요.'),1800);

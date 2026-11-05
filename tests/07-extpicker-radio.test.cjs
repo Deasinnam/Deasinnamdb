@@ -15,17 +15,13 @@ run('External music picker, car source, dashcam flip, internet radio, battery sa
       await px.goto(origin);
       await px.evaluate(() => document.querySelector('#srcSeg button[data-src="ext"]').click());
       await px.locator('#wExt [data-xstart="com.spotify.music"]').click();
-      assert.ok((await px.evaluate(() => xl)).includes('play:com.spotify.music'), 'Starts Spotify in the background');
-      assert.ok(!(await px.evaluate(() => xl)).some(x => /^open:/.test(x)), 'Does not open the Spotify app');
-      await px.waitForFunction(() => document.querySelectorAll('#xPick [data-q]').length === 2);
-      await px.locator('#xPick [data-q="12"]').click();
-      assert.ok((await px.evaluate(() => xl)).includes('q:12'), 'Pick a queued song in-app');
-      await px.locator('#xPick [data-xv="browse"]').click();
-      await px.waitForFunction(() => document.querySelector('#xPick [data-xf="pl"]'));
-      await px.locator('#xPick [data-xf="pl"]').click();
-      await px.waitForFunction(() => document.querySelector('#xPick [data-xm="t1"]'));
-      await px.locator('#xPick [data-xm="t1"]').click();
-      assert.ok((await px.evaluate(() => xl)).includes('bplay:t1'), 'Play from browse in-app');
+      // 누르면 그 앱으로 전환(목록을 이 앱 안에 넣지 않음)
+      assert.ok((await px.evaluate(() => xl)).includes('open:com.spotify.music'), 'Switches to the Spotify app');
+      assert.ok(!(await px.evaluate(() => xl)).some(x => /^(play|q|bplay|browse):/.test(x)), 'No in-app queue or background start');
+      assert.equal(await px.locator('#xPick [data-q], #xPick [data-xv]').count(), 0, 'No in-app song list');
+      await px.waitForFunction(() => /Song A/.test(document.getElementById('xPick').textContent), null, {timeout: 4000});
+      await px.locator('#xPick [data-xapp="com.google.android.apps.youtube.music"]').click();
+      assert.ok((await px.evaluate(() => xl)).includes('open:com.google.android.apps.youtube.music'), 'YouTube Music button switches app');
       // 차 연결: 고른 음원(YouTube Music)을 화면 전환 없이 재생
       await px.evaluate(() => { localStorage.setItem('dna_carSrc', JSON.stringify('ytm')); window.__carConnected('MyCar'); });
       assert.ok((await px.evaluate(() => xl)).includes('play:com.google.android.apps.youtube.music'), 'Car connect plays YouTube Music');

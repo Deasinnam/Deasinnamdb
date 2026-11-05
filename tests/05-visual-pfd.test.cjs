@@ -123,7 +123,8 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
       await pf.goto(origin);
       await pf.waitForFunction(() => window.AmpFlight);
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Ver1 opens in the cockpit skin');
-      assert.equal(await pf.locator('#skin').inputValue(), 'carnival3', 'First run opens in cockpit 2');
+      assert.equal(await pf.locator('#skin').inputValue(), 'carnival5', 'First run opens in the revised cockpit');
+      assert.equal(await pf.evaluate(() => document.documentElement.dataset.ckr), '1');
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.ck2), '1');
       assert.equal(await pf.locator('#ckRail button[data-f="all"]').evaluate(b => b.classList.contains('on')), true, 'All views by default');
       assert.equal(await pf.locator('#clkDialNow').isVisible(), true, 'Cockpit shows the round analog clock by default');

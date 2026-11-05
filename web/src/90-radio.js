@@ -92,6 +92,7 @@ async function rdNextCand(){const t=rdTry;if(!t||!rdPlaying)return;t.i++;if(t.i>
 function rdStart(s){const t=rdTry;if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.radioPlay(s.url)}catch(e){return rdNextCand()}
     const t0=Date.now();clearInterval(rdPoll);rdPoll=setInterval(()=>{if(t!==rdTry)return clearInterval(rdPoll);let o={};try{o=JSON.parse(NB.radioState())}catch(e){}
       if(o.state==='playing'){if(rdSt0!=='ON AIR'){rdSay('ON AIR');rdT0=rdT0||Date.now();rdBridge(rdCur)}const ti=(o.title||'').trim();if(ti!==rdNow){rdNow=ti;rdShow();rdBridge(rdCur)}}
+      else if(o.state==='yielded'){clearInterval(rdPoll);rdYield(o.err)}
       else if(o.state==='buffering'||o.state==='resolving')rdSay(o.retry?'다시 연결 중…':'버퍼링…');
       else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);if(t)t.err=(o.err==='API'?'방송사 주소 받기 실패':o.err?'재생 오류 '+o.err:'응답 없음')+(/^api:/.test(s.url)?' · 공식 주소':' · 공개 목록 주소');rdNextCand()}},500);return}
   if(/^api:/.test(s.url))return rdNextCand(); // 웹 미리보기는 방송사 주소를 직접 받을 수 없어 공개 목록 주소로
@@ -104,6 +105,11 @@ function rdLcd(){const f=rdFreqOf(rdCur);$('#time').textContent=lcdFmt(rdPlaying
   setMarquee('📻 '+(f?'FM '+f.toFixed(1)+' · ':'')+rdCur.name+(!rdPlaying?'  · 정지 (▶ 누르면 다시 들어요)':rdNow?'  ♪ '+rdNow:(rdSt0==='ON AIR'?'  · ON AIR':'  · 연결 중')));
   if(!seeking){seek.value=0;setP(seek)}$('#tCur').textContent='LIVE';$('#tDur').textContent='RADIO';
   const k=$('#kbps');const kb=(rdCur.br?rdCur.br+' kbps':'LIVE kbps');if(k.textContent!==kb)k.textContent=kb}
+// 다른 앱(YouTube Music·Spotify 등)이 소리를 가져감: 라디오는 멈춤으로 두고 다시 잇지 않음. 플레이어 버튼은 그 앱을 조작
+function rdYield(why){if(!rdPlaying)return;radioStop();
+  try{if(why!=='noisy'&&HAS_EXT){store.set('lastSrc','ext');if(mode!=='ext')setMode('ext')}}catch(e){}
+  try{state()}catch(e){}
+  toast(why==='noisy'?'이어폰·블루투스가 끊겨 라디오를 멈췄어요.':'다른 앱이 음악을 재생해서 라디오를 멈췄어요. 다시 들으려면 라디오 창의 재생을 누르세요.')}
 function radioStop(){if(!rdPlaying&&rdAudio.paused&&!RD_NATIVE)return;rdTry=null;clearInterval(rdPoll);if(RD_NATIVE){try{NB.radioStop()}catch(e){}}rdAudio.pause();rdAudio.removeAttribute('src');try{rdAudio.load()}catch(e){}if(!rdPlaying)return;rdPlaying=false;rdNow='';rdSay('대기');rdBridge(null);rdShow();rdRenderList();try{updateMeta();state()}catch(e){}}
 const rdVolV=()=>(+$('#rdVol').value||80)/100;
 rdAudio.addEventListener('error',()=>{if(rdPlaying&&rdTry&&!RD_NATIVE)rdNextCand()}); // 끊기면 같은 방송의 다른 주소로
