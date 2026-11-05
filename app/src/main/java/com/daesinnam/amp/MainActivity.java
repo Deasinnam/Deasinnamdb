@@ -655,6 +655,37 @@ public class MainActivity extends Activity {
         });
     }
 
+    @Override
+    public void onConfigurationChanged(@androidx.annotation.NonNull android.content.res.Configuration c) {
+        super.onConfigurationChanged(c);
+        if (isInMultiWindowMode() || lastSplit) main.postDelayed(this::pushSplit, 200); // 가운데 막대를 끌어 비율이 바뀔 때
+    }
+
+    private boolean lastSplit = false;
+
+    /** 분할 상태 {on, ratio(이 앱 창 높이 ÷ 화면 높이)} */
+    private String splitState() {
+        boolean on = Build.VERSION.SDK_INT >= 24 && isInMultiWindowMode();
+        double ratio = 1;
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                Rect cur = getWindowManager().getCurrentWindowMetrics().getBounds();
+                Rect max = getWindowManager().getMaximumWindowMetrics().getBounds();
+                if (max.height() > 0) ratio = cur.height() / (double) max.height();
+            } else if (web != null && web.getRootView() != null) {
+                android.util.DisplayMetrics dm = new android.util.DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+                if (dm.heightPixels > 0) ratio = web.getRootView().getHeight() / (double) dm.heightPixels;
+            }
+        } catch (Exception ignored) {}
+        return "{\"on\":" + on + ",\"ratio\":" + String.format(java.util.Locale.ROOT, "%.3f", ratio) + "}";
+    }
+
+    private void pushSplit() {
+        lastSplit = Build.VERSION.SDK_INT >= 24 && isInMultiWindowMode();
+        js("window.__split&&window.__split(" + splitState() + ")");
+    }
+
     private void js(final String code) {
         main.post(() -> {
             if (web != null) web.evaluateJavascript(code, null);
@@ -730,6 +761,7 @@ public class MainActivity extends Activity {
     @Override
     public void onMultiWindowModeChanged(boolean inMulti, android.content.res.Configuration cfg) {
         super.onMultiWindowModeChanged(inMulti, cfg);
+        main.postDelayed(this::pushSplit, 250); // 화면 분할(TMAP 위·아래): 앱 화면을 남은 칸에 맞게 다시 배치
         // 옆 창 분할이 끝나면 회전 설정을 원래대로(태블릿 모드 2면 가로 고정 유지)
         if (!inMulti && sideLock) {
             sideLock = false;
@@ -1504,8 +1536,9 @@ public class MainActivity extends Activity {
             main.post(() -> {
                 launch.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
                 ActivityOptions o = ActivityOptions.makeBasic();
-                int mid = full.top + full.height() / 2;
-                o.setLaunchBounds(top ? new Rect(full.left, full.top, full.right, mid) : new Rect(full.left, mid, full.right, full.bottom));
+                // 내비 앱 60% · 대신남 원 40% (안드로이드·기기가 정해진 비율로 맞추면 그 비율을 따름)
+                int cut = top ? full.top + Math.round(full.height() * .6f) : full.top + Math.round(full.height() * .4f);
+                o.setLaunchBounds(top ? new Rect(full.left, full.top, full.right, cut) : new Rect(full.left, cut, full.right, full.bottom));
                 try { startActivity(launch, o.toBundle()); } catch (Exception e) { MainActivity.this.openApp(pkg); }
             });
             return full.width() > full.height() ? "landscape" : (top ? "top" : "bottom");
@@ -1611,6 +1644,10 @@ public class MainActivity extends Activity {
         public String migrateTake() {
             return takeMigrate();
         }
+
+        /** 화면 분할 상태(JSON {on, ratio}) — 앱 화면이 시작할 때 읽음 */
+        @JavascriptInterface
+        public String splitState() { return MainActivity.this.splitState(); }
 
         /** 설정: 통화가 끝나면 통화 화면을 닫고 이 앱으로 돌아오기(기본 true) */
         @JavascriptInterface

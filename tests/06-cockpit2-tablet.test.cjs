@@ -35,6 +35,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
         sizes.push(await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]}, ids[0]));
       }
       for (const z of sizes) assert.deepEqual(z, sizes[0], 'Every rail view has the same size as the speedometer view');
+      assert.match(await pc2.evaluate(() => document.documentElement.style.getPropertyValue('--fxTop')), /^\d+px$/, 'Focus view measures its top offset');
       // 높이 조절: 제목줄 ↕ 버튼을 눌렀을 때만, 모든 보기에 같이 적용
       await pc2.locator('#ckRail [data-f="gps"]').click();
       assert.equal(await pc2.locator('#wGps > .grip').isVisible(), false, 'No resize handle until the ↕ button is pressed');

@@ -15,7 +15,7 @@ function navOpen(id,at){const a=NAV[id];if(!a)return;
     const r=NB.openAppSplit?NB.openAppSplit(a.pkg,top):(top?(NB.openApp(a.pkg),'open'):NB.openAppBottom(a.pkg));
     if(r==='missing')toast(a.name+'이 설치되어 있지 않아 설치 화면을 열어요.');
     else if(r==='landscape')toast(a.name+a.josa+' 함께 띄웠어요. 가로 화면에서는 안드로이드가 옆에 붙여요. 세로로 돌리면 위아래로 나뉘어요.');
-    else if(r!=='open')toast(a.name+a.josa+' 화면 '+(top?'위쪽':'아래쪽')+'에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
+    else if(r!=='open')toast(a.name+a.josa+' 화면 '+(top?'위쪽':'아래쪽')+'(약 60%)에 띄웠어요. 이 앱은 '+(top?'아래':'위')+' 칸에 맞춰 정리돼요. 가운데 막대를 끌어 비율을 바꿀 수 있어요.');
     return r}catch(e){}}
 let mapPref=store.get('mapPref',null),mapObj=null,mapMarker=null,mapEngine=null,tmapFrame=null,mapFollow=true,mapLastPush=0,mapLoading=false;
 let mapNight=store.get('mapNight',true);

@@ -1018,7 +1018,7 @@ function navOpen(id,at){const a=NAV[id];if(!a)return;
     const r=NB.openAppSplit?NB.openAppSplit(a.pkg,top):(top?(NB.openApp(a.pkg),'open'):NB.openAppBottom(a.pkg));
     if(r==='missing')toast(a.name+'이 설치되어 있지 않아 설치 화면을 열어요.');
     else if(r==='landscape')toast(a.name+a.josa+' 함께 띄웠어요. 가로 화면에서는 안드로이드가 옆에 붙여요. 세로로 돌리면 위아래로 나뉘어요.');
-    else if(r!=='open')toast(a.name+a.josa+' 화면 '+(top?'위쪽':'아래쪽')+'에 띄웠어요. 가운데 막대를 끌어 크기를 바꿀 수 있어요.');
+    else if(r!=='open')toast(a.name+a.josa+' 화면 '+(top?'위쪽':'아래쪽')+'(약 60%)에 띄웠어요. 이 앱은 '+(top?'아래':'위')+' 칸에 맞춰 정리돼요. 가운데 막대를 끌어 비율을 바꿀 수 있어요.');
     return r}catch(e){}}
 let mapPref=store.get('mapPref',null),mapObj=null,mapMarker=null,mapEngine=null,tmapFrame=null,mapFollow=true,mapLastPush=0,mapLoading=false;
 let mapNight=store.get('mapNight',true);
@@ -1971,13 +1971,14 @@ function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
   const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
   h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
-function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const on=isCk2()&&f!=='all';
+function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.documentElement.hasAttribute('data-split');if(split&&f!=='all'){SPLIT.prevFocus=f;f='all'} // 화면 분할 중엔 보기 전환을 미뤘다가 끝나면 되돌림
+  const on=isCk2()&&f!=='all';
   appEl.classList.toggle('FX',on);if(on)document.documentElement.style.setProperty('--fxN',String(FX_GROUPS[f].length));
   document.querySelectorAll('#app>.win').forEach(w=>{const sel=on&&FX_GROUPS[f].includes(w.id);w.classList.toggle('fx',sel);if(sel)w.classList.remove('collapsed')});
   ckRailPlace(isCk2()?(on?FX_GROUPS[f][0]:'wGps'):null,on&&FX_GROUPS[f].length>1); // 창이 보인 뒤에 위치를 재야 제목줄 높이가 맞음
   document.querySelectorAll('#ckRail button[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===(on?f:'all')));
-  if(isCk2())store.set('ckFocus',f);
-  if(on){let top=0;for(let e=appEl;e;e=e.offsetParent)top+=e.offsetTop; // 스크롤과 무관한 화면 위치document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
+  if(isCk2()&&!split)store.set('ckFocus',f);
+  if(on){let top=0;for(let e=appEl;e;e=e.offsetParent)top+=e.offsetTop; /* 스크롤과 무관한 화면 위치 */document.documentElement.style.setProperty('--fxTop',Math.round(top+28)+'px');if(!quiet)window.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}if(f==='map'&&mapPref==='on')mapUpdate(true)},120)}}
 $('#ckRail').addEventListener('click',e=>{const o=e.target.closest('button[data-open]');if(o){if(o.__long){o.__long=false;return}navPick(o);return}const b=e.target.closest('button[data-f]');if(!b)return;if(b.dataset.f==='set'){openSettings();return}ckFocus(b.dataset.f)});
 window.addEventListener('resize',()=>{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)});
@@ -2005,6 +2006,24 @@ document.querySelectorAll('#ckRail button[data-open]').forEach(b=>{let t=0,x0=0,
   ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
   b.addEventListener('contextmenu',e=>e.preventDefault())});
 navLabels();
+/* ===== 93-split.js ===== */
+// 화면 분할(TMAP·네이버 지도 위·아래): 이 앱은 남은 칸(약 40%)에 맞게 스크롤 없이 따로 배치
+// 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
+/* ---------- 분할 화면 배치: 넓으면 [속도계 | 플레이어], 좁으면 [속도계] + 아래 조작 줄 ---------- */
+const SPLIT={on:false,ratio:1,prevFocus:null};
+function splitWanted(){return SPLIT.on&&SPLIT.ratio<.8&&store.get('splitLayout',true)!==false&&!isTab()}
+function splitApply(){const want=splitWanted(),root=document.documentElement;
+  if(want===root.hasAttribute('data-split'))return;
+  root.toggleAttribute('data-split',want);
+  if(want){if(appEl.classList.contains('FX')||(isCk2()&&store.get('ckFocus','all')!=='all')){SPLIT.prevFocus=store.get('ckFocus','all');ckFocus('all',true)}
+    window.scrollTo(0,0)}
+  else if(SPLIT.prevFocus){const f=SPLIT.prevFocus;SPLIT.prevFocus=null;ckFocus(f,true)}
+  setTimeout(()=>{window.dispatchEvent(new Event('resize'));try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}},80)}
+window.__split=o=>{o=o||{};SPLIT.on=!!o.on;SPLIT.ratio=+o.ratio||1;splitApply()};
+window.AmpSplit={get on(){return document.documentElement.hasAttribute('data-split')},set:(on,ratio)=>window.__split({on,ratio:ratio==null?.4:ratio}),apply:splitApply};
+$('#sSplit').checked=store.get('splitLayout',true)!==false;
+$('#sSplit').onchange=e=>{store.set('splitLayout',e.target.checked);splitApply()};
+try{if(NB&&NB.splitState)window.__split(JSON.parse(NB.splitState()))}catch(e){}
 /* ===== 94-weather.js ===== */
 // 오늘의 날씨
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

@@ -1344,3 +1344,49 @@ html.driving body{overflow:hidden}
 :root[data-ck3] .rd-presets button.on{background:linear-gradient(180deg,#3b2a14,#1f160a);box-shadow:inset 0 0 0 1px #ff9f43,0 0 12px #ff9f4333}
 :root[data-ck3] .rd-sec b{color:#ffffff}
 :root[data-ck3] .rd-mhz{color:#ffcf8a}:root[data-ck3] .rd-hint,:root[data-ck3] .rd-drag{color:#aab4be}:root[data-ck3] .rd-sec span{color:#c3cbd3}
+
+/* ---------- 화면 분할(TMAP·네이버 지도 위·아래): 남은 칸에 스크롤 없이 ---------- */
+:root[data-split],:root[data-split] body{height:100%;overflow:hidden}
+:root[data-split] .top,:root[data-split] .ckrail,:root[data-split] .win>.grip{display:none!important}
+:root[data-split] .app{height:100dvh;max-width:none;margin:0;gap:6px;padding:6px max(6px,env(safe-area-inset-right,0px)) 6px max(6px,env(safe-area-inset-left,0px))!important;box-sizing:border-box;
+  grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;grid-template-areas:"gps main"!important;overflow:hidden}
+:root[data-split] .app>.win{display:none!important}
+:root[data-split] .app>#wGps,:root[data-split] .app>#wMain{display:flex!important;height:auto!important;min-height:0!important;order:0!important;grid-row:1!important}
+:root[data-split] .app>#wGps{grid-area:gps!important}
+:root[data-split] .app>#wMain{grid-area:main!important}
+:root[data-split] .app>.win.collapsed>.body{display:block}
+:root[data-split] .win>.body{min-height:0;overflow:hidden}
+:root[data-split] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:0!important}
+:root[data-split] #wMain .subrow{display:none}
+:root[data-split] #wMain>.body{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:8px}
+:root[data-split] #wMain .transport{margin-top:6px}
+:root[data-split] #wMain .seek{margin-top:6px}
+/* 속도계가 없는 스킨: 플레이어 + 재생 화면 */
+:root[data-split] .app:not(.G){grid-template-areas:"main vis"!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+:root[data-split] .app:not(.G)>#wGps{display:none!important}
+:root[data-split] .app:not(.G)>#wVis{display:flex!important;grid-area:vis!important;height:auto!important;min-height:0!important;grid-row:1!important}
+/* 좁은 화면(휴대폰 세로): 속도계 위, 아래에 한 줄 조작 */
+@media (max-width:639px){
+  :root[data-split] .app{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto!important;grid-template-areas:"gps" "main"!important}
+  :root[data-split] .app>#wMain{grid-row:2!important}
+  :root[data-split] #wMain>.bar,:root[data-split] #wMain .lcd,:root[data-split] #wMain .seek{display:none}
+  :root[data-split] #wMain>.body{padding:5px}
+  :root[data-split] #wMain .transport{margin:0;flex-wrap:nowrap}
+  :root[data-split] #wMain .tb{height:42px}
+  :root[data-split] .app:not(.G){grid-template-areas:"vis" "main"!important;grid-template-columns:minmax(0,1fr)!important}
+  :root[data-split] .app:not(.G)>#wVis{grid-row:1!important}
+}
+:root[data-split] .app>#wGps,:root[data-split] .app>#wMain,:root[data-split] .app>#wVis{align-self:stretch!important}
+:root[data-split] #wMain #bEject{display:none}
+/* 분할: 속도계는 계기 화면만 꽉 차게(기록 칸·아래 버튼 숨김) */
+:root[data-split] #wGps>.body{display:flex;flex-direction:column;padding:6px}
+:root[data-split] #wGps[data-gs="cockpit"] #pfdHost{flex:1;min-height:0;display:flex!important;flex-direction:column}
+:root[data-split] #wGps #pfdHost .dsn-pfd,:root[data-split] #wGps #pfdHost [data-role="content"],:root[data-split] #wGps #pfdHost .pfd-glass{flex:1;min-height:0;display:flex;flex-direction:column}
+:root[data-split] #wGps #pfdHost .pfd-canvas-wrap{flex:1;min-height:80px;height:auto!important;aspect-ratio:auto!important}
+:root[data-split] #wGps #pfdHost :is(.pfd-metrics,.pfd-tools,.pfd-status-line,.pfd-header){display:none!important}
+:root[data-split] #wGps #pfdHost .dsn-pfd{padding:4px}
+:root[data-split] #wGps .gps{flex:1;min-height:0}
+:root[data-split] #wGps .gstats{display:none}
+:root[data-split] #wGps .gps{grid-template-columns:minmax(0,1fr)!important}
+:root[data-split] #wGps .dial{min-height:0}
+:root[data-split] #wGps>.body>:not(#pfdHost):not(.gps){display:none}
