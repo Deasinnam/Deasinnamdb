@@ -27,7 +27,7 @@ run('Free map route finding', async ({context, origin, errors}) => {
   await p.goto(origin);
   await p.waitForFunction(() => !document.getElementById('rtBar').hidden, null, {timeout: 8000});
   // 콕핏 2에서는 지도 아래 TMAP·네이버 지도 줄이 없음(측면 버튼으로)
-  assert.equal(await p.locator('#wMap .navrow').first().isVisible(), false, 'Navigation-app rows hidden in cockpit 2');
+  assert.equal(await p.locator('#mapTmap').isVisible(), false, 'TMAP button hidden in the cockpit skin (side buttons)');
   await p.evaluate(() => { if (!AmpHost.gpsOn) AmpHost.gpsStart(); });
   await p.waitForFunction(() => AmpHost.gs.fix && Math.abs(AmpHost.gs.lat - 37.5) < 1e-6, null, {timeout: 8000}); // GPS 수신
   // 검색 → 결과 → 경로

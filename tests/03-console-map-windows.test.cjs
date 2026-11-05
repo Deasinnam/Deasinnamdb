@@ -29,27 +29,20 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     // 지도: TMAP 켜기 / 하단에 켜기(위아래 반씩) / 옆 창
     await p7.locator('#mapYes').click();
     await p7.locator('#skin').selectOption('carnival', {force: true}); // 측면 버튼이 없는 스킨에서 지도 아래 버튼 줄
-    assert.deepEqual(await p7.locator('#wMap .navrow').allInnerTexts().then(a => a.map(t => t.replace(/\s+/g,' ').trim())), ['TMAP 켜기 상단에 켜기 하단에 켜기 옆 창','네이버 지도 켜기 상단에 켜기 하단에 켜기 옆 창']);
-    await p7.locator('#wMap [data-nav="tmap"][data-at="bottom"]').click();
-    await p7.locator('#wMap [data-nav="tmap"][data-at="open"]').click();
-    const tl = await p7.evaluate(() => log.filter(x => /^(open|bottom|side):/.test(x)));
-    assert.deepEqual(tl, ['bottom:com.skt.tmap.ku','open:com.skt.tmap.ku']);
+    // 자동차 모드: 확대·축소·내 위치·야간 지도·지도 끄기·TMAP 한 줄, TMAP은 바로 하단에 켜기
+    assert.deepEqual((await p7.locator('#wMap .mapctl > .pill:visible').allInnerTexts()).map(t => t.trim()), ['＋ 확대','－ 축소','내 위치','야간 지도','지도 끄기','TMAP']);
+    const tops = await p7.locator('#wMap .mapctl > .pill:visible').evaluateAll(bs => bs.map(b => Math.round(b.getBoundingClientRect().top)));
+    assert.equal(new Set(tops).size, 1, 'Map buttons in one row');
+    assert.equal(await p7.locator('#wMap [data-nav]').count(), 0, 'No Naver Map / open / top / side buttons');
+    await p7.locator('#mapTmap').click();
+    const tl = await p7.evaluate(() => log.filter(x => /^(open|bottom|top|side):/.test(x)));
+    assert.equal(tl[tl.length - 1], 'bottom:com.skt.tmap.ku', 'TMAP opens at the bottom');
     assert.match(await p7.locator('#toast').textContent(), /아래쪽/);
-    // 옆 창: 세로 화면이면 가로로 돌린 뒤 좌우로 붙인다고 안내
-    await p7.locator('#wMap [data-nav="tmap"][data-at="side"]').click();
-    assert.ok((await p7.evaluate(() => log)).includes('side:com.skt.tmap.ku'), 'Side launch requested');
-    assert.match(await p7.locator('#toast').textContent(), /가로/);
-    // 지도 창(측면 버튼이 없는 스킨): 상단에 켜기 / 네이버 지도
     await p7.setViewportSize({width:900,height:1400}); // 세로 화면에서 위/아래 고르기
-    await p7.locator('#wMap [data-nav="tmap"][data-at="top"]').click();
-    assert.match(await p7.locator('#toast').textContent(), /TMAP을 화면 위쪽/);
-    await p7.locator('#wMap [data-nav="nmap"][data-at="bottom"]').click();
-    assert.match(await p7.locator('#toast').textContent(), /네이버 지도를 화면 아래쪽/);
-    let nl = await p7.evaluate(() => log.filter(x => /^(top|bottom):/.test(x)));
-    assert.deepEqual(nl.slice(-2), ['top:com.skt.tmap.ku','bottom:com.nhn.android.nmap']);
+    let nl;
     // 측면 버튼: 누르면 위/아래 고르기, 고른 위치를 기억해 표시, 길게 누르면 바로 열기
     await p7.locator('#skin').selectOption('carnival5', {force: true});
-    assert.equal(await p7.locator('#wMap .navrow').first().isVisible(), false, 'Cockpit 2: map-window app rows removed (side buttons instead)');
+    assert.equal(await p7.locator('#mapTmap').isVisible(), false, 'Cockpit: TMAP from the side buttons');
     assert.equal(await p7.locator('#ckRail [data-open="tmap"] em').textContent(), '▼ 아래');
     await p7.locator('#ckRail [data-open="tmap"]').click();
     assert.equal(await p7.locator('#navPick').isVisible(), true, 'Tap shows the top/bottom chooser');

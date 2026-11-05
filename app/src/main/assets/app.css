@@ -1593,3 +1593,16 @@ html.driving body{overflow:hidden}
 .tools .selw:has(#skin){display:none!important}
 /* 자동차 모드 스킨: 블랙박스 창 없음 */
 :root[data-skin="carnival"] #wCam{display:none!important}
+
+/* 지도 아래 버튼: 확대부터 TMAP까지 한 줄(칸을 똑같이 나눠 너비에 맞춤) */
+#wMap .mapctl{flex-wrap:nowrap;gap:6px}
+#wMap .mapctl>.pill{flex:1 1 0;min-width:0;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(12px,2.4vw,16px)}
+#wMap .mapctl>.pill[hidden]{display:none}
+#wMap .mapctl>.maptmap{color:#f3bc65;font-weight:700}
+:root[data-ck2] #mapTmap{display:none!important}
+
+#wMap .mapctl>.maptmap{color:inherit;font-weight:800;box-shadow:inset 0 -3px 0 #f39a2e}
+@media (max-width:560px){#wMap .mapctl>.zoom .lbl{display:none}#wMap .mapctl>.zoom{flex:0 0 44px;font-size:20px}}
+:root[data-car] #wMap .mapctl>.maptmap{color:#141416!important;text-shadow:none}
+@media (max-width:560px){#wMap .mapctl>.pill{letter-spacing:0!important;padding:0 2px!important;font-size:13px}#wMap .mapctl{gap:4px}}
+@media (max-width:440px){#wMap .mapctl>.pill:not(.zoom){white-space:normal;line-height:1.1;text-overflow:clip;word-break:keep-all}}

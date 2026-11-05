@@ -1115,9 +1115,8 @@ $('#tmapKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tmapKeySave'
 $('#tmapKeyDel').onclick=()=>{const sel=$('#mapProvSel').value;delete mapKeys[sel];store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(mapProv===sel?'osm':mapProv)};
 if(!NB)$('#mapKeyBox').hidden=true;
 syncKeyUi();
-document.querySelectorAll('#wMap [data-nav]').forEach(b=>b.onclick=()=>{const r=navOpen(b.dataset.nav,b.dataset.at);
-  if((b.dataset.at==='top'||b.dataset.at==='bottom')&&r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)});
-if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('#wMap .navrow').forEach(b=>b.hidden=true)}
+// 지도 아래 [TMAP]: 누르면 바로 화면 아래쪽에 TMAP(측면 버튼이 있는 콕핏 스킨에서는 측면 버튼으로)
+$('#mapTmap').onclick=()=>{const r=navOpen('tmap','bottom');if(r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)};
 /* ===== 55-route.js ===== */
 // 무료 지도(OpenStreetMap) 길찾기: 목적지 검색(Nominatim, 안 되면 Photon) → 경로(OSRM) → 다음 회전 안내·음성·경로 이탈 시 다시 찾기
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

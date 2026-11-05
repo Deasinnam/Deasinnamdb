@@ -108,7 +108,6 @@ $('#tmapKey').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tmapKeySave'
 $('#tmapKeyDel').onclick=()=>{const sel=$('#mapProvSel').value;delete mapKeys[sel];store.set('mapKeys',mapKeys);$('#mapKeyBox').open=false;setProv(mapProv===sel?'osm':mapProv)};
 if(!NB)$('#mapKeyBox').hidden=true;
 syncKeyUi();
-document.querySelectorAll('#wMap [data-nav]').forEach(b=>b.onclick=()=>{const r=navOpen(b.dataset.nav,b.dataset.at);
-  if((b.dataset.at==='top'||b.dataset.at==='bottom')&&r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)});
-if(!HAS_EXT&&!(NB&&NB.openApp)){document.querySelectorAll('#wMap .navrow').forEach(b=>b.hidden=true)}
+// 지도 아래 [TMAP]: 누르면 바로 화면 아래쪽에 TMAP(측면 버튼이 있는 콕핏 스킨에서는 측면 버튼으로)
+$('#mapTmap').onclick=()=>{const r=navOpen('tmap','bottom');if(r&&r!=='missing')setTimeout(()=>{const w=$('#wMap');if(w&&!w.classList.contains('collapsed'))w.scrollIntoView({block:'start',behavior:'smooth'})},900)};
 
