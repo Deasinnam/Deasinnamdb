@@ -121,11 +121,14 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
       assert.equal(await p7.locator('#wPl > .grip').isVisible(), true, 'Car mode grip stays direct');
       await p7.close();
     }
-    // 로고 옆 시계: 서울 시간 + 해외 시간 하나
+    // 로고 옆: 서울 시간 · 날씨 · 밝기(해외 시간 카드는 없음), 앱이 켜진 동안 화면 항상 켜 둠
     {
       const p9 = await context.newPage();
       p9.on('pageerror', error => errors.push(error.message));
-      await p9.addInitScript(() => {if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival'));}); // 해외 시간은 콕핏이 아닌 스킨(콕핏은 나침반)
+      await p9.addInitScript(() => {
+        window.__briCalls = []; window.__scrCalls = [];
+        window.AndroidBridge = {setScreenBrightness: v => window.__briCalls.push(v), setScreenAlways: v => window.__scrCalls.push(['always', v]), setScreenOnPlay: v => window.__scrCalls.push(['play', v])};
+        if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival'));});
       await p9.clock.install({time: new Date('2026-10-30T13:05:00Z')});
       await p9.goto(origin);
       await p9.locator('#clkTime').waitFor({state:'attached'});
@@ -134,15 +137,37 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
       assert.match(await p9.locator('#clkDate').textContent(), /10\.30 \(금\)/);
       const cb = await p9.locator('#clock').boundingBox(), bb = await p9.locator('.brand').boundingBox();
       assert.ok(cb.x >= bb.x + bb.width - 2 && Math.abs((cb.y+cb.height/2)-(bb.y+bb.height/2)) < bb.height/2, 'Clock sits next to the logo');
-      assert.equal(await p9.locator('#clkWTime').textContent(), '+ 추가');
-      await p9.locator('#clkWorld').click();
-      assert.equal(await p9.locator('#settings').isVisible(), true, 'Tapping the world clock opens settings');
-      await p9.locator('#sWorld').selectOption('America/New_York');
-      await p9.clock.runFor(1100);
-      assert.equal(await p9.locator('#clkWTime').textContent(), '09:05');
-      assert.equal(await p9.locator('#clkDiff').textContent(), '−13h');
-      await p9.reload();await p9.clock.runFor(1500);
-      assert.match(await p9.locator('#clkCity').textContent(), /뉴욕/, 'World city remembered');
+      assert.equal(await p9.locator('#clkWorld').isVisible(), false, 'No world-time card');
+      assert.equal(await p9.locator('#clkWx').isVisible(), true, 'Weather stays');
+      assert.equal(await p9.locator('#clkBri').isVisible(), true, 'Brightness card in its place');
+      assert.equal(await p9.locator('#clkCmp').isVisible(), false, 'Compass only in cockpit skins');
+      assert.deepEqual(await p9.evaluate(() => window.__scrCalls.filter(c => c[0] === 'always').pop()), ['always', true], 'Screen stays on while the app is open (default)');
+      assert.equal(await p9.locator('#briV').textContent(), '자동');
+      await p9.locator('#briUp').click();
+      assert.equal(await p9.locator('#briV').textContent(), '70%', '+ from auto starts at 60%');
+      assert.equal(await p9.evaluate(() => window.__briCalls.pop()), 70);
+      await p9.locator('#briDn').click(); await p9.locator('#briDn').click();
+      assert.equal(await p9.locator('#briV').textContent(), '50%');
+      assert.equal(await p9.locator('#briPick').isVisible(), false, 'Quick buttons do not open the panel');
+      await p9.locator('#clkBri small').click();
+      assert.equal(await p9.locator('#briPick').isVisible(), true, 'Tapping the card opens the brightness panel');
+      await p9.locator('#briPre button[data-v="20"]').click();
+      assert.equal(await p9.locator('#briV').textContent(), '20%');
+      await p9.locator('#briRange').fill('85');
+      assert.equal(await p9.locator('#briPV').textContent(), '85%');
+      assert.equal(await p9.evaluate(() => window.__briCalls.pop()), 85);
+      await p9.reload(); await p9.clock.runFor(800);
+      assert.equal(await p9.locator('#briV').textContent(), '85%', 'Brightness remembered');
+      assert.equal(await p9.evaluate(() => window.__briCalls.includes(85)), true, 'Re-applied at start');
+      await p9.locator('#clkBri small').click();
+      await p9.locator('#briPre button[data-v="-1"]').click();
+      assert.equal(await p9.locator('#briV').textContent(), '자동');
+      assert.equal(await p9.evaluate(() => window.__briCalls.pop()), -1, 'Auto returns to system brightness');
+      await p9.mouse.click(5, 880);
+      assert.equal(await p9.locator('#briPick').isVisible(), false, 'Tap outside closes');
+      // 설정: 재생 중만으로 바꾸면 항상 켜기를 끔
+      await p9.evaluate(() => document.querySelector('#sScr button[data-v="play"]').click());
+      assert.deepEqual(await p9.evaluate(() => window.__scrCalls.filter(c => c[0] === 'always').pop()), ['always', false]);
       await p9.close();
     }
 });

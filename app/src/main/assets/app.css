@@ -1606,3 +1606,24 @@ html.driving body{overflow:hidden}
 :root[data-car] #wMap .mapctl>.maptmap{color:#141416!important;text-shadow:none}
 @media (max-width:560px){#wMap .mapctl>.pill{letter-spacing:0!important;padding:0 2px!important;font-size:13px}#wMap .mapctl{gap:4px}}
 @media (max-width:440px){#wMap .mapctl>.pill:not(.zoom){white-space:normal;line-height:1.1;text-overflow:clip;word-break:keep-all}}
+
+/* 1.18.2: 상단 해외 시간 카드 없앰 → 그 자리에 화면 밝기 카드. 콕핏 스킨(콕핏·콕핏 그레이)은 시계·날씨·나침반·밝기 */
+.clock .ck-world{display:none!important}
+:root[data-ck2] .clock .ck-cmp{display:grid}
+.clock .ck-bri{cursor:pointer}
+.clock .ck-bri .bri-q{display:flex;gap:6px;grid-column:1/-1;margin-top:4px;max-width:none;overflow:visible}
+.clock .ck-bri .bri-b{flex:1 1 0;min-width:40px;height:34px;padding:0;border:1px solid color-mix(in srgb,var(--logo-tag) 55%,transparent);border-radius:5px;background:color-mix(in srgb,#000 35%,transparent);color:var(--logo-word);font:600 20px/1 "Share Tech Mono",monospace;cursor:pointer;touch-action:manipulation}
+.clock .ck-bri .bri-b:active{background:color-mix(in srgb,var(--logo-blue) 35%,#000)}
+.clock .ck-bri .bri-b:disabled{opacity:.35;cursor:default}
+:root[data-skin="carnival2"][data-clock="analog"] .clock .ck-bri .bri-q{grid-column:2;margin-top:2px}
+:root[data-skin="carnival2"][data-clock="analog"] .clock .ck-bri .bri-b{min-width:36px;height:32px;border-color:#000;background:linear-gradient(180deg,#3a4236,#1a1f19);box-shadow:inset 0 1px 0 #ffffff1a,0 0 0 1px #54604e;color:#f3bc65}
+@media (max-width:600px){:root[data-ckr] .clock .ck-bri .bri-q{grid-column:1}}
+.bripick{width:min(380px,calc(100vw - 16px))}
+.bripick .bri-row{display:grid!important;grid-template-columns:52px minmax(0,1fr) 52px;flex-direction:row!important;align-items:center;gap:10px}
+.bripick .bri-row .pill{height:52px;justify-content:center;font-size:24px;padding:0;text-align:center}
+.bripick input[type=range]{width:100%;height:44px;accent-color:#f3bc65;touch-action:none}
+.bripick .bri-now{display:flex!important;flex-direction:row!important;align-items:baseline;justify-content:space-between;gap:8px}
+.bripick .bri-now span{font:600 22px "Share Tech Mono",monospace;color:#f3bc65}.bripick .bri-now small{font-size:12px;color:#9fa99a}
+.bripick .bri-pre{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.bripick .bri-pre .pill{height:44px;font-size:14px;justify-content:center;text-align:center;padding:0 2px}
+.bripick .bri-pre .pill[data-v="-1"]{grid-column:1/-1}

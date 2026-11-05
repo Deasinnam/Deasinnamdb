@@ -55,6 +55,7 @@
     <button class="ck-wx" id="clkWx" type="button" title="오늘의 날씨"><canvas class="ck-dial" id="wxDial" width="256" height="256" aria-hidden="true"></canvas><i id="wxIco">·</i><b id="wxT">--°</b><small id="wxS">날씨</small></button>
     <button class="ck-world" id="clkWorld" type="button" title="해외 시간 바꾸기"><canvas class="ck-dial" id="clkDialW" width="256" height="256" aria-hidden="true"></canvas><small id="clkCity">해외 시간</small><b id="clkWTime">+ 추가</b><em id="clkDiff"></em></button>
     <button class="ck-cmp" id="clkCmp" type="button" title="나침반 (누르면 GPS 켜기)"><canvas class="ck-dial" id="cmpDial" width="256" height="256" aria-hidden="true"></canvas><small id="cmpS">나침반</small><b id="cmpB">---°</b><em id="cmpE">GPS 꺼짐</em></button>
+    <div class="ck-bri" id="clkBri" role="group" aria-label="화면 밝기" title="화면 밝기 (누르면 자세히 조절)"><canvas class="ck-dial" id="briDial" width="256" height="256" aria-hidden="true"></canvas><small>밝기</small><b id="briV">자동</b><em class="bri-q"><button type="button" class="bri-b" id="briDn" aria-label="밝기 낮추기">−</button><button type="button" class="bri-b" id="briUp" aria-label="밝기 올리기">＋</button></em></div>
   </div>
   <div class="tools">
     <div class="seg" id="srcSeg" hidden><button data-src="local">내 음악</button><button data-src="ext">외부 앱</button></div>
@@ -81,6 +82,10 @@
   <button data-open="tmap" title="TMAP 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2 4 21l8-4 8 4z"/></svg><span>T맵<em>▼ 아래</em></span></button>
   <button data-open="nmap" title="네이버 지도 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 4.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg><span>네이버지도<em>▼ 아래</em></span></button>
 </nav>
+<div class="skinpick bripick" id="briPick" role="dialog" aria-label="화면 밝기" hidden><b>화면 밝기</b>
+  <div class="bri-row"><button type="button" class="pill" id="briPDn" aria-label="낮추기">−</button><input type="range" id="briRange" min="10" max="100" step="5" value="60" aria-label="밝기"><button type="button" class="pill" id="briPUp" aria-label="올리기">＋</button></div>
+  <div class="bri-now"><span id="briPV">자동</span><small>이 앱 화면에만 적용돼요</small></div>
+  <div class="bri-pre" id="briPre"><button type="button" class="pill" data-v="20">20%</button><button type="button" class="pill" data-v="40">40%</button><button type="button" class="pill" data-v="60">60%</button><button type="button" class="pill" data-v="80">80%</button><button type="button" class="pill" data-v="100">100%</button><button type="button" class="pill" data-v="-1">자동(시스템)</button></div></div>
 <div class="skinpick" id="skinPick" role="dialog" aria-label="스킨 바꾸기" hidden><b>스킨</b><div id="skinPickList"></div></div>
 <div class="nhelp" id="notifHelp" role="dialog" aria-modal="true" aria-labelledby="nhT" hidden><div class="nhbox">
   <b id="nhT">알림 접근 허용하기 ("제한된 설정"이 뜰 때)</b>
@@ -468,8 +473,8 @@
       <h3>배터리</h3>
       <div class="row col"><span><b>절전 모드</b><small>켜지면 화면 움직임(계기·시각화)을 초당 20번으로 줄이고 비행 계기를 30fps로 그려요. 자동은 배터리 30% 이하이고 충전 중이 아닐 때만 켜져요.</small></span>
         <div class="chips" id="sPwr"><button type="button" class="pill" data-v="auto">자동</button><button type="button" class="pill" data-v="on">항상 켜기</button><button type="button" class="pill" data-v="off">끄기</button></div><small class="pwr-now" id="sPwrNow"></small></div>
-      <div class="row col"><span><b>재생 중 화면 켜 두기</b><small>화면이 켜져 있는 것이 배터리를 가장 많이 써요. 자동은 자동차·드라이브·콕핏 스킨에서만 재생 중 화면을 켜 둬요.</small></span>
-        <div class="chips" id="sScr"><button type="button" class="pill" data-v="auto">자동</button><button type="button" class="pill" data-v="on">항상</button><button type="button" class="pill" data-v="off">끄기</button></div></div>
+      <div class="row col"><span><b>화면 켜 두기</b><small>기본은 대신남 원이 켜져 있는 동안 화면이 꺼지지 않아요(수면 모드로 들어가지 않음). 배터리를 아끼려면 "재생 중만"이나 "끄기"를 고르세요.</small></span>
+        <div class="chips" id="sScr"><button type="button" class="pill" data-v="always">앱 켜진 동안 항상</button><button type="button" class="pill" data-v="play">재생 중만</button><button type="button" class="pill" data-v="off">끄기</button></div></div>
     </section>
     <section id="secWx">
       <h3>날씨</h3>
@@ -478,7 +483,7 @@
     </section>
     <section id="secClock">
       <h3>시계</h3>
-      <label class="row"><span><b>해외 시간</b><small>로고 옆 시계에 서울 시간과 함께 보여 줄 도시를 골라요.</small></span><select class="sel" id="sWorld"></select></label>
+      <label class="row" hidden><span><b>해외 시간</b><small>로고 옆 시계에 서울 시간과 함께 보여 줄 도시를 골라요.</small></span><select class="sel" id="sWorld"></select></label>
       <label class="row"><span><b>시계 모양 (콕핏 스킨)</b><small>아날로그는 조종석 계기처럼 둥근 시계로 보여요. 시계를 눌러도 바뀌어요.</small></span><select class="sel" id="sClockStyle"><option value="digital">디지털</option><option value="analog">아날로그 (둥근 계기)</option></select></label>
     </section>
     <section id="secLook">

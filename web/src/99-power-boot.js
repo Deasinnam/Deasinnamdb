@@ -8,10 +8,13 @@ function pwrApply(){const m=store.get('pwrMode','auto'),low=!!(pwrBat&&!pwrBat.c
   window.AmpPwr={saver:pwrSaver};document.documentElement.toggleAttribute('data-saver',pwrSaver);
   const n=$('#sPwrNow');if(n)n.textContent=(pwrBat?'배터리 '+pwrBat.pct+'%'+(pwrBat.chg?' · 충전 중':'')+' · ':'')+(pwrSaver?'지금 절전 모드 켜짐':'지금 절전 모드 꺼짐');
   document.querySelectorAll('#sPwr button').forEach(b=>b.classList.toggle('on',b.dataset.v===m));
-  const sm=store.get('scrMode','auto'),on=sm==='on'||(sm==='auto'&&isCar());document.querySelectorAll('#sScr button').forEach(b=>b.classList.toggle('on',b.dataset.v===sm));
-  try{NB&&NB.setScreenOnPlay&&NB.setScreenOnPlay(on)}catch(e){}}
+  const sm=scrMode();document.querySelectorAll('#sScr button').forEach(b=>b.classList.toggle('on',b.dataset.v===sm));
+  try{NB&&NB.setScreenAlways&&NB.setScreenAlways(sm==='always')}catch(e){}
+  try{NB&&NB.setScreenOnPlay&&NB.setScreenOnPlay(sm!=='off')}catch(e){}}
+/* 화면 켜 두기: always(기본, 앱이 켜진 동안 수면 모드 없음) · play(재생 중만) · off. 예전 값(auto/on)은 '항상'으로 */
+function scrMode(){const v=store.get('scrMode2',null);return v==='play'||v==='off'?v:'always'}
 $('#sPwr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('pwrMode',b.dataset.v);pwrApply()};
-$('#sScr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('scrMode',b.dataset.v);pwrApply()};
+$('#sScr').onclick=e=>{const b=e.target.closest('button');if(!b)return;store.set('scrMode2',b.dataset.v);pwrApply()};
 $('#revBtn').onclick=()=>window.AmpRev.toggle();
 $('#sRevOn').checked=store.get('revOn',true)!==false;$('#sRevOn').onchange=e=>{store.set('revOn',e.target.checked);if(!e.target.checked)revSet(false)};
 $('#sRevAuto').checked=!!store.get('revAuto',false);$('#sRevAuto').onchange=e=>{store.set('revAuto',e.target.checked);if(e.target.checked){try{attWant(true)}catch(x){}toast('자동 감지를 켰어요. 휴대폰이 차 앞쪽을 보게 거치돼 있어야 해요.')}};

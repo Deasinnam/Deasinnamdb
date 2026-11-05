@@ -115,6 +115,7 @@ public class MainActivity extends Activity {
     private boolean hudOn = false;
     private boolean landLock = false;   // 태블릿 모드 2: 가로 고정
     private boolean sideLock = false;   // TMAP 옆 창: 좌우로 나누려고 잠시 가로로 돌림
+    private boolean screenAlways = true; // 앱 실행 중 화면 항상 켜 두기(기본)
     private boolean screenOnPlay = true; // 재생 중 화면 켜 두기(앱 설정: 자동이면 차량 스킨에서만)
     private boolean started = false;
 
@@ -184,6 +185,8 @@ public class MainActivity extends Activity {
         am = getSystemService(AudioManager.class);
         listenerCn = new ComponentName(this, MediaListener.class);
         gps = new GpsTracker(this);
+        screenAlways = getSharedPreferences("app", MODE_PRIVATE).getBoolean("screenAlways", true);
+        applyScreenOn();
         cam = new CamLink(this);
         radio = new RadioPlayer(this);
 
@@ -805,6 +808,12 @@ public class MainActivity extends Activity {
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQ_LOC);
     }
 
+    /** 화면 켜 두기 결정은 한 곳에서: 항상 켜기 · HUD · 재생 중 켜기 */
+    private void applyScreenOn() {
+        if (screenAlways || hudOn || (playing && screenOnPlay)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -1283,8 +1292,7 @@ public class MainActivity extends Activity {
             NowPlaying.playing = "playing".equals(state);
             main.post(() -> {
                 playing = NowPlaying.playing;
-                if (playing && screenOnPlay) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                else if (!hudOn) getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                applyScreenOn();
 
                 Intent i = new Intent(MainActivity.this, PlaybackService.class);
                 try {
@@ -1554,8 +1562,7 @@ public class MainActivity extends Activity {
         public void keepScreenOn(final boolean on) {
             main.post(() -> {
                 hudOn = on;
-                if (on || (playing && screenOnPlay)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                applyScreenOn();
             });
         }
 
@@ -1601,8 +1608,17 @@ public class MainActivity extends Activity {
         public void setScreenOnPlay(final boolean on) {
             main.post(() -> {
                 screenOnPlay = on;
-                if (hudOn || (playing && on)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                applyScreenOn();
+            });
+        }
+
+        /** 앱이 켜져 있는 동안 화면을 계속 켜 둘지(기본: 켜 둠 — 수면 모드로 들어가지 않음) */
+        @JavascriptInterface
+        public void setScreenAlways(final boolean on) {
+            main.post(() -> {
+                screenAlways = on;
+                getSharedPreferences("app", MODE_PRIVATE).edit().putBoolean("screenAlways", on).apply();
+                applyScreenOn();
             });
         }
 

@@ -34,7 +34,7 @@ function drawCmpDial(cv,hdg,on){const ctx=cv.getContext('2d'),S=cv.width,R=S/2;c
   ctx.fillStyle='#e7e9df';ctx.font=`600 ${S*.1}px "Share Tech Mono",monospace`;ctx.fillText(on?String(Math.round(hdg)%360).padStart(3,'0'):'---',0,R*.42);
   const gl=ctx.createLinearGradient(-R*.6,-R*.8,R*.3,R*.2);gl.addColorStop(0,'#ffffff1f');gl.addColorStop(.45,'#ffffff05');gl.addColorStop(.46,'#ffffff00');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,0,R*.8,0,7);ctx.fill()}
 let cmpLast='';
-function cmpTick(){if(document.hidden||!document.documentElement.hasAttribute('data-ckr'))return;
+function cmpTick(){if(document.hidden||!document.documentElement.hasAttribute('data-ck2'))return;
   const on=gpsOn&&hdgNow>=0,h=on?((hdgDisp%360)+360)%360:0,key=on?(Math.round(h*2)/2)+'':gpsOn?'wait':'off';if(key===cmpLast)return;cmpLast=key;
   try{drawCmpDial($('#cmpDial'),h,on)}catch(e){}
   $('#cmpB').textContent=on?Math.round(h)%360+'°':'---°';

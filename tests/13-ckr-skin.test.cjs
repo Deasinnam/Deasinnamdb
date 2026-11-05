@@ -30,12 +30,18 @@ run('Revised cockpit skin', async ({context, origin, errors}) => {
   // 상단: 해외 시간 대신 나침반
   assert.equal(await p.locator('#clkWorld').isVisible(), false);
   assert.equal(await p.locator('#clkCmp').isVisible(), true, 'Compass dial in the clock row');
+  assert.equal(await p.locator('#clkBri').isVisible(), true, 'Brightness next to the compass');
+  { const c = await p.locator('#clkCmp').boundingBox(), b = await p.locator('#clkBri').boundingBox(); assert.ok(b.x > c.x && Math.abs(b.y - c.y) < 4, 'Brightness right after the compass'); }
+  assert.ok((await p.locator('#briUp').boundingBox()).height >= 30, 'Brightness buttons are tappable');
+  assert.ok(await p.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth + 1), 'Clock row with brightness still fits a phone');
   // 상단 스킨 버튼
   await p.locator('#skinBtn').click();
   assert.equal(await p.locator('#skinPick').isVisible(), true);
   assert.equal(await p.locator('#skinPick button.on').getAttribute('data-k'), 'carnival5');
   await p.locator('#skinPick button[data-k="carnival4"]').click();
   assert.equal(await p.locator('#skin').inputValue(), 'carnival4', 'Skin changed from the top button');
+  assert.equal(await p.locator('#clkCmp').isVisible(), true, 'Cockpit grey also has the compass');
+  assert.equal(await p.locator('#clkBri').isVisible(), true, 'Cockpit grey also has brightness');
   assert.equal(await p.locator('#skinBtn').isVisible(), true, 'Skin button in every skin');
   await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival5'; s.dispatchEvent(new Event('change')); });
   // 설정에서 스킨 바꾸기 → 콕핏 2로 되돌림, 다시 켜도 다시 바뀌지 않음
