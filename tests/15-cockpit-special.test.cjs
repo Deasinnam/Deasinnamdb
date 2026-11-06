@@ -88,6 +88,9 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   await p.locator('#pfdThemeQuick').click();
   assert.ok(await p.evaluate(() => !!document.querySelector('#pfdHost dialog[open], .dsn-pfd dialog[open]')), 'Opens the theme settings');
   await p.keyboard.press('Escape');
+  // 즐겨찾기 키캡: 숫자 1~6만, 재생 버튼 키캡(일시정지 골드)
+  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#rdPresets button')].slice(0, 6).map(b => getComputedStyle(b, '::before').content)), ['"1"','"2"','"3"','"4"','"5"','"6"']);
+  assert.ok(await p.evaluate(() => getComputedStyle(document.getElementById('bPause')).backgroundImage.includes('233, 191, 98')), 'Gold pause key');
   // 라디오: 전구빛 숫자 드럼 + 크림색 눈금창
   await p.locator('#ckRail button[data-f="radio"]').click();
   await p.locator('#rdUp').click();

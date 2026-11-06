@@ -2254,3 +2254,58 @@ html.driving body{overflow:hidden}
 :root[data-cp][data-cks] #clkNow small{grid-area:a/a/b/b!important;justify-self:center!important}
 :root[data-cp][data-cks] #clkNow :is(small),:root[data-cp][data-cks] :is(#clkWx,#clkCmp,#clkBri)::after{font:800 clamp(12px,1.7vw,19px)/1.15 "Noto Sans KR",sans-serif!important;height:1.15em}
 :root[data-cp][data-cks] #clock #clkNow #clkDate{font:800 clamp(12px,1.7vw,19px)/1.15 "Noto Sans KR",sans-serif!important}
+
+/* 1.30 외부 앱 창: 아이콘·이름 크게, 아이보리 키캡 [열기] (스페셜 2), 다른 스킨은 글자만 */
+.xl-ico,.xl-open,.xn-ico,.xn-lamp{display:none}
+:root[data-cp] #wExt .now{display:flex!important;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px!important}
+:root[data-cp] #wExt .now>small,:root[data-cp] #wExt #xSrc,:root[data-cp] #wExt #xVer{display:none!important}
+:root[data-cp] #wExt .xn-ico{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;font:700 24px/1 Georgia,serif;font-style:normal;color:#1a120a;
+  background:radial-gradient(circle at 35% 30%,#fbe7b5,#c9a565 55%,#7a5a2c);box-shadow:0 0 0 2px #050403,0 0 0 3px #b8935a,0 3px 6px #000c}
+:root[data-cp] #wExt .xn-lamp{display:block;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff1c8,#f0a33a);box-shadow:0 0 8px #f0a33a}
+:root[data-cp] #wExt #xApp{flex:1 1 auto;padding-left:14px;border-left:2px solid #b8935a;font:800 clamp(20px,2.6vw,30px)/1.1 "Noto Sans KR",sans-serif;color:#f4ecd2}
+:root[data-cp] #wExt #xEq{padding:8px 14px;border-radius:7px;background:linear-gradient(180deg,#2a2214,#140f09);color:#f4ecd2;font:700 14px/1 "Noto Sans KR",sans-serif;box-shadow:inset 0 0 0 1px #b8935a,0 2px 4px #000b}
+:root[data-cp] #wExt .launch{display:grid!important;grid-template-columns:1fr 1fr;gap:12px}
+:root[data-cp][data-cks] #wExt .launch .tb.xl{display:grid!important;grid-template-columns:auto 1fr;grid-template-areas:"i n" "o o";align-items:center;gap:12px 16px;height:auto!important;max-width:none!important;padding:16px!important;
+  background:linear-gradient(180deg,#0b0a07,#13110b)!important;border-radius:8px!important;box-shadow:inset 0 2px 6px #000,0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #000!important;color:#f4ecd2!important;text-shadow:none!important}
+:root[data-cp] #wExt .xl-ico{display:grid;place-items:center;grid-area:i;width:54px;height:54px;border-radius:50%;box-shadow:0 0 0 2px #050403,0 0 0 4px #b8935a,0 3px 6px #000c}
+:root[data-cp] #wExt .xl-ico.ytm{background:radial-gradient(circle at 35% 30%,#e8705c,#a8281a)}
+:root[data-cp] #wExt .xl-ico.spt{background:radial-gradient(circle at 35% 30%,#8fc78a,#3e7a3a)}
+:root[data-cp] #wExt .xl-ico::after{font:700 22px/1 Arial,sans-serif;color:#fbf2dc}
+:root[data-cp] #wExt .xl-ico.ytm::after{content:"\25B6\FE0E"}:root[data-cp] #wExt .xl-ico.spt::after{content:"\266B"}
+:root[data-cp] #wExt .xl>b{grid-area:n;justify-self:start;padding-left:16px;border-left:2px solid #b8935a;font:800 clamp(20px,2.6vw,30px)/1.1 "Noto Sans KR",sans-serif;color:#f4ecd2}
+:root[data-cp] #wExt .xl-open{display:block;grid-area:o;padding:14px;border-radius:8px;text-align:center;font:800 clamp(18px,2.2vw,26px)/1 "Noto Sans KR",sans-serif;color:#1d1509;
+  background:linear-gradient(180deg,#f7eed6 0%,#e9dcb8 55%,#cdbb8c 100%);box-shadow:inset 0 1px 0 #fffaf0,inset 0 -3px 0 #a8956a,0 0 0 2px #6e5430,0 5px 0 #4a3519,0 8px 12px #000b}
+:root[data-cp] #wExt .xl:active .xl-open{transform:translateY(3px);box-shadow:inset 0 1px 0 #fffaf0,inset 0 -2px 0 #a8956a,0 0 0 2px #6e5430,0 2px 0 #4a3519,0 4px 6px #000b}
+:root[data-cp] #wExt .xp-head,:root[data-cp] #wExt .permbox .hint{display:none!important}
+
+/* 1.30 라디오 즐겨찾기: 숫자 1~6만 새긴 아이보리 빈티지 키캡 (스페셜 2) */
+:root[data-cp] #rdPresetTg>b{font-size:0!important}
+:root[data-cp] #rdPresetTg>b::before{content:"★ 즐겨찾기";font:700 16px/1 "Noto Sans KR",sans-serif;color:#f4ecd2;letter-spacing:.04em}
+:root[data-cp] #rdPresetTg>span,:root[data-cp] #rdPresetTg .rd-hint{display:none!important}
+:root[data-cp] #rdPresets{gap:12px!important;padding:12px!important;border-radius:8px;background:linear-gradient(180deg,#0b0a07,#13110b);box-shadow:inset 0 2px 6px #000,0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #000}
+:root[data-cp][data-cks] #rdPresets button{position:relative;height:clamp(60px,9vw,88px)!important;border-radius:10px!important;border:1px solid #3a2a12!important;color:transparent!important;text-shadow:none!important;
+  background:radial-gradient(90% 70% at 50% 35%,#fbf3dd,#efe3c2 55%,#d9c79a 100%)!important;
+  box-shadow:inset 0 2px 0 #fffaf0,inset 0 -6px 0 #b9a676,inset 6px 0 6px -4px #fff7e4,inset -6px 0 6px -4px #a8956a,0 0 0 2px #6e5430,0 6px 0 #4a3519,0 9px 14px #000c!important;transition:transform .05s,box-shadow .05s}
+:root[data-cp][data-cks] #rdPresets button>*{display:none!important}
+:root[data-cp][data-cks] #rdPresets button::before{content:attr(data-n);position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(30px,4.6vw,46px)/1 Georgia,"Times New Roman",serif;color:#21170b;text-shadow:0 1px 0 #fffaf0}
+:root[data-cp][data-cks] #rdPresets button.blank::before{color:#8a7a55}
+:root[data-cp][data-cks] #rdPresets button.on::after{content:"";position:absolute;left:30%;right:30%;bottom:10px;height:3px;border-radius:2px;background:#d8432e;box-shadow:0 0 6px #d8432e88}
+:root[data-cp][data-cks] #rdPresets button:active{transform:translateY(5px);box-shadow:inset 0 2px 0 #fffaf0,inset 0 -3px 0 #b9a676,0 0 0 2px #6e5430,0 1px 0 #4a3519,0 3px 6px #000c!important}
+:root[data-cp] #wExt .xl-open{justify-self:stretch;width:100%;box-sizing:border-box}
+:root[data-cp] #wExt .xl>b{font-size:clamp(17px,2vw,26px)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;min-width:0}
+:root[data-cp][data-cks] #wExt .launch .tb.xl{grid-template-columns:auto minmax(0,1fr)}
+:root[data-cp] #wExt .perm small{display:none!important}
+:root[data-cp] #wExt .perm li{align-items:center}
+:root[data-cp] #wExt .perm li>div>b{font-size:15px;color:#f4ecd2}
+
+/* 1.30 재생 버튼 6개: 황동 틀 안 아이보리 입체 키캡, 일시정지는 골드 */
+:root[data-cp][data-cks] #wMain .transport .tb,:root[data-cp][data-cks][data-ckr] #wMain .transport .tb.hot{position:relative;border:1px solid #3a2a12!important;border-radius:9px!important;
+  background:radial-gradient(90% 70% at 50% 30%,#fbf3dd,#efe3c2 55%,#d6c394 100%)!important;
+  box-shadow:inset 0 2px 0 #fffaf0,inset 0 -7px 0 #b3a070,inset 6px 0 6px -4px #fff7e4,inset -6px 0 6px -4px #a8956a,0 0 0 3px #2a1d0c,0 0 0 5px #b8935a,0 0 0 6px #000,0 6px 0 #4a3519,0 9px 14px #000c!important;transition:transform .05s}
+:root[data-cp][data-cks] #wMain .transport .tb svg{fill:#21170b!important;filter:drop-shadow(0 1px 0 #fffaf0)!important}
+:root[data-cp][data-cks] #wMain .transport #bPause,:root[data-cp][data-cks][data-ckr] #wMain .transport #bPause.hot{background:radial-gradient(90% 70% at 50% 30%,#ffe7a8,#e9bf62 55%,#b98a34 100%)!important;
+  box-shadow:inset 0 2px 0 #fff2c8,inset 0 -7px 0 #8f6826,inset 6px 0 6px -4px #fff0c2,inset -6px 0 6px -4px #8a6427,0 0 0 3px #2a1d0c,0 0 0 5px #e7c98a,0 0 0 6px #000,0 6px 0 #4a3519,0 0 16px #ffc35c55,0 9px 14px #000c!important}
+:root[data-cp][data-cks] #wMain .transport #bPause svg{fill:#2a1a06!important}
+:root[data-cp][data-cks] #wMain .transport .tb:active{transform:translateY(5px);box-shadow:inset 0 2px 0 #fffaf0,inset 0 -3px 0 #b3a070,0 0 0 3px #2a1d0c,0 0 0 5px #b8935a,0 0 0 6px #000,0 1px 0 #4a3519,0 3px 6px #000c!important}
+:root[data-cp][data-cks] #wMain .transport{padding:6px 6px 10px}
+:root[data-cp] #wExt .xl>b{white-space:normal!important;overflow:visible!important}

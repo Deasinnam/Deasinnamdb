@@ -48,8 +48,12 @@ function rdRenderList(){const ul=$('#rdList');ul.innerHTML='';
     if(st.fav){const im=new Image();im.alt='';im.referrerPolicy='no-referrer';im.onload=()=>li.firstChild.replaceWith(im);im.src=st.fav}
     li.querySelector('b').textContent=st.name;li.querySelector('small').textContent=[st.tags,st.codec&&(st.codec+(st.br?' '+st.br+'k':''))].filter(Boolean).join(' · ');
     li.querySelector('em').textContent=f?f.toFixed(1):'';li.querySelector('button').textContent=rdFavs.some(x=>x.id===st.id)?'★':'☆';ul.appendChild(li)})}
+/* 키캡 누르는 소리: 짧은 딸깍(고음 클릭) + 바닥에 닿는 낮은 톡 */
+function sndKey(){if(!document.documentElement.hasAttribute('data-cp'))return;const a=fx();if(!a)return;const t=a.currentTime;
+  const n=fxNoise(a,.03),hp=a.createBiquadFilter();hp.type='bandpass';hp.frequency.value=3200;hp.Q.value=1.2;const g=fxEnv(a,t,.22,.001,.025);n.connect(hp).connect(g).connect(a.destination);n.start(t);
+  const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(190,t+.012);o.frequency.exponentialRampToValueAtTime(90,t+.07);const g2=fxEnv(a,t+.012,.18,.002,.06);o.connect(g2).connect(a.destination);o.start(t+.012);o.stop(t+.1)}
 function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const n=Math.max(6,Math.ceil((rdFavs.length+1)/6)*6);
-  for(let i=0;i<n;i++){const st=rdFavs[i],b=document.createElement('button');b.type='button';b.dataset.p=i;
+  for(let i=0;i<n;i++){const st=rdFavs[i],b=document.createElement('button');b.type='button';b.dataset.p=i;b.dataset.n=i+1;if(st)b.title=st.name;b.addEventListener('pointerdown',()=>{try{sndKey()}catch(e){}});
     if(!st){b.className='blank';b.innerHTML='<em>P'+(i+1)+'</em><b>+</b>저장';b.setAttribute('aria-label','P'+(i+1)+' 비어 있음 · 지금 방송 저장');
       b.onclick=()=>{if(!rdCur)return toast('먼저 방송을 고른 뒤 저장하세요.');if(rdFavs.some(x=>x.id===rdCur.id))return toast('이미 저장된 방송이에요.');rdFavs.push(rdCur);store.set('rdFavs',rdFavs);rdShow();rdRenderList()};box.appendChild(b);continue}
     const f=rdFreqOf(st);b.className='set'+(rdCur&&rdCur.id===st.id?' on':'');b.innerHTML='<em></em><span></span><small></small>';
@@ -213,3 +217,5 @@ function rdResume(){rdPlay(rdCur||rdFavs[0]||RD_KR.find(x=>x.id==='kr-mbcfm4u')|
 window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,resume:rdResume,step:rdStep,toggle(){if(rdPlaying)radioStop();else rdResume()},
   get state(){const f=rdCur&&rdFreqOf(rdCur);return {playing:rdPlaying,cur:rdCur,favs:rdFavs.length,list:rdList.length,now:rdNow,freq:f||null,onAir:rdSt0==='ON AIR',t0:rdT0,status:rdSt0}}};
 
+// 재생 버튼 6개도 키캡 소리(스페셜 2)
+document.querySelectorAll('#wMain .transport .tb').forEach(b=>b.addEventListener('pointerdown',()=>{try{sndKey()}catch(e){}}));
