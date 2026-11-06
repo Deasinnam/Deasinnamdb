@@ -21,6 +21,53 @@
   const angleDelta = (a, b) => ((b - a + 540) % 360) - 180;
   const EYE = 4, CRUISE = 380, TAN_G = Math.tan(3 * Math.PI / 180), VR = 5, VR_HI = 70, RW_W = 45, TD = 300;
 
+  /* ---------- 활주로 아스팔트 질감·타이어 자국, 구름 입체감(한 번 만들어 두고 재사용) ---------- */
+  const srand = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  // 아스팔트: 골재 알갱이·잔금·얼룩이 섞인 회색 결(바둑판 반복이 안 보이게 256px)
+  const ASPH = (() => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256; const x = cv.getContext('2d'), id = x.createImageData(256, 256), d = id.data;
+    for (let i = 0; i < 256 * 256; i++) {
+      const px = i & 255, py = i >> 8, n = srand(i * 1.37), m = srand(((px >> 3) + (py >> 3) * 97) * 3.1), blot = srand(((px >> 5) + (py >> 5) * 13) * 7.7);
+      let v = 0; if (n > .985) v = 34; else if (n > .93) v = 16; else if (n < .05) v = -26; else v = (n - .5) * 10;
+      v += (m - .5) * 9 + (blot - .5) * 12; const k = i * 4;
+      d[k] = d[k + 1] = d[k + 2] = 128 + v * 1.4; d[k + 3] = n > .93 || n < .05 ? 105 : 58;
+    }
+    x.putImageData(id, 0, 0);
+    x.strokeStyle = '#00000038'; x.lineWidth = .8; // 실금(크랙 실링)
+    for (let k = 0; k < 7; k++) { x.beginPath(); let cx = srand(k + 50) * 256, cy = srand(k + 70) * 256; x.moveTo(cx, cy); for (let s2 = 0; s2 < 8; s2++) { cx += (srand(k * 9 + s2) - .5) * 40; cy += srand(k * 7 + s2 + 3) * 22; x.lineTo(cx, cy); } x.stroke(); }
+    return cv;
+  })();
+  let asphPat = null;
+  // 타이어 고무 자국: 접지 구역(양쪽 끝)에 진하고 가운데로 갈수록 옅어지는 가는 줄 여러 개
+  const SKIDS = (() => {
+    const a = [];
+    for (let k = 0; k < 220; k++) {
+      const end = k % 2, side = srand(k + 1) < .5 ? -1 : 1, x = side * (3.2 + srand(k + 2) * 6.5), w = .12 + srand(k + 3) * .38;
+      const d0 = 120 + Math.pow(srand(k + 4), 1.6) * 1100, len = 18 + srand(k + 5) * 160, al = (.1 + srand(k + 6) * .26) * (1 - Math.min(1, (d0 - 120) / 1300) * .7);
+      a.push({ end, x, w, d0, len, al });
+    }
+    return a;
+  })();
+  // 구름: 위는 햇빛에 밝고 아래·안쪽은 그늘진 입체감(원본 구름 그림에 명암만 덧입힘)
+  function shadeClouds(sprites) {
+    if (!sprites || sprites.__shaded) return; sprites.__shaded = true;
+    for (const sp of sprites) {
+      const cv = sp.day; if (!cv) continue; const x = cv.getContext('2d'), W = cv.width, Hh = cv.height; let id; try { id = x.getImageData(0, 0, W, Hh); } catch (e) { continue; }
+      const d = id.data, acc = new Float32Array(W);
+      for (let yy = 0; yy < Hh; yy++) for (let xx = 0; xx < W; xx++) {
+        const k = (yy * W + xx) * 4, a = d[k + 3] / 255; acc[xx] = acc[xx] * .982 + a; if (a < .01) continue;
+        const L = d[k] / 249, depth = Math.min(1, Math.max(0, (acc[xx] - 3) / 34)), rim = Math.max(0, 1 - acc[xx] / 5), base = Math.min(1, Math.max(0, (yy / Hh - .45) / .4));
+        const sh = Math.min(1, depth * .7 + base * .3);
+        let r = 255 - sh * 78, g = 255 - sh * 66, b = 253 - sh * 46;                    // 밝은 흰색 → 푸른 회색 그늘
+        r += rim * 8; g += rim * 6; b -= rim * 4;                                          // 위쪽 가장자리 햇빛
+        const f = .8 + L * .2; d[k] = Math.min(255, r * f); d[k + 1] = Math.min(255, g * f); d[k + 2] = Math.min(255, b * f);
+        d[k + 3] = Math.min(255, d[k + 3] * (1.04 + depth * .08));
+      }
+      x.putImageData(id, 0, 0);
+    }
+  }
+  try { shadeClouds(sc.sprites); } catch (e) {}
+
   const F = {
     phase: 'hold', alt: 0, pitch: 0, bank: 0, rwS: -120, rwLen: 3200, rwNum: 33, rolled: 0,
     rem: 0, D0: 0, K: 10, auto: false, autoRate: 0, vAuto: 0, slowT: 0, stopT: 0, tdAt: 0, liftAt: 0,
@@ -219,8 +266,23 @@
     quad(-30, -RW_W / 2, F.rwS, rwE, night ? '#0e1013' : '#6d6c60');
     quad(RW_W / 2, 30, F.rwS, rwE, night ? '#0e1013' : '#6d6c60');
     quad(-RW_W / 2, RW_W / 2, F.rwS, rwE, g);
-    // 바퀴 자국(접지 구역이 진함)
-    if (!night) for (const x of [-6, 6]) { quad(x - 2.5, x + 2.5, F.rwS + 250, F.rwS + 1000, '#2b2d30', .35); quad(x - 2.5, x + 2.5, rwE - 1000, rwE - 250, '#2b2d30', .35); }
+    // 아스팔트 결: 가까운 곳은 크게, 먼 곳은 작게 보이도록 띠마다 무늬 크기를 바꿔 깔고, 달리면 함께 흘러감
+    if (!night || quality !== 'balanced') {
+      if (!asphPat) try { asphPat = c.createPattern(ASPH, 'repeat'); } catch (e) {}
+      if (asphPat && asphPat.setTransform && window.DOMMatrix) {
+        const z0 = Math.max(F.rwS, zn), z1 = Math.min(rwE, 2600); let z = z0;
+        while (z < z1) { const z2 = Math.min(z1, z * 1.18 + 2), zm = (z + z2) / 2, sc2 = f / zm * .09;
+          asphPat.setTransform(new DOMMatrix([sc2, 0, 0, sc2 * Hc / zm * 1.6, 0, py(zm) - ((zm - F.rwS) * 11 % 256) * sc2 * Hc / zm * 1.6]));
+          quad(-RW_W / 2, RW_W / 2, z, z2, asphPat, night ? .35 : .9); z = z2; }
+      }
+      // 이음 줄(포장 패널 경계)
+      for (let z = F.rwS + 25; z < Math.min(rwE, 1800); z += 25) quad(-RW_W / 2, RW_W / 2, z, z + .12, night ? '#000' : '#2c2f33', night ? .25 : .3);
+    }
+    // 타이어 고무 자국: 접지 구역은 진한 줄이 겹겹이, 멀어질수록 옅게
+    if (!night) for (const t of SKIDS) {
+      const za = t.end ? rwE - t.d0 - t.len : F.rwS + t.d0; quad(t.x - t.w / 2, t.x + t.w / 2, za, za + t.len, '#17181a', t.al);
+    } else for (const x of [-6, 6]) { quad(x - 2.5, x + 2.5, F.rwS + 250, F.rwS + 1000, '#000', .3); quad(x - 2.5, x + 2.5, rwE - 1000, rwE - 250, '#000', .3); }
+    if (!night) { quad(-1.4, 1.4, F.rwS + 60, rwE - 60, '#1c1e21', .12); } // 가운데 기름 얼룩 띠
 
     // 4) 표지(흰색)
     quad(-RW_W / 2 + .5, -RW_W / 2 + 1.4, F.rwS, rwE, ink, inkA);

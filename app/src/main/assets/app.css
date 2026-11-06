@@ -1885,3 +1885,67 @@ html.driving body{overflow:hidden}
 :root[data-cp] #addTop{display:inline-flex!important}
 :root[data-cp] .tools .pill{display:inline-flex!important;align-items:center;justify-content:center}
 :root[data-cp] .tools .pill .ico,:root[data-cp] #setBtn svg{margin-top:0;vertical-align:0}
+
+/* ===== 1.21.1 콕핏 스페셜 2: 더 입체적이고 오래 쓴 전투기 계기판 느낌 =====
+   (정적 그라데이션만 — 움직이는 효과·필터 없음, 크기·배치는 그대로) */
+:root[data-cp]{
+  --cp-screw:radial-gradient(circle at 42% 38%,#d5dacb 0 1.2px,#8d9584 1.8px,#4b5247 3px,#1a1f19 3.8px,#000 4.4px,transparent 5px);
+  --cp-wear:repeating-linear-gradient(112deg,#ffffff06 0 1px,transparent 1px 9px),repeating-linear-gradient(23deg,#00000014 0 1px,transparent 1px 13px),
+    radial-gradient(120% 80% at 15% 0%,#ffffff0d,transparent 55%),radial-gradient(90% 70% at 100% 100%,#0000004d,transparent 60%);
+  --cp-key-face:linear-gradient(180deg,#4b5449 0%,#353d34 38%,#262d26 62%,#1a201b 100%);
+  --cp-key-3d:inset 0 1px 0 #b3bba3,inset 0 0 0 1px #46503f,inset 0 -3px 0 #0a0f0b,inset 0 -1px 6px #00000055,0 2px 0 #050806,0 4px 9px #000000b0;
+}
+:root[data-cp][data-cks] body{background:
+  radial-gradient(130% 70% at 50% 0%,#232b26 0%,transparent 60%),
+  repeating-linear-gradient(90deg,#ffffff03 0 1px,transparent 1px 3px),
+  radial-gradient(#ffffff06 1px,transparent 1.4px) 0 0/5px 5px,
+  linear-gradient(180deg,#121915,#0b100d)!important;background-attachment:fixed!important}
+/* 창·조종 패널·위 버튼 판: 두꺼운 테두리 + 네 귀퉁이 나사 + 닳은 금속 */
+:root[data-cp][data-cks] :is(.win,.tools,.dsn .console){
+  background:
+    var(--cp-screw) 5px 5px/11px 11px no-repeat,var(--cp-screw) calc(100% - 5px) 5px/11px 11px no-repeat,
+    var(--cp-screw) 5px calc(100% - 5px)/11px 11px no-repeat,var(--cp-screw) calc(100% - 5px) calc(100% - 5px)/11px 11px no-repeat,
+    var(--cp-wear),linear-gradient(180deg,#2d352f 0%,#232a25 45%,#1a201c 100%)!important;
+  border:1px solid #020403!important;border-radius:7px!important;
+  box-shadow:inset 0 1px 0 #9aa38c80,inset 0 0 0 1px #4e5848,inset 0 0 0 3px #10150f,inset 0 0 0 4px #3a4337,inset 0 -2px 0 4px #00000060,0 0 0 1px #3a4336,0 6px 14px #000000c0!important}
+:root[data-cp][data-cks] .dsn .fastener{display:none}
+/* 계기 카드·조종 칸: 작은 판 + 나사 */
+:root[data-cp][data-cks] :is(.clock>div,.clock>button,.dsn .module){
+  background:var(--cp-screw) 4px 4px/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) 4px/9px 9px no-repeat,var(--cp-screw) 4px calc(100% - 4px)/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) calc(100% - 4px)/9px 9px no-repeat,
+    var(--cp-wear),linear-gradient(180deg,#323a33,#222823 55%,#191e1a)!important;
+  border:1px solid #020403!important;box-shadow:inset 0 1px 0 #a7af9870,inset 0 0 0 1px #4a5445,inset 0 0 0 3px #11160f,0 3px 7px #000000b0!important}
+:root[data-cp][data-cks] .dsn .emergency{background:var(--cp-screw) 4px 4px/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) 4px/9px 9px no-repeat,var(--cp-wear),linear-gradient(180deg,#3f3626,#2a241a 60%,#1e1a13)!important;box-shadow:inset 0 1px 0 #c9a46a66,inset 0 0 0 1px #6d5a3c,inset 0 0 0 3px #140f08,0 3px 7px #000000b0!important}
+/* 제목줄: 각인 명판 느낌 */
+:root[data-cp][data-cks] .win>.bar{border-bottom:1px solid #000!important;box-shadow:0 1px 0 #6b755f55!important}
+:root[data-cp][data-cks] .win>.bar .t,:root[data-cp][data-cks] .dsn .brand-block h1{color:#e9eee2!important;text-shadow:0 -1px 0 #000,0 1px 0 #ffffff1f!important;letter-spacing:.24em}
+/* 매립 표시창: 더 깊게 */
+:root[data-cp][data-cks] :is(.lcd,.visbox,.eqgrid,.pl,.now,#curve,.devcaps,.dsn .deck,.camview),:root[data-cp][data-cks] #pfdHost .pfd-metric{
+  background:linear-gradient(180deg,#040805,#09110c)!important;border:1px solid #000!important;
+  box-shadow:inset 0 3px 7px #000000e0,inset 0 0 0 1px #00000099,inset 0 0 14px #00000080,0 1px 0 #8a947c40,0 -1px 0 #00000080!important}
+:root[data-cp][data-cks] #pfdHost .pfd-glass{border-radius:6px;box-shadow:0 0 0 1px #000,0 0 0 4px #262d27,0 0 0 5px #4a5445,0 0 0 6px #000,inset 0 2px 8px #000!important}
+/* 버튼: 볼록한 금속 키(위 하이라이트 + 아래 두께 + 그림자) */
+:root[data-cp][data-cks] :is(.pill,.tog,.seg button,.tb,.wbtn,.ckrail button,.dsn .header-btn,.pfd-tool,.pfd-levelq,.vmode button,.bri-b,.dsn .pfd-tools.in-ctl>button,.atcmini,.pfd-demo){
+  background:var(--cp-key-face)!important;border:1px solid #020403!important;color:#e9eee2!important;text-shadow:0 -1px 0 #000000cc!important;box-shadow:var(--cp-key-3d)!important}
+:root[data-cp][data-cks] .ckrail{background:linear-gradient(180deg,#0d130f,#141b16)!important;border:1px solid #000!important;box-shadow:inset 0 2px 6px #000,0 1px 0 #6b755f40!important;gap:6px!important;padding:6px!important}
+/* 선택: 앰버 표시등 + 은은한 빛 */
+:root[data-cp][data-cks][data-ckr] :is(.pill.on,.tog.on,.seg button.on,.ckrail button.on,.tb.hot,.vmode button.on,[aria-pressed="true"]:is(.pill,.tog,.pfd-tool,.tb)){
+  color:#ffc96e!important;background:linear-gradient(180deg,#4d4a38 0%,#383527 45%,#25241b 100%)!important;
+  box-shadow:inset 0 1px 0 #d9c38f,inset 0 0 0 1px #6b5f3f,inset 0 -3px 0 #f6be62,0 0 10px #f6be6240,0 2px 0 #050806,0 4px 9px #000000b0!important}
+:root[data-cp][data-cks][data-ckr] :is(.pill,.tog,.tb,.wbtn,.ckrail button,.pfd-tool,.pfd-levelq,.bri-b,.dsn .header-btn,.dsn .pfd-tools.in-ctl>button):active:not(:disabled){
+  transform:translateY(2px);background:linear-gradient(180deg,#1d231e,#262d27)!important;box-shadow:inset 0 2px 5px #000000d0,inset 0 0 0 1px #3e463b,0 0 0 #000!important}
+/* ＋음악 추가: 앰버 강조, 후진 R 배지 */
+:root[data-cp][data-cks] #addTop{color:#ffc96e!important;box-shadow:inset 0 1px 0 #d9c38f99,inset 0 0 0 1px #6b5f3f,inset 0 -3px 0 #f6be62,0 2px 0 #050806,0 4px 9px #000000b0!important}
+:root[data-cp][data-cks] #revBtn b{background:linear-gradient(180deg,#ff7a6d,#d9382b)!important;box-shadow:inset 0 1px 0 #ffffff66,0 1px 2px #000}
+/* 선택창: 매립 */
+:root[data-cp][data-cks] :is(.sel,.vsel,#pfdHost select,.dsn .pfd-tools.in-ctl select){background-color:#060b08!important;border:1px solid #000!important;box-shadow:inset 0 2px 6px #000,0 1px 0 #8a947c40!important}
+/* 로고 판 */
+:root[data-cp][data-cks] .brand .af-img{border-radius:8px;box-shadow:0 0 0 1px #000,0 0 0 4px #262d27,0 0 0 5px #5a6553,0 0 0 6px #000,0 6px 14px #000c!important}
+
+/* 스페셜 2: 키를 조금 더 크게(입체감이 보이도록), 바로가기 키는 아이콘 위·글자 아래 */
+:root[data-cp][data-cks] .tools .pill{height:36px;min-height:36px;font-size:14px}
+:root[data-cp][data-cks] .tools .sel{height:36px;min-height:36px}
+:root[data-cp][data-cks] .win.hasrail .ckrail button{flex-direction:column!important;gap:3px!important;min-height:50px!important;max-height:56px!important;font-size:11px!important;border-radius:5px}
+:root[data-cp][data-cks] .win.hasrail .ckrail button svg{width:18px!important;height:18px!important}
+:root[data-cp][data-cks] .win.hasrail .ckrail button[data-open] span{display:block!important}
+:root[data-split="ck"][data-cp] .win.hasrail .ckrail button{flex-direction:row!important;min-height:26px!important;max-height:30px!important}
+:root[data-cp][data-cks] .win.hasrail .ckrail button span{font-size:12px!important}:root[data-cp][data-cks] .win.hasrail .ckrail button[data-f="vis"] span{font-size:10px!important}
