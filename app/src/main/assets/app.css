@@ -2182,3 +2182,41 @@ html.driving body{overflow:hidden}
 /* 1.27 비행 화면: 가장자리를 살짝 어둡게(시뮬레이터 화면 같은 명암) — 고정 그림이라 부담 없음 */
 #pfdHost .pfd-canvas-wrap{position:relative}
 #pfdHost .pfd-canvas-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(125% 95% at 50% 42%,transparent 58%,#00000052 100%)}
+
+/* 1.28 콕핏 스페셜 2 상단 계기: 크게 · 밝은 아이보리 · 황동 */
+:root[data-cp][data-cks] .clock{gap:8px}
+:root[data-cp][data-cks] .clock>:is(div,button){padding:8px 12px!important}
+:root[data-cp][data-cks] .clock .ck-dial{width:clamp(84px,9.5vw,118px)!important;height:auto!important;aspect-ratio:1}
+:root[data-cp][data-cks] #clkNow{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:12px;align-items:center}
+:root[data-cp][data-cks] #clkNow .ck-dial{grid-row:1/3}
+:root[data-cp][data-cks] #clkNow small,:root[data-cp][data-cks] #clkNow em{padding-left:12px;border-left:2px solid #b8935a;font:800 clamp(18px,2.4vw,30px)/1.05 "Noto Sans KR",Arial,sans-serif!important;color:#f6edd4!important;font-style:normal}
+:root[data-cp][data-cks] #clkNow small{align-self:end}:root[data-cp][data-cks] #clkNow em{align-self:start}
+:root[data-cp][data-cks] #clkWx :is(#wxIco,#wxT,#wxS),:root[data-cp][data-cks] #clkCmp :is(#cmpS,#cmpB),:root[data-cp][data-cks] #clkBri>small,:root[data-cp][data-cks] #clkBri>b{display:none!important}
+:root[data-cp][data-cks] #clkCmp{display:flex!important;align-items:center;gap:12px}
+:root[data-cp][data-cks] #cmpE{display:inline-flex!important;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:linear-gradient(180deg,#1b150c,#0b0805);color:#f6edd4!important;
+  font:800 clamp(14px,1.7vw,20px)/1 "Noto Sans KR",Arial,sans-serif!important;font-style:normal;white-space:nowrap;box-shadow:inset 0 0 0 1px #000,0 0 0 2px #b8935a,0 0 0 3px #000,0 3px 6px #000b}
+:root[data-cp][data-cks] #cmpE::before{content:"";width:10px;height:10px;border-radius:50%;background:#f0a33a;box-shadow:0 0 6px #f0a33a}
+:root[data-cp][data-cks] #cmpE[data-st="on"]::before{background:#9fe07f;box-shadow:0 0 6px #9fe07f}
+:root[data-cp][data-cks] #clkBri{display:flex!important;align-items:center;gap:10px}
+:root[data-cp][data-cks] #clkBri .bri-q{display:flex!important;gap:10px;margin:0}
+:root[data-cp][data-cks] #clkBri .bri-b{width:clamp(46px,5vw,60px)!important;height:clamp(46px,5vw,60px)!important;font:900 clamp(26px,3vw,36px)/1 Arial,sans-serif!important;color:#f6edd4!important;border-radius:8px!important;
+  background:linear-gradient(180deg,#1b150c,#0b0805)!important;box-shadow:inset 0 0 0 1px #000,0 0 0 2px #b8935a,0 0 0 3px #000,inset 0 1px 0 2px #e7cb8f33,0 3px 6px #000b!important}
+:root[data-cp][data-cks] #clock #clkDate,:root[data-cp][data-cks] #clock #clkNow em{font:800 clamp(18px,2.4vw,30px)/1.05 "Noto Sans KR",Arial,sans-serif!important;letter-spacing:0!important;color:#f6edd4!important}
+:root[data-cp][data-cks] #cmpE{align-self:center}
+@media (max-width:600px){:root[data-cp][data-cks] #clkBri .bri-q{display:none!important}:root[data-cp][data-cks] #clkNow{grid-template-columns:auto}:root[data-cp][data-cks] #clkNow :is(small,em){border-left:0;padding-left:0;text-align:center;font-size:15px!important}
+  :root[data-cp][data-cks] #cmpE{display:none!important}}
+
+/* 1.28 스페셜 2 재생 화면: 앨범 아래 곡 제목·가수, 오른쪽은 재생 표시창 + 스펙트럼(높이 맞춤) */
+:root[data-cp] .npmerge.one{grid-template-columns:minmax(150px,32%) minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr) auto!important;grid-template-areas:"cv lcd" "cv vis" "tt vis"!important;gap:10px 14px!important;align-items:stretch}
+:root[data-cp] .npmerge.one .art .cover{grid-area:cv;width:100%;aspect-ratio:1;box-shadow:0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #000,0 6px 14px #000c!important}
+:root[data-cp] .npmerge.one .art>div:not(.cover):not(.npctl){grid-area:tt;padding:8px 14px;border-radius:6px;background:linear-gradient(180deg,#0b0a07,#13110b);box-shadow:inset 0 2px 6px #000,0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #000}
+:root[data-cp][data-cks] .npmerge.one :is(.lcd,.visbox){border-radius:6px!important;box-shadow:inset 0 2px 6px #000,0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #000!important;background:linear-gradient(180deg,#0b0a07,#13110b)!important;padding:10px 14px!important}
+:root[data-cp][data-cks] .npmerge.one .lcd{border-top:0!important}
+:root[data-cp][data-cks] .npmerge.one .visbox{padding:0!important;min-height:150px}
+/* 재생 버튼 6개: 같은 크기·간격, 전체 폭 */
+:root[data-cp][data-cks] #wMain .transport{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:clamp(6px,1.2vw,14px)!important;width:100%}
+:root[data-cp][data-cks] #wMain .transport .tb{width:100%!important;max-width:none!important;height:clamp(52px,7vw,76px)!important;border-radius:8px!important;
+  box-shadow:inset 0 0 0 2px #050403,inset 0 0 0 3px #b8935a,inset 0 0 0 4px #050403,inset 0 1px 0 5px #e7cb8f30,0 0 0 1px #000,0 0 0 3px #8a6a35,0 0 0 4px #e7cb8f55,0 4px 10px #000c!important}
+:root[data-cp][data-cks] #wMain .transport .tb svg{width:clamp(22px,3vw,34px);height:clamp(22px,3vw,34px)}
+:root[data-cp][data-cks][data-ckr] #wMain .transport .tb.hot{box-shadow:inset 0 0 0 2px #050403,inset 0 0 0 3px #ffc35c,inset 0 0 0 4px #050403,0 0 0 1px #000,0 0 0 3px #d6ae62,0 0 14px #ffb44a55,0 4px 10px #000c!important}
+@media (max-width:560px){:root[data-cp] .npmerge.one{grid-template-columns:110px minmax(0,1fr)!important}}

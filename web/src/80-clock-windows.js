@@ -26,7 +26,7 @@ $('#sClockStyle').onchange=e=>setClockStyle(e.target.value);
 $('#clkNow').onclick=()=>{if(isCk())setClockStyle(clockStyle==='analog'?'digital':'analog')};
 function tzHMS(d,tz){const f=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});const o={};f.formatToParts(d).forEach(p=>o[p.type]=p.value);return {h:+o.hour,m:+o.minute,s:+o.second+d.getMilliseconds()/1000}}
 const CITY3={'Asia/Seoul':'SEL','America/New_York':'NYC','America/Los_Angeles':'LAX','America/Chicago':'CHI','America/Toronto':'YYZ','America/Vancouver':'YVR','Pacific/Honolulu':'HNL','America/Sao_Paulo':'SAO','Europe/London':'LON','Europe/Paris':'PAR','Europe/Berlin':'BER','Europe/Rome':'ROM','Europe/Madrid':'MAD','Europe/Istanbul':'IST','Asia/Dubai':'DXB','Asia/Kolkata':'DEL','Asia/Bangkok':'BKK','Asia/Ho_Chi_Minh':'SGN','Asia/Singapore':'SIN','Asia/Manila':'MNL','Asia/Shanghai':'PEK','Asia/Hong_Kong':'HKG','Asia/Taipei':'TPE','Asia/Tokyo':'TYO','Australia/Sydney':'SYD','Pacific/Auckland':'AKL','Pacific/Guam':'GUM'};
-function drawDial(cv,t,code,night){const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
+function drawDial(cv,t,code,night){if(CPX())return antClock(cv,t);const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
   // 계기 장착판(모서리 나사)
   const pl=ctx.createLinearGradient(-R,-R,R,R);pl.addColorStop(0,DIAL().pl[0]);pl.addColorStop(1,DIAL().pl[1]);ctx.fillStyle=pl;ctx.beginPath();ctx.roundRect(-R+1,-R+1,S-2,S-2,S*.12);ctx.fill();
   ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.stroke();

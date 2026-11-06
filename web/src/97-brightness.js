@@ -12,7 +12,7 @@ function briUi(){const t=scrBri<0?'자동':scrBri+'%';$('#briV').textContent=t;$
   document.querySelectorAll('#briPre button').forEach(b=>b.classList.toggle('on',+b.dataset.v===scrBri));
   try{drawBriDial($('#briDial'),scrBri)}catch(e){}}
 /* 계기: 날씨·나침반과 같은 장착판·베젤, 270° 눈금 호에 지금 밝기 */
-function drawBriDial(cv,v){const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
+function drawBriDial(cv,v){if(CPX())return antBri(cv,v);const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
   const pl=ctx.createLinearGradient(-R,-R,R,R);pl.addColorStop(0,DIAL().pl[0]);pl.addColorStop(1,DIAL().pl[1]);ctx.fillStyle=pl;ctx.beginPath();ctx.roundRect(-R+1,-R+1,S-2,S-2,S*.12);ctx.fill();ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.stroke();
   for(const [x,y] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const sx=x*R*.8,sy=y*R*.8,r=S*.035,g=ctx.createRadialGradient(sx-r*.3,sy-r*.3,0,sx,sy,r);g.addColorStop(0,DIAL().sc[0]);g.addColorStop(1,DIAL().sc[1]);ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,r,0,7);ctx.fill();ctx.strokeStyle='#1a1d20';ctx.lineWidth=S*.008;ctx.beginPath();ctx.moveTo(sx-r*.7,sy+r*.7);ctx.lineTo(sx+r*.7,sy-r*.7);ctx.stroke()}
   const bz=ctx.createLinearGradient(0,-R,0,R);bz.addColorStop(0,DIAL().bz[0]);bz.addColorStop(.5,DIAL().bz[1]);bz.addColorStop(1,DIAL().bz[2]);ctx.fillStyle=bz;ctx.beginPath();ctx.arc(0,0,R*.9,0,7);ctx.fill();
