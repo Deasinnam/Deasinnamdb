@@ -2332,3 +2332,46 @@ html.driving body{overflow:hidden}
   :root[data-cks] #wGps>.bar .atcmini{max-width:52px!important;padding:0 6px!important}:root[data-cks] #wGps>.bar .atcmini span{display:none}
   :root[data-skin="carnival2"] #wGps>.bar .groove{display:none}}
 @media (max-width:600px){:root[data-cks] #wGps>.bar .atcmini{flex:none!important;min-width:46px;justify-content:center}}
+
+/* ===== 1.32 폴드8 전용판(data-fold): 외부 화면 10:16 · 내부 화면 4:3에 맞춘 배치 ===== */
+/* 내부 화면(넓게 펼침, 가로 4:3): 로고+계기 한 줄, 왼쪽 비행 계기·조종 패널 / 오른쪽 플레이어·라디오 */
+@media (min-width:760px) and (min-aspect-ratio:6/5){
+  :root[data-fold] .top{flex-wrap:wrap!important;align-items:center;gap:8px 10px}
+  :root[data-fold] .top .brand{flex:0 0 auto}
+  :root[data-fold] .top .brand .af-img{width:clamp(220px,28vw,320px)!important}
+  :root[data-fold][data-cks] .clock{flex:1 1 480px;width:auto!important;min-width:0}
+  :root[data-fold] .top .tools{flex:1 1 100%}
+  :root[data-fold][data-cks] .npmerge.one{grid-template-columns:minmax(96px,26%) minmax(0,1fr)!important}
+  :root[data-fold][data-cks] .npmerge.one .lcd .time{font-size:clamp(30px,4.2vw,44px)!important}
+  :root[data-fold][data-cks] .npmerge.one .lcd .meta{flex-wrap:wrap;gap:4px 10px}
+  :root[data-fold][data-cks] #wGps>.bar .t{font-size:14px!important;letter-spacing:.1em!important;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  :root[data-fold][data-cks] #wGps>.bar .gsbar{min-width:110px!important;flex:0 1 auto!important}
+  :root[data-fold][data-cks] #wGps>.bar .groove{display:none}
+  :root[data-fold][data-cks] #wGps>.bar .atcmini{max-width:150px}
+  :root[data-fold][data-cks] #wGps>.bar .t{min-width:96px}
+  :root[data-fold] #pfdHost .pfd-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  :root[data-fold][data-ck2] .win.hasrail .ckrail button{flex-direction:column!important;font-size:10px!important;padding:3px 0!important}
+  :root[data-fold][data-ck2] .win.hasrail .ckrail button span[data-s]{font-size:0!important}
+  :root[data-fold][data-ck2] .win.hasrail .ckrail button span[data-s]::after{content:attr(data-s);font-size:10px}
+  :root[data-fold][data-ck2] .win.hasrail .ckrail button[data-open] em{display:none}
+  :root[data-fold][data-cks] .app.G:not(.FX){grid-template-columns:minmax(0,1.12fr) minmax(0,1fr)!important;
+    grid-template-areas:"gps main" "gps radio" "ctl radio" "map map" "eq pl" "cam cam"!important;align-items:start}
+  :root[data-fold][data-cks] .app.G:not(.FX)>#wGps{align-self:stretch}
+  :root[data-fold][data-cks] .app:not(.FX) #wGps #pfdHost .pfd-canvas-wrap{aspect-ratio:1.25!important;max-height:none}
+}
+/* 내부 화면 세로(3:4): 비행 계기는 위에 넓게, 그 아래 두 칸씩 */
+@media (min-width:640px) and (max-aspect-ratio:6/5) and (min-aspect-ratio:2/3){
+  :root[data-fold][data-cks] .app.G:not(.FX){grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:"gps gps" "ctl ctl" "main radio" "map map" "eq pl" "cam cam"!important;align-items:start}
+  :root[data-fold][data-cks] .app:not(.FX) #wGps #pfdHost .pfd-canvas-wrap{aspect-ratio:1.6!important}
+}
+/* 외부 화면(10:16, 폭 400px 안팎): 한 줄 계기·버튼을 촘촘하게, 로고는 작게 */
+@media (max-width:520px) and (min-aspect-ratio:9/17){
+  :root[data-fold] .top .brand .af-img{width:min(78vw,300px)!important}
+  :root[data-fold][data-cks] .clock .ck-dial{width:clamp(60px,17vw,84px)!important}
+  :root[data-fold][data-cks] .clock>:is(div,button){padding:6px 4px!important}
+  :root[data-fold][data-cks] .app{gap:5px!important;padding-left:6px!important;padding-right:6px!important}
+  :root[data-fold][data-cks] .app:not(.FX) #wGps #pfdHost .pfd-canvas-wrap{aspect-ratio:1.3!important}
+  :root[data-fold] #pfdHost .pfd-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media (max-width:440px){:root[data-cks] #wGps>.bar .t{display:none!important}:root[data-cks] #wGps>.bar .gsbar{max-width:none!important;flex:1 1 auto!important;margin-left:4px}}

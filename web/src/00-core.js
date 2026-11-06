@@ -2,6 +2,9 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 const $=s=>document.querySelector(s);
 const NB=window.__AmpNB||window.AndroidBridge||null;
+/* 갤럭시 Z 폴드8 전용판(보라색): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
+const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
+if(IS_FOLD)document.documentElement.dataset.fold='1';
 const HAS_EXT=!!(NB&&NB.extStatus);
 const BANDS=[60,170,310,600,1000,3000,6000,12000,14000,16000];
 const LBL=['60','170','310','600','1K','3K','6K','12K','14K','16K'];
@@ -18,13 +21,13 @@ const PRESETS={
 };
 const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['carnival6','대신남 자동차 모드 · 콕핏 스페셜'],['carnival7','대신남 자동차 모드 · 콕핏 스페셜 2'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
 const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','carnival6','carnival7','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5'||skin==='carnival6'||skin==='carnival7';/* 원형 계기 색: 콕핏 스페셜 2는 황동 베젤·황동 나사·짙은 올리브 판 */
-const DIAL=()=>document.documentElement.hasAttribute('data-cp')?{pl:['#2f3424','#12150d'],bz:['#f3d99c','#9a7638','#2e2210'],sc:['#fbe7b5','#7a5a2c'],ink:'#efe6cf'}:{pl:['#3a4236','#151a14'],bz:['#6b7468','#22281f','#0b0e0a'],sc:['#d9dee3','#4c535b'],ink:'#e7e9df'};
+const DIAL=()=>document.documentElement.hasAttribute('data-cp')?(IS_FOLD?{pl:['#2c2436','#120d18'],bz:['#dcc6ff','#7a52c4','#24133d'],sc:['#ecdcff','#5e3a99'],ink:'#efe6cf'}:{pl:['#2f3424','#12150d'],bz:['#f3d99c','#9a7638','#2e2210'],sc:['#fbe7b5','#7a5a2c'],ink:'#efe6cf'}):{pl:['#3a4236','#151a14'],bz:['#6b7468','#22281f','#0b0e0a'],sc:['#d9dee3','#4c535b'],ink:'#e7e9df'};
 const isCks=()=>skin==='carnival6'||skin==='carnival7';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
-let skin=store.get('skin2','carnival5'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
+let skin=store.get('skin2',IS_FOLD?'carnival7':'carnival5'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
 // 1.18: 스킨 정리 — 콕핏·콕핏 2는 콕핏(예전 콕핏 수정판)으로, 드라이브는 자동차 모드로
 {const M={carnival2:'carnival5',carnival3:'carnival5',drive:'carnival'};if(M[skin]){skin=M[skin];store.set('skin2',skin);window.__skinNote=skin}}store.set('ckrSwitched',true);
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;

@@ -1,0 +1,12 @@
+<resources>
+    <!-- Android 12 이상 실행 화면: 폴드8 보라 배경에 로고 아이콘 -->
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0E0716</item>
+        <item name="android:statusBarColor">#0E0716</item>
+        <item name="android:navigationBarColor">#0E0716</item>
+        <item name="android:colorAccent">#9B6BFF</item>
+        <item name="android:windowSplashScreenBackground">#0E0716</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_fg</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#0E0716</item>
+    </style>
+</resources>

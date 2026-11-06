@@ -988,7 +988,7 @@ public class MainActivity extends Activity {
     // ---------------------------------------------------------------- 외부 앱
 
     private static boolean notifSupported() {
-        return "full".equals(BuildConfig.FLAVOR);
+        return "full".equals(BuildConfig.FLAVOR_edition);
     }
 
     private boolean hasNotifAccess() {
@@ -1383,7 +1383,8 @@ public class MainActivity extends Activity {
                 o.put("artV", artVersion);
                 o.put("notifSupported", notifSupported());
                 o.put("spotifyRx", SpotifyInfo.lastUpdate > 0);
-                o.put("edition", BuildConfig.FLAVOR);
+                o.put("edition", BuildConfig.FLAVOR_edition);
+                o.put("device", BuildConfig.FLAVOR_device);
                 o.put("version", BuildConfig.VERSION_NAME);
                 MediaController c = ctrl;
                 o.put("seekable", c != null);
@@ -1711,6 +1712,10 @@ public class MainActivity extends Activity {
             recOut = null; recUri = null; recName = null;
             return name == null ? "" : name;
         }
+
+        /** 어떤 판인지: "std" 또는 "fold8"(갤럭시 Z 폴드8 전용판) */
+        @JavascriptInterface
+        public String buildDevice() { return BuildConfig.FLAVOR_device; }
 
         /** 기기 지원 확인(GPS·방향 센서·LTE·5G·Wi-Fi·블루투스): {키:{s:on|off|yes|no|unk, t:짧은 글}} — 새 권한 없이 확인 가능한 것만 */
         @JavascriptInterface

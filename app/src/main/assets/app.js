@@ -5,6 +5,9 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 const $=s=>document.querySelector(s);
 const NB=window.__AmpNB||window.AndroidBridge||null;
+/* 갤럭시 Z 폴드8 전용판(보라색): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
+const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
+if(IS_FOLD)document.documentElement.dataset.fold='1';
 const HAS_EXT=!!(NB&&NB.extStatus);
 const BANDS=[60,170,310,600,1000,3000,6000,12000,14000,16000];
 const LBL=['60','170','310','600','1K','3K','6K','12K','14K','16K'];
@@ -21,13 +24,13 @@ const PRESETS={
 };
 const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['carnival6','대신남 자동차 모드 · 콕핏 스페셜'],['carnival7','대신남 자동차 모드 · 콕핏 스페셜 2'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
 const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','carnival6','carnival7','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5'||skin==='carnival6'||skin==='carnival7';/* 원형 계기 색: 콕핏 스페셜 2는 황동 베젤·황동 나사·짙은 올리브 판 */
-const DIAL=()=>document.documentElement.hasAttribute('data-cp')?{pl:['#2f3424','#12150d'],bz:['#f3d99c','#9a7638','#2e2210'],sc:['#fbe7b5','#7a5a2c'],ink:'#efe6cf'}:{pl:['#3a4236','#151a14'],bz:['#6b7468','#22281f','#0b0e0a'],sc:['#d9dee3','#4c535b'],ink:'#e7e9df'};
+const DIAL=()=>document.documentElement.hasAttribute('data-cp')?(IS_FOLD?{pl:['#2c2436','#120d18'],bz:['#dcc6ff','#7a52c4','#24133d'],sc:['#ecdcff','#5e3a99'],ink:'#efe6cf'}:{pl:['#2f3424','#12150d'],bz:['#f3d99c','#9a7638','#2e2210'],sc:['#fbe7b5','#7a5a2c'],ink:'#efe6cf'}):{pl:['#3a4236','#151a14'],bz:['#6b7468','#22281f','#0b0e0a'],sc:['#d9dee3','#4c535b'],ink:'#e7e9df'};
 const isCks=()=>skin==='carnival6'||skin==='carnival7';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
 let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',false), repeat=store.get('rep','all'), visMode=store.get('vis',0);
-let skin=store.get('skin2','carnival5'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
+let skin=store.get('skin2',IS_FOLD?'carnival7':'carnival5'), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
 // 1.18: 스킨 정리 — 콕핏·콕핏 2는 콕핏(예전 콕핏 수정판)으로, 드라이브는 자동차 모드로
 {const M={carnival2:'carnival5',carnival3:'carnival5',drive:'carnival'};if(M[skin]){skin=M[skin];store.set('skin2',skin);window.__skinNote=skin}}store.set('ckrSwitched',true);
 let list=[], cur=-1, showRemain=false, seeking=false, volDrag=false, wake=null;
@@ -44,6 +47,21 @@ const appEl=$('#app');
 function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',isCp());if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
 window.addEventListener('resize',layout);
+/* ===== 03-fold.js ===== */
+// 폴드8 전용판: 앱 색을 보라색으로 — 스타일시트의 황동·호박·파랑 계열 색을 한 번만 보라 계열로 바꿈(사진·지도·글자색 아이보리는 그대로)
+// 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
+function foldHue(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;if(!d)return null;
+  const s=d/(1-Math.abs(2*l-1));let h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=(h*60+360)%360;
+  const warm=h>=18&&h<=58&&s>=.22&&l<=.86,blue=h>=195&&h<=245&&s>=.35;if(!warm&&!blue)return null;
+  const H=warm?272:262,S=Math.min(1,s*(warm?.9:1)),c=(1-Math.abs(2*l-1))*S,x=c*(1-Math.abs((H/60)%2-1)),m=l-c/2;
+  let R,G,B;[R,G,B]=H<300?[x,0,c]:[c,0,x];return [Math.round((R+m)*255),Math.round((G+m)*255),Math.round((B+m)*255)]}
+function foldColor(txt){return txt.replace(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(\s*,\s*[\d.]+)?\s*\)/g,(all,r,g,b,a)=>{const c=foldHue(+r,+g,+b);return c?`rgba(${c[0]}, ${c[1]}, ${c[2]}${a||', 1'})`:all})}
+const foldDone=new WeakSet();
+function foldSheets(){if(!IS_FOLD)return;for(const sh of document.styleSheets){if(foldDone.has(sh))continue;let rules;try{rules=sh.cssRules}catch(e){continue}if(!rules)continue;foldDone.add(sh);foldRules(rules)}}
+function foldRules(rules){for(const r of rules){if(r.cssRules&&!r.style){foldRules(r.cssRules);continue}const st=r.style;if(!st)continue;
+  for(let i=0;i<st.length;i++){const k=st[i],v=st.getPropertyValue(k);if(!/rgb|#/.test(v))continue;const nv=foldColor(v.replace(/#([0-9a-f]{3,8})\b/gi,hex=>{let h=hex.slice(1);if(h.length<=4)h=h.split('').map(c=>c+c).join('');const n=parseInt(h.slice(0,6),16),a=h.length===8?(parseInt(h.slice(6),16)/255).toFixed(3):null;return `rgba(${n>>16&255}, ${n>>8&255}, ${n&255}${a?', '+a:''})`}));
+    if(nv!==v)try{st.setProperty(k,nv,st.getPropertyPriority(k))}catch(e){}}}}
+if(IS_FOLD){foldSheets();addEventListener('load',foldSheets);setTimeout(foldSheets,1500)}
 /* ===== 10-audio-ext.js ===== */
 // 내 음악 소리 연결(Web Audio)과 외부 앱(YouTube Music·Spotify) 연동
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
@@ -2708,7 +2726,7 @@ cksApply();
 new MutationObserver(()=>{try{briUi()}catch(e){}try{drawWxDial($('#wxDial'),WX.kind,WX.temp,WX.day===false)}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-cp']});
 /* ===== 콕핏 스페셜 2 상단 계기: 앤틱 황동 테 + 검은 다이얼 + 밝은 아이보리 큰 숫자·방위·아이콘 ===== */
 function CPX(){return document.documentElement.hasAttribute('data-cp')}
-const IVO='#f6edd4',BRS=['#fbe3a6','#d6ae62','#8a6427','#3e2a0e'];
+const IVO='#f6edd4',BRS=IS_FOLD?['#e6d4ff','#a57ce8','#5e3a99','#22113d']:['#fbe3a6','#d6ae62','#8a6427','#3e2a0e'];
 function antBase(cv){const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
   // 황동 두 겹 테
   let g=ctx.createLinearGradient(-R,-R,R,R);g.addColorStop(0,BRS[0]);g.addColorStop(.3,BRS[1]);g.addColorStop(.65,BRS[3]);g.addColorStop(1,BRS[1]);
