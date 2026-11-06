@@ -69,6 +69,19 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#revBtn b').isVisible(), true, 'R badge kept');
   assert.equal(await p.locator('#pfdLevelQuick').isVisible(), true);
   assert.equal(await p.locator('#wVis').isVisible(), false, 'Merged player like special');
+  // 상단 계기 4칸: 같은 크기 한 줄, 나침반 옆 글자·밝기 −/＋ 없음, 누르면 자세한 창
+  { const bs = await p.evaluate(() => ['clkNow', 'clkWx', 'clkCmp', 'clkBri'].map(id => { const r = document.getElementById(id).getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
+    assert.equal(new Set(bs.map(b => b.join())).size, 1, 'Four equal gauge cards in one row ' + JSON.stringify(bs)); }
+  assert.equal(await p.locator('#cmpE').isVisible(), false);
+  assert.equal(await p.locator('#briUp').isVisible(), false);
+  await p.locator('#clkCmp').click();
+  assert.equal(await p.locator('#cmpPick').isVisible(), true, 'Compass details');
+  assert.equal(await p.locator('#cpGps').textContent(), '꺼짐');
+  await p.locator('#cpClose').click();
+  assert.equal(await p.locator('#cmpPick').isVisible(), false);
+  await p.locator('#clkBri').click();
+  assert.equal(await p.locator('#briPick').isVisible(), true, 'Brightness details');
+  await p.mouse.click(5, 1250);
   assert.equal(await p.locator('#pfdThemeQuick').isVisible(), true, 'Theme button under the level button');
   { const l = await p.locator('#pfdLevelQuick').boundingBox(), t = await p.locator('#pfdThemeQuick').boundingBox(); assert.ok(t.y > l.y + l.height - 2 && Math.abs(t.x - l.x) < 2, 'Stacked below'); }
   assert.equal(await p.locator('#pfdThemeQuick').textContent(), '테마 자동');

@@ -2484,7 +2484,26 @@ function cmpTick(){if(document.hidden||!document.documentElement.hasAttribute('d
   $('#cmpB').textContent=on?Math.round(h)%360+'°':'---°';
   $('#cmpE').textContent=on?CMP_KO[Math.round(h/45)%8]+'쪽':gpsOn?'방향 찾는 중':'GPS 꺼짐 · 눌러서 켜기'}
 setInterval(cmpTick,150);cmpTick();
-$('#clkCmp').onclick=()=>{if(!gpsOn){try{gpsStart();toast('GPS를 켰어요. 움직이거나 나침반이 잡히면 방향이 나와요.')}catch(e){}}};
+/* 나침반을 누르면 자세한 정보 창(방향·출처·GPS 상태·정확도·위성·속도·고도·좌표), 창 안에서 GPS 켜고 끄기 */
+const CMP16=['북','북북동','북동','동북동','동','동남동','남동','남남동','남','남남서','남서','서남서','서','서북서','북서','북북서'];
+let cpT=0;
+function cpFill(){const fix=gpsOn&&gs&&gs.fix,on=hdgNow>=0,h=on?((hdgNow%360)+360)%360:0,v=(x,u,d=0)=>x==null||!isFinite(x)?'—':(+x).toFixed(d)+u;
+  $('#cpDeg').textContent=on?String(Math.round(h)%360).padStart(3,'0')+'°':'---°';$('#cpDir').textContent=on?CMP16[Math.round(h/22.5)%16]+'쪽':'방향 없음';
+  const moving=fix&&spdNow>9;$('#cpSrc').textContent=!on?'없음':(typeof att!=='undefined'&&att.on&&att.hdg>=0)?'방향 센서(나침반)':moving?'GPS 진행 방향':'방향 센서(나침반)';
+  $('#cpGps').textContent=!gpsOn?'꺼짐':fix?'위치 잡힘':'위치 찾는 중';
+  $('#cpAcc').textContent=fix&&gs.acc>=0?'±'+Math.round(gs.acc)+' m':'—';
+  $('#cpSat').textContent=gs&&gs.satsUsed>=0?gs.satsUsed+' / '+(gs.satsSeen>=0?gs.satsSeen:'?')+' 개':'—';
+  $('#cpSpd').textContent=fix?v(spdNow,' km/h',1):'—';$('#cpAlt').textContent=fix&&gs.alt>-9000?v(gs.alt,' m'):'—';
+  $('#cpLat').textContent=fix&&isFinite(gs.lat)?(+gs.lat).toFixed(5)+'°':'—';$('#cpLon').textContent=fix&&isFinite(gs.lon)?(+gs.lon).toFixed(5)+'°':'—';
+  $('#cpGpsBtn').textContent=gpsOn?'GPS 끄기':'GPS 켜기';$('#cpGpsBtn').classList.toggle('on',!gpsOn)}
+function cpClose(){$('#cmpPick').hidden=true;clearInterval(cpT)}
+function cpOpen(){const p=$('#cmpPick');p.hidden=false;cpFill();clearInterval(cpT);cpT=setInterval(cpFill,500);
+  const r=$('#clkCmp').getBoundingClientRect(),pr=p.getBoundingClientRect();p.style.left=Math.max(8,Math.min(innerWidth-pr.width-8,r.left))+'px';p.style.top=Math.max(8,Math.min(innerHeight-pr.height-8,r.bottom+6))+'px'}
+$('#clkCmp').onclick=()=>{if($('#cmpPick').hidden)cpOpen();else cpClose()};
+$('#cpClose').onclick=cpClose;
+$('#cpGpsBtn').onclick=()=>{try{if(gpsOn)gpsStop(true);else{gpsStart();toast('GPS를 켰어요. 움직이거나 나침반이 잡히면 방향이 나와요.')}}catch(e){}cpFill()};
+document.addEventListener('pointerdown',e=>{if(!$('#cmpPick').hidden&&!e.target.closest('#cmpPick,#clkCmp'))cpClose()},true);
+window.addEventListener('scroll',()=>{if(!$('#cmpPick').hidden)cpClose()},{passive:true});
 
 /* ---------- 알림 접근: "제한된 설정" 단계별 안내 ---------- */
 function notifGranted(){try{return !!JSON.parse(NB.extStatus()).notif}catch(e){return false}}

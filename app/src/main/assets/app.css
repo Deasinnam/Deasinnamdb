@@ -2220,3 +2220,37 @@ html.driving body{overflow:hidden}
 :root[data-cp][data-cks] #wMain .transport .tb svg{width:clamp(22px,3vw,34px);height:clamp(22px,3vw,34px)}
 :root[data-cp][data-cks][data-ckr] #wMain .transport .tb.hot{box-shadow:inset 0 0 0 2px #050403,inset 0 0 0 3px #ffc35c,inset 0 0 0 4px #050403,0 0 0 1px #000,0 0 0 3px #d6ae62,0 0 14px #ffb44a55,0 4px 10px #000c!important}
 @media (max-width:560px){:root[data-cp] .npmerge.one{grid-template-columns:110px minmax(0,1fr)!important}}
+
+/* 1.29 상단 계기 4칸: 항상 같은 크기·같은 높이 한 줄, 글자 길이에 따라 크기 변하지 않음 */
+:root[data-cp][data-cks] .clock{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;width:100%;margin-right:0;flex-wrap:nowrap}
+:root[data-cp][data-cks] .clock>:is(div,button):not([hidden]):not(.ck-world){display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:6px;min-width:0;width:100%;height:100%;padding:10px 8px!important}
+:root[data-cp][data-cks] .clock .ck-dial{width:clamp(76px,min(18vw,13vh),124px)!important;flex:none}
+:root[data-cp][data-cks] #cmpE,:root[data-cp][data-cks] #clkBri .bri-q{display:none!important}
+/* 네 칸 모두 같은 틀: 위 계기(가운데) · 아래 한 줄 글자 */
+:root[data-cp][data-cks] .clock>:is(#clkNow,#clkWx,#clkCmp,#clkBri){display:grid!important;grid-template-columns:auto auto!important;grid-template-rows:minmax(0,1fr) auto!important;
+  grid-template-areas:"d d" "a b"!important;justify-content:center!important;align-content:center!important;justify-items:center;column-gap:6px!important;row-gap:6px!important}
+:root[data-cp][data-cks] .clock>* .ck-dial{grid-area:d!important;grid-row:auto!important;grid-column:auto!important}
+:root[data-cp][data-cks] #clkNow small{grid-area:a!important;grid-column:auto!important;justify-self:end}
+:root[data-cp][data-cks] #clkNow em{grid-area:b!important;grid-column:auto!important;justify-self:start}
+:root[data-cp][data-cks] #clkNow :is(small,em){display:block!important;border:0!important;padding:0!important;margin:0!important;font:800 clamp(12px,1.7vw,19px)/1.1 "Noto Sans KR",sans-serif!important;letter-spacing:0!important;color:#f6edd4!important;white-space:nowrap}
+:root[data-cp][data-cks] #clkNow b{display:none!important}
+:root[data-cp][data-cks] :is(#clkWx,#clkCmp,#clkBri)::after{grid-area:a/a/b/b;display:block;font:800 clamp(12px,1.7vw,19px)/1.1 "Noto Sans KR",sans-serif;color:#f6edd4;white-space:nowrap}
+:root[data-cp][data-cks] #clkWx::after{content:"날씨"}
+:root[data-cp][data-cks] #clkCmp::after{content:"나침반"}
+:root[data-cp][data-cks] #clkBri::after{content:"밝기"}
+:root[data-cp][data-cks] :is(#clkWx,#clkCmp,#clkBri) > :not(canvas){display:none!important}
+@media (max-width:600px){:root[data-cp][data-cks] #clkNow em{display:none!important}}
+/* 나침반 정보 창 */
+.cmppick{width:min(340px,calc(100vw - 16px))}
+.cmppick .cp-big{display:flex!important;flex-direction:row!important;align-items:baseline;gap:12px}
+.cmppick .cp-big span{font:700 40px/1 "Share Tech Mono",monospace;color:#f6edd4}.cmppick .cp-big em{font:700 20px/1 "Noto Sans KR",sans-serif;font-style:normal;color:#f3bc65}
+.cmppick .cp-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px}
+.cmppick dt{color:#b8ad8c}.cmppick dd{margin:0;color:#f4ecd2;font-family:"Share Tech Mono","Noto Sans KR",monospace;text-align:right}
+.cmppick .cp-act{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+.cmppick .cp-act .pill{height:46px;justify-content:center;text-align:center}
+.cmppick .cp-note{font-size:12px;line-height:1.5;color:#9fa99a}
+/* 1.29: 시계 칸은 날짜·요일만(도시 이름 없음) — 네 칸 글자 줄 높이 같게 */
+:root[data-cp][data-cks] #clkNow em{display:none!important}
+:root[data-cp][data-cks] #clkNow small{grid-area:a/a/b/b!important;justify-self:center!important}
+:root[data-cp][data-cks] #clkNow :is(small),:root[data-cp][data-cks] :is(#clkWx,#clkCmp,#clkBri)::after{font:800 clamp(12px,1.7vw,19px)/1.15 "Noto Sans KR",sans-serif!important;height:1.15em}
+:root[data-cp][data-cks] #clock #clkNow #clkDate{font:800 clamp(12px,1.7vw,19px)/1.15 "Noto Sans KR",sans-serif!important}
