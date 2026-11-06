@@ -960,10 +960,18 @@ header.top{padding-top:28px!important}
 #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 56px)!important}
 /* 콕핏 2: 세로 바로가기 — 따로 떠 있지 않고 스피드미터(또는 고른 창) 안 왼쪽에 들어감 */
 .ckrail{display:none}
-:root[data-ck2] .win.hasrail>.ckrail{display:flex;position:absolute;z-index:3;left:8px;top:calc(var(--rail-top,40px));bottom:10px;width:84px;flex-direction:column;gap:6px;padding:6px 4px;
-  border:1px solid #000;border-radius:8px;background:linear-gradient(180deg,#2a3127,#1a1f1b);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #54604e;overflow-y:auto;scrollbar-width:none}
-:root[data-ck2] .win.hasrail>.ckrail::-webkit-scrollbar{display:none}
-:root[data-ck2] .win.hasrail>.ckrail{container-type:size}
+/* 1.19: 창 안 바로가기는 가로 한 줄(작은 버튼) — 스피드미터 창은 계기 화면 바로 아래 */
+:root[data-ck2] .win.hasrail .ckrail{display:flex;position:static;z-index:auto;width:auto;flex:none;flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:4px;padding:4px;margin:6px 2px 0;
+  border:1px solid #000;border-radius:7px;background:linear-gradient(180deg,#2a3127,#1a1f1b);box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #54604e;overflow:hidden;container-type:normal}
+:root[data-ck2] .win.hasrail .ckrail button{width:auto;flex:1 1 0;min-width:0;min-height:40px;max-height:46px;gap:1px;padding:3px 1px;font-size:10px;line-height:1}
+:root[data-ck2] .win.hasrail .ckrail button svg{width:16px;height:16px;flex:none}
+:root[data-ck2] .win.hasrail .ckrail button span{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:clip;font-size:inherit}
+:root[data-ck2] .win.hasrail .ckrail button[data-f="vis"] span{white-space:normal;font-size:8.5px;line-height:.95}
+:root[data-ck2] .win.hasrail .ckrail button[data-open] em{font-size:8.5px;margin-top:0}
+:root[data-ck2] .win.hasrail .ckrail .ckdiv{flex:none;width:2px;height:auto;margin:4px 1px;background:linear-gradient(180deg,transparent,#a8f08f55,transparent)}
+@media (max-width:460px){:root[data-ck2] .win.hasrail .ckrail{gap:3px;padding:3px}:root[data-ck2] .win.hasrail .ckrail button{font-size:9px;padding:3px 0}:root[data-ck2] .win.hasrail .ckrail button svg{width:15px;height:15px}
+  :root[data-ck2] .win.hasrail .ckrail button[data-open] em{display:none}}
+
 :root[data-ck2] .app.FX.RL{grid-template-columns:92px minmax(0,1fr)!important}
 :root[data-ck2] .app.FX.RL>.win.fx{grid-column:2!important}
 :root[data-ck2] .app.RL>.ckrail.inapp{display:flex;grid-column:1;grid-row:1/span 2;flex-direction:column;gap:6px;padding:6px 4px;align-self:stretch;
@@ -972,7 +980,7 @@ header.top{padding-top:28px!important}
   :root[data-ck2] .app.RL>.ckrail.inapp{grid-row:auto;flex-direction:row;overflow-x:auto;order:-2}}
 @container (max-height:520px){.ckrail button{min-height:30px;flex:1 1 0;gap:1px;font-size:10px;padding:2px}.ckrail button svg{width:17px;height:17px}}
 @container (max-height:340px){.ckrail button span{display:none}.ckrail button svg{width:18px;height:18px}}
-:root[data-ck2] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:96px}
+
 .ckrail button{width:100%;min-height:54px;flex:1 0 auto;max-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid #000;border-radius:6px;cursor:pointer;
   background:linear-gradient(180deg,#3d4248,#191f1b);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 #14171a;color:#c9d0d7;font:600 12px/1.1 "Noto Sans KR",sans-serif;letter-spacing:0;padding:4px 2px}
 .ckrail button svg{width:22px;height:22px;fill:currentColor}
@@ -995,10 +1003,10 @@ header.top{padding-top:28px!important}
 @media (max-width:760px){.ckrail .ckdiv{width:2px;height:auto;margin:6px 2px}}
 .ckrail button.on{color:var(--ck-green,#a8f08f);box-shadow:inset 0 1px 0 #ffffff1c,inset 0 -3px 0 var(--ck-green,#a8f08f),0 0 10px #a8f08f26}
 @media (max-width:720px){
-  :root[data-ck2] .win.hasrail>.ckrail{position:static;width:auto;flex-direction:row;overflow-x:auto;overflow-y:hidden;margin:6px 8px 0}
+  :root[data-ck2] .win.hasrail .ckrail{position:static;width:auto;flex-direction:row;overflow-x:auto;overflow-y:hidden;margin:6px 8px 0}
   :root[data-ck2] .win.hasrail>:not(.bar):not(.ckrail):not(.grip):not(.slowfx){margin-left:0}
   .ckrail button{width:auto;min-width:62px;flex:0 0 auto;min-height:50px;font-size:11px}
-  :root[data-ck2] .win.hasrail>.ckrail{container-type:normal}}
+  :root[data-ck2] .win.hasrail .ckrail{container-type:normal}}
 /* 콕핏 2 바로가기로 고른 창만 화면에 꽉 차게(스크롤 없이) */
 .app.FX>.win:not(.fx),.app.FX>#wExt{display:none!important}
 .app.FX{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:none!important}
@@ -1331,7 +1339,7 @@ html.driving body{overflow:hidden}
 /* 측면 버튼: 밝은 판, 고른 버튼은 주황 불 */
 :root[data-ck3] .ckrail button{color:#eef2f5;background:linear-gradient(180deg,#7a8591,#4e5863);box-shadow:inset 0 1px 0 #ffffff40,inset 0 -3px 0 #2a3038}
 :root[data-ck3] .ckrail button.on{color:#ffcf8a;background:linear-gradient(180deg,#4e5863,#2e353d);box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -3px 0 #ff9f43,0 0 12px #ff9f4344}
-:root[data-ck3] .ckrail.inapp,:root[data-ck3] .win.hasrail>.ckrail{background:linear-gradient(180deg,#3b444e,#2a3038);box-shadow:inset 0 0 0 1px #8b96a255}
+:root[data-ck3] .ckrail.inapp,:root[data-ck3] .win.hasrail .ckrail{background:linear-gradient(180deg,#3b444e,#2a3038);box-shadow:inset 0 0 0 1px #8b96a255}
 /* 라디오: 주황 숫자 + 하늘색 대기 주파수 */
 :root[data-ck3] #wRadio{--rg:#ffb14d;--ra:#7fd8ff;--rdot:#4f86a8;--rbg:#1a1206;--rl:#2a3b4d}
 :root[data-ck3] .rd-panel{background:linear-gradient(180deg,#2e353d,#1b2128);box-shadow:inset 0 1px 0 #ffffff26,0 2px 10px #0008}
@@ -1415,7 +1423,7 @@ html.driving body{overflow:hidden}
   :root[data-split="ck"] #wGps #pfdHost .pfd-metrics{display:none}
   :root[data-split="ck"] #wGps #pfdHost .pfd-tools{display:flex;overflow-x:auto;scrollbar-width:none}
   :root[data-split="ck"] #wGps #pfdHost .pfd-tools>*{flex:0 0 auto}
-  :root[data-split="ck"] .win.hasrail>.ckrail{margin:4px 6px 0}
+  :root[data-split="ck"] .win.hasrail .ckrail{margin:4px 6px 0}
   :root[data-split="ck"] .ckrail button{min-height:40px;min-width:56px;font-size:10px;padding:2px}
   :root[data-split="ck"] .ckrail button svg{width:17px;height:17px}
 }
@@ -1476,7 +1484,7 @@ html.driving body{overflow:hidden}
 #app>.win>.bar .groove{min-width:0}
 #app>.win>.bar .gsbar{min-width:0;flex:0 1 auto;max-width:42%}
 #app>.win>.bar .wbtn{flex:none}
-.win.hasrail>.ckrail{min-width:0;max-width:100%}
+.win.hasrail .ckrail{min-width:0;max-width:100%}
 /* 2. 좁은 라디오 표시창: 주파수 숫자·FM·MHz가 칸 안에, 방송 이름은 두 줄까지 */
 .rd-fq{max-width:100%;min-width:0}
 .rd-disp #rdName{max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.2}
@@ -1627,3 +1635,45 @@ html.driving body{overflow:hidden}
 .bripick .bri-pre{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .bripick .bri-pre .pill{height:44px;font-size:14px;justify-content:center;text-align:center;padding:0 2px}
 .bripick .bri-pre .pill[data-v="-1"]{grid-column:1/-1}
+
+/* 1.19 콕핏: 바로가기가 아래로 내려가 넓어진 만큼 스피드미터 화면을 더 크게(가로 꽉 + 높이 키움) */
+:root[data-ck2]:not([data-split="grid"]) .app:not(.FX) #wGps:not(.sized) #pfdHost .pfd-canvas-wrap{aspect-ratio:1.8!important;height:auto!important;max-height:62vh}
+@media (max-width:650px){:root[data-ck2]:not([data-split="grid"]) .app:not(.FX) #wGps:not(.sized) #pfdHost .pfd-canvas-wrap{aspect-ratio:1.45!important}}
+:root[data-ck2] #wGps.hasrail #pfdHost .ckrail{margin:6px 2px 0}
+
+/* 1.19: [GPS 켜기] 줄 아래 기기 지원 표시 */
+.devcaps{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 3px 0;padding:5px 6px;border:1px solid color-mix(in srgb,var(--edge,#54604e) 70%,transparent);border-radius:6px;
+  background:color-mix(in srgb,#000 30%,transparent);font:600 11px/1.15 "Noto Sans KR",sans-serif;color:var(--muted,#9da69d)}
+.devcaps .dc-h{font:700 10.5px/1 "Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.08em;color:var(--muted,#9da69d);margin-right:2px}
+.devcaps .dc{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:12px;border:1px solid #ffffff1c;background:#ffffff08;white-space:nowrap}
+.devcaps .dc i{width:7px;height:7px;border-radius:50%;background:#6b7369;flex:none}
+.devcaps .dc em{font-style:normal;color:#e7ece2}
+.devcaps .dc small{font-size:10px;color:#a8b0a4}
+.devcaps .dc[data-s="on"] i{background:#7cf06a;box-shadow:0 0 6px #7cf06a}
+.devcaps .dc[data-s="on"] small{color:#a8f08f}
+.devcaps .dc[data-s="yes"] i{background:#a8f08f}
+.devcaps .dc[data-s="off"] i{background:#f3bc65}
+.devcaps .dc[data-s="off"] small{color:#f3bc65}
+.devcaps .dc[data-s="no"]{opacity:.55}.devcaps .dc[data-s="no"] i{background:#d06a5c}.devcaps .dc[data-s="no"] em{text-decoration:line-through}
+.devcaps .dc[data-s="unk"] i{background:transparent;border:1px solid #8a9286}
+#pfdHost .devcaps{margin:8px 3px 0}
+@media (max-width:520px){.devcaps .dc{padding:3px 5px}.devcaps .dc small{font-size:9.5px}}
+
+/* 1.19: NOW PLAYING 효과 즐겨찾기 */
+.vmode .vfav,.vmode .vfavonly{width:auto;min-width:26px;padding:0 6px;color:var(--lcd-dim);letter-spacing:0}
+.vmode .vfav{font-size:15px;line-height:1}
+.vmode .vfav.on{color:#f3bc65;text-shadow:0 0 6px #f3bc6588}
+.vmode .vfavonly{font-size:11px}
+.vmode .vfavonly.on{color:#f3bc65;box-shadow:inset 0 -2px 0 #f3bc65}
+.vmode .vsel optgroup{background:var(--panel);color:var(--muted)}
+@media (max-width:460px){:root[data-ck2] .win.hasrail .ckrail button span[data-s]{font-size:0}
+  :root[data-ck2] .win.hasrail .ckrail button span[data-s]::after{content:attr(data-s);font-size:9px}}
+@media (min-width:900px){:root[data-ck2] .win.hasrail .ckrail button{flex-direction:row;gap:6px;min-height:36px;font-size:12px}
+  :root[data-ck2] .win.hasrail .ckrail button[data-f="vis"] span{font-size:10px}
+  :root[data-ck2] .win.hasrail .ckrail button[data-open] span{display:flex;align-items:baseline;gap:4px}}
+:root[data-split] #devCaps{display:none}
+/* TMAP과 나눈 화면: 바로가기 줄을 더 얇게(계기 화면 높이 확보) */
+:root[data-split="ck"][data-ck2] .win.hasrail .ckrail{padding:1px 2px;gap:3px;margin:2px 2px 0;border-radius:5px}
+:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button{flex-direction:row;gap:4px;min-height:24px;max-height:26px;padding:0 2px;font-size:10px}
+:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button svg{width:14px;height:14px}
+:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-open] em,:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-f="vis"] span br{display:none}

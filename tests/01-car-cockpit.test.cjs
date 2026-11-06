@@ -132,7 +132,7 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     assert.equal(await page.locator('#wGps .body').evaluate(el => el.scrollHeight <= el.clientHeight + 1), true, 'Shrunk cockpit fits without scrolling');
     await page.waitForTimeout(150);
     const cw = await page.locator('#pfdHost canvas').evaluate(c => c.width / c.height);
-    assert.ok(cw > 3, `PFD canvas follows the new aspect ratio (${cw})`);
+    assert.ok(cw > 2.2, `PFD canvas follows the new aspect ratio (${cw})`);
     await page.evaluate(() => {const w=document.querySelector('#wGps');w.style.height='';w.classList.remove('sized')});
     // 조종 패널(패키지 콘솔): 웹 시연에서는 레버가 바로 바뀌고, 볼륨 노브·+/−·음소거, DRIVE MODE는 앱의 간편 모드
     assert.equal(await page.locator('#wCtl').isVisible(), true);

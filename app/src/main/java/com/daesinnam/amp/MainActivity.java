@@ -808,6 +808,12 @@ public class MainActivity extends Activity {
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQ_LOC);
     }
 
+    private static JSONObject cap(String s, String t) {
+        JSONObject j = new JSONObject();
+        try { j.put("s", s); j.put("t", t); } catch (Exception ignored) {}
+        return j;
+    }
+
     /** 화면 켜 두기 결정은 한 곳에서: 항상 켜기 · HUD · 재생 중 켜기 */
     private void applyScreenOn() {
         if (screenAlways || hudOn || (playing && screenOnPlay)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -1610,6 +1616,67 @@ public class MainActivity extends Activity {
                 screenOnPlay = on;
                 applyScreenOn();
             });
+        }
+
+        /** 기기 지원 확인(GPS·방향 센서·LTE·5G·Wi-Fi·블루투스): {키:{s:on|off|yes|no|unk, t:짧은 글}} — 새 권한 없이 확인 가능한 것만 */
+        @JavascriptInterface
+        public String deviceCaps() {
+            JSONObject o = new JSONObject();
+            PackageManager pm = getPackageManager();
+            try {
+                // GPS
+                boolean gpsHw = pm.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
+                boolean gpsOn = false;
+                try { android.location.LocationManager lm = (android.location.LocationManager) getSystemService(LOCATION_SERVICE); gpsOn = lm != null && lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER); } catch (Exception ignored) {}
+                o.put("gps", cap(gpsHw ? (gpsOn ? "on" : "off") : "no", gpsHw ? (gpsOn ? "켜짐" : "꺼짐") : "없음"));
+                // 방향 센서(나침반·회전)
+                android.hardware.SensorManager sm = (android.hardware.SensorManager) getSystemService(SENSOR_SERVICE);
+                boolean rot = sm != null && (sm.getDefaultSensor(android.hardware.Sensor.TYPE_ROTATION_VECTOR) != null
+                        || (sm.getDefaultSensor(android.hardware.Sensor.TYPE_MAGNETIC_FIELD) != null && sm.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER) != null));
+                boolean gyro = sm != null && sm.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE) != null;
+                o.put("compass", cap(rot ? "yes" : "no", rot ? (gyro ? "있음 · 자이로" : "있음") : "없음"));
+                // 지금 쓰는 네트워크
+                boolean cellNow = false, wifiNow = false;
+                try {
+                    android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+                    android.net.NetworkCapabilities nc = cm == null ? null : cm.getNetworkCapabilities(cm.getActiveNetwork());
+                    if (nc != null) { cellNow = nc.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR); wifiNow = nc.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI); }
+                } catch (Exception ignored) {}
+                // LTE · 5G
+                boolean tel = pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+                String lte, lteT, nr, nrT;
+                if (!tel) { lte = "no"; lteT = "없음(Wi-Fi 전용)"; nr = "no"; nrT = "없음"; }
+                else {
+                    long fam = -1;
+                    try { android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) getSystemService(TELEPHONY_SERVICE); if (Build.VERSION.SDK_INT >= 29 && tm != null) fam = tm.getSupportedRadioAccessFamily(); } catch (Exception ignored) {}
+                    boolean nrSeen = false;
+                    try {
+                        if (Build.VERSION.SDK_INT >= 29 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+                            List<android.telephony.CellInfo> cells = tm == null ? null : tm.getAllCellInfo();
+                            if (cells != null) for (android.telephony.CellInfo c : cells) if (c instanceof android.telephony.CellInfoNr) { nrSeen = true; break; }
+                        }
+                    } catch (Exception ignored) {}
+                    boolean lteOk = fam < 0 || (fam & android.telephony.TelephonyManager.NETWORK_TYPE_BITMASK_LTE) != 0;
+                    lte = lteOk ? (cellNow ? "on" : "yes") : "no"; lteT = lteOk ? (cellNow ? "모바일 데이터 사용 중" : "지원") : "없음";
+                    if (fam > 0) { boolean ok = (fam & android.telephony.TelephonyManager.NETWORK_TYPE_BITMASK_NR) != 0; nr = ok ? (nrSeen ? "on" : "yes") : "no"; nrT = ok ? (nrSeen ? "5G 신호 잡힘" : "지원") : "없음"; }
+                    else if (nrSeen) { nr = "on"; nrT = "5G 신호 잡힘"; }
+                    else { nr = "unk"; nrT = "확인 불가"; }
+                }
+                o.put("lte", cap(lte, lteT));
+                o.put("nr", cap(nr, nrT));
+                // Wi-Fi
+                boolean wifiHw = pm.hasSystemFeature(PackageManager.FEATURE_WIFI);
+                boolean wifiOn = false;
+                try { WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE); wifiOn = wm != null && wm.isWifiEnabled(); } catch (Exception ignored) {}
+                o.put("wifi", cap(!wifiHw ? "no" : wifiNow ? "on" : wifiOn ? "yes" : "off", !wifiHw ? "없음" : wifiNow ? "연결됨" : wifiOn ? "켜짐" : "꺼짐"));
+                // 블루투스
+                boolean btHw = pm.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
+                int btState = -1;
+                try { BluetoothManager bm = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE); BluetoothAdapter ba = bm == null ? null : bm.getAdapter(); if (ba != null) btState = ba.isEnabled() ? 1 : 0; } catch (Exception ignored) {}
+                o.put("bt", cap(!btHw ? "no" : btState == 1 ? "on" : btState == 0 ? "off" : "yes", !btHw ? "없음" : btState == 1 ? "켜짐" : btState == 0 ? "꺼짐" : "지원"));
+            } catch (Exception e) { /* 확인 못 한 것은 화면에서 '확인 불가' */ }
+            return o.toString();
         }
 
         /** 앱이 켜져 있는 동안 화면을 계속 켜 둘지(기본: 켜 둠 — 수면 모드로 들어가지 않음) */

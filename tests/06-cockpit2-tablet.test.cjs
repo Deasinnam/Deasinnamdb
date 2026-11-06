@@ -12,7 +12,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pc2.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Cockpit 2 reuses the cockpit look');
       assert.equal(await pc2.evaluate(() => document.documentElement.dataset.ck2), '1');
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
-      assert.equal(await pc2.locator('#wGps > #ckRail').count(), 1, 'Rail sits inside the speedometer window');
+      assert.equal(await pc2.locator('#wGps #pfdHost .pfd-glass + #ckRail').count(), 1, 'Rail sits right under the speedometer view');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
       assert.deepEqual(await pc2.locator('#ckRail button[data-f]').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio','vis'], 'Six view buttons (with NOW PLAYING)');
       assert.deepEqual(await pc2.locator('#ckRail button[data-open]').evaluateAll(bs => bs.map(b => b.dataset.open)), ['tmap','nmap'], 'TMAP / Naver Map open-below buttons');
@@ -31,7 +31,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
         assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');
         const fit = await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return r.bottom<=innerHeight+2&&r.top>=0}, ids[0]);
         assert.ok(fit, f+' fits the screen without scrolling');
-        assert.equal(await pc2.locator(`#${ids[0]} > #ckRail`).count(), 1, 'Rail inside the window');
+        assert.equal(await pc2.locator(`#${ids[0]} #ckRail`).count(), 1, 'Rail inside the window');
         sizes.push(await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]}, ids[0]));
       }
       for (const z of sizes) assert.deepEqual(z, sizes[0], 'Every rail view has the same size as the speedometer view');
@@ -117,7 +117,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       await pt2.locator('#tkSpd').selectOption('mate');
       assert.equal(await pt2.locator('#tkPfd').isVisible(), true, 'Back to SPEED MATE');
       assert.equal(await pt2.locator('#tabCk #tkVisW #vis').isVisible(), true, 'App visualizer in the audio panel');
-      assert.equal(await pt2.locator('#tabCk #visSel option').count(), 30, 'All 30 effects');
+      assert.equal(await pt2.locator('#tabCk #visSel option').count(), 40, 'All 40 effects');
       const dn0 = await pt2.locator('#tkDN').textContent(); await pt2.locator('#tkDN').click();
       assert.notEqual(await pt2.locator('#tkDN').textContent(), dn0, 'Map day/night switch');
       await pt2.locator('#tabCk [data-k="setup"]').click();

@@ -172,6 +172,7 @@ function drawVisFx(g,w,h,d,live){
     const R=Math.hypot(w,h)/2;vfx.pulse=vfx.pulse.filter(p=>(p.r+=R*.012*(1+b),p.a-=.012)>0&&p.r<R);
     for(const p of vfx.pulse){g.globalAlpha=p.a;g.strokeStyle=p.c;g.lineWidth=(2+p.a*4)*d;g.beginPath();g.arc(cx,cy,p.r,0,7);g.stroke()}
     g.globalAlpha=1;const gr=g.createRadialGradient(cx,cy,0,cx,cy,Math.min(w,h)*.3);gr.addColorStop(0,L4);gr.addColorStop(.4,L3);gr.addColorStop(1,'transparent');g.globalAlpha=.25+b*.6;g.fillStyle=gr;g.beginPath();g.arc(cx,cy,Math.min(w,h)*(.12+b*.18),0,7);g.fill();g.globalAlpha=1;return}
+  if(visMode>=30){drawVisFx4(g,w,h,d,live,t,wv);return}
   if(visMode>=20){drawVisFx3(g,w,h,d,live,t,wv);return}
   if(visMode>=10){drawVisFx2(g,w,h,d,live,t,wv);return}
   // 9. VU METER: 좌우 아날로그 바늘
@@ -283,6 +284,52 @@ function drawVisFx3(g,w,h,d,live,t,wv){
   g.fillStyle=L4;g.beginPath();g.arc(cx,cy,R*(.05+bass*.06),0,7);g.fill();
   for(let i=0;i<8;i++){const v=visLevel(i/8,(i+1)/8),rr=R*(.1+i*.05),a=t*(1.2-i*.12)+i;g.strokeStyle=C.grid;g.lineWidth=1;g.beginPath();g.ellipse(cx,cy,rr*1.4,rr*.9,0,0,7);g.stroke();
     g.fillStyle=col(v);g.beginPath();g.arc(cx+Math.cos(a)*rr*1.4,cy+Math.sin(a)*rr*.9,(2.5+v*7)*d,0,7);g.fill()}}
+/* 시각화 효과 30~39 */
+const vfx4={ridge:[],bub:[],rip:[],sw:[],lastB:0};
+function drawVisFx4(g,w,h,d,live,t,wv){
+  const cx=w/2,cy=h/2,L1=C.l1,L2=C.l2,L3=C.l3,L4=C.l4,lv=visLevel(0,1),bass=visLevel(0,.12),col=v=>v>.75?L4:v>.5?L3:v>.25?L2:L1,R=Math.min(w,h);
+  if(visMode===30){ // FAN: 아래 가운데서 부채꼴로 펼쳐지는 막대
+    const n=40,r0=R*.12,oy=h-4*d;for(let i=0;i<n;i++){const v=bars[Math.floor(i/n*N)]||0,a=Math.PI+(i+.5)/n*Math.PI,r1=r0+v*(Math.min(h*.92,w*.48)-r0);
+      g.strokeStyle=col(v);g.lineWidth=Math.max(2*d,Math.PI*r0/n*1.4);g.lineCap='round';g.beginPath();g.moveTo(cx+Math.cos(a)*r0,oy+Math.sin(a)*r0);g.lineTo(cx+Math.cos(a)*r1,oy+Math.sin(a)*r1);g.stroke()}
+    g.lineCap='butt';g.fillStyle=L4;g.beginPath();g.arc(cx,oy,r0*(.6+bass*.4),Math.PI,0);g.fill();return}
+  if(visMode===31){ // RIDGES: 지나간 스펙트럼이 겹겹이 쌓인 능선
+    const rows=24;vfx4.ridge.unshift(Array.from({length:48},(_,i)=>bars[Math.floor(i/48*N)]||0));vfx4.ridge.length=Math.min(vfx4.ridge.length,rows);
+    for(let r=vfx4.ridge.length-1;r>=0;r--){const row=vfx4.ridge[r],base=h*.96-r*(h*.72/rows),sc=1-r/rows*.45,x0=cx-w*.45*sc,ww=w*.9*sc;
+      g.beginPath();g.moveTo(x0,base);row.forEach((v,i)=>{const mid=1-Math.abs(i/47-.5)*2;g.lineTo(x0+i/47*ww,base-v*h*.42*sc*(.35+mid*.65))});g.lineTo(x0+ww,base);
+      g.fillStyle=C.bg||'#000';g.fill();g.strokeStyle=r?col(.2+.6*(1-r/rows)):L4;g.lineWidth=(r?1.2:2)*d;g.globalAlpha=1-r/rows*.7;g.stroke()}g.globalAlpha=1;return}
+  if(visMode===32){ // BUBBLES: 대역마다 거품이 떠오름
+    if(vfx4.bub.length<140)for(let k=0;k<3;k++){const b=Math.floor(Math.random()*N),v=bars[b]||0;if(v>.2||Math.random()<.05)vfx4.bub.push({x:(b+.5)/N*w,y:h+10*d,r:(3+v*14)*d,s:(.8+v*2.5)*d,c:col(v),p:Math.random()*6})}
+    vfx4.bub=vfx4.bub.filter(b=>(b.y-=b.s*(1+lv))>-30*d);for(const b of vfx4.bub){const x=b.x+Math.sin(t*2+b.p)*6*d;g.strokeStyle=b.c;g.lineWidth=1.5*d;g.globalAlpha=.75;g.beginPath();g.arc(x,b.y,b.r,0,7);g.stroke();
+      g.globalAlpha=.35;g.fillStyle=b.c;g.beginPath();g.arc(x-b.r*.35,b.y-b.r*.35,b.r*.25,0,7);g.fill()}g.globalAlpha=1;return}
+  if(visMode===33){ // LASER: 아래에서 쏘아 올리는 레이저 빔
+    g.globalCompositeOperation='lighter';const n=14;for(let i=0;i<n;i++){const v=visLevel(i/n,(i+1)/n),a=-Math.PI/2+Math.sin(t*(.6+i*.07)+i)*.9,len=h*(.25+v*1.1);
+      g.strokeStyle=col(v);g.globalAlpha=.25+v*.6;g.lineWidth=(1+v*3)*d;g.shadowColor=col(v);g.shadowBlur=12*d;g.beginPath();g.moveTo(cx,h);g.lineTo(cx+Math.cos(a)*len,h+Math.sin(a)*len);g.stroke()}
+    g.shadowBlur=0;g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle=L4;g.beginPath();g.arc(cx,h,R*(.04+bass*.05),Math.PI,0);g.fill();return}
+  if(visMode===34){ // HONEYCOMB: 벌집 칸이 소리에 따라 밝아짐
+    const s=Math.max(14*d,R/9),hh=s*Math.sqrt(3);let k=0;for(let y=-hh/2,row=0;y<h+hh;y+=hh/2,row++)for(let x=(row%2)*s*1.5;x<w+s*2;x+=s*3,k++){
+      const v=bars[(k*7)%N]||0;g.beginPath();for(let j=0;j<6;j++){const a=j*Math.PI/3;g.lineTo(x+Math.cos(a)*s*.92,y+Math.sin(a)*s*.92)}g.closePath();
+      g.globalAlpha=.08+v*.85;g.fillStyle=col(v);g.fill();g.globalAlpha=.4;g.strokeStyle=C.grid;g.lineWidth=1;g.stroke()}g.globalAlpha=1;return}
+  if(visMode===35){ // POLAR: 원을 따라 감긴 파형
+    for(let k=0;k<3;k++){const r0=R*(.22+k*.08+bass*.05);g.strokeStyle=[L4,L3,L2][k];g.globalAlpha=1-k*.28;g.lineWidth=(2-k*.4)*d;g.beginPath();
+      for(let i=0;i<=180;i++){const a=i/180*Math.PI*2+t*(k%2?-.3:.3),r=r0+wv(i*2.8+k*40)*R*.22;const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;i?g.lineTo(x,y):g.moveTo(x,y)}g.stroke()}g.globalAlpha=1;return}
+  if(visMode===36){ // TILES: 격자 타일이 대역별로 깜빡임
+    const cols=16,rows=Math.max(4,Math.round(cols*h/w)),tw=w/cols,th=h/rows;for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const v=bars[Math.floor(x/cols*N)]||0,on=(rows-y)/rows<=v+.02;
+      g.globalAlpha=on?.5+v*.5:.06;g.fillStyle=on?col((rows-y)/rows):L1;g.fillRect(x*tw+1.5*d,y*th+1.5*d,tw-3*d,th-3*d)}g.globalAlpha=1;return}
+  if(visMode===37){ // SWARM: 저음이 오면 퍼졌다 모이는 입자 떼
+    while(vfx4.sw.length<220)vfx4.sw.push({a:Math.random()*7,r:Math.random(),s:.3+Math.random()*.9});const kick=Math.max(0,bass-vfx4.lastB)*6;vfx4.lastB=bass;
+    for(const p of vfx4.sw){p.a+=.01*p.s*(1+lv*3);p.r+=(.25+bass*.7-p.r)*.04+kick*(Math.random()-.3)*.3;p.r=Math.max(.05,Math.min(1.2,p.r));const x=cx+Math.cos(p.a)*p.r*R*.62+Math.sin(t*3+p.s*9)*4*d,y=cy+Math.sin(p.a)*p.r*R*.42+Math.cos(t*2.6+p.s*7)*4*d;
+      g.fillStyle=col(Math.min(1,p.r));g.globalAlpha=.4+p.s*.5;g.fillRect(x,y,2*d,2*d)}g.globalAlpha=1;return}
+  if(visMode===38){ // RIPPLES: 물결이 소리에 맞춰 퍼짐
+    if((bass-vfx4.lastB>.05&&bass>.25)||Math.random()<.04+lv*.08)vfx4.rip.push({x:Math.random()*w,y:Math.random()*h,r:0,v:.6+lv,c:col(.4+lv*.6)});vfx4.lastB=bass;
+    vfx4.rip=vfx4.rip.filter(o=>(o.r+=(1.4+o.v*2)*d)<R*.6).slice(-40);for(const o of vfx4.rip){const a=1-o.r/(R*.6);g.strokeStyle=o.c;g.globalAlpha=a*.85;g.lineWidth=2*d*a+.5;
+      g.beginPath();g.ellipse(o.x,o.y,o.r,o.r*.55,0,0,7);g.stroke();g.globalAlpha=a*.4;g.beginPath();g.ellipse(o.x,o.y,o.r*.6,o.r*.33,0,0,7);g.stroke()}g.globalAlpha=1;return}
+  // 39. SYNTHWAVE: 지는 해와 다가오는 격자 길, 스펙트럼 스카이라인
+  const hz=h*.58,sr=R*.26;const sg=g.createLinearGradient(0,hz-sr,0,hz);sg.addColorStop(0,L4);sg.addColorStop(1,L2);g.fillStyle=sg;g.save();g.beginPath();g.arc(cx,hz,sr*(.9+bass*.15),Math.PI,0);g.clip();
+  g.fillRect(cx-sr*1.2,hz-sr*1.3,sr*2.4,sr*1.3);g.globalCompositeOperation='destination-out';for(let k=0;k<6;k++){const yy=hz-sr*(.1+k*.13);g.fillRect(cx-sr*1.2,yy,sr*2.4,(1.5+k*.6)*d)}g.globalCompositeOperation='source-over';g.restore();
+  const n=48,bw=w/n;for(let i=0;i<n;i++){const v=bars[Math.floor(Math.abs(i-n/2)/(n/2)*(N-1))]||0;g.fillStyle=col(v);g.globalAlpha=.85;g.fillRect(i*bw+1,hz-v*h*.3,bw-2,v*h*.3)}g.globalAlpha=1;
+  g.strokeStyle=L3;g.lineWidth=1*d;g.globalAlpha=.7;g.beginPath();g.moveTo(0,hz);g.lineTo(w,hz);g.stroke();
+  for(let i=-12;i<=12;i++){g.beginPath();g.moveTo(cx+i*w*.02,hz);g.lineTo(cx+i*w*.16,h);g.stroke()}
+  const sp=(t*(.6+lv*1.5))%1;for(let k=0;k<8;k++){const f=(k+sp)/8,y=hz+(h-hz)*f*f;g.globalAlpha=.25+f*.6;g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}g.globalAlpha=1}
 function drawMini(){
   const c=cv.mini,g=cx.mini,w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const n=19,gap=Math.max(1,2*d),bw=(w-gap*(n-1))/n;
@@ -294,10 +341,31 @@ function drawEqLed(){
   for(let i=0;i<11;i++){const x=i*cw+cw/2-bw/2;ledColumn(g,x,bw,h-4*d,h-8*d,eqLv[i],Math.max(3,5*d),Math.max(1,2*d),null,C.off)}
   g.fillStyle=C.edge;g.fillRect(cw*.12,h/2,w-cw*.24,1);
 }
-const VIS_N=30;if(!(visMode>=0&&visMode<VIS_N))visMode=0;
-const syncVis=()=>{$('#visSel').value=String(visMode)};
+/* 효과 40개 + 즐겨찾기(★): ★를 누르면 등록/해제, 즐겨찾기가 2개 이상이고 [★만]을 켜면 ◀ ▶·화면 탭이 즐겨찾기 안에서만 넘어감 */
+const VIS_NAMES=['SPECTRUM','MIRROR','SCOPE','AREA','RING','RADAR','WAVES','DOTS','PULSE','VU METER','CITY','FLAME','STARS','SPIRAL','WATERFALL','TUNNEL','FLOWER','BLOCKS 3D','LISSAJOUS','ECG',
+  'PLASMA','HELIX','CODE RAIN','SUNBURST','MOUNTAINS','KALEIDO','BOUNCE','GRID WARP','FIREWORKS','ORBIT','FAN','RIDGES','BUBBLES','LASER','HONEYCOMB','POLAR','TILES','SWARM','RIPPLES','SYNTHWAVE'];
+const VIS_N=VIS_NAMES.length;if(!(visMode>=0&&visMode<VIS_N))visMode=0;
+let visFav=(()=>{const a=store.get('visFav',[]);return Array.isArray(a)?[...new Set(a.filter(i=>i>=0&&i<VIS_N))]:[]})(),visFavOnly=store.get('visFavOnly',true);
+const visNum=i=>String(i+1).padStart(2,'0');
+function visBuild(){const sel=$('#visSel');sel.innerHTML='';
+  if(visFav.length){const og=document.createElement('optgroup');og.label='★ 즐겨찾기';visFav.slice().sort((a,b)=>a-b).forEach(i=>og.append(new Option('★ '+VIS_NAMES[i],String(i))));sel.append(og)}
+  const og=document.createElement('optgroup');og.label='전체 효과 '+VIS_N+'개';VIS_NAMES.forEach((n,i)=>og.append(new Option(visNum(i)+' '+n+(visFav.includes(i)?' ★':''),String(i))));sel.append(og)}
+const syncVis=()=>{$('#visSel').value=String(visMode);const f=visFav.includes(visMode),b=$('#visFav'),o=$('#visFavOnly');
+  if(b){b.textContent=f?'★':'☆';b.classList.toggle('on',f);b.setAttribute('aria-pressed',String(f));b.title=f?'즐겨찾기에서 빼기':'즐겨찾기에 등록'}
+  if(o){o.hidden=visFav.length<2;o.classList.toggle('on',visFavOnly);o.setAttribute('aria-pressed',String(visFavOnly))}};
 const setVis=m=>{visMode=((m%VIS_N)+VIS_N)%VIS_N;store.set('vis',visMode);syncVis()};
+function visStep(dir){if(visFavOnly&&visFav.length>=2){const f=visFav.slice().sort((a,b)=>a-b);let k=f.indexOf(visMode);
+    if(k<0){k=dir>0?f.findIndex(i=>i>visMode):f.length-1-f.slice().reverse().findIndex(i=>i<visMode);if(k<0||k>=f.length)k=dir>0?0:f.length-1;setVis(f[k]);return}
+    setVis(f[(k+dir+f.length)%f.length]);return}
+  setVis(visMode+dir)}
+function visFavToggle(){const i=visFav.indexOf(visMode);if(i>=0)visFav.splice(i,1);else visFav.push(visMode);store.set('visFav',visFav);visBuild();syncVis();
+  try{toast(i>=0?VIS_NAMES[visMode]+' 즐겨찾기에서 뺐어요':'★ '+VIS_NAMES[visMode]+' 즐겨찾기에 등록했어요')}catch(e){}}
+{const vm=document.querySelector('#wVis .vmode');if(vm&&!$('#visFav')){const fb=document.createElement('button');fb.type='button';fb.className='vfav';fb.id='visFav';fb.textContent='☆';
+  const ob=document.createElement('button');ob.type='button';ob.className='vfavonly';ob.id='visFavOnly';ob.textContent='★만';ob.title='즐겨찾기만 넘기기';vm.append(fb,ob);
+  fb.onclick=e=>{e.stopPropagation();visFavToggle()};ob.onclick=e=>{e.stopPropagation();visFavOnly=!visFavOnly;store.set('visFavOnly',visFavOnly);syncVis()}}}
+visBuild();syncVis();
 $('#visSel').onchange=e=>setVis(+e.target.value);$('#visSel').onclick=e=>e.stopPropagation();
-document.querySelectorAll('.vmode .vstep').forEach(b=>b.onclick=e=>{e.stopPropagation();setVis(visMode+ +b.dataset.d)});
-cv.vis.onclick=()=>setVis(visMode+1);
+document.querySelectorAll('.vmode .vstep').forEach(b=>b.onclick=e=>{e.stopPropagation();visStep(+b.dataset.d)});
+cv.vis.onclick=()=>visStep(1);
+window.AmpVis={level:()=>visLevel(0,1),names:VIS_NAMES,set:setVis,fav:()=>visFav.slice(),toggleFav:visFavToggle};
 

@@ -73,14 +73,14 @@
 
 <nav class="ckrail" id="ckRail" aria-label="콕핏 2 바로가기">
   <button data-f="all" class="on"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg><span>전체</span></button>
-  <button data-f="gps"><svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 0 0-9 9 9 9 0 0 0 2.2 5.9l1.5-1.3A7 7 0 1 1 19 13a7 7 0 0 1-1.7 4.6l1.5 1.3A9 9 0 0 0 12 4zm4.2 4.4-5.4 4.1a1.6 1.6 0 1 0 2.2 2.2z"/></svg><span>스피드미터</span></button>
+  <button data-f="gps"><svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 0 0-9 9 9 9 0 0 0 2.2 5.9l1.5-1.3A7 7 0 1 1 19 13a7 7 0 0 1-1.7 4.6l1.5 1.3A9 9 0 0 0 12 4zm4.2 4.4-5.4 4.1a1.6 1.6 0 1 0 2.2 2.2z"/></svg><span data-s="속도계">스피드미터</span></button>
   <button data-f="map"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zm0 2.2 6 2v11.6l-6-2z"/></svg><span>지도</span></button>
-  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>DASHCAM</span></button>
+  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span data-s="CAM">DASHCAM</span></button>
   <button data-f="radio"><svg viewBox="0 0 24 24"><path d="M4 8h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zm2.5-1L17 3l.7 1.8L9.6 8zM8 11a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm7 1v1.6h4V12zm0 3v1.6h4V15z"/></svg><span>라디오</span></button>
   <button data-f="vis"><svg viewBox="0 0 24 24"><path d="M3 20h2V10H3zm4 0h2V4H7zm4 0h2v-7h-2zm4 0h2V7h-2zm4 0h2v-4h-2z"/></svg><span>NOW<br>PLAYING</span></button>
   <i class="ckdiv" aria-hidden="true"></i>
   <button data-open="tmap" title="TMAP 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2 4 21l8-4 8 4z"/></svg><span>T맵<em>▼ 아래</em></span></button>
-  <button data-open="nmap" title="네이버 지도 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 4.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg><span>네이버지도<em>▼ 아래</em></span></button>
+  <button data-open="nmap" title="네이버 지도 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 4.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg><span data-s="네이버">네이버지도<em>▼ 아래</em></span></button>
 </nav>
 <div class="skinpick bripick" id="briPick" role="dialog" aria-label="화면 밝기" hidden><b>화면 밝기</b>
   <div class="bri-row"><button type="button" class="pill" id="briPDn" aria-label="낮추기">−</button><input type="range" id="briRange" min="10" max="100" step="5" value="60" aria-label="밝기"><button type="button" class="pill" id="briPUp" aria-label="올리기">＋</button></div>
@@ -332,7 +332,7 @@
       <div class="visbox">
         <div class="npempty" id="npEmpty"><b>재생 중인 곡이 없어요</b><span>음악을 추가하거나 라디오를 틀어 보세요.</span><div><button class="pill on" id="npAdd">+ 음악 추가</button><button class="pill" id="npRadio">📻 라디오</button></div></div>
         <canvas id="vis" aria-label="사운드 시각화. 탭하면 모드 변경"></canvas>
-        <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option><option value="1">MIRROR</option><option value="2">SCOPE</option><option value="3">AREA</option><option value="4">RING</option><option value="5">RADAR</option><option value="6">WAVES</option><option value="7">DOTS</option><option value="8">PULSE</option><option value="9">VU METER</option><option value="10">CITY</option><option value="11">FLAME</option><option value="12">STARS</option><option value="13">SPIRAL</option><option value="14">WATERFALL</option><option value="15">TUNNEL</option><option value="16">FLOWER</option><option value="17">BLOCKS 3D</option><option value="18">LISSAJOUS</option><option value="19">ECG</option><option value="20">PLASMA</option><option value="21">HELIX</option><option value="22">CODE RAIN</option><option value="23">SUNBURST</option><option value="24">MOUNTAINS</option><option value="25">KALEIDO</option><option value="26">BOUNCE</option><option value="27">GRID WARP</option><option value="28">FIREWORKS</option><option value="29">ORBIT</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
+        <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
       </div>
     </div>
   </section>

@@ -4,11 +4,18 @@
 // 콕핏 2 바로가기: 모두 한 창씩, 스피드미터와 같은 크기(바꿔도 화면 크기가 그대로)
 const FX_GROUPS={gps:['wGps'],map:['wMap'],cam:['wCam'],radio:['wRadio'],vis:['wVis']};
 const ckRailHome=document.createComment('ckRail');$('#ckRail').before(ckRailHome);
-function ckRailPlace(hostId,span){const r=$('#ckRail');document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
+const ckRailEl=$('#ckRail'); // 스피드미터 화면이 다시 만들어져도 잃지 않게 붙잡아 둠
+/* 콕핏: 바로가기는 가로 한 줄 — 스피드미터 창에서는 계기 화면 바로 아래, 다른 창에서는 제목줄 아래 */
+function ckRailPlace(hostId,span){const r=ckRailEl;ckRailPlace.last=[hostId,span];document.querySelectorAll('.win.hasrail').forEach(w=>w.classList.remove('hasrail'));appEl.classList.remove('RL');r.classList.remove('inapp');
   if(!isCk2()||!hostId){ckRailHome.after(r);return}
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
-  const h=$('#'+hostId);if(!h)return;const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild);h.classList.add('hasrail');
-  h.style.setProperty('--rail-top',(bar?bar.offsetHeight+8:10)+'px')}
+  const h=$('#'+hostId);if(!h)return;h.classList.add('hasrail');
+  if(hostId==='wGps'){const glass=h.dataset.gs==='cockpit'&&h.querySelector('#pfdHost .pfd-glass'),gauge=h.querySelector('.body>.gps');
+    const at=glass||gauge;if(at){if(at.nextElementSibling!==r)at.after(r);return}}
+  const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild)}
+// 스피드미터 화면(PFD)이 늦게 만들어지거나 디자인이 바뀌면 자리를 다시 잡음
+{const mo=new MutationObserver(()=>{const l=ckRailPlace.last;if(l&&l[0]==='wGps'&&!l[1])ckRailPlace('wGps',false)});
+  mo.observe($('#wGps'),{attributes:true,attributeFilter:['data-gs']});if($('#pfdHost'))mo.observe($('#pfdHost'),{childList:true})}
 function ckFocus(f,quiet){if(!FX_GROUPS[f])f='all';const split=document.documentElement.getAttribute('data-split')==='ck';if(split&&quiet&&!SPLIT.set)f=SPLIT.f; /* 분할 중 자동 복원은 지금 보기 유지 */if(split&&f==='all')f='gps';if(split)SPLIT.f=f; // 화면 분할 중엔 한 창씩(전체 = 속도계), 고른 보기는 저장하지 않고 끝나면 원래 보기로
   const on=isCk2()&&f!=='all';
   appEl.classList.toggle('FX',on);if(on)document.documentElement.style.setProperty('--fxN',String(FX_GROUPS[f].length));

@@ -6,11 +6,11 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
     p9.on('pageerror', error => errors.push(error.message+' @ '+(error.stack||'').split('\n').slice(1,3).join(' | ')));
     await p9.addInitScript(() => {if(sessionStorage.getItem('p9'))return;sessionStorage.setItem('p9','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival5'));});
     await p9.goto(origin);
-    assert.equal(await p9.locator('#visSel option').count(), 30);
+    assert.equal(await p9.locator('#visSel option').count(), 40);
     const visImgs = new Set();
-    for (let m = 0; m < 30; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
-    assert.ok(visImgs.size >= 27, `Effects render differently (${visImgs.size}/30)`);
-    await p9.locator('#visSel').selectOption('29');
+    for (let m = 0; m < 40; m++) {await p9.locator('#visSel').selectOption(String(m));await p9.waitForTimeout(120);visImgs.add(await p9.locator('#vis').evaluate(c => c.toDataURL()))}
+    assert.ok(visImgs.size >= 36, `Effects render differently (${visImgs.size}/40)`);
+    await p9.locator('#visSel').selectOption('39');
     await p9.locator('#wVis .vstep[data-d="1"]').click();
     assert.equal(await p9.locator('#visSel').inputValue(), '0', 'Next wraps around');
     await p9.locator('#visSel').selectOption('5');

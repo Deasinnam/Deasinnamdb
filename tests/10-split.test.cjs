@@ -18,7 +18,7 @@ run('Split screen layout next to TMAP / Naver Map', async ({context, origin, err
     vis: [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id),
     scroll: document.scrollingElement.scrollHeight - innerHeight, h: innerHeight,
     g: document.getElementById('wGps').getBoundingClientRect(),
-    rail: !!document.querySelector('#wGps > #ckRail') && !!document.getElementById('ckRail').offsetParent,
+    rail: !!document.querySelector('#wGps #ckRail') && !!document.getElementById('ckRail').offsetParent,
     metrics: !!document.querySelector('#pfdHost .pfd-metrics').offsetParent, tools: !!document.querySelector('#pfdHost .pfd-tools').offsetParent,
     canvas: document.querySelector('#pfdHost .pfd-canvas-wrap').getBoundingClientRect().height, top: getComputedStyle(document.querySelector('.top')).display}));
   assert.equal(lay.mode, 'ck');
