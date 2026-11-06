@@ -1658,7 +1658,7 @@ public class MainActivity extends Activity {
                         }
                     } catch (Exception ignored) {}
                     boolean lteOk = fam < 0 || (fam & android.telephony.TelephonyManager.NETWORK_TYPE_BITMASK_LTE) != 0;
-                    lte = lteOk ? (cellNow ? "on" : "yes") : "no"; lteT = lteOk ? (cellNow ? "모바일 데이터 사용 중" : "지원") : "없음";
+                    lte = lteOk ? (cellNow ? "on" : "yes") : "no"; lteT = lteOk ? (cellNow ? "사용 중" : "지원") : "없음";
                     if (fam > 0) { boolean ok = (fam & android.telephony.TelephonyManager.NETWORK_TYPE_BITMASK_NR) != 0; nr = ok ? (nrSeen ? "on" : "yes") : "no"; nrT = ok ? (nrSeen ? "5G 신호 잡힘" : "지원") : "없음"; }
                     else if (nrSeen) { nr = "on"; nrT = "5G 신호 잡힘"; }
                     else { nr = "unk"; nrT = "확인 불가"; }

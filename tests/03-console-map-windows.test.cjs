@@ -21,8 +21,8 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     assert.equal(await p7.locator('#dkWifiSwitch').getAttribute('aria-checked'), 'false', 'Tapping does not fake ON before the device confirms');
     await p7.evaluate(() => {dev.wifi=true});
     await p7.waitForFunction(() => document.querySelector('#dkWifiSwitch').getAttribute('aria-checked') === 'true', null, {timeout:4000});
-    await p7.locator('#dkVolumeUp').click();
-    await p7.waitForFunction(() => log.includes('vol:45'));
+    await p7.locator('#dkVolumeRange').fill('47');
+    await p7.waitForFunction(() => log.includes('vol:47'));
     await p7.waitForFunction(() => document.querySelector('#dkVolumeValue').textContent === '47', null, {timeout:4000});
     await p7.locator('#dkGuardCover').click();await p7.locator('#dkSosButton').click();
     assert.ok((await p7.evaluate(() => log)).includes('call:01000000000'));

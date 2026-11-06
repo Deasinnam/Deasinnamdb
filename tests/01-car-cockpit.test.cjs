@@ -145,13 +145,10 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
       assert.notEqual(await page.locator(id).getAttribute('aria-checked'), was, id+' toggles in the demo');
       await page.locator(id).click();
     }
-    await page.locator('#dkVolumeUp').click();
-    assert.equal(await page.locator('#dkVolumeValue').textContent(), '47');
-    await page.locator('#dkMuteButton').click();
-    assert.equal(await page.locator('#dkVolumeValue').textContent(), '0');
-    assert.equal(await page.locator('#dkMuteButton').textContent(), 'MUTED');
-    await page.locator('#dkMuteButton').click();
-    assert.equal(await page.locator('#dkVolumeValue').textContent(), '47', 'Unmute restores the last volume');
+    assert.equal(await page.locator('#dkVolumeUp').isVisible(), false, 'No −/+ buttons');
+    assert.equal(await page.locator('#dkMuteButton').isVisible(), false, 'No mute button');
+    await page.locator('#dkVolumeRange').fill('47');
+    assert.equal(await page.locator('#dkVolumeValue').textContent(), '47', 'Slider sets the volume');
     const kb = await page.locator('#dkVolumeKnob').boundingBox();
     await page.mouse.move(kb.x+kb.width/2, kb.y+kb.height/2);await page.mouse.down();await page.mouse.move(kb.x+kb.width/2, kb.y+kb.height/2-30,{steps:5});await page.mouse.up();
     assert.ok(+(await page.locator('#dkVolumeValue').textContent()) > 47, 'Dragging the knob up raises the volume');
@@ -179,7 +176,6 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     assert.deepEqual(mods, ['미디어 볼륨','와이파이','EMERGENCY','블루투스','간편 모드'], 'Korean titles, EMERGENCY stays English');
     assert.equal(await page.locator('#dkConsole .subline').count(), 0, 'No sublines');
     assert.equal(await page.locator('#dkConsole .console-footer').isVisible(), false, 'No footer message/usage line');
-    assert.equal(await page.evaluate(() => document.querySelector('#dkMuteButton').parentElement.className), 'volume-strip', 'MUTE sits next to +');
     assert.ok((await page.locator('#wCtl').boundingBox()).height < 340, 'Control panel stays compact');
     assert.equal(await page.locator('#dkSosButton').isDisabled(), true, 'Closed guard disables SOS');
     await page.locator('#dkGuardCover').click();

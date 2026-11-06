@@ -17,7 +17,6 @@ run('Revised cockpit skin', async ({context, origin, errors}) => {
   assert.equal(await p.locator('.tools label[for="skin"]').isVisible(), false);
   assert.ok((await p.locator('#driveBtn').boundingBox()).height >= 46, 'Big toolbar buttons');
   assert.ok((await p.locator('#wGps > .bar .wbtn').last().boundingBox()).width >= 44, 'Window buttons are finger-sized');
-  assert.equal(await p.locator('#dkMuteButton').evaluate(b => b.scrollWidth <= b.clientWidth + 1), true, 'MUTE fits');
   // 조종 패널은 너비와 관계없이 다섯 칸 한 줄
   for (const w of [412, 600, 1000]) {
     await p.setViewportSize({width: w, height: 900}); await p.waitForTimeout(300);

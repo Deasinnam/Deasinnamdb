@@ -8,10 +8,13 @@ function devCapsRead(){let r=null;try{if(NB&&NB.deviceCaps)r=JSON.parse(NB.devic
 function devCapsRender(){const r=devCapsRead();
   for(const [k,n] of DEVCAPS){const el=devCapsEl.querySelector(`[data-k="${k}"]`),c=r&&r[k],s=c&&c.s||'unk',t=c&&c.t||(r?'확인 불가':'앱에서 확인');
     el.dataset.s=s;el.querySelector('small').textContent=t;el.title=`${n}: ${t}`}}
-function devCapsPlace(){const w=$('#wGps');if(!w)return;const tools=w.dataset.gs==='cockpit'&&w.querySelector('#pfdHost .pfd-tools');
+/* 자리: 조종 패널(COCKPIT CONTROL)이 보이면 그 버튼들 아래, 아니면 스피드미터 [GPS 켜기] 줄 아래 */
+function devCapsPlace(){const deck=$('#dkControlDeck');
+  if(deck&&deck.offsetParent){if(deck.nextElementSibling!==devCapsEl)deck.after(devCapsEl);return}
+  const w=$('#wGps');if(!w)return;const tools=w.dataset.gs==='cockpit'&&w.querySelector('#pfdHost .pfd-tools');
   const after=tools||w.querySelector('.gctl');if(after&&after.nextElementSibling!==devCapsEl)after.after(devCapsEl)}
 devCapsPlace();devCapsRender();
-{const mo=new MutationObserver(()=>devCapsPlace());mo.observe($('#wGps'),{attributes:true,attributeFilter:['data-gs']});if($('#pfdHost'))mo.observe($('#pfdHost'),{childList:true})}
-setInterval(()=>{if(!document.hidden)devCapsRender()},15000);
+{let q=0;const mo=new MutationObserver(()=>{if(!q)q=setTimeout(()=>{q=0;devCapsPlace()},60)});mo.observe(document.documentElement,{attributes:true,attributeFilter:['data-skin','data-ck2','data-split']});if($('#app'))mo.observe($('#app'),{attributes:true,attributeFilter:['class','hidden'],subtree:true});mo.observe($('#wGps'),{attributes:true,attributeFilter:['data-gs']});if($('#pfdHost'))mo.observe($('#pfdHost'),{childList:true})}
+setInterval(()=>{if(!document.hidden){devCapsPlace();devCapsRender()}},15000);addEventListener('load',()=>setTimeout(devCapsPlace,300));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)devCapsRender()});
 window.AmpDevCaps={render:devCapsRender};

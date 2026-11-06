@@ -27,8 +27,15 @@ run('Cockpit rail row, device support, 40 effects with favorites', async ({conte
     assert.ok(r.glassW > r.winW - 70, 'Speedometer view uses the full width (no side rail)');
     assert.ok(await p.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth + 1), 'No sideways overflow');
   }
-  // 기기 지원: [GPS 켜기] 줄 바로 아래, 6가지 자동 확인
-  assert.ok(await p.evaluate(() => document.querySelector('#pfdHost .pfd-tools').nextElementSibling?.id === 'devCaps'), 'Device support row under the GPS controls');
+  // 기기 지원: 조종 패널 버튼 아래(패널이 안 보이면 [GPS 켜기] 줄 아래), 6가지 자동 확인
+  assert.ok(await p.evaluate(() => document.getElementById('dkControlDeck').nextElementSibling?.id === 'devCaps'), 'Device support row under the control buttons');
+  await p.locator('#ckRail button[data-f="gps"]').click(); await p.waitForTimeout(300);
+  assert.ok(await p.evaluate(() => document.querySelector('#pfdHost .pfd-tools').nextElementSibling?.id === 'devCaps'), 'Falls back under the GPS controls when the control panel is hidden');
+  await p.locator('#ckRail button[data-f="all"]').click(); await p.waitForTimeout(300);
+  assert.ok(await p.evaluate(() => document.getElementById('dkControlDeck').nextElementSibling?.id === 'devCaps'), 'Back under the control buttons');
+  // 기록 칸은 낮게, 조종 패널도 낮게
+  assert.ok((await p.locator('#pfdHost .pfd-metric').first().boundingBox()).height <= 54, 'Low record tiles');
+  assert.ok(await p.evaluate(() => { const m = document.querySelector('#dkControlDeck .wifi-module').getBoundingClientRect().height; return m < 150; }), 'Low control modules');
   const caps = await p.evaluate(() => [...document.querySelectorAll('#devCaps .dc')].map(e => [e.dataset.k, e.dataset.s, e.querySelector('small').textContent]));
   assert.deepEqual(caps.map(c => c[0]), ['gps', 'compass', 'lte', 'nr', 'wifi', 'bt']);
   assert.deepEqual(caps.map(c => c[1]), ['on', 'yes', 'yes', 'unk', 'off', 'no']);

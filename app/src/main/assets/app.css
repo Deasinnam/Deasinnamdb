@@ -1677,3 +1677,72 @@ html.driving body{overflow:hidden}
 :root[data-split="ck"][data-ck2] .win.hasrail .ckrail button{flex-direction:row;gap:4px;min-height:24px;max-height:26px;padding:0 2px;font-size:10px}
 :root[data-split="ck"][data-ck2] .win.hasrail .ckrail button svg{width:14px;height:14px}
 :root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-open] em,:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-f="vis"] span br{display:none}
+
+/* 1.19.1 콕핏: 기록 칸을 낮게 → 활주로(PFD) 화면을 더 크게 */
+:root[data-ck2] #wGps #pfdHost .pfd-metrics{margin:0 2px 5px;gap:4px}
+:root[data-ck2] #wGps #pfdHost .pfd-metric{padding:4px 9px;box-shadow:inset 0 0 0 2px #070e08}
+:root[data-ck2] #wGps #pfdHost .pfd-metric-label{font-size:12px;margin-bottom:0;line-height:1.15}
+:root[data-ck2] #wGps #pfdHost .pfd-metric-value{font-size:clamp(16px,2.2vw,24px);line-height:1.1}
+:root[data-ck2] #wGps #pfdHost .pfd-metric .pfd-sat{display:none}
+
+/* 1.19.1: 볼륨의 −/＋·음소거 버튼 없앰(노브와 밀어서 조절만) */
+.dsn #dkVolumeDown,.dsn #dkVolumeUp,.dsn #dkMuteButton{display:none!important}
+.dsn .volume-strip output{min-width:0!important}
+
+/* 1.19.1 콕핏: 조종 패널 높이 더 낮게 */
+:root[data-ck2] .dsn .console{padding:9px 14px 8px}
+:root[data-ck2] .dsn .console-header{margin-bottom:6px}
+:root[data-ck2] .dsn .deck{padding:6px 7px 6px}
+:root[data-ck2] .dsn .modules{gap:7px}
+:root[data-ck2] .dsn .module{padding:5px 6px 6px!important}
+:root[data-ck2] .dsn .module:before,:root[data-ck2] .dsn .module:after{display:none}
+:root[data-ck2] .dsn .module h2{font-size:12px!important;margin:0}
+:root[data-ck2] .dsn .control-zone,:root[data-ck2] .dsn .knob-zone,:root[data-ck2] .dsn .sos-zone,:root[data-ck2] .dsn .emergency .control-zone{padding:2px 0}
+:root[data-ck2] .dsn .lever-switch,:root[data-ck2] .dsn .guard-frame,:root[data-ck2] .dsn .knob-surround{zoom:.5}
+:root[data-ck2] .dsn .knob-legend{display:none}
+:root[data-ck2] .dsn .volume-strip output{font-size:14px!important;line-height:1}
+:root[data-ck2] .dsn .volume-range{height:16px!important;margin-top:0!important}
+:root[data-ck2] .dsn .module-footer{margin-top:0}
+:root[data-ck2] .dsn .readout{font-size:10.5px!important;letter-spacing:.08em}
+
+/* 1.19.1: 콕핏 그레이 스킨은 조종 패널도 회색(주황·하늘색 표시) */
+:root[data-ck3] .dsn{--bg:#141b24;--panel:#4a545f;--edge:#0b0f14;--text:#f4f6f8;--muted:#c3cbd3;--green:#7fd8ff;--accent:#ff9f43;--amber:#ffb14d;--track:#1b2128;--hot-a:#ffe0b8;--hot-b:#ffb14d;--hot-c:#b8601c;--lcd-glow:#7fd8ff55}
+:root[data-ck3] .dsn .console{background:linear-gradient(155deg,#5a6571 0,#4a545f 18%,#3b444e 80%);border-color:#8b96a2;box-shadow:0 0 0 4px #0b0f14,0 0 0 5px #56616d,0 22px 70px #000a,inset 0 1px #ffffff40}
+:root[data-ck3] .dsn .fastener{background:radial-gradient(circle at 35% 25%,#d9dee3,#6d7884 60%,#2e353d 65%);box-shadow:0 0 0 2px #1b2128,inset 0 1px #f4f6f8}
+:root[data-ck3] .dsn .fastener:after{background:#232a32}
+:root[data-ck3] .dsn .console-header{border-bottom-color:#1b2128;box-shadow:0 1px #8b96a255}
+:root[data-ck3] .dsn .header-btn{border-color:#8b96a2;background:linear-gradient(#7a8591,#4e5863);box-shadow:inset 0 1px #ffffff4a,0 2px 2px #0008;color:#f4f6f8}
+:root[data-ck3] .dsn .header-btn:hover{border-color:#ffb14d}
+:root[data-ck3] .dsn .deck{background:linear-gradient(180deg,#232a32,#2a3038);border-color:#0b0f14;box-shadow:inset 0 2px 7px #000c,0 1px #8b96a255}
+:root[data-ck3] .dsn .module{background:linear-gradient(155deg,#56616d,#3b444e 80%);border-color:#8b96a2;box-shadow:0 4px 9px #0006,inset 0 1px #ffffff33}
+:root[data-ck3] .dsn .module h2{color:#f4f6f8}
+:root[data-ck3] .dsn .emergency{background:linear-gradient(155deg,#5b4636,#3b302a);border-color:#ff9f4399}
+:root[data-ck3] .dsn .emergency h2{color:#ffb14d}
+:root[data-ck3] .dsn .readout{color:#7fd8ff}
+:root[data-ck3] .dsn .readout.off,:root[data-ck3] .dsn .off .readout{color:#c3cbd3}
+:root[data-ck3] .dsn .indicator{background:#7fd8ff;box-shadow:0 0 8px #7fd8ff}
+:root[data-ck3] .dsn .off .indicator{background:#6d7884;box-shadow:none}
+:root[data-ck3] .dsn .switch-plate{background:linear-gradient(135deg,#1b2128,#141a20);border-color:#06090c;box-shadow:inset 0 2px 6px #000c,0 1px #8b96a2}
+:root[data-ck3] .dsn .switch-side{color:#aab4be}
+:root[data-ck3] .dsn .switch-pivot{background:conic-gradient(#e4e8ec,#56616d,#eef1f4,#5d6873,#e4e8ec)}
+:root[data-ck3] .dsn .switch-pivot:after{background:radial-gradient(circle,#141a20 45%,#a7b1bb 48%,#3b444e 65%,#8b96a2 70%);border-color:#0b0f14}
+:root[data-ck3] .dsn .switch-stem{background:linear-gradient(90deg,#3b444e,#f7f9fa 28%,#c9d0d6 45%,#7a8591 73%,#2e353d)}
+:root[data-ck3] .dsn .switch-stem:before{background:linear-gradient(90deg,#6d7884,#eef1f4 36%,#b9c1c9 70%,#4e5863);border-color:#c9d0d6}
+:root[data-ck3] .dsn .knob-ticks,:root[data-ck3] .dsn .knob-legend{color:#d5dbe1}
+:root[data-ck3] .dsn .volume-knob{background:repeating-conic-gradient(#1b2128 0deg 3deg,#7a8591 4deg 5deg,#2a3038 6deg 8deg);border-color:#0b0f14;box-shadow:0 5px 9px #000a,0 0 0 2px #0b0f14,inset 0 1px 3px #ffffff80}
+:root[data-ck3] .dsn .knob-face{background:conic-gradient(from 20deg,#3b444e,#7a8591,#2e353d,#56616d,#232a32,#6d7884,#3b444e);border-color:#8b96a2}
+:root[data-ck3] .dsn .knob-face:after{background:#3b444e;border-color:#8b96a288}
+:root[data-ck3] .dsn .volume-strip output{color:#ffb14d}
+:root[data-ck3] .dsn .volume-range{accent-color:#ff9f43}
+:root[data-ck3] .dsn .deck-id,:root[data-ck3] .dsn .eyebrow{color:#c3cbd3}
+:root[data-ck3] .dsn .squad-mark{color:#e4e8ec}
+:root[data-ck3] .devcaps{border-color:#8b96a2aa;background:linear-gradient(180deg,#3b444e,#2a3038)}
+:root[data-ck3] .devcaps .dc{border-color:#ffffff2a;background:#ffffff10}
+:root[data-ck3] .devcaps .dc[data-s="on"] i{background:#7fd8ff;box-shadow:0 0 6px #7fd8ff}
+:root[data-ck3] .devcaps .dc[data-s="on"] small{color:#a9e6ff}
+:root[data-ck3] .devcaps .dc[data-s="yes"] i{background:#bfe9ff}
+:root[data-ck3] .devcaps .dc[data-s="off"] i,:root[data-ck3] .devcaps .dc[data-s="off"] small{color:#ffb14d}
+:root[data-ck3] .devcaps .dc[data-s="off"] i{background:#ffb14d}
+
+/* 기기 지원: 조종 패널 버튼 아래 */
+.dsn .devcaps{margin:7px 0 0}
