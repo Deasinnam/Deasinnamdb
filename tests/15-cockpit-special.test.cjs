@@ -50,5 +50,25 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#wAtc').isVisible(), true, 'Tower window back');
   assert.equal(await p.locator('#atcMini').isVisible(), false);
   assert.ok(await p.evaluate(() => document.querySelector('#pfdHost .pfd-tools') !== null), 'GPS buttons back in the speedometer');
+  // 속도 칸 아래 [수평 맞춤], 아래 줄의 수평 맞춤은 숨김
+  await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival6'; s.dispatchEvent(new Event('change')); });
+  await p.waitForTimeout(300);
+  assert.equal(await p.locator('#pfdLevelQuick').isVisible(), true, 'Level button under the speed readout');
+  assert.equal(await p.locator('.pfd-tool[data-role="level"]').isVisible(), false, 'Level button removed from the GPS row');
+  { const b = await p.locator('#pfdLevelQuick').boundingBox(), c = await p.locator('#pfdHost .pfd-canvas-wrap').boundingBox();
+    assert.ok(b.x - c.x < 12 && b.y > c.y + c.height * .55, 'Sits on the left speed tape, below the readout'); }
+  // 스페셜 2: 같은 배치 + 전투기 콕핏 외관, 원래 위 버튼 줄 컨트롤 모두 유지
+  await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival7'; s.dispatchEvent(new Event('change')); });
+  await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => [document.documentElement.dataset.cks, document.documentElement.dataset.cp, document.documentElement.dataset.ck3].join()), '1,1,');
+  assert.ok((await p.locator('#skin option').allTextContents()).includes('대신남 자동차 모드 · 콕핏 스페셜 2'));
+  assert.equal(await p.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(16, 23, 20)', 'Charcoal background');
+  for (const sel of ['#layout', '#skinBtn', '#driveBtn', '#setBtn', '#radioBtn', '#revBtn', '#addTop']) assert.equal(await p.locator(sel).isVisible(), true, sel + ' kept');
+  assert.equal(await p.locator('#skinBtn .ico').isVisible(), true, 'Vector icon instead of emoji');
+  assert.equal(await p.locator('#skinBtn .emo').isVisible(), false);
+  assert.equal(await p.locator('#revBtn b').isVisible(), true, 'R badge kept');
+  assert.equal(await p.locator('#pfdLevelQuick').isVisible(), true);
+  assert.equal(await p.locator('#wVis').isVisible(), false, 'Merged player like special');
+  assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow.includes('246, 190, 98')), 'Selected key uses the amber indicator');
   await p.close();
 });

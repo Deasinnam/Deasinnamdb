@@ -19,8 +19,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['carnival6','대신남 자동차 모드 · 콕핏 스페셜'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
-const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','carnival6','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5'||skin==='carnival6';const isCks=()=>skin==='carnival6';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['carnival6','대신남 자동차 모드 · 콕핏 스페셜'],['carnival7','대신남 자동차 모드 · 콕핏 스페셜 2'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
+const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','carnival6','carnival7','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5'||skin==='carnival6'||skin==='carnival7';const isCks=()=>skin==='carnival6'||skin==='carnival7';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -35,9 +35,9 @@ let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={bg:g('--lcd')||'#000',text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
 function setSkin(k){setSkin0(k);try{pwrApply()}catch(e){}}
-function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')?'carnival2':k;if(k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4'||k==='carnival6')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='carnival6')document.documentElement.dataset.cks='1';else delete document.documentElement.dataset.cks;if(k==='carnival5')document.documentElement.dataset.ckr='1';else delete document.documentElement.dataset.ckr;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus((k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6'||k==='carnival7')?'carnival2':k;if(k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6'||k==='carnival7')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4'||k==='carnival6')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='carnival6'||k==='carnival7')document.documentElement.dataset.cks='1';else delete document.documentElement.dataset.cks;if(k==='carnival7')document.documentElement.dataset.cp='1';else delete document.documentElement.dataset.cp;if(k==='carnival5'||k==='carnival7')document.documentElement.dataset.ckr='1';else delete document.documentElement.dataset.ckr;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6'||k==='carnival7')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus((k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6'||k==='carnival7')?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
-$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')&&typeof setGStyle==='function')setGStyle('cockpit')};
+$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6'||k==='carnival7')&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
 function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',isCp());if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
@@ -86,7 +86,7 @@ function pollExt(){
   if(mode!=='ext') return;
   let s;try{s=JSON.parse(NB.extStatus())}catch(e){return}
   ext=s;extT=performance.now();
-  if(s.artV!==extArtV){extArtV=s.artV;let a='';try{a=NB.extArt()}catch(e){}setCover(a)}
+  if(s.artV!==extArtV){extArtV=s.artV;let a='';try{a=NB.extArt()}catch(e){}setCover(a)}extBrand(s);
   if(!volDrag&&typeof s.vol==='number'){volEl.value=s.vol;setP(volEl)}
   $('#xApp').textContent=s.app||'재생 중인 앱 없음';
   $('#xEq').textContent='EQ: '+(s.eq||'꺼짐');
@@ -138,7 +138,12 @@ if(HAS_EXT){
   $('#xFull').onclick=()=>{try{NB.openUrl('https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk')}catch(e){}};
 }
 
-function setCover(u){const c=$('#cover');c.style.backgroundImage=u?`url("${u}")`:'';c.classList.toggle('empty',!u)}
+function setCover(u){const c=$('#cover');c.style.backgroundImage=u?`url("${u}")`:'';c.classList.toggle('empty',!u);if(u||mode!=='ext')delete c.dataset.brand}
+/* 외부 앱 곡에 앨범 그림이 안 들어오면 어느 앱인지 글자로 표시(상표 로고는 쓰지 않음) */
+const EXT_BRAND={'com.google.android.apps.youtube.music':['ytm','YouTube Music'],'com.spotify.music':['spotify','Spotify']};
+function extBrand(s){const c=$('#cover');if(mode!=='ext'||!c.classList.contains('empty')){delete c.dataset.brand;return}
+  let b=EXT_BRAND[s&&s.pkg];if(!b&&s&&s.app){const a=String(s.app);b=/youtube/i.test(a)?EXT_BRAND['com.google.android.apps.youtube.music']:/spotify/i.test(a)?EXT_BRAND['com.spotify.music']:null}
+  if(b){c.dataset.brand=b[0];c.dataset.label=b[1]}else if(s&&s.app){c.dataset.brand='app';c.dataset.label=String(s.app)}else delete c.dataset.brand}
 /* ===== 20-player.js ===== */
 // 플레이어: 표시 형식, 데모 곡, 재생목록, 재생 버튼, 안드로이드 표준 플레이어
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

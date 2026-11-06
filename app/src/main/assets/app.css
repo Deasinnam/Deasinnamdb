@@ -1809,3 +1809,79 @@ html.driving body{overflow:hidden}
 .dsn .pfd-tools.in-ctl span{overflow:hidden;text-overflow:ellipsis}
 @media (max-width:620px){.dsn .pfd-tools.in-ctl svg{display:none}.dsn .pfd-tools.in-ctl>*{font-size:11.5px!important;padding:0 3px}}
 .npmerge .art{align-self:start}
+
+/* 1.21: 외부 앱 곡에 앨범 그림이 없을 때 앱 이름 표시(로고 대신 글자) */
+.art .cover{position:relative}
+.art .cover.empty[data-brand]{background-image:none}
+.art .cover.empty[data-brand]::before{content:"\25B6\FE0E";position:absolute;left:50%;top:38%;width:32%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:2px solid currentColor;
+  display:grid;place-items:center;padding-left:4%;box-sizing:border-box;font:400 clamp(14px,2.4vw,30px)/1 Arial,sans-serif;color:currentColor}
+.art .cover.empty[data-brand]::after{content:attr(data-label);position:absolute;left:6%;right:6%;top:64%;text-align:center;font:700 clamp(11px,1.6vw,18px)/1.15 "Noto Sans KR",Arial,sans-serif;letter-spacing:.02em;color:#f4f6f8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.art .cover.empty[data-brand="ytm"]{color:#ff5a5a;background:radial-gradient(circle at 50% 38%,#ff5a5a22,transparent 55%),var(--lcd)}
+.art .cover.empty[data-brand="spotify"]{color:#3ddc84;background:radial-gradient(circle at 50% 38%,#3ddc8422,transparent 55%),var(--lcd)}
+.art .cover.empty[data-brand="app"]{color:var(--muted)}
+/* 콕핏 스페셜(1·2): 속도 칸 아래 [수평 맞춤], 아래 버튼 줄의 수평 맞춤은 숨김 */
+.pfd-levelq{display:none}
+:root[data-cks] #pfdHost .pfd-canvas-wrap{position:relative}
+:root[data-cks] .pfd-levelq{display:block;position:absolute;z-index:3;height:34px;padding:0 4px;border-radius:5px;font:600 12px/1 "Noto Sans KR",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;
+  color:#f4f6f8;background:linear-gradient(180deg,#7a8591,#4e5863);border:1px solid #0b0f14;box-shadow:inset 0 1px 0 #ffffff40,inset 0 -2px 0 #2a3038,0 2px 4px #0008}
+:root[data-cks] .pfd-levelq:active{transform:translateY(1px);box-shadow:inset 0 2px 4px #0009}
+:root[data-cks] .pfd-tool[data-role="level"]{display:none!important}
+
+/* ===== 1.21 콕핏 스페셜 2(carnival7 = 스페셜 배치 + data-cp 전투기 콕핏 외관) =====
+   외관만: 색·표면 음영·테두리·아이콘·선. 크기·여백·배치는 스페셜 스킨 그대로. */
+.tools .ico{display:none}
+:root[data-cp]{
+  --cp-bg:#101714;--cp-panel:#202a24;--cp-panel-top:#29332b;--cp-well:#080f0b;--cp-edge:#53604d;--cp-edge-light:#87917a;
+  --cp-text:#e6ede4;--cp-muted:#a4b39b;--cp-hud:#b8f59c;--cp-amber:#f6be62;--cp-cyan:#7bd4ea;--cp-reverse:#ff6255;
+  --bg:var(--cp-bg);--bg-glow:var(--cp-bg);--panel:var(--cp-panel);--panel-2:var(--cp-panel-top);--frame-in:var(--cp-edge);
+  --text:var(--cp-text);--muted:var(--cp-muted);--accent:var(--cp-amber);
+  --lcd:var(--cp-well);--lcd-edge:#1c261f;--lcd-text:var(--cp-hud);--lcd-text-2:var(--cp-cyan);--lcd-fg:var(--cp-text);--lcd-glow:#b8f59c55;
+  --led3:var(--cp-hud);--peak:var(--cp-amber);
+  --ck-green:var(--cp-hud);--ck-cyan:var(--cp-cyan);--ck-amber:var(--cp-amber);--ck-mag:var(--cp-amber);--ck-white:var(--cp-text);
+}
+:root[data-cp] body{background:var(--cp-bg)!important;background-image:none!important;color:var(--cp-text)}
+/* 패널: 올리브 회색 금속 케이스 + 얇은 이중 베벨 */
+:root[data-cp] .win,:root[data-cp] .tools,:root[data-cp] .clock>div,:root[data-cp] .clock>button,:root[data-cp] .dsn .console,:root[data-cp] .dsn .module{
+  background:linear-gradient(180deg,var(--cp-panel-top),var(--cp-panel))!important;border-color:var(--cp-edge)!important;
+  box-shadow:inset 0 1px 0 rgb(180 190 156 / 30%),inset 0 -1px 0 rgb(0 0 0 / 75%),inset 0 0 0 2px rgb(0 0 0 / 35%),0 3px 5px rgb(0 0 0 / 28%)!important}
+:root[data-cp] .dsn .emergency{background:linear-gradient(180deg,#3a3326,#262219)!important;border-color:#6d5a3c!important}
+:root[data-cp] .win>.bar{border-bottom-color:#000000b0;box-shadow:0 1px 0 rgb(135 145 122 / 22%)}
+:root[data-cp] .win>.bar .t,:root[data-cp] .dsn .brand-block h1{color:var(--cp-text)!important;text-shadow:0 1px 1px rgb(0 0 0 / 60%)}
+:root[data-cp] .groove{height:1px;background:linear-gradient(90deg,var(--cp-amber),rgb(246 190 98 / 15%) 45%,transparent)!important;box-shadow:none!important;opacity:.85}
+/* 매립 표시창 */
+:root[data-cp] :is(.lcd,.visbox,.eqgrid,.pl,.now,#curve,.devcaps,.dsn .deck,.camview,.rd-disp),:root[data-cp] #pfdHost .pfd-metric{
+  background:var(--cp-well)!important;border-color:var(--cp-edge)!important;box-shadow:inset 0 2px 4px rgb(0 0 0 / 65%),inset 0 0 0 1px rgb(135 145 122 / 15%)!important}
+:root[data-cp] #pfdHost .pfd-metric-value,:root[data-cp] .time,:root[data-cp] .clock b{color:var(--cp-hud)!important;font-variant-numeric:tabular-nums;text-shadow:none!important}
+:root[data-cp] #pfdHost .pfd-metric-label,:root[data-cp] #pfdHost .pfd-status-line,:root[data-cp] .clock small{color:var(--cp-muted)!important}
+:root[data-cp] .clock em{color:var(--cp-cyan)!important}
+/* 버튼: 무광 차콜, 좁은 위 하이라이트·아래 음영 */
+:root[data-cp] :is(.pill,.tog,.seg button,.tb,.wbtn,.ckrail button,.dsn .header-btn,.pfd-tool,.pfd-levelq,.rd-key,.vmode button,.bri-b,.dsn .pfd-tools.in-ctl>button,.atcmini){
+  color:var(--cp-text)!important;background:linear-gradient(180deg,#303a32 0%,#202922 55%,#151d17 100%)!important;border-color:#080c09!important;text-shadow:0 1px 1px rgb(0 0 0 / 60%);
+  box-shadow:inset 0 1px 0 #87917a,inset 0 0 0 1px #53604d,inset 0 -2px 0 #080f0b,0 2px 3px rgb(0 0 0 / 40%)!important}
+:root[data-cp] :is(.tb,.wbtn,.ckrail button) svg{fill:currentColor}
+/* 선택 상태: 앰버 아래 표시등 */
+:root[data-cp][data-cks][data-ckr] :is(.pill.on,.tog.on,.seg button.on,.ckrail button.on,.tb.hot,.vmode button.on,[aria-pressed="true"]:is(.pill,.tog,.pfd-tool,.tb)){
+  color:var(--cp-amber)!important;background:linear-gradient(180deg,#384139,#1a231c)!important;
+  box-shadow:inset 0 1px 0 #87917a,inset 0 0 0 1px #53604d,inset 0 -3px 0 var(--cp-amber),0 2px 3px rgb(0 0 0 / 40%)!important}
+:root[data-cp][data-cks][data-ckr] .tb.hot svg{fill:var(--cp-amber)!important;filter:none!important}
+:root[data-cp][data-cks][data-ckr] :is(.pill,.tog,.tb,.wbtn,.ckrail button,.pfd-tool,.pfd-levelq,.dsn .pfd-tools.in-ctl>button):active:not(:disabled){background:#172019!important;box-shadow:inset 0 2px 5px rgb(0 0 0 / 65%),inset 0 0 0 1px var(--cp-edge)!important}
+:root[data-cp] :is(.pill,.tog,.tb,.ckrail button,.pfd-tool,.sel,.vsel):focus-visible{outline:2px solid var(--cp-cyan);outline-offset:-3px}
+:root[data-cp][data-cks][data-ckr] :is(.pill,.tog,.tb,.pfd-tool):disabled{color:var(--cp-muted)!important;background:#1c241e!important;text-shadow:none}
+/* 선택창: 매립형, 하늘색 값 */
+:root[data-cp] :is(.sel,.vsel,.dsn .pfd-tools.in-ctl select,#pfdHost select){color:var(--cp-cyan)!important;background-color:var(--cp-well)!important;border-color:var(--cp-edge)!important;box-shadow:inset 0 2px 4px rgb(0 0 0 / 65%)!important}
+/* 위 버튼 줄: 이모티콘 대신 단색 아이콘, 후진 R 배지 유지 */
+:root[data-cp] .tools .ico{display:inline-block;width:15px;height:15px;margin-right:5px;vertical-align:-3px;fill:currentColor}
+:root[data-cp] #setBtn svg{display:inline-block!important;width:15px;height:15px;margin-right:4px}
+:root[data-cp] #revBtn b{display:inline-grid!important;place-items:center;min-width:18px;height:18px;line-height:18px;margin-right:5px;border-radius:3px;background:var(--cp-reverse);color:#fff;font-size:11px;text-shadow:none}
+/* 관제탑 표시·기기 지원·수평 맞춤 */
+:root[data-cp] .atcmini b{color:var(--cp-hud)}
+:root[data-cp] .atcmini[data-k="ok"]{color:var(--cp-hud)!important}
+:root[data-cp] .atcmini[data-k="warn"]{color:#ffb3a8!important;box-shadow:inset 0 0 0 1px #ff6255,inset 0 -2px 0 #ff6255!important}
+:root[data-cp] .devcaps .dc{background:#ffffff08;border-color:rgb(135 145 122 / 25%)}
+/* 로고: 원본 그대로, 바깥 프레임만 */
+:root[data-cp] .brand .af-img{box-shadow:0 0 0 1px #000,0 0 0 2px var(--cp-edge),inset 0 1px 0 #87917a!important}
+/* 스페셜 2: 원본 위 버튼 줄의 모든 컨트롤 유지(화면 선택 · ＋음악 추가) */
+:root[data-cp] .tools .selw:not(:has(#skin)){display:flex!important}
+:root[data-cp] #addTop{display:inline-flex!important}
+:root[data-cp] .tools .pill{display:inline-flex!important;align-items:center;justify-content:center}
+:root[data-cp] .tools .pill .ico,:root[data-cp] #setBtn svg{margin-top:0;vertical-align:0}

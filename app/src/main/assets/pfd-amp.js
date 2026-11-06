@@ -159,6 +159,20 @@
     c.beginPath(); c.moveTo(edge, cy); c.lineTo(edge + dir * 12, cy - 10); c.lineTo(edge + dir * 12, cy + 10); c.closePath(); c.fill();
     c.restore();
   };
+  // 콕핏 스페셜: [수평 맞춤]을 속도 칸 바로 아래로(아래 버튼 줄의 같은 버튼은 화면에서 숨김, 기능은 같은 calibrate)
+  const wrapEl = host.querySelector('[data-role="canvasWrap"]');
+  if (wrapEl) {
+    const lv = document.createElement('button');
+    lv.type = 'button'; lv.className = 'pfd-levelq'; lv.id = 'pfdLevelQuick'; lv.textContent = '수평 맞춤'; lv.title = '지금 자세를 수평으로 맞춤';
+    lv.addEventListener('click', e => { e.stopPropagation(); try { P.calibrate(); } catch (_) {} });
+    wrapEl.appendChild(lv);
+    const place = () => {
+      const r = wrapEl.getBoundingClientRect(), w = r.width, h = r.height; if (!w || !h) return;
+      const cl = (v, a, b) => Math.max(a, Math.min(b, v)), fh = h - cl(h * .145, 43, 66), tape = cl(w * .12, 67, 175), boxH = cl(fh * .26, 78, 124);
+      lv.style.left = '4px'; lv.style.width = (tape - 8) + 'px'; lv.style.top = Math.min(fh - 40, fh * .53 + boxH / 2 + 10) + 'px';
+    };
+    if (window.ResizeObserver) new ResizeObserver(place).observe(wrapEl); place();
+  }
   applyTheme();
   setInterval(applyTheme, 60000);
   // 절전 모드: 비행 계기를 30fps로(사용자가 고른 품질은 그대로 저장)
@@ -170,7 +184,7 @@
 
   /* ---------- 2. 앱 데이터 → 패키지 ---------- */
   function feed() {
-    if (!['carnival2', 'carnival3', 'carnival4', 'carnival5', 'carnival6', 'tablet'].includes(H.skin)) return;
+    if (!['carnival2', 'carnival3', 'carnival4', 'carnival5', 'carnival6', 'carnival7', 'tablet'].includes(H.skin)) return;
     const now = performance.now();
     if (now - lastFeed < 100) return;
     lastFeed = now;

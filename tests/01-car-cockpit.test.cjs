@@ -88,7 +88,7 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     assert.equal(await page.locator('#mainTitle').textContent(), 'Daesinnam One');
     assert.equal(await page.locator('.brand .logo-img').count(), 0, 'No third-party car-maker logo in the app');
     assert.equal(await page.evaluate(() => /카니발|KIA|Carnival/i.test(document.body.innerText + [...document.querySelectorAll('#skin option')].map(o=>o.textContent).join(''))), false, 'No Kia/Carnival names on screen');
-    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 그레이','대신남 자동차 모드 · 콕핏 스페셜']);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#skin option')].filter(o=>/^carnival/.test(o.value)).map(o=>o.textContent)), ['대신남 자동차 모드','대신남 자동차 모드 · 콕핏','대신남 자동차 모드 · 콕핏 그레이','대신남 자동차 모드 · 콕핏 스페셜','대신남 자동차 모드 · 콕핏 스페셜 2']);
     // 설정 → 오픈소스 라이선스
     await page.locator('#setBtn').click();
     assert.match(await page.locator('#secOss').textContent(), /Apache License 2\.0[\s\S]*Leaflet[\s\S]*jsmediatags[\s\S]*OpenStreetMap contributors/);

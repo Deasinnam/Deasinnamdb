@@ -22,6 +22,10 @@ run('External music picker, car source, dashcam flip, internet radio, battery sa
       await px.waitForFunction(() => /Song A/.test(document.getElementById('xPick').textContent), null, {timeout: 4000});
       await px.locator('#xPick [data-xapp="com.google.android.apps.youtube.music"]').click();
       assert.ok((await px.evaluate(() => xl)).includes('open:com.google.android.apps.youtube.music'), 'YouTube Music button switches app');
+      // 앨범 그림이 안 들어오면 어느 앱인지 글자로(로고 대신)
+      await px.waitForFunction(() => document.getElementById('cover').dataset.brand === 'spotify', null, {timeout: 4000});
+      assert.equal(await px.locator('#cover').getAttribute('data-label'), 'Spotify');
+      assert.equal(await px.locator('#cover').evaluate(c => getComputedStyle(c, '::after').content), '"Spotify"', 'App name shown on the empty cover');
       // 알림 접근 단계별 안내(제한된 설정 풀기)
       await px.evaluate(() => document.getElementById('xNotifHelp').click());
       assert.equal(await px.locator('#notifHelp').isVisible(), true, 'Restricted-settings guide opens');

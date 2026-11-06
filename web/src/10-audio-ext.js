@@ -41,7 +41,7 @@ function pollExt(){
   if(mode!=='ext') return;
   let s;try{s=JSON.parse(NB.extStatus())}catch(e){return}
   ext=s;extT=performance.now();
-  if(s.artV!==extArtV){extArtV=s.artV;let a='';try{a=NB.extArt()}catch(e){}setCover(a)}
+  if(s.artV!==extArtV){extArtV=s.artV;let a='';try{a=NB.extArt()}catch(e){}setCover(a)}extBrand(s);
   if(!volDrag&&typeof s.vol==='number'){volEl.value=s.vol;setP(volEl)}
   $('#xApp').textContent=s.app||'재생 중인 앱 없음';
   $('#xEq').textContent='EQ: '+(s.eq||'꺼짐');
@@ -93,4 +93,9 @@ if(HAS_EXT){
   $('#xFull').onclick=()=>{try{NB.openUrl('https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk')}catch(e){}};
 }
 
-function setCover(u){const c=$('#cover');c.style.backgroundImage=u?`url("${u}")`:'';c.classList.toggle('empty',!u)}
+function setCover(u){const c=$('#cover');c.style.backgroundImage=u?`url("${u}")`:'';c.classList.toggle('empty',!u);if(u||mode!=='ext')delete c.dataset.brand}
+/* 외부 앱 곡에 앨범 그림이 안 들어오면 어느 앱인지 글자로 표시(상표 로고는 쓰지 않음) */
+const EXT_BRAND={'com.google.android.apps.youtube.music':['ytm','YouTube Music'],'com.spotify.music':['spotify','Spotify']};
+function extBrand(s){const c=$('#cover');if(mode!=='ext'||!c.classList.contains('empty')){delete c.dataset.brand;return}
+  let b=EXT_BRAND[s&&s.pkg];if(!b&&s&&s.app){const a=String(s.app);b=/youtube/i.test(a)?EXT_BRAND['com.google.android.apps.youtube.music']:/spotify/i.test(a)?EXT_BRAND['com.spotify.music']:null}
+  if(b){c.dataset.brand=b[0];c.dataset.label=b[1]}else if(s&&s.app){c.dataset.brand='app';c.dataset.label=String(s.app)}else delete c.dataset.brand}
