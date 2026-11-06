@@ -1949,3 +1949,60 @@ html.driving body{overflow:hidden}
 :root[data-cp][data-cks] .win.hasrail .ckrail button[data-open] span{display:block!important}
 :root[data-split="ck"][data-cp] .win.hasrail .ckrail button{flex-direction:row!important;min-height:26px!important;max-height:30px!important}
 :root[data-cp][data-cks] .win.hasrail .ckrail button span{font-size:12px!important}:root[data-cp][data-cks] .win.hasrail .ckrail button[data-f="vis"] span{font-size:10px!important}
+
+/* ===== 1.22 콕핏 스페셜 2 라디오: 전구빛 숫자 드럼 · 크림색 눈금창 + 빨간 바늘 · 묵직한 다이얼 ===== */
+:root[data-cp] #wRadio{--brass:#b8935a;--brass-hi:#e6c98e;--brass-lo:#5e4626;--cream:#f1e3bf;--bakelite:#1d150d}
+:root[data-cp] #wRadio .rd-sig{display:none}
+:root[data-cp] #wRadio .rd-top{grid-template-columns:minmax(0,2.7fr) minmax(140px,1fr)}
+:root[data-cp] #wRadio :is(.rd-cell,.rd-panel){background:var(--cp-screw) 6px 6px/11px 11px no-repeat,var(--cp-screw) calc(100% - 6px) 6px/11px 11px no-repeat,var(--cp-screw) 6px calc(100% - 6px)/11px 11px no-repeat,var(--cp-screw) calc(100% - 6px) calc(100% - 6px)/11px 11px no-repeat,
+  var(--cp-wear),linear-gradient(180deg,#2c2a20,#1f1d16 60%,#17150f)!important;border:1px solid #070604!important;
+  box-shadow:inset 0 0 0 1px #6e5a36,inset 0 0 0 3px #120f09,inset 0 1px 0 4px #8a704066,0 3px 8px #000000b0!important}
+:root[data-cp] #wRadio .rd-panel{background:var(--cp-wear),linear-gradient(180deg,#25281f,#1a1d16)!important;box-shadow:inset 0 0 0 1px #4e5848,inset 0 0 0 3px #10150f,0 4px 10px #000c!important}
+:root[data-cp] #wRadio .rd-disp::after{display:none}
+:root[data-cp] #wRadio :is(.rd-band,.rd-mhz){font:700 clamp(20px,3.4cqw,40px)/1 Georgia,"Times New Roman",serif;color:var(--cream);text-shadow:0 1px 0 #000,0 0 10px #f3c97a33;letter-spacing:.02em}
+/* 숫자 드럼 창: 위에서 따뜻한 전구빛 */
+:root[data-cp] #wRadio .rd-seg{height:auto}
+:root[data-cp] #wRadio .rd-drums{position:relative;display:inline-flex;align-items:stretch;gap:3px;padding:7px 9px;border-radius:7px;
+  background:radial-gradient(60% 34% at 50% 0%,#ffd48a88,#ffb24a22 55%,transparent 75%),linear-gradient(180deg,#14100a,#0b0906);
+  box-shadow:inset 0 0 0 2px #050403,inset 0 0 0 3px var(--brass-lo),inset 0 0 0 4px #050403,inset 0 6px 14px #000c,0 0 0 1px var(--brass),0 0 0 3px #0b0906,0 3px 8px #000}
+:root[data-cp] #wRadio .rd-drums::before{content:"";position:absolute;left:30%;right:30%;top:0;height:5px;border-radius:0 0 50% 50%;background:radial-gradient(ellipse at 50% 0%,#fff3c8,#ffbf5a 45%,transparent 75%);opacity:.9;pointer-events:none}
+:root[data-cp] #wRadio .drum{display:grid;place-items:center;min-width:.66em;padding:0 .06em;border-radius:3px;font:700 clamp(46px,8.4cqw,96px)/1.05 Georgia,"Times New Roman",serif;color:var(--cream);
+  background:linear-gradient(180deg,#0e0b07 0%,#2c2416 16%,#4a3e2a 50%,#2c2416 84%,#0e0b07 100%);box-shadow:inset 1px 0 0 #00000099,inset -1px 0 0 #00000099,inset 0 1px 0 #ffffff12;
+  text-shadow:0 2px 2px #000c,0 0 14px #ffcf7a40}
+:root[data-cp] #wRadio .drum-dot{align-self:flex-end;margin:0 -.02em .12em;font:700 clamp(46px,8.4cqw,96px)/1 Georgia,serif;color:var(--cream);font-style:normal}
+:root[data-cp] #wRadio #rdName{font-family:Georgia,"Noto Serif KR","Noto Sans KR",serif;color:var(--cream);text-shadow:0 1px 0 #000}
+:root[data-cp] #wRadio :is(#rdStat,#rdInfo){color:#d9c9a3!important}
+:root[data-cp] #wRadio .rd-stby{border:1px solid #050403!important;border-radius:6px;background:linear-gradient(180deg,#2b2519,#17130c)!important;color:#e9d7ad!important;box-shadow:inset 0 0 0 1px var(--brass),inset 0 1px 0 2px #e6c98e33,0 2px 4px #000!important}
+:root[data-cp] #wRadio .rd-stby :is(small,b){color:#e9d7ad!important;font-family:"Share Tech Mono",monospace}
+/* 묵직한 다이얼: 홈 파인 검은 링 + 황동 테 + 베이클라이트 손잡이 + 크림색 표시선 */
+:root[data-cp] #wRadio .rd-lbl{color:#cdb98b}
+:root[data-cp] #wRadio .rd-knob{background:repeating-conic-gradient(from 0deg,#0b0805 0deg 4deg,#3a3122 4deg 6deg,#151009 6deg 9deg)!important;border:0!important;
+  box-shadow:0 0 0 3px #050403,0 0 0 6px var(--brass),0 0 0 7px var(--brass-hi),0 0 0 9px #050403,inset 0 0 0 1px #000,inset 0 -8px 14px #000c,0 8px 16px #000e!important}
+:root[data-cp] #wRadio .rd-knob::before{inset:20%;background:radial-gradient(circle at 36% 28%,#7a6040 0%,#3b2a18 22%,var(--bakelite) 58%,#0a0704 100%);box-shadow:inset 0 2px 2px #ffffff30,inset 0 -6px 12px #000d,0 4px 10px #000,0 0 0 2px #0a0704}
+:root[data-cp] #wRadio .rd-knob i::after{top:auto;bottom:16%;height:24%;width:5px;margin-left:-2.5px;border-radius:3px;background:var(--cream);box-shadow:0 0 3px #000}
+:root[data-cp] #wRadio .rd-knob i{transform:rotate(calc(var(--rot,0deg) + 210deg))}
+:root[data-cp] #wRadio .rd-step small{color:#e9d7ad;font-family:"Share Tech Mono",monospace}
+/* 눈금창 틀: 황동 테 + 나사 */
+:root[data-cp] #wRadio .rd-scalebox{padding:6px 10px!important;background:var(--cp-screw) 8px 50%/11px 11px no-repeat,var(--cp-screw) calc(100% - 8px) 50%/11px 11px no-repeat,linear-gradient(180deg,#3b2f1c,#211a0f)!important;
+  box-shadow:inset 0 0 0 1px #050403,inset 0 0 0 3px var(--brass),inset 0 0 0 4px #050403,0 3px 8px #000b!important}
+:root[data-cp] #wRadio #rdScale{border-radius:4px;margin:0 18px;width:calc(100% - 36px);box-shadow:inset 0 2px 6px #5a3a10,0 0 0 1px #050403}
+:root[data-cp] #wRadio .rd-drag{display:none}
+/* 버튼·볼륨 */
+:root[data-cp][data-cks] #wRadio :is(.rd-key,.rd-sq){background:linear-gradient(180deg,#3e3a2c 0%,#2a2619 45%,#1a170f 100%)!important;color:#efe2c2!important;border:1px solid #050403!important;
+  box-shadow:inset 0 1px 0 #cdb68866,inset 0 0 0 1px #5a4a2e,inset 0 -3px 0 #0b0906,0 2px 0 #050403,0 4px 9px #000b!important}
+:root[data-cp][data-cks] #wRadio .rd-key svg{fill:#efe2c2}
+:root[data-cp][data-cks] #wRadio .rd-key.hot{color:#ffcf7a!important}
+:root[data-cp][data-cks] #wRadio .rd-key.hot svg{fill:#ffcf7a}
+:root[data-cp] #wRadio .rd-vol{background:linear-gradient(180deg,#14110b,#0c0a06)!important;border:1px solid #050403!important;box-shadow:inset 0 0 0 1px #5a4a2e,inset 0 2px 6px #000!important;color:#e9d7ad!important}
+:root[data-cp] #wRadio .rd-vol b{color:#efe2c2}
+:root[data-cp] #wRadio .rd-vol svg{fill:none;stroke:#efe2c2}
+:root[data-cp] #wRadio .rd-vol input{-webkit-appearance:none;appearance:none;height:22px;background:transparent}
+:root[data-cp] #wRadio .rd-vol input::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:#050403;box-shadow:inset 0 1px 2px #000,0 1px 0 #ffffff14}
+:root[data-cp] #wRadio .rd-vol input::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9.5px;border-radius:50%;border:1px solid #2a1d0c;
+  background:radial-gradient(circle at 35% 30%,#fff1c8,#d9b56f 35%,#8a6a35 75%,#4a3519);box-shadow:0 2px 4px #000c,inset 0 -2px 3px #0006}
+:root[data-cp] #wRadio .bar .rd-com{color:#efe2c2;border-color:var(--brass)!important}
+:root[data-cp] #wRadio .rd-disp{padding:14px 16px 12px!important}
+:root[data-cp] #wRadio .rd-stby{position:static!important;margin-top:6px!important;flex-direction:row;gap:8px;padding:4px 14px!important;inset:auto!important;transform:none!important}
+:root[data-cp] #wRadio .rd-knob{width:clamp(110px,15cqw,168px)!important}
+:root[data-cp] #wRadio #rdScale{height:84px!important}
+:root[data-cp] #wRadio .rd-drums{margin:4px 0}

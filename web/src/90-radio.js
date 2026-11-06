@@ -58,7 +58,10 @@ function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const n=Math.
     b.addEventListener('pointerup',()=>{if(t!==-1){clearTimeout(t);rdPlay(st)}});b.addEventListener('pointerleave',()=>{if(t>0)clearTimeout(t)});box.appendChild(b)}}
 // 7세그먼트 주파수 표시(꺼진 칸은 희미하게)
 const RD_SEGS={'0':'abcdef','1':'bc','2':'abged','3':'abgcd','4':'fgbc','5':'afgcd','6':'afgedc','7':'abc','8':'abcdefg','9':'abcdfg','-':'g',' ':''};
-function rdSegSvg(txt){const t=7,hz=(x1,x2,cy)=>`${x1},${cy} ${x1+t/2},${cy-t/2} ${x2-t/2},${cy-t/2} ${x2},${cy} ${x2-t/2},${cy+t/2} ${x1+t/2},${cy+t/2}`,
+/* 콕핏 스페셜 2: 7세그 대신 전구빛 비치는 숫자 드럼(돌아가는 숫자판) */
+function rdDrums(txt){const [ip,fp]=txt.split('.');let o='';for(const ch of ip.trim()||'-')o+=`<b class="drum">${ch==='-'?'–':ch}</b>`;
+  o+='<i class="drum-dot">.</i>'+`<b class="drum">${fp?fp:'–'}</b>`;return `<span class="rd-drums" aria-hidden="true">${o}</span><span class="sr">${fp?txt+' MHz':'--.-'}</span>`}
+function rdSegSvg(txt){if(document.documentElement.hasAttribute('data-cp'))return rdDrums(txt);const t=7,hz=(x1,x2,cy)=>`${x1},${cy} ${x1+t/2},${cy-t/2} ${x2-t/2},${cy-t/2} ${x2},${cy} ${x2-t/2},${cy+t/2} ${x1+t/2},${cy+t/2}`,
     vt=(cx,y1,y2)=>`${cx},${y1} ${cx+t/2},${y1+t/2} ${cx+t/2},${y2-t/2} ${cx},${y2} ${cx-t/2},${y2-t/2} ${cx-t/2},${y1+t/2}`,
     P={a:hz(5,35,3.5),g:hz(5,35,36),d:hz(5,35,68.5),f:vt(3.5,5,34),b:vt(36.5,5,34),e:vt(3.5,38,67),c:vt(36.5,38,67)};
   const [ip,fp]=txt.split('.'),ds=(ip.padStart(3,' ')+(fp||'-')).split(''),xs=[0,50,100,162];let o='';
@@ -119,6 +122,7 @@ function rdStep(d){const pool=rdFavs.length?rdFavs:rdList;if(!pool.length)return
 // FM 다이얼: 87.5~108MHz, 저장·목록의 방송 표시, 끌어서 맞추면 가장 가까운 방송으로
 const rdCols=()=>{const cs=getComputedStyle($('#wRadio')),v=(n,d)=>cs.getPropertyValue(n).trim()||d;return {g:v('--rg','#a8f08f'),a:v('--ra','#f3bc65'),bg:v('--rbg','#0d1a0b'),d:v('--rdot','#5f8f55')}};
 function rdDraw(){const RC=rdCols();const cv=$('#rdScale');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
+  if(document.documentElement.hasAttribute('data-cp')){rdDrawWarm(g,W,H,d);return}
   const x=f=>W*.035+(f-87.5)/(108-87.5)*W*.93;g.clearRect(0,0,W,H);
   g.strokeStyle='#3b4439';g.lineWidth=d;g.beginPath();g.moveTo(x(87.5),H*.62);g.lineTo(x(108),H*.62);g.stroke();
   g.textAlign='center';g.font=`600 ${11*d}px "Share Tech Mono",monospace`;g.fillStyle='#c9d0c4';
@@ -130,6 +134,23 @@ function rdDraw(){const RC=rdCols();const cv=$('#rdScale');if(!cv||!cv.offsetWid
     g.beginPath();g.moveTo(cx,H*.27);g.lineTo(cx,H*.68);g.stroke();g.shadowBlur=0;
     g.font=`700 ${12*d}px "Share Tech Mono",monospace`;const lb=cf.toFixed(1),tw=g.measureText(lb).width+8*d,bx=Math.max(1,Math.min(W-tw-1,cx-tw/2));
     g.fillStyle=RC.bg;g.fillRect(bx,1,tw,H*.22);g.strokeRect(bx,1,tw,H*.22);g.fillStyle=RC.g;g.textBaseline='middle';g.fillText(lb,bx+tw/2,1+H*.11);g.textBaseline='alphabetic'}}
+/* 콕핏 스페셜 2 눈금창: 따뜻한 전구빛 크림색 판, 갈색 눈금, 빨간 튜닝 바늘 */
+function rdDrawWarm(g,W,H,d){const x=f=>W*.05+(f-87.5)/(108-87.5)*W*.9;g.clearRect(0,0,W,H);
+  let bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#f6dc9a');bg.addColorStop(.55,'#efd08a');bg.addColorStop(1,'#d9b468');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  let gl=g.createRadialGradient(W/2,H*.2,H*.1,W/2,H*.4,W*.6);gl.addColorStop(0,'#fff6d855');gl.addColorStop(1,'#00000000');g.fillStyle=gl;g.fillRect(0,0,W,H);
+  let vg=g.createLinearGradient(0,0,W,0);vg.addColorStop(0,'#5a3a1066');vg.addColorStop(.08,'#5a3a1000');vg.addColorStop(.92,'#5a3a1000');vg.addColorStop(1,'#5a3a1066');g.fillStyle=vg;g.fillRect(0,0,W,H);
+  const base=H*.6;g.strokeStyle='#3b2a12';g.lineWidth=1.2*d;g.beginPath();g.moveTo(x(87.5),base);g.lineTo(x(108),base);g.stroke();
+  g.textAlign='center';g.font=`700 ${14*d}px Georgia,"Times New Roman",serif`;g.fillStyle="#2c1e0c";
+  for(let k=0;k<=102;k++){const f=87.6+k*.2,big=Math.abs(f-Math.round(f/2)*2)<.01,mid=!big&&Math.abs(f-Math.round(f))<.01;
+    g.strokeStyle=big?'#2c1e0c':mid?'#5a4325':'#7d6644';g.lineWidth=(big?1.6:1)*d;g.beginPath();g.moveTo(x(f),base);g.lineTo(x(f),H*(big?.3:mid?.4:.48));g.stroke();
+    if(big)g.fillText(String(Math.round(f)),x(f),H*.9)}
+  for(const st of rdPool()){const f=rdFreqOf(st);if(!f)continue;const fav=rdFavs.some(s=>s.id===st.id);g.fillStyle=fav?'#b8741c':'#4f6b2c';g.beginPath();g.arc(x(f),H*.69,(fav?3.4:2.6)*d,0,7);g.fill()}
+  const cf=rdTune!=null?rdTune:(rdCur&&rdFreqOf(rdCur));if(cf){const cx=x(cf);
+    g.strokeStyle='#00000040';g.lineWidth=3*d;g.beginPath();g.moveTo(cx+1.5*d,H*.24);g.lineTo(cx+1.5*d,H*.74);g.stroke();
+    g.strokeStyle='#d22b1a';g.lineWidth=2.6*d;g.beginPath();g.moveTo(cx,H*.22);g.lineTo(cx,H*.74);g.stroke();
+    g.font=`700 ${12*d}px Georgia,"Times New Roman",serif`;const lb=cf.toFixed(1),tw=g.measureText(lb).width+12*d,bx=Math.max(1,Math.min(W-tw-1,cx-tw/2)),bh=H*.22;
+    g.fillStyle='#fbecc4';g.fillRect(bx,1,tw,bh);g.strokeStyle='#2c1e0c';g.lineWidth=1.2*d;g.strokeRect(bx,1,tw,bh);g.fillStyle='#2c1e0c';g.textBaseline='middle';g.fillText(lb,bx+tw/2,1+bh/2);g.textBaseline='alphabetic'}}
+new MutationObserver(()=>{try{rdShow();rdDraw()}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-cp']});
 // 신호 세기 계기(바늘 + 막대) — 재생 상태를 보여 주는 표시
 let rdLvl=0,rdLvlT=0,rdSigOn=false,rdSigTm=0;
 function rdLamps(){const on=rdPlaying&&rdSt0==='ON AIR';$('#rdStereo').classList.toggle('on',on);$('#rdRds').classList.toggle('on',on&&!!rdCur)}

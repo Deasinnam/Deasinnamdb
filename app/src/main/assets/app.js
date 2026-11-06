@@ -1773,12 +1773,13 @@ function sndPress(on){const a=fx();if(!a)return;const t=a.currentTime;
   const g=fxEnv(a,t,on?.55:.3,.003,on?.16:.08);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.25);
   const n=fxNoise(a,.05),hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=on?1800:3200;const gn=fxEnv(a,t,on?.35:.25,.001,.03);n.connect(hp).connect(gn).connect(a.destination);n.start(t)}
 // 무전 스퀠치("치익")
-function sndSquelch(at=0,len=.14){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,n=fxNoise(a,len+.05),bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1700;bp.Q.value=.8;
-  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16,t+.01);g.gain.setValueAtTime(.16,t+len*.7);g.gain.exponentialRampToValueAtTime(.0001,t+len);n.connect(bp).connect(g).connect(a.destination);n.start(t)}
-function sndRoger(at=0){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator();o.type='square';o.frequency.value=1050;const bp=a.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;
-  const g=fxEnv(a,t,.06,.005,.07);o.connect(bp).connect(g).connect(a.destination);o.start(t);o.stop(t+.1)}
+/* 관제탑 신호음: 잡음(직직) 없이 둥근 사인파로 — 점검 시작은 짧은 '똑', 확인은 작은 '띵' */
+function sndSquelch(at=0,len=.14){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(1320,t);o.frequency.exponentialRampToValueAtTime(990,t+.06);
+  const g=fxEnv(a,t,.05,.004,.08);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.12)}
+function sndRoger(at=0){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator(),o2=a.createOscillator();o.type='sine';o2.type='sine';o.frequency.value=1568;o2.frequency.value=3136;
+  const g=fxEnv(a,t,.07,.005,.14),g2=a.createGain();g2.gain.value=.1;o.connect(g);o2.connect(g2).connect(g);g.connect(a.destination);o.start(t);o2.start(t);o.stop(t+.2);o2.stop(t+.2)}
 // 이륙 허가: 무전 → 두 음 차임 → 엔진 스풀업
-function sndTakeoff(){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime;sndSquelch(0,.22);
+function sndTakeoff(){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime;
   [[784,.25],[659,.75]].forEach(([f,dt])=>{const o=a.createOscillator(),o2=a.createOscillator();o.frequency.value=f;o2.frequency.value=f*2;const g=fxEnv(a,t+dt,.22,.01,1.2),g2=fxEnv(a,t+dt,.05,.01,.6);o.connect(g).connect(a.destination);o2.connect(g2).connect(a.destination);o.start(t+dt);o2.start(t+dt);o.stop(t+dt+1.4);o2.stop(t+dt+1.4)});
   const s=t+1.6,L=6.5,n=fxNoise(a,L),lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.setValueAtTime(180,s);lp.frequency.exponentialRampToValueAtTime(3200,s+4);lp.frequency.exponentialRampToValueAtTime(900,s+L);
   const gn=a.createGain();gn.gain.setValueAtTime(.0001,s);gn.gain.exponentialRampToValueAtTime(.32,s+3.6);gn.gain.exponentialRampToValueAtTime(.0001,s+L);n.connect(lp).connect(gn).connect(a.destination);n.start(s);
@@ -1821,7 +1822,12 @@ function revAutoTick(s,v){if(!store.get('revAuto',false)||!store.get('revOn',tru
   if(diff>140){rev.offT=0;if(!rev.autoT)rev.autoT=now;if(!rev.on&&now-rev.autoT>2500)revSet(true,'auto')}
   else{rev.autoT=0;if(rev.on&&rev.src==='auto'&&diff<60){if(!rev.offT)rev.offT=now;if(now-rev.offT>2000)revSet(false)}}}
 window.AmpRev={toggle(){revSet(!rev.on,'button')},set:revSet,get on(){return rev.on}};
-// 관제탑 무전: 앱에서는 TTS를 파일로 받아 무전기 소리(300~3000Hz 대역, 찌그러짐, 잡음, 스퀠치)로 재생
+// 관제탑 무전: 앱에서는 TTS를 파일로 받아 무전기 느낌(300~3000Hz 대역)으로 재생. 잡음·찌그러짐·스퀠치(직직) 없이, 말 앞뒤에 부드러운 '띠릭'
+/* 띠릭: 둥근 사인파 두 음(올라가면 시작, 내려가면 끝), 짧고 작게 */
+function sndChime(at,up=true){const a=fx();if(!a)return;const t=a.currentTime+at,notes=up?[1046.5,1568]:[1568,1174.7];
+  notes.forEach((f,i)=>{const o=a.createOscillator(),o2=a.createOscillator();o.type='sine';o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;
+    const g=fxEnv(a,t+i*.085,.12,.006,.16),g2=a.createGain();g2.gain.value=.12;o.connect(g);o2.connect(g2).connect(g);g.connect(a.destination);
+    o.start(t+i*.085);o2.start(t+i*.085);o.stop(t+i*.085+.22);o2.stop(t+i*.085+.22)})}
 const ttsWait={};let radioSrc=null;
 window.__ttsFile=(id,ok)=>{const f=ttsWait[id];if(f){delete ttsWait[id];f(!!ok)}};
 async function radioSay(text){
@@ -1834,20 +1840,17 @@ async function radioSay(text){
   const t=a.currentTime+.18,src=a.createBufferSource();src.buffer=buf;src.playbackRate.value=1.04;radioSrc=src;
   const hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=330;hp.Q.value=.9;
   const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2900;lp.Q.value=1.1;
-  const pk=a.createBiquadFilter();pk.type='peaking';pk.frequency.value=1750;pk.gain.value=7;pk.Q.value=1.2;
-  const ws=a.createWaveShaper(),n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=Math.tanh(x*3.2)}ws.curve=cv;ws.oversample='2x';
-  const cmp=a.createDynamicsCompressor();cmp.threshold.value=-22;cmp.ratio.value=8;cmp.attack.value=.003;cmp.release.value=.12;
-  const out=a.createGain();out.gain.value=.9;
-  src.connect(hp).connect(pk).connect(ws).connect(lp).connect(cmp).connect(out).connect(a.destination);
-  const dur=buf.duration/1.04,nz=fxNoise(a,dur+.5),nbp=a.createBiquadFilter();nbp.type='bandpass';nbp.frequency.value=1900;nbp.Q.value=.6;
-  const ng=a.createGain();ng.gain.setValueAtTime(.0001,t-.15);ng.gain.linearRampToValueAtTime(.035,t-.1);ng.gain.setValueAtTime(.035,t+dur);ng.gain.linearRampToValueAtTime(.0001,t+dur+.3);
-  nz.connect(nbp).connect(ng).connect(a.destination);nz.start(t-.15);
-  sndSquelch(0,.16);src.start(t);sndSquelch(dur+.22,.22);sndRoger(dur+.2);
+  const pk=a.createBiquadFilter();pk.type='peaking';pk.frequency.value=1750;pk.gain.value=4;pk.Q.value=1.2;
+  const cmp=a.createDynamicsCompressor();cmp.threshold.value=-22;cmp.ratio.value=4;cmp.attack.value=.003;cmp.release.value=.12;
+  const out=a.createGain();out.gain.value=.95;
+  src.connect(hp).connect(pk).connect(lp).connect(cmp).connect(out).connect(a.destination);
+  const dur=buf.duration/1.04;
+  sndChime(0,true);src.start(t+.12);sndChime(dur+.42,false);
   return true}
 function atcSpeak(text){if(!atcOn())return;
   if(NB&&NB.ttsToFile){radioSay(text).then(ok=>{if(!ok&&NB.speak)try{NB.speak(text)}catch(e){}});return}
   try{if(NB&&NB.speak){NB.speak(text);return}}catch(e){}
-  try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=1.02;u.pitch=.95;speechSynthesis.cancel();sndSquelch(0,.14);speechSynthesis.speak(u)}}catch(e){}}
+  try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=1.02;u.pitch=.95;speechSynthesis.cancel();sndChime(0,true);setTimeout(()=>speechSynthesis.speak(u),220)}}catch(e){}}
 
 // SOS 연락처: 앱 설정(SOS 긴급 연락처)과 조종 패널 설정이 같은 저장소를 씀
 let sos=store.get('sos',{name:'',number:''});
@@ -2083,7 +2086,10 @@ function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const n=Math.
     b.addEventListener('pointerup',()=>{if(t!==-1){clearTimeout(t);rdPlay(st)}});b.addEventListener('pointerleave',()=>{if(t>0)clearTimeout(t)});box.appendChild(b)}}
 // 7세그먼트 주파수 표시(꺼진 칸은 희미하게)
 const RD_SEGS={'0':'abcdef','1':'bc','2':'abged','3':'abgcd','4':'fgbc','5':'afgcd','6':'afgedc','7':'abc','8':'abcdefg','9':'abcdfg','-':'g',' ':''};
-function rdSegSvg(txt){const t=7,hz=(x1,x2,cy)=>`${x1},${cy} ${x1+t/2},${cy-t/2} ${x2-t/2},${cy-t/2} ${x2},${cy} ${x2-t/2},${cy+t/2} ${x1+t/2},${cy+t/2}`,
+/* 콕핏 스페셜 2: 7세그 대신 전구빛 비치는 숫자 드럼(돌아가는 숫자판) */
+function rdDrums(txt){const [ip,fp]=txt.split('.');let o='';for(const ch of ip.trim()||'-')o+=`<b class="drum">${ch==='-'?'–':ch}</b>`;
+  o+='<i class="drum-dot">.</i>'+`<b class="drum">${fp?fp:'–'}</b>`;return `<span class="rd-drums" aria-hidden="true">${o}</span><span class="sr">${fp?txt+' MHz':'--.-'}</span>`}
+function rdSegSvg(txt){if(document.documentElement.hasAttribute('data-cp'))return rdDrums(txt);const t=7,hz=(x1,x2,cy)=>`${x1},${cy} ${x1+t/2},${cy-t/2} ${x2-t/2},${cy-t/2} ${x2},${cy} ${x2-t/2},${cy+t/2} ${x1+t/2},${cy+t/2}`,
     vt=(cx,y1,y2)=>`${cx},${y1} ${cx+t/2},${y1+t/2} ${cx+t/2},${y2-t/2} ${cx},${y2} ${cx-t/2},${y2-t/2} ${cx-t/2},${y1+t/2}`,
     P={a:hz(5,35,3.5),g:hz(5,35,36),d:hz(5,35,68.5),f:vt(3.5,5,34),b:vt(36.5,5,34),e:vt(3.5,38,67),c:vt(36.5,38,67)};
   const [ip,fp]=txt.split('.'),ds=(ip.padStart(3,' ')+(fp||'-')).split(''),xs=[0,50,100,162];let o='';
@@ -2144,6 +2150,7 @@ function rdStep(d){const pool=rdFavs.length?rdFavs:rdList;if(!pool.length)return
 // FM 다이얼: 87.5~108MHz, 저장·목록의 방송 표시, 끌어서 맞추면 가장 가까운 방송으로
 const rdCols=()=>{const cs=getComputedStyle($('#wRadio')),v=(n,d)=>cs.getPropertyValue(n).trim()||d;return {g:v('--rg','#a8f08f'),a:v('--ra','#f3bc65'),bg:v('--rbg','#0d1a0b'),d:v('--rdot','#5f8f55')}};
 function rdDraw(){const RC=rdCols();const cv=$('#rdScale');if(!cv||!cv.offsetWidth)return;const d=Math.min(2,devicePixelRatio||1),W=cv.width=Math.round(cv.offsetWidth*d),H=cv.height=Math.round(cv.offsetHeight*d),g=cv.getContext('2d');
+  if(document.documentElement.hasAttribute('data-cp')){rdDrawWarm(g,W,H,d);return}
   const x=f=>W*.035+(f-87.5)/(108-87.5)*W*.93;g.clearRect(0,0,W,H);
   g.strokeStyle='#3b4439';g.lineWidth=d;g.beginPath();g.moveTo(x(87.5),H*.62);g.lineTo(x(108),H*.62);g.stroke();
   g.textAlign='center';g.font=`600 ${11*d}px "Share Tech Mono",monospace`;g.fillStyle='#c9d0c4';
@@ -2155,6 +2162,23 @@ function rdDraw(){const RC=rdCols();const cv=$('#rdScale');if(!cv||!cv.offsetWid
     g.beginPath();g.moveTo(cx,H*.27);g.lineTo(cx,H*.68);g.stroke();g.shadowBlur=0;
     g.font=`700 ${12*d}px "Share Tech Mono",monospace`;const lb=cf.toFixed(1),tw=g.measureText(lb).width+8*d,bx=Math.max(1,Math.min(W-tw-1,cx-tw/2));
     g.fillStyle=RC.bg;g.fillRect(bx,1,tw,H*.22);g.strokeRect(bx,1,tw,H*.22);g.fillStyle=RC.g;g.textBaseline='middle';g.fillText(lb,bx+tw/2,1+H*.11);g.textBaseline='alphabetic'}}
+/* 콕핏 스페셜 2 눈금창: 따뜻한 전구빛 크림색 판, 갈색 눈금, 빨간 튜닝 바늘 */
+function rdDrawWarm(g,W,H,d){const x=f=>W*.05+(f-87.5)/(108-87.5)*W*.9;g.clearRect(0,0,W,H);
+  let bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#f6dc9a');bg.addColorStop(.55,'#efd08a');bg.addColorStop(1,'#d9b468');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  let gl=g.createRadialGradient(W/2,H*.2,H*.1,W/2,H*.4,W*.6);gl.addColorStop(0,'#fff6d855');gl.addColorStop(1,'#00000000');g.fillStyle=gl;g.fillRect(0,0,W,H);
+  let vg=g.createLinearGradient(0,0,W,0);vg.addColorStop(0,'#5a3a1066');vg.addColorStop(.08,'#5a3a1000');vg.addColorStop(.92,'#5a3a1000');vg.addColorStop(1,'#5a3a1066');g.fillStyle=vg;g.fillRect(0,0,W,H);
+  const base=H*.6;g.strokeStyle='#3b2a12';g.lineWidth=1.2*d;g.beginPath();g.moveTo(x(87.5),base);g.lineTo(x(108),base);g.stroke();
+  g.textAlign='center';g.font=`700 ${14*d}px Georgia,"Times New Roman",serif`;g.fillStyle="#2c1e0c";
+  for(let k=0;k<=102;k++){const f=87.6+k*.2,big=Math.abs(f-Math.round(f/2)*2)<.01,mid=!big&&Math.abs(f-Math.round(f))<.01;
+    g.strokeStyle=big?'#2c1e0c':mid?'#5a4325':'#7d6644';g.lineWidth=(big?1.6:1)*d;g.beginPath();g.moveTo(x(f),base);g.lineTo(x(f),H*(big?.3:mid?.4:.48));g.stroke();
+    if(big)g.fillText(String(Math.round(f)),x(f),H*.9)}
+  for(const st of rdPool()){const f=rdFreqOf(st);if(!f)continue;const fav=rdFavs.some(s=>s.id===st.id);g.fillStyle=fav?'#b8741c':'#4f6b2c';g.beginPath();g.arc(x(f),H*.69,(fav?3.4:2.6)*d,0,7);g.fill()}
+  const cf=rdTune!=null?rdTune:(rdCur&&rdFreqOf(rdCur));if(cf){const cx=x(cf);
+    g.strokeStyle='#00000040';g.lineWidth=3*d;g.beginPath();g.moveTo(cx+1.5*d,H*.24);g.lineTo(cx+1.5*d,H*.74);g.stroke();
+    g.strokeStyle='#d22b1a';g.lineWidth=2.6*d;g.beginPath();g.moveTo(cx,H*.22);g.lineTo(cx,H*.74);g.stroke();
+    g.font=`700 ${12*d}px Georgia,"Times New Roman",serif`;const lb=cf.toFixed(1),tw=g.measureText(lb).width+12*d,bx=Math.max(1,Math.min(W-tw-1,cx-tw/2)),bh=H*.22;
+    g.fillStyle='#fbecc4';g.fillRect(bx,1,tw,bh);g.strokeStyle='#2c1e0c';g.lineWidth=1.2*d;g.strokeRect(bx,1,tw,bh);g.fillStyle='#2c1e0c';g.textBaseline='middle';g.fillText(lb,bx+tw/2,1+bh/2);g.textBaseline='alphabetic'}}
+new MutationObserver(()=>{try{rdShow();rdDraw()}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-cp']});
 // 신호 세기 계기(바늘 + 막대) — 재생 상태를 보여 주는 표시
 let rdLvl=0,rdLvlT=0,rdSigOn=false,rdSigTm=0;
 function rdLamps(){const on=rdPlaying&&rdSt0==='ON AIR';$('#rdStereo').classList.toggle('on',on);$('#rdRds').classList.toggle('on',on&&!!rdCur)}

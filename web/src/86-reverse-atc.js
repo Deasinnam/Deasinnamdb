@@ -29,7 +29,12 @@ function revAutoTick(s,v){if(!store.get('revAuto',false)||!store.get('revOn',tru
   if(diff>140){rev.offT=0;if(!rev.autoT)rev.autoT=now;if(!rev.on&&now-rev.autoT>2500)revSet(true,'auto')}
   else{rev.autoT=0;if(rev.on&&rev.src==='auto'&&diff<60){if(!rev.offT)rev.offT=now;if(now-rev.offT>2000)revSet(false)}}}
 window.AmpRev={toggle(){revSet(!rev.on,'button')},set:revSet,get on(){return rev.on}};
-// 관제탑 무전: 앱에서는 TTS를 파일로 받아 무전기 소리(300~3000Hz 대역, 찌그러짐, 잡음, 스퀠치)로 재생
+// 관제탑 무전: 앱에서는 TTS를 파일로 받아 무전기 느낌(300~3000Hz 대역)으로 재생. 잡음·찌그러짐·스퀠치(직직) 없이, 말 앞뒤에 부드러운 '띠릭'
+/* 띠릭: 둥근 사인파 두 음(올라가면 시작, 내려가면 끝), 짧고 작게 */
+function sndChime(at,up=true){const a=fx();if(!a)return;const t=a.currentTime+at,notes=up?[1046.5,1568]:[1568,1174.7];
+  notes.forEach((f,i)=>{const o=a.createOscillator(),o2=a.createOscillator();o.type='sine';o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;
+    const g=fxEnv(a,t+i*.085,.12,.006,.16),g2=a.createGain();g2.gain.value=.12;o.connect(g);o2.connect(g2).connect(g);g.connect(a.destination);
+    o.start(t+i*.085);o2.start(t+i*.085);o.stop(t+i*.085+.22);o2.stop(t+i*.085+.22)})}
 const ttsWait={};let radioSrc=null;
 window.__ttsFile=(id,ok)=>{const f=ttsWait[id];if(f){delete ttsWait[id];f(!!ok)}};
 async function radioSay(text){
@@ -42,20 +47,17 @@ async function radioSay(text){
   const t=a.currentTime+.18,src=a.createBufferSource();src.buffer=buf;src.playbackRate.value=1.04;radioSrc=src;
   const hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=330;hp.Q.value=.9;
   const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2900;lp.Q.value=1.1;
-  const pk=a.createBiquadFilter();pk.type='peaking';pk.frequency.value=1750;pk.gain.value=7;pk.Q.value=1.2;
-  const ws=a.createWaveShaper(),n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=Math.tanh(x*3.2)}ws.curve=cv;ws.oversample='2x';
-  const cmp=a.createDynamicsCompressor();cmp.threshold.value=-22;cmp.ratio.value=8;cmp.attack.value=.003;cmp.release.value=.12;
-  const out=a.createGain();out.gain.value=.9;
-  src.connect(hp).connect(pk).connect(ws).connect(lp).connect(cmp).connect(out).connect(a.destination);
-  const dur=buf.duration/1.04,nz=fxNoise(a,dur+.5),nbp=a.createBiquadFilter();nbp.type='bandpass';nbp.frequency.value=1900;nbp.Q.value=.6;
-  const ng=a.createGain();ng.gain.setValueAtTime(.0001,t-.15);ng.gain.linearRampToValueAtTime(.035,t-.1);ng.gain.setValueAtTime(.035,t+dur);ng.gain.linearRampToValueAtTime(.0001,t+dur+.3);
-  nz.connect(nbp).connect(ng).connect(a.destination);nz.start(t-.15);
-  sndSquelch(0,.16);src.start(t);sndSquelch(dur+.22,.22);sndRoger(dur+.2);
+  const pk=a.createBiquadFilter();pk.type='peaking';pk.frequency.value=1750;pk.gain.value=4;pk.Q.value=1.2;
+  const cmp=a.createDynamicsCompressor();cmp.threshold.value=-22;cmp.ratio.value=4;cmp.attack.value=.003;cmp.release.value=.12;
+  const out=a.createGain();out.gain.value=.95;
+  src.connect(hp).connect(pk).connect(lp).connect(cmp).connect(out).connect(a.destination);
+  const dur=buf.duration/1.04;
+  sndChime(0,true);src.start(t+.12);sndChime(dur+.42,false);
   return true}
 function atcSpeak(text){if(!atcOn())return;
   if(NB&&NB.ttsToFile){radioSay(text).then(ok=>{if(!ok&&NB.speak)try{NB.speak(text)}catch(e){}});return}
   try{if(NB&&NB.speak){NB.speak(text);return}}catch(e){}
-  try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=1.02;u.pitch=.95;speechSynthesis.cancel();sndSquelch(0,.14);speechSynthesis.speak(u)}}catch(e){}}
+  try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=1.02;u.pitch=.95;speechSynthesis.cancel();sndChime(0,true);setTimeout(()=>speechSynthesis.speak(u),220)}}catch(e){}}
 
 // SOS 연락처: 앱 설정(SOS 긴급 연락처)과 조종 패널 설정이 같은 저장소를 씀
 let sos=store.get('sos',{name:'',number:''});

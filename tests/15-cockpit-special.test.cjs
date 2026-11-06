@@ -69,6 +69,19 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#revBtn b').isVisible(), true, 'R badge kept');
   assert.equal(await p.locator('#pfdLevelQuick').isVisible(), true);
   assert.equal(await p.locator('#wVis').isVisible(), false, 'Merged player like special');
+  assert.equal(await p.locator('#pfdThemeQuick').isVisible(), true, 'Theme button under the level button');
+  { const l = await p.locator('#pfdLevelQuick').boundingBox(), t = await p.locator('#pfdThemeQuick').boundingBox(); assert.ok(t.y > l.y + l.height - 2 && Math.abs(t.x - l.x) < 2, 'Stacked below'); }
+  assert.equal(await p.locator('#pfdThemeQuick').textContent(), '테마 자동');
+  await p.locator('#pfdThemeQuick').click();
+  assert.ok(await p.evaluate(() => !!document.querySelector('#pfdHost dialog[open], .dsn-pfd dialog[open]')), 'Opens the theme settings');
+  await p.keyboard.press('Escape');
+  // 라디오: 전구빛 숫자 드럼 + 크림색 눈금창
+  await p.locator('#ckRail button[data-f="radio"]').click();
+  await p.locator('#rdUp').click();
+  assert.ok(await p.locator('#rdFreq .rd-drums .drum').count() >= 3, 'Drum digits');
+  assert.equal(await p.locator('#wRadio .rd-sig').isVisible(), false);
+  assert.ok(await p.evaluate(() => { const c = document.getElementById('rdScale'), g = c.getContext('2d'), d = g.getImageData(Math.round(c.width * .3), Math.round(c.height * .1), 1, 1).data; window.__px = [...d]; return d[0] > 200 && d[1] > 170 && d[2] < 190; }), 'Warm cream dial');
+  await p.locator('#ckRail button[data-f="all"]').click();
   assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow.includes('246, 190, 98')), 'Selected key uses the amber indicator');
   await p.close();
 });

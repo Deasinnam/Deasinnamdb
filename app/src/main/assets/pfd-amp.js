@@ -166,10 +166,19 @@
     lv.type = 'button'; lv.className = 'pfd-levelq'; lv.id = 'pfdLevelQuick'; lv.textContent = '수평 맞춤'; lv.title = '지금 자세를 수평으로 맞춤';
     lv.addEventListener('click', e => { e.stopPropagation(); try { P.calibrate(); } catch (_) {} });
     wrapEl.appendChild(lv);
+    // 그 아래 [테마 설정]: 아래 버튼 줄의 테마 버튼과 같은 설정 창을 열고, 글자(테마 자동/주간/야간)도 같이 보여 줌
+    const th = document.createElement('button');
+    th.type = 'button'; th.className = 'pfd-levelq pfd-themeq'; th.id = 'pfdThemeQuick'; th.title = '테마 설정';
+    const thSrc = () => P.root.querySelector('.pfd-tool[data-role="settings"]');
+    const thSync = () => { const t = P.els && P.els.themeText; th.textContent = (t && t.textContent) || '테마 설정'; };
+    th.addEventListener('click', e => { e.stopPropagation(); const b = thSrc(); if (b) b.click(); else try { P.openSettings(); } catch (_) {} });
+    wrapEl.appendChild(th); thSync();
+    if (P.els && P.els.themeText && window.MutationObserver) new MutationObserver(thSync).observe(P.els.themeText, { childList: true, characterData: true, subtree: true });
     const place = () => {
       const r = wrapEl.getBoundingClientRect(), w = r.width, h = r.height; if (!w || !h) return;
       const cl = (v, a, b) => Math.max(a, Math.min(b, v)), fh = h - cl(h * .145, 43, 66), tape = cl(w * .12, 67, 175), boxH = cl(fh * .26, 78, 124);
-      lv.style.left = '4px'; lv.style.width = (tape - 8) + 'px'; lv.style.top = Math.min(fh - 40, fh * .53 + boxH / 2 + 10) + 'px';
+      const top = Math.min(fh - 80, fh * .53 + boxH / 2 + 10);
+      for (const [b, dy] of [[lv, 0], [th, 40]]) { b.style.left = '4px'; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; }
     };
     if (window.ResizeObserver) new ResizeObserver(place).observe(wrapEl); place();
   }
