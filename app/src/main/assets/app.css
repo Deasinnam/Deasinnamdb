@@ -2179,3 +2179,6 @@ html.driving body{overflow:hidden}
 /* 콕핏 스페셜: 스피드미터만 크게 볼 때 [GPS 켜기] 줄·기기 지원을 스피드미터 안에 넣지 않음(화면이 줄지 않게) */
 :root[data-cks] #pfdHost .pfd-tools:not(.in-ctl),:root[data-cks] #wGps #devCaps{display:none!important}
 :root[data-cks] #wGps .gctl,:root[data-cks] #wGps #gMsg{display:none!important}
+/* 1.27 비행 화면: 가장자리를 살짝 어둡게(시뮬레이터 화면 같은 명암) — 고정 그림이라 부담 없음 */
+#pfdHost .pfd-canvas-wrap{position:relative}
+#pfdHost .pfd-canvas-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(125% 95% at 50% 42%,transparent 58%,#00000052 100%)}

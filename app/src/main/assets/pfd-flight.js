@@ -37,7 +37,11 @@
     for (let k = 0; k < 7; k++) { x.beginPath(); let cx = srand(k + 50) * 256, cy = srand(k + 70) * 256; x.moveTo(cx, cy); for (let s2 = 0; s2 < 8; s2++) { cx += (srand(k * 9 + s2) - .5) * 40; cy += srand(k * 7 + s2 + 3) * 22; x.lineTo(cx, cy); } x.stroke(); }
     return cv;
   })();
-  let asphPat = null;
+  let asphPat = null, grassPat = null;
+  const GRASS = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 256; const x = cv.getContext('2d'), id = x.createImageData(256, 256), d = id.data;
+    for (let i = 0; i < 256 * 256; i++) { const px = i & 255, py = i >> 8, n = srand(i * 2.13), m = srand(((px >> 4) + (py >> 4) * 31) * 5.3), b = srand(((px >> 6) + (py >> 6) * 7) * 9.1), k = i * 4;
+      const v = (n - .5) * 40 + (m - .5) * 34 + (b - .5) * 26; d[k] = 70 + v * .6; d[k + 1] = 104 + v; d[k + 2] = 44 + v * .4; d[k + 3] = 46 + Math.abs(v) * .9; }
+    x.putImageData(id, 0, 0); return cv; })();
   // 타이어 고무 자국: 접지 구역(양쪽 끝)에 진하고 가운데로 갈수록 옅어지는 가는 줄 여러 개
   const SKIDS = (() => {
     const a = [];
@@ -57,9 +61,9 @@
       for (let yy = 0; yy < Hh; yy++) for (let xx = 0; xx < W; xx++) {
         const k = (yy * W + xx) * 4, a = d[k + 3] / 255; acc[xx] = acc[xx] * .982 + a; if (a < .01) continue;
         const L = d[k] / 249, depth = Math.min(1, Math.max(0, (acc[xx] - 3) / 34)), rim = Math.max(0, 1 - acc[xx] / 5), base = Math.min(1, Math.max(0, (yy / Hh - .45) / .4));
-        const sh = Math.min(1, depth * .7 + base * .3);
-        let r = 255 - sh * 78, g = 255 - sh * 66, b = 253 - sh * 46;                    // 밝은 흰색 → 푸른 회색 그늘
-        r += rim * 8; g += rim * 6; b -= rim * 4;                                          // 위쪽 가장자리 햇빛
+        const sh = Math.min(1, Math.pow(depth, .8) * .8 + base * .4);
+        let r = 255 - sh * 118, g = 254 - sh * 102, b = 252 - sh * 74;                    // 밝은 흰색 → 푸른 회색 그늘
+        r += rim * 10; g += rim * 6; b -= rim * 10;                                          // 위쪽 가장자리 햇빛
         const f = .8 + L * .2; d[k] = Math.min(255, r * f); d[k + 1] = Math.min(255, g * f); d[k + 2] = Math.min(255, b * f);
         d[k + 3] = Math.min(255, d[k + 3] * (1.04 + depth * .08));
       }
@@ -205,6 +209,7 @@
     const rwE = F.rwS + F.rwLen;
     const showRw = rwE > zn && F.rwS < zf;
     if (gA < .01 && !showRw && night) return;
+    drawHorizon(c, w, h, night, quality, f);
     c.save();
     c.beginPath(); c.rect(-w * 2, 0, w * 4, h * 3); c.clip();
 
@@ -237,6 +242,12 @@
         if (rwE + 500 > zn) quad(-760, 820, F.rwS - 500, rwE + 500, g, Math.max(gA, .85));
         const n0 = Math.ceil((zn - F.rwS) / 70) - 1;
         for (let n = n0; n < n0 + 60; n++) { const z1 = F.rwS - 500 + n * 70; if (z1 > rwE + 500) break; if (n % 2) continue; quad(-760, 820, z1, z1 + 70, '#20330f', .12); }
+        // 잔디 결: 짙고 옅은 풀 얼룩이 원근에 맞춰 작아짐
+        if (quality !== 'balanced') { if (!grassPat) try { grassPat = c.createPattern(GRASS, 'repeat'); } catch (e) {}
+          if (grassPat && grassPat.setTransform && window.DOMMatrix) { let z = Math.max(zn, F.rwS - 500); const z1e = Math.min(rwE + 500, 3000);
+            while (z < z1e) { const z2 = Math.min(z1e, z * 1.2 + 2), zm = (z + z2) / 2, k = f / zm * .16;
+              grassPat.setTransform(new DOMMatrix([k, 0, 0, k * Hc / zm * 1.4, 0, py(zm) - ((zm + F.wz) * 6 % 256) * k * Hc / zm * 1.4]));
+              quad(-760, -26, z, z2, grassPat, .8); quad(26, 820, z, z2, grassPat, .8); z = z2; } } }
       }
       c.globalAlpha = 1;
     }
@@ -283,6 +294,13 @@
       const za = t.end ? rwE - t.d0 - t.len : F.rwS + t.d0; quad(t.x - t.w / 2, t.x + t.w / 2, za, za + t.len, '#17181a', t.al);
     } else for (const x of [-6, 6]) { quad(x - 2.5, x + 2.5, F.rwS + 250, F.rwS + 1000, '#000', .3); quad(x - 2.5, x + 2.5, rwE - 1000, rwE - 250, '#000', .3); }
     if (!night) { quad(-1.4, 1.4, F.rwS + 60, rwE - 60, '#1c1e21', .12); } // 가운데 기름 얼룩 띠
+    // 노면 광택: 먼 쪽은 하늘빛이 비쳐 밝고 가까울수록 짙어짐(젖은 듯한 반사), 가장자리는 살짝 어둡게
+    if (quality !== 'balanced') {
+      const zs = Math.max(F.rwS, zn), ze = Math.min(rwE, 4000);
+      if (ze > zs) { const sh = c.createLinearGradient(0, py(ze), 0, Math.min(py(zs), h * .62)); sh.addColorStop(0, night ? '#9fb4ff30' : '#eef4fa50'); sh.addColorStop(.18, night ? '#9fb4ff10' : '#eef4fa14'); sh.addColorStop(.45, '#00000000'); sh.addColorStop(1, night ? '#00000030' : '#0000004a');
+        quad(-RW_W / 2, RW_W / 2, zs, ze, sh, 1); }
+      quad(-RW_W / 2, -RW_W / 2 + 4, F.rwS, rwE, '#000', .14); quad(RW_W / 2 - 4, RW_W / 2, F.rwS, rwE, '#000', .14);
+    }
 
     // 4) 표지(흰색)
     quad(-RW_W / 2 + .5, -RW_W / 2 + 1.4, F.rwS, rwE, ink, inkA);
@@ -316,7 +334,7 @@
     }
     // 5) 건물(먼 것부터) — 지평선 위로 솟으므로 땅 클립 밖에서 그림
     c.restore(); c.save();
-    const bld = [{ z: F.rwS + 1150, kind: 'tower' }, { z: F.rwS + 660, kind: 'terminal' }, { z: F.rwS + 520, kind: 'hangar' }, { z: F.rwS + 1450, kind: 'hangar2' }];
+    const bld = [{ z: F.rwS + 1150, kind: 'tower' }, { z: F.rwS + 660, kind: 'terminal' }, { z: F.rwS + 1900, kind: 'terminal2' }, { z: F.rwS + 520, kind: 'hangar' }, { z: F.rwS + 1450, kind: 'hangar2' }, { z: F.rwS + 2600, kind: 'cargo' }];
     bld.sort((a, b) => b.z - a.z);
     for (const b of bld) drawBuilding(c, b, f, Hc, zn, zf, night, now, py, px);
 
@@ -328,8 +346,15 @@
       if (y < -2 || y > h * 2.6 || Math.abs(x) > w * 1.3) return;
       c.globalAlpha = clamp(k, 0, 1) * (Z > 6000 ? clamp(1 - (Z - 6000) / 10000, .25, 1) : 1);
       c.drawImage(glow(col), x - s / 2, y - s / 2, s, s);
+      if (REFL && Z < 1600 && quality !== 'balanced') { c.globalAlpha *= night ? .35 : .22; c.drawImage(glow(col), x - s * .22, y, s * .44, s * 2.6); } // 노면에 비친 등 빛
     };
     const nk = night ? 1 : 0;
+    let REFL = true;
+    if (!nk && quality !== 'balanced') { // 낮에도 켜 둔 활주로 등(시뮬레이터처럼 은은하게): 가장자리·접지 구역·말단
+      for (let z = F.rwS; z <= Math.min(rwE, F.rwS + 3200); z += 60) { const col = z > rwE - 600 ? C.amber : C.white; L(-24, z, col, 3.2, .55); L(24, z, col, 3.2, .55); }
+      for (let x = -21; x <= 21; x += 3) L(x, F.rwS, C.green, 2.6, .6);
+      for (let z = F.rwS + 60; z < F.rwS + 600; z += 30) for (const x of [-7.5, 7.5]) L(x, z, C.white, 1.4, .3);
+    }
     if (nk) {
       for (let z = F.rwS; z <= rwE; z += 60) { const col = z > rwE - 600 ? C.amber : C.white; L(-24, z, col, 4.2, .95); L(24, z, col, 4.2, .95); }
       for (let z = F.rwS + 15; z < rwE; z += 30) { const left = rwE - z, col = left < 300 ? C.red : left < 900 ? ((Math.round(z / 30) % 2) ? C.red : C.white) : C.white; L(0, z, col, 2.2, .7); }
@@ -358,6 +383,29 @@
     c.restore();
   }
 
+  /* 먼 산 능선(대기 원근으로 겹겹이 옅게) + 지평선 아지랑이 + 먼 도시 실루엣. 방향을 틀면 천천히 옆으로 흐름 */
+  const RIDGE = [0, 1, 2].map(k => { const a = []; for (let i = 0; i <= 256; i++) { const t = i / 256 * Math.PI * 2; a.push(.5 + .22 * Math.sin(t * (2 + k) + k * 1.7) + .14 * Math.sin(t * (5 + k * 2) + k) + .08 * Math.sin(t * (11 + k * 3) + 2 * k) + .04 * Math.sin(t * 29 + k * 5)); } return a; });
+  const SKY_BLK = (() => { const a = []; for (let i = 0; i < 70; i++) a.push({ x: srand(i + 900), w: .004 + srand(i + 950) * .012, h: .25 + srand(i + 990) * .75 }); return a; })();
+  function drawHorizon(c, w, h, night, quality, f) {
+    const yaw = (sc.yawAcc || 0) * w / 72.5, alt = F.alt, lift = clamp(1 - alt / 1500, .25, 1);
+    c.save(); c.globalAlpha = 1;
+    const layers = night ? [['#0d1622', .1, .25], ['#111c29', .07, .45], ['#16212e', .045, .7]] : [['#8ea4b8', .12, .2], ['#6f879b', .085, .4], ['#58707f', .055, .65]];
+    layers.forEach(([col, hk, par], k) => {
+      const ridge = RIDGE[k], span = w * 3, off = ((yaw * par) % span + span) % span, hh = h * hk * lift;
+      c.fillStyle = col; c.beginPath(); c.moveTo(-w * 1.6, 1);
+      for (let i = 0; i <= 160; i++) { const x = -w * 1.6 + i / 160 * w * 3.2, u = ((x + off) / span % 1 + 1) % 1, v = ridge[Math.floor(u * 256)]; c.lineTo(x, -hh * v); }
+      c.lineTo(w * 1.6, 1); c.closePath(); c.fill();
+    });
+    if (quality !== 'balanced' && alt < 900) { // 먼 도시(공항 너머)
+      c.fillStyle = night ? '#0a1018' : '#7f93a3'; const span = w * 2.6, off = ((yaw * .8) % span + span) % span;
+      for (const b of SKY_BLK) { const x = ((b.x * span - off) % span + span) % span - span / 2, bw = b.w * w, bh = h * .03 * b.h * lift; c.fillRect(x, -bh, bw, bh + 1);
+        if (night && b.h > .5) { c.globalAlpha = .55; c.fillStyle = '#f2c983'; for (let y = 2; y < bh - 2; y += 3) c.fillRect(x + bw * .3, -bh + y, Math.max(1, bw * .15), 1); c.globalAlpha = 1; c.fillStyle = '#0a1018'; } }
+    }
+    const hz = c.createLinearGradient(0, -h * .06, 0, h * .02); hz.addColorStop(0, night ? '#1a243300' : '#e8eef400'); hz.addColorStop(.7, night ? '#1a243355' : '#e8eef4aa'); hz.addColorStop(1, night ? '#1a243300' : '#e8eef400');
+    c.fillStyle = hz; c.fillRect(-w * 2, -h * .06, w * 4, h * .08);
+    c.restore();
+  }
+
   function drawBuilding(c, b, f, Hc, zn, zf, night, now, py, px) {
     const Z = b.z; if (Z < zn * 2 || Z > zf) return;
     const s = f / Z, gy = py(Z);
@@ -371,6 +419,17 @@
       else { box(250, 268, 40.5, 44.5, '#6fa7b4'); box(250, 268, 43.5, 44.5, '#d8e6ea'); }
       box(248, 270, 46, 48, night ? '#090c10' : '#7f8586');
       box(258.6, 259.4, 48, 56, night ? '#090c10' : '#6a6f70');
+    } else if (b.kind === 'terminal2') { // 두 번째 여객 터미널: 곡선 지붕 + 유리 + 탑승교
+      const X1 = px(560, Z), X2 = px(980, Z), top = gy - 22 * s, eave = gy - 15 * s;
+      c.fillStyle = night ? '#0b0e12' : '#cfd3d1'; c.fillRect(X1, eave, X2 - X1, 15 * s);
+      c.beginPath(); c.moveTo(X1 - 2 * s, eave); c.quadraticCurveTo((X1 + X2) / 2, top - 6 * s, X2 + 2 * s, eave); c.closePath(); c.fillStyle = night ? '#07090c' : '#9aa3a6'; c.fill();
+      if (night) { c.globalAlpha = .7; for (let x = 566; x < 974; x += 7) if (((x * 5) % 9) > 2) box(x, x + 4, 4, 11, '#f2c983'); c.globalAlpha = 1; }
+      else { const gl = c.createLinearGradient(0, gy - 13 * s, 0, gy - 3 * s); gl.addColorStop(0, '#7fa6b8'); gl.addColorStop(1, '#3f5f6e'); c.fillStyle = gl; c.fillRect(px(566, Z), gy - 13 * s, (974 - 566) * s, 10 * s);
+        for (let x = 566; x < 974; x += 14) box(x, x + .5, 3, 13, '#d9e0e2'); }
+      for (const x of [600, 700, 800, 900]) box(x, x + 3, 3, 6, night ? '#0e1216' : '#8d9496');
+    } else if (b.kind === 'cargo') {
+      box(-620, -360, 0, 11, night ? '#0a0d10' : '#b4b8b4'); box(-620, -360, 10, 12, night ? '#07090c' : '#80878a');
+      for (let x = -610; x < -370; x += 26) box(x, x + 18, 0, 7, night ? '#11161b' : '#8e9599');
     } else if (b.kind === 'terminal') {
       box(300, 540, 0, 16, night ? '#0b0e12' : '#d6d8d4');
       box(300, 540, 14, 17, night ? '#07090c' : '#8e9394');
