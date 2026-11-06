@@ -85,7 +85,7 @@ cksApply();
 new MutationObserver(()=>{try{briUi()}catch(e){}try{drawWxDial($('#wxDial'),WX.kind,WX.temp,WX.day===false)}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-cp']});
 /* ===== 콕핏 스페셜 2 상단 계기: 앤틱 황동 테 + 검은 다이얼 + 밝은 아이보리 큰 숫자·방위·아이콘 ===== */
 function CPX(){return document.documentElement.hasAttribute('data-cp')}
-const IVO='#f6edd4',BRS=IS_FOLD?['#e6d4ff','#a57ce8','#5e3a99','#22113d']:['#fbe3a6','#d6ae62','#8a6427','#3e2a0e'];
+const IVO='#f6edd4',BRS=['#fbe3a6','#d6ae62','#8a6427','#3e2a0e'];
 function antBase(cv){const ctx=cv.getContext('2d'),S=cv.width,R=S/2;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S,S);ctx.translate(R,R);
   // 황동 두 겹 테
   let g=ctx.createLinearGradient(-R,-R,R,R);g.addColorStop(0,BRS[0]);g.addColorStop(.3,BRS[1]);g.addColorStop(.65,BRS[3]);g.addColorStop(1,BRS[1]);

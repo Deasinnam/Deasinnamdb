@@ -1,7 +1,7 @@
 const {run, assert} = require('./lib/harness.cjs');
 
 // 1.32 폴드8 전용판: 보라색, 콕핏 스페셜 2로 시작, 외부(10:16)·내부(4:3) 화면 배치
-run('Fold8 edition layout and purple colour', async ({context, origin, errors}) => {
+run('Fold8 edition layout, same in-app colours', async ({context, origin, errors}) => {
   const p = await context.newPage();
   p.on('pageerror', e => errors.push('fold8: ' + e.message));
   await p.addInitScript(() => {
@@ -23,8 +23,8 @@ run('Fold8 edition layout and purple colour', async ({context, origin, errors}) 
   await p.setViewportSize({width: 940, height: 705}); await p.waitForTimeout(300);
   const g = await p.locator('#wGps').boundingBox(), m = await p.locator('#wMain').boundingBox();
   assert.ok(m.x > g.x + g.width - 4 && Math.abs(m.y - g.y) < 4, 'Speedometer and player side by side on the inner screen');
-  // 보라색: 선택된 바로가기 표시등이 보라 계열
-  assert.ok(await p.evaluate(() => { const s = getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow; const m = [...s.matchAll(/rgba?\((\d+), (\d+), (\d+)/g)].map(x => x.slice(1).map(Number)); return m.some(([r, g, b]) => b > g + 40 && r > g); }), 'Purple accents');
+  // 앱 안 색은 일반판과 같음(보라색은 아이콘·실행 화면만)
+  assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow.includes('255, 195, 92')), 'Same amber accents as the standard app');
   await p.close();
   // 일반판은 그대로(보라색 아님)
   const q = await context.newPage();
