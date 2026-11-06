@@ -80,3 +80,6 @@ cksApply();
   dayUi();
   window.AmpDay={get mode(){return dayMode},set:dayApply};
 })();
+
+// 스페셜 2로 바뀌면 원형 계기(시계·날씨·나침반·밝기)를 황동 베젤로 바로 다시 그림
+new MutationObserver(()=>{try{briUi()}catch(e){}try{drawWxDial($('#wxDial'),WX.kind,WX.temp,WX.day===false)}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-cp']});
