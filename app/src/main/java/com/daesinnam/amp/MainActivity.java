@@ -79,6 +79,11 @@ public class MainActivity extends Activity {
     private static final int REQ_CALL = 47;
     private static final int REQ_CONTACT = 48;
     private static final int REQ_CAM = 49;
+    private static final int REQ_REC = 50;
+    private android.webkit.PermissionRequest pendingWebCam;
+    private java.io.OutputStream recOut;
+    private Uri recUri;
+    private String recName;
     private String[] pendingCam;
     private String pendingCall;
     private boolean attWanted;
@@ -241,6 +246,25 @@ public class MainActivity extends Activity {
         });
 
         web.setWebChromeClient(new WebChromeClient() {
+            /** 주행 녹화: 앱 화면(자기 주소)만 카메라 사용 허가 — 소리는 쓰지 않음 */
+            @Override
+            public void onPermissionRequest(final android.webkit.PermissionRequest req) {
+                main.post(() -> {
+                    Uri o = req.getOrigin();
+                    boolean ours = o != null && APP_HOST.equals(o.getHost());
+                    boolean wantsCam = false;
+                    for (String r : req.getResources()) if (android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r)) wantsCam = true;
+                    if (!ours || !wantsCam) { req.deny(); return; }
+                    if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        req.grant(new String[]{android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                    } else {
+                        if (pendingWebCam != null) pendingWebCam.deny();
+                        pendingWebCam = req;
+                        requestPermissions(new String[]{Manifest.permission.CAMERA}, REQ_REC);
+                    }
+                });
+            }
+
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                 if (pendingChooser != null) pendingChooser.onReceiveValue(null);
@@ -333,6 +357,12 @@ public class MainActivity extends Activity {
             pendingCall = null;
             boolean ok = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
             placeCall(n, ok);
+        }
+        if (requestCode == REQ_REC && pendingWebCam != null) {
+            android.webkit.PermissionRequest r = pendingWebCam;
+            pendingWebCam = null;
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) r.grant(new String[]{android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+            else r.deny();
         }
         if (requestCode == REQ_CAM && pendingCam != null) {
             String[] a = pendingCam;
@@ -808,6 +838,14 @@ public class MainActivity extends Activity {
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQ_LOC);
     }
 
+    private synchronized void recCloseQuiet() {
+        if (recOut != null) try { recOut.close(); } catch (Exception ignored) {}
+        if (recUri != null && Build.VERSION.SDK_INT >= 29) {
+            try { android.content.ContentValues v = new android.content.ContentValues(); v.put(android.provider.MediaStore.Video.Media.IS_PENDING, 0); getContentResolver().update(recUri, v, null, null); } catch (Exception ignored) {}
+        }
+        recOut = null; recUri = null; recName = null;
+    }
+
     private static JSONObject cap(String s, String t) {
         JSONObject j = new JSONObject();
         try { j.put("s", s); j.put("t", t); } catch (Exception ignored) {}
@@ -928,6 +966,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        recCloseQuiet(); // 녹화 중 앱이 닫혀도 그때까지 찍은 파일은 남김
         main.removeCallbacksAndMessages(null);
         if (tts != null) { tts.shutdown(); tts = null; }
         try { am.unregisterAudioDeviceCallback(devCallback); } catch (Exception ignored) {}
@@ -1616,6 +1655,61 @@ public class MainActivity extends Activity {
                 screenOnPlay = on;
                 applyScreenOn();
             });
+        }
+
+        /** 주행 녹화 파일 열기: 동영상(Movies)/DaesinnamOne/이름.webm — 녹화 조각을 이어 붙여 저장 */
+        @JavascriptInterface
+        public synchronized boolean recOpen(String name) {
+            recCloseQuiet();
+            String n = nz(name).replaceAll("[^A-Za-z0-9_.-]", "_");
+            if (!n.endsWith(".webm")) n += ".webm";
+            try {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    android.content.ContentValues v = new android.content.ContentValues();
+                    v.put(android.provider.MediaStore.Video.Media.DISPLAY_NAME, n);
+                    v.put(android.provider.MediaStore.Video.Media.MIME_TYPE, "video/webm");
+                    v.put(android.provider.MediaStore.Video.Media.RELATIVE_PATH, "Movies/DaesinnamOne");
+                    v.put(android.provider.MediaStore.Video.Media.IS_PENDING, 1);
+                    recUri = getContentResolver().insert(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI, v);
+                    if (recUri == null) return false;
+                    recOut = getContentResolver().openOutputStream(recUri);
+                    recName = "동영상/DaesinnamOne/" + n;
+                } else {
+                    java.io.File dir = new java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_MOVIES), "DaesinnamOne");
+                    if (!dir.exists() && !dir.mkdirs()) return false;
+                    java.io.File f = new java.io.File(dir, n);
+                    recOut = new java.io.FileOutputStream(f);
+                    recUri = null;
+                    recName = f.getAbsolutePath();
+                }
+                return recOut != null;
+            } catch (Exception e) {
+                recCloseQuiet();
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public synchronized boolean recWrite(String b64) {
+            if (recOut == null || b64 == null) return false;
+            try { recOut.write(android.util.Base64.decode(b64, android.util.Base64.DEFAULT)); return true; } catch (Exception e) { return false; }
+        }
+
+        /** 녹화 끝: 파일을 닫고 갤러리에 보이게. 저장된 위치를 돌려줌(실패하면 빈 글자) */
+        @JavascriptInterface
+        public synchronized String recClose() {
+            if (recOut == null) return "";
+            String name = recName;
+            try {
+                recOut.flush(); recOut.close();
+                if (recUri != null && Build.VERSION.SDK_INT >= 29) {
+                    android.content.ContentValues v = new android.content.ContentValues();
+                    v.put(android.provider.MediaStore.Video.Media.IS_PENDING, 0);
+                    getContentResolver().update(recUri, v, null, null);
+                }
+            } catch (Exception e) { name = ""; }
+            recOut = null; recUri = null; recName = null;
+            return name == null ? "" : name;
         }
 
         /** 기기 지원 확인(GPS·방향 센서·LTE·5G·Wi-Fi·블루투스): {키:{s:on|off|yes|no|unk, t:짧은 글}} — 새 권한 없이 확인 가능한 것만 */

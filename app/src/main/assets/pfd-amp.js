@@ -214,5 +214,11 @@
     if (Object.keys(patch).length) try { P.updateTelemetry(patch, { touchTimestamp: false }); } catch (e) {}
   }
 
-  window.AmpPfd = { ready: true, panel: P, feed };
+  // 앱에서 주간/야간/자동 바꾸기(조종 패널 주간·야간 스위치)
+  function setTheme(t) {
+    if (!['auto', 'day', 'night'].includes(t)) return;
+    theme = t; H.save('pfdSet', Object.assign({}, H.load('pfdSet', {}) || {}, { theme: t }));
+    applyTheme(); try { P.renderText(); } catch (_) {}
+  }
+  window.AmpPfd = { ready: true, panel: P, feed, setTheme, get theme() { return theme; } };
 })();

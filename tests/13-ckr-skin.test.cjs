@@ -20,7 +20,7 @@ run('Revised cockpit skin', async ({context, origin, errors}) => {
   // 조종 패널은 너비와 관계없이 다섯 칸 한 줄
   for (const w of [412, 600, 1000]) {
     await p.setViewportSize({width: w, height: 900}); await p.waitForTimeout(300);
-    const tops = await p.evaluate(() => [...document.querySelectorAll('.dsn .modules>.module')].map(m => Math.round(m.getBoundingClientRect().top)));
+    const tops = await p.evaluate(() => [...document.querySelectorAll('.dsn .modules>.module')].filter(m => m.offsetParent).map(m => Math.round(m.getBoundingClientRect().top)));
     assert.equal(new Set(tops).size, 1, 'Cockpit control in one row at ' + w + 'px');
   }
   await p.setViewportSize({width: 600, height: 900});

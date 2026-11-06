@@ -172,7 +172,7 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     await page.waitForFunction(() => window.__spoke.length > 0 && !document.querySelector('#atcClr').hidden, null, {timeout:40000});
     assert.equal(await page.locator('#atcLog li').count(), 0, 'After the run only the clearance is left');
     // SOS: 가운데 EMERGENCY, 닫힌 덮개에서는 누를 수 없고 덮개를 연 뒤 SOS로 등록 번호에 전화
-    const mods = await page.locator('#dkConsole .module h2').allTextContents();
+    const mods = (await page.locator('#dkConsole .module:not(.cks-mod) h2').allTextContents());
     assert.deepEqual(mods, ['미디어 볼륨','와이파이','EMERGENCY','블루투스','간편 모드'], 'Korean titles, EMERGENCY stays English');
     assert.equal(await page.locator('#dkConsole .subline').count(), 0, 'No sublines');
     assert.equal(await page.locator('#dkConsole .console-footer').isVisible(), false, 'No footer message/usage line');

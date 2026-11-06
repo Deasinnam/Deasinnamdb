@@ -2006,3 +2006,19 @@ html.driving body{overflow:hidden}
 :root[data-cp] #wRadio .rd-knob{width:clamp(110px,15cqw,168px)!important}
 :root[data-cp] #wRadio #rdScale{height:84px!important}
 :root[data-cp] #wRadio .rd-drums{margin:4px 0}
+
+/* 1.23 콕핏 스페셜 조종 패널: 녹화 · 음소거 · 주간/야간 스위치 */
+.dsn .cks-mod{display:none}
+:root[data-cks] .dsn :is(.wifi-module,.bt-module,.mode-module){display:none!important}
+:root[data-cks] .dsn .cks-mod{display:flex}
+.dsn .readout.rec{color:#ff5a4a!important}
+.dsn .readout.rec .indicator{background:#ff3b2b!important;box-shadow:0 0 8px #ff3b2b!important;animation:recBlink 1s steps(2) infinite}
+.dsn .readout.night{color:#9fc3ff!important}.dsn .readout.night .indicator{background:#9fc3ff!important;box-shadow:0 0 6px #9fc3ff!important}
+.dsn .rec-module .lever-switch[aria-checked="true"] .on-word{color:#ff5a4a}
+.dsn .mute-module .lever-switch[aria-checked="true"] .on-word{color:#ffb14d}
+@keyframes recBlink{50%{opacity:.25}}
+.recbadge{position:fixed;top:10px;right:12px;z-index:60;display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:6px;background:#140605e6;border:1px solid #ff3b2b;
+  box-shadow:0 0 0 1px #000,0 4px 12px #000c;font:700 14px/1 "Share Tech Mono",monospace;color:#ffd7d2;pointer-events:none}
+.recbadge[hidden]{display:none}
+.recbadge i{width:10px;height:10px;border-radius:50%;background:#ff3b2b;box-shadow:0 0 8px #ff3b2b;animation:recBlink 1s steps(2) infinite}
+.recbadge b{color:#ff5a4a;letter-spacing:.1em}
