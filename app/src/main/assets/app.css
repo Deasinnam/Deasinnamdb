@@ -1746,3 +1746,66 @@ html.driving body{overflow:hidden}
 
 /* 기기 지원: 조종 패널 버튼 아래 */
 .dsn .devcaps{margin:7px 0 0}
+
+/* ===== 1.20 콕핏 스페셜 스킨(carnival6, 회색 콕핏 바탕 + data-cks) ===== */
+/* 창과 창 사이 최소 */
+:root[data-cks] .app{gap:6px;padding-block:4px 16px}
+:root[data-cks] .win>.bar{min-height:0;padding-top:4px;padding-bottom:4px}
+:root[data-cks] .win>.body{padding-top:6px;padding-bottom:6px}
+/* 위 버튼 줄: 작게 한 줄, 이모티콘 없음 */
+:root[data-cks] .tools{display:flex!important;flex-wrap:nowrap;gap:4px;padding:4px 6px!important;overflow-x:auto;scrollbar-width:none;width:100%}
+:root[data-cks] .tools::-webkit-scrollbar{display:none}
+:root[data-cks] .tools .emo,:root[data-cks] #setBtn svg,:root[data-cks] #revBtn b{display:none!important}
+:root[data-cks] .tools .pill{flex:1 0 auto;height:30px;min-height:30px;padding:0 9px;font-size:13px;line-height:28px;white-space:nowrap}
+:root[data-cks] .tools .selw{flex:none;gap:4px;font-size:12px;white-space:nowrap}
+:root[data-cks] .tools .sel{height:30px;min-height:30px;padding:0 22px 0 8px;font-size:13px}
+/* 관제탑: 아래 창 없앰 → 스피드미터 제목줄의 작은 표시 */
+.atcmini{display:none}
+:root[data-cks] #wAtc{display:none!important}
+:root[data-cks] .atcmini{display:inline-flex;align-items:center;gap:6px;flex:0 1 auto;min-width:0;max-width:46%;height:26px;margin:0 8px;padding:0 9px;border:1px solid #8b96a2;border-radius:13px;
+  background:#0b1623;color:#c3cbd3;font:600 12px/1 "Noto Sans KR",sans-serif;cursor:pointer;overflow:hidden}
+:root[data-cks] .atcmini b{font:700 11px/1 "Share Tech Mono",monospace;letter-spacing:.08em;color:#7fd8ff}
+:root[data-cks] .atcmini span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+:root[data-cks] .atcmini[data-k="ok"]{border-color:#7fd8ff;color:#a9e6ff}
+:root[data-cks] .atcmini[data-k="run"] b{animation:atcBlink 1s steps(2) infinite}
+:root[data-cks] .atcmini[data-k="warn"]{border-color:#ff4d3d;background:#2a0b08;color:#ffb3a8}
+:root[data-cks] .atcmini[data-k="warn"] b{color:#ff4d3d}
+@keyframes atcBlink{50%{opacity:.35}}
+/* GPS 켜기 버튼 줄: 조종 패널 아래(작게 한 줄) */
+.dsn .pfd-tools.in-ctl{display:flex;flex-wrap:nowrap;gap:5px;margin:6px 0 0;padding:0}
+.dsn .pfd-tools.in-ctl>*{flex:1 1 0;min-width:0;min-height:32px!important;height:32px;padding:0 6px;font-size:12.5px!important;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:#f4f6f8;background:linear-gradient(180deg,#7a8591,#4e5863);border:1px solid #0b0f14;box-shadow:inset 0 1px 0 #ffffff40,inset 0 -2px 0 #2a3038}
+.dsn .pfd-tools.in-ctl select{background:#0b1623;color:#7fd8ff}
+.dsn .pfd-tools.in-ctl [aria-pressed="true"],.dsn .pfd-tools.in-ctl .on,.dsn .pfd-tools.in-ctl .active{color:#ffcf8a;box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -2px 0 #ff9f43}
+/* 기기 지원: 접기/펴기 */
+.devcaps .dc-h{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:2px 2px;color:inherit;font:inherit;cursor:pointer}
+.devcaps .dc-h .dc-sum{display:none;font-weight:500;color:#a8b0a4}
+.devcaps .dc-h .dc-car{font-style:normal;transition:transform .15s}
+.devcaps.fold .dc{display:none}
+.devcaps.fold .dc-h .dc-sum{display:inline}
+.devcaps.fold .dc-h .dc-car{transform:rotate(-90deg)}
+:root[data-cks] .dsn .devcaps{margin-top:5px;padding:3px 6px}
+/* COCKPIT CONTROL 제목줄 슬림 */
+:root[data-cks] .dsn .console{padding:6px 10px 7px}
+:root[data-cks] .dsn .fastener{display:none}
+:root[data-cks] .dsn .squad-mark,:root[data-cks] .dsn .eyebrow{display:none}
+:root[data-cks] .dsn .console-header{min-height:0;padding:0 2px 5px 6px;margin-bottom:5px;gap:8px}
+:root[data-cks] .dsn .brand-block h1{font:600 14px/1 "Barlow Condensed","Noto Sans KR",sans-serif!important;letter-spacing:.2em!important;margin:0}
+:root[data-cks] .dsn .header-btn{min-width:32px;height:28px}
+:root[data-cks] .dsn .header-btn svg{width:15px;height:15px}
+/* 플레이어 + NOW PLAYING 한 창 */
+:root[data-cks] #wVis{display:none!important}
+.npmerge{display:grid;grid-template-columns:minmax(110px,22%) minmax(0,1fr);gap:8px;margin-top:8px}
+.npmerge .art .npctl{display:none}
+.npmerge .art .cover{max-height:150px}
+.npmerge .visbox{min-height:150px}
+.app.FX>#wMain.fx .npmerge{flex:1;min-height:0}.app.FX>#wMain.fx .npmerge .visbox{min-height:180px}
+@media (max-width:520px){.npmerge{grid-template-columns:96px minmax(0,1fr)}.npmerge .visbox{min-height:120px}}
+/* 바로가기 줄: 어느 창이든 맨 아래 */
+:root[data-cks] .win.hasrail>.ckrail{margin:6px 6px 6px}
+#wCam.collapsed>.body{display:none}
+.dsn .pfd-tools.in-ctl>button{display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.dsn .pfd-tools.in-ctl svg{display:inline-block;width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2}
+.dsn .pfd-tools.in-ctl span{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:620px){.dsn .pfd-tools.in-ctl svg{display:none}.dsn .pfd-tools.in-ctl>*{font-size:11.5px!important;padding:0 3px}}
+.npmerge .art{align-self:start}

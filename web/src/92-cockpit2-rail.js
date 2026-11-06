@@ -12,6 +12,7 @@ function ckRailPlace(hostId,span){const r=ckRailEl;ckRailPlace.last=[hostId,span
   const h=$('#'+hostId);if(!h)return;h.classList.add('hasrail');
   if(hostId==='wGps'){const glass=h.dataset.gs==='cockpit'&&h.querySelector('#pfdHost .pfd-glass'),gauge=h.querySelector('.body>.gps');
     const at=glass||gauge;if(at){if(at.nextElementSibling!==r)at.after(r);return}}
+  if(isCks()){const g=h.querySelector(':scope>.grip');if(g)h.insertBefore(r,g);else if(h.lastElementChild!==r)h.append(r);return} // 콕핏 스페셜: 어느 창이든 맨 아래 고정
   const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild)}
 // 스피드미터 화면(PFD)이 늦게 만들어지거나 디자인이 바뀌면 자리를 다시 잡음
 {const mo=new MutationObserver(()=>{const l=ckRailPlace.last;if(l&&l[0]==='wGps'&&!l[1])ckRailPlace('wGps',false)});

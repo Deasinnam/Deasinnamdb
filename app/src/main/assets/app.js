@@ -19,8 +19,8 @@ const PRESETS={
   'Treble Boost':[-2,-2,-1,0,1,3,6,8,9,9],
   'Live':[-3,0,3,4,4,4,3,2,2,2]
 };
-const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
-const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
+const SKINS=[['blue','대신남 블루'],['amber','클래식 앰버'],['base','베이스 그린'],['neon','네온 시티'],['ice','아이스 크롬'],['red','레드 라인'],['wood','우드 하이파이'],['carnival','대신남 자동차 모드'],['carnival5','대신남 자동차 모드 · 콕핏'],['carnival4','대신남 자동차 모드 · 콕핏 그레이'],['carnival6','대신남 자동차 모드 · 콕핏 스페셜'],['tablet','대신남 태블릿 가로모드'],['tablet2','대신남 태블릿 가로모드 2']];
+const CAR_SKINS=['carnival','carnival2','carnival3','carnival4','carnival5','carnival6','drive','tablet','tablet2'];const isTab=()=>skin==='tablet'||skin==='tablet2';const isCk2=()=>skin==='carnival3'||skin==='carnival4'||skin==='carnival5'||skin==='carnival6';const isCks=()=>skin==='carnival6';const isCp=()=>skin==='carnival2'||isCk2();const isCk=()=>isCp()||isTab();const isCar=()=>CAR_SKINS.includes(skin);
 const store={get(k,d){try{const v=localStorage.getItem('dna_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('dna_'+k,JSON.stringify(v))}catch(e){}}};
 
 let gains=store.get('gains',PRESETS.Flat.slice()), pre=store.get('pre',0), eqOn=store.get('eqOn',true);
@@ -35,9 +35,9 @@ let C={};
 function readSkin(){const cs=getComputedStyle(document.documentElement);const g=k=>cs.getPropertyValue(k).trim();
   C={bg:g('--lcd')||'#000',text:g('--lcd-text'),glow:g('--lcd-glow'),l1:g('--led1'),l2:g('--led2'),l3:g('--led3'),l4:g('--led4'),peak:g('--peak'),off:g('--led-off'),grid:g('--grid'),dim:g('--lcd-dim'),fg:g('--lcd-fg'),edge:g('--lcd-edge'),cp:g('--copper')||'#e0803a',cphi:g('--copper-hi')||'#ffb27a',cplo:g('--hot-c')||'#8a4316'}}
 function setSkin(k){setSkin0(k);try{pwrApply()}catch(e){}}
-function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4'||k==='carnival5')?'carnival2':k;if(k==='carnival3'||k==='carnival4'||k==='carnival5')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='carnival5')document.documentElement.dataset.ckr='1';else delete document.documentElement.dataset.ckr;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus((k==='carnival3'||k==='carnival4'||k==='carnival5')?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
+function setSkin0(k){if(!SKINS.some(s=>s[0]===k))k='blue';skin=k;document.documentElement.dataset.skin=(k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')?'carnival2':k;if(k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')document.documentElement.dataset.ck2='1';else delete document.documentElement.dataset.ck2;if(k==='carnival4'||k==='carnival6')document.documentElement.dataset.ck3='1';else delete document.documentElement.dataset.ck3;if(k==='carnival6')document.documentElement.dataset.cks='1';else delete document.documentElement.dataset.cks;if(k==='carnival5')document.documentElement.dataset.ckr='1';else delete document.documentElement.dataset.ckr;if(k==='tablet2'){document.documentElement.dataset.tk2='1';document.documentElement.dataset.skin='tablet'}else delete document.documentElement.dataset.tk2;if(CAR_SKINS.includes(k))document.documentElement.dataset.car='1';else delete document.documentElement.dataset.car;const nm=k==='carnival'?'Daesinnam Car Mode':(k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')?'Daesinnam One':'Daesinnam Amp';document.querySelector('.brand').setAttribute('aria-label',nm);$('#mainTitle').textContent=nm;if(typeof layout==='function'&&appEl)layout();if(typeof gpsSkinChanged==='function')gpsSkinChanged();if(typeof cockpitSkin==='function')cockpitSkin();try{applySizes()}catch(e){}if(typeof ckFocus==='function')ckFocus((k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')?store.get('ckFocus','all'):'all',true);store.set('skin2',k);$('#skin').value=k;readSkin();drawCurve()}
 SKINS.forEach(([k,n])=>{const o=document.createElement('option');o.value=k;o.textContent=n;$('#skin').appendChild(o)});
-$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5')&&typeof setGStyle==='function')setGStyle('cockpit')};
+$('#skin').onchange=e=>{const k=e.target.value;setSkin(k);if((k==='carnival2'||k==='carnival3'||k==='carnival4'||k==='carnival5'||k==='carnival6')&&typeof setGStyle==='function')setGStyle('cockpit')};
 const appEl=$('#app');
 function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3:w>=900?2:1):+layoutMode;appEl.classList.remove('L2','L3');if(n>1)appEl.classList.add('L'+n);appEl.classList.toggle('G',isCar());appEl.classList.toggle('K',isCp());if(typeof applyWinOrder==='function')try{applyWinOrder()}catch(e){}}
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
@@ -1078,18 +1078,29 @@ function drawTape(){
 /* 상태: on(지원·사용 중) off(지원·꺼짐) yes(지원) no(없음) unk(확인 불가). 앱이 아닌 미리보기에서는 '앱에서 확인' */
 const DEVCAPS=[['gps','GPS'],['compass','방향 센서'],['lte','LTE'],['nr','5G'],['wifi','Wi-Fi'],['bt','블루투스']];
 const devCapsEl=(()=>{const d=document.createElement('div');d.className='devcaps';d.id='devCaps';d.setAttribute('role','list');d.setAttribute('aria-label','기기 지원');
-  d.innerHTML='<b class="dc-h">기기 지원</b>'+DEVCAPS.map(([k,n])=>`<span class="dc" role="listitem" data-k="${k}" data-s="unk"><i aria-hidden="true"></i><em>${n}</em><small>…</small></span>`).join('');return d})();
+  d.innerHTML='<button type="button" class="dc-h" aria-expanded="true">기기 지원<span class="dc-sum"></span><i class="dc-car" aria-hidden="true">▾</i></button>'+DEVCAPS.map(([k,n])=>`<span class="dc" role="listitem" data-k="${k}" data-s="unk"><i aria-hidden="true"></i><em>${n}</em><small>…</small></span>`).join('');return d})();
+/* 접기: 콕핏 스페셜은 기본 접힘(누르면 펼침), 사용자가 바꾼 상태는 기억 */
+function devCapsFolded(){const v=store.get('devCapsFold',null);return v===null?isCks():!!v}
+function devCapsFoldUi(){const f=devCapsFolded();devCapsEl.classList.toggle('fold',f);devCapsEl.querySelector('.dc-h').setAttribute('aria-expanded',String(!f))}
+devCapsEl.querySelector('.dc-h').onclick=()=>{store.set('devCapsFold',!devCapsFolded());devCapsFoldUi()};
 function devCapsRead(){let r=null;try{if(NB&&NB.deviceCaps)r=JSON.parse(NB.deviceCaps()||'{}')}catch(e){r=null}return r}
 function devCapsRender(){const r=devCapsRead();
   for(const [k,n] of DEVCAPS){const el=devCapsEl.querySelector(`[data-k="${k}"]`),c=r&&r[k],s=c&&c.s||'unk',t=c&&c.t||(r?'확인 불가':'앱에서 확인');
-    el.dataset.s=s;el.querySelector('small').textContent=t;el.title=`${n}: ${t}`}}
+    el.dataset.s=s;el.querySelector('small').textContent=t;el.title=`${n}: ${t}`}
+  const all=[...devCapsEl.querySelectorAll('.dc')].map(e=>e.dataset.s),ok=all.filter(x=>x==='on'||x==='off'||x==='yes').length,no=all.filter(x=>x==='no').length;
+  devCapsEl.querySelector('.dc-sum').textContent=r?` · 지원 ${ok}`+(no?` · 없음 ${no}`:'')+(all.length-ok-no?` · 확인 불가 ${all.length-ok-no}`:''):' · 앱에서 확인';devCapsFoldUi()}
+/* 콕핏 스페셜: 스피드미터의 [GPS 켜기] 버튼 줄도 조종 패널 아래로(패널이 안 보이면 제자리) */
+let pfdToolsHome=null;
+function pfdToolsPlace(deckVis){const t=document.querySelector('.pfd-tools');if(!t)return false;
+  if(isCks()&&deckVis){if(!pfdToolsHome){pfdToolsHome=document.createComment('pfdTools');t.before(pfdToolsHome)}const deck=$('#dkControlDeck');if(deck.nextElementSibling!==t)deck.after(t);t.classList.add('in-ctl');return true}
+  if(pfdToolsHome&&pfdToolsHome.nextSibling!==t)pfdToolsHome.after(t);t.classList.remove('in-ctl');return false}
 /* 자리: 조종 패널(COCKPIT CONTROL)이 보이면 그 버튼들 아래, 아니면 스피드미터 [GPS 켜기] 줄 아래 */
-function devCapsPlace(){const deck=$('#dkControlDeck');
-  if(deck&&deck.offsetParent){if(deck.nextElementSibling!==devCapsEl)deck.after(devCapsEl);return}
+function devCapsPlace(){const deck=$('#dkControlDeck'),vis=!!(deck&&deck.offsetParent),moved=pfdToolsPlace(vis);
+  if(vis){const a=moved?document.querySelector('.pfd-tools'):deck;if(a.nextElementSibling!==devCapsEl)a.after(devCapsEl);return}
   const w=$('#wGps');if(!w)return;const tools=w.dataset.gs==='cockpit'&&w.querySelector('#pfdHost .pfd-tools');
   const after=tools||w.querySelector('.gctl');if(after&&after.nextElementSibling!==devCapsEl)after.after(devCapsEl)}
 devCapsPlace();devCapsRender();
-{let q=0;const mo=new MutationObserver(()=>{if(!q)q=setTimeout(()=>{q=0;devCapsPlace()},60)});mo.observe(document.documentElement,{attributes:true,attributeFilter:['data-skin','data-ck2','data-split']});if($('#app'))mo.observe($('#app'),{attributes:true,attributeFilter:['class','hidden'],subtree:true});mo.observe($('#wGps'),{attributes:true,attributeFilter:['data-gs']});if($('#pfdHost'))mo.observe($('#pfdHost'),{childList:true})}
+{let q=0;const mo=new MutationObserver(()=>{if(!q)q=setTimeout(()=>{q=0;devCapsPlace()},60)});mo.observe(document.documentElement,{attributes:true,attributeFilter:['data-skin','data-ck2','data-split','data-cks']});if($('#app'))mo.observe($('#app'),{attributes:true,attributeFilter:['class','hidden'],subtree:true});mo.observe($('#wGps'),{attributes:true,attributeFilter:['data-gs']});if($('#pfdHost'))mo.observe($('#pfdHost'),{childList:true})}
 setInterval(()=>{if(!document.hidden){devCapsPlace();devCapsRender()}},15000);addEventListener('load',()=>setTimeout(devCapsPlace,300));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)devCapsRender()});
 window.AmpDevCaps={render:devCapsRender};
@@ -2215,6 +2226,7 @@ function ckRailPlace(hostId,span){const r=ckRailEl;ckRailPlace.last=[hostId,span
   const h=$('#'+hostId);if(!h)return;h.classList.add('hasrail');
   if(hostId==='wGps'){const glass=h.dataset.gs==='cockpit'&&h.querySelector('#pfdHost .pfd-glass'),gauge=h.querySelector('.body>.gps');
     const at=glass||gauge;if(at){if(at.nextElementSibling!==r)at.after(r);return}}
+  if(isCks()){const g=h.querySelector(':scope>.grip');if(g)h.insertBefore(r,g);else if(h.lastElementChild!==r)h.append(r);return} // 콕핏 스페셜: 어느 창이든 맨 아래 고정
   const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild)}
 // 스피드미터 화면(PFD)이 늦게 만들어지거나 디자인이 바뀌면 자리를 다시 잡음
 {const mo=new MutationObserver(()=>{const l=ckRailPlace.last;if(l&&l[0]==='wGps'&&!l[1])ckRailPlace('wGps',false)});
@@ -2429,6 +2441,34 @@ window.addEventListener('scroll',()=>{if(!$('#briPick').hidden)briPickClose()},{
 // 태블릿 스킨을 나오면 태블릿 쪽이 시스템 밝기로 되돌리므로, 스킨이 바뀔 때마다 이 설정을 다시 적용
 new MutationObserver(()=>setTimeout(()=>{if(!isTab())briNative(scrBri)},60)).observe(document.documentElement,{attributes:true,attributeFilter:['data-skin']});
 briSet(scrBri,false);window.AmpBri={set:briSet,get:()=>scrBri};
+/* ===== 98-cockpit-special.js ===== */
+// 콕핏 스페셜 스킨(carnival6) 전용 배치: 플레이어+NOW PLAYING 한 창, 관제탑은 스피드미터 제목줄의 작은 표시, 블랙박스는 기본 접힘
+// 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
+/* NOW PLAYING(앨범·시각화)을 플레이어 창 안으로 옮기고, 스킨을 바꾸면 원래 창으로 되돌림 */
+function cksNp(on){const art=document.querySelector('#wVis .art,#npMerge .art'),vb=document.querySelector('#wVis .visbox,#npMerge .visbox');
+  if(on){let m=$('#npMerge');if(!m){m=document.createElement('div');m.id='npMerge';m.className='npmerge';$('#wMain .body').append(m)}
+    if(art&&art.parentElement!==m)m.append(art);if(vb&&vb.parentElement!==m)m.append(vb)}
+  else{const b=$('#wVis .body');if(b){if(art&&art.parentElement!==b)b.append(art);if(vb&&vb.parentElement!==b)b.append(vb)}}
+  FX_GROUPS.vis=on?['wMain']:['wVis']}
+/* 관제탑: 아래 창 대신 스피드미터 제목줄 옆 작은 표시(누르면 다시 점검) */
+const atcMini=(()=>{const b=document.createElement('button');b.type='button';b.id='atcMini';b.className='atcmini';b.title='관제탑 — 누르면 다시 점검';
+  b.innerHTML='<b>TWR</b><span>대기</span>';const bar=$('#wGps>.bar'),g=bar&&bar.querySelector('.groove');if(bar)bar.insertBefore(b,g||null);
+  b.onclick=e=>{e.stopPropagation();const r=$('#atcRun');if(r)r.click()};return b})();
+function atcMiniSync(){const w=$('#atcWarn'),c=$('#atcClr'),li=[...document.querySelectorAll('#atcLog li')].pop();let t,k='';
+  if(w&&!w.hidden){t=(w.querySelector('b')||w).textContent.replace(/^⚠\s*/,'');k='warn'}
+  else if(c&&!c.hidden){t='이륙 허가';k='ok'}
+  else if(li){t=li.textContent.replace(/\s+/g,' ').trim().replace(/^TWR\s*/,'');k='run'}
+  else t=($('#atcSt')&&$('#atcSt').textContent.replace(/^·\s*/,''))||'대기';
+  atcMini.querySelector('span').textContent=t;atcMini.dataset.k=k}
+if($('#wAtc'))new MutationObserver(()=>atcMiniSync()).observe($('#wAtc'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+atcMiniSync();
+let cksWas=false;
+function cksApply(){const on=isCks();cksNp(on);
+  if(on&&!cksWas){const c=$('#wCam');if(c)c.classList.add('collapsed')} // 블랙박스는 처음엔 접어 둠(− 버튼으로 펴고 접기)
+  cksWas=on;try{devCapsPlace();devCapsRender()}catch(e){}
+  if(typeof ckFocus==='function'&&appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)}
+new MutationObserver(cksApply).observe(document.documentElement,{attributes:true,attributeFilter:['data-cks']});
+cksApply();
 /* ===== 99-power-boot.js ===== */
 // 배터리 절전, 후진 설정, 시작(boot)
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
