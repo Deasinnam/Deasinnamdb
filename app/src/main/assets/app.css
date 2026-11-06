@@ -1557,7 +1557,7 @@ html.driving body{overflow:hidden}
 :root[data-ckr] .npempty div{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
 :root[data-ckr] .npempty .pill{height:44px;font-size:16px;padding:0 16px}
 :root[data-ckr] #wVis.np-empty .vmode{display:none}
-@media (max-width:600px){#app>.win>.bar .gsbar{display:none!important}}
+@media (max-width:600px){#app>.win>.bar .gsbar{max-width:40%;height:30px!important;font-size:12.5px!important;padding:0 18px 0 6px}#app>.win>#wGps>.bar .atcmini,#wGps>.bar .atcmini{max-width:30%}}
 @container (max-width:520px){.rd-disp #rdName{font-size:17px!important}.rd-disp #rdStat{font-size:12px!important}}
 /* ---------- 조종 패널: 화면 너비와 관계없이 다섯 칸을 한 줄로 ----------
    모듈 줄(deck)을 일정한 설계 너비로 그린 뒤 창 너비에 맞춰 통째로 줄입니다(zoom, 앱이 너비에 따라 값을 정함).
@@ -2309,3 +2309,26 @@ html.driving body{overflow:hidden}
 :root[data-cp][data-cks] #wMain .transport .tb:active{transform:translateY(5px);box-shadow:inset 0 2px 0 #fffaf0,inset 0 -3px 0 #b3a070,0 0 0 3px #2a1d0c,0 0 0 5px #b8935a,0 0 0 6px #000,0 1px 0 #4a3519,0 3px 6px #000c!important}
 :root[data-cp][data-cks] #wMain .transport{padding:6px 6px 10px}
 :root[data-cp] #wExt .xl>b{white-space:normal!important;overflow:visible!important}
+
+/* 화면이 좁아도 스피드미터 디자인 선택창은 보이게(콕핏 계열) */
+@media (max-width:600px){:root[data-skin="carnival2"] #wGps>.bar .gsbar{display:inline-block!important}:root[data-skin="carnival2"] #wGps>.bar .t{letter-spacing:.12em!important;font-size:15px!important}}
+/* 1.31 그래픽 성능 테스트 */
+.bench{position:fixed;inset:0;z-index:95;display:flex;flex-direction:column;background:#000}
+.bench[hidden]{display:none}
+.bench canvas{flex:1;width:100%;min-height:0;display:block}
+.bench .bn-hud{position:absolute;left:12px;top:12px;right:12px;display:flex;justify-content:space-between;gap:12px;pointer-events:none;font:700 15px/1.3 "Share Tech Mono","Noto Sans KR",monospace;color:#f4ecd2;text-shadow:0 1px 2px #000}
+.bench .bn-res{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:#000c}
+.bench .bn-res[hidden]{display:none}
+.bench .bn-card{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:10px;background:linear-gradient(180deg,#2a2f22,#171a12);color:#efe6cf;
+  box-shadow:0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #000,0 20px 50px #000}
+.bench .bn-card h3{margin:0;font:700 20px/1.2 "Noto Sans KR",sans-serif;color:#f6edd4}
+.bench .bn-score{display:flex;align-items:baseline;gap:12px}.bench .bn-score b{font:800 48px/1 Georgia,serif;color:#ffd27a}.bench .bn-score span{font:700 18px/1.2 "Noto Sans KR",sans-serif}
+.bench .bn-score span.good{color:#9fe07f}.bench .bn-score span.mid{color:#ffd27a}.bench .bn-score span.low{color:#ff8a70}
+.bench dl{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0;font-size:14px}.bench dt{color:#b8ad8c}.bench dd{margin:0;text-align:right;font-family:"Share Tech Mono","Noto Sans KR",monospace}
+.bench p{margin:0;font-size:14px;line-height:1.55;color:#ddd2b2}
+.bench .bn-act{display:flex;gap:8px;flex-wrap:wrap}.bench .bn-act .pill{flex:1 1 140px;height:46px;justify-content:center}
+@media (max-width:600px){:root[data-skin="carnival2"] #wGps>.bar .gsbar{min-width:96px!important;max-width:40%!important;flex:0 1 auto!important}:root[data-skin="carnival2"] #wGps>.bar{overflow:hidden}:root[data-skin="carnival2"] #wGps>.bar .t{flex:1 1 0}
+  :root[data-skin="carnival2"] #wGps>.bar .t{font-size:13px!important;letter-spacing:.08em!important;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  :root[data-cks] #wGps>.bar .atcmini{max-width:52px!important;padding:0 6px!important}:root[data-cks] #wGps>.bar .atcmini span{display:none}
+  :root[data-skin="carnival2"] #wGps>.bar .groove{display:none}}
+@media (max-width:600px){:root[data-cks] #wGps>.bar .atcmini{flex:none!important;min-width:46px;justify-content:center}}

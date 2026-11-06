@@ -131,3 +131,26 @@ run('Walk compass mode and speedometer focus', async ({context, origin, errors})
   await p.evaluate(() => { const s = document.getElementById('gStyle'); s.value = 'cockpit'; s.dispatchEvent(new Event('change')); });
   await p.close();
 });
+
+// 1.31 좁은 화면에서도 스피드미터 디자인 선택창, 설정 › 그래픽 성능 테스트
+run('Narrow speedometer select and graphics benchmark', async ({context, origin, errors}) => {
+  const p = await context.newPage();
+  p.on('pageerror', e => errors.push('bench: ' + e.message));
+  await p.addInitScript(() => { if (!sessionStorage.getItem('bn')) { sessionStorage.setItem('bn', '1'); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); } });
+  await p.setViewportSize({width: 412, height: 900});
+  await p.goto(origin);
+  await p.waitForTimeout(600);
+  assert.equal(await p.locator('#gStyleBar').isVisible(), true, 'Design select visible on a phone');
+  assert.ok((await p.locator('#gStyleBar').boundingBox()).width >= 90);
+  await p.locator('#setBtn').click();
+  await p.locator('#sBench').scrollIntoViewIfNeeded();
+  await p.locator('#sBench').click();
+  assert.equal(await p.locator('#bench').isVisible(), true);
+  await p.waitForSelector('#bnRes:not([hidden])', {timeout: 40000});
+  assert.ok(+(await p.locator('#bnScore').textContent()) > 0, 'Score shown');
+  assert.ok(await p.locator('#bnTable dt').count() >= 7);
+  await p.locator('#bnApply').click();
+  assert.equal(await p.locator('#bench').isVisible(), false);
+  assert.match(await p.locator('#sBench').textContent(), /최근 \d+점/);
+  await p.close();
+});

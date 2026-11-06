@@ -91,6 +91,9 @@
   <dl class="cp-grid"><dt>방향 출처</dt><dd id="cpSrc">—</dd><dt>GPS</dt><dd id="cpGps">—</dd><dt>정확도</dt><dd id="cpAcc">—</dd><dt>위성</dt><dd id="cpSat">—</dd><dt>속도</dt><dd id="cpSpd">—</dd><dt>고도</dt><dd id="cpAlt">—</dd><dt>위도</dt><dd id="cpLat">—</dd><dt>경도</dt><dd id="cpLon">—</dd></dl>
   <div class="cp-act"><button type="button" class="pill" id="cpGpsBtn">GPS 켜기</button><button type="button" class="pill" id="cpClose">닫기</button></div>
   <small class="cp-note">방향이 틀리면 기기를 8자 모양으로 천천히 돌려 보정하세요. 자석·스피커 가까이에서는 오차가 커져요.</small></div>
+<div class="bench" id="bench" hidden role="dialog" aria-label="그래픽 성능 테스트"><canvas id="benchCv"></canvas><div class="bn-hud"><span id="bnStage">준비</span><span id="bnFps">-- fps</span></div>
+  <div class="bn-res" id="bnRes" hidden><div class="bn-card"><h3>그래픽 성능 테스트 결과</h3><div class="bn-score"><b id="bnScore">0</b><span id="bnVerdict"></span></div><dl id="bnTable"></dl><p id="bnAdvice"></p>
+  <div class="bn-act"><button type="button" class="pill on" id="bnApply">추천 설정 적용</button><button type="button" class="pill" id="bnAgain">다시 테스트</button><button type="button" class="pill" id="bnClose">닫기</button></div></div></div></div>
 <div class="skinpick" id="skinPick" role="dialog" aria-label="스킨 바꾸기" hidden><b>스킨</b><div id="skinPickList"></div></div>
 <div class="nhelp" id="notifHelp" role="dialog" aria-modal="true" aria-labelledby="nhT" hidden><div class="nhbox">
   <b id="nhT">알림 접근 허용하기 ("제한된 설정"이 뜰 때)</b>
@@ -503,6 +506,7 @@
         <div class="chips" id="sPwr"><button type="button" class="pill" data-v="auto">자동</button><button type="button" class="pill" data-v="on">항상 켜기</button><button type="button" class="pill" data-v="off">끄기</button></div><small class="pwr-now" id="sPwrNow"></small></div>
       <div class="row col"><span><b>화면 켜 두기</b><small>기본은 대신남 원이 켜져 있는 동안 화면이 꺼지지 않아요(수면 모드로 들어가지 않음). 배터리를 아끼려면 "재생 중만"이나 "끄기"를 고르세요.</small></span>
         <div class="chips" id="sScr"><button type="button" class="pill" data-v="always">앱 켜진 동안 항상</button><button type="button" class="pill" data-v="play">재생 중만</button><button type="button" class="pill" data-v="off">끄기</button></div></div>
+      <div class="row"><span><b>그래픽 성능 테스트</b><small>이 기기가 대신남 원의 비행 화면·시각화를 부드럽게 그릴 수 있는지 약 15초 동안 시험하고, 알맞은 설정을 추천해요.</small></span><button type="button" class="pill on" id="sBench">그래픽 테스트</button></div>
     </section>
     <section id="secWx">
       <h3>날씨</h3>
