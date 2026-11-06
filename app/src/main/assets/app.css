@@ -2142,3 +2142,40 @@ html.driving body{overflow:hidden}
 :root[data-cp][data-cks] .clock small,:root[data-cp][data-cks] .clock em{color:var(--ivory)!important}
 :root[data-cp][data-cks] .clock b{color:#f4e9cc!important}
 :root[data-cp][data-cks] #pfdHost .pfd-demo,:root[data-cp][data-cks] #pfdHost [data-role="demo"]{background:linear-gradient(180deg,#3a2f1d,#1a150c)!important;color:var(--ivory)!important;box-shadow:inset 0 0 0 1px var(--brass),0 2px 6px #000c!important}
+
+/* 1.26 스피드미터 "뚜벅이 모드": 탐험용 나침반 */
+#walkHost{display:none}
+#wGps[data-gs="walk"] #walkHost{display:grid}
+#wGps[data-gs="walk"] .body>.gps,#wGps[data-gs="walk"] #pfdHost{display:none!important}
+.walk{grid-template-columns:minmax(96px,17%) minmax(0,1fr) minmax(96px,17%);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top top top" "l dial r" "bot bot bot";
+  gap:8px 10px;min-height:clamp(320px,52vw,560px);padding:0 12px 10px;border-radius:8px;background-size:100% 100%;background-color:#0d1710;color:#efe2bf;
+  box-shadow:inset 0 0 0 1px #000,0 0 0 2px #b8935a,0 0 0 3px #000,inset 0 0 40px #000c}
+.app.FX>#wGps.fx .walk{flex:1;min-height:0}
+.walk .wk-top{grid-area:top;display:flex;justify-content:space-between;align-items:center;margin:0 -12px;padding:7px 14px;border-bottom:1px solid #b8935a88;background:linear-gradient(180deg,#14130c,#0b0a06cc);
+  font:700 12px/1 Georgia,"Times New Roman",serif;letter-spacing:.12em;color:#e7d9b3}
+.walk .wk-top span{font:700 15px/1 "Noto Serif KR",Georgia,serif;letter-spacing:.05em;color:#f3e6c4}
+.walk .wk-left{grid-area:l;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.walk .wk-right{grid-area:r;display:flex;flex-direction:column;justify-content:center}
+.walk .wk-dial{grid-area:dial;width:100%;height:100%;min-height:240px}
+.walk .wk-box{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border-radius:6px;background:linear-gradient(180deg,#0b0a07,#13110b);
+  box-shadow:inset 0 2px 6px #000,0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #e7cb8f55,0 0 0 5px #000;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)}
+.walk .wk-box small{font:600 13px/1 "Noto Sans KR",sans-serif;color:#e7d9b3}
+.walk .wk-box b{font:700 clamp(26px,3.6vw,40px)/1 Georgia,"Times New Roman",serif;color:#b9f08f;text-shadow:0 0 10px #9fe07f44;font-variant-numeric:tabular-nums}
+.walk .wk-box em{font:600 12px/1 "Noto Sans KR",sans-serif;font-style:normal;color:#c9bb94}
+.walk .wk-btn{height:36px;border-radius:5px;border:1px solid #050403;background:linear-gradient(180deg,#3a2f1d,#2a2214 45%,#1a150c);color:#efe6cf;font:600 13px/1 "Noto Sans KR",sans-serif;cursor:pointer;
+  box-shadow:inset 0 0 0 1px #b8935a,inset 0 1px 0 2px #e7cb8f40,0 2px 0 #050403,0 4px 9px #000b}
+.walk .wk-btn:active{transform:translateY(2px);box-shadow:inset 0 0 0 1px #b8935a,inset 0 2px 5px #000}
+.walk .wk-bot{grid-area:bot;display:flex;flex-direction:column;align-items:center;gap:6px}
+.walk .wk-brg{display:flex;align-items:center;gap:14px;min-width:min(340px,80%);justify-content:center;padding:8px 18px;border-radius:5px;background:linear-gradient(180deg,#0b0a07,#13110b);
+  box-shadow:inset 0 2px 6px #000,0 0 0 1px #000,0 0 0 3px #b8935a,0 0 0 4px #e7cb8f55,0 0 0 5px #000}
+.walk .wk-brg small{font:600 14px/1 "Noto Sans KR",sans-serif;color:#e7d9b3}
+.walk .wk-brg i{width:1px;height:20px;background:#b8935a}
+.walk .wk-brg b{font:700 clamp(20px,2.6vw,28px)/1 Georgia,serif;color:#f3e6c4;font-variant-numeric:tabular-nums}
+.walk p{margin:0;font:500 12px/1.2 "Noto Sans KR",sans-serif;color:#c9bb94;display:flex;align-items:center;gap:10px}
+.walk p::before,.walk p::after{content:"";width:60px;height:1px;background:linear-gradient(90deg,transparent,#b8935a)}
+.walk p::after{transform:scaleX(-1)}
+#wGps.wk-night .walk{filter:brightness(.85)}
+@media (max-width:560px){.walk{grid-template-columns:1fr 1fr;grid-template-areas:"top top" "dial dial" "l r" "bot bot"}.walk .wk-left{flex-direction:row;flex-wrap:wrap}.walk .wk-left .wk-box{flex:1 1 100%}.walk .wk-left .wk-btn{flex:1}}
+/* 콕핏 스페셜: 스피드미터만 크게 볼 때 [GPS 켜기] 줄·기기 지원을 스피드미터 안에 넣지 않음(화면이 줄지 않게) */
+:root[data-cks] #pfdHost .pfd-tools:not(.in-ctl),:root[data-cks] #wGps #devCaps{display:none!important}
+:root[data-cks] #wGps .gctl,:root[data-cks] #wGps #gMsg{display:none!important}

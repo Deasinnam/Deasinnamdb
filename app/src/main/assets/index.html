@@ -102,9 +102,16 @@
 <main class="app" id="app">
   <div class="recbadge" id="recBadge" hidden role="status" aria-label="주행 녹화 중"><i></i><b>REC</b><span>00:00:00</span></div>
   <section class="win" id="wGps">
-    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><select class="sel gsbar" id="gStyleBar" aria-label="속도계 디자인"><option value="cockpit">콕핏 PFD</option><option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option></select><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
+    <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><select class="sel gsbar" id="gStyleBar" aria-label="속도계 디자인"><option value="cockpit">콕핏 PFD</option><option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option><option value="walk">뚜벅이 모드</option></select><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
     <div class="body">
       <div id="pfdHost"></div>
+      <div id="walkHost" class="walk" aria-label="뚜벅이 모드 나침반">
+        <div class="wk-top"><b>GPS</b><span>뚜벅이 모드</span><b>COMPASS</b></div>
+        <div class="wk-left"><div class="wk-box"><small>이동 속도</small><b id="wkSpd">0.0</b><em>km/h</em></div><button type="button" class="wk-btn" id="wkCal">방위 보정</button><button type="button" class="wk-btn" id="wkTheme">테마 자동</button></div>
+        <canvas id="wkDial" class="wk-dial"></canvas>
+        <div class="wk-right"><div class="wk-box"><small>고도</small><b id="wkAlt">—</b><em>m</em></div></div>
+        <div class="wk-bot"><div class="wk-brg"><small>방위각</small><i></i><b id="wkBrg">—°</b></div><p id="wkStat">방향 센서 연결 대기</p></div>
+      </div>
       <div class="gps">
         <div class="gauge">
           <div class="dial" id="dial"><canvas id="gauge" aria-label="속도 게이지"></canvas>
@@ -127,7 +134,7 @@
         <button class="pill" id="gHudBtn">HUD</button>
         <label class="selw" for="gStyle">디자인<select class="sel" id="gStyle">
           <option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option><option value="cockpit">콕핏 PFD</option>
-        </select></label>
+        <option value="walk">뚜벅이 모드</option></select></label>
         <button class="pill ck-only" id="gLevel" title="지금 기기 자세를 수평으로">수평 맞춤</button>
         <label class="selw ck-only" for="gSky">하늘<select class="sel" id="gSky"><option value="auto">자동</option><option value="day">주간</option><option value="night">야간</option></select></label>
         <label class="selw" for="gLimit">경고<select class="sel" id="gLimit">

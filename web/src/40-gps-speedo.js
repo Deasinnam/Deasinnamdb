@@ -76,7 +76,7 @@ function drawGps(){
 const GMAX=200,GA0=Math.PI*.75,GA1=Math.PI*2.25;
 const gA=v=>GA0+(GA1-GA0)*Math.max(0,Math.min(1,v/GMAX));
 let gStyle=store.get('gStyle','carbon');
-function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit'].includes(k))k='carbon';if(k==='cockpit'&&!isCp())k=store.get('gStyleCar','carbon');if(isCp())store.set('gStyleCk',k);else if(k!=='cockpit')store.set('gStyleCar',k);{const gb=$('#gStyleBar');if(gb)gb.value=k}setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)}catch(e){}window.dispatchEvent(new Event('resize'))},60);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
+function setGStyle(k){if(!['carbon','neon','classic','minimal','tactical','cockpit','walk'].includes(k))k='carbon';if(k==='cockpit'&&!isCp())k=store.get('gStyleCar','carbon');if(isCp())store.set('gStyleCk',k);else if(k!=='cockpit')store.set('gStyleCar',k);{const gb=$('#gStyleBar');if(gb)gb.value=k}setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(appEl.classList.contains('FX'))ckFocus(store.get('ckFocus','all'),true)}catch(e){}window.dispatchEvent(new Event('resize'))},60);gStyle=k;$('#wGps').dataset.gs=k;if(k!=='cockpit'){const b=$('#spdBox');b.style.left='';b.style.width=''}$('#gStyle').value=k;store.set('gStyle',k)}
 $('#gStyle').onchange=e=>setGStyle(e.target.value);$('#gStyleBar').onchange=e=>setGStyle(e.target.value);
 const RJ='Rajdhani,"Barlow Condensed",sans-serif';
 function ring(g,x,y,r,lw,col){g.lineWidth=lw;g.strokeStyle=col;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.stroke()}
@@ -88,6 +88,7 @@ function drawGauge(over){
   const c=cv.gauge,g=cx.gauge;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
   const v=spdDisp,RED='#ff3b30',box=$('#spdBox'),dial=$('#dial');
   if(gStyle==='cockpit'){drawPFD(g,w,h,d,v,over,box,dial);return}
+  if(gStyle==='walk')return; // 뚜벅이 모드는 47-walk.js가 따로 그림
   box.style.left='';box.style.width='';
   if(gStyle==='minimal'){
     dial.style.setProperty('--g',(Math.min(h,w*.5)/d)+'px');box.style.top=(h*.34/d)+'px';
@@ -303,7 +304,7 @@ function drawPFD(g,w,h,d,v,over,box,dial){
 }
 function drawTape(){
   const c=cv.tape,g=cx.tape;if(!g)return;const w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
-  const P={carbon:['#e6e3de','#9fa2a7',C.cp],neon:['#f1ece6','#a19c96',C.cphi],classic:['#efe6d8','#b7a991','#ff9a3c'],minimal:['#ece8e2','#8e9196',C.cp],tactical:['#c9f5bf','#7fa878','#ffb43a'],cockpit:['#ffffff','#9fb3c8','#f3bc65']}[gStyle];
+  const P={walk:['#efe6d8','#b7a991','#ff9a3c'],carbon:['#e6e3de','#9fa2a7',C.cp],neon:['#f1ece6','#a19c96',C.cphi],classic:['#efe6d8','#b7a991','#ff9a3c'],minimal:['#ece8e2','#8e9196',C.cp],tactical:['#c9f5bf','#7fa878','#ffb43a'],cockpit:['#ffffff','#9fb3c8','#f3bc65']}[gStyle];
   const ppd=w/150,ctr=hdgDisp,boxW=110*d;g.textAlign='center';g.textBaseline='alphabetic';
   for(let deg=Math.floor((ctr-80)/5)*5;deg<=ctr+80;deg+=5){
     const x=w/2+(deg-ctr)*ppd,n=((deg%360)+360)%360,card=n%45===0,mid=n%15===0;

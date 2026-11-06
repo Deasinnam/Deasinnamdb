@@ -85,3 +85,33 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow.includes('255, 195, 92')), 'Selected key uses the amber indicator');
   await p.close();
 });
+
+// 1.26 뚜벅이 모드(탐험용 나침반) + 스피드미터만 볼 때 GPS 줄·기기 지원 없음
+run('Walk compass mode and speedometer focus', async ({context, origin, errors}) => {
+  const p = await context.newPage();
+  p.on('pageerror', e => errors.push('walk: ' + e.message));
+  await p.addInitScript(() => { if (!sessionStorage.getItem('wk')) { sessionStorage.setItem('wk', '1'); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); } });
+  await p.setViewportSize({width: 1036, height: 1200});
+  await p.goto(origin);
+  await p.waitForTimeout(800);
+  await p.locator('#ckRail button[data-f="gps"]').click();
+  await p.waitForTimeout(300);
+  assert.equal(await p.locator('#wGps .pfd-tools').isVisible(), false, 'No GPS row inside the speedometer');
+  assert.equal(await p.locator('#devCaps').isVisible(), false, 'No device support row');
+  assert.equal(await p.locator('#wGps .gctl').isVisible(), false);
+  await p.locator('#ckRail button[data-f="all"]').click();
+  assert.ok((await p.locator('#gStyleBar option').allTextContents()).includes('뚜벅이 모드'));
+  await p.evaluate(() => { const s = document.getElementById('gStyle'); s.value = 'walk'; s.dispatchEvent(new Event('change')); });
+  await p.waitForTimeout(500);
+  assert.equal(await p.locator('#walkHost').isVisible(), true, 'Compass shown');
+  assert.equal(await p.locator('#pfdHost').isVisible(), false);
+  assert.ok(await p.evaluate(() => { const c = document.getElementById('wkDial'); return c.width > 100 && c.getContext('2d').getImageData(c.width / 2, Math.round(c.height * .04), 1, 1).data[3] > 0; }), 'Dial drawn');
+  assert.ok(await p.evaluate(() => /url\(/.test(document.getElementById('walkHost').style.backgroundImage)), 'Contour background');
+  assert.equal(await p.locator('#wkTheme').textContent(), '테마 자동');
+  await p.locator('#wkTheme').click();
+  assert.equal(await p.locator('#wkTheme').textContent(), '테마 주간');
+  await p.reload(); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => document.getElementById('wGps').dataset.gs), 'walk', 'Remembered');
+  await p.evaluate(() => { const s = document.getElementById('gStyle'); s.value = 'cockpit'; s.dispatchEvent(new Event('change')); });
+  await p.close();
+});

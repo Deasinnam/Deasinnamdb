@@ -19,7 +19,7 @@ run('Car mode, cockpit skin, console, tower, SOS, map ask, drive skin', async ({
     });
     await page.goto(origin);
     await page.locator('#gStyle').waitFor();
-    assert.equal(await page.locator('#gStyle option:not([disabled])').count(), themes.length, 'Car mode offers the five car designs only');
+    assert.equal(await page.locator('#gStyle option:not([disabled])').count(), themes.length + 1, 'Car mode offers the five car designs plus walk compass');
     assert.equal(await page.locator('#gStyle option[value="cockpit"]').evaluate(o => o.disabled), true, 'Cockpit PFD is not offered in car mode');
     assert.equal(await page.locator('#gStyle').inputValue(), 'carbon');
     const top = sel => page.locator(sel).evaluate(el => el.getBoundingClientRect().top);
