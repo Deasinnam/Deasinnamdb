@@ -9,8 +9,8 @@ android {
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
         targetSdk 35
-        versionCode 41
-        versionName "1.23-one"
+        versionCode 42
+        versionName "1.24-one"
     }
 
     buildFeatures { buildConfig true }

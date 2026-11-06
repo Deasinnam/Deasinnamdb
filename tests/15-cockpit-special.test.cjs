@@ -62,7 +62,7 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   await p.waitForTimeout(300);
   assert.equal(await p.evaluate(() => [document.documentElement.dataset.cks, document.documentElement.dataset.cp, document.documentElement.dataset.ck3].join()), '1,1,');
   assert.ok((await p.locator('#skin option').allTextContents()).includes('대신남 자동차 모드 · 콕핏 스페셜 2'));
-  assert.ok(await p.evaluate(() => { const b = getComputedStyle(document.body); return b.backgroundColor === 'rgb(16, 23, 20)' || b.backgroundImage.includes('18, 25, 21'); }), 'Charcoal background');
+  assert.ok(await p.evaluate(() => { const b = getComputedStyle(document.body); return b.backgroundColor === 'rgb(16, 23, 20)' || b.backgroundImage.includes('25, 27, 20'); }), 'Dark antique background');
   for (const sel of ['#layout', '#skinBtn', '#driveBtn', '#setBtn', '#radioBtn', '#revBtn', '#addTop']) assert.equal(await p.locator(sel).isVisible(), true, sel + ' kept');
   assert.equal(await p.locator('#skinBtn .ico').isVisible(), true, 'Vector icon instead of emoji');
   assert.equal(await p.locator('#skinBtn .emo').isVisible(), false);
@@ -82,6 +82,6 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#wRadio .rd-sig').isVisible(), false);
   assert.ok(await p.evaluate(() => { const c = document.getElementById('rdScale'), g = c.getContext('2d'), d = g.getImageData(Math.round(c.width * .3), Math.round(c.height * .1), 1, 1).data; window.__px = [...d]; return d[0] > 200 && d[1] > 170 && d[2] < 190; }), 'Warm cream dial');
   await p.locator('#ckRail button[data-f="all"]').click();
-  assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow.includes('246, 190, 98')), 'Selected key uses the amber indicator');
+  assert.ok(await p.evaluate(() => getComputedStyle(document.querySelector('#ckRail button.on')).boxShadow.includes('255, 195, 92')), 'Selected key uses the amber indicator');
   await p.close();
 });

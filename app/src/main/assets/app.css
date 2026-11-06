@@ -2022,3 +2022,96 @@ html.driving body{overflow:hidden}
 .recbadge[hidden]{display:none}
 .recbadge i{width:10px;height:10px;border-radius:50%;background:#ff3b2b;box-shadow:0 0 8px #ff3b2b;animation:recBlink 1s steps(2) infinite}
 .recbadge b{color:#ff5a4a;letter-spacing:.1em}
+
+/* ===== 1.24 콕핏 스페셜 2: 황동 테두리 · 아이보리 손잡이 · 은은한 전구빛 — 고급 앤틱 군용 장비 ===== */
+:root[data-cp]{
+  --brass:#b8935a;--brass-hi:#e7cb8f;--brass-lo:#5e4626;--ivory:#efe6cf;--ivory-lo:#b9ab86;--cream:#dccfa8;--amber-glow:#ffc35c;--warm-well:#0e0c08;
+  --cp-screw:radial-gradient(circle at 40% 35%,#fbe7b5 0 1.1px,#c9a565 1.8px,#7a5a2c 3px,#2b1f0e 3.8px,#000 4.4px,transparent 5px);
+  --cp-wear:radial-gradient(#ffffff05 1px,transparent 1.3px) 0 0/3px 3px,repeating-linear-gradient(112deg,#ffffff04 0 1px,transparent 1px 8px),radial-gradient(120% 80% at 20% 0%,#ffe2a60b,transparent 55%),radial-gradient(90% 70% at 100% 100%,#0000004d,transparent 60%);
+  --ck-cyan:var(--amber-glow);--lcd-text:#f2e3b8;--lcd-text-2:var(--amber-glow);--ck-green:#9fe07f;
+}
+:root[data-cp][data-cks] body{background:radial-gradient(120% 70% at 50% 0%,#2a2c20 0%,transparent 60%),radial-gradient(#ffffff05 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#191b14,#0f100b)!important;background-attachment:fixed!important}
+/* 판: 올리브 가죽 + 황동 테 + 황동 나사 */
+:root[data-cp][data-cks] :is(.win,.tools,.dsn .console){
+  background:var(--cp-screw) 6px 6px/11px 11px no-repeat,var(--cp-screw) calc(100% - 6px) 6px/11px 11px no-repeat,var(--cp-screw) 6px calc(100% - 6px)/11px 11px no-repeat,var(--cp-screw) calc(100% - 6px) calc(100% - 6px)/11px 11px no-repeat,
+    var(--cp-wear),linear-gradient(180deg,#343a2b 0%,#2a2f22 50%,#21251a 100%)!important;border:1px solid #050403!important;
+  box-shadow:inset 0 0 0 1px #000,inset 0 0 0 2px var(--brass),inset 0 0 0 3px #1a140a,inset 0 1px 0 4px #e7cb8f30,0 0 0 1px #000,0 6px 14px #000c!important}
+:root[data-cp][data-cks] :is(.clock>div,.clock>button,.dsn .module){
+  background:var(--cp-screw) 4px 4px/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) 4px/9px 9px no-repeat,var(--cp-screw) 4px calc(100% - 4px)/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) calc(100% - 4px)/9px 9px no-repeat,
+    var(--cp-wear),linear-gradient(180deg,#363c2d,#272b1f 60%,#1f2219)!important;border:1px solid #050403!important;box-shadow:inset 0 0 0 1px var(--brass-lo),inset 0 0 0 2px #0b0906,inset 0 1px 0 3px #e7cb8f22,0 3px 7px #000b!important}
+:root[data-cp][data-cks] .win>.bar .t,:root[data-cp][data-cks] .dsn .brand-block h1{color:var(--cream)!important;text-shadow:0 -1px 0 #000,0 1px 0 #ffffff14!important}
+:root[data-cp][data-cks] .win>.bar{border-bottom:1px solid #000!important;box-shadow:0 1px 0 #b8935a55!important}
+:root[data-cp][data-cks] .groove{height:2px!important;background:linear-gradient(180deg,var(--brass-hi),var(--brass-lo))!important;opacity:.75!important;box-shadow:0 1px 0 #000!important}
+/* 표시창: 따뜻한 검정 + 황동 테 + 위에서 은은한 전구빛 */
+:root[data-cp][data-cks] :is(.lcd,.visbox,.eqgrid,.pl,.now,#curve,.devcaps,.dsn .deck,.camview,.npmerge.one),:root[data-cp][data-cks] #pfdHost .pfd-metric{
+  background:radial-gradient(70% 40% at 50% 0%,#ffc56a14,transparent 70%),linear-gradient(180deg,#0b0a07,#13110b)!important;border:1px solid #000!important;border-radius:8px!important;
+  box-shadow:inset 0 3px 8px #000000e0,inset 0 0 0 1px #000,0 0 0 1px var(--brass-lo),0 0 0 2px var(--brass),0 0 0 3px #000,0 2px 6px #000a!important}
+/* 버튼: 짙은 갈색 몸체 + 황동 테 + 아이보리 글자 */
+:root[data-cp][data-cks] :is(.pill,.tog,.seg button,.tb,.wbtn,.ckrail button,.dsn .header-btn,.pfd-tool,.pfd-levelq,.vmode button,.bri-b,.dsn .pfd-tools.in-ctl>button,.atcmini,.pfd-demo,#wRadio .rd-key,#wRadio .rd-sq){
+  background:linear-gradient(180deg,#3a2f1d 0%,#2a2214 45%,#1a150c 100%)!important;color:var(--ivory)!important;border:1px solid #050403!important;text-shadow:0 -1px 0 #000!important;
+  box-shadow:inset 0 0 0 1px var(--brass),inset 0 1px 0 2px #e7cb8f40,inset 0 -2px 0 2px #0b0906,0 2px 0 #050403,0 4px 9px #000000b8!important}
+:root[data-cp][data-cks] :is(.tb,.wbtn,.ckrail button,#wRadio .rd-key) svg{fill:var(--ivory)!important}
+:root[data-cp][data-cks][data-ckr] :is(.pill.on,.tog.on,.seg button.on,.ckrail button.on,.tb.hot,.vmode button.on,[aria-pressed="true"]:is(.pill,.tog,.pfd-tool,.tb),#addTop,#wRadio .rd-key.hot){
+  color:var(--amber-glow)!important;background:linear-gradient(180deg,#4a3a1e 0%,#33280f 50%,#21190a 100%)!important;
+  box-shadow:inset 0 0 0 1px var(--brass-hi),inset 0 1px 0 2px #ffe0a060,inset 0 -3px 0 1px var(--amber-glow),0 0 12px #ffb44a40,0 2px 0 #050403,0 4px 9px #000000b8!important}
+:root[data-cp][data-cks][data-ckr] :is(.tb.hot,#wRadio .rd-key.hot) svg{fill:var(--amber-glow)!important}
+/* 선택창: 황동 테 + 아이보리 글자 */
+:root[data-cp][data-cks] :is(.sel,.vsel,#pfdHost select,.dsn .pfd-tools.in-ctl select){color:var(--ivory)!important;background-color:#0e0c08!important;border:1px solid #000!important;box-shadow:inset 0 0 0 1px var(--brass),inset 0 2px 5px #000!important}
+/* 밀어서 조절: 아이보리 손잡이 + 황동 테, 채운 부분은 호박색 */
+:root[data-cp][data-cks] input[type=range]:not(.slot input){-webkit-appearance:none;appearance:none;background:transparent;height:24px}
+:root[data-cp][data-cks] input[type=range]:not(.slot input)::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,#f0a43a 0 var(--p,50%),#0b0906 var(--p,50%));box-shadow:inset 0 1px 2px #000,0 1px 0 #ffffff12}
+:root[data-cp][data-cks] input[type=range]:not(.slot input)::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9.5px;border-radius:50%;border:1px solid #3a2a12;
+  background:radial-gradient(circle at 35% 30%,#fffaf0,var(--ivory) 35%,var(--ivory-lo) 80%,#8a7a55);box-shadow:0 0 0 2px var(--brass),0 0 0 3px #000,0 3px 5px #000c,inset 0 -2px 3px #0003}
+/* 이퀄라이저: 아이보리 손잡이(황동 테), 호박색 막대, 크림 눈금 글자 */
+:root[data-cp][data-cks] .slot{background:linear-gradient(#000,#000) center/7px 100% no-repeat,repeating-linear-gradient(180deg,#d9caa04d 0 1px,transparent 1px 11px) center/34px 100% no-repeat!important}
+:root[data-cp][data-cks] .slot input::-webkit-slider-runnable-track{background:linear-gradient(90deg,#f0a43a 0 var(--p,50%),transparent var(--p,50%))!important;box-shadow:0 0 8px #f0a43a66!important}
+:root[data-cp][data-cks] .slot input::-webkit-slider-thumb{width:18px!important;height:44px!important;margin-top:-20px!important;border-radius:4px!important;border:1px solid #2a1d0c!important;
+  background:linear-gradient(90deg,#8a7a55,var(--ivory) 30%,#fffaf0 50%,var(--ivory) 70%,#8a7a55)!important;box-shadow:0 0 0 2px var(--brass),0 0 0 3px #000,0 3px 6px #000c!important}
+:root[data-cp][data-cks] .band span{color:var(--cream)!important;font-family:"Share Tech Mono",monospace}
+:root[data-cp][data-cks] .band.pre span{color:var(--amber-glow)!important}
+/* 재생 표시창(앨범 · 곡 정보 · 재생 시간 · 스펙트럼 한 창) */
+.npmerge.one{grid-template-columns:minmax(120px,30%) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"cv tt" "cv lcd" "cv vis";gap:6px 16px;padding:14px;margin:0 0 10px}
+.npmerge.one .art{display:contents}
+.npmerge.one .art .cover{grid-area:cv;align-self:start;max-height:none;border-radius:6px;box-shadow:0 0 0 1px #000,0 0 0 2px var(--brass-lo),0 6px 14px #000c}
+.npmerge.one .art>div:not(.cover):not(.npctl){grid-area:tt;min-width:0}
+.npmerge.one .art .tt{font:700 clamp(18px,2.6vw,30px)/1.15 Georgia,"Noto Serif KR",serif;color:#f4e9cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.npmerge.one .art .ar{font:400 clamp(13px,1.7vw,19px)/1.2 Georgia,"Noto Serif KR",serif;color:#cdbf98}
+.npmerge.one .art .ar::before{content:"● ";color:#8a7a55;font-size:.7em}
+.npmerge.one .lcd{grid-area:lcd;background:none!important;box-shadow:none!important;border:0!important;padding:0!important;min-height:0;border-top:1px solid #b8935a66!important;padding-top:6px!important}
+.npmerge.one .lcd .lcdbottom canvas{display:none}
+.npmerge.one .lcd .time{font-family:Georgia,"Times New Roman",serif!important;color:#f4e9cc!important;text-shadow:0 0 12px #ffc56a33!important}
+.npmerge.one .lcd .marquee{color:#e8dcb8!important;font-family:"Noto Sans KR",sans-serif}
+.npmerge.one .visbox{grid-area:vis;min-height:130px;background:none!important;box-shadow:none!important;border:0!important}
+.app.FX>#wMain.fx .npmerge.one{flex:1}
+@media (max-width:560px){.npmerge.one{grid-template-columns:96px minmax(0,1fr)}}
+:root[data-cp][data-cks] .seek span,:root[data-cp][data-cks] .knob label{color:var(--cream)!important;font-family:Georgia,serif}
+/* 한 창 표시: 안쪽 칸 테두리 없애기 */
+:root[data-cp][data-cks] .npmerge.one :is(.lcd,.visbox){background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+:root[data-cp][data-cks] .npmerge.one .lcd{border-top:1px solid #b8935a66!important;padding-top:8px!important}
+
+/* 스페셜 2 조종 패널: 황동 프레임 · 아이보리 스위치 · 짙은 베이클라이트 */
+:root[data-cp] .dsn .module h2{color:var(--cream)!important;font-family:"Noto Sans KR",sans-serif}
+:root[data-cp] .dsn .emergency h2{color:#e7cb8f!important;font-family:Georgia,serif;letter-spacing:.2em}
+:root[data-cp] .dsn .switch-plate{background:radial-gradient(circle at 30% 20%,#2a2116,#140f09 70%)!important;border:1px solid #000!important;
+  box-shadow:inset 0 0 0 1px var(--brass),inset 0 0 0 2px #0b0806,inset 0 3px 8px #000c,0 2px 4px #000a!important}
+:root[data-cp] .dsn .switch-plate::before,:root[data-cp] .dsn .switch-plate::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--cp-screw);background-size:7px 7px}
+:root[data-cp] .dsn .switch-plate::before{top:4px;right:4px}:root[data-cp] .dsn .switch-plate::after{bottom:4px;right:4px}
+:root[data-cp] .dsn .switch-side{color:#e8dcb8!important;font-family:Georgia,serif}
+:root[data-cp] .dsn .switch-pivot{background:conic-gradient(#f3d79a,#7a5a2c,#e7c98a,#5e4626,#f3d79a)!important}
+:root[data-cp] .dsn .switch-pivot:after{background:radial-gradient(circle,#140f09 45%,#c9a565 48%,#5e4626 65%,#e7cb8f 70%)!important;border-color:#0b0806!important}
+:root[data-cp] .dsn .switch-stem{background:linear-gradient(90deg,#8a7a55,#fffaf0 30%,#efe6cf 50%,#b9ab86 75%,#6d6040)!important}
+:root[data-cp] .dsn .switch-stem:before{background:linear-gradient(90deg,#9a8a62,#fffaf0 38%,#efe6cf 62%,#a8996f)!important;border-color:#d8cba6!important;box-shadow:0 2px 3px #000a}
+:root[data-cp] .dsn .volume-knob{background:repeating-conic-gradient(#120c06 0deg 3deg,#6e5430 4deg 5deg,#1c140b 6deg 8deg)!important;border-color:#000!important;
+  box-shadow:0 0 0 2px var(--brass),0 0 0 3px #000,0 6px 10px #000c,inset 0 1px 3px #ffe2a666!important}
+:root[data-cp] .dsn .knob-face{background:radial-gradient(circle at 36% 28%,#5c4529 0%,#2d1f12 30%,#1a120a 62%,#0a0704 100%)!important;border-color:#7a5a2c!important}
+:root[data-cp] .dsn .knob-face:after{background:var(--ivory)!important;border-color:#00000080!important}
+:root[data-cp] .dsn .knob-ticks{color:#e7cb8f!important}
+:root[data-cp] .dsn .volume-strip output{color:#f4e9cc!important;font-family:Georgia,serif}
+:root[data-cp] .dsn .indicator{background:#9fe07f;box-shadow:0 0 6px #9fe07f}
+:root[data-cp] .dsn .readout{color:var(--cream)!important;font-family:Georgia,serif;letter-spacing:.1em}
+:root[data-cp] .dsn .guard-cover small{display:none!important}
+:root[data-cp] .dsn .console-header{border-bottom-color:#000!important;box-shadow:0 1px 0 #b8935a66!important}
+:root[data-cp] .dsn .brand-block h1{font-family:Georgia,"Times New Roman",serif!important;letter-spacing:.18em!important}
+:root[data-cp] .dsn .emergency{background:var(--cp-screw) 4px 4px/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) 4px/9px 9px no-repeat,var(--cp-screw) 4px calc(100% - 4px)/9px 9px no-repeat,var(--cp-screw) calc(100% - 4px) calc(100% - 4px)/9px 9px no-repeat,
+  var(--cp-wear),linear-gradient(180deg,#4a3320,#33220f 60%,#261a0c)!important;box-shadow:inset 0 0 0 1px var(--brass),inset 0 0 0 2px #0b0806,0 3px 7px #000b!important}
+:root[data-cp] .dsn .guard-frame{filter:sepia(.25) saturate(1.05)}
