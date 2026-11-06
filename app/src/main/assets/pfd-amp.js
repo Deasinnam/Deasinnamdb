@@ -134,6 +134,31 @@
     oText();
     if (this.els && this.els.themeText) this.els.themeText.textContent = '테마 ' + ({ auto: '자동', day: '주간', night: '야간' }[theme]);
   };
+  // 콕핏 스페셜 스킨: 속도·고도 칸을 더 크게 덧그려 숫자가 돋보기로 본 듯 커 보이게(패키지 그리기는 그대로 두고 위에 덧그림)
+  const oTape = P.drawTape.bind(P);
+  P.drawTape = function (c, x, y, w, h, kind, value, known) {
+    oTape(c, x, y, w, h, kind, value, known);
+    if (!document.documentElement.hasAttribute('data-cks')) return;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), af = this.settings.skin === 'airforce', isSpeed = kind === 'speed', cy = h * .53;
+    const boxH = clamp(h * .26, 78, 124), inset = 3, tip = 14;
+    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+    c.beginPath();
+    if (isSpeed) { c.moveTo(x + inset, cy - boxH / 2); c.lineTo(x + w - tip, cy - boxH / 2); c.lineTo(x + w, cy); c.lineTo(x + w - tip, cy + boxH / 2); c.lineTo(x + inset, cy + boxH / 2); }
+    else { c.moveTo(x + w - inset, cy - boxH / 2); c.lineTo(x + tip, cy - boxH / 2); c.lineTo(x, cy); c.lineTo(x + tip, cy + boxH / 2); c.lineTo(x + w - inset, cy + boxH / 2); }
+    c.closePath(); c.fillStyle = '#000603'; c.fill(); c.strokeStyle = af ? '#a7fa98' : '#e1e8d7'; c.lineWidth = 1.5; c.stroke();
+    const warn = isSpeed && known && this.settings.limitKmh > 0 && value > this.settings.limitKmh, txt = known ? String(Math.round(value)) : '—', tx = x + w / 2 + (isSpeed ? -5 : 5);
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = warn ? '#ffd16a' : af ? '#c6ffb6' : isSpeed ? '#f7fbef' : '#b8f3a7';
+    let fs = clamp(boxH * .62, 40, 84); c.font = '800 ' + fs + 'px Arial'; const mw = w - tip - 10, tw = c.measureText(txt).width;
+    if (tw > mw) { fs *= mw / tw; c.font = '800 ' + fs + 'px Arial'; }
+    c.save(); c.shadowColor = warn ? '#ffd16a99' : '#ffffff55'; c.shadowBlur = 12; c.fillText(txt, tx, cy - boxH * .08); c.restore();
+    c.font = '700 ' + clamp(w * .13, 10, 16) + 'px Arial'; c.fillStyle = af ? '#c0ffad' : '#e4eddd'; c.fillText(isSpeed ? 'km/h' : 'm', tx, cy + boxH * .34);
+    const lg = c.createRadialGradient(tx - w * .15, cy - boxH * .3, 2, tx, cy, boxH * .75); lg.addColorStop(0, '#ffffff30'); lg.addColorStop(.45, '#ffffff0c'); lg.addColorStop(1, '#ffffff00');
+    c.fillStyle = lg; c.fill();
+    c.strokeStyle = '#ffffff26'; c.lineWidth = 1; c.beginPath(); c.ellipse(tx, cy - boxH * .3, w * .32, boxH * .12, 0, Math.PI * 1.05, Math.PI * 1.95); c.stroke();
+    c.fillStyle = af ? '#a9ff99' : '#ffd15a'; const edge = isSpeed ? x + w : x, dir = isSpeed ? -1 : 1;
+    c.beginPath(); c.moveTo(edge, cy); c.lineTo(edge + dir * 12, cy - 10); c.lineTo(edge + dir * 12, cy + 10); c.closePath(); c.fill();
+    c.restore();
+  };
   applyTheme();
   setInterval(applyTheme, 60000);
   // 절전 모드: 비행 계기를 30fps로(사용자가 고른 품질은 그대로 저장)
