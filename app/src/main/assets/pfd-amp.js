@@ -215,8 +215,11 @@
     const place = () => {
       const r = wrapEl.getBoundingClientRect(), w = r.width, h = r.height; if (!w || !h) return;
       const cl = (v, a, b) => Math.max(a, Math.min(b, v)), fh = h - cl(h * .145, 43, 66), tape = cl(w * .12, 67, 175), boxH = cl(fh * .26, 78, 124);
-      const top = Math.min(fh - 120, fh * .53 + boxH / 2 + 10);
-      for (const [b, dy] of [[lv, 0], [th, 40], [lk, 80]]) { b.style.left = '4px'; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; }
+      const base = fh * .53 + boxH / 2 + 10, top = Math.min(fh - 80, base), three = fh - 120 >= base;
+      for (const [b, dy] of [[lv, 0], [th, 40]]) { b.style.left = '4px'; b.style.right = ''; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; }
+      // 스킨 버튼: 자리가 넉넉하면 테마 아래, 낮은 화면이면 오른쪽 고도 칸 아래
+      if (three) { lk.style.left = '4px'; lk.style.right = ''; lk.style.top = (top + 80) + 'px'; } else { lk.style.left = ''; lk.style.right = '4px'; lk.style.top = top + 'px'; }
+      lk.style.width = (tape - 8) + 'px';
     };
     if (window.ResizeObserver) new ResizeObserver(place).observe(wrapEl); place();
   }
