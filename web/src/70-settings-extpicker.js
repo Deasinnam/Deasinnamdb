@@ -13,6 +13,7 @@ window.AmpHost={
   get atcDone(){return typeof atcDone!=='undefined'&&atcDone},
   speedTick(v){try{atcSpeedTick(v,true)}catch(e){}},
   atcSay(t){try{if(typeof atcSpeak==='function')atcSpeak(t)}catch(e){}},
+  sfx(k,v){try{const S=AmpSfx;if(k==='roll')S.rollSpeed(v);else if(S[k])S[k]()}catch(e){}},
   beep(k){try{if(k==='tireUp'||k==='tireDown'){sndTire(k==='tireDown');return}if(k==='takeoff'&&typeof sndTakeoff==='function')sndTakeoff();else if(typeof sndRoger==='function')sndRoger()}catch(e){}}
 };
 /* 태블릿 가로모드(tablet.js) 연결 창구: 읽기·호출만 하고 기존 동작은 바꾸지 않음 */

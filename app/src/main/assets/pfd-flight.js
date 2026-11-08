@@ -83,6 +83,10 @@
   const wxKind = () => { const W = window.AmpWx; const k = W ? W.kind : 'clear'; return k || 'clear'; };
   const active = () => ['carnival2', 'carnival3', 'carnival4', 'carnival5', 'carnival6', 'carnival7', 'tablet'].includes(H.skin) && (H.skin === 'tablet' || !H.gStyle || H.gStyle === 'cockpit'); // 콕핏 스킨에서 기존 속도계를 고르면 비행 화면은 쉼
 
+  /* 효과음: 앱의 AmpHost.sfx(없으면 예전 beep) — 활주 소리는 속도에 맞춰 0.2초마다만 갱신 */
+  let sfxT = 0;
+  function sfx(k, v, fallback) { if (H.sfx) H.sfx(k, v); else if (fallback) fallback(); }
+  function sfxRoll(v) { const t = performance.now(); if (t - sfxT < 200) return; sfxT = t; sfx('roll', v); }
   function newDeparture() { F.rwS = -120; F.rwLen = 3200; F.rolled = 0; F.rwNum = rwNumFor(P.display && P.display.headingDeg); }
 
   /* ---------- 단계 전환 ---------- */
@@ -96,13 +100,13 @@
     F.K = F.sim ? (F.rem / 18) / (70 / 3.6) : (F.rem / 45) / (60 / 3.6); // 60km/h면 약 45초
     F.auto = false; F.slowT = 0;
     F.phase = 'approach';
-    H.beep('roger');
+    H.beep('roger'); sfx('approach');
     H.atcSay('대신남 원, 활주로 ' + pad2(F.rwNum) + ' 착륙을 허가합니다.');
     kick(); renderBadge(true); return true;
   }
   function goAround() {
     if (F.phase !== 'approach') return false;
-    F.phase = 'climb'; F.auto = false; F.liftAt = performance.now() + F.off;
+    F.phase = 'climb'; F.auto = false; F.liftAt = performance.now() + F.off; sfx('goAround');
     H.atcSay('대신남 원, 복행합니다. 다시 상승하세요.');
     kick(); renderBadge(true); return true;
   }
@@ -119,19 +123,19 @@
       case 'hold':
       case 'landed':
         F.alt = 0;
-        if (v > 3) { if (F.phase === 'landed') newDeparture(); F.phase = 'roll'; F.stopT = 0; F.rollT = 0; F.rolled = 0; }
+        if (v > 3) { if (F.phase === 'landed') newDeparture(); F.phase = 'roll'; F.stopT = 0; F.rollT = 0; F.rolled = 0; sfx('rollStart'); }
         break;
       case 'roll': {
         // 5km/h만 넘으면 이륙: 활주는 실제 비행기처럼 몇 초 만에 빨라지는 모습으로 보여 줌
         F.rollT += vEff >= 3 ? dt : 0;
         const vis = vEff >= 3 ? Math.max(vEff, Math.min(150, 30 + F.rollT * 26)) : vEff;
         const adv = vis / 3.6 * 1.6 * dt;
-        F.rwS -= adv; F.rolled += adv; F.v = vis;
+        F.rwS -= adv; F.rolled += adv; F.v = vis; sfxRoll(vis);
         if (F.rwS + F.rwLen < 900) F.rwLen += 1500;
         if ((vEff >= VR && F.rolled >= 150) || vEff >= VR_HI) {
-          F.phase = 'climb'; F.liftAt = now; H.beep('takeoff'); H.beep('tireUp');
+          F.phase = 'climb'; F.liftAt = now; sfx('liftoff', null, () => { H.beep('takeoff'); H.beep('tireUp'); });
         }
-        if (vEff < 1) { F.stopT += dt; if (F.stopT > 2.5) F.phase = 'hold'; } else F.stopT = 0;
+        if (vEff < 1) { F.stopT += dt; if (F.stopT > 2.5) { F.phase = 'hold'; sfx('rollStop'); } } else F.stopT = 0;
         break;
       }
       case 'climb': {
@@ -158,7 +162,7 @@
         if (a < 14) a = 14 * Math.pow(a / 14, 1.55);     // 플레어: 바닥 가까이에서 내려가는 속도를 줄임
         F.alt = a;
         if (F.rem <= 0.5) {
-          F.phase = 'rollout'; F.alt = 0; F.tdAt = now; H.beep('tireDown');
+          F.phase = 'rollout'; F.alt = 0; F.tdAt = now; sfx('touchdown', null, () => H.beep('tireDown'));
           if (F.auto) F.vAuto = 140;
           H.beep('roger');
           H.atcSay('대신남 원, 착륙을 확인했습니다. 목적지에 도착했습니다.');
@@ -169,7 +173,8 @@
         if (F.auto) { F.vAuto = Math.max(0, F.vAuto - 26 * dt); vEff = F.vAuto; F.v = vEff; }
         F.rwS -= vEff / 3.6 * 2.2 * dt;
         if (F.rwS + F.rwLen < 900) F.rwLen += 1200;
-        if (vEff < 6) { F.stopT += dt; if (F.stopT > 1.2) { F.phase = 'landed'; F.auto = false; F.stopT = 0; } } else F.stopT = 0;
+        if ((now - F.tdAt) > 900 && vEff > 6) { sfx('rollStart'); sfxRoll(vEff); }                 // 접지 뒤 감속 활주: 바퀴 진동이 속도와 함께 잦아듦
+        if (vEff < 6) { F.stopT += dt; if (F.stopT > 1.2) { F.phase = 'landed'; F.auto = false; F.stopT = 0; sfx('rollStop'); } } else F.stopT = 0;
         break;
       }
     }
@@ -224,8 +229,28 @@
     if (!night) {
       strip(110, '#b7ad86', .55 * k);
       const g = c.createLinearGradient(0, 0, 0, h * .9); g.addColorStop(0, '#b9d0dc'); g.addColorStop(.12, '#7fa6bd'); g.addColorStop(1, '#3f6f8f'); strip(78, g, .95 * k);
-      strip(10, '#e4f0f6', .3 * k);
+      strip(3.5, '#e4f0f6', .22 * k);
     } else { strip(78, '#132232', .9 * k); strip(8, '#5a7aa055', .6 * k); }
+    // 1.39 나무: 강둑을 따라 늘어선 숲 + 들판 경계의 나무 무리(가까운 것은 크고 빠르게, 먼 것은 작고 천천히 — 지면 레이어와 함께 흐름)
+    if (!night && quality !== 'balanced') {
+      const trees = [];
+      const RS = 110, r0 = Math.floor((zn + wr) / RS);                      // 강둑 숲(강과 같은 빠르기)
+      for (let j = r0; j < r0 + 70; j++) { const Zw = j * RS, z = Zw - wr; if (z < zn * 1.3) continue; if (z > 6500) break;
+        for (const side of [-1, 1]) { const h = srand(j * 3.1 + side), X = riverX(Zw) + side * (96 + h * 70); if (h > .82) continue; trees.push([X, z, 9 + h * 9]); } }
+      const FC = 320, f0 = Math.floor((zn + F.wz) / FC);                     // 들판 경계 나무 무리(들판과 같은 빠르기)
+      for (let j = f0; j < f0 + 16; j++) { const z0 = j * FC - F.wz; if (z0 > 5200) break;
+        for (let i = -8; i < 8; i++) { const h = srand(i * 17.3 + j * 5.7); if (h > .32) continue;
+          const n = 2 + Math.floor(h * 12); for (let q = 0; q < n; q++) { const X = i * FC + (srand(q + i * 3 + j) - .5) * 90, z = z0 + (srand(q * 7 + j + i) - .5) * 60; if (z > zn * 1.3) trees.push([X, z, 7 + srand(q + j) * 7]); } } }
+      trees.sort((a, b) => b[1] - a[1]);
+      for (const [X, z, r] of trees) {
+        const sR = r * f / z; if (sR < .6) continue; const x = px(X, z), y = py(z); if (x < -w * .8 || x > w * .8) continue;
+        const sh = Math.max(.5, sR * Hc / z * 1.2);                                  // 위에서 내려다볼수록 둥글게
+        c.globalAlpha = k * clamp(1.2 - z / 7000, .35, 1);
+        c.fillStyle = '#1f3418'; c.beginPath(); c.ellipse(x, y - sh * .4, sR, Math.max(sh, sR * .55), 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#3c5e2a'; c.beginPath(); c.ellipse(x - sR * .25, y - sh * .65, sR * .6, Math.max(sh, sR * .55) * .55, 0, 0, Math.PI * 2); c.fill();
+      }
+      c.globalAlpha = 1;
+    }
     // 마을: 강가에 지붕 스무 채 남짓 + 작은 종탑, 먼 것부터
     const j0 = Math.floor((zn + wr - 1600) / VIL_P);
     for (let j = j0 + 2; j >= j0; j--) {
@@ -659,6 +684,7 @@
 
   /* ---------- 시연: GPS 없이 이륙~착륙을 보여 줌 ---------- */
   function sim(on) {
+    sfx('rollStop');
     if (!on) { F.sim = null; try { P.updateTelemetry({ source: H.gpsOn ? 'gps' : 'none' }); } catch (e) {} renderBadge(true); return; }
     F.phase = 'hold'; F.alt = 0; F.pitch = 0; F.bank = 0; F.auto = false; newDeparture();
     F.sim = { t0: performance.now(), v: 0, hdg: fin(P.display && P.display.headingDeg) ? P.display.headingDeg : 330, landed: 0 };

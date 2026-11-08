@@ -88,7 +88,7 @@
   }
 
   /* ---------- 1·3. 붙이기와 설정 동기화 ---------- */
-  let theme = 'auto', fromDialog = false, P = null, lastFeed = 0;
+  let theme = 'auto', fromDialog = false, P = null, lastFeed = 0, lastHdg = null;
   // 앱의 야간 기준: "자동"이면 오후 7시~오전 6시를 야간으로
   function applyTheme() {
     if (!P) return;
@@ -135,12 +135,31 @@
     if (this.els && this.els.themeText) this.els.themeText.textContent = '테마 ' + ({ auto: '자동', day: '주간', night: '야간' }[theme]);
   };
   // 콕핏 스페셜 스킨: 속도·고도 칸을 더 크게 덧그려 숫자가 돋보기로 본 듯 커 보이게(패키지 그리기는 그대로 두고 위에 덧그림)
-  const oTape = P.drawTape.bind(P);
+  // 1.39 조종석 패널: 속도·고도 칸과 아래 나침반 띠를 짙은 올리브 + 얇은 앤틱 황동 테로(패키지 그리기의 바탕색만 바꿔 끼움)
+  const olive = (c, x, w, horiz, y0, h0) => { const g = horiz ? c.createLinearGradient(0, y0, 0, y0 + h0) : c.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#2b2d1f'); g.addColorStop(.5, '#22251a'); g.addColorStop(1, '#1a1c13'); return g; };
+  const brassFrame = (c, x, y, w, h) => { c.save(); c.strokeStyle = '#00000099'; c.lineWidth = 3; c.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3); c.strokeStyle = '#b08d4c'; c.lineWidth = 1.2; c.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5); c.strokeStyle = '#e9cf8a55'; c.lineWidth = .6; c.strokeRect(x + 3.6, y + 3.6, w - 7.2, h - 7.2); c.restore(); };
+  const oliveOn = () => !(P.settings && P.settings.skin === 'airforce');
+  const oTape0 = P.drawTape.bind(P);
+  const oTape = function (c, x, y, w, h, kind, value, known) {
+    if (!oliveOn()) return oTape0(c, x, y, w, h, kind, value, known);
+    const oG = c.createLinearGradient; let first = true;
+    c.createLinearGradient = function (...a) { if (first) { first = false; return olive(this, x, w, false); } return oG.apply(this, a); };
+    try { oTape0(c, x, y, w, h, kind, value, known); } finally { c.createLinearGradient = oG; }
+    brassFrame(c, x, y, w, h);
+  };
+  const oComp = P.drawCompass.bind(P);
+  P.drawCompass = function (c, x, y, w, h, value) {
+    if (!oliveOn()) return oComp(c, x, y, w, h, value);
+    const oF = c.fillRect; let first = true;
+    c.fillRect = function (fx, fy, fw, fh) { if (first) { first = false; const s0 = this.fillStyle; this.fillStyle = olive(this, x, w, true, y, h); oF.call(this, fx, fy, fw, fh); this.fillStyle = s0; return; } return oF.call(this, fx, fy, fw, fh); };
+    try { oComp(c, x, y, w, h, value); } finally { c.fillRect = oF; }
+    brassFrame(c, x, y, w, h);
+  };
   P.drawTape = function (c, x, y, w, h, kind, value, known) {
     oTape(c, x, y, w, h, kind, value, known);
     { // 칸 이름: 실제 주행 정보임을 분명히(왼쪽 '주행 속도', 오른쪽 'GPS 고도') — 비행 연출 고도와 구분
-      const af0 = this.settings.skin === 'airforce', g0 = c.createLinearGradient(x, 0, x + w, 0); g0.addColorStop(0, af0 ? '#03140d' : '#111e14'); g0.addColorStop(1, af0 ? '#061e13' : '#1b2a1b');
-      c.save(); c.fillStyle = g0; c.fillRect(x, y, w, 28); let fs0 = Math.max(10, Math.min(15, w * .15)); c.font = '700 ' + fs0 + 'px "Noto Sans KR",Arial,sans-serif';
+      const af0 = this.settings.skin === 'airforce'; let g0; if (af0) { g0 = c.createLinearGradient(x, 0, x + w, 0); g0.addColorStop(0, '#03140d'); g0.addColorStop(1, '#061e13'); } else g0 = olive(c, x, w, false);
+      c.save(); c.fillStyle = g0; c.fillRect(x + 4, y + 4, w - 8, 24); let fs0 = Math.max(10, Math.min(15, w * .15)); c.font = '700 ' + fs0 + 'px "Noto Sans KR",Arial,sans-serif';
       const lb = kind === 'speed' ? '주행 속도' : 'GPS 고도', tw0 = c.measureText(lb).width; if (tw0 > w - 6) { fs0 *= (w - 6) / tw0; c.font = '700 ' + fs0 + 'px "Noto Sans KR",Arial,sans-serif'; }
       c.fillStyle = '#b4f49f'; c.textAlign = 'center'; c.textBaseline = 'top'; c.fillText(lb, x + w / 2, 9); c.restore();
     }
@@ -207,9 +226,13 @@
     const patch = {}, gs = H.gs || {}, trip = H.trip, att = H.att;
     if (H.gpsOn) {
       const fix = !!gs.fix, num = v => finite(v) ? v : null;
+      // 진행 방향: 움직이는 동안(5km/h 이상, GPS 수신)의 값만 믿고, 저속·정차·수신 끊김에는 마지막 유효 방향을 유지(359°→0°는 패키지가 짧은 쪽으로 보간)
+      const rawH = H.hdgNow >= 0 ? H.hdgNow : null, moving = fix && H.spdNow >= 5;
+      if (moving && rawH !== null) lastHdg = rawH;
+      const hdg = moving ? rawH : (lastHdg !== null ? lastHdg : rawH);
       Object.assign(patch, {
         source: 'gps', fixValid: fix, speedKmh: fix ? Math.max(0, H.spdNow) : null,
-        altitudeM: fix && gs.alt > -9000 ? gs.alt : null, headingDeg: H.hdgNow >= 0 ? H.hdgNow : null,
+        altitudeM: fix && finite(gs.alt) && gs.alt > -9000 ? gs.alt : null, headingDeg: hdg,
         accuracyM: fix && gs.acc >= 0 ? gs.acc : null, satellitesUsed: num(gs.satsUsed), satellitesVisible: num(gs.satsSeen),
         maxSpeedKmh: Math.max(0, trip.max), avgSpeedKmh: trip.time > 0 ? trip.dist / trip.time * 3.6 : 0,
         distanceKm: trip.dist / 1000, durationSeconds: trip.time,
