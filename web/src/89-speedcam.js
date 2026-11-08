@@ -4,7 +4,13 @@
 (function(){
   const camOn=()=>store.get('camOn',true)!==false;
   let osm=[],osmAt=null,osmBusy=false,osmT=0,db=null;           // [lat,lon,limit]
-  const loadDb=()=>{if(db)return db;try{db=JSON.parse(localStorage.getItem('dna_camDb')||'null')||[]}catch(e){db=[]}return db};
+  const loadUser=()=>{if(db)return db;try{db=JSON.parse(localStorage.getItem('dna_camDb')||'null')||[]}catch(e){db=[]}return db};
+  // 1.38 기본 내장 자료: 공공데이터포털 전국무인교통단속카메라표준데이터(2026-06-19 수정본)에서 제한속도가 있는 카메라만(assets/data/kr-speedcams.txt)
+  // 직접 불러온 CSV가 있으면 그것을, 없으면 내장 자료를 씀
+  let builtin=[],builtinInfo='';
+  fetch('data/kr-speedcams.txt').then(r=>r.ok?r.text():'').then(t=>{const out=[];for(const l of t.split('\n')){if(!l)continue;if(l[0]==='#'){const m=l.match(/기준일 ([\d-]+)~([\d-]+)/);builtinInfo=m?m[2].slice(0,7):'';continue}
+    const c=l.split(',');if(c.length>=3)out.push([+c[0],+c[1],+c[2]])}builtin=out;statUi()}).catch(()=>{});
+  const loadDb=()=>{const u=loadUser();return u.length?u:builtin};
   const R=6371000,rad=x=>x*Math.PI/180;
   const dist=(a,b,c,d)=>{const p=rad(c-a),q=rad(d-b),h=Math.sin(p/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(q/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
   const brg=(a,b,c,d)=>{const y=Math.sin(rad(d-b))*Math.cos(rad(c)),x=Math.cos(rad(a))*Math.sin(rad(c))-Math.sin(rad(a))*Math.cos(rad(c))*Math.cos(rad(d-b));return (Math.atan2(y,x)*180/Math.PI+360)%360};
@@ -27,7 +33,7 @@
   async function importFile(f){const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);if(/\uFFFD/.test(t.slice(0,2000))){try{t=new TextDecoder('euc-kr').decode(buf)}catch(e){}}
     const rows=parseCsv(t);if(!rows){toast('위도·경도 열을 찾지 못했어요. 공공데이터 "전국무인교통단속카메라표준데이터" CSV인지 확인해 주세요.');return}
     try{localStorage.setItem('dna_camDb',JSON.stringify(rows));db=rows;toast('과속 카메라 '+rows.length.toLocaleString()+'곳을 불러왔어요.')}catch(e){toast('저장 공간이 부족해 불러오지 못했어요.')}statUi()}
-  function statUi(){const el=$('#sCamStat');if(!el)return;const a=loadDb().length;el.textContent=(a?'공공데이터 '+a.toLocaleString()+'곳':'공공데이터 없음')+' · 지도 자료 주변 '+osm.length+'곳'+(osmAt?'':' (GPS·인터넷 연결 후 받음)')}
+  function statUi(){const el=$('#sCamStat');if(!el)return;const u=loadUser().length,b=builtin.length;el.textContent=(u?'불러온 공공데이터 '+u.toLocaleString()+'곳':b?'기본 내장 전국 자료 '+b.toLocaleString()+'곳'+(builtinInfo?' ('+builtinInfo+' 기준)':''):'공공데이터 없음')+' · 지도 자료 주변 '+osm.length+'곳'+(osmAt?'':' (GPS·인터넷 연결 후 받음)')}
   /* 안내: 진행 방향 ±35° 안, 1.2km 이내에서 가장 가까운 카메라 */
   const told=new Map();let cur=null,lastSay=0;
   // 말은 짧게, 사람이 옆에서 알려 주듯: "500미터 앞 단속 카메라, 50이에요." / "속도 줄이세요."
@@ -52,7 +58,7 @@
   setInterval(()=>{if(demoOn)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
   $('#sCam').checked=camOn();$('#sCam').onchange=e=>{store.set('camOn',e.target.checked);if(!e.target.checked)show(null)};
   $('#sCamCsv').onclick=()=>$('#sCamFile').click();$('#sCamFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importFile(f);e.target.value=''};
-  $('#sCamClr').onclick=()=>{try{localStorage.removeItem('dna_camDb')}catch(e){}db=[];statUi();toast('불러온 과속 카메라 자료를 지웠어요.')};
+  $('#sCamClr').onclick=()=>{try{localStorage.removeItem('dna_camDb')}catch(e){}db=[];statUi();toast('불러온 자료를 지웠어요. 기본 내장 전국 자료로 안내해요.')};
   /* 예시: 실제 안내와 같은 소리·음성·표지판을 약 8초 동안 보여 줌(50km 구간을 70km/h로 다가가는 상황) */
   document.body.appendChild($('#camSign')); // 어느 창·설정 위에도 보이게 맨 위층으로
   let demoT=[],demoOn=false;
@@ -64,5 +70,5 @@
     demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},8600))}
   $('#sCamDemo').onclick=e=>{e.preventDefault();e.stopPropagation();demo()};
   statUi();
-  window.AmpCam={demo,check,parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
+  window.AmpCam={get builtin(){return builtin.length},demo,check,parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
 })();

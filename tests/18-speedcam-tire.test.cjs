@@ -9,8 +9,8 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   await p.setViewportSize({width: 1036, height: 900});
   await p.goto(origin);
   await p.waitForTimeout(500);
-  // 카메라: (37.5000, 127.0000) 제한 50, 남쪽 500m에서 북쪽으로 70km/h
-  await p.evaluate(() => { AmpCam.osm = [[37.5, 127.0, 50]]; AmpCam.check(37.5 - 0.0045, 127.0, 70, 0); });
+  // 카메라: (36.0000, 125.0000) 제한 50, 남쪽 500m에서 북쪽으로 70km/h
+  await p.evaluate(() => { AmpCam.osm = [[36.0, 125.0, 50]]; AmpCam.check(36.0 - 0.0045, 125.0, 70, 0); });
   assert.equal(await p.locator('#camSign').isVisible(), true, 'Red speed-limit sign');
   assert.equal(await p.locator('#camLim').textContent(), '50');
   // 1.34: 화면 전체를 붉게 덮고 가운데 큰 숫자
@@ -20,15 +20,19 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   assert.match(await p.locator('#camDist').textContent(), /전방 5\d0m/);
   assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 50이에요.', 'Short, natural voice');
   assert.equal(await p.locator('#camSign').evaluate(e => e.classList.contains('over')), true, 'Flashes when over the limit');
-  await p.evaluate(() => AmpCam.check(37.5 - 0.0012, 127.0, 70, 0));
+  await p.evaluate(() => AmpCam.check(36.0 - 0.0012, 125.0, 70, 0));
   assert.equal(await p.evaluate(() => __said[1] || ''), '속도 줄이세요.', 'Second warning when close and still fast');
   // 카메라가 뒤쪽이면 표시 없음
-  await p.evaluate(() => AmpCam.check(37.5 + 0.003, 127.0, 70, 0));
+  await p.evaluate(() => AmpCam.check(36.0 + 0.003, 125.0, 70, 0));
   assert.equal(await p.locator('#camSign').isVisible(), false, 'Nothing when the camera is behind');
   // 공공데이터 CSV 형식
   const rows = await p.evaluate(() => AmpCam.parseCsv('무인교통단속카메라관리번호,시도명,단속구분,제한속도,위도,경도\nA1,서울,과속단속,60,37.51,127.01\nA2,서울,신호단속,0,37.52,127.02\nA3,부산,과속단속,"80",35.1,129.0'));
   assert.deepEqual(rows, [[37.51, 127.01, 60], [35.1, 129, 80]]);
   assert.equal(await p.locator('#sCam').isChecked(), true);
+  // 1.38 기본 내장 전국 자료(공공데이터): 3만 곳 이상, 설정에 표시
+  await p.waitForFunction(() => AmpCam.builtin > 30000, null, {timeout: 5000});
+  await p.evaluate(() => AmpCam.statUi());
+  assert.match(await p.locator('#sCamStat').textContent(), /기본 내장 전국 자료 3\d,\d{3}곳/);
   // 설정의 [예시 보기]: 표지판·소리·음성이 실제처럼
   await p.evaluate(() => { __said.length = 0; });
   await p.locator('#setBtn').click(); await p.locator('#sCamDemo').scrollIntoViewIfNeeded(); await p.locator('#sCamDemo').click();

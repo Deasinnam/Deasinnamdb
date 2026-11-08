@@ -514,8 +514,8 @@
       <div class="row col"><span><b>과속 경고 속도</b><small>고른 속도를 넘으면 관제탑이 "슬로우 다운"이라고 말하고 속도계가 빨갛게 세 번 깜빡여요. (5km/h 아래로 내려가면 다시 경고)</small></span>
         <div class="chips" id="sSpdMarks"></div></div>
       <label class="row"><span><b>과속 카메라 안내</b><small>앞쪽 단속 카메라를 "500미터 앞 단속 카메라, 50이에요"처럼 짧게 알려 주고, 화면 전체를 붉게 덮어 제한 속도를 크게 보여 줘요. GPS를 켜야 동작해요.</small></span><span class="cam-ctl"><button type="button" class="pill" id="sCamDemo">▶ 예시 보기</button><input type="checkbox" id="sCam" class="sw"></span></label>
-      <div class="row col"><span><b>과속 카메라 자료</b><small>인터넷이 되면 주변 지도 자료(OpenStreetMap)에서 자동으로 받아요. 전국 자료를 쓰려면 공공데이터포털(data.go.kr)의 "전국무인교통단속카메라표준데이터" CSV 파일을 받아 불러오세요.</small><small id="sCamStat">자료 없음</small></span>
-        <span class="permbtns"><button type="button" class="pill" id="sCamCsv">공공데이터 CSV 불러오기</button><button type="button" class="pill" id="sCamClr">불러온 자료 지우기</button><input type="file" id="sCamFile" accept=".csv,text/csv" hidden></span></div>
+      <div class="row col"><span><b>과속 카메라 자료</b><small>공공데이터포털 "전국무인교통단속카메라표준데이터"(2026-06-19 수정본)의 전국 단속 카메라가 앱에 기본으로 들어 있어요. 인터넷이 되면 주변 지도 자료(OpenStreetMap)도 함께 써요. 더 새 CSV를 받으면 불러와서 바꿀 수 있어요.</small><small id="sCamStat">자료 없음</small></span>
+        <span class="permbtns"><button type="button" class="pill" id="sCamCsv">공공데이터 CSV 불러오기</button><button type="button" class="pill" id="sCamClr">기본 자료로 되돌리기</button><input type="file" id="sCamFile" accept=".csv,text/csv" hidden></span></div>
     </section>
     <section id="secRev">
       <h3>후진 멜로디</h3>
