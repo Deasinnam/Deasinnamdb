@@ -65,6 +65,8 @@ jobs:
           AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
+          # Gradle 배포 서버가 잠깐 막힐 때가 있어 내려받기만 최대 4번 재시도
+          for i in 1 2 3 4; do ./gradlew --no-daemon --version >/dev/null && break; echo "gradle download retry $i"; sleep $((i*20)); done
           ./gradlew --no-daemon assembleRelease
           find app/build/outputs/apk -name '*.apk'
           rm -f "$AMP_KEYSTORE_FILE"
