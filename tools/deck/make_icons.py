@@ -15,16 +15,15 @@ KR = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc'
 def kr(s): return ImageFont.truetype(KR, s, index=1)
 
 S = 3                       # 3배로 그린 뒤 줄여서 매끈하게
-W = H = 100                 # 키 그림
-CX, CY = 52.5, 42           # 보이는 영역(5..100, 0..95)의 가운데
+W = H = 112                 # 키 그림(보이는 곳 약 108×108, 오른쪽 위 기준)
+CX, CY = 58, 50           # 보이는 영역(5..100, 0..95)의 가운데
 IVORY = (246, 236, 210); BRASS = (214, 174, 98); BRASS_D = (120, 88, 40); RED = (230, 70, 50); GREEN = (120, 220, 120)
 
 def base():
-    im = Image.new('RGB', (W * S, H * S), (16, 14, 10))
+    im = Image.new('RGB', (W * S, H * S), (30, 32, 22))   # 디자인 시안과 같은 짙은 올리브 판 + 황동 테
     d = ImageDraw.Draw(im)
-    for r in range(70, 0, -2):  # 가운데가 살짝 밝은 검은 바탕
-        c = int(16 + (70 - r) * .35); d.ellipse([(CX - r) * S, (CY - r) * S, (CX + r) * S, (CY + r) * S], fill=(c, c - 2, c - 6))
-    R = 30   # 황동 링
+    d.rounded_rectangle([4 * S, 1 * S, (W - 1) * S, (H - 5) * S], radius=6 * S, outline=(150, 112, 52), width=3 * S)
+    R = 34   # 황동 링
     d.ellipse([(CX - R) * S, (CY - 4 - R) * S, (CX + R) * S, (CY - 4 + R) * S], outline=BRASS_D, width=6 * S // 2)
     d.ellipse([(CX - R + 2) * S, (CY - 4 - R + 2) * S, (CX + R - 2) * S, (CY - 4 + R - 2) * S], outline=BRASS, width=S * 2)
     return im, d
@@ -32,8 +31,8 @@ def base():
 def P(pts, dx=0, dy=0): return [((CX + x + dx) * S, (CY - 4 + y + dy) * S) for x, y in pts]
 
 def label(d, t):
-    f = kr(12 * S); w = d.textlength(t, font=f)
-    d.text(((CX * S) - w / 2, (CY + 28) * S), t, font=f, fill=IVORY)
+    f = kr(14 * S); w = d.textlength(t, font=f)
+    d.text(((CX * S) - w / 2, (CY + 32) * S), t, font=f, fill=IVORY)
 
 # 그림 그리는 함수들(가운데 기준 좌표, 반지름 약 20 안)
 def g_prev(d): d.rectangle(P([(-16, -12), (-12, 12)])[0] + P([(-12, 12)])[0], fill=IVORY); d.polygon(P([(14, -13), (14, 13), (-10, 0)]), fill=IVORY)
@@ -142,6 +141,24 @@ def side_images():
     out.append(im)
     return [o.resize((SW, SH), Image.LANCZOS) for o in out]
 
+# 사용자 디자인 시안(design.png)의 타일: 바깥 배경 없이 타일만 잘라 키에 꽉 차게
+DESIGN = os.path.join(HERE, 'design.png')
+D_COLS = [(42, 292), (312, 562), (582, 832), (852, 1102), (1121, 1371)]; D_ROWS = [(81, 337), (359, 615), (639, 895)]
+D_ORDER = ['prev', 'play', 'next', 'swap', 'mute', 'gps', 'map', 'radio', 'vis', 'all', 'rec', 'day', 'tmap', 'nmap', 'land']
+D_SIDE = [(83, 308), (347, 594), (632, 890)]
+def design_tiles():
+    if not os.path.exists(DESIGN): return {}, None
+    src = Image.open(DESIGN).convert('RGB'); out = {}
+    for i, a in enumerate(D_ORDER):
+        r, c = divmod(i, 5); (x0, x1), (y0, y1) = D_COLS[c], D_ROWS[r]
+        t = src.crop((x0, y0, x1, y1)).resize((108, 108), Image.LANCZOS)
+        im = Image.new('RGB', (W, H), (30, 32, 22)); im.paste(t, (W - 108, 0)); out[a] = im   # 보이는 곳(오른쪽 위 108×108)에 맞춤
+    sides = []
+    for y0, y1 in D_SIDE:
+        t = src.crop((1396, y0, 1583, y1)).resize((80, 96), Image.LANCZOS)
+        im = Image.new('RGB', (88, 104), (30, 32, 22)); im.paste(t, (88 - 80, 0)); sides.append(im)
+    return out, sides
+
 def save_jpg(im, path):
     im = im.rotate(90, expand=True)  # 장치가 시계 방향 90°로 보여 주므로 미리 반대로
     im.save(path, 'JPEG', quality=90, optimize=True)
@@ -149,15 +166,16 @@ def save_jpg(im, path):
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     keys = {}
+    dk, dside = design_tiles()
     for a in ACTS:
-        keys[a] = key_image(a); save_jpg(keys[a], os.path.join(OUT, 'act_%s.jpg' % a))
-    sides = side_images()
+        keys[a] = dk.get(a) or key_image(a); save_jpg(keys[a], os.path.join(OUT, 'act_%s.jpg' % a))
+    sides = dside or side_images()
     for i, im in enumerate(sides): save_jpg(im, os.path.join(OUT, 'side%d.jpg' % (i + 1)))
     # 미리보기: 기본 배치 15키 + 오른쪽 3칸(실제 보이는 부분만)
     order = ['prev', 'play', 'next', 'swap', 'mute', 'gps', 'map', 'radio', 'vis', 'all', 'rec', 'day', 'tmap', 'nmap', 'land']
-    pv = Image.new('RGB', (5 * 110 + 100, 3 * 110 + 20), (236, 236, 236))
+    pv = Image.new('RGB', (5 * 110 + 110, 3 * 110 + 20), (236, 236, 236))
     for i, a in enumerate(order):
-        r, c = divmod(i, 5); pv.paste(keys[a].crop((5, 0, 100, 95)), (15 + c * 110, 15 + r * 110))
-    for i, im in enumerate(sides): pv.paste(im.crop((8, 0, 80, 85)), (15 + 5 * 110 + 5, 15 + i * 110))
+        r, c = divmod(i, 5); pv.paste(keys[a].crop((4, 0, 112, 108)).resize((100, 100)), (15 + c * 110, 15 + r * 110))
+    for i, im in enumerate(sides): pv.paste(im.crop((8, 0, 88, 96)), (15 + 5 * 110 + 5, 15 + i * 110))
     pv.save(os.path.join(HERE, 'preview.png'))
     print('ok', len(keys), 'keys +', len(sides), 'side')
