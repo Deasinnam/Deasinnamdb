@@ -75,6 +75,7 @@
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
             android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize"
             android:supportsPictureInPicture="false"
             android:screenOrientation="fullUser">
             <intent-filter>

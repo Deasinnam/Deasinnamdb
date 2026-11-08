@@ -56,7 +56,7 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#pfdLevelQuick').isVisible(), true, 'Level button under the speed readout');
   assert.equal(await p.locator('.pfd-tool[data-role="level"]').isVisible(), false, 'Level button removed from the GPS row');
   { const b = await p.locator('#pfdLevelQuick').boundingBox(), c = await p.locator('#pfdHost .pfd-canvas-wrap').boundingBox();
-    assert.ok(b.x - c.x < 12 && b.y > c.y + c.height * .55, 'Sits on the left speed tape, below the readout'); }
+    assert.ok(b.x - c.x < 12 && b.y > c.y + c.height * .55, 'Sits on the left speed tape, below the readout ' + JSON.stringify([b, c])); }
   // 스페셜 2: 같은 배치 + 전투기 콕핏 외관, 원래 위 버튼 줄 컨트롤 모두 유지
   await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival7'; s.dispatchEvent(new Event('change')); });
   await p.waitForTimeout(300);

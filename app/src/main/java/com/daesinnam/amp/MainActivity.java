@@ -206,7 +206,7 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(true);
-        s.setTextZoom(100);
+        applyTextZoom(); // 1.47 시스템 글자 크기(접근성 글꼴 크기)를 그대로 따름 — 강제로 100% 고정하지 않음
         // TMAP 등 일부 지도 서버가 그림(타일)을 http로 보내도 표시되게 합니다(이미지 같은 수동 콘텐츠만 허용).
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
@@ -311,13 +311,25 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Android 15 이상에서는 화면이 상태바 아래까지 그려지므로, 시스템 바 높이만큼 여백을 줍니다. */
+    /** 1.47 시스템 글자 크기 → WebView 글자 배율. 아주 큰 배율(200% 초과)만 화면이 무너지지 않게 200%에서 멈춤 */
+    private void applyTextZoom() {
+        if (web == null) return;
+        float fs = getResources().getConfiguration().fontScale;
+        int z = Math.round(Math.max(0.85f, Math.min(2f, fs)) * 100);
+        if (web.getSettings().getTextZoom() != z) {
+            web.getSettings().setTextZoom(z);
+            web.evaluateJavascript("document.documentElement.style.setProperty('--fs'," + (z / 100f) + ");window.dispatchEvent(new Event('resize'))", null);
+        }
+    }
+
+    /** Android 15 이상에서는 화면이 상태바 아래까지 그려지므로, 시스템 바 높이만큼 여백을 줍니다. 1.47 키보드가 뜨면 키보드 높이만큼 아래 여백(입력창이 가려지지 않게) */
     private void applySystemBarPadding(View v) {
         v.setOnApplyWindowInsetsListener((view, insets) -> {
             int l, t, r, b;
             if (Build.VERSION.SDK_INT >= 30) {
                 Insets in = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                l = in.left; t = in.top; r = in.right; b = in.bottom;
+                Insets ime = insets.getInsets(WindowInsets.Type.ime());
+                l = in.left; t = in.top; r = in.right; b = Build.VERSION.SDK_INT >= 35 ? Math.max(in.bottom, ime.bottom) : in.bottom; // 15 이상은 창이 저절로 줄지 않아 직접 키보드 높이만큼
             } else {
                 l = insets.getSystemWindowInsetLeft(); t = insets.getSystemWindowInsetTop();
                 r = insets.getSystemWindowInsetRight(); b = insets.getSystemWindowInsetBottom();
@@ -697,6 +709,7 @@ public class MainActivity extends Activity {
     @Override
     public void onConfigurationChanged(@androidx.annotation.NonNull android.content.res.Configuration c) {
         super.onConfigurationChanged(c);
+        applyTextZoom();
         if (isInMultiWindowMode() || lastSplit) main.postDelayed(this::pushSplit, 200); // 가운데 막대를 끌어 비율이 바뀔 때
     }
 

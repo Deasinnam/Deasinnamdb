@@ -2537,3 +2537,143 @@ li.due .lst{color:#ff7a5c;font-weight:700}
 .vmode .vlyr.on{color:var(--accent,#ffb02a)}
 :root[data-cp][data-cks] .lyr-lines p{color:#efe3c48a}
 :root[data-cp][data-cks] .lyr-lines p.on{color:#fff6dd;text-shadow:0 0 14px #ffb02a66}
+
+/* ==========================================================================
+   1.47 반응형 공통 규칙 — 기기 이름이 아니라 실제 쓸 수 있는 화면 폭(CSS px)과 콘텐츠가 들어가는 최소 공간 기준
+   - 가로 넘침 없음: 칸이 모자라면 줄바꿈·열 수 변경·세로 배치, 세로 스크롤은 허용
+   - 터치 영역 48px: 실제 크기를 키우거나, 디자인을 지켜야 하는 작은 버튼은 보이지 않는 누름 영역을 넓힘(::after)
+   - 글자 확대(시스템 글자 크기) 대비: 고정 높이 대신 최소 높이, 중요한 글자는 말줄임 대신 줄바꿈
+   ========================================================================== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:hidden}
+img,video,canvas,svg{max-width:100%}
+img{height:auto;object-fit:contain}
+.cover img,.dv-art img,#dvArt img{object-fit:cover}
+:root{--hit:48px}
+
+/* 1) 누름 영역: 작은 아이콘 버튼은 모양은 그대로, 누름 영역만 48px까지 */
+:where(.wbtn,.vmode>button,.vmode>.vsel,.pfd-tool,.flt-btns>button,.rd-list li>button,.atcmini,.ckrail button,.cam-ctl .pill,.bri-b){position:relative}
+:where(.wbtn,.vmode>button,.pfd-tool,.flt-btns>button,.rd-list li>button,.atcmini,.bri-b)::after{content:"";position:absolute;pointer-events:auto;
+  top:min(0px,calc(50% - var(--hit)/2));bottom:min(0px,calc(50% - var(--hit)/2));left:min(0px,calc(50% - var(--hit)/2));right:min(0px,calc(50% - var(--hit)/2))}
+/* 설정·목록·선택 창의 버튼·입력칸은 실제 크기를 48px 이상으로 */
+:is(#settings,.skinpick,.carlog,#ordList,#deckMap,#hwMap,.permbox,#drive) :is(.pill,.sel,select,button:not(.wbtn):not(.lchk),input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),summary){min-height:var(--hit)!important;height:auto!important}
+:is(#settings,.skinpick,.carlog,#ordList,#deckMap,#hwMap) :is(.pill,button:not(.wbtn)){min-width:var(--hit)}
+#settings .set-card .pill,#settings .set-card .sel{line-height:1.2;padding-block:6px}
+#settings .set-card details>summary{min-height:var(--hit);display:flex;align-items:center}
+.lchk{width:var(--hit);height:var(--hit)}.lchk i{inset:9px}
+.lchk input:checked+i::after{left:9px;top:4px}
+
+/* 2) 창 제목줄: 자리가 모자라면 버튼이 화면 밖으로 밀리지 않고 다음 줄로 */
+.win>.bar{flex-wrap:wrap;row-gap:4px;height:auto!important;min-height:30px}
+.win>.bar>.t{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.win>.bar>.groove{flex:1 1 16px;min-width:8px}
+.win>.bar>:is(.wbtn,button,select,.sel){flex:none}
+
+/* 3) 상단 도구 줄(콕핏 스페셜): 숨은 가로 스크롤 대신 줄바꿈 */
+:root[data-cks] .tools{flex-wrap:wrap!important;overflow-x:visible!important}
+:root[data-cks] .tools .pill,:root[data-cks] .tools .sel{min-height:var(--hit)!important;height:auto!important;line-height:1.2!important;padding-block:6px!important}
+
+/* 4) 콕핏 바로가기 줄: 좁으면 4칸씩 두 줄(글자가 잘리지 않게) */
+@media (max-width:540px){
+  :root[data-ck2] .win.hasrail .ckrail{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible!important}
+  :root[data-ck2] .win.hasrail .ckrail .ckdiv{display:none}
+  :root[data-ck2] .win.hasrail .ckrail button{min-height:var(--hit)!important;max-height:none!important;font-size:11px!important;padding:4px 2px}
+  :root[data-ck2] .win.hasrail .ckrail button span,:root[data-ck2] .win.hasrail .ckrail button span[data-s]{white-space:normal!important;overflow:visible!important;font-size:11px!important;line-height:1.1;text-align:center;word-break:keep-all}
+  :root[data-ck2] .win.hasrail .ckrail button span[data-s]::after{content:none!important}
+  :root[data-ck2] .win.hasrail .ckrail button[data-open] em{display:block!important}
+}
+
+/* 5) 재생 버튼 줄(콕핏 스페셜 2): 좁으면 4칸씩 */
+@media (max-width:520px){
+  :root[data-cp][data-cks] #wMain .transport{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important}
+  :root[data-cp][data-cks] #wMain .transport .tb{min-width:0!important}
+}
+.transport .tb{min-height:var(--hit)}
+
+/* 6) 재생 화면 효과·가사 조작: 좁으면 줄바꿈, 화면 안에 */
+.vmode{flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 16px)}
+.vmode .vsel{min-width:0;max-width:100%}
+
+/* 7) 긴 글자: 중요한 이름·안내는 줄바꿈(말줄임 대신) */
+.set-card .row b,.set-card .row small,.logitems .lmain b,.npempty b,.npempty span,#lyrMsg{overflow-wrap:anywhere;word-break:keep-all}
+.set-card .row{flex-wrap:wrap}
+.set-card .row>span{flex:1 1 220px}
+.set-card .row>:is(.sel,select){max-width:100%!important;flex:1 1 180px}
+.set-card .row>:is(.pill,.permbtns,.cam-ctl){flex:0 1 auto;white-space:normal}
+.permbtns{display:flex;flex-wrap:wrap;gap:6px}
+#wGps>.bar .t{text-overflow:clip}
+
+/* 8) 설정 창: 너무 넓은 화면에서는 읽기 좋은 폭, 작은 화면에서는 꽉 차게 */
+.set-card{width:min(720px,100%)}
+@media (max-width:420px){#settings{padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}.set-card section{padding-inline:12px}}
+
+/* 9) 간편 모드: 아주 좁거나 글자가 크면 버튼이 화면 밖으로 나가지 않게 */
+#drive{overflow-y:auto;overflow-x:hidden}
+#drive :is(.dv-b,.dv-s,#dvClose){min-height:var(--hit)}
+#drive .dv-sub{flex-wrap:wrap}
+#drive .dv-top{flex-wrap:wrap;row-gap:8px}
+#drive .dv-top .pill{white-space:normal;line-height:1.15;min-height:var(--hit);height:auto}
+@media (max-width:520px){#drive .dv-mid{flex-direction:column;align-items:stretch}#drive .dv-art{width:min(46vw,30vh);align-self:center}}
+/* 1.47 PFD 빠른 버튼(수평 맞춤·테마·계기 스킨): 자리가 모자라면 계기 아래 한 줄 */
+:root[data-cks] .pfd-qrow{display:flex;gap:6px;margin:6px 2px 0}
+:root[data-cks] .pfd-qrow[hidden]{display:none}
+:root[data-cks] .pfd-qrow .pfd-levelq{position:static;flex:1 1 0;min-width:0;height:auto;min-height:var(--hit);white-space:normal;line-height:1.15;overflow:visible}
+.pfd-qrow:not(:root[data-cks] *){display:none}
+/* 좁은 화면에서는 PFD를 덜 납작하게(계기 숫자·자세 표시가 읽히는 높이) */
+@media (max-width:480px){:root[data-ck2]:not([data-split="grid"]) .app:not(.FX) #wGps:not(.sized) #pfdHost .pfd-canvas-wrap{aspect-ratio:1.05!important}}
+/* 1.47 기본 조작 요소 전체: 최소 48px 높이(모양은 그대로, 높이만 넉넉히) */
+:is(.pill,.sel,.tb,.tog,.seg button,.rd-key,.rd-sq,.vmode .vsel){min-height:var(--hit)}
+:where(.app,.top,#drive,#settings,.skinpick) :is(select,input[type=text],input[type=search],input[type=number],input[type=date],input[type=tel],input:not([type])){min-height:var(--hit)}
+.pill{height:auto;line-height:1.15}
+.pill:not(.wbtn){min-width:var(--hit)}
+.sw{min-height:0}
+:where(.pill,.sel,.tb){touch-action:manipulation}
+/* 1.47 플레이어 한 창(콕핏 스페셜 2): 창 폭이 600px보다 좁으면 [앨범|곡 정보] 위, 재생 표시창·재생 화면은 아래 전체 폭 */
+#wMain>.body{container-type:inline-size;container-name:wmain}
+@container wmain (max-width:600px){
+  :root[data-cp] .npmerge.one{grid-template-columns:clamp(84px,28cqi,140px) minmax(0,1fr)!important;grid-template-rows:auto auto auto!important;grid-template-areas:"cv tt" "lcd lcd" "vis vis"!important}
+  :root[data-cp] .npmerge.one .art>div:not(.cover):not(.npctl){align-self:center}
+  :root[data-cp] .npmerge.one .art .tt{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  :root[data-cp][data-cks] .npmerge.one .visbox{min-height:clamp(170px,52cqi,260px)}
+  .npmerge.one{grid-template-columns:clamp(84px,28cqi,140px) minmax(0,1fr);grid-template-areas:"cv tt" "lcd lcd" "vis vis"}
+}
+@container wmain (max-width:600px){.npmerge:not(.one){grid-template-columns:minmax(0,1fr)}.npmerge:not(.one) .art .cover{max-height:120px}}
+/* 1.47 재생 표시창: 좁으면(또는 글자가 크면) 시간 위, 곡 정보 아래 */
+@container wmain (max-width:420px){.lcd{grid-template-columns:minmax(0,1fr)!important}.lcd .timebox{justify-self:start}}
+/* 바로가기 이름: 글자가 커져도 칸 안에서 줄바꿈 */
+.ckrail button span{overflow-wrap:anywhere}
+/* PFD 위 비행 단계 표시: 좁으면 두 줄까지 */
+.flt-badge{max-width:calc(100% - 16px)}
+.flt-badge span,.flt-badge b{white-space:normal!important;overflow-wrap:anywhere}
+/* 1.47 조종 패널 머리줄: 좁으면 버튼이 밀려나지 않게(제목이 줄어들고 버튼은 그대로) */
+.dsn .console-header{flex-wrap:wrap;row-gap:6px}
+.dsn .console-header .brand-block{min-width:0;flex:1 1 140px}
+.dsn .console-header .brand-block h1{overflow-wrap:anywhere}
+.dsn .header-actions{flex:none;margin-left:auto}
+.dsn .header-btn{min-width:var(--hit)!important;min-height:var(--hit)!important}
+@container dsn (max-width:340px){.dsn .system-tag{display:none}}
+/* 작은 조작 요소 추가: 누름 영역 넓히기 */
+:where(.pfd-flight-meta button,#rdDn,#rdUp,.dc-h,.rd-seg button,.npctl .tb,.dsn .module button,.dsn .toggle,.dsn .guard-cover,#dkGuardCover,.clock>button){position:relative}
+:where(.pfd-flight-meta button,#rdDn,#rdUp,.dc-h,.npctl .tb,#dkGuardCover)::after{content:"";position:absolute;pointer-events:auto;
+  top:min(0px,calc(50% - var(--hit)/2));bottom:min(0px,calc(50% - var(--hit)/2));left:min(0px,calc(50% - var(--hit)/2));right:min(0px,calc(50% - var(--hit)/2))}
+.npctl .tb{min-width:var(--hit);min-height:var(--hit)}
+#rdPresetTg,#rdListTg,.rd-presets button,#rdPresets>button{min-height:var(--hit)}
+.logtop .lf.la{min-height:var(--hit)}
+/* 글자가 커지면 줄바꿈(잘리지 않게) */
+:root[data-ck2] .win.hasrail .ckrail button span{white-space:normal!important;overflow:visible!important;text-align:center;line-height:1.1}
+.dsn .pfd-tools.in-ctl>button.pfd-tool span,.pfd-tool span{white-space:normal!important;text-overflow:clip!important;overflow:visible!important;line-height:1.1}
+#bSwapT{white-space:normal!important;text-overflow:clip!important;overflow:visible!important}
+/* 보조 정보 말줄임: 눌러서 전체 보기(다시 누르면 접힘) */
+[data-full]{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;-webkit-line-clamp:unset!important;display:block}
+/* 1.47 화면 분할(TMAP·네이버 지도 옆) 중에는 계기를 크게: 빠른 버튼 줄 대신 아래 도구 줄의 [수평 맞춤] */
+:root[data-split] .pfd-qrow{display:none!important}
+:root[data-split][data-cks] .pfd-tool[data-role="level"]{display:inline-flex!important}
+:root[data-split] .win>.bar :is(.sel,.pill,select){min-height:0}
+#rdPrev,#rdPlay,#rdNext,#rdFav,#rdStby{min-height:var(--hit)!important}
+:root[data-ck2] .win.hasrail .ckrail button{min-height:var(--hit)!important;max-height:none!important}
+:where(.dsn .switch-btn,#dkWifiSwitch,#dkBtSwitch,#dkModeSwitch){position:relative}
+:where(#dkWifiSwitch,#dkBtSwitch,#dkModeSwitch)::after{content:"";position:absolute;pointer-events:auto;top:min(0px,calc(50% - var(--hit)/2));bottom:min(0px,calc(50% - var(--hit)/2));left:min(0px,calc(50% - var(--hit)/2));right:min(0px,calc(50% - var(--hit)/2))}
+.dsn .pfd-tools select.pfd-mode{min-height:44px}
+/* 분할 화면에서는 바로가기 줄을 낮게(계기를 크게), 대신 누름 영역은 48px까지 */
+:root[data-split] .win.hasrail .ckrail button,:root[data-split] .ckrail button{min-height:0!important}
+:root[data-split] .ckrail button::after{content:"";position:absolute;pointer-events:auto;top:min(0px,calc(50% - var(--hit)/2));bottom:min(0px,calc(50% - var(--hit)/2));left:0;right:0}

@@ -154,3 +154,11 @@ window.__back=()=>{
   const set=$('#settings');if(set&&!set.hidden){closeSettings();return true}
   const full=document.querySelector('#wCam.full');if(full){full.classList.remove('full');return true}
   return false};
+/* 1.47 키보드가 올라와 화면이 줄면, 지금 입력 중인 칸과 그 옆 확인 버튼이 보이게 가운데로 */
+window.addEventListener('resize',()=>{const a=document.activeElement;if(a&&a.matches&&a.matches('input:not([type=checkbox]):not([type=range]),textarea,select'))setTimeout(()=>{try{(a.closest('.row,.logfill,.logadd,.led,li,label')||a).scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}},120)});
+/* 1.47 말줄임(…)된 보조 정보는 눌러서 전체 보기 — 버튼·링크 안의 글자는 원래 동작 그대로 */
+document.addEventListener('click',e=>{let el=e.target;if(!(el instanceof Element)||el.closest('button,a,select,input,label,summary,[role=button],canvas'))return;
+  for(let i=0;i<3&&el&&el!==document.body;i++,el=el.parentElement){if(el.hasAttribute('data-full')){el.removeAttribute('data-full');return}
+    const cs=getComputedStyle(el);if(cs.textOverflow==='ellipsis'&&el.scrollWidth>el.clientWidth+1){el.setAttribute('data-full','');return}}},true);
+/* 말줄임된 글자에는 전체 내용을 툴팁(title)으로도 */
+setInterval(()=>{if(document.hidden)return;document.querySelectorAll('#atcLog li span,#cmpE,#cmpS,#clkDate,.rd-list li small,#rdName,#atcMini span,#wGps>.bar .t,.marquee').forEach(el=>{if(el.scrollWidth>el.clientWidth+1){if(el.title!==el.textContent)el.title=el.textContent.trim()}else if(el.title)el.removeAttribute('title')})},3000);

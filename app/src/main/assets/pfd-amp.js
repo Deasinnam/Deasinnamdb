@@ -212,15 +212,24 @@
     lk.addEventListener('click', e => { e.stopPropagation(); window.AmpPfdLook.set(isAf() ? 'airline' : 'airforce'); });
     wrapEl.appendChild(lk); lkSync();
     if (P.els && P.els.themeText && window.MutationObserver) new MutationObserver(thSync).observe(P.els.themeText, { childList: true, characterData: true, subtree: true });
+    // 1.47 자리가 모자라면(낮은 화면·큰 글자) 계기 위에 겹치지 않고 계기 아래 한 줄로 내려 놓음
+    const qrow = document.createElement('div'); qrow.className = 'pfd-qrow'; qrow.hidden = true; wrapEl.after(qrow);
     const place = () => {
       const r = wrapEl.getBoundingClientRect(), w = r.width, h = r.height; if (!w || !h) return;
       const cl = (v, a, b) => Math.max(a, Math.min(b, v)), fh = h - cl(h * .145, 43, 66), tape = cl(w * .12, 67, 175), boxH = cl(fh * .26, 78, 124);
-      const base = fh * .53 + boxH / 2 + 10, top = Math.min(fh - 80, base), three = fh - 120 >= base;
-      for (const [b, dy] of [[lv, 0], [th, 40]]) { b.style.left = '4px'; b.style.right = ''; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; }
+      const base = fh * .53 + boxH / 2 + 10, bh = Math.max(34, Math.ceil(parseFloat(getComputedStyle(lv).fontSize || '12') * 2.3)), gap = bh + 6;
+      const textW = Math.max(...[lv, th, lk].map(b => { const c = document.createElement('canvas').getContext('2d'); const cs = getComputedStyle(b); c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; return c.measureText(b.textContent).width + 12; }));
+      const flow = fh - base < gap * 2 || textW > tape - 8;
+      qrow.hidden = !flow; wrapEl.classList.toggle('qflow', flow);
+      if (flow) { for (const b of [lv, th, lk]) { if (b.parentElement !== qrow) qrow.appendChild(b); b.style.cssText = ''; } return; }
+      for (const b of [lv, th, lk]) if (b.parentElement !== wrapEl) wrapEl.appendChild(b);
+      const top = Math.min(fh - gap * 2, base), three = fh - gap * 3 >= base;
+      for (const [b, dy] of [[lv, 0], [th, gap]]) { b.style.left = '4px'; b.style.right = ''; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; b.style.height = bh + 'px'; }
       // 스킨 버튼: 자리가 넉넉하면 테마 아래, 낮은 화면이면 오른쪽 고도 칸 아래
-      if (three) { lk.style.left = '4px'; lk.style.right = ''; lk.style.top = (top + 80) + 'px'; } else { lk.style.left = ''; lk.style.right = '4px'; lk.style.top = top + 'px'; }
-      lk.style.width = (tape - 8) + 'px';
+      if (three) { lk.style.left = '4px'; lk.style.right = ''; lk.style.top = (top + gap * 2) + 'px'; } else { lk.style.left = ''; lk.style.right = '4px'; lk.style.top = top + 'px'; }
+      lk.style.width = (tape - 8) + 'px'; lk.style.height = bh + 'px';
     };
+    window.addEventListener('resize', () => setTimeout(place, 60));
     if (window.ResizeObserver) new ResizeObserver(place).observe(wrapEl); place();
   }
   applyTheme();
