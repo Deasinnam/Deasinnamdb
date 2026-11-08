@@ -19,7 +19,7 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
   const fin = v => typeof v === 'number' && Number.isFinite(v);
   const angleDelta = (a, b) => ((b - a + 540) % 360) - 180;
-  const EYE = 4, CRUISE = 380, TAN_G = Math.tan(3 * Math.PI / 180), VR = 5, VR_HI = 70, RW_W = 45, TD = 300;
+  const EYE = 4, CRUISE = 380, CLIMB_ALT = 240, CLIMB_PITCH = 6.5, CRUISE_PITCH = 1.4, BANK_MAX = 6.5, TAN_G = Math.tan(3 * Math.PI / 180), VR = 5, VR_HI = 70, RW_W = 45, TD = 300;
 
   /* ---------- 활주로 아스팔트 질감·타이어 자국, 구름 입체감(한 번 만들어 두고 재사용) ---------- */
   const srand = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -75,7 +75,7 @@
   const F = {
     phase: 'hold', alt: 0, pitch: 0, bank: 0, rwS: -120, rwLen: 3200, rwNum: 33, rolled: 0,
     rem: 0, D0: 0, K: 10, auto: false, autoRate: 0, vAuto: 0, slowT: 0, stopT: 0, tdAt: 0, liftAt: 0,
-    hdgPrev: null, lastT: 0, sim: null, v: 0, wz: 0, off: 0, rollT: 0, snow: 0, snowInit: false
+    hdgPrev: null, lastT: 0, sim: null, v: 0, wz: 0, off: 0, rollT: 0, snow: 0, snowInit: false, vs: 0, stillT: 0
   };
   const rwNumFor = hdg => { if (!fin(hdg)) return 33; const n = Math.round(((hdg % 360) + 360) % 360 / 10) % 36; return n === 0 ? 36 : n; };
   const pad2 = n => String(n).padStart(2, '0');
@@ -113,6 +113,7 @@
     const v = fin(vIn) ? vIn : 0;
     let vEff = F.auto ? F.vAuto : v;
     F.v = vEff;
+    F.vs += (vEff - F.vs) * clamp(dt * (vEff < F.vs ? .8 : 1.6), 0, 1); // 지면이 흐르는 빠르기: 멈출 때는 1~2초에 걸쳐 부드럽게 감속
     const rw0 = F.rwS;
     switch (F.phase) {
       case 'hold':
@@ -134,14 +135,18 @@
         break;
       }
       case 'climb': {
-        const rate = vEff > 3 ? clamp(4 + vEff * 0.33, 7, 40) : 0;
-        F.alt = Math.min(CRUISE, F.alt + rate * dt);
-        F.rwS -= vEff / 3.6 * 4 * dt;
-        if (F.alt >= CRUISE) F.phase = 'cruise';
+        // 이륙 후 10초 연출: 0~2초 기수 들기 → 2~6초 활주로가 빠르게 작아져 화면 아래로 빠짐(가까운 들판·길은 빠르게) → 6~10초 수평 회복, 지평선 안정 → CRUISE
+        const s = (now - F.liftAt) / 1000;
+        F.alt = Math.max(F.alt, CLIMB_ALT * (1 - Math.pow(1 - clamp(s / 9, 0, 1), 2)));
+        const boost = s < 1.4 ? 0 : s < 3 ? (s - 1.4) / 1.6 : s < 5.6 ? 1 : s < 7.2 ? 1 - (s - 5.6) / 1.6 : 0;
+        F.rwS -= (F.vs / 3.6 * 4 + boost * 950) * dt;
+        if (s >= 12 || (s >= 7.6 && F.rwS + F.rwLen < 0 && Math.abs(F.pitch - CRUISE_PITCH) < .9)) { F.phase = 'cruise'; F.stillT = 0; }
         break;
       }
       case 'cruise':
-        F.rwS -= vEff / 3.6 * 4 * dt;
+        F.alt += (CRUISE - F.alt) * clamp(dt * .05, 0, 1);       // 순항 중 아주 천천히 남은 높이까지
+        F.rwS -= F.vs / 3.6 * 4 * dt;                              // 차가 멈추면 지면 흐름도 서서히 멈춤
+        if (vEff < 2) F.stillT += dt; else F.stillT = 0;
         break;
       case 'approach': {
         if (!F.auto && v < 5) { F.slowT += dt; if (F.slowT > 3) { F.auto = true; F.autoRate = Math.max(F.rem / 8, 60); } }
@@ -173,8 +178,9 @@
     // 기수 각도(시각 효과)
     let tp = 0;
     const sinceLift = (now - F.liftAt) / 1000;
-    if (F.phase === 'climb') tp = sinceLift < 3 ? lerp(0, 11, clamp(sinceLift / 2.2, 0, 1)) : lerp(10, 3, clamp(F.alt / CRUISE, 0, 1));
-    else if (F.phase === 'cruise') tp = 1.2;
+    if (F.phase === 'climb') { const s = sinceLift, e = t => 1 - Math.pow(1 - clamp(t, 0, 1), 2);
+      tp = s < 1.8 ? lerp(0, CLIMB_PITCH, e(s / 1.5)) : s < 6 ? CLIMB_PITCH - (s - 1.8) * .12 : lerp(CLIMB_PITCH - .5, CRUISE_PITCH, e((s - 6) / 3.2)); }
+    else if (F.phase === 'cruise') tp = CRUISE_PITCH;
     else if (F.phase === 'approach') tp = F.alt > 14 ? -2.4 : lerp(3.6, -2.4, F.alt / 14);
     else if (F.phase === 'rollout') { const s = (now - F.tdAt) / 1000; tp = s < .35 ? -1.6 : s < 1.6 ? lerp(2.2, 0, (s - .35) / 1.25) : 0; }
     else if (F.phase === 'roll' && vEff > VR - 6) tp = 1.2;
@@ -182,9 +188,9 @@
     // 선회하면 날개가 기움(공중에서만)
     const hd = P.display && fin(P.display.headingDeg) && P.effective().valid ? P.display.headingDeg : null;
     let tb = 0;
-    if (hd !== null && F.hdgPrev !== null && dt > 0 && ['climb', 'cruise', 'approach'].includes(F.phase)) tb = clamp(angleDelta(F.hdgPrev, hd) / dt * 2.2, -25, 25);
+    if (hd !== null && F.hdgPrev !== null && dt > 0 && ['climb', 'cruise', 'approach'].includes(F.phase)) tb = clamp(angleDelta(F.hdgPrev, hd) / dt * 1.6, -BANK_MAX, BANK_MAX);
     F.hdgPrev = hd;
-    F.bank += (tb - F.bank) * clamp(dt * 1.4, 0, 1);
+    F.bank += (tb - F.bank) * clamp(dt * .9, 0, 1);               // 배경과 피치 눈금이 함께 최대 6.5°까지 부드럽게 기울어 숫자는 읽기 편하게
     renderBadge();
   }
 
@@ -200,6 +206,46 @@
   }
   const FIELD = ['#5f7d3c', '#6c8644', '#7f8f4b', '#53703a', '#8d9157', '#68824b', '#9a9a5e', '#4d6a36'];
   const C = { white: '255,240,210', amber: '255,184,80', green: '110,255,150', red: '255,64,52', blue: '80,140,255', strobe: '220,235,255' };
+
+  /* ---------- 순항 풍경: 굽은 강 하나 + 작은 마을 하나(공항을 벗어나면 나타남). 들판보다 천천히 흘러 깊이감 ---------- */
+  const RK = .55;                                                   // 강·마을이 흐르는 빠르기(들판 대비)
+  const riverX = Zw => -120 + 900 * Math.sin(Zw / 2100) + 380 * Math.sin(Zw / 700 + 1.3);
+  const VIL_P = 3600, HOUSES = Array.from({ length: 30 }, (_, i) => ({ dx: (srand(i + 300) - .5) * 520, dz: (srand(i + 340) - .5) * 460, w: 18 + srand(i + 380) * 16, d: 14 + srand(i + 420) * 12, hh: 9 + srand(i + 460) * 7, r: Math.floor(srand(i + 500) * 4) }));
+  const ROOF = [['#a4503f', '#7d3a2e'], ['#5f7486', '#455766'], ['#8f6343', '#6d4a31'], ['#b9b2a2', '#8f897b']];
+  function drawCountry(c, w, h, night, quality, f, Hc, zn, py, px, quad) {
+    const k = clamp((F.alt - 40) / 110, 0, 1); if (k < .01) return;
+    const wr = F.wz * RK, zEnd = 9000;
+    // 강: 모래 둑 → 물(먼 곳은 하늘빛을 받아 밝게) → 가운데 반짝임
+    const strip = (half, fill, a) => {
+      const L = [], R = []; for (let z = Math.max(zn, 2); z < zEnd; z = z * 1.07 + 6) { const X = riverX(z + wr), y = py(z); L.push([px(X - half, z), y]); R.push([px(X + half, z), y]); }
+      if (L.length < 2) return; c.globalAlpha = a; c.fillStyle = fill; c.beginPath(); c.moveTo(L[0][0], L[0][1]);
+      for (const p of L) c.lineTo(p[0], p[1]); for (let i = R.length - 1; i >= 0; i--) c.lineTo(R[i][0], R[i][1]); c.closePath(); c.fill();
+    };
+    if (!night) {
+      strip(110, '#b7ad86', .55 * k);
+      const g = c.createLinearGradient(0, 0, 0, h * .9); g.addColorStop(0, '#b9d0dc'); g.addColorStop(.12, '#7fa6bd'); g.addColorStop(1, '#3f6f8f'); strip(78, g, .95 * k);
+      strip(10, '#e4f0f6', .3 * k);
+    } else { strip(78, '#132232', .9 * k); strip(8, '#5a7aa055', .6 * k); }
+    // 마을: 강가에 지붕 스무 채 남짓 + 작은 종탑, 먼 것부터
+    const j0 = Math.floor((zn + wr - 1600) / VIL_P);
+    for (let j = j0 + 2; j >= j0; j--) {
+      const Zw = j * VIL_P + 1600, zc = Zw - wr; if (zc < zn * 1.5 || zc > 6500) continue;
+      const side = (j & 1) ? 1 : -1, xc = riverX(Zw) + side * 380;
+      const list = HOUSES.map(o => ({ ...o, z: zc + o.dz, x: xc + o.dx * (1 + srand(j) * .3) })).filter(o => o.z > zn * 1.2).sort((a, b) => b.z - a.z);
+      if (!night) { { const r0 = riverX(Zw); quad(Math.min(r0, xc), Math.max(r0, xc), zc - 3, zc + 3, '#d8d2bf', .8 * k); } quad(xc - 3, xc + 3, zc - 160, zc + 160, '#d8d2bf', .7 * k); }
+      for (const o of list) {
+        const s = f / o.z, gy = py(o.z), X0 = px(o.x - o.w / 2, o.z), Wd = o.w * s, Hh = o.hh * s; if (Wd < .6) continue;
+        if (night) { c.globalAlpha = .85 * k; c.fillStyle = '#ffc874'; c.fillRect(X0 + Wd * .35, gy - Hh * .7, Math.max(1, Wd * .25), Math.max(1, Hh * .3)); continue; }
+        const [r1, r2] = ROOF[o.r];
+        c.globalAlpha = k; c.fillStyle = '#00000030'; c.fillRect(X0 + Wd * .15, gy - 1, Wd, Math.max(1, Hh * .25));      // 그림자
+        c.fillStyle = '#e9e2d2'; c.fillRect(X0, gy - Hh, Wd, Hh);                                                            // 벽
+        quad(o.x - o.w / 2 - .6, o.x, o.z - o.d, o.z, r1, k); quad(o.x, o.x + o.w / 2 + .6, o.z - o.d, o.z, r2, k);           // 지붕(위에서 내려다본 두 쪽)
+        c.fillStyle = r2; c.beginPath(); c.moveTo(X0 - .6 * s, gy - Hh); c.lineTo(X0 + Wd / 2, gy - Hh - o.w * .35 * s); c.lineTo(X0 + Wd + .6 * s, gy - Hh); c.closePath(); c.fill();
+      }
+      if (!night) { const zt = zc + 20, s = f / zt, gy = py(zt), X = px(xc + 10, zt); if (zt > zn * 1.2 && s > .02) { c.globalAlpha = k; c.fillStyle = '#efe9da'; c.fillRect(X - 6 * s, gy - 40 * s, 12 * s, 40 * s); c.fillStyle = '#6a3a2c'; c.beginPath(); c.moveTo(X - 8 * s, gy - 40 * s); c.lineTo(X, gy - 58 * s); c.lineTo(X + 8 * s, gy - 40 * s); c.closePath(); c.fill(); } }
+    }
+    c.globalAlpha = 1;
+  }
 
   /* ---------- 공항 그리기(지평선 기준 좌표, 아래가 +) ---------- */
   function drawAirport(c, w, h, night, quality) {
@@ -232,6 +278,7 @@
       for (const rx of [-1310, 870, 2590]) quad(rx - 6, rx + 6, zn, 11000, '#8b8b84', fA * .9);
       for (let j = Math.floor((zn + F.wz) / 2240); j < Math.floor((zn + F.wz) / 2240) + 6; j++) { const z = j * 2240 - F.wz + 1100; quad(-3800, 3800, z - 5, z + 5, '#8b8b84', fA * .8); }
     }
+    drawCountry(c, w, h, night, quality, f, Hc, zn, py, px, quad);
     if (gA > .01) {
       let g = c.createLinearGradient(0, 0, 0, h * 2.6);
       if (night) {
@@ -571,14 +618,14 @@
     let b = '', s = '';
     if (ph === 'hold') { if (H.atcDone) { b = 'LINE UP · ' + rw; s = '이륙 허가 · 속도를 내면 이륙해요'; } else { b = 'HOLD · ' + rw; s = '관제탑 이륙 허가 대기 중'; } }
     else if (ph === 'roll') { b = F.rolled >= 90 ? 'V1 · ROTATE' : 'TAKEOFF ROLL'; s = '이륙 활주 · ' + Math.round(F.v) + ' km/h'; }
-    else if (ph === 'climb') { b = 'CLIMB'; s = '상승 중 · ' + Math.round(F.alt) + ' m'; }
-    else if (ph === 'cruise') { b = 'CRUISE'; s = '순항 · 도착이 가까우면 착륙을 누르세요'; }
+    else if (ph === 'climb') { b = 'CLIMB · 상승 중'; }                     // 단계만(고도 숫자는 오른쪽 GPS 고도와 헷갈리지 않게 빼 둠)
+    else if (ph === 'cruise') { b = F.stillT > 3 ? '순항 중 · 정차' : 'CRUISE · 순항'; }
     else if (ph === 'approach') { b = (F.alt < 14 ? 'FLARE · ' : 'APPROACH · ') + rw; s = (F.auto ? '자동 착륙 · ' : '활주로까지 ') + (F.rem >= 1000 ? (F.rem / 1000).toFixed(1) + ' km' : Math.round(F.rem) + ' m') + ' · 고도 ' + Math.round(F.alt) + ' m'; }
     else if (ph === 'rollout') { b = 'TOUCHDOWN · ' + rw; s = '착륙 · 감속 중'; }
     else if (ph === 'landed') { b = 'ARRIVED · ' + rw; s = '목적지에 도착했어요'; }
     const txt = ph + '|' + b + '|' + s + '|' + !!F.sim;
     if (txt === lastTxt) return; lastTxt = txt;
-    const bd = ui.firstChild; bd.dataset.ph = ph; bd.children[1].textContent = b; bd.children[2].textContent = s;
+    const bd = ui.firstChild; bd.dataset.ph = ph; bd.children[1].textContent = b; bd.children[2].textContent = s; bd.classList.toggle('mini', !s);
     ui.querySelector('.flt-land').hidden = !(ph === 'cruise' || ph === 'climb');
     ui.querySelector('.flt-ga').hidden = ph !== 'approach';
     const sb = ui.querySelector('.flt-sim'); sb.classList.toggle('on', !!F.sim); sb.textContent = F.sim ? '시연 끝' : '시연';
@@ -636,7 +683,7 @@
   setInterval(() => { if (F.sim && document.hidden === false) simStep(); }, 100);
 
   window.AmpFlight = {
-    get state() { return { snow: F.snow, wx: wxKind(), phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
+    get state() { return { vs: F.vs, still: F.stillT, snow: F.snow, wx: wxKind(), phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
     step(sec, v) { const n = Math.max(1, Math.round(sec / .05)); let t = performance.now() + F.off; F.lastT = t; for (let i = 0; i < n; i++) { t += 50; update(t, v); } F.off += n * 50; renderBadge(true); return this.state; },
     land, goAround, sim, redraw() { try { P.draw(); } catch (e) {} }
   };

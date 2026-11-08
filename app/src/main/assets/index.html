@@ -75,12 +75,12 @@
   <button data-f="all" class="on"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg><span>전체</span></button>
   <button data-f="gps"><svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 0 0-9 9 9 9 0 0 0 2.2 5.9l1.5-1.3A7 7 0 1 1 19 13a7 7 0 0 1-1.7 4.6l1.5 1.3A9 9 0 0 0 12 4zm4.2 4.4-5.4 4.1a1.6 1.6 0 1 0 2.2 2.2z"/></svg><span data-s="속도계">스피드미터</span></button>
   <button data-f="map"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zm0 2.2 6 2v11.6l-6-2z"/></svg><span>지도</span></button>
-  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span data-s="CAM">DASHCAM</span></button>
   <button data-f="radio"><svg viewBox="0 0 24 24"><path d="M4 8h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zm2.5-1L17 3l.7 1.8L9.6 8zM8 11a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm7 1v1.6h4V12zm0 3v1.6h4V15z"/></svg><span>라디오</span></button>
   <button data-f="vis"><svg viewBox="0 0 24 24"><path d="M3 20h2V10H3zm4 0h2V4H7zm4 0h2v-7h-2zm4 0h2V7h-2zm4 0h2v-4h-2z"/></svg><span>NOW<br>PLAYING</span></button>
   <i class="ckdiv" aria-hidden="true"></i>
   <button data-open="tmap" title="TMAP 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2 4 21l8-4 8 4z"/></svg><span>T맵<em>▼ 아래</em></span></button>
   <button data-open="nmap" title="네이버 지도 열기: 누르면 위/아래 고르기, 길게 누르면 바로 열기"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 4.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg><span data-s="네이버">네이버지도<em>▼ 아래</em></span></button>
+  <button data-f="cam"><svg viewBox="0 0 24 24"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm5 2.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span data-s="CAM">DASHCAM</span></button>
 </nav>
 <div class="skinpick bripick" id="briPick" role="dialog" aria-label="화면 밝기" hidden><b>화면 밝기</b>
   <div class="bri-row"><button type="button" class="pill" id="briPDn" aria-label="낮추기">−</button><input type="range" id="briRange" min="10" max="100" step="5" value="60" aria-label="밝기"><button type="button" class="pill" id="briPUp" aria-label="올리기">＋</button></div>
@@ -108,7 +108,7 @@
 </div></div>
 <div class="navpick" id="navPick" role="dialog" aria-label="지도 앱 열 위치" hidden><b></b><button class="pill" data-at="top">▲ 위에 열기</button><button class="pill" data-at="bottom">▼ 아래에 열기</button><small>길게 누르면 고른 위치로 바로 열려요 · 가로 화면에서는 옆에 붙어요</small></div>
 <main class="app" id="app">
-  <div class="camsign" id="camSign" hidden role="status" aria-live="polite"><div class="cs-sign"><b id="camLim">50</b></div><div class="cs-txt"><small>과속 카메라</small><b id="camDist">전방 500m</b></div></div>
+  <div class="camsign" id="camSign" hidden role="status" aria-live="polite"><div class="cs-in"><div class="cs-head"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="30" height="20" rx="3"/><circle cx="17" cy="19" r="6"/><circle cx="17" cy="19" r="2.4"/><path d="M36 14l7-3v16l-7-3"/><path d="M21 29v6M21 35l-9 9M21 35l9 9M21 35v9"/></svg><span>과속 카메라</span></div><b class="cs-num" id="camLim">50</b><span class="cs-unit">km/h</span><b class="cs-dist" id="camDist">전방 500m</b></div></div>
   <div class="recbadge" id="recBadge" hidden role="status" aria-label="주행 녹화 중"><i></i><b>REC</b><span>00:00:00</span></div>
   <section class="win" id="wGps">
     <div class="bar"><span class="t">Speedometer</span><span class="s" id="gSrc"></span><select class="sel gsbar" id="gStyleBar" aria-label="속도계 디자인"><option value="cockpit">콕핏 PFD</option><option value="carbon">카본 세그먼트</option><option value="neon">네온 링</option><option value="classic">클래식 아날로그</option><option value="minimal">미니멀 디지털</option><option value="tactical">택티컬 그린</option><option value="walk">뚜벅이 모드</option></select><span class="groove"></span><button class="wbtn rzbtn" id="gRz" aria-pressed="false" aria-label="창 크기 조절 켜기" title="창 크기 조절"><svg viewBox="0 0 10 10"><path d="M5 0 8 3H6v4h2l-3 3-3-3h2V3H2z"/></svg></button><button class="wbtn" data-col="wGps" aria-label="접기"><svg viewBox="0 0 10 10"><rect y="7" width="10" height="2"/></svg></button></div>
@@ -346,6 +346,7 @@
         <button class="tb" id="bPause" aria-label="일시정지"><svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></button>
         <button class="tb" id="bStop" aria-label="정지"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/></svg></button>
         <button class="tb" id="bNext" aria-label="다음 곡"><svg viewBox="0 0 24 24"><path d="M16 5h3v14h-3zM4 5v14l11-7z"/></svg></button>
+        <button class="tb swap" id="bSwap" aria-label="음악 앱으로 전환" title="라디오 ↔ 듣던 음악 앱(YouTube Music·Spotify) 전환"><svg viewBox="0 0 24 24"><path d="M4 8h12.2l-3-3L14.6 3.6 20 9l-5.4 5.4-1.4-1.4 3-3H4zm16 8H7.8l3 3-1.4 1.4L4 15l5.4-5.4 1.4 1.4-3 3H20z"/></svg><span class="kt" id="bSwapT">음악 앱</span></button>
         <button class="tb eject" id="bEject" aria-label="파일 열기"><svg viewBox="0 0 24 24"><path d="M12 4l8 9H4zM4 16h16v3H4z"/></svg></button>
       </div>
       <div class="subrow">

@@ -14,7 +14,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.equal(await pc2.locator('#ckRail').isVisible(), true);
       assert.equal(await pc2.locator('#wGps #pfdHost .pfd-glass + #ckRail').count(), 1, 'Rail sits right under the speedometer view');
       assert.equal(await pc2.locator('#wGps #pfdHost canvas').isVisible(), true, 'Cockpit PFD in cockpit 2');
-      assert.deepEqual(await pc2.locator('#ckRail button[data-f]').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','cam','radio','vis'], 'Six view buttons (with NOW PLAYING)');
+      assert.deepEqual(await pc2.locator('#ckRail button[data-f]').evaluateAll(bs => bs.map(b => b.dataset.f)), ['all','gps','map','radio','vis','cam'], 'Six view buttons (with NOW PLAYING)');
       assert.deepEqual(await pc2.locator('#ckRail button[data-open]').evaluateAll(bs => bs.map(b => b.dataset.open)), ['tmap','nmap'], 'TMAP / Naver Map open-below buttons');
       for (const sel of ['#ckRail [data-open="tmap"]', '#ckRail [data-open="nmap"]']) {
         const b = await pc2.locator(sel).boundingBox(), r = await pc2.locator('#ckRail').boundingBox();

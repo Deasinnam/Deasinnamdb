@@ -1,5 +1,5 @@
 // 과속 카메라 안내: 지도 자료(OpenStreetMap, 주변 자동) + 공공데이터 CSV(전국, 직접 불러오기)
-// 진행 방향 앞쪽 카메라를 찾아 음성("전방 500미터 앞에 50킬로 과속 카메라가 있습니다")과 빨간 제한 속도 표지판으로 알림.
+// 진행 방향 앞쪽 카메라를 찾아 짧은 음성("500미터 앞 단속 카메라, 50이에요")과 화면 전체 빨간 제한 속도로 알림.
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 (function(){
   const camOn=()=>store.get('camOn',true)!==false;
@@ -30,7 +30,11 @@
   function statUi(){const el=$('#sCamStat');if(!el)return;const a=loadDb().length;el.textContent=(a?'공공데이터 '+a.toLocaleString()+'곳':'공공데이터 없음')+' · 지도 자료 주변 '+osm.length+'곳'+(osmAt?'':' (GPS·인터넷 연결 후 받음)')}
   /* 안내: 진행 방향 ±35° 안, 1.2km 이내에서 가장 가까운 카메라 */
   const told=new Map();let cur=null,lastSay=0;
-  function say(t){try{if(NB&&NB.speak){NB.speak(t);return}}catch(e){}try{const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';speechSynthesis.speak(u)}catch(e){}}
+  // 말은 짧게, 사람이 옆에서 알려 주듯: "500미터 앞 단속 카메라, 50이에요." / "속도 줄이세요."
+  const sayFar=(m,lim)=>m+'미터 앞 단속 카메라'+(lim?', '+lim+'이에요.':'예요.'),SAY_NEAR='속도 줄이세요.';
+  function say(t){try{if(NB&&NB.speakCam){NB.speakCam(t);return}if(NB&&NB.speak){NB.speak(t);return}}catch(e){}
+    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=1.08;u.pitch=1.02;
+      const v=(speechSynthesis.getVoices()||[]).filter(x=>/^ko/i.test(x.lang));const nat=v.find(x=>/natural|neural|online|google/i.test(x.name))||v[0];if(nat)u.voice=nat;speechSynthesis.speak(u)}catch(e){}}
   function ding(){try{const a=fx();if(!a)return;const t=a.currentTime;[0,.16].forEach((dt,i)=>{const o=a.createOscillator();o.type='sine';o.frequency.value=i?1320:990;const g=fxEnv(a,t+dt,.16,.005,.18);o.connect(g).connect(a.destination);o.start(t+dt);o.stop(t+dt+.25)})}catch(e){}}
   function nearAll(lat,lon){const out=[];for(const src of [loadDb(),osm])for(const c of src){if(Math.abs(c[0]-lat)>.012||Math.abs(c[1]-lon)>.016)continue;const d=dist(lat,lon,c[0],c[1]);if(d<1300)out.push({c,d})}
     out.sort((a,b)=>a.d-b.d);const uniq=[];for(const o of out)if(!uniq.some(u=>dist(u.c[0],u.c[1],o.c[0],o.c[1])<35))uniq.push(o);return uniq}
@@ -40,8 +44,8 @@
     show(best?{lim:best.c[2],d:best.d,over:best.c[2]&&spd>best.c[2]+2}:null,spd);
     if(!best)return;const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{};
     const lim=best.c[2],m=Math.max(100,Math.round(best.d/100)*100);
-    if(!st.far&&best.d<=650){st.far=true;ding();say('전방 '+m+'미터 앞에 '+(lim?lim+'킬로 ':'')+'과속 카메라가 있습니다.')}
-    if(!st.near&&best.d<=180&&lim&&spd>lim+2){st.near=true;say('과속 카메라 앞입니다. 속도를 '+lim+'킬로 이하로 줄이세요.')}
+    if(!st.far&&best.d<=650){st.far=true;ding();say(sayFar(m,lim))}
+    if(!st.near&&best.d<=180&&lim&&spd>lim+2){st.near=true;say(SAY_NEAR)}
     st.t=Date.now();told.set(key,st);if(told.size>200)for(const [k,v] of told)if(Date.now()-v.t>6e5)told.delete(k)}
   function show(o,spd){const el=$('#camSign');if(!o){el.hidden=true;document.documentElement.removeAttribute('data-cam');return}
     el.hidden=false;document.documentElement.setAttribute('data-cam','1');$('#camLim').textContent=o.lim||'!';$('#camDist').textContent='전방 '+(o.d>=1000?(o.d/1000).toFixed(1)+'km':Math.round(o.d/10)*10+'m');el.classList.toggle('over',!!o.over)}
@@ -55,8 +59,8 @@
   function demo(){demoT.forEach(clearTimeout);demoT=[];const el=$('#camSign');el.classList.add('demo');demoOn=true;
     const steps=[[0,600,false],[1200,500,false],[2400,400,false],[3600,300,true],[4800,200,true],[5800,150,true],[6800,80,true]];
     steps.forEach(([t,d,over])=>demoT.push(setTimeout(()=>show({lim:50,d,over},70),t)));
-    demoT.push(setTimeout(()=>{ding();say('전방 600미터 앞에 50킬로 과속 카메라가 있습니다.')},0));
-    demoT.push(setTimeout(()=>{try{sndAlarm()}catch(e){}say('과속 카메라 앞입니다. 속도를 50킬로 이하로 줄이세요.')},5800));
+    demoT.push(setTimeout(()=>{ding();say(sayFar(600,50))},0));
+    demoT.push(setTimeout(()=>{try{sndAlarm()}catch(e){}say(SAY_NEAR)},5800));
     demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},8600))}
   $('#sCamDemo').onclick=e=>{e.preventDefault();e.stopPropagation();demo()};
   statUi();

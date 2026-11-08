@@ -138,6 +138,12 @@
   const oTape = P.drawTape.bind(P);
   P.drawTape = function (c, x, y, w, h, kind, value, known) {
     oTape(c, x, y, w, h, kind, value, known);
+    { // 칸 이름: 실제 주행 정보임을 분명히(왼쪽 '주행 속도', 오른쪽 'GPS 고도') — 비행 연출 고도와 구분
+      const af0 = this.settings.skin === 'airforce', g0 = c.createLinearGradient(x, 0, x + w, 0); g0.addColorStop(0, af0 ? '#03140d' : '#111e14'); g0.addColorStop(1, af0 ? '#061e13' : '#1b2a1b');
+      c.save(); c.fillStyle = g0; c.fillRect(x, y, w, 28); let fs0 = Math.max(10, Math.min(15, w * .15)); c.font = '700 ' + fs0 + 'px "Noto Sans KR",Arial,sans-serif';
+      const lb = kind === 'speed' ? '주행 속도' : 'GPS 고도', tw0 = c.measureText(lb).width; if (tw0 > w - 6) { fs0 *= (w - 6) / tw0; c.font = '700 ' + fs0 + 'px "Noto Sans KR",Arial,sans-serif'; }
+      c.fillStyle = '#b4f49f'; c.textAlign = 'center'; c.textBaseline = 'top'; c.fillText(lb, x + w / 2, 9); c.restore();
+    }
     if (!document.documentElement.hasAttribute('data-cks')) return;
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), af = this.settings.skin === 'airforce', isSpeed = kind === 'speed', cy = h * .53;
     const boxH = clamp(h * .26, 78, 124), inset = 3, tip = 14;

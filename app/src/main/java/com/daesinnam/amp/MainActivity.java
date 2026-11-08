@@ -932,6 +932,19 @@ public class MainActivity extends Activity {
         withTts(() -> tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "atc"));
     }
 
+    // 과속 카메라 안내: 옆 사람이 말하듯 조금 빠르고 밝게(이 문장에만 적용, 관제탑 목소리는 그대로)
+    private void speakCam(String text) {
+        withTts(() -> {
+            tts.setSpeechRate(1.1f);
+            tts.setPitch(1.03f);
+            Bundle b = new Bundle();
+            b.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, android.media.AudioManager.STREAM_MUSIC);
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, b, "cam");
+            tts.setSpeechRate(1.0f);
+            tts.setPitch(0.96f);
+        });
+    }
+
     private java.io.File ttsDir() {
         java.io.File d = new java.io.File(getCacheDir(), "tts");
         if (!d.exists()) d.mkdirs();
@@ -2141,6 +2154,11 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void speak(final String text) {
             main.post(() -> MainActivity.this.speak(text));
+        }
+
+        @JavascriptInterface
+        public void speakCam(final String text) {
+            main.post(() -> MainActivity.this.speakCam(text));
         }
 
         // ---------- D1 DASHCAM

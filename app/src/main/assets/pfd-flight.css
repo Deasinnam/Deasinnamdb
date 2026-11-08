@@ -21,3 +21,8 @@
 .flt-btns button[hidden]{display:none}
 @media (max-width:600px){.flt-badge{top:40px;max-width:60%}.flt-btns{top:auto;bottom:calc(clamp(43px,14.5%,66px) + 8px)}.flt-btns button{height:34px;min-width:54px;font-size:14px}}
 #pfdHost .pfd-canvas-wrap{position:relative}
+.flt-badge.mini{grid-template-columns:auto auto;padding:5px 12px 5px 10px;border-radius:99px;max-width:none}
+.flt-badge.mini i{grid-row:auto}
+.flt-badge.mini span{display:none}
+.flt-badge.mini b{font-family:"Barlow Condensed","Noto Sans KR",sans-serif;letter-spacing:.08em;font-size:clamp(12px,1.3vw,16px)}
+.flt-badge.mini[data-ph="cruise"]{border-color:#2b4a5c;background:#03101acc}

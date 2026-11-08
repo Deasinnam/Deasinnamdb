@@ -144,8 +144,14 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
       await pf.evaluate(() => AmpFlight.step(1.5, 30));
       assert.ok(await pf.evaluate(() => AmpFlight.state.pitch) > 3, 'Nose up while climbing '+JSON.stringify(await pf.evaluate(() => AmpFlight.state)));
       assert.equal(await pf.locator('.flt-land').isVisible(), true, 'Land button while airborne');
+      assert.equal(await pf.locator('.flt-badge').textContent(), 'CLIMB · 상승 중', 'Climb shows only the stage');
       await pf.evaluate(() => AmpFlight.step(30, 80));
       assert.equal(await ph(), 'cruise');
+      assert.equal(await pf.locator('.flt-badge').textContent(), 'CRUISE · 순항');
+      assert.ok(Math.abs(await pf.evaluate(() => AmpFlight.state.bank)) <= 6.6, 'Gentle bank only');
+      await pf.evaluate(() => AmpFlight.step(6, 0));
+      assert.ok(await pf.evaluate(() => AmpFlight.state.vs) < 5, 'Ground flow slows down when the car stops');
+      assert.equal(await pf.locator('.flt-badge').textContent(), '순항 중 · 정차');
       const img1 = await pf.evaluate(() => {AmpFlight.redraw();return document.querySelector('#pfdHost canvas').toDataURL()});
       assert.notEqual(img0, img1, 'Runway view differs from cruise view');
       await pf.locator('.flt-land').click();
