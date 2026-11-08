@@ -2677,3 +2677,24 @@ img{height:auto;object-fit:contain}
 /* 분할 화면에서는 바로가기 줄을 낮게(계기를 크게), 대신 누름 영역은 48px까지 */
 :root[data-split] .win.hasrail .ckrail button,:root[data-split] .ckrail button{min-height:0!important}
 :root[data-split] .ckrail button::after{content:"";position:absolute;pointer-events:auto;top:min(0px,calc(50% - var(--hit)/2));bottom:min(0px,calc(50% - var(--hit)/2));left:0;right:0}
+/* 1.50 PFD 원형 지도(왼쪽 아래, 속도 칸 오른쪽·나침반 위) */
+.pfd-mini{--pm-d:clamp(96px,min(calc(var(--pfd-h,300px) * .34),calc(var(--pfd-w,600px) * .24)),200px);position:absolute;z-index:4;left:calc(var(--pfd-tape,70px) + 10px);bottom:calc(var(--pfd-cmp,50px) + 10px);width:var(--pm-d);height:var(--pm-d)}
+.pfd-mini .pm-ring{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#0d0c08;
+  box-shadow:0 0 0 2px #0a0906,0 0 0 4px #b08d4a,0 0 0 5px #2a2312,0 4px 12px #000c,inset 0 0 18px #000;isolation:isolate}
+.pfd-mini .pm-map{position:absolute;left:50%;top:50%;width:142%;height:142%;transform:translate(-50%,-50%);transition:transform .35s linear;
+  filter:grayscale(1) invert(1) sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(.92) contrast(1.15)}
+.pfd-mini .pm-map .leaflet-container,.pfd-mini .pm-map{background:#0d0c08}
+.pfd-mini .pm-me{position:absolute;left:50%;top:50%;width:18px;height:22px;margin:-12px 0 0 -9px;z-index:5;
+  background:conic-gradient(from 150deg at 50% 70%,#fff 0 60deg,transparent 0);clip-path:polygon(50% 0,100% 100%,50% 78%,0 100%);filter:drop-shadow(0 0 3px #000) drop-shadow(0 0 2px #3fd8ff);background:#e9fbff}
+.pfd-mini .pm-n{position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;z-index:6;display:grid;place-items:center;border-radius:50%;
+  font:800 11px/1 Arial,sans-serif;color:#111;background:#f2e6c8;box-shadow:0 0 0 1px #000;transition:transform .35s linear}
+.pfd-mini .pm-msg{position:absolute;inset:0;display:none;place-items:center;z-index:6;font:700 13px/1 Arial,sans-serif;color:#cdbf98;letter-spacing:.1em;background:#0d0c08cc}
+.pfd-mini.nofix .pm-msg{display:grid}
+.pfd-mini .pm-x{position:absolute;right:-4px;top:-4px;z-index:7;min-width:26px;height:26px;padding:0 6px;border-radius:13px;border:1px solid #000;background:#2a2c1c;color:#efe3c4;font:700 14px/1 Arial,"Noto Sans KR",sans-serif;box-shadow:0 0 0 1px #b08d4a99,0 2px 4px #000a}
+.pfd-mini .pm-x::after{content:"";position:absolute;inset:-11px}
+.pfd-mini.off{width:auto;height:auto}
+.pfd-mini.off .pm-ring{display:none}
+.pfd-mini.off .pm-x{position:static;height:34px;padding:0 12px;font-size:13px;border-radius:7px;opacity:.85}
+.pfd-mini.tiny:not(.off){display:none}
+.pfd-mini .leaflet-control-container{display:none}
+:root[data-split] .pfd-mini{display:none}

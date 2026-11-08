@@ -217,6 +217,7 @@
     const place = () => {
       const r = wrapEl.getBoundingClientRect(), w = r.width, h = r.height; if (!w || !h) return;
       const cl = (v, a, b) => Math.max(a, Math.min(b, v)), fh = h - cl(h * .145, 43, 66), tape = cl(w * .12, 67, 175), boxH = cl(fh * .26, 78, 124);
+      wrapEl.style.setProperty('--pfd-tape', tape + 'px'); wrapEl.style.setProperty('--pfd-cmp', (h - fh) + 'px'); wrapEl.style.setProperty('--pfd-h', fh + 'px'); wrapEl.style.setProperty('--pfd-w', w + 'px');
       const base = fh * .53 + boxH / 2 + 10, bh = Math.max(34, Math.ceil(parseFloat(getComputedStyle(lv).fontSize || '12') * 2.3)), gap = bh + 6;
       const textW = Math.max(...[lv, th, lk].map(b => { const c = document.createElement('canvas').getContext('2d'); const cs = getComputedStyle(b); c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; return c.measureText(b.textContent).width + 12; }));
       const flow = fh - base < gap * 2 || textW > tape - 8;

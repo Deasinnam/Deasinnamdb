@@ -9,3 +9,4 @@ node_modules/
 *.jks
 *.p12
 signing/
+app/src/main/assets/leaflet/
