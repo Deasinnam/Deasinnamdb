@@ -147,3 +147,10 @@ function gpsRz(on){winRz($('#wGps'),on)}
 const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
 
+/* 1.45 폰의 뒤로 가기: 열린 창(설정·선택 창·대화상자·전체 화면)을 위에서부터 하나 닫고 true. 닫을 게 없으면 false → 원래대로 앱 뒤로 */
+window.__back=()=>{
+  const dl=[...document.querySelectorAll('dialog[open]')].pop();if(dl){try{dl.close()}catch(e){dl.removeAttribute('open')}return true}
+  const pick=[...document.querySelectorAll('.skinpick:not([hidden])')].pop();if(pick){pick.hidden=true;return true}
+  const set=$('#settings');if(set&&!set.hidden){closeSettings();return true}
+  const full=document.querySelector('#wCam.full');if(full){full.classList.remove('full');return true}
+  return false};

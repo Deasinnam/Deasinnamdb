@@ -57,6 +57,12 @@ run('Car log checklist by fuel type, and brass equalizer', async ({context, orig
   assert.equal(await p.evaluate(() => document.getElementById('wEq').classList.contains('eqn')), true, 'Narrow EQ scrolls sideways');
   assert.ok(await p.evaluate(() => { const g = document.getElementById('eqgrid'); return g.scrollWidth > g.clientWidth * 1.8; }), 'Bands wider than the view');
   if (SHOT) { await p.evaluate(() => document.getElementById('wEq').scrollIntoView()); await p.locator('#wEq').screenshot({path: SHOT + '/eqn.png'}); }
+  // 1.45 폰 뒤로 가기: 설정이 열려 있으면 설정만 닫고, 닫을 게 없으면 앱이 원래대로 처리
+  await p.locator('#setBtn').click();
+  assert.equal(await p.locator('#settings').isVisible(), true);
+  assert.equal(await p.evaluate(() => __back()), true, 'Back closes settings');
+  assert.equal(await p.locator('#settings').isVisible(), false);
+  assert.equal(await p.evaluate(() => __back()), false, 'Nothing open → app handles back');
   // 1.43 계기 스킨: 기본 에어라인, 버튼으로 에어포스(HUD) ↔ 에어라인, 다시 열어도 유지
   await p.setViewportSize({width: 1036, height: 900});
   await p.evaluate(() => document.getElementById('wGps').scrollIntoView());

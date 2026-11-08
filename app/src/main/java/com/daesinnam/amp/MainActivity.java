@@ -954,6 +954,17 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        // 1.45 설정·선택 창이 열려 있으면 뒤로 가기는 그 창만 닫음(앱은 그대로)
+        if (web != null) {
+            web.evaluateJavascript("(function(){try{return !!(window.__back&&window.__back())}catch(e){return false}})()", r -> {
+                if (!"true".equals(r)) backDefault();
+            });
+            return;
+        }
+        backDefault();
+    }
+
+    private void backDefault() {
         // 재생 중이거나 외부 앱 연동 중이면 앱을 끄지 않고 뒤로 보냅니다.
         if (playing || extMode) moveTaskToBack(true);
         else super.onBackPressed();

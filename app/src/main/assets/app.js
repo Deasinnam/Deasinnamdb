@@ -1873,6 +1873,14 @@ function winRz(w,on){const b=w.querySelector(':scope>.bar .rzbtn');w.classList.t
 function gpsRz(on){winRz($('#wGps'),on)}
 const eqgridEl=$('#eqgrid');
 new ResizeObserver(()=>{const sl=eqgridEl.querySelector('.slot');if(sl)eqgridEl.style.setProperty('--slot-h',sl.clientHeight+'px')}).observe(eqgridEl);
+
+/* 1.45 폰의 뒤로 가기: 열린 창(설정·선택 창·대화상자·전체 화면)을 위에서부터 하나 닫고 true. 닫을 게 없으면 false → 원래대로 앱 뒤로 */
+window.__back=()=>{
+  const dl=[...document.querySelectorAll('dialog[open]')].pop();if(dl){try{dl.close()}catch(e){dl.removeAttribute('open')}return true}
+  const pick=[...document.querySelectorAll('.skinpick:not([hidden])')].pop();if(pick){pick.hidden=true;return true}
+  const set=$('#settings');if(set&&!set.hidden){closeSettings();return true}
+  const full=document.querySelector('#wCam.full');if(full){full.classList.remove('full');return true}
+  return false};
 /* ===== 81-win-reorder.js ===== */
 // 창 순서 바꾸기: 창 제목줄을 3초 누르고 있으면 창이 들려서, 끌어 놓은 자리로 옮김(설정 → 창 순서와 같은 저장)
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
