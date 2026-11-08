@@ -193,7 +193,8 @@
     // 선회하면 날개가 기움(공중에서만)
     const hd = P.display && fin(P.display.headingDeg) && P.effective().valid ? P.display.headingDeg : null;
     let tb = 0;
-    if (hd !== null && F.hdgPrev !== null && dt > 0 && ['climb', 'cruise', 'approach'].includes(F.phase)) tb = clamp(angleDelta(F.hdgPrev, hd) / dt * 1.6, -BANK_MAX, BANK_MAX);
+    if (hd !== null && F.hdgPrev !== null && dt > 0) { const inst = clamp(angleDelta(F.hdgPrev, hd) / dt, -40, 40); F.hRate = (F.hRate || 0) + (inst - (F.hRate || 0)) * clamp(dt / 1.1, 0, 1); } // 선회 속도도 1초쯤 걸러서 GPS 방향 튐에 흔들리지 않게
+    if (hd !== null && ['climb', 'cruise', 'approach'].includes(F.phase) && Math.abs(F.hRate || 0) > 1.5) tb = clamp((F.hRate - Math.sign(F.hRate) * 1.5) * 1.6, -BANK_MAX, BANK_MAX);
     F.hdgPrev = hd;
     F.bank += (tb - F.bank) * clamp(dt * .9, 0, 1);               // 배경과 피치 눈금이 함께 최대 6.5°까지 부드럽게 기울어 숫자는 읽기 편하게
     renderBadge();
@@ -567,8 +568,16 @@
     update(performance.now() + F.off, this.sceneSpeed ? this.sceneSpeed() : 0);
     const d = this.data, dp = this.display, cal = this.calibration || { pitch: 0, roll: 0 };
     const has = fin(d.pitchDeg) && fin(d.rollDeg);
-    const sp = has ? dp.pitchDeg - cal.pitch : 0, sr = has ? dp.rollDeg - cal.roll : 0;
-    const shake = (F.phase === 'roll' || F.phase === 'rollout') ? (Math.random() - .5) * clamp(F.v / 90, 0, 1) * .5 : 0;
+    // 1.42.1 흔들림 잡기: 달리는 차 안에서 폰 자세 센서는 노면 진동·가감속에 크게 출렁임 →
+    // 아주 느리게 따라가는 저역 필터 + 작은 떨림은 무시(데드밴드) + 주행 중엔 기울기 폭 제한. 비행 연출 기울기(F.bank)는 따로 부드럽게 들어감
+    const rawP = has ? dp.pitchDeg - cal.pitch : 0, rawR = has ? dp.rollDeg - cal.roll : 0, nowT = performance.now();
+    const SM = P.__attSm || (P.__attSm = { p: rawP, r: rawR, t: nowT });
+    const dts = clamp((nowT - SM.t) / 1000, 0, .5); SM.t = nowT;
+    const drive = (F.v || 0) > 3, tau = drive ? 1.6 : .45, k = 1 - Math.exp(-dts / tau), dz = drive ? 1.2 : .3;
+    const lim = (v, m) => clamp(v, -m, m), dead = (v, cur) => Math.abs(v - cur) < dz ? cur : v - Math.sign(v - cur) * dz;
+    SM.p += (dead(drive ? lim(rawP, 5) : rawP, SM.p) - SM.p) * k; SM.r += (dead(drive ? lim(rawR, 7) : rawR, SM.r) - SM.r) * k;
+    const sp = SM.p, sr = SM.r;
+    const shake = (F.phase === 'roll' || F.phase === 'rollout') ? Math.sin(nowT / 47) * Math.sin(nowT / 131) * clamp(F.v / 90, 0, 1) * .25 : 0; // 활주 진동은 아주 작고 매끄럽게
     const save = [d.pitchDeg, d.rollDeg, dp.pitchDeg, dp.rollDeg];
     d.pitchDeg = 0; d.rollDeg = 0;
     dp.pitchDeg = sp + F.pitch + shake + cal.pitch;

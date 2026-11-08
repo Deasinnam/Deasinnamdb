@@ -44,6 +44,14 @@ run('PFD flight phases, sounds, heading wrap, GPS loss and demo', async ({contex
   const d1 = await data(); assert.equal(d1.h, 1);
   assert.ok(d1.dh > 350 || d1.dh < 10, 'Display heading wraps through north, not around: ' + d1.dh);
   assert.ok(Math.abs(await p.evaluate(() => AmpFlight.state.bank)) <= 6.6, 'Gentle bank');
+  // 1.42.1 주행 중 폰 자세 센서가 마구 흔들려도(±8°, 20Hz) 화면 지평선은 거의 움직이지 않음
+  const span = await p.evaluate(async () => { const a = window.__att, keep = [a.ok, a.pitch, a.bank]; a.ok = true; let mn = 99, mx = -99, pm = 99, px = -99;
+    const iv = setInterval(() => { a.pitch = (Math.random() - .5) * 16; a.bank = (Math.random() - .5) * 16; }, 50);
+    await new Promise(r => setTimeout(r, 900)); const t0 = performance.now();
+    while (performance.now() - t0 < 1500) { await new Promise(r => requestAnimationFrame(r)); const s = AmpPfd.panel.__attSm; if (s) { mn = Math.min(mn, s.r); mx = Math.max(mx, s.r); pm = Math.min(pm, s.p); px = Math.max(px, s.p); } }
+    clearInterval(iv); [a.ok, a.pitch, a.bank] = keep; return [mx - mn, px - pm]; });
+  console.log('span', span);
+  assert.ok(span[0] >= 0 && span[1] >= 0 && span[0] < 2 && span[1] < 2, 'Horizon stays steady with noisy sensors: ' + span);
   // 저속·정차: 흔들리는 방향값 대신 마지막 유효 방향 유지
   await fix({speed: .3, bearing: 200, azimuth: 120}); await tick();
   assert.equal((await data()).h, 1, 'Holds the last valid heading at low speed');
