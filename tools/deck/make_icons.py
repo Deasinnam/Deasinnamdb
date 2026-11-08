@@ -146,12 +146,14 @@ DESIGN = os.path.join(HERE, 'design.png')
 D_COLS = [(42, 292), (312, 562), (582, 832), (852, 1102), (1121, 1371)]; D_ROWS = [(81, 337), (359, 615), (639, 895)]
 D_ORDER = ['prev', 'play', 'next', 'swap', 'mute', 'gps', 'map', 'radio', 'vis', 'all', 'rec', 'day', 'tmap', 'nmap', 'land']
 D_SIDE = [(83, 308), (347, 594), (632, 890)]
+TV, TX = 90, 7   # 실측: 100×100 중 아래 약 9줄과 왼쪽 몇 줄은 키 테두리에 가려 안 보임
 def design_tiles():
     if not os.path.exists(DESIGN): return {}, None
     src = Image.open(DESIGN).convert('RGB'); out = {}
     for i, a in enumerate(D_ORDER):
         r, c = divmod(i, 5); (x0, x1), (y0, y1) = D_COLS[c], D_ROWS[r]
-        out[a] = src.crop((x0, y0, x1, y1)).resize((W, H), Image.LANCZOS)   # 타일을 키 전체(100×100)에 꽉 차게
+        t = src.crop((x0, y0, x1, y1)).resize((TV, TV), Image.LANCZOS)
+        im = Image.new('RGB', (W, H), (0, 0, 0)); im.paste(t, (TX, 0)); out[a] = im   # 실제로 보이는 곳(오른쪽 위, 약 x 6..98 · y 0..91)에 타일을 맞춤
     sides = []
     for y0, y1 in D_SIDE:
         t = src.crop((1396, y0, 1583, y1)).resize((72, 86), Image.LANCZOS)
