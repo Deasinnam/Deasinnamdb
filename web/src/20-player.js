@@ -68,7 +68,7 @@ function addFiles(files){
     const it={...splitName(f.name),url:URL.createObjectURL(f),size:f.size,duration:0,art:null,file:f};
     list.push(it);
     const probe=new Audio();probe.preload='metadata';probe.src=it.url;probe.onloadedmetadata=()=>{it.duration=probe.duration;renderList();if(list[cur]===it)updateMeta()};
-    if(window.jsmediatags) try{window.jsmediatags.read(f,{onSuccess:tag=>{const t=tag.tags||{};if(t.title)it.title=t.title;if(t.artist)it.artist=t.artist;if(t.picture){const p=t.picture;it.art=URL.createObjectURL(new Blob([new Uint8Array(p.data)],{type:p.format}))}renderList();if(list[cur]===it){updateMeta();lastArtSent=null;bridgeState(true)}},onError:()=>{}})}catch(e){}
+    if(window.jsmediatags) try{window.jsmediatags.read(f,{onSuccess:tag=>{const t=tag.tags||{};if(t.title)it.title=t.title;if(t.artist)it.artist=t.artist;{const L=t.lyrics;const s=L&&(typeof L==='string'?L:L.lyrics||(L.data&&L.data.lyrics));if(s&&String(s).trim())it.lyrics=String(s)}if(t.picture){const p=t.picture;it.art=URL.createObjectURL(new Blob([new Uint8Array(p.data)],{type:p.format}))}renderList();if(list[cur]===it){updateMeta();lastArtSent=null;bridgeState(true)}},onError:()=>{}})}catch(e){}
   });
   renderList();
   if(list.length>start&&(cur<0||audio.paused)) playIndex(start);

@@ -366,6 +366,7 @@
       <div class="visbox">
         <div class="npempty" id="npEmpty"><b>재생 중인 곡이 없어요</b><span>음악을 추가하거나 라디오를 틀어 보세요.</span><div><button class="pill on" id="npAdd">+ 음악 추가</button><button class="pill" id="npRadio"><span class="emo">📻 </span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zm4.5 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM14 12v1.5h5V12zm0 3v1.5h5V15zM6.2 7.3 16.8 3.4l.5 1.4L8.4 8z"/></svg>라디오</button></div></div>
         <canvas id="vis" aria-label="사운드 시각화. 탭하면 모드 변경"></canvas>
+        <div class="lyr" id="lyr" hidden aria-live="off"><div class="lyr-scroll" id="lyrScroll"><div class="lyr-lines" id="lyrLines"></div></div><div class="lyr-msg" id="lyrMsg"></div><small class="lyr-src" id="lyrSrc"></small></div>
         <div class="vmode"><button class="vstep" data-d="-1" aria-label="이전 효과">◀</button><select class="vsel" id="visSel" aria-label="시각화 효과"><option value="0">SPECTRUM</option></select><button class="vstep" data-d="1" aria-label="다음 효과">▶</button></div>
       </div>
     </div>
@@ -563,6 +564,7 @@
     <section id="secLook">
       <h3>화면 · 스킨</h3>
       <label class="row"><span><b>스킨</b><small>위 도구 줄의 [🎨 스킨] 버튼으로도 바꿀 수 있어요.</small></span><select class="sel" id="sSkinSel" aria-label="스킨"></select></label>
+      <label class="row"><span><b>재생 화면에 가사 보기</b><small>켜면 재생 화면의 시각화 효과 대신 지금 곡의 가사를 보여 줘요. 곡 파일에 들어 있는 가사를 먼저 쓰고, 없으면 인터넷(LRCLIB)에서 찾아요. 시간이 맞는 가사는 지금 부르는 줄이 밝게 표시돼요. 재생 화면의 [가사] 버튼으로도 바꿀 수 있어요.</small></span><input type="checkbox" id="sLyrics" class="sw"></label>
       <label class="row"><span><b>화면 배치</b><small>자동은 화면 너비에 맞춰 1열·2열을 고릅니다.</small></span><select class="sel" id="sLayoutSel" aria-label="화면 배치"></select></label>
     </section>
     <section>

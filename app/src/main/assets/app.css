@@ -2520,3 +2520,20 @@ li.due .lst{color:#ff7a5c;font-weight:700}
 @media (max-width:560px){.logitems li{grid-template-columns:auto 1fr auto}.lst{grid-column:2/3;text-align:left;max-width:none}.ledit{grid-row:1;grid-column:3}}
 :root[data-cp][data-cks] #wEq .slot{background:none!important}
 :root[data-cp][data-cks] #wEq #eqOn,:root[data-cp][data-cks] #wEq #eqOn.on{padding:0 36px 0 16px!important}
+/* 1.46 가사 보기 */
+.lyr{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;background:inherit}
+.lyr[hidden]{display:none}
+.lyr-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:44px 18px 40px;scrollbar-width:none;-webkit-mask-image:linear-gradient(180deg,#0000,#000 14%,#000 86%,#0000);mask-image:linear-gradient(180deg,#0000,#000 14%,#000 86%,#0000)}
+.lyr-scroll::-webkit-scrollbar{display:none}
+.lyr-lines{display:flex;flex-direction:column;align-items:center;padding:30% 0}
+.lyr-lines p{margin:0;padding:.38em 0;text-align:center;font:600 clamp(17px,2.3vw,26px)/1.35 "Noto Sans KR",sans-serif;color:color-mix(in srgb,var(--lcd-fg,#cfe9c7) 52%,transparent);transition:color .3s,transform .3s;word-break:keep-all}
+.lyr-lines p.on{color:var(--lcd-text,#fff);transform:scale(1.07);text-shadow:0 0 12px color-mix(in srgb,var(--lcd-text,#fff) 40%,transparent)}
+.lyr-msg{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font:600 16px/1.5 "Noto Sans KR",sans-serif;color:var(--lcd-fg,#cfe9c7);pointer-events:none}
+.lyr-msg[hidden]{display:none}
+.lyr-src{position:absolute;left:10px;bottom:6px;font:500 11px/1 "Noto Sans KR",sans-serif;color:color-mix(in srgb,var(--lcd-fg,#cfe9c7) 55%,transparent);pointer-events:none}
+.vmode{z-index:3}
+.vmode .lyrhide{display:none!important}
+.vmode .vlyr{min-width:52px;font-weight:700}
+.vmode .vlyr.on{color:var(--accent,#ffb02a)}
+:root[data-cp][data-cks] .lyr-lines p{color:#efe3c48a}
+:root[data-cp][data-cks] .lyr-lines p.on{color:#fff6dd;text-shadow:0 0 14px #ffb02a66}

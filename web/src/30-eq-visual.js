@@ -97,12 +97,13 @@ function frame(now){
   for(let i=0;i<N;i++){if(bars[i]>=peaks[i]){peaks[i]=bars[i];pv[i]=0}else{pv[i]+=.0009;peaks[i]=Math.max(0,peaks[i]-pv[i])}}
   for(let i=0;i<19;i++)miniP[i]=Math.max(miniB[i],miniP[i]-.012);
   for(let i=0;i<11;i++){let v=0;if(live){if(i===0){let s=0;for(let k=0;k<W.length;k+=2){const d=(W[k]-128)/128;s+=d*d}v=Math.min(1,Math.sqrt(s/(W.length/2))*2.6)}else{const f=BANDS[i-1];v=Math.pow(band(f/1.3,f*1.3),1.25)*1.08}}eqLv[i]=Math.max(v,eqLv[i]*.88)}
-  drawVis(live);drawMini();drawEqLed();drawGps();
+  if(!lyrOn)drawVis(live);drawMini();drawEqLed();drawGps();
   let d=0,t=0,has=false;
   if((rdPlaying||rdSel())&&rdCur)rdLcd();
   else if(mode==='ext'){has=!!ext.title;d=(ext.dur||0)/1000;t=extPos()}
   else if(natL()&&cur>=0){has=true;d=(nat.dur||0)/1000||list[cur].duration||0;t=natPos()}
   else if(cur>=0){has=true;d=audio.duration||list[cur].duration||0;t=audio.currentTime}
+  npT=t;npD=d;npHas=has&&!((rdPlaying||rdSel())&&rdCur);
   if((rdPlaying||rdSel())&&rdCur){}
   else if(has){$('#time').textContent=showRemain&&d?'-'+lcdFmt(d-t):lcdFmt(t);
     if(!seeking){seek.value=d?t/d*1000:0;setP(seek);$('#tCur').textContent=fmt(t);$('#tDur').textContent=fmt(d)}}
@@ -141,6 +142,7 @@ function drawVis(live){
 
 /* 시각화 효과 3~9: AREA · RING · RADAR · WAVES · DOTS · PULSE · VU METER (색은 스킨 팔레트) */
 const vfx={rad:0,blips:[],pulse:[],vuL:0,vuR:0,lastBass:0};
+let lyrOn=false,npT=0,npD=0,npHas=false; // 1.46 가사 보기(64-lyrics.js)와 재생 위치 공유
 function visLevel(lo,hi){let s=0,n=0;for(let i=Math.floor(lo*N);i<Math.ceil(hi*N);i++){s+=bars[i]||0;n++}return n?s/n:0}
 function drawVisFx(g,w,h,d,live){
   const t=performance.now()/1000,cx=w/2,cy=h/2,L1=C.l1,L2=C.l2,L3=C.l3,L4=C.l4;
