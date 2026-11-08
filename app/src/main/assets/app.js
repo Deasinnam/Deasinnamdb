@@ -2636,6 +2636,7 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
   function ui(){const sec=$('#secDeck');if(!sec)return;
     const s=$('#deckStat');s.textContent=!NB||!NB.deckState?'안드로이드 앱에서 동작해요(폴드에 USB-C로 꽂아 쓰세요).':st.open?'연결됨 · 키를 누르면 바로 동작해요':st.present?(st.err||'꽂혀 있어요 · [연결]을 눌러 주세요'):(st.err||'몬스타덱이 연결되어 있지 않아요');
     s.dataset.ok=st.open?'1':'';
+    const al=$('#deckAll');if(al){const L=st.all||[];al.textContent=!NB||!NB.deckState?'':L.length?'폴드에 꽂힌 USB 장치: '+L.join(' / '):'폴드에 꽂힌 USB 장치 없음 — 폴드가 몬스타덱을 USB 장치로 인식하지 못했어요(OTG 젠더로 연결해 보세요)'}
     $('#deckRaw').textContent=raw.length?'받은 신호: '+raw.slice(0,3).join(' · '):'받은 신호 없음';
     const ul=$('#deckMap');const rows=ACTS.filter(a=>a[0]!=='none').map(a=>{const keys=Object.keys(map).filter(k=>map[k]===a[0]).map(k=>k[0]==='k'?k.slice(1)+'번':'키');
       return '<li data-a="'+a[0]+'" class="'+(learn===a[0]?'learn':'')+'"><span>'+a[1]+'</span><em>'+(learn===a[0]?'몬스타덱 키를 누르세요…':keys.length?keys.join(', '):'—')+'</em><button type="button" class="pill" data-learn="'+a[0]+'">'+(learn===a[0]?'취소':'키 지정')+'</button></li>'}).join('');

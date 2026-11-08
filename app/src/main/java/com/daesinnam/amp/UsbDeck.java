@@ -205,6 +205,13 @@ final class UsbDeck {
                 o.put("pid", String.format("%04x", d.getProductId()));
                 o.put("name", d.getProductName() == null ? "" : d.getProductName());
             }
+            org.json.JSONArray all = new org.json.JSONArray();
+            if (um != null) for (UsbDevice x : um.getDeviceList().values()) {
+                String nm = x.getProductName(); String mf = x.getManufacturerName();
+                all.put(String.format("%04x:%04x", x.getVendorId(), x.getProductId()) + " " + (mf == null ? "" : mf) + " " + (nm == null ? "" : nm) + " (인터페이스 " + x.getInterfaceCount() + ")");
+            }
+            o.put("all", all);
+            o.put("host", um != null);
             if (in != null) o.put("ep", in.getMaxPacketSize() + "/" + (out == null ? "ctl" : String.valueOf(out.getMaxPacketSize())));
             return o.toString();
         } catch (Exception e) { return "{}"; }
