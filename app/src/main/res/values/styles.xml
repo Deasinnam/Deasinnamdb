@@ -1,0 +1,8 @@
+<resources>
+    <style name="GameTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+    <color name="bg">#0B3D6B</color>
+    <color name="icon_bg">#1E7CE0</color>
+</resources>

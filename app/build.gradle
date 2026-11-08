@@ -1,0 +1,43 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.daesinnam.lords'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.daesinnam.lords'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+    }
+
+    // 대신남 AMP와 같은 GitHub 비밀값(서명 키)이 있으면 그 키로 서명하고,
+    // 없으면 디버그 키로 서명해서 바로 설치할 수 있는 APK를 만듭니다.
+    def ampKeystore = System.getenv('AMP_KEYSTORE_FILE')
+    signingConfigs {
+        amp {
+            if (ampKeystore) {
+                storeFile file(ampKeystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('AMP_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('AMP_KEY_ALIAS') ?: 'amp'
+                keyPassword System.getenv('AMP_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig ampKeystore ? signingConfigs.amp : signingConfigs.debug
+        }
+    }
+
+    lint { checkReleaseBuilds false; abortOnError false }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

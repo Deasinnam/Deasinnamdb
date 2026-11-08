@@ -1,0 +1,65 @@
+name: Build Lords APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK 준비
+        run: |
+          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: 서명 키 준비 (있으면 사용, 없으면 디버그 키)
+        env:
+          AMP_KEYSTORE_BASE64: ${{ secrets.AMP_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$AMP_KEYSTORE_BASE64" ]; then
+            echo "$AMP_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/amp-release.p12"
+            echo "AMP_KEYSTORE_FILE=$RUNNER_TEMP/amp-release.p12" >> "$GITHUB_ENV"
+          else
+            echo "::warning::서명 키 비밀값이 없어 디버그 키로 서명합니다."
+          fi
+
+      - name: Build
+        env:
+          AMP_KEYSTORE_PASSWORD: ${{ secrets.AMP_KEYSTORE_PASSWORD }}
+          AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
+          AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+          rm -f "$RUNNER_TEMP/amp-release.p12"
+          cp app/build/outputs/apk/release/app-release.apk DaesinnamLords.apk
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: DaesinnamLords-apk
+          path: DaesinnamLords.apk
+
+      - name: Releases에 APK 올리기
+        if: github.ref == 'refs/heads/toplord-defense'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete lords-latest --yes --cleanup-tag || true
+          gh release create lords-latest DaesinnamLords.apk \
+            --target "$GITHUB_SHA" \
+            --title "대신남 로드 디펜스 (최신 빌드)" \
+            --notes "탑 로드 스타일 다리 방어 게임. DaesinnamLords.apk 를 받아 설치하세요. 빌드 번호 ${{ github.run_number }}" \
+            --latest=false
