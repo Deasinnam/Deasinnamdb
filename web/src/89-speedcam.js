@@ -24,7 +24,7 @@
     for(let i=1;i<lines.length;i++){const c=split(lines[i]),la=+c[iLat],lo=+c[iLon];if(!(la>32&&la<39.5&&lo>124&&lo<132))continue;
       const kind=iKind>=0?c[iKind]:'';if(kind&&/신호|주정차|버스|안전띠/.test(kind)&&!/과속/.test(kind))continue;out.push([+la.toFixed(6),+lo.toFixed(6),iLim>=0?limOf(c[iLim]):0])}
     return out}
-  async function importFile(f){const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);if(/�/.test(t.slice(0,2000))){try{t=new TextDecoder('euc-kr').decode(buf)}catch(e){}}
+  async function importFile(f){const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);if(/\uFFFD/.test(t.slice(0,2000))){try{t=new TextDecoder('euc-kr').decode(buf)}catch(e){}}
     const rows=parseCsv(t);if(!rows){toast('위도·경도 열을 찾지 못했어요. 공공데이터 "전국무인교통단속카메라표준데이터" CSV인지 확인해 주세요.');return}
     try{localStorage.setItem('dna_camDb',JSON.stringify(rows));db=rows;toast('과속 카메라 '+rows.length.toLocaleString()+'곳을 불러왔어요.')}catch(e){toast('저장 공간이 부족해 불러오지 못했어요.')}statUi()}
   function statUi(){const el=$('#sCamStat');if(!el)return;const a=loadDb().length;el.textContent=(a?'공공데이터 '+a.toLocaleString()+'곳':'공공데이터 없음')+' · 지도 자료 주변 '+osm.length+'곳'+(osmAt?'':' (GPS·인터넷 연결 후 받음)')}
