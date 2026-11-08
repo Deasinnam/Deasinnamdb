@@ -25,6 +25,17 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   const rows = await p.evaluate(() => AmpCam.parseCsv('무인교통단속카메라관리번호,시도명,단속구분,제한속도,위도,경도\nA1,서울,과속단속,60,37.51,127.01\nA2,서울,신호단속,0,37.52,127.02\nA3,부산,과속단속,"80",35.1,129.0'));
   assert.deepEqual(rows, [[37.51, 127.01, 60], [35.1, 129, 80]]);
   assert.equal(await p.locator('#sCam').isChecked(), true);
+  // 설정의 [예시 보기]: 표지판·소리·음성이 실제처럼
+  await p.evaluate(() => { __said.length = 0; });
+  await p.locator('#setBtn').click(); await p.locator('#sCamDemo').scrollIntoViewIfNeeded(); await p.locator('#sCamDemo').click();
+  await p.waitForTimeout(1500);
+  assert.equal(await p.locator('#camSign').isVisible(), true, 'Demo shows the sign above settings');
+  assert.equal(await p.evaluate(() => __said[0]), '전방 600미터 앞에 50킬로 과속 카메라가 있습니다.');
+  await p.waitForTimeout(5000);
+  assert.equal(await p.locator('#camSign').evaluate(e => e.classList.contains('over')), true);
+  assert.match(await p.evaluate(() => __said[1] || ''), /줄이세요/);
+  await p.waitForTimeout(2600);
+  assert.equal(await p.locator('#camSign').isVisible(), false, 'Demo ends by itself');
   // 타이어 마찰음(오류 없이 재생)
   await p.evaluate(() => { AmpHost.beep('tireDown'); AmpHost.beep('tireUp'); });
   await p.close();

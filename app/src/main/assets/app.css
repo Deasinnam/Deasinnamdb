@@ -2388,3 +2388,6 @@ html.driving body{overflow:hidden}
 .camsign.over{animation:camFlash .6s steps(2) infinite}
 .camsign.over .cs-txt small{color:#ff5a4a}
 @keyframes camFlash{50%{box-shadow:0 0 0 1px #000,0 0 0 4px #ff3b30,0 0 24px #ff3b30aa}}
+.cam-ctl{display:inline-flex;align-items:center;gap:10px;flex:none}
+.cam-ctl .pill{height:38px;white-space:nowrap}
+.camsign.demo{z-index:200}

@@ -45,10 +45,20 @@
     st.t=Date.now();told.set(key,st);if(told.size>200)for(const [k,v] of told)if(Date.now()-v.t>6e5)told.delete(k)}
   function show(o,spd){const el=$('#camSign');if(!o){el.hidden=true;document.documentElement.removeAttribute('data-cam');return}
     el.hidden=false;document.documentElement.setAttribute('data-cam','1');$('#camLim').textContent=o.lim||'!';$('#camDist').textContent='전방 '+(o.d>=1000?(o.d/1000).toFixed(1)+'km':Math.round(o.d/10)*10+'m');el.classList.toggle('over',!!o.over)}
-  setInterval(()=>{if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
+  setInterval(()=>{if(demoOn)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
   $('#sCam').checked=camOn();$('#sCam').onchange=e=>{store.set('camOn',e.target.checked);if(!e.target.checked)show(null)};
   $('#sCamCsv').onclick=()=>$('#sCamFile').click();$('#sCamFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importFile(f);e.target.value=''};
   $('#sCamClr').onclick=()=>{try{localStorage.removeItem('dna_camDb')}catch(e){}db=[];statUi();toast('불러온 과속 카메라 자료를 지웠어요.')};
+  /* 예시: 실제 안내와 같은 소리·음성·표지판을 약 8초 동안 보여 줌(50km 구간을 70km/h로 다가가는 상황) */
+  document.body.appendChild($('#camSign')); // 어느 창·설정 위에도 보이게 맨 위층으로
+  let demoT=[],demoOn=false;
+  function demo(){demoT.forEach(clearTimeout);demoT=[];const el=$('#camSign');el.classList.add('demo');demoOn=true;
+    const steps=[[0,600,false],[1200,500,false],[2400,400,false],[3600,300,true],[4800,200,true],[5800,150,true],[6800,80,true]];
+    steps.forEach(([t,d,over])=>demoT.push(setTimeout(()=>show({lim:50,d,over},70),t)));
+    demoT.push(setTimeout(()=>{ding();say('전방 600미터 앞에 50킬로 과속 카메라가 있습니다.')},0));
+    demoT.push(setTimeout(()=>{try{sndAlarm()}catch(e){}say('과속 카메라 앞입니다. 속도를 50킬로 이하로 줄이세요.')},5800));
+    demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},8600))}
+  $('#sCamDemo').onclick=e=>{e.preventDefault();e.stopPropagation();demo()};
   statUi();
-  window.AmpCam={check,parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
+  window.AmpCam={demo,check,parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
 })();

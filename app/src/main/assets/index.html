@@ -494,7 +494,7 @@
       <label class="row"><span><b>관제탑 소리</b><small>이륙 허가·착륙·경고 음성과 무전 효과음을 켜거나 꺼요.</small></span><input type="checkbox" id="sAtcSound" class="sw" checked></label>
       <div class="row col"><span><b>과속 경고 속도</b><small>고른 속도를 넘으면 관제탑이 "슬로우 다운"이라고 말하고 속도계가 빨갛게 세 번 깜빡여요. (5km/h 아래로 내려가면 다시 경고)</small></span>
         <div class="chips" id="sSpdMarks"></div></div>
-      <label class="row"><span><b>과속 카메라 안내</b><small>앞쪽 과속 단속 카메라를 "전방 500미터 앞에 50킬로 과속 카메라가 있습니다"처럼 알려 주고, 화면에 빨간 제한 속도 표지판을 보여 줘요. GPS를 켜야 동작해요.</small></span><input type="checkbox" id="sCam" class="sw"></label>
+      <label class="row"><span><b>과속 카메라 안내</b><small>앞쪽 과속 단속 카메라를 "전방 500미터 앞에 50킬로 과속 카메라가 있습니다"처럼 알려 주고, 화면에 빨간 제한 속도 표지판을 보여 줘요. GPS를 켜야 동작해요.</small></span><span class="cam-ctl"><button type="button" class="pill" id="sCamDemo">▶ 예시 보기</button><input type="checkbox" id="sCam" class="sw"></span></label>
       <div class="row col"><span><b>과속 카메라 자료</b><small>인터넷이 되면 주변 지도 자료(OpenStreetMap)에서 자동으로 받아요. 전국 자료를 쓰려면 공공데이터포털(data.go.kr)의 "전국무인교통단속카메라표준데이터" CSV 파일을 받아 불러오세요.</small><small id="sCamStat">자료 없음</small></span>
         <span class="permbtns"><button type="button" class="pill" id="sCamCsv">공공데이터 CSV 불러오기</button><button type="button" class="pill" id="sCamClr">불러온 자료 지우기</button><input type="file" id="sCamFile" accept=".csv,text/csv" hidden></span></div>
     </section>
