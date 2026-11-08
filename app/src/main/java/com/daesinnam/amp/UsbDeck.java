@@ -17,8 +17,7 @@ import android.os.Build;
  * 몬스타덱(MiraBox StreamDock 293V3 계열) USB 단축키 패드 읽기.
  *
  * 몬스타덱은 키를 눌러도 일반 키보드 신호를 보내지 않고, 제조사 전용 HID 보고서(512바이트)로 알립니다.
- * PC 프로그램(SDLibrary)과 같은 순서로 인사(HAN) → 화면 켜기(DIS) → 밝기(LIG) → 연결 유지(CONNECT)를 보내고,
- * 들어오는 보고서를 그대로 웹 화면에 넘깁니다(어떤 키인지는 웹 쪽에서 '키 배우기'로 정함).
+ * 키를 누르면 장치가 "ACK··OK··<키 번호>" 보고서를 보내므로, 아무 명령도 보내지 않고 들어오는 보고서를 그대로 웹 화면에 넘깁니다(어떤 키인지는 웹 쪽에서 '키 배우기'로 정함).
  * 장치에 저장된 설정·펌웨어는 바꾸지 않습니다.
  */
 final class UsbDeck {
@@ -123,16 +122,9 @@ final class UsbDeck {
             if (!c.claimInterface(pick, true)) { lastErr = "다른 앱이 장치를 쓰고 있어요"; c.close(); state(); return; }
             dev = d; conn = c; iface = pick; in = ei; out = eo; lastErr = "";
             run = true;
-            // PC 프로그램과 같은 순서: 인사 → 화면 켜기 → 밝기 → 연결 유지
-            send(pkt("HAN"));
-            send(crt("DIS"));
-            setBrightness(brightness);
-            send(crt("CONNECT"));
+            // TS115(펌웨어 V2.293S)는 꽂자마자 키를 누를 때마다 "ACK··OK··<키>"를 보냄. 아무 명령도 보내지 않고 읽기만 함.
+            // (실측: "CRT··DIS"를 보내면 그 뒤로 키 신호가 끊김 → 보내지 않음. 밝기는 사용자가 바꿀 때만)
             reader = new Thread(this::readLoop, "deck-read"); reader.start();
-            beat = new Thread(() -> {
-                while (run) { try { Thread.sleep(5000); } catch (InterruptedException e) { return; } if (run) send(crt("CONNECT")); }
-            }, "deck-beat");
-            beat.start();
             state();
         } catch (Exception e) { lastErr = "연결 오류: " + e.getMessage(); close(); state(); }
     }
@@ -191,7 +183,6 @@ final class UsbDeck {
         send(b);
     }
 
-    void wake() { send(crt("DIS")); }
 
     String stateJson() {
         UsbDevice d = dev != null ? dev : find();
