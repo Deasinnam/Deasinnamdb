@@ -150,9 +150,9 @@
   const oComp = P.drawCompass.bind(P);
   P.drawCompass = function (c, x, y, w, h, value) {
     if (!oliveOn()) return oComp(c, x, y, w, h, value);
-    const oF = c.fillRect; let first = true;
+    const oF = c.fillRect; let first = true, sk = this.settings.skin; this.settings.skin = 'airforce';   // 1.41 나침반 눈금·숫자·방향 상자도 HUD 녹색
     c.fillRect = function (fx, fy, fw, fh) { if (first) { first = false; const s0 = this.fillStyle; this.fillStyle = olive(this, x, w, true, y, h); oF.call(this, fx, fy, fw, fh); this.fillStyle = s0; return; } return oF.call(this, fx, fy, fw, fh); };
-    try { oComp(c, x, y, w, h, value); } finally { c.fillRect = oF; }
+    try { oComp(c, x, y, w, h, value); } finally { c.fillRect = oF; this.settings.skin = sk; }
     brassFrame(c, x, y, w, h);
   };
   P.drawTape = function (c, x, y, w, h, kind, value, known) {
@@ -172,10 +172,10 @@
     else { c.moveTo(x + w - inset, cy - boxH / 2); c.lineTo(x + tip, cy - boxH / 2); c.lineTo(x, cy); c.lineTo(x + tip, cy + boxH / 2); c.lineTo(x + w - inset, cy + boxH / 2); }
     c.closePath(); c.fillStyle = '#000603'; c.fill(); c.strokeStyle = af ? '#a7fa98' : '#e1e8d7'; c.lineWidth = 1.5; c.stroke();
     const warn = isSpeed && known && this.settings.limitKmh > 0 && value > this.settings.limitKmh, txt = known ? String(Math.round(value)) : '—', tx = x + w / 2 + (isSpeed ? -5 : 5);
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = warn ? '#ffd16a' : af ? '#c6ffb6' : isSpeed ? '#f7fbef' : '#b8f3a7';
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = warn ? '#ffd16a' : '#c9ffbd';   // 1.41 속도·고도 숫자는 가장 크고 선명한 HUD 녹색
     let fs = clamp(boxH * .62, 40, 84); c.font = '800 ' + fs + 'px Arial'; const mw = w - tip - 10, tw = c.measureText(txt).width;
     if (tw > mw) { fs *= mw / tw; c.font = '800 ' + fs + 'px Arial'; }
-    c.save(); c.shadowColor = warn ? '#ffd16a99' : '#ffffff55'; c.shadowBlur = 12; c.fillText(txt, tx, cy - boxH * .08); c.restore();
+    c.save(); c.shadowColor = warn ? '#ffd16a99' : 'rgba(110,255,130,.45)'; c.shadowBlur = 6; c.fillText(txt, tx, cy - boxH * .08); c.restore();
     c.font = '700 ' + clamp(w * .13, 10, 16) + 'px Arial'; c.fillStyle = af ? '#c0ffad' : '#e4eddd'; c.fillText(isSpeed ? 'km/h' : 'm', tx, cy + boxH * .34);
     const lg = c.createRadialGradient(tx - w * .15, cy - boxH * .3, 2, tx, cy, boxH * .75); lg.addColorStop(0, '#ffffff30'); lg.addColorStop(.45, '#ffffff0c'); lg.addColorStop(1, '#ffffff00');
     c.fillStyle = lg; c.fill();

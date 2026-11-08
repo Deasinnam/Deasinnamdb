@@ -540,8 +540,15 @@
     }
   };
   const oDrawGround2 = sc.drawGround;
+  // 1.41 HUD 시안: 풍경(하늘·구름·땅)을 청회색 저녁 톤으로 — HUD 선은 이 뒤에 그려져 색이 그대로 남음
+  const hudOn = () => active() && P.__hud;
   sc.drawGround = function (c, w, h, night, speed, quality) {
     oDrawGround2.call(this, c, w, h, night, speed, quality);
+    if (hudOn() && !night) {
+      c.save(); c.globalAlpha = 1; c.globalCompositeOperation = 'multiply'; c.fillStyle = '#9fadc0'; c.fillRect(-w * 2, -h * 3, w * 4, h * 6);
+      c.globalCompositeOperation = 'soft-light'; const g = c.createLinearGradient(0, -h * .5, 0, h * .4); g.addColorStop(0, '#2c3c5a'); g.addColorStop(.45, '#c9a98a'); g.addColorStop(.55, '#7d8fa8'); g.addColorStop(1, '#1d2a38');
+      c.fillStyle = g; c.fillRect(-w * 2, -h * 3, w * 4, h * 6); c.restore();
+    }
     if (!night || !this.lightDraw || !this.lightDraw.length) return;
     // 도시 불빛·가로등이 제자리에서 살짝 일렁임(정차해도 화면이 멈춰 보이지 않게)
     const t = idleT(); c.save(); c.globalCompositeOperation = 'lighter';
@@ -566,9 +573,24 @@
     d.pitchDeg = 0; d.rollDeg = 0;
     dp.pitchDeg = sp + F.pitch + shake + cal.pitch;
     dp.rollDeg = sr + F.bank + cal.roll;
+    // HUD: 지평선·피치·롤 눈금·날개 기준표시를 전투기 HUD처럼 얇은 녹색으로(패키지의 공군 디자인 그리기를 빌림), 발광은 선 가장자리에만 약하게
+    const hud = !(this.settings.skin === 'airforce'), sk = this.settings.skin, oStroke = c.stroke, oText = c.fillText;
+    if (hud) {
+      this.settings.skin = 'airforce'; this.__hud = true;
+      const green = st => typeof st === 'string' && /^#[9abc][0-9a-f]f/i.test(st);
+      c.stroke = function (...a) { if (!green(this.strokeStyle)) return oStroke.apply(this, a); const sb = this.shadowBlur, sc0 = this.shadowColor; this.shadowColor = 'rgba(110,255,130,.42)'; this.shadowBlur = 3; oStroke.apply(this, a); this.shadowBlur = sb; this.shadowColor = sc0; };
+      c.fillText = function (...a) { if (!green(this.fillStyle)) return oText.apply(this, a); const sb = this.shadowBlur, sc0 = this.shadowColor; this.shadowColor = 'rgba(110,255,130,.35)'; this.shadowBlur = 2; oText.apply(this, a); this.shadowBlur = sb; this.shadowColor = sc0; };
+    }
     try { return oDrawHorizon.call(this, c, x, y, w, h, valid); }
     finally {
-      d.pitchDeg = save[0]; d.rollDeg = save[1]; dp.pitchDeg = save[2]; dp.rollDeg = save[3];
+      if (hud) { this.settings.skin = sk; c.stroke = oStroke; c.fillText = oText; this.__hud = false; }
+      if (hud && valid && fin(dp.headingDeg)) { // 상단 TRK: 롤 눈금 위에 진행 방향
+        c.save(); const fs = Math.max(12, Math.min(22, w * .026)); c.font = '600 ' + fs + 'px "Barlow Condensed","Rajdhani",Arial,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+        c.shadowColor = 'rgba(110,255,130,.45)'; c.shadowBlur = 3; c.fillStyle = '#b7ffae';
+        const t = 'TRK ' + String(Math.round(((dp.headingDeg % 360) + 360) % 360) % 360).padStart(3, '0') + '°', tw = c.measureText(t).width + fs * .9, ty = y + h * .115;
+        c.shadowBlur = 0; c.fillStyle = 'rgba(8,16,12,.55)'; c.strokeStyle = 'rgba(160,255,150,.55)'; c.lineWidth = 1; c.beginPath(); c.rect(x + w / 2 - tw / 2, ty - fs * .95, tw, fs * 1.25); c.fill(); c.stroke();
+        c.shadowBlur = 3; c.fillStyle = '#b7ffae'; c.fillText(t, x + w / 2, ty); c.restore();
+      }
       try { drawWeather(c, x, w, h, sp + F.pitch + shake, sr + F.bank, !this.day); } catch (e) {}
     }
   };
