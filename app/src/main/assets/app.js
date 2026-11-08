@@ -2437,10 +2437,19 @@ const AmpSfx=(()=>{
   function ding(){try{const a=fx();if(!a)return;const t=a.currentTime;[0,.16].forEach((dt,i)=>{const o=a.createOscillator();o.type='sine';o.frequency.value=i?1320:990;const g=fxEnv(a,t+dt,.16,.005,.18);o.connect(g).connect(a.destination);o.start(t+dt);o.stop(t+dt+.25)})}catch(e){}}
   function nearAll(lat,lon){const out=[];for(const src of [loadDb(),osm])for(const c of src){if(Math.abs(c[0]-lat)>.012||Math.abs(c[1]-lon)>.016)continue;const d=dist(lat,lon,c[0],c[1]);if(d<1300)out.push({c,d})}
     out.sort((a,b)=>a.d-b.d);const uniq=[];for(const o of out)if(!uniq.some(u=>dist(u.c[0],u.c[1],o.c[0],o.c[1])<35))uniq.push(o);return uniq}
+  const seen=new Map(); // 카메라별 직전 거리(가까워지는지 확인)
   function check(lat,lon,spd,hdg){if(!camOn()){show(null);return}
     if(!osmAt||dist(lat,lon,osmAt[0],osmAt[1])>3000)osmFetch(lat,lon);
-    let best=null;if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180);if(df<=35&&o.d<=1200){best=o;break}}
-    if(!best){show(null);return}const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{},now=Date.now();
+    // 1.49 진행 방향 앞, 같은 길 위의 카메라만: ① 방향 차이 25° 이내 ② 진행선에서 옆으로 벗어난 거리 25~45m 이내(옆길·평행 도로 제외)
+    //       ③ 1초 전보다 실제로 가까워지는 중(교차로·건너편 도로의 카메라 제외). 세 가지를 모두 만족해야 안내
+    let best=null;const now=Date.now(),seenNow=new Map();
+    if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){if(o.d>1200)break;const k=o.c[0].toFixed(5)+','+o.c[1].toFixed(5);seenNow.set(k,o.d);
+      const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180)*Math.PI/180,along=o.d*Math.cos(df),cross=Math.abs(o.d*Math.sin(df));
+      if(df>25*Math.PI/180||along<=0||cross>Math.max(25,Math.min(45,along*.08)))continue;
+      const pd=seen.get(k);if(!(pd&&pd.t>now-3000&&pd.d-o.d>=2))continue;
+      best=o;break}
+    seen.clear();for(const [k,d] of seenNow)seen.set(k,{d,t:now});
+    if(!best){show(null);return}const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{};
     const lim=best.c[2],over=!!(lim&&spd>lim+2);
     if(!st.far&&!st.near&&best.d<=FAR_M&&best.d>NEAR_M+60){st.far=true;st.until=now+SHOW_MS;ding();say(sayFar(500,lim))}
     if(!st.near&&best.d<=NEAR_M){st.near=true;st.far=true;st.until=now+SHOW_MS;ding();say(sayNear(lim,over))}
@@ -2448,7 +2457,8 @@ const AmpSfx=(()=>{
     st.t=now;told.set(key,st);if(told.size>200)for(const [k,v] of told)if(now-v.t>6e5)told.delete(k)}
   function show(o,spd){const el=$('#camSign');if(!o){el.hidden=true;document.documentElement.removeAttribute('data-cam');return}
     el.hidden=false;document.documentElement.setAttribute('data-cam','1');$('#camLim').textContent=o.lim||'!';$('#camDist').textContent='전방 '+(o.d>=1000?(o.d/1000).toFixed(1)+'km':Math.round(o.d/10)*10+'m');el.classList.toggle('over',!!o.over)}
-  setInterval(()=>{if(demoOn)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
+  let manualT=0; // 시험·외부에서 직접 부른 직후에는 자동 확인이 덮어쓰지 않게
+  setInterval(()=>{if(demoOn||Date.now()-manualT<3000)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
   $('#sCam').checked=camOn();$('#sCam').onchange=e=>{store.set('camOn',e.target.checked);if(!e.target.checked)show(null)};
   $('#sCamCsv').onclick=()=>$('#sCamFile').click();$('#sCamFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importFile(f);e.target.value=''};
   $('#sCamClr').onclick=()=>{try{localStorage.removeItem('dna_camDb')}catch(e){}db=[];statUi();toast('불러온 자료를 지웠어요. 기본 내장 전국 자료로 안내해요.')};
@@ -2465,7 +2475,7 @@ const AmpSfx=(()=>{
     demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},9000))}
   $('#sCamDemo').onclick=e=>{e.preventDefault();e.stopPropagation();demo()};
   statUi();
-  window.AmpCam={get builtin(){return builtin.length},demo,check,parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
+  window.AmpCam={get builtin(){return builtin.length},demo,check:(...a)=>{manualT=Date.now();check(...a)},parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
 })();
 /* ===== 90-radio.js ===== */
 // 인터넷 라디오
