@@ -97,13 +97,22 @@ def g_set(d):
         a = k * math.pi / 4; d.line(P([(12 * math.cos(a), 12 * math.sin(a)), (17 * math.cos(a), 17 * math.sin(a))]), fill=IVORY, width=4 * S)
     d.ellipse(P([(-4, -4)])[0] + P([(4, 4)])[0], fill=BRASS)
 def g_none(d): pass
+def g_vol(d, up):
+    d.polygon(P([(-16, -5), (-9, -5), (-1, -13), (-1, 13), (-9, 5), (-16, 5)]), fill=IVORY)
+    d.line(P([(5, 0), (15, 0)]), fill=BRASS, width=3 * S)
+    if up: d.line(P([(10, -5), (10, 5)]), fill=BRASS, width=3 * S)
+def g_zoom(d, up):
+    d.ellipse(P([(-15, -15)])[0] + P([(7, 7)])[0], outline=IVORY, width=3 * S); d.line(P([(5, 5), (15, 15)]), fill=IVORY, width=4 * S)
+    d.line(P([(-9, -4), (1, -4)]), fill=BRASS, width=3 * S)
+    if up: d.line(P([(-4, -9), (-4, 1)]), fill=BRASS, width=3 * S)
 
 ACTS = {  # 앱의 기능 이름(web/src/95-deck.js ACTS)과 같게
     'prev': (g_prev, '이전'), 'play': (g_play, '재생'), 'next': (g_next, '다음'), 'swap': (g_swap, '전환'), 'mute': (g_mute, '음소거'),
     'gps': (g_gps, '속도계'), 'map': (g_map, '지도'), 'radio': (g_radio, '라디오'), 'vis': (g_vis, 'NOW'), 'all': (g_all, '전체'),
     'cam': (g_cam, '대쉬캠'), 'rec': (g_rec, '녹화'), 'day': (g_day, '주야간'), 'tmap': (lambda d: g_nav(d, 'T'), 'T맵'),
     'nmap': (lambda d: g_nav(d, 'N'), '네이버'), 'land': (g_land, '착륙'), 'briUp': (lambda d: g_sun(d, True), '밝게'),
-    'briDn': (lambda d: g_sun(d, False), '어둡게'), 'camDemo': (g_cdemo, '카메라'), 'set': (g_set, '설정'), 'none': (g_none, ''),
+    'briDn': (lambda d: g_sun(d, False), '어둡게'), 'volUp': (lambda d: g_vol(d, True), '소리+'), 'volDn': (lambda d: g_vol(d, False), '소리−'),
+    'zoomIn': (lambda d: g_zoom(d, True), '확대'), 'zoomOut': (lambda d: g_zoom(d, False), '축소'), 'camDemo': (g_cdemo, '카메라'), 'set': (g_set, '설정'), 'none': (g_none, ''),
 }
 
 def key_image(act):

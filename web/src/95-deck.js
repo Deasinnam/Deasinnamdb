@@ -11,6 +11,7 @@
     ['tmap','T맵 열기',()=>navOpen('tmap')],['nmap','네이버지도 열기',()=>navOpen('nmap')],
     ['land','착륙',()=>{if(window.AmpFlight&&!AmpFlight.land())toast('착륙은 순항 중에만 할 수 있어요.')}],
     ['briUp','화면 밝게',()=>briSet(briBase()+10)],['briDn','화면 어둡게',()=>briSet(briBase()-10)],
+    ['volUp','소리 크게',()=>vol1(1)],['volDn','소리 작게',()=>vol1(-1)],['zoomIn','지도 확대',()=>AmpTk.mapZoom(1)],['zoomOut','지도 축소',()=>AmpTk.mapZoom(-1)],
     ['camDemo','과속 경고 예시',()=>AmpCam.demo()],['set','설정 열기',()=>openSettings()],['none','(없음)',()=>{}]];
   // 장치 키 번호 → 화면 위치(5칸×3줄, 왼쪽 위부터 1~15): 장치 번호 = (4-열)*3 + 줄 + 1
   const POS={};for(let r=0;r<3;r++)for(let c=0;c<5;c++)POS[(4-c)*3+r+1]=r*5+c+1;
@@ -54,5 +55,27 @@
   $('#deckBri').oninput=e=>{try{NB&&NB.deckBright&&NB.deckBright(+e.target.value)}catch(x){}store.set('deckBri',+e.target.value)};
   $('#deckBri').value=store.get('deckBri',70);
   stateNow();ui();setInterval(()=>{if(!$('#settings').hidden){stateNow();ui()}},1500);
+  /* 1.37 블루투스 다이얼·키패드(울란지 D100H 등): 폴드와 블루투스로 짝을 맺으면 버튼·단축키·다이얼 돌리기를 키처럼 배워서 기능에 붙임.
+   * 앱이 정한 키만 가로채고(나머지 키·휠은 원래대로), 배우는 동안에는 모든 외부 키를 받음. */
+  const HW_DEF={MEDIA_PREVIOUS:'prev',MEDIA_PLAY_PAUSE:'play',MEDIA_NEXT:'next'};
+  let hw=Object.assign({},store.get('hwMap',null)||HW_DEF),hwLearn=null,hwLast={id:'',t:0},hwRaw=[];
+  const HWN={WHEEL_UP:'다이얼 ↻(위)',WHEEL_DOWN:'다이얼 ↺(아래)',VOLUME_UP:'다이얼 ↻(소리+)',VOLUME_DOWN:'다이얼 ↺(소리−)',MEDIA_PREVIOUS:'이전 버튼',MEDIA_PLAY_PAUSE:'재생 버튼',MEDIA_NEXT:'다음 버튼'};
+  const hwName=id=>HWN[id]||id.replace(/_/g,' ');
+  function hwSync(){try{NB&&NB.hwKeys&&NB.hwKeys(JSON.stringify(Object.keys(hw)),!!hwLearn)}catch(e){}}
+  window.__hwKey=(id,dev)=>{hwRaw.unshift(id+(dev?' · '+dev:''));hwRaw.length=Math.min(hwRaw.length,4);
+    const now=Date.now();const wheel=/^WHEEL|^VOLUME/.test(id);if(!wheel&&id===hwLast.id&&now-hwLast.t<200)return;hwLast={id,t:now};
+    if(hwLearn){for(const x in hw)if(hw[x]===hwLearn)delete hw[x];hw[id]=hwLearn;store.set('hwMap',hw);toast(hwName(id)+' → '+ACT[hwLearn][1]);hwLearn=null;hwSync();hwUi();return}
+    hwUi();const a=ACT[hw[id]];if(!a)return;try{if(!wheel)sndKey()}catch(e){}try{a[2]()}catch(e){}if(!wheel)flash(a[1])};
+  function hwUi(){const ul=$('#hwMap');if(!ul)return;
+    let devs=[];try{devs=[...new Set(JSON.parse(NB&&NB.hwDevices?NB.hwDevices():'[]'))]}catch(e){}
+    $('#hwStat').textContent=!NB||!NB.hwKeys?'안드로이드 앱에서 동작해요(폴드와 블루투스로 짝을 맺어 쓰세요).':devs.length?'연결된 장치: '+devs.join(', '):'외부 장치가 없어요 — 폴드 설정 › 연결 › 블루투스에서 다이얼과 짝을 맺어 주세요';
+    $('#hwRaw').textContent=hwRaw.length?hwRaw.slice(0,3).join(' · '):'아직 없음 — 다이얼 버튼을 누르거나 돌려 보세요';
+    const rows=ACTS.filter(a=>a[0]!=='none').map(a=>{const keys=Object.keys(hw).filter(k=>hw[k]===a[0]).map(hwName);
+      return '<li data-a="'+a[0]+'" class="'+(hwLearn===a[0]?'learn':'')+'"><span>'+a[1]+'</span><em>'+(hwLearn===a[0]?'다이얼 버튼을 누르거나 돌리세요…':keys.length?keys.join(', '):'—')+'</em><button type="button" class="pill" data-hwlearn="'+a[0]+'">'+(hwLearn===a[0]?'취소':'키 지정')+'</button></li>'}).join('');
+    if(ul.__h!==rows){ul.__h=rows;ul.innerHTML=rows}}
+  $('#hwMap').addEventListener('click',e=>{const b=e.target.closest('[data-hwlearn]');if(!b)return;e.preventDefault();hwLearn=hwLearn===b.dataset.hwlearn?null:b.dataset.hwlearn;hwSync();hwUi()});
+  $('#hwReset').onclick=e=>{e.preventDefault();hw=Object.assign({},HW_DEF);store.set('hwMap',hw);hwLearn=null;hwSync();hwUi();toast('기본 배치로 되돌렸어요.')};
+  hwSync();hwUi();setInterval(()=>{if(!$('#settings').hidden)hwUi()},2000);
+  window.AmpHw={get map(){return hw},learn(a){hwLearn=a;hwSync();hwUi()},key:(id,dev)=>window.__hwKey(id,dev||'')};
   window.AmpDeck={images:()=>pushImages(),report:onReport,get map(){return map},learn(a){learn=a;ui()},parse,ACTS:ACTS.map(a=>a[0])};
 })();

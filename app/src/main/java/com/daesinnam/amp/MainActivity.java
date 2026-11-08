@@ -777,8 +777,56 @@ public class MainActivity extends Activity {
         return out;
     }
 
+    // ------------------------------------------------------------ 블루투스 다이얼·키패드(울란지 D100H 등) 단축키
+    // 웹 화면이 정한 키(hwBound)를 누르거나 '키 배우기' 중이면 그 키를 가로채 웹으로 넘김. 나머지는 원래대로.
+    private final java.util.Set<String> hwBound = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+    private volatile boolean hwLearn = false;
+
+    private static boolean externalDevice(android.view.InputDevice d) {
+        if (d == null || d.isVirtual()) return false;
+        if (Build.VERSION.SDK_INT >= 29) return d.isExternal();
+        return true;
+    }
+
+    private static String hwKeyId(KeyEvent e) {
+        StringBuilder b = new StringBuilder();
+        if (e.isCtrlPressed()) b.append("Ctrl+");
+        if (e.isAltPressed()) b.append("Alt+");
+        if (e.isShiftPressed()) b.append("Shift+");
+        if (e.isMetaPressed()) b.append("Meta+");
+        String n = KeyEvent.keyCodeToString(e.getKeyCode());
+        b.append(n.startsWith("KEYCODE_") ? n.substring(8) : n);
+        return b.toString();
+    }
+
+    private boolean hwSend(String id, android.view.InputDevice d) {
+        if (!hwLearn && !hwBound.contains(id)) return false;
+        String dev = d == null ? "" : d.getName();
+        js("window.__hwKey&&window.__hwKey(" + JSONObject.quote(id) + "," + JSONObject.quote(dev == null ? "" : dev) + ")");
+        return true;
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(android.view.MotionEvent ev) {
+        // 다이얼 돌리기가 마우스 휠로 오면: 정해 둔 경우에만 기능으로(아니면 지도 확대·스크롤 그대로)
+        if (ev.getAction() == android.view.MotionEvent.ACTION_SCROLL && externalDevice(ev.getDevice())) {
+            float v = ev.getAxisValue(android.view.MotionEvent.AXIS_VSCROLL), hz = ev.getAxisValue(android.view.MotionEvent.AXIS_HSCROLL);
+            String id = v > 0 ? "WHEEL_UP" : v < 0 ? "WHEEL_DOWN" : hz > 0 ? "WHEEL_RIGHT" : hz < 0 ? "WHEEL_LEFT" : null;
+            if (id != null && hwSend(id, ev.getDevice())) return true;
+        }
+        return super.dispatchGenericMotionEvent(ev);
+    }
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
+        // 외부 다이얼·키패드: 정해 둔 키는 누를 때 웹으로(뗄 때·반복은 삼킴)
+        if (externalDevice(e.getDevice()) && !KeyEvent.isModifierKey(e.getKeyCode())) {
+            String id = hwKeyId(e);
+            if (hwLearn || hwBound.contains(id)) {
+                if (e.getAction() == KeyEvent.ACTION_DOWN && (e.getRepeatCount() == 0 || id.startsWith("VOLUME"))) hwSend(id, e.getDevice());
+                return true;
+            }
+        }
         // DeX 키보드·블루투스 키보드의 미디어 키 (앱 창에 초점이 있을 때)
         if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {
             String cmd = null, label = null;
@@ -2181,6 +2229,27 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void deckClose() { if (deck != null) deck.close(); }
+
+        @JavascriptInterface
+        public void hwKeys(String json, boolean learn) {
+            hwLearn = learn;
+            try {
+                org.json.JSONArray a = new org.json.JSONArray(json == null ? "[]" : json);
+                java.util.HashSet<String> n = new java.util.HashSet<>();
+                for (int i = 0; i < a.length(); i++) n.add(a.optString(i));
+                synchronized (hwBound) { hwBound.clear(); hwBound.addAll(n); }
+            } catch (Exception ignored) {}
+        }
+
+        @JavascriptInterface
+        public String hwDevices() {
+            org.json.JSONArray out = new org.json.JSONArray();
+            for (int id : android.view.InputDevice.getDeviceIds()) {
+                android.view.InputDevice d = android.view.InputDevice.getDevice(id);
+                if (externalDevice(d)) out.put(d.getName());
+            }
+            return out.toString();
+        }
 
         @JavascriptInterface
         public void deckImages(String json) {
