@@ -2413,3 +2413,68 @@ html.driving body{overflow:hidden}
 .deckflash{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:90;pointer-events:none;padding:10px 22px;border-radius:99px;
   font:800 clamp(18px,3vw,28px)/1 "Noto Sans KR",sans-serif;color:#2a1a06;background:radial-gradient(90% 70% at 50% 30%,#fbf3dd,#e9d6a2);box-shadow:0 0 0 3px #2a1d0c,0 0 0 5px #b8935a,0 10px 24px #000b}
 .deckflash[hidden]{display:none}
+
+/* 1.40 이퀄라이저: 빈티지 전투기 조종석 — 브러시드 실버 프레임 + 일자 나사, 무광 올리브 상단, 검은 홈 + 눈금, 실버 페이더 캡의 붉은 표시선 */
+:root[data-cp][data-cks] #wEq{--eq-ol:#4b5034;--eq-ol2:#3b3f28;--eq-cream:#efe6cc;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.38' cy='.32' r='.75'%3E%3Cstop offset='0' stop-color='%23f2f2ee'/%3E%3Cstop offset='.55' stop-color='%23a9a9a2'/%3E%3Cstop offset='1' stop-color='%23545450'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='10' cy='10' r='8.6' fill='url(%23g)' stroke='%23303030' stroke-width='1.2'/%3E%3Cpath d='M4.6 12.6 15.4 7.4' stroke='%232a2a28' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M4.8 13.4 15.6 8.2' stroke='%23ffffff55' stroke-width='.8'/%3E%3C/svg%3E") 7px 7px/18px 18px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.38' cy='.32' r='.75'%3E%3Cstop offset='0' stop-color='%23f2f2ee'/%3E%3Cstop offset='.55' stop-color='%23a9a9a2'/%3E%3Cstop offset='1' stop-color='%23545450'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='10' cy='10' r='8.6' fill='url(%23g)' stroke='%23303030' stroke-width='1.2'/%3E%3Cpath d='M7 4.4 13 15.6' stroke='%232a2a28' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") calc(100% - 7px) 7px/18px 18px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.38' cy='.32' r='.75'%3E%3Cstop offset='0' stop-color='%23f2f2ee'/%3E%3Cstop offset='.55' stop-color='%23a9a9a2'/%3E%3Cstop offset='1' stop-color='%23545450'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='10' cy='10' r='8.6' fill='url(%23g)' stroke='%23303030' stroke-width='1.2'/%3E%3Cpath d='M4.4 9 15.6 11' stroke='%232a2a28' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") 7px calc(100% - 7px)/18px 18px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.38' cy='.32' r='.75'%3E%3Cstop offset='0' stop-color='%23f2f2ee'/%3E%3Cstop offset='.55' stop-color='%23a9a9a2'/%3E%3Cstop offset='1' stop-color='%23545450'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='10' cy='10' r='8.6' fill='url(%23g)' stroke='%23303030' stroke-width='1.2'/%3E%3Cpath d='M12.6 4.6 7.4 15.4' stroke='%232a2a28' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") calc(100% - 7px) calc(100% - 7px)/18px 18px no-repeat,
+    radial-gradient(120% 60% at 30% 0%,#ffffff22,#0000 60%),
+    radial-gradient(40% 30% at 85% 90%,#5a4a2a26,#0000 70%),
+    repeating-linear-gradient(0deg,#ffffff10 0 1px,#0000 1px 3px),
+    repeating-linear-gradient(0deg,#00000012 0 1px,#0000 1px 5px),
+    linear-gradient(180deg,#d6d6d0,#b3b3ab 35%,#c9c9c2 60%,#9d9d95)!important;
+  border:1px solid #2c2c28!important;border-radius:12px!important;padding:16px 18px 18px!important;
+  box-shadow:inset 0 1px 0 #ffffffaa,inset 0 -2px 0 #00000055,inset 0 0 0 2px #8a8a82,0 0 0 1px #000,0 8px 18px #000c!important}
+:root[data-cp][data-cks] #wEq>.bar{background:linear-gradient(180deg,#535839,var(--eq-ol) 45%,var(--eq-ol2))!important;border:1px solid #23251a!important;border-radius:8px 8px 3px 3px!important;
+  box-shadow:inset 0 1px 0 #ffffff26,inset 0 -1px 0 #0006,0 1px 0 #ffffff66!important;padding:6px 10px!important;margin:0 0 0!important}
+:root[data-cp][data-cks] #wEq>.bar .t{font:600 clamp(18px,2.4vw,30px)/1 Georgia,"Noto Serif","Times New Roman",serif!important;letter-spacing:.18em!important;color:var(--eq-cream)!important;text-shadow:0 1px 0 #000a!important;text-transform:uppercase}
+:root[data-cp][data-cks] #wEq>.bar .groove{height:1px!important;background:#efe6cc88!important;box-shadow:0 1px 0 #0008!important;border:0!important}
+:root[data-cp][data-cks] #wEq>.bar .wbtn{background:linear-gradient(180deg,#4f5436,#353923)!important;border:1px solid #17190f!important;box-shadow:inset 0 1px 0 #ffffff2a,0 0 0 1px #8f8a5d66,0 2px 3px #000a!important}
+:root[data-cp][data-cks] #wEq>.bar .wbtn svg{fill:var(--eq-cream)!important}
+:root[data-cp][data-cks] #wEq>.body{background:linear-gradient(180deg,var(--eq-ol),var(--eq-ol2))!important;border:1px solid #23251a;border-top:0;border-radius:0 0 8px 8px;padding:10px!important;
+  box-shadow:inset 0 1px 0 #0005,0 1px 0 #ffffff55}
+:root[data-cp][data-cks] #wEq .eqtop{gap:10px!important;margin-bottom:10px!important}
+:root[data-cp][data-cks] #wEq .eqtop .pill,:root[data-cp][data-cks] #wEq #preset{height:40px!important;padding:0 16px!important;border-radius:6px!important;border:1px solid #17190f!important;
+  background:linear-gradient(180deg,#4a4f33,#33361f)!important;color:var(--eq-cream)!important;font:600 clamp(15px,1.6vw,20px)/1 "Barlow Condensed","Rajdhani",Georgia,sans-serif!important;letter-spacing:.06em!important;
+  box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -2px 0 #0006,0 0 0 1px #8f8a5d77,0 3px 5px #000b!important;text-shadow:0 1px 0 #000}
+:root[data-cp][data-cks] #wEq #eqOn{position:relative;padding-right:30px!important}
+:root[data-cp][data-cks] #wEq #eqOn::after{content:"";position:absolute;right:11px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffb39b,#e3341f 45%,#6d0e05);box-shadow:0 0 6px #ff3b1f,0 0 0 1px #000}
+:root[data-cp][data-cks] #wEq #eqOn:not(.on)::after{background:radial-gradient(circle at 35% 35%,#7a4a40,#3d140e 60%,#1a0604);box-shadow:0 0 0 1px #000}
+:root[data-cp][data-cks] #wEq #curve{height:44px!important;border-radius:10px!important;border:2px solid #22241a!important;background:radial-gradient(120% 140% at 50% 120%,#2c301f,#15170f 70%)!important;
+  box-shadow:inset 0 2px 6px #000,0 0 0 1px #8f8a5d66,0 1px 0 #ffffff33!important}
+:root[data-cp][data-cks] #wEq .eqgrid{background:repeating-linear-gradient(0deg,#ffffff04 0 1px,#0000 1px 3px),radial-gradient(120% 80% at 50% 0%,#24251c,#121309 75%)!important;
+  border:2px solid #17190f!important;border-radius:10px!important;box-shadow:inset 0 2px 10px #000,0 0 0 1px #8f8a5d55,0 1px 0 #ffffff33!important;padding:16px 6px 0!important;gap:0!important;overflow:hidden}
+:root[data-cp][data-cks] #wEq #eqled{display:none!important}
+:root[data-cp][data-cks] #wEq .band{gap:0!important;border:0!important}
+:root[data-cp][data-cks] #wEq .slot{margin-bottom:10px}
+/* 검은 홈(가운데) + 양옆 눈금선 */
+:root[data-cp][data-cks] #wEq .slot::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:9px;margin-left:-4.5px;border-radius:5px;background:linear-gradient(90deg,#000,#0b0b08 40%,#1d1d16);box-shadow:inset 0 0 3px #000,0 0 0 1px #2f3023,1px 0 0 #ffffff14}
+:root[data-cp][data-cks] #wEq .slot::after{content:"";position:absolute;left:8%;right:8%;top:4px;bottom:4px;pointer-events:none;opacity:.7;
+  background:repeating-linear-gradient(180deg,#e8e2cc 0 1px,#0000 1px 20px) left top/32% 100% no-repeat,repeating-linear-gradient(180deg,#e8e2cc 0 1px,#0000 1px 20px) right top/32% 100% no-repeat}
+/* 실버 페이더 캡(슬라이더는 -90° 돌려 그려서, 캡의 가로·세로가 바뀌어 있음): 가로로 넓은 브러시드 실버 + 가운데 붉은 표시선 */
+:root[data-cp][data-cks] #wEq .slot input::-webkit-slider-thumb{width:24px!important;height:clamp(40px,8vw,64px)!important;margin-top:-10px!important;border-radius:4px!important;border:1px solid #2a2a26!important;
+  background:linear-gradient(180deg,#0000 calc(50% - 1.6px),#b0201a calc(50% - 1.6px),#d43a2e 50%,#b0201a calc(50% + 1.6px),#0000 calc(50% + 1.6px)) center/42% 100% no-repeat,
+    repeating-linear-gradient(90deg,#ffffff22 0 1px,#0000 1px 3px),linear-gradient(90deg,#8e8e88,#f2f2ee 30%,#d8d8d2 55%,#bdbdb6 75%,#77776f)!important;
+  box-shadow:inset 1px 0 0 #fff,inset -2px 0 0 #0004,-3px 2px 5px #000c!important}
+:root[data-cp][data-cks] #wEq .slot input::-moz-range-thumb{width:22px;height:56px;border-radius:4px;border:1px solid #2a2a26;background:linear-gradient(90deg,#8e8e88,#f2f2ee 30%,#c8c8c2 70%,#77776f)}
+:root[data-cp][data-cks] #wEq .slot.drag input::-webkit-slider-thumb{box-shadow:inset 1px 0 0 #fff,0 0 0 2px #e3341f99,-3px 2px 6px #000!important}
+/* 아래 주파수 이름: 어두운 올리브 띠 + 구분선 */
+:root[data-cp][data-cks] #wEq .band span{display:block;width:100%;text-align:center;padding:7px 0 8px;background:linear-gradient(180deg,#23251a,#191a12);border-top:1px solid #8f8a5d55;
+  font:600 clamp(12px,1.5vw,19px)/1 "Barlow Condensed",Georgia,serif!important;color:var(--eq-cream)!important;letter-spacing:.04em;text-shadow:0 1px 0 #000}
+:root[data-cp][data-cks] #wEq .band.pre span{color:var(--eq-cream)!important}
+:root[data-cp][data-cks] #wEq .band+.band span{box-shadow:inset 1px 0 0 #8f8a5d66}
+:root[data-cp][data-cks] #wEq .slot input::-webkit-slider-runnable-track{background:none!important;box-shadow:none!important}
+:root[data-cp][data-cks] #wEq .slot input::-moz-range-track{background:none!important}
+:root[data-cp][data-cks] #wEq .eqgrid{container-type:inline-size}
+:root[data-cp][data-cks] #wEq .slot input::-webkit-slider-thumb{height:min(62px,calc(100cqi / 11 * .78))!important}
+:root[data-cp][data-cks] #wEq #eqOn.on{background:linear-gradient(180deg,#4a4f33,#33361f)!important;color:var(--eq-cream)!important;box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -2px 0 #0006,0 0 0 1px #8f8a5d77,0 3px 5px #000b!important}
+/* 위로 길게: 페이더 길이를 넉넉히(캡·눈금·이름 띠가 겹치지 않게), 상단 버튼 줄은 한 줄로 */
+:root[data-cp][data-cks] #wEq .eqgrid,:root[data-cp][data-cks] .app.FX>#wEq.fx .eqgrid{min-height:clamp(300px,42vh,460px)!important}
+:root[data-cp][data-cks] #wEq .slot{min-height:clamp(230px,34vh,380px)!important;margin:0 0 14px!important}
+:root[data-cp][data-cks] #wEq .eqtop{flex-wrap:nowrap!important}
+:root[data-cp][data-cks] #wEq .eqtop #curve{min-width:60px!important}
+:root[data-cp][data-cks] #wEq .eqtop #preset{min-width:0;max-width:34%}
+:root[data-cp][data-cks] #wEq .eqtop .pill{flex:none}
