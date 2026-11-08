@@ -799,8 +799,21 @@ public class MainActivity extends Activity {
         return b.toString();
     }
 
+    /** 정해 둔 키인지: "키" 또는 "키@장치이름 일부"(예: Ctrl+V@ulanzi — 그 장치에서 온 것만, 다른 키보드의 붙여넣기는 그대로) */
+    private boolean hwIsBound(String id, android.view.InputDevice d) {
+        if (hwBound.contains(id)) return true;
+        String dev = d == null || d.getName() == null ? "" : d.getName().toLowerCase(java.util.Locale.ROOT);
+        synchronized (hwBound) {
+            for (String b : hwBound) {
+                int at = b.indexOf('@');
+                if (at > 0 && b.substring(0, at).equals(id) && dev.contains(b.substring(at + 1).toLowerCase(java.util.Locale.ROOT))) return true;
+            }
+        }
+        return false;
+    }
+
     private boolean hwSend(String id, android.view.InputDevice d) {
-        if (!hwLearn && !hwBound.contains(id)) return false;
+        if (!hwLearn && !hwIsBound(id, d)) return false;
         String dev = d == null ? "" : d.getName();
         js("window.__hwKey&&window.__hwKey(" + JSONObject.quote(id) + "," + JSONObject.quote(dev == null ? "" : dev) + ")");
         return true;
@@ -822,7 +835,7 @@ public class MainActivity extends Activity {
         // 외부 다이얼·키패드: 정해 둔 키는 누를 때 웹으로(뗄 때·반복은 삼킴)
         if (externalDevice(e.getDevice()) && !KeyEvent.isModifierKey(e.getKeyCode())) {
             String id = hwKeyId(e);
-            if (hwLearn || hwBound.contains(id)) {
+            if (hwLearn || hwIsBound(id, e.getDevice())) {
                 if (e.getAction() == KeyEvent.ACTION_DOWN && (e.getRepeatCount() == 0 || id.startsWith("VOLUME"))) hwSend(id, e.getDevice());
                 return true;
             }
