@@ -2400,3 +2400,16 @@ html.driving body{overflow:hidden}
 :root[data-cp][data-cks] #wMain .transport #bSwap svg{width:clamp(18px,2.4vw,26px);height:clamp(18px,2.4vw,26px)}
 :root[data-cp][data-cks] #wMain .transport #bSwap[data-to="app"]{background:radial-gradient(90% 70% at 50% 30%,#e8f3e2,#cfe0c2 55%,#a9bf96 100%)!important}
 :root[data-cp][data-cks] #wMain .transport{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+
+/* 1.35 몬스타덱: 키 배치 목록, 누를 때 잠깐 뜨는 기능 이름 */
+.decklist{list-style:none;margin:6px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+.decklist li{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #ffffff1a;border-radius:6px;background:#0003}
+.decklist li span{flex:1 1 auto;font-weight:700;font-size:13px}
+.decklist li em{font-style:normal;font-size:12px;opacity:.8;white-space:nowrap}
+.decklist li.learn{border-color:#ffc35c;box-shadow:0 0 0 1px #ffc35c66;animation:fltBlink 1s steps(2) infinite}
+.decklist li .pill{height:30px;padding:0 10px;font-size:12px}
+#deckStat[data-ok="1"]{color:#a8f08f}
+#deckBri{width:min(220px,40vw)}
+.deckflash{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:90;pointer-events:none;padding:10px 22px;border-radius:99px;
+  font:800 clamp(18px,3vw,28px)/1 "Noto Sans KR",sans-serif;color:#2a1a06;background:radial-gradient(90% 70% at 50% 30%,#fbf3dd,#e9d6a2);box-shadow:0 0 0 3px #2a1d0c,0 0 0 5px #b8935a,0 10px 24px #000b}
+.deckflash[hidden]{display:none}

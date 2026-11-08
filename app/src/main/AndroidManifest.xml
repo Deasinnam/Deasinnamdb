@@ -35,6 +35,7 @@
     <!-- 선택: 앱이 꺼져 있을 때 차에 연결되면 앱을 자동으로 열기 (사용자가 설정에서 허용) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
 
     <!-- YouTube Music, Spotify 설치 여부 확인과 실행 -->
@@ -80,6 +81,11 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 몬스타덱(USB 단축키 패드)을 꽂으면 이 앱으로 열고 바로 연결 -->
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_deck" />
         </activity>
 
         <receiver

@@ -295,6 +295,12 @@ public class MainActivity extends Activity {
 
         connectPlayer();
         handleCarIntent(getIntent());
+        deck = new UsbDeck(this, new UsbDeck.Sink() {
+            @Override public void onReport(String hex) { js("window.__deck&&window.__deck('" + hex + "')"); }
+            @Override public void onState(String json) { js("window.__deckState&&window.__deckState(" + json + ")"); }
+        });
+        deck.start();
+        handleDeckIntent(getIntent());
         am.registerAudioDeviceCallback(devCallback, main);
         // 등록 직후에는 이미 연결된 기기가 한꺼번에 전달되므로, 그 뒤에 새로 연결되는 것만 차량 연결로 봅니다.
         main.postDelayed(() -> devCallbackReady = true, 1500);
@@ -742,6 +748,16 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleCarIntent(intent);
+        handleDeckIntent(intent);
+    }
+
+    // ------------------------------------------------------------ 몬스타덱(USB 단축키 패드)
+    private UsbDeck deck;
+
+    private void handleDeckIntent(Intent i) {
+        if (i == null || deck == null) return;
+        if (android.hardware.usb.UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(i.getAction())) main.postDelayed(() -> deck.connect(), 600);
+        else if (deck.find() != null) main.postDelayed(() -> deck.connect(), 1500); // 이미 꽂혀 있으면 앱을 켤 때 연결
     }
 
     void onCarConnected(final String name) {
@@ -980,6 +996,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         recCloseQuiet(); // 녹화 중 앱이 닫혀도 그때까지 찍은 파일은 남김
+        if (deck != null) deck.stop();
         main.removeCallbacksAndMessages(null);
         if (tts != null) { tts.shutdown(); tts = null; }
         try { am.unregisterAudioDeviceCallback(devCallback); } catch (Exception ignored) {}
@@ -2155,6 +2172,18 @@ public class MainActivity extends Activity {
         public void speak(final String text) {
             main.post(() -> MainActivity.this.speak(text));
         }
+
+        @JavascriptInterface
+        public String deckState() { return deck == null ? "{}" : deck.stateJson(); }
+
+        @JavascriptInterface
+        public boolean deckConnect() { return deck != null && deck.connect(); }
+
+        @JavascriptInterface
+        public void deckClose() { if (deck != null) deck.close(); }
+
+        @JavascriptInterface
+        public void deckBright(int pct) { if (deck != null) deck.setBrightness(pct); }
 
         @JavascriptInterface
         public void speakCam(final String text) {
