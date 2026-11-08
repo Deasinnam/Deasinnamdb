@@ -9,11 +9,11 @@ run('Monstar Deck keys run app functions', async ({context, origin, errors}) => 
   await p.setViewportSize({width: 1036, height: 900});
   await p.goto(origin); await p.waitForTimeout(500);
   const ack = (k, s) => '41434b00004f4b0000' + k.toString(16).padStart(2, '0') + s.toString(16).padStart(2, '0');
-  // 7번 키(기본: 지도) → 지도 창에 초점
-  await p.evaluate(h => __deck(h), ack(7, 1));
+  // 화면 위치 7번(가운데 줄 둘째 = 장치 번호 11, 누를 때만 신호) → 기본: 지도
+  await p.evaluate(h => __deck(h), ack(11, 0));
   assert.equal(await p.evaluate(() => document.getElementById('ckRail').parentElement.id), 'wMap', 'Key 7 opens the map view');
   assert.equal(await p.locator('#deckFlash').textContent(), '지도');
-  await p.evaluate(h => __deck(h), ack(7, 0)); // 떼는 신호는 무시
+  assert.equal(await p.evaluate(() => AmpDeck.parse('41434b00004f4b00000d00').id), 'k1', 'Device key 13 is the top-left key');
   // 설정: 연결됨 표시, 키 배우기(낯선 형식의 보고서도 키로 기억)
   await p.locator('#setBtn').click();
   await p.locator('#secDeck').scrollIntoViewIfNeeded();

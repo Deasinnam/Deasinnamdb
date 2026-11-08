@@ -2612,6 +2612,8 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
     ['land','착륙',()=>{if(window.AmpFlight&&!AmpFlight.land())toast('착륙은 순항 중에만 할 수 있어요.')}],
     ['briUp','화면 밝게',()=>briSet(briBase()+10)],['briDn','화면 어둡게',()=>briSet(briBase()-10)],
     ['camDemo','과속 경고 예시',()=>AmpCam.demo()],['set','설정 열기',()=>openSettings()],['none','(없음)',()=>{}]];
+  // 장치 키 번호 → 화면 위치(5칸×3줄, 왼쪽 위부터 1~15): 장치 번호 = (4-열)*3 + 줄 + 1
+  const POS={};for(let r=0;r<3;r++)for(let c=0;c<5;c++)POS[(4-c)*3+r+1]=r*5+c+1;
   const ACT=Object.fromEntries(ACTS.map(a=>[a[0],a]));
   // 키 번호(1~15)가 보이는 장치의 기본 배치: 윗줄 재생 조작, 가운데 화면, 아랫줄 운전 기능
   const DEF={k1:'prev',k2:'play',k3:'next',k4:'swap',k5:'mute',k6:'gps',k7:'map',k8:'radio',k9:'vis',k10:'all',k11:'rec',k12:'day',k13:'tmap',k14:'nmap',k15:'land'};
@@ -2621,7 +2623,9 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
     if(b[0]===0x41&&b[1]===0x43&&b[2]===0x4b){                     // "ACK"
       if(b[5]===0x54&&b[6]===0x46)return null;                        // 펌웨어 정보 응답
       if(b[5]===0x43&&b[6]===0x42)return null;                        // 명령 확인 응답
-      const k=b[9],down=b[10]!==0;if(k>0&&k<64)return {id:'k'+k,down,label:k+'번 키'};}
+      // TS115(293S 펌웨어): 누를 때만 "ACK··OK··<키>" 한 번(뗄 때 신호 없음). 장치 번호는 세로 줄 순서라 화면 위치 번호(왼쪽 위 1 → 오른쪽 아래 15)로 바꿈
+      const raw=b[9];if(raw>0&&raw<=15&&!b[10]){const k=POS[raw];return {id:'k'+k,down:true,label:k+'번 키'}}
+      const k=raw,down=b[10]!==0;if(k>0&&k<64)return {id:'k'+k,down,label:k+'번 키'};}
     if(b[0]===0x48&&b[1]===0x41&&b[2]===0x4e)return null;             // 장치가 인사를 다시 청함(앱이 처리)
     return {id:'r'+hex.slice(0,24),down:true,label:'키('+hex.slice(0,8)+'…)'}}
   function onReport(hex){raw.unshift(hex);raw.length=Math.min(raw.length,6);ui();
