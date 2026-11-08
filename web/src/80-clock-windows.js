@@ -60,9 +60,9 @@ setClockStyle(clockStyle);
 $('#clkWorld').onclick=()=>{openSettings();const r=$('#secClock');if(r){r.scrollIntoView({block:'center'});$('#sWorld').focus()}};
 clockTick();setInterval(clockTick,1000);
 /* ---------- 창 순서(설정) ---------- */
-const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wRadio:'라디오',wEq:'이퀄라이저',wPl:'재생 목록'};
+const WIN_NAME={wGps:'속도계',wCtl:'조종 패널',wAtc:'관제탑',wCam:'블랙박스',wMap:'지도',wMain:'플레이어',wVis:'재생 화면',wRadio:'라디오',wEq:'이퀄라이저',wPl:'재생 목록',wLog:'차계부'};
 function winKind(){return isCp()?'K':isCar()?'G':'N'}
-function winDefault(){return {K:['wGps','wCtl','wAtc','wMap','wMain','wVis','wRadio','wEq','wPl','wCam'],G:['wGps','wMap','wMain','wVis','wRadio','wEq','wPl'],N:['wMain','wVis','wRadio','wEq','wPl']}[winKind()]}
+function winDefault(){return {K:['wGps','wCtl','wAtc','wMap','wMain','wVis','wRadio','wEq','wPl','wLog','wCam'],G:['wGps','wMap','wMain','wVis','wRadio','wEq','wPl','wLog'],N:['wMain','wVis','wRadio','wEq','wPl','wLog']}[winKind()]}
 function winOrder(){const d=winDefault(),o=store.get('winOrder_'+winKind(),null);if(!Array.isArray(o))return null;const f=o.filter(id=>d.includes(id));d.forEach(id=>{if(!f.includes(id))f.push(id)});return f}
 function applyWinOrder(){const o=winOrder();appEl.classList.toggle('CO',!!o);
   document.querySelectorAll('#app>.win').forEach(w=>w.style.order='');

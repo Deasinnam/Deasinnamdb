@@ -34,9 +34,10 @@ Object.values(cv).forEach(c=>{size(c);ro.observe(c)});
 
 function drawCurve(){
   const c=cv.curve,g=cx.curve;if(!g||!C.text)return;const w=c.width,h=c.height;g.clearRect(0,0,w,h);
-  g.strokeStyle=C.edge;g.lineWidth=1;g.beginPath();g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();
+  const brass=document.documentElement.hasAttribute('data-cp')&&document.documentElement.hasAttribute('data-cks'); /* 1.42 황동 EQ: 주황 발광 곡선, 가운데 선 없음 */
+  if(!brass){g.strokeStyle=C.edge;g.lineWidth=1;g.beginPath();g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke()}
   const pts=gains.map((v,i)=>[(i+.5)/10*w,h/2-(eqOn?v:0)/12*(h/2-3)]);
-  g.strokeStyle=eqOn?C.text:C.dim;g.lineWidth=Math.max(1.5,h/18);g.shadowColor=C.text;g.shadowBlur=eqOn?6:0;
+  g.strokeStyle=brass?(eqOn?'#ffad2e':'#6a5a3a'):eqOn?C.text:C.dim;g.lineWidth=Math.max(1.5,h/18);g.shadowColor=brass?'#ff9a14':C.text;g.shadowBlur=eqOn?(brass?10:6):0;
   g.beginPath();g.moveTo(0,pts[0][1]);pts.forEach((p,i)=>{if(i===0){g.lineTo(p[0],p[1]);return}const q=pts[i-1],mx=(q[0]+p[0])/2;g.bezierCurveTo(mx,q[1],mx,p[1],p[0],p[1])});g.lineTo(w,pts[9][1]);g.stroke();g.shadowBlur=0;
 }
 
@@ -369,3 +370,5 @@ document.querySelectorAll('.vmode .vstep').forEach(b=>b.onclick=e=>{e.stopPropag
 cv.vis.onclick=()=>visStep(1);
 window.AmpVis={level:()=>visLevel(0,1),names:VIS_NAMES,set:setVis,fav:()=>visFav.slice(),toggleFav:visFavToggle};
 
+/* 1.42 좁은 화면 EQ: 5개 대역씩 보이고 가로로 넘김 */
+{const w=$('#wEq');new ResizeObserver(()=>{const n=w.getBoundingClientRect().width<480;if(n!==w.classList.contains('eqn')){w.classList.toggle('eqn',n);setTimeout(()=>window.dispatchEvent(new Event('resize')),30)}}).observe(w)}

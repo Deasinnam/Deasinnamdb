@@ -18,7 +18,7 @@ function pollGps(){
     if(lastFix&&s.ts!==lastFix.ts){
       const dt=(s.ts-lastFix.ts)/1000,dd=hav(lastFix.lat,lastFix.lon,s.lat,s.lon);
       if(v<0&&dt>0)v=dd/dt;
-      if(dt>0&&dt<10&&s.acc<35&&v>0.8){trip.dist+=dd;trip.time+=dt}
+      if(dt>0&&dt<10&&s.acc<35&&v>0.8){trip.dist+=dd;trip.time+=dt;try{AmpLog.addDist(dd)}catch(e){}}
       if(s.acc<35&&v*3.6>trip.max&&v*3.6<400)trip.max=v*3.6;
       store.set('trip',trip);
     }

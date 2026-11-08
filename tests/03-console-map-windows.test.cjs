@@ -72,7 +72,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
     const ty = sel => pa.locator(sel).evaluate(el => el.getBoundingClientRect().top);
     assert.ok(await ty('#wGps') < await ty('#wAtc'));
     await pa.locator('#setBtn').click();
-    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','지도','플레이어','재생 화면','라디오','이퀄라이저','재생 목록','블랙박스']);
+    assert.deepEqual(await pa.locator('#ordList li b').allTextContents(), ['속도계','조종 패널','관제탑','지도','플레이어','재생 화면','라디오','이퀄라이저','재생 목록','차계부','블랙박스']);
     await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
     await pa.locator('#ordList li[data-id="wAtc"] button[data-d="-1"]').click();
     assert.deepEqual((await pa.locator('#ordList li b').allTextContents()).slice(0,3), ['관제탑','속도계','조종 패널']);
