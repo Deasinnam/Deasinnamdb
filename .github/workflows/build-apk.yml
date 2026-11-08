@@ -66,8 +66,16 @@ jobs:
         run: |
           chmod +x gradlew
           # Gradle 배포 서버가 잠깐 막힐 때가 있어 내려받기만 최대 4번 재시도
-          for i in 1 2 3 4; do ./gradlew --no-daemon --version >/dev/null && break; echo "gradle download retry $i"; sleep $((i*20)); done
-          ./gradlew --no-daemon assembleRelease
+          G=./gradlew
+          for i in 1 2 3; do ./gradlew --no-daemon --version >/dev/null && break; echo "gradle download retry $i"; sleep $((i*20)); G=""; done
+          if ! ./gradlew --no-daemon --version >/dev/null 2>&1; then
+            # 공식 배포 서버가 계속 막히면 미러에서 받아 SHA-256 확인 후 사용
+            SUM=$(curl -fsSL --retry 3 https://services.gradle.org/distributions/gradle-8.9-bin.zip.sha256 || echo d725d707bfabd4dfdc958c624003b3c80accc03f7037b5122c4b1d0ef15cecab)
+            for U in https://mirrors.cloud.tencent.com/gradle/gradle-8.9-bin.zip https://downloads.gradle.org/distributions/gradle-8.9-bin.zip https://mirrors.huaweicloud.com/gradle/gradle-8.9-bin.zip; do
+              curl -fSL --retry 3 -m 300 -o /tmp/g.zip "$U" && echo "$SUM  /tmp/g.zip" | sha256sum -c - && break; rm -f /tmp/g.zip; done
+            unzip -q /tmp/g.zip -d /tmp/gd && G=/tmp/gd/gradle-8.9/bin/gradle
+          else G=./gradlew; fi
+          $G --no-daemon assembleRelease
           find app/build/outputs/apk -name '*.apk'
           rm -f "$AMP_KEYSTORE_FILE"
 
