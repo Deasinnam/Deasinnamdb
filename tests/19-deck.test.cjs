@@ -4,7 +4,7 @@ const {run, assert} = require('./lib/harness.cjs');
 run('Monstar Deck keys run app functions', async ({context, origin, errors}) => {
   const p = await context.newPage();
   p.on('pageerror', e => errors.push('deck: ' + e.message));
-  await p.addInitScript(() => { window.__conn = 0; window.AndroidBridge = {deckState: () => JSON.stringify({present: true, open: true, vid: '0400', pid: '1000'}), deckConnect: () => { window.__conn++; return true; }, deckBright: () => {}};
+  await p.addInitScript(() => { window.__conn = 0; window.AndroidBridge = {deckState: () => JSON.stringify({present: true, open: true, vid: '0400', pid: '1000'}), deckConnect: () => { window.__conn++; return true; }, deckBright: () => {}, deckImages: j => { window.__imgs = JSON.parse(j); }};
     if (!sessionStorage.getItem('dk')) { sessionStorage.setItem('dk', '1'); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); } });
   await p.setViewportSize({width: 1036, height: 900});
   await p.goto(origin); await p.waitForTimeout(500);
@@ -14,6 +14,8 @@ run('Monstar Deck keys run app functions', async ({context, origin, errors}) => 
   assert.equal(await p.evaluate(() => document.getElementById('ckRail').parentElement.id), 'wMap', 'Key 7 opens the map view');
   assert.equal(await p.locator('#deckFlash').textContent(), '지도');
   assert.equal(await p.evaluate(() => AmpDeck.parse('41434b00004f4b00000d00').id), 'k1', 'Device key 13 is the top-left key');
+  await p.waitForTimeout(400);
+  assert.deepEqual(await p.evaluate(() => __imgs.slice(0, 5)), ['prev', 'play', 'next', 'swap', 'mute'], 'Key pictures follow the layout');
   // 설정: 연결됨 표시, 키 배우기(낯선 형식의 보고서도 키로 기억)
   await p.locator('#setBtn').click();
   await p.locator('#secDeck').scrollIntoViewIfNeeded();

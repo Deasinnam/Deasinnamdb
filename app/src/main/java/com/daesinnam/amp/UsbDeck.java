@@ -175,6 +175,50 @@ final class UsbDeck {
         } catch (Exception e) { return false; }
     }
 
+    /**
+     * 키 그림 넣기: 화면 켜기(DIS) → 화면 위치 1~15에 기능 아이콘, 오른쪽 세로 화면 3칸에 로고 → 새로고침(STP).
+     * (실측: DIS 뒤에는 키 신호가 멈췄다가 STP로 그림을 확정하면 다시 옴) 그림은 assets/deck/*.jpg(장치 방향에 맞게 미리 돌려 둠)
+     */
+    void sendImages(final String[] acts) {
+        if (conn == null) return;
+        new Thread(() -> {
+            synchronized (UsbDeck.this) {
+                try {
+                    send(crt("DIS"));
+                    for (int pos = 1; pos <= 15; pos++) {
+                        String a = acts != null && pos - 1 < acts.length && acts[pos - 1] != null ? acts[pos - 1] : "none";
+                        byte[] img = asset("deck/act_" + a.replaceAll("[^A-Za-z]", "") + ".jpg");
+                        if (img == null) img = asset("deck/act_none.jpg");
+                        int r = (pos - 1) / 5, c = (pos - 1) % 5;
+                        bat((4 - c) * 3 + r + 1, img);
+                    }
+                    for (int i = 0; i < 3; i++) { byte[] img = asset("deck/side" + (i + 1) + ".jpg"); if (img != null) bat(16 + i, img); }
+                    send(crt("STP"));
+                } catch (Exception ignored) {}
+            }
+        }, "deck-img").start();
+    }
+
+    private byte[] asset(String name) {
+        try (java.io.InputStream in = ctx.getAssets().open(name)) {
+            java.io.ByteArrayOutputStream o = new java.io.ByteArrayOutputStream();
+            byte[] b = new byte[4096]; int n; while ((n = in.read(b)) > 0) o.write(b, 0, n);
+            return o.toByteArray();
+        } catch (Exception e) { return null; }
+    }
+
+    private void bat(int dev, byte[] img) {
+        if (img == null || img.length > 0xffff) return;
+        byte[] h = crt("BAT\0\0");
+        h[10] = (byte) ((img.length >> 8) & 0xff); h[11] = (byte) (img.length & 0xff); h[12] = (byte) dev;
+        send(h);
+        for (int i = 0; i < img.length; i += 512) {
+            byte[] p = new byte[512];
+            System.arraycopy(img, i, p, 0, Math.min(512, img.length - i));
+            send(p);
+        }
+    }
+
     /** 키 화면 밝기 0~100 */
     void setBrightness(int pct) {
         brightness = Math.max(0, Math.min(100, pct));

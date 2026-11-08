@@ -2183,6 +2183,17 @@ public class MainActivity extends Activity {
         public void deckClose() { if (deck != null) deck.close(); }
 
         @JavascriptInterface
+        public void deckImages(String json) {
+            if (deck == null) return;
+            try {
+                org.json.JSONArray a = new org.json.JSONArray(json);
+                String[] acts = new String[15];
+                for (int i = 0; i < 15 && i < a.length(); i++) acts[i] = a.optString(i, "none");
+                deck.sendImages(acts);
+            } catch (Exception ignored) {}
+        }
+
+        @JavascriptInterface
         public void deckBright(int pct) { if (deck != null) deck.setBrightness(pct); }
 
         @JavascriptInterface

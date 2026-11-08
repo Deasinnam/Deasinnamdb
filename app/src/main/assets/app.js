@@ -2618,7 +2618,7 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
   // 키 번호(1~15)가 보이는 장치의 기본 배치: 윗줄 재생 조작, 가운데 화면, 아랫줄 운전 기능
   const DEF={k1:'prev',k2:'play',k3:'next',k4:'swap',k5:'mute',k6:'gps',k7:'map',k8:'radio',k9:'vis',k10:'all',k11:'rec',k12:'day',k13:'tmap',k14:'nmap',k15:'land'};
   let map=Object.assign({},store.get('deckMap',null)||DEF),learn=null,last={id:'',t:0},st={},raw=[];
-  const save=()=>store.set('deckMap',map);
+  const save=()=>{store.set('deckMap',map);try{pushImages()}catch(e){}};
   function parse(hex){const b=[];for(let i=0;i<hex.length;i+=2)b.push(parseInt(hex.substr(i,2),16));
     if(b[0]===0x41&&b[1]===0x43&&b[2]===0x4b){                     // "ACK"
       if(b[5]===0x54&&b[6]===0x46)return null;                        // 펌웨어 정보 응답
@@ -2635,8 +2635,11 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
     try{sndKey()}catch(e){}try{a[2]()}catch(e){}flash(a[1])}
   let flT=0;function flash(t){const el=$('#deckFlash');if(!el)return;el.textContent=t;el.hidden=false;clearTimeout(flT);flT=setTimeout(()=>el.hidden=true,900)}
   window.__deck=onReport;
-  window.__deckState=s=>{st=s||{};ui()};
-  function stateNow(){try{if(NB&&NB.deckState)st=JSON.parse(NB.deckState()||'{}')}catch(e){}}
+  // 키 화면 그림: 연결될 때와 배치를 바꿀 때 화면 위치 1~15의 기능 아이콘 + 오른쪽 로고를 장치에 넣음
+  let imgT=0,wasOpen=false;
+  function pushImages(){clearTimeout(imgT);imgT=setTimeout(()=>{try{if(NB&&NB.deckImages&&st.open)NB.deckImages(JSON.stringify(Array.from({length:15},(_,i)=>map['k'+(i+1)]||'none')))}catch(e){}},300)}
+  window.__deckState=s=>{st=s||{};if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open;ui()};
+  function stateNow(){try{if(NB&&NB.deckState){st=JSON.parse(NB.deckState()||'{}');if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open}}catch(e){}}
   function ui(){const sec=$('#secDeck');if(!sec)return;
     const s=$('#deckStat');s.textContent=!NB||!NB.deckState?'안드로이드 앱에서 동작해요(폴드에 USB-C로 꽂아 쓰세요).':st.open?'연결됨 · 키를 누르면 바로 동작해요':st.present?(st.err||'꽂혀 있어요 · [연결]을 눌러 주세요'):(st.err||'몬스타덱이 연결되어 있지 않아요');
     s.dataset.ok=st.open?'1':'';
@@ -2651,7 +2654,7 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
   $('#deckBri').oninput=e=>{try{NB&&NB.deckBright&&NB.deckBright(+e.target.value)}catch(x){}store.set('deckBri',+e.target.value)};
   $('#deckBri').value=store.get('deckBri',70);
   stateNow();ui();setInterval(()=>{if(!$('#settings').hidden){stateNow();ui()}},1500);
-  window.AmpDeck={report:onReport,get map(){return map},learn(a){learn=a;ui()},parse,ACTS:ACTS.map(a=>a[0])};
+  window.AmpDeck={images:()=>pushImages(),report:onReport,get map(){return map},learn(a){learn=a;ui()},parse,ACTS:ACTS.map(a=>a[0])};
 })();
 /* ===== 96-skin-compass-notif.js ===== */
 // 상단 스킨 버튼(콕핏 수정판), 나침반 계기(해외 시간 대신), 알림 접근 "제한된 설정" 단계별 안내
