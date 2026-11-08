@@ -1634,6 +1634,16 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void setExtEqPolicy(boolean ext, boolean global) {
+            ExternalEq.I.setPolicy(ext, global);
+        }
+
+        @JavascriptInterface
+        public void resetExtEq() {
+            ExternalEq.I.reset();
+        }
+
+        @JavascriptInterface
         public void setSystemVolume(int pct) {
             int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
             am.setStreamVolume(AudioManager.STREAM_MUSIC, Math.round(Math.max(0, Math.min(100, pct)) * max / 100f), 0);

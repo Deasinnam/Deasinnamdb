@@ -31,6 +31,8 @@ final class ExternalEq {
     private final Map<Integer, AudioEffect> effects = new HashMap<>();
     private boolean active = false;
     private boolean on = true;
+    // 1.48 다른 앱 소리에 EQ를 거는 것 자체를 끌 수 있게(기본 켬), 기기 전체 소리(세션 0)는 기본 끔 — 일부 기기에서 외부 앱 소리가 아예 안 나는 문제
+    private boolean extAllowed = true, globalAllowed = false;
     private float pre = 0f;
     private float[] gains = new float[10];
     private String status = "꺼짐";
@@ -70,11 +72,33 @@ final class ExternalEq {
     }
 
     synchronized void set(boolean enabled, float preamp, float[] g) {
+        boolean was = needed();
         on = enabled;
         pre = preamp;
         if (g != null && g.length == 10) gains = g.clone();
+        if (was != needed()) rebuild();
         for (AudioEffect e : effects.values()) apply(e);
         if (localEffect != null) apply(localEffect);
+    }
+
+    synchronized void setPolicy(boolean ext, boolean global) {
+        extAllowed = ext; globalAllowed = global;
+        rebuild();
+    }
+
+    /** 문제 해결: 다른 앱에 붙은 효과를 모두 떼고 다시 붙임(설정이 허용하는 만큼만) */
+    synchronized void reset() {
+        for (AudioEffect e : effects.values()) release(e);
+        effects.clear();
+        rebuild();
+    }
+
+    /** EQ가 꺼져 있거나 모든 값이 0이면 다른 앱 소리에는 아무것도 걸지 않음 */
+    private boolean needed() {
+        if (!on) return false;
+        if (Math.abs(pre) > 0.05f) return true;
+        for (float g : gains) if (Math.abs(g) > 0.05f) return true;
+        return false;
     }
 
     /** 표준 플레이어가 만들어지거나 없어질 때 호출 (0이면 해제) */
@@ -101,12 +125,13 @@ final class ExternalEq {
 
     private void rebuild() {
         Set<Integer> want = new LinkedHashSet<>();
-        if (active) want.addAll(sessions.keySet());
+        boolean use = active && extAllowed && needed();
+        if (use) want.addAll(sessions.keySet());
 
         Iterator<Map.Entry<Integer, AudioEffect>> it = effects.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<Integer, AudioEffect> en = it.next();
-            boolean keep = want.contains(en.getKey()) || (en.getKey() == 0 && active && want.isEmpty());
+            boolean keep = want.contains(en.getKey()) || (en.getKey() == 0 && use && globalAllowed && want.isEmpty());
             if (!keep) {
                 release(en.getValue());
                 it.remove();
@@ -123,7 +148,7 @@ final class ExternalEq {
         }
         boolean appAttached = false;
         for (int s : effects.keySet()) if (s != 0) appAttached = true;
-        if (active && !appAttached && !effects.containsKey(0)) {
+        if (use && globalAllowed && !appAttached && !effects.containsKey(0)) {
             AudioEffect e = create(0);
             if (e != null) {
                 effects.put(0, e);
@@ -134,7 +159,9 @@ final class ExternalEq {
         }
 
         if (!active) status = "꺼짐";
-        else if (effects.isEmpty()) status = "이 기기는 외부 앱 EQ를 지원하지 않아요";
+        else if (!extAllowed) status = "외부 앱에는 적용 안 함(설정)";
+        else if (!needed()) status = "EQ 평탄 · 외부 앱 소리 그대로";
+        else if (effects.isEmpty()) status = sessions.isEmpty() ? (globalAllowed ? "이 기기는 외부 앱 EQ를 지원하지 않아요" : "앱이 EQ 연결을 알려 주지 않음 · 소리 그대로") : "이 기기는 외부 앱 EQ를 지원하지 않아요";
         else if (effects.containsKey(0)) status = "전역 EQ (기기 전체 소리)";
         else {
             List<String> names = new ArrayList<>();

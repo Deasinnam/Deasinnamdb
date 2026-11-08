@@ -99,3 +99,11 @@ const EXT_BRAND={'com.google.android.apps.youtube.music':['ytm','YouTube Music']
 function extBrand(s){const c=$('#cover');if(mode!=='ext'||!c.classList.contains('empty')){delete c.dataset.brand;return}
   let b=EXT_BRAND[s&&s.pkg];if(!b&&s&&s.app){const a=String(s.app);b=/youtube/i.test(a)?EXT_BRAND['com.google.android.apps.youtube.music']:/spotify/i.test(a)?EXT_BRAND['com.spotify.music']:null}
   if(b){c.dataset.brand=b[0];c.dataset.label=b[1]}else if(s&&s.app){c.dataset.brand='app';c.dataset.label=String(s.app)}else delete c.dataset.brand}
+/* 1.48 외부 앱 소리 설정: EQ를 외부 앱에 걸지 여부(기본 켬), 기기 전체 소리(기본 끔), 소리가 안 날 때 다시 연결 */
+{const ex=$('#sExtEq'),gl=$('#sExtEqGlobal');let pol=store.get('extEqPol',{ext:true,global:false});
+  const send=()=>{try{NB.setExtEqPolicy(!!pol.ext,!!pol.global)}catch(e){}};
+  const ui=()=>{ex.checked=!!pol.ext;gl.checked=!!pol.global;gl.disabled=!pol.ext};
+  ex.onchange=()=>{pol.ext=ex.checked;if(!pol.ext)pol.global=false;store.set('extEqPol',pol);ui();send();toast(pol.ext?'외부 앱 소리에도 EQ를 걸어요.':'외부 앱 소리는 EQ 없이 그대로 나와요.')};
+  gl.onchange=()=>{pol.global=gl.checked;store.set('extEqPol',pol);ui();send()};
+  $('#extEqReset').onclick=()=>{try{NB.resetExtEq()}catch(e){}toast('외부 앱 EQ를 다시 연결했어요.');setTimeout(()=>{try{$('#extEqStat').textContent='지금: '+(JSON.parse(NB.extStatus()).eq||'꺼짐')}catch(e){}},400)};
+  if(!HAS_EXT)$('#secExtSnd').hidden=true;ui();send();}
