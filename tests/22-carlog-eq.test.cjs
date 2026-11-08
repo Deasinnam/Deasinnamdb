@@ -57,5 +57,18 @@ run('Car log checklist by fuel type, and brass equalizer', async ({context, orig
   assert.equal(await p.evaluate(() => document.getElementById('wEq').classList.contains('eqn')), true, 'Narrow EQ scrolls sideways');
   assert.ok(await p.evaluate(() => { const g = document.getElementById('eqgrid'); return g.scrollWidth > g.clientWidth * 1.8; }), 'Bands wider than the view');
   if (SHOT) { await p.evaluate(() => document.getElementById('wEq').scrollIntoView()); await p.locator('#wEq').screenshot({path: SHOT + '/eqn.png'}); }
+  // 1.43 계기 스킨: 기본 에어라인, 버튼으로 에어포스(HUD) ↔ 에어라인, 다시 열어도 유지
+  await p.setViewportSize({width: 1036, height: 900});
+  await p.evaluate(() => document.getElementById('wGps').scrollIntoView());
+  const lk = p.locator('#pfdLookQuick');
+  if (await lk.count()) {
+    assert.equal((await lk.textContent()).trim(), '에어라인', 'Default instrument skin is airline');
+    assert.equal(await p.evaluate(() => document.documentElement.getAttribute('data-pfdlook')), 'airline');
+    await p.evaluate(() => document.getElementById('pfdLookQuick').click());
+    assert.equal((await lk.textContent()).trim(), '에어포스');
+    assert.equal(await p.evaluate(() => [document.documentElement.getAttribute('data-pfdlook'), AmpPfdLook.get()].join()), 'airforce,airforce');
+    await p.reload(); await p.waitForTimeout(600);
+    assert.equal(await p.evaluate(() => AmpPfdLook.get()), 'airforce', 'Choice is kept');
+  } else assert.fail('Look button missing');
   await p.close();
 });

@@ -583,7 +583,7 @@
     dp.pitchDeg = sp + F.pitch + shake + cal.pitch;
     dp.rollDeg = sr + F.bank + cal.roll;
     // HUD: 지평선·피치·롤 눈금·날개 기준표시를 전투기 HUD처럼 얇은 녹색으로(패키지의 공군 디자인 그리기를 빌림), 발광은 선 가장자리에만 약하게
-    const hud = !(this.settings.skin === 'airforce'), sk = this.settings.skin, oStroke = c.stroke, oText = c.fillText;
+    const hud = this.__look === 'airforce' && !(this.settings.skin === 'airforce'), sk = this.settings.skin, oStroke = c.stroke, oText = c.fillText;
     if (hud) {
       this.settings.skin = 'airforce'; this.__hud = true;
       const green = st => typeof st === 'string' && /^#[9abc][0-9a-f]f/i.test(st);

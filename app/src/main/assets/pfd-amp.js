@@ -139,6 +139,13 @@
   const olive = (c, x, w, horiz, y0, h0) => { const g = horiz ? c.createLinearGradient(0, y0, 0, y0 + h0) : c.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#2b2d1f'); g.addColorStop(.5, '#22251a'); g.addColorStop(1, '#1a1c13'); return g; };
   const brassFrame = (c, x, y, w, h) => { c.save(); c.strokeStyle = '#00000099'; c.lineWidth = 3; c.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3); c.strokeStyle = '#b08d4c'; c.lineWidth = 1.2; c.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5); c.strokeStyle = '#e9cf8a55'; c.lineWidth = .6; c.strokeRect(x + 3.6, y + 3.6, w - 7.2, h - 7.2); c.restore(); };
   const oliveOn = () => !(P.settings && P.settings.skin === 'airforce');
+  // 1.43 계기 스킨: 에어라인(기본, 1.39의 밝은 하늘·흰 눈금·노란 날개) / 에어포스(1.41 HUD: 청회색 저녁·녹색 눈금·황동 테)
+  P.__look = H.load('pfdLook', 'airline') === 'airforce' ? 'airforce' : 'airline';
+  const isAf = () => P.__look === 'airforce';
+  const lookApply = () => { document.documentElement.setAttribute('data-pfdlook', P.__look); };
+  lookApply();
+  window.AmpPfdLook = { get: () => P.__look, set(v) { P.__look = v === 'airforce' ? 'airforce' : 'airline'; H.save('pfdLook', P.__look); lookApply(); try { lkSync(); } catch (e) {} try { P.render && P.render(); } catch (e) {} } };
+  let lkSync = () => {};
   const oTape0 = P.drawTape.bind(P);
   const oTape = function (c, x, y, w, h, kind, value, known) {
     if (!oliveOn()) return oTape0(c, x, y, w, h, kind, value, known);
@@ -150,7 +157,7 @@
   const oComp = P.drawCompass.bind(P);
   P.drawCompass = function (c, x, y, w, h, value) {
     if (!oliveOn()) return oComp(c, x, y, w, h, value);
-    const oF = c.fillRect; let first = true, sk = this.settings.skin; this.settings.skin = 'airforce';   // 1.41 나침반 눈금·숫자·방향 상자도 HUD 녹색
+    const oF = c.fillRect; let first = true, sk = this.settings.skin; if (isAf()) this.settings.skin = 'airforce';   // 1.41 나침반 눈금·숫자·방향 상자도 HUD 녹색
     c.fillRect = function (fx, fy, fw, fh) { if (first) { first = false; const s0 = this.fillStyle; this.fillStyle = olive(this, x, w, true, y, h); oF.call(this, fx, fy, fw, fh); this.fillStyle = s0; return; } return oF.call(this, fx, fy, fw, fh); };
     try { oComp(c, x, y, w, h, value); } finally { c.fillRect = oF; this.settings.skin = sk; }
     brassFrame(c, x, y, w, h);
@@ -172,10 +179,10 @@
     else { c.moveTo(x + w - inset, cy - boxH / 2); c.lineTo(x + tip, cy - boxH / 2); c.lineTo(x, cy); c.lineTo(x + tip, cy + boxH / 2); c.lineTo(x + w - inset, cy + boxH / 2); }
     c.closePath(); c.fillStyle = '#000603'; c.fill(); c.strokeStyle = af ? '#a7fa98' : '#e1e8d7'; c.lineWidth = 1.5; c.stroke();
     const warn = isSpeed && known && this.settings.limitKmh > 0 && value > this.settings.limitKmh, txt = known ? String(Math.round(value)) : '—', tx = x + w / 2 + (isSpeed ? -5 : 5);
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = warn ? '#ffd16a' : '#c9ffbd';   // 1.41 속도·고도 숫자는 가장 크고 선명한 HUD 녹색
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = warn ? '#ffd16a' : isAf() ? '#c9ffbd' : af ? '#c6ffb6' : isSpeed ? '#f7fbef' : '#b8f3a7';   // 에어포스: 가장 크고 선명한 HUD 녹색
     let fs = clamp(boxH * .62, 40, 84); c.font = '800 ' + fs + 'px Arial'; const mw = w - tip - 10, tw = c.measureText(txt).width;
     if (tw > mw) { fs *= mw / tw; c.font = '800 ' + fs + 'px Arial'; }
-    c.save(); c.shadowColor = warn ? '#ffd16a99' : 'rgba(110,255,130,.45)'; c.shadowBlur = 6; c.fillText(txt, tx, cy - boxH * .08); c.restore();
+    c.save(); c.shadowColor = warn ? '#ffd16a99' : isAf() ? 'rgba(110,255,130,.45)' : '#ffffff55'; c.shadowBlur = isAf() ? 6 : 12; c.fillText(txt, tx, cy - boxH * .08); c.restore();
     c.font = '700 ' + clamp(w * .13, 10, 16) + 'px Arial'; c.fillStyle = af ? '#c0ffad' : '#e4eddd'; c.fillText(isSpeed ? 'km/h' : 'm', tx, cy + boxH * .34);
     const lg = c.createRadialGradient(tx - w * .15, cy - boxH * .3, 2, tx, cy, boxH * .75); lg.addColorStop(0, '#ffffff30'); lg.addColorStop(.45, '#ffffff0c'); lg.addColorStop(1, '#ffffff00');
     c.fillStyle = lg; c.fill();
@@ -198,12 +205,18 @@
     const thSync = () => { const t = P.els && P.els.themeText; th.textContent = (t && t.textContent) || '테마 설정'; };
     th.addEventListener('click', e => { e.stopPropagation(); const b = thSrc(); if (b) b.click(); else try { P.openSettings(); } catch (_) {} });
     wrapEl.appendChild(th); thSync();
+    // 그 아래 [에어라인 / 에어포스] 계기 스킨 바꾸기
+    const lk = document.createElement('button');
+    lk.type = 'button'; lk.className = 'pfd-levelq pfd-lookq'; lk.id = 'pfdLookQuick'; lk.title = '계기 스킨 바꾸기(에어라인 ↔ 에어포스)';
+    lkSync = () => { lk.textContent = isAf() ? '에어포스' : '에어라인'; lk.setAttribute('aria-label', '계기 스킨: ' + lk.textContent + ' (누르면 바꿈)'); };
+    lk.addEventListener('click', e => { e.stopPropagation(); window.AmpPfdLook.set(isAf() ? 'airline' : 'airforce'); });
+    wrapEl.appendChild(lk); lkSync();
     if (P.els && P.els.themeText && window.MutationObserver) new MutationObserver(thSync).observe(P.els.themeText, { childList: true, characterData: true, subtree: true });
     const place = () => {
       const r = wrapEl.getBoundingClientRect(), w = r.width, h = r.height; if (!w || !h) return;
       const cl = (v, a, b) => Math.max(a, Math.min(b, v)), fh = h - cl(h * .145, 43, 66), tape = cl(w * .12, 67, 175), boxH = cl(fh * .26, 78, 124);
-      const top = Math.min(fh - 80, fh * .53 + boxH / 2 + 10);
-      for (const [b, dy] of [[lv, 0], [th, 40]]) { b.style.left = '4px'; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; }
+      const top = Math.min(fh - 120, fh * .53 + boxH / 2 + 10);
+      for (const [b, dy] of [[lv, 0], [th, 40], [lk, 80]]) { b.style.left = '4px'; b.style.width = (tape - 8) + 'px'; b.style.top = (top + dy) + 'px'; }
     };
     if (window.ResizeObserver) new ResizeObserver(place).observe(wrapEl); place();
   }
