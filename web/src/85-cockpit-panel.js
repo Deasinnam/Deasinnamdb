@@ -17,6 +17,16 @@ function sndSquelch(at=0,len=.14){if(!atcOn())return;const a=fx();if(!a)return;c
   const g=fxEnv(a,t,.05,.004,.08);o.connect(g).connect(a.destination);o.start(t);o.stop(t+.12)}
 function sndRoger(at=0){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime+at,o=a.createOscillator(),o2=a.createOscillator();o.type='sine';o2.type='sine';o.frequency.value=1568;o2.frequency.value=3136;
   const g=fxEnv(a,t,.07,.005,.14),g2=a.createGain();g2.gain.value=.1;o.connect(g);o2.connect(g2).connect(g);g.connect(a.destination);o.start(t);o2.start(t);o.stop(t+.2);o2.stop(t+.2)}
+/* 타이어 마찰음: 착륙은 바퀴가 닿는 순간 '끼익' 두 번(좌·우 바퀴) + 쿵, 이륙은 바퀴가 떨어질 때 짧은 마찰음과 굴러가던 소리가 잦아듦 */
+function sndTire(down){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime;
+  const screech=(at,dur,f0,f1,amp)=>{const n=fxNoise(a,dur+.05),bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=7;bp.frequency.setValueAtTime(f0,t+at);bp.frequency.exponentialRampToValueAtTime(f1,t+at+dur);
+    const g=a.createGain();g.gain.setValueAtTime(.0001,t+at);g.gain.linearRampToValueAtTime(amp,t+at+.015);g.gain.exponentialRampToValueAtTime(.0001,t+at+dur);n.connect(bp).connect(g).connect(a.destination);n.start(t+at);
+    const o=a.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f0*.42,t+at);o.frequency.exponentialRampToValueAtTime(f1*.42,t+at+dur);const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;
+    const g2=a.createGain();g2.gain.setValueAtTime(.0001,t+at);g2.gain.linearRampToValueAtTime(amp*.18,t+at+.02);g2.gain.exponentialRampToValueAtTime(.0001,t+at+dur*.8);o.connect(lp).connect(g2).connect(a.destination);o.start(t+at);o.stop(t+at+dur)};
+  const thump=(at,amp)=>{const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(95,t+at);o.frequency.exponentialRampToValueAtTime(42,t+at+.18);const g=fxEnv(a,t+at,amp,.004,.2);o.connect(g).connect(a.destination);o.start(t+at);o.stop(t+at+.25)};
+  const rumble=(at,dur,amp)=>{const n=fxNoise(a,dur+.05),lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;const g=a.createGain();g.gain.setValueAtTime(amp,t+at);g.gain.exponentialRampToValueAtTime(.0001,t+at+dur);n.connect(lp).connect(g).connect(a.destination);n.start(t+at)};
+  if(down){screech(0,.42,2600,1300,.2);thump(0,.3);screech(.09,.36,2300,1200,.16);thump(.09,.22);rumble(.05,1.6,.12)}
+  else{rumble(0,.7,.1);screech(.02,.18,1900,1500,.07)}}
 // 이륙 허가: 무전 → 두 음 차임 → 엔진 스풀업
 function sndTakeoff(){if(!atcOn())return;const a=fx();if(!a)return;const t=a.currentTime;
   [[784,.25],[659,.75]].forEach(([f,dt])=>{const o=a.createOscillator(),o2=a.createOscillator();o.frequency.value=f;o2.frequency.value=f*2;const g=fxEnv(a,t+dt,.22,.01,1.2),g2=fxEnv(a,t+dt,.05,.01,.6);o.connect(g).connect(a.destination);o2.connect(g2).connect(a.destination);o.start(t+dt);o2.start(t+dt);o.stop(t+dt+1.4);o2.stop(t+dt+1.4)});

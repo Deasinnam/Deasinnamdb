@@ -128,7 +128,7 @@
         F.rwS -= adv; F.rolled += adv; F.v = vis;
         if (F.rwS + F.rwLen < 900) F.rwLen += 1500;
         if ((vEff >= VR && F.rolled >= 150) || vEff >= VR_HI) {
-          F.phase = 'climb'; F.liftAt = now; H.beep('takeoff');
+          F.phase = 'climb'; F.liftAt = now; H.beep('takeoff'); H.beep('tireUp');
         }
         if (vEff < 1) { F.stopT += dt; if (F.stopT > 2.5) F.phase = 'hold'; } else F.stopT = 0;
         break;
@@ -153,7 +153,7 @@
         if (a < 14) a = 14 * Math.pow(a / 14, 1.55);     // 플레어: 바닥 가까이에서 내려가는 속도를 줄임
         F.alt = a;
         if (F.rem <= 0.5) {
-          F.phase = 'rollout'; F.alt = 0; F.tdAt = now;
+          F.phase = 'rollout'; F.alt = 0; F.tdAt = now; H.beep('tireDown');
           if (F.auto) F.vAuto = 140;
           H.beep('roger');
           H.atcSay('대신남 원, 착륙을 확인했습니다. 목적지에 도착했습니다.');
