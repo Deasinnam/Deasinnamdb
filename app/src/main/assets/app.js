@@ -2298,7 +2298,7 @@ const AmpSfx=(()=>{
 })();
 /* ===== 89-speedcam.js ===== */
 // 과속 카메라 안내: 지도 자료(OpenStreetMap, 주변 자동) + 공공데이터 CSV(전국, 직접 불러오기)
-// 진행 방향 앞쪽 카메라를 찾아 짧은 음성("500미터 앞 단속 카메라, 50이에요")과 화면 전체 빨간 제한 속도로 알림.
+// 진행 방향 앞쪽 카메라를 찾아 500m·100m 앞에서 두 번, 제한 속도 표지판과 짧은 음성으로 알리고 사라짐.
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 (function(){
   const camOn=()=>store.get('camOn',true)!==false;
@@ -2336,7 +2336,10 @@ const AmpSfx=(()=>{
   /* 안내: 진행 방향 ±35° 안, 1.2km 이내에서 가장 가까운 카메라 */
   const told=new Map();let cur=null,lastSay=0;
   // 말은 짧게, 사람이 옆에서 알려 주듯: "500미터 앞 단속 카메라, 50이에요." / "속도 줄이세요."
+  // 1.44 안내는 두 번만: 500m 앞(표지판 + 음성) → 100m 앞(표지판 + 음성), 각각 몇 초 보이고 사라짐
   const sayFar=(m,lim)=>m+'미터 앞 단속 카메라'+(lim?', '+lim+'이에요.':'예요.'),SAY_NEAR='속도 줄이세요.';
+  const sayNear=(lim,over)=>'100미터 앞'+(over?', 속도 줄이세요.':lim?', '+lim+'이에요.':' 단속 카메라예요.');
+  const SHOW_MS=7000,FAR_M=520,NEAR_M=130;
   function say(t){try{if(NB&&NB.speakCam){NB.speakCam(t);return}if(NB&&NB.speak){NB.speak(t);return}}catch(e){}
     try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=1.08;u.pitch=1.02;
       const v=(speechSynthesis.getVoices()||[]).filter(x=>/^ko/i.test(x.lang));const nat=v.find(x=>/natural|neural|online|google/i.test(x.name))||v[0];if(nat)u.voice=nat;speechSynthesis.speak(u)}catch(e){}}
@@ -2346,12 +2349,12 @@ const AmpSfx=(()=>{
   function check(lat,lon,spd,hdg){if(!camOn()){show(null);return}
     if(!osmAt||dist(lat,lon,osmAt[0],osmAt[1])>3000)osmFetch(lat,lon);
     let best=null;if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180);if(df<=35&&o.d<=1200){best=o;break}}
-    show(best?{lim:best.c[2],d:best.d,over:best.c[2]&&spd>best.c[2]+2}:null,spd);
-    if(!best)return;const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{};
-    const lim=best.c[2],m=Math.max(100,Math.round(best.d/100)*100);
-    if(!st.far&&best.d<=650){st.far=true;ding();say(sayFar(m,lim))}
-    if(!st.near&&best.d<=180&&lim&&spd>lim+2){st.near=true;say(SAY_NEAR)}
-    st.t=Date.now();told.set(key,st);if(told.size>200)for(const [k,v] of told)if(Date.now()-v.t>6e5)told.delete(k)}
+    if(!best){show(null);return}const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{},now=Date.now();
+    const lim=best.c[2],over=!!(lim&&spd>lim+2);
+    if(!st.far&&!st.near&&best.d<=FAR_M&&best.d>NEAR_M+60){st.far=true;st.until=now+SHOW_MS;ding();say(sayFar(500,lim))}
+    if(!st.near&&best.d<=NEAR_M){st.near=true;st.far=true;st.until=now+SHOW_MS;ding();say(sayNear(lim,over))}
+    show(now<(st.until||0)?{lim,d:best.d,over}:null,spd);
+    st.t=now;told.set(key,st);if(told.size>200)for(const [k,v] of told)if(now-v.t>6e5)told.delete(k)}
   function show(o,spd){const el=$('#camSign');if(!o){el.hidden=true;document.documentElement.removeAttribute('data-cam');return}
     el.hidden=false;document.documentElement.setAttribute('data-cam','1');$('#camLim').textContent=o.lim||'!';$('#camDist').textContent='전방 '+(o.d>=1000?(o.d/1000).toFixed(1)+'km':Math.round(o.d/10)*10+'m');el.classList.toggle('over',!!o.over)}
   setInterval(()=>{if(demoOn)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
@@ -2362,11 +2365,13 @@ const AmpSfx=(()=>{
   document.body.appendChild($('#camSign')); // 어느 창·설정 위에도 보이게 맨 위층으로
   let demoT=[],demoOn=false;
   function demo(){demoT.forEach(clearTimeout);demoT=[];const el=$('#camSign');el.classList.add('demo');demoOn=true;
-    const steps=[[0,600,false],[1200,500,false],[2400,400,false],[3600,300,true],[4800,200,true],[5800,150,true],[6800,80,true]];
-    steps.forEach(([t,d,over])=>demoT.push(setTimeout(()=>show({lim:50,d,over},70),t)));
-    demoT.push(setTimeout(()=>{ding();say(sayFar(600,50))},0));
-    demoT.push(setTimeout(()=>{try{sndAlarm()}catch(e){}say(SAY_NEAR)},5800));
-    demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},8600))}
+    // 500m 앞 안내(약 4초) → 사라짐 → 100m 앞 안내(과속이면 깜빡임 + "속도 줄이세요")
+    [[0,500,false],[1300,460,false],[2600,420,false]].forEach(([t,d,over])=>demoT.push(setTimeout(()=>show({lim:50,d,over},70),t)));
+    demoT.push(setTimeout(()=>{ding();say(sayFar(500,50))},0));
+    demoT.push(setTimeout(()=>show(null),4000));
+    [[5200,100,true],[6400,70,true],[7600,40,true]].forEach(([t,d,over])=>demoT.push(setTimeout(()=>show({lim:50,d,over},70),t)));
+    demoT.push(setTimeout(()=>{ding();say(sayNear(50,true))},5200));
+    demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},9000))}
   $('#sCamDemo').onclick=e=>{e.preventDefault();e.stopPropagation();demo()};
   statUi();
   window.AmpCam={get builtin(){return builtin.length},demo,check,parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};

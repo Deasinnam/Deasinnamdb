@@ -13,15 +13,23 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   await p.evaluate(() => { AmpCam.osm = [[36.0, 125.0, 50]]; AmpCam.check(36.0 - 0.0045, 125.0, 70, 0); });
   assert.equal(await p.locator('#camSign').isVisible(), true, 'Red speed-limit sign');
   assert.equal(await p.locator('#camLim').textContent(), '50');
-  // 1.34: 화면 전체를 붉게 덮고 가운데 큰 숫자
-  const cov = await p.evaluate(() => { const r = document.getElementById('camSign').getBoundingClientRect(), n = document.getElementById('camLim').getBoundingClientRect(); return {w: r.width, h: r.height, fs: parseFloat(getComputedStyle(document.getElementById('camLim')).fontSize), cx: n.left + n.width / 2}; });
-  assert.ok(cov.w >= 1036 - 1 && cov.h >= 900 - 1, 'Covers the whole screen');
-  assert.ok(cov.fs >= 140 && Math.abs(cov.cx - 518) < 30, 'Big limit number in the middle');
+  // 1.44: 화면 전체가 아니라 제한 속도 표지판 카드(위쪽 가운데), 500m·100m 앞 두 번만 안내하고 사라짐
+  const cov = await p.evaluate(() => { const r = document.getElementById('camSign').querySelector('.cs-in').getBoundingClientRect(), g = document.querySelector('#camSign .cs-sign').getBoundingClientRect(); return {w: r.width, h: r.height, round: getComputedStyle(document.querySelector('#camSign .cs-sign')).borderRadius, gw: g.width}; });
+  assert.ok(cov.w < 1036 * .7 && cov.h < 900 * .3, 'Sign card, not the whole screen: ' + JSON.stringify(cov));
+  assert.ok(cov.gw >= 90 && cov.round === '50%', 'Round speed-limit sign');
   assert.match(await p.locator('#camDist').textContent(), /전방 5\d0m/);
-  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 50이에요.', 'Short, natural voice');
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 50이에요.', 'First call 500 m ahead');
   assert.equal(await p.locator('#camSign').evaluate(e => e.classList.contains('over')), true, 'Flashes when over the limit');
-  await p.evaluate(() => AmpCam.check(36.0 - 0.0012, 125.0, 70, 0));
-  assert.equal(await p.evaluate(() => __said[1] || ''), '속도 줄이세요.', 'Second warning when close and still fast');
+  // 몇 초 지나면 사라짐(같은 카메라를 계속 다가가도 다시 말하지 않음)
+  await p.evaluate(() => { const n = Date.now; Date.now = () => n() + 8000; AmpCam.check(36.0 - 0.0030, 125.0, 70, 0); Date.now = n; });
+  assert.equal(await p.locator('#camSign').isVisible(), false, 'Hides after a few seconds');
+  assert.equal(await p.evaluate(() => __said.length), 1, 'No extra talking between 500 m and 100 m');
+  // 100m 앞: 두 번째(마지막) 안내, 과속이면 "속도 줄이세요"
+  await p.evaluate(() => AmpCam.check(36.0 - 0.0009, 125.0, 70, 0));
+  assert.equal(await p.locator('#camSign').isVisible(), true, 'Shows again 100 m ahead');
+  assert.equal(await p.evaluate(() => __said[1] || ''), '100미터 앞, 속도 줄이세요.', 'Second call 100 m ahead');
+  await p.evaluate(() => AmpCam.check(36.0 - 0.0004, 125.0, 70, 0));
+  assert.equal(await p.evaluate(() => __said.length), 2, 'Only two calls per camera');
   // 카메라가 뒤쪽이면 표시 없음
   await p.evaluate(() => AmpCam.check(36.0 + 0.003, 125.0, 70, 0));
   assert.equal(await p.locator('#camSign').isVisible(), false, 'Nothing when the camera is behind');
@@ -38,11 +46,13 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   await p.locator('#setBtn').click(); await p.locator('#sCamDemo').scrollIntoViewIfNeeded(); await p.locator('#sCamDemo').click();
   await p.waitForTimeout(1500);
   assert.equal(await p.locator('#camSign').isVisible(), true, 'Demo shows the sign above settings');
-  assert.equal(await p.evaluate(() => __said[0]), '600미터 앞 단속 카메라, 50이에요.');
-  await p.waitForTimeout(5000);
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 50이에요.');
+  await p.waitForTimeout(3000);
+  assert.equal(await p.locator('#camSign').isVisible(), false, 'Demo hides between the two calls');
+  await p.waitForTimeout(1500);
   assert.equal(await p.locator('#camSign').evaluate(e => e.classList.contains('over')), true);
-  assert.match(await p.evaluate(() => __said[1] || ''), /줄이세요/);
-  await p.waitForTimeout(2600);
+  assert.match(await p.evaluate(() => __said[1] || ''), /100미터 앞, 속도 줄이세요/);
+  await p.waitForTimeout(3500);
   assert.equal(await p.locator('#camSign').isVisible(), false, 'Demo ends by itself');
   // 타이어 마찰음(오류 없이 재생)
   await p.evaluate(() => { AmpHost.beep('tireDown'); AmpHost.beep('tireUp'); });

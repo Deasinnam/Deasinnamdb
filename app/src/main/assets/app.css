@@ -2376,18 +2376,23 @@ html.driving body{overflow:hidden}
 }
 @media (max-width:440px){:root[data-cks] #wGps>.bar .t{display:none!important}:root[data-cks] #wGps>.bar .gsbar{max-width:none!important;flex:1 1 auto!important;margin-left:4px}}
 
-/* 1.34 과속 카메라: 화면 전체를 붉게 덮고 가운데 제한 속도를 크게(누르기는 그대로 통과) */
-.camsign{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;
-  background:radial-gradient(120% 90% at 50% 45%,#d4211bd0,#a30f0cdd 60%,#5e0605ee);box-shadow:inset 0 0 0 6px #ff3b30,inset 0 0 80px #000a}
+/* 1.44 과속 카메라: 초기 모델처럼 제한 속도 표지판(흰 원 + 빨간 테) 카드 — 500m·100m 앞에서 잠깐 보였다 사라짐(누르기는 그대로 통과) */
+.camsign{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);z-index:70;display:block;pointer-events:none;animation:camIn .35s ease-out}
 .camsign[hidden]{display:none}
-.camsign .cs-in{display:flex;flex-direction:column;align-items:center;color:#fff;text-shadow:0 3px 14px #0008;line-height:1}
-.camsign .cs-head{display:flex;align-items:center;gap:clamp(8px,1.6vw,16px);font:800 clamp(24px,5vw,52px)/1 "Noto Sans KR",sans-serif}
-.camsign .cs-head svg{width:clamp(38px,7vw,74px);height:auto;fill:none;stroke:#fff;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
-.camsign .cs-num{font:900 clamp(140px,34vmin,360px)/.86 Arial,"Noto Sans KR",sans-serif;letter-spacing:-.04em;margin-top:clamp(6px,2vmin,20px)}
-.camsign .cs-unit{font:800 clamp(26px,6vmin,60px)/1 Arial,sans-serif;margin-top:clamp(2px,1vmin,10px)}
-.camsign .cs-dist{font:800 clamp(22px,5vmin,46px)/1 "Noto Sans KR",sans-serif;margin-top:clamp(10px,3vmin,28px);padding:.25em .8em;border-radius:99px;background:#0006;box-shadow:0 0 0 2px #fff6}
-.camsign.over{animation:camFlash .7s steps(2) infinite}
-@keyframes camFlash{50%{background:radial-gradient(120% 90% at 50% 45%,#ff3b30e6,#d1150fee 60%,#7a0807f4);box-shadow:inset 0 0 0 14px #fff,inset 0 0 80px #000a}}
+@keyframes camIn{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translateX(-50%)}}
+.camsign .cs-in{display:flex;align-items:center;gap:clamp(12px,2vw,20px);padding:10px clamp(16px,2.6vw,26px) 10px 10px;border-radius:999px;
+  background:linear-gradient(180deg,#1b1d17f2,#0c0d0af2);box-shadow:0 0 0 1px #000,0 0 0 3px #ffffff2e,0 10px 26px #000c;color:#fff;line-height:1}
+.camsign .cs-sign{display:grid;place-items:center;width:clamp(92px,13vw,136px);aspect-ratio:1;border-radius:50%;background:#fff;
+  box-shadow:inset 0 0 0 clamp(10px,1.45vw,15px) #e01e1e,inset 0 0 0 clamp(12px,1.7vw,17px) #fff,0 0 0 2px #fff,0 3px 8px #000}
+.camsign .cs-num{font:900 clamp(40px,6vw,62px)/1 Arial,"Noto Sans KR",sans-serif;color:#111;letter-spacing:-.03em}
+.camsign .cs-txt{display:flex;flex-direction:column;gap:clamp(6px,1vw,10px)}
+.camsign .cs-head{display:flex;align-items:center;gap:8px;font:700 clamp(15px,2vw,20px)/1 "Noto Sans KR",sans-serif;color:#ffc2b8}
+.camsign .cs-head svg{width:clamp(22px,2.8vw,30px);height:auto;fill:none;stroke:currentColor;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.camsign .cs-unit{display:none}
+.camsign .cs-dist{font:800 clamp(26px,3.8vw,40px)/1 "Noto Sans KR",sans-serif;color:#fff}
+.camsign.over .cs-in{animation:camFlash .6s steps(2) infinite}
+.camsign.over .cs-head{color:#ff6a55}
+@keyframes camFlash{50%{box-shadow:0 0 0 1px #000,0 0 0 5px #ff3b30,0 0 28px #ff3b30cc}}
 .cam-ctl{display:inline-flex;align-items:center;gap:10px;flex:none}
 .cam-ctl .pill{height:38px;white-space:nowrap}
 .camsign.demo{z-index:200}
