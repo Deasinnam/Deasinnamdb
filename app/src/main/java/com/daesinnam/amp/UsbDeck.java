@@ -185,6 +185,7 @@ final class UsbDeck {
             synchronized (UsbDeck.this) {
                 try {
                     send(crt("DIS"));
+                    { byte[] c = crt("CLE\0\0\0"); c[11] = (byte) 0xff; send(c); } // 화면 전체 지우기(다른 프로그램이 남긴 그림 정리)
                     for (int pos = 1; pos <= 15; pos++) {
                         String a = acts != null && pos - 1 < acts.length && acts[pos - 1] != null ? acts[pos - 1] : "none";
                         byte[] img = asset("deck/act_" + a.replaceAll("[^A-Za-z]", "") + ".jpg");

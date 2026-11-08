@@ -15,15 +15,15 @@ KR = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc'
 def kr(s): return ImageFont.truetype(KR, s, index=1)
 
 S = 3                       # 3배로 그린 뒤 줄여서 매끈하게
-W = H = 112                 # 키 그림(보이는 곳 약 108×108, 오른쪽 위 기준)
-CX, CY = 58, 50           # 보이는 영역(5..100, 0..95)의 가운데
+W = H = 100                 # 키 그림: 장치가 받는 크기는 100×100(그보다 크면 잘림)
+CX, CY = 50, 45           # 보이는 영역(5..100, 0..95)의 가운데
 IVORY = (246, 236, 210); BRASS = (214, 174, 98); BRASS_D = (120, 88, 40); RED = (230, 70, 50); GREEN = (120, 220, 120)
 
 def base():
     im = Image.new('RGB', (W * S, H * S), (30, 32, 22))   # 디자인 시안과 같은 짙은 올리브 판 + 황동 테
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle([4 * S, 1 * S, (W - 1) * S, (H - 5) * S], radius=6 * S, outline=(150, 112, 52), width=3 * S)
-    R = 34   # 황동 링
+    d.rounded_rectangle([1 * S, 1 * S, (W - 1) * S, (H - 1) * S], radius=6 * S, outline=(150, 112, 52), width=3 * S)
+    R = 31   # 황동 링
     d.ellipse([(CX - R) * S, (CY - 4 - R) * S, (CX + R) * S, (CY - 4 + R) * S], outline=BRASS_D, width=6 * S // 2)
     d.ellipse([(CX - R + 2) * S, (CY - 4 - R + 2) * S, (CX + R - 2) * S, (CY - 4 + R - 2) * S], outline=BRASS, width=S * 2)
     return im, d
@@ -32,7 +32,7 @@ def P(pts, dx=0, dy=0): return [((CX + x + dx) * S, (CY - 4 + y + dy) * S) for x
 
 def label(d, t):
     f = kr(14 * S); w = d.textlength(t, font=f)
-    d.text(((CX * S) - w / 2, (CY + 32) * S), t, font=f, fill=IVORY)
+    d.text(((CX * S) - w / 2, (CY + 29) * S), t, font=f, fill=IVORY)
 
 # 그림 그리는 함수들(가운데 기준 좌표, 반지름 약 20 안)
 def g_prev(d): d.rectangle(P([(-16, -12), (-12, 12)])[0] + P([(-12, 12)])[0], fill=IVORY); d.polygon(P([(14, -13), (14, 13), (-10, 0)]), fill=IVORY)
@@ -151,12 +151,11 @@ def design_tiles():
     src = Image.open(DESIGN).convert('RGB'); out = {}
     for i, a in enumerate(D_ORDER):
         r, c = divmod(i, 5); (x0, x1), (y0, y1) = D_COLS[c], D_ROWS[r]
-        t = src.crop((x0, y0, x1, y1)).resize((108, 108), Image.LANCZOS)
-        im = Image.new('RGB', (W, H), (30, 32, 22)); im.paste(t, (W - 108, 0)); out[a] = im   # 보이는 곳(오른쪽 위 108×108)에 맞춤
+        out[a] = src.crop((x0, y0, x1, y1)).resize((W, H), Image.LANCZOS)   # 타일을 키 전체(100×100)에 꽉 차게
     sides = []
     for y0, y1 in D_SIDE:
-        t = src.crop((1396, y0, 1583, y1)).resize((80, 96), Image.LANCZOS)
-        im = Image.new('RGB', (88, 104), (30, 32, 22)); im.paste(t, (88 - 80, 0)); sides.append(im)
+        t = src.crop((1396, y0, 1583, y1)).resize((72, 86), Image.LANCZOS)
+        im = Image.new('RGB', (80, 90), (0, 0, 0)); im.paste(t, (80 - 72, 0)); sides.append(im)   # 보이는 곳(오른쪽 위 약 72×86)
     return out, sides
 
 def save_jpg(im, path):
@@ -175,7 +174,7 @@ if __name__ == '__main__':
     order = ['prev', 'play', 'next', 'swap', 'mute', 'gps', 'map', 'radio', 'vis', 'all', 'rec', 'day', 'tmap', 'nmap', 'land']
     pv = Image.new('RGB', (5 * 110 + 110, 3 * 110 + 20), (236, 236, 236))
     for i, a in enumerate(order):
-        r, c = divmod(i, 5); pv.paste(keys[a].crop((4, 0, 112, 108)).resize((100, 100)), (15 + c * 110, 15 + r * 110))
-    for i, im in enumerate(sides): pv.paste(im.crop((8, 0, 88, 96)), (15 + 5 * 110 + 5, 15 + i * 110))
+        r, c = divmod(i, 5); pv.paste(keys[a], (15 + c * 110, 15 + r * 110))
+    for i, im in enumerate(sides): pv.paste(im.crop((8, 0, 80, 86)), (15 + 5 * 110 + 5, 15 + i * 110))
     pv.save(os.path.join(HERE, 'preview.png'))
     print('ok', len(keys), 'keys +', len(sides), 'side')
