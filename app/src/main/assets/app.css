@@ -2733,3 +2733,4 @@ img{height:auto;object-fit:contain}
 /* 원형 지도 출처 */
 .pfd-mini .pm-ring::after{content:"© OSM";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:6;font:600 8px/1 Arial,sans-serif;color:#fff;opacity:.75;text-shadow:0 0 2px #000;pointer-events:none}
 .rd-search.pub #rdCountry,.rd-search.pub #rdGo{display:none}
+.pfd-odo[hidden]{display:none}

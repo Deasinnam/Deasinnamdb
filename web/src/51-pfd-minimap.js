@@ -34,6 +34,7 @@ const PfdMap=(()=>{
     if(odo){let km=null;try{km=window.AmpLog&&AmpLog.state?AmpLog.state.odo:null}catch(e){}const t=km==null?'—':(Math.floor(km)).toLocaleString('ko-KR');const b=odo.querySelector('b');if(b.textContent!==t)b.textContent=t;odo.setAttribute('aria-label','총 주행거리 '+t+' 킬로미터. 누르면 차계부')}
     const fix=gpsOn&&gs&&gs.fix&&isFinite(gs.lat);host.classList.toggle('nofix',!fix);
     const small=w.clientHeight<230||w.clientWidth<300;host.classList.toggle('tiny',small);
+    if(odo)odo.hidden=w.clientWidth<520; // 좁은 계기에서는 착륙·시연 버튼·원형 지도와 겹치지 않게 총 주행거리 숨김
     if(!on||!map||!fix)return;
     const now=performance.now();if(now-lastSet>900){lastSet=now;const z=spdNow>90?14:spdNow>40?15:16;map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
     // 진행 방향이 위: 지도를 반대로 돌리고, N 표시는 테두리를 따라 돎(359→0도 매끄럽게)
