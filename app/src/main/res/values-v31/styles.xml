@@ -6,7 +6,7 @@
         <item name="android:navigationBarColor">#05070D</item>
         <item name="android:colorAccent">#2F5BFF</item>
         <item name="android:windowSplashScreenBackground">#05070D</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_fg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
         <item name="android:windowSplashScreenIconBackgroundColor">#05070D</item>
     </style>
 </resources>

@@ -5,7 +5,7 @@ run('Split screen layout next to TMAP / Naver Map', async ({context, origin, err
   const p = await context.newPage();
   p.on('pageerror', e => errors.push('split: ' + e.message));
   await p.addInitScript(() => {
-    if (!sessionStorage.getItem('sp')) { sessionStorage.setItem('sp', '1'); localStorage.clear(); localStorage.setItem('dna_ckFocus', JSON.stringify('radio')); }
+    if (!sessionStorage.getItem('sp')) { sessionStorage.setItem('sp', '1'); localStorage.clear(); localStorage.setItem('dna_ckFocus', JSON.stringify('radio')); localStorage.setItem('dna_skin2', JSON.stringify('carnival5')); }
     window.__splitBoot = {on: true, ratio: .4};
     window.AndroidBridge = {gpsStatus: () => '{}', startGps() {}, stopGps() {}, keepScreenOn() {}, takeCarAutoplay: () => false, splitState: () => JSON.stringify(window.__splitBoot)};
   });
@@ -25,7 +25,7 @@ run('Split screen layout next to TMAP / Naver Map', async ({context, origin, err
   assert.deepEqual(lay.vis, ['wGps'], 'Only the speedometer window');
   assert.equal(lay.scroll, 0, 'No scrolling in the split half');
   assert.ok(lay.g.bottom <= lay.h && lay.g.bottom > lay.h - 14 && lay.g.top < 10, 'Fills the half');
-  assert.ok(lay.rail && lay.metrics && lay.tools, 'Side buttons, record tiles and tool buttons stay');
+  assert.ok(lay.rail && lay.metrics && lay.tools, 'Side buttons, record tiles and tool buttons stay ' + JSON.stringify([lay.rail, lay.metrics, lay.tools]));
   assert.ok(lay.canvas > lay.h * .4, 'Flight display stays large (' + lay.canvas + ')');
   assert.equal(lay.top, 'none', 'Header hidden in split view');
   // 측면 버튼으로 다른 보기(같은 칸), 저장된 보기는 그대로

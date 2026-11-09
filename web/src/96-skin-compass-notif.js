@@ -3,7 +3,9 @@
 /* ---------- 스킨 바꾸기 버튼 ---------- */
 function skinPickClose(){$('#skinPick').hidden=true}
 function skinPickOpen(){const p=$('#skinPick'),l=$('#skinPickList');l.innerHTML='';
-  for(const [k,n] of SKINS){const b=document.createElement('button');b.className='pill'+(k===skin?' on':'');b.dataset.k=k;b.textContent=n.replace('대신남 자동차 모드 · ','자동차 · ');l.appendChild(b)}
+  // 1.52 오디오 스킨(블루~우드 하이파이)은 다크 블루, 대신남 에어라인은 스카이 블루 버튼
+  const AUDIO=['blue','amber','base','neon','ice','red','wood'];
+  for(const [k,n] of SKIN_LIST){const b=document.createElement('button');b.className='pill'+(k===skin?' on':'')+(AUDIO.includes(k)?' sk-audio':k==='carnival7'?' sk-air':' sk-car');b.dataset.k=k;b.textContent=n.replace('대신남 자동차 모드 · ','자동차 · ');l.appendChild(b)}
   p.hidden=false;const r=$('#skinBtn').getBoundingClientRect(),pr=p.getBoundingClientRect();
   p.style.left=Math.max(8,Math.min(innerWidth-pr.width-8,r.left))+'px';p.style.top=Math.min(innerHeight-pr.height-8,r.bottom+6)+'px'}
 $('#skinBtn').onclick=e=>{e.stopPropagation();if($('#skinPick').hidden)skinPickOpen();else skinPickClose()};

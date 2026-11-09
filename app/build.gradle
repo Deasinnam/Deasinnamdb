@@ -2,15 +2,15 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.daesinnam.amp'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         // 대신남 원 Ver1: 기존 앱·데모판과 패키지 이름이 달라 덮어쓰지 않고 따로 설치됩니다(백업·비교 테스트용).
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
-        targetSdk 35
-        versionCode 77
-        versionName "1.51-one"
+        targetSdk 36  // 1.52 구글 플레이: 2026-08-31부터 새 앱은 API 36 이상
+        versionCode 78
+        versionName "1.52-one"
     }
 
     buildFeatures { buildConfig true }

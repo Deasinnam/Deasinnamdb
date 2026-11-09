@@ -118,12 +118,14 @@ run('Visual effects, PFD v1.1/v1.2, tower speed cautions, car skins without PFD,
     {
       const pf = await context.newPage();
       pf.on('pageerror', error => errors.push(error.message));
-      await pf.addInitScript(() => {if(sessionStorage.getItem('pf'))return;sessionStorage.setItem('pf','1');localStorage.clear();
+      await pf.addInitScript(() => {if(!sessionStorage.getItem('pf')){sessionStorage.setItem('pf','1');localStorage.clear();}
         window.__said=[];window.AndroidBridge={gpsStatus:()=>JSON.stringify({fix:false,perm:true,enabled:true}),startGps:()=>{},stopGps:()=>{},keepScreenOn:()=>{},speak:t=>window.__said.push(t)};});
       await pf.goto(origin);
       await pf.waitForFunction(() => window.AmpFlight);
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.skin), 'carnival2', 'Ver1 opens in the cockpit skin');
-      assert.equal(await pf.locator('#skin').inputValue(), 'carnival5', 'First run opens in the revised cockpit');
+      assert.equal(await pf.locator('#skin').inputValue(), 'carnival7', 'First run opens in the airline skin');
+      // 아래는 예전 콕핏(시험용으로만 남김) 동작 확인
+      await pf.evaluate(() => localStorage.setItem('dna_skin2', JSON.stringify('carnival5'))); await pf.reload(); await pf.waitForFunction(() => window.AmpFlight);
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.ckr), '1');
       assert.equal(await pf.evaluate(() => document.documentElement.dataset.ck2), '1');
       assert.equal(await pf.locator('#ckRail button[data-f="all"]').evaluate(b => b.classList.contains('on')), true, 'All views by default');

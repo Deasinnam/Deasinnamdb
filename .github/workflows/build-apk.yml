@@ -41,7 +41,7 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_HOME"
           SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
           yes | "$SDKM" --licenses > /dev/null || true
-          "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          "$SDKM" "platforms;android-36" "build-tools;35.0.0" "platform-tools" > /dev/null
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       - name: 태그 읽기 라이브러리 내장 (오프라인에서도 앨범아트 표시)
@@ -75,7 +75,8 @@ jobs:
               curl -fSL --retry 3 -m 300 -o /tmp/g.zip "$U" && echo "$SUM  /tmp/g.zip" | sha256sum -c - && break; rm -f /tmp/g.zip; done
             unzip -q /tmp/g.zip -d /tmp/gd && G=/tmp/gd/gradle-8.9/bin/gradle
           else G=./gradlew; fi
-          $G --no-daemon assembleRelease
+          $G --no-daemon assembleRelease bundleStdLiteRelease
+          find app/build/outputs/bundle -name '*.aab'
           find app/build/outputs/apk -name '*.apk'
           rm -f "$AMP_KEYSTORE_FILE"
 
@@ -93,8 +94,9 @@ jobs:
           cp app/build/outputs/apk/stdFull/release/app-std-full-release.apk DaesinnamOne-V1-full.apk
           cp app/build/outputs/apk/fold8Lite/release/app-fold8-lite-release.apk DaesinnamOne-V1_Fold8.apk
           cp app/build/outputs/apk/fold8Full/release/app-fold8-full-release.apk DaesinnamOne-V1_Fold8-full.apk
+          cp app/build/outputs/bundle/stdLiteRelease/app-std-lite-release.aab DaesinnamOne-V1-play.aab
           gh release delete one-v1 --yes --cleanup-tag || true
-          gh release create one-v1 DaesinnamOne-V1.apk DaesinnamOne-V1-full.apk DaesinnamOne-V1_Fold8.apk DaesinnamOne-V1_Fold8-full.apk \
+          gh release create one-v1 DaesinnamOne-V1.apk DaesinnamOne-V1-full.apk DaesinnamOne-V1_Fold8.apk DaesinnamOne-V1_Fold8-full.apk DaesinnamOne-V1-play.aab \
             --target "$GITHUB_SHA" \
             --prerelease \
             --title "대신남 원 Ver1 (독립 설치판)" \

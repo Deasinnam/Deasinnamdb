@@ -32,7 +32,9 @@ async function startServer(hook) {
   return {server, origin: `http://127.0.0.1:${server.address().port}`};
 }
 
-function routeLocal(context, origin) {
+async function routeLocal(context, origin) {
+  // 시험에서는 플레이 출시 때 숨긴 예전 스킨도 그대로 확인
+  await context.addInitScript(() => { if (window.__allSkins === undefined) window.__allSkins = true; });
   return context.route('**/*', route => {
     const url = route.request().url();
     if (!url.startsWith(origin)) return route.abort();

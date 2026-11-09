@@ -185,6 +185,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 1.52 안드로이드 16(API 36)부터는 뒤로 가기가 onBackPressed 대신 이 콜백으로 옴 — 같은 동작(열린 창 닫기 → 없으면 앱 뒤로)
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+        }
         current = new WeakReference<>(this);
         msm = getSystemService(MediaSessionManager.class);
         am = getSystemService(AudioManager.class);
@@ -967,6 +971,10 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        handleBack();
+    }
+
+    private void handleBack() {
         // 1.45 설정·선택 창이 열려 있으면 뒤로 가기는 그 창만 닫음(앱은 그대로)
         if (web != null) {
             web.evaluateJavascript("(function(){try{return !!(window.__back&&window.__back())}catch(e){return false}})()", r -> {
@@ -980,7 +988,7 @@ public class MainActivity extends Activity {
     private void backDefault() {
         // 재생 중이거나 외부 앱 연동 중이면 앱을 끄지 않고 뒤로 보냅니다.
         if (playing || extMode) moveTaskToBack(true);
-        else super.onBackPressed();
+        else finish();
     }
 
     @Override

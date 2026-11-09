@@ -61,7 +61,7 @@ run('Cockpit special skin layout', async ({context, origin, errors}) => {
   await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival7'; s.dispatchEvent(new Event('change')); });
   await p.waitForTimeout(300);
   assert.equal(await p.evaluate(() => [document.documentElement.dataset.cks, document.documentElement.dataset.cp, document.documentElement.dataset.ck3].join()), '1,1,');
-  assert.ok((await p.locator('#skin option').allTextContents()).includes('대신남 자동차 모드 · 콕핏 스페셜 2'));
+  assert.ok((await p.locator('#skin option').allTextContents()).includes('대신남 에어라인'));
   assert.ok(await p.evaluate(() => { const b = getComputedStyle(document.body); return b.backgroundColor === 'rgb(16, 23, 20)' || b.backgroundImage.includes('25, 27, 20'); }), 'Dark antique background');
   for (const sel of ['#layout', '#skinBtn', '#driveBtn', '#setBtn', '#radioBtn', '#revBtn', '#addTop']) assert.equal(await p.locator(sel).isVisible(), true, sel + ' kept');
   assert.equal(await p.locator('#skinBtn .ico').isVisible(), true, 'Vector icon instead of emoji');
