@@ -37,6 +37,12 @@ jobs:
           echo "웹 빌드 폴더: $SITE"
           rm -rf "$GITHUB_WORKSPACE/app/src/main/assets/www"
           cp -r "$SITE" "$GITHUB_WORKSPACE/app/src/main/assets/www"
+          # 웹 빌드의 app/photocraft-web.js 는 ./snippets/... 를 app/ 기준으로 불러오는데,
+          # 릴리스 zip에는 snippets/ 가 맨 위에만 있어 그대로 두면 앱이 시작되지 않습니다(로딩에서 멈춤).
+          W="$GITHUB_WORKSPACE/app/src/main/assets/www"
+          if grep -q '\./snippets/' "$W/app/photocraft-web.js" && [ ! -d "$W/app/snippets" ] && [ -d "$W/snippets" ]; then
+            cp -r "$W/snippets" "$W/app/snippets"; echo "snippets를 app/ 에도 복사"
+          fi
           ls -la "$GITHUB_WORKSPACE/app/src/main/assets/www" "$GITHUB_WORKSPACE/app/src/main/assets/www/app"
           cp photocraft-web-*.zip "$GITHUB_WORKSPACE/photocraft-web.zip"
           for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$GITHUB_WORKSPACE/app/src/main/assets/www/$f.txt" || true; done
