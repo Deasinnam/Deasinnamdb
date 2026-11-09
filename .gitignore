@@ -1,0 +1,11 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+node_modules/
+# 서명 키는 저장소에 올리지 않습니다
+*.keystore
+*.jks
+*.p12
+signing/
