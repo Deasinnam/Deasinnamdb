@@ -8,9 +8,10 @@
 왜 이렇게 하나
   - 안드로이드 10부터 앱 데이터 폴더의 파일은 실행할 수 없고, 앱에 같이 설치되는 lib/<abi>/lib*.so 만 실행됩니다.
     그래서 node 실행 파일을 libnode.so 라는 이름으로 넣습니다.
-  - 설치기는 lib*.so 모양의 파일만 풀어 주므로 libz.so.1 같은 이름을 libz_1.so 로 바꾸고,
-    서로를 찾는 이름(NEEDED)도 patchelf 로 함께 고칩니다.
-필요한 도구: dpkg-deb, readelf, patchelf
+  - 설치기는 lib*.so 모양의 파일만 풀어 주므로 libz.so.1 같은 이름은 libz_1.so 로 바꿔 넣고,
+    앱이 실행할 때 원래 이름의 심볼릭 링크를 만들어 줍니다(바이너리 자체는 손대지 않음).
+    이름 대응표는 --map 파일(assets/nodelibs.txt)에 씁니다.
+필요한 도구: dpkg-deb, readelf
 """
 import argparse
 import pathlib
@@ -78,6 +79,7 @@ def main() -> None:
     ap.add_argument("--arch", required=True, choices=["aarch64", "x86_64", "arm"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--package", default="nodejs-lts")
+    ap.add_argument("--map", default="app/src/main/assets/nodelibs.txt")
     a = ap.parse_args()
     out = pathlib.Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -121,26 +123,20 @@ def main() -> None:
         todo.extend(needed(libs[n]))
 
     renames = {n: android_name(n) for n in libs}
-    targets = []
     for n, src in libs.items():
-        dst = out / renames[n]
-        shutil.copyfile(src, dst)
-        targets.append((dst, renames[n]))
+        shutil.copyfile(src, out / renames[n])
+        print(f"  {renames[n]} ← {n} ({src.stat().st_size / 1e6:.1f}MB)")
     node_dst = out / "libnode.so"
     shutil.copyfile(node, node_dst)
     node_dst.chmod(0o755)
-    targets.append((node_dst, None))
+    print(f"  libnode.so ({node_dst.stat().st_size / 1e6:.1f}MB)")
 
-    for path, soname in targets:
-        args = ["patchelf"]
-        for old, new in renames.items():
-            if old != new:
-                args += ["--replace-needed", old, new]
-        if soname:
-            args += ["--set-soname", soname]
-        args += ["--remove-rpath", str(path)]
-        subprocess.run(args, check=True)
-        print(f"  {path.name} ({path.stat().st_size / 1e6:.1f}MB)")
+    # 원래 이름 → 설치된 이름 (여러 CPU 종류를 받으면 합칩니다)
+    mp = pathlib.Path(a.map)
+    mp.parent.mkdir(parents=True, exist_ok=True)
+    lines = set(mp.read_text().splitlines()) if mp.exists() else set()
+    lines |= {f"{old}={new}" for old, new in renames.items() if old != new}
+    mp.write_text("\n".join(sorted(l for l in lines if l)) + "\n")
     shutil.rmtree(stage, ignore_errors=True)
 
 

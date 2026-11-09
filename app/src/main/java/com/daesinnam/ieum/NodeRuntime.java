@@ -136,6 +136,7 @@ final class NodeRuntime {
         File tmp = new File(context.getCacheDir(), "nodetmp");
         tmp.mkdirs();
 
+        File libLinks = linkLibraries();
         ProcessBuilder pb = new ProcessBuilder(
                 new File(nativeDir, "libnode.so").getAbsolutePath(),
                 "--max-old-space-size=1024",
@@ -143,7 +144,7 @@ final class NodeRuntime {
         pb.directory(project);
         pb.redirectErrorStream(true);
         Map<String, String> env = pb.environment();
-        env.put("LD_LIBRARY_PATH", nativeDir.getAbsolutePath());
+        env.put("LD_LIBRARY_PATH", libLinks.getAbsolutePath() + ":" + nativeDir.getAbsolutePath());
         env.put("IEUM_PORT", String.valueOf(port));
         env.put("IEUM_TOKEN", token);
         env.put("IEUM_DATA", data.getAbsolutePath());
@@ -184,6 +185,36 @@ final class NodeRuntime {
             throw new IOException(failure);
         }
         if (listener != null) listener.onState("ready", "");
+    }
+
+    /**
+     * node가 찾는 원래 이름(libz.so.1 등)으로, 설치된 라이브러리(libz_1.so)를 가리키는 심볼릭 링크를 만듭니다.
+     * 링크 대상은 앱 설치 폴더에 있으므로 안드로이드가 실행용으로 불러오는 것을 허용합니다.
+     */
+    private File linkLibraries() throws IOException {
+        File dir = new File(context.getFilesDir(), "nodelib");
+        deleteTree(dir);
+        if (!dir.mkdirs()) throw new IOException("라이브러리 링크 폴더를 만들 수 없습니다");
+        String map;
+        try (InputStream in = context.getAssets().open("nodelibs.txt")) {
+            java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+            byte[] b = new byte[4096];
+            int n;
+            while ((n = in.read(b)) > 0) bo.write(b, 0, n);
+            map = bo.toString("UTF-8");
+        }
+        for (String line : map.split("\n")) {
+            int eq = line.indexOf('=');
+            if (eq <= 0) continue;
+            File target = new File(nativeDir, line.substring(eq + 1).trim());
+            if (!target.exists()) continue;
+            try {
+                android.system.Os.symlink(target.getAbsolutePath(), new File(dir, line.substring(0, eq).trim()).getAbsolutePath());
+            } catch (android.system.ErrnoException e) {
+                throw new IOException("라이브러리 링크 실패: " + line, e);
+            }
+        }
+        return dir;
     }
 
     private static String safeExit(Process p) {

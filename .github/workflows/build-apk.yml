@@ -53,7 +53,6 @@ jobs:
 
       - name: 안드로이드용 Node.js 받기 (Termux)
         run: |
-          sudo apt-get install -y patchelf > /dev/null
           python3 tools/fetch_android_node.py --arch aarch64 --out app/src/main/jniLibs/arm64-v8a
           python3 tools/fetch_android_node.py --arch x86_64 --out app/src/main/jniLibs/x86_64
 

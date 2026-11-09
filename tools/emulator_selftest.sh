@@ -12,6 +12,18 @@ for i in $(seq 1 60); do
   if adb logcat -d -s IEUM_SELFTEST:I | grep -q "DONE all"; then break; fi
 done
 adb logcat -d -s IEUM_SELFTEST:I IeumNode:* > selftest-result.txt
+
+echo "===== 진단: 앱 안에서 node 직접 실행 ====="
+NLD=$(adb shell dumpsys package "$PKG" | grep -m1 -o 'legacyNativeLibraryDir=[^ ]*' | cut -d= -f2)
+ABI=$(adb shell getprop ro.product.cpu.abi | tr -d '\r')
+case "$ABI" in x86_64) SUB=x86_64;; arm64-v8a) SUB=arm64;; *) SUB=$ABI;; esac
+LIB="$NLD/$SUB"
+echo "nativeLibraryDir=$LIB"
+adb shell run-as "$PKG" ls -la files/nodelib 2>&1 | head -20
+adb shell run-as "$PKG" sh -c "LD_LIBRARY_PATH=/data/data/$PKG/files/nodelib:$LIB $LIB/libnode.so --version; echo exit=\$?" 2>&1 | head -20
+adb shell run-as "$PKG" sh -c "LD_LIBRARY_PATH=/data/data/$PKG/files/nodelib:$LIB $LIB/libnode.so -e 'console.log(process.version, process.arch, require(\"os\").tmpdir())'; echo exit=\$?" 2>&1 | head -20
+echo "===== 진단: 크래시 기록 ====="
+adb logcat -d -b crash | tail -60
 adb logcat -d > selftest-full.txt
 echo "===== 점검 결과 ====="
 grep -E "IEUM_SELFTEST" selftest-result.txt || true
