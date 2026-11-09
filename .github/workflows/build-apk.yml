@@ -38,6 +38,7 @@ jobs:
           rm -rf "$GITHUB_WORKSPACE/app/src/main/assets/www"
           cp -r "$SITE" "$GITHUB_WORKSPACE/app/src/main/assets/www"
           ls -la "$GITHUB_WORKSPACE/app/src/main/assets/www" "$GITHUB_WORKSPACE/app/src/main/assets/www/app"
+          cp photocraft-web-*.zip "$GITHUB_WORKSPACE/photocraft-web.zip"
           for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$GITHUB_WORKSPACE/app/src/main/assets/www/$f.txt" || true; done
 
       - name: Android SDK 준비
@@ -62,7 +63,7 @@ jobs:
       - name: 에뮬레이터에서 자동 점검
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 35
           arch: x86_64
           target: google_apis
           ram-size: 4096M
@@ -76,9 +77,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ls photocraft-screen-*.png 2>/dev/null || exit 0
           gh release delete photocraft-ci --yes --cleanup-tag || true
-          gh release create photocraft-ci photocraft-screen-*.png selftest-result.txt --target "$GITHUB_SHA" --prerelease \
+          gh release create photocraft-ci $(ls photocraft-screen-*.png selftest-result.txt photocraft-web.zip 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
             --title "PhotoCraft 안드로이드 자동 점검 화면" --notes "빌드 서버 에뮬레이터 점검 결과 (빌드 ${{ github.run_number }})"
 
       - name: 서명 키 준비 (있으면)

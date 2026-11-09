@@ -322,7 +322,8 @@ public class MainActivity extends ComponentActivity {
                 break;
             }
             case "selftest":
-                Log.i("PHOTOCRAFT_SELFTEST", "page canvas=" + m.optString("canvas") + " webgpu=" + m.optBoolean("webgpu")
+                Log.i("PHOTOCRAFT_SELFTEST", "page started=" + m.optBoolean("started") + " seconds=" + m.optInt("seconds")
+                        + " canvas=" + m.optString("canvas") + " webgpu=" + m.optBoolean("webgpu") + " ua=" + m.optString("ua")
                         + " errors=" + m.optInt("errors") + " first=" + m.optString("first") + " text=" + m.optString("text"));
                 break;
             case "log":

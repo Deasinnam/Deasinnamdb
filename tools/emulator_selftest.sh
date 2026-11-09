@@ -6,16 +6,16 @@ PKG=com.daesinnam.photocraft
 adb install -r -g "$APK" || exit 1
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez photocraft.selftest true
-for i in $(seq 1 40); do
+for i in $(seq 1 45); do
   sleep 5
-  [ "$i" = 14 ] && adb exec-out screencap -p > photocraft-screen-70s.png
+  [ "$i" = 6 ] && adb exec-out screencap -p > photocraft-screen-30s.png
   if adb logcat -d -s PHOTOCRAFT_SELFTEST:I | grep -q "DONE"; then break; fi
 done
 adb exec-out screencap -p > photocraft-screen-end.png
 adb logcat -d -s PHOTOCRAFT_SELFTEST:I PhotoCraft:* PhotoCraftConsole:* > selftest-result.txt
 echo "===== 점검 결과 ====="
 cat selftest-result.txt | tail -60
-page=$(grep -c "PHOTOCRAFT_SELFTEST.*page canvas=[0-9]" selftest-result.txt || true)
+page=$(grep -c "PHOTOCRAFT_SELFTEST.*page started=true" selftest-result.txt || true)
 saved=$(grep -c "PHOTOCRAFT_SELFTEST.*save ok" selftest-result.txt || true)
 if [ "$page" -ge 1 ] && [ "$saved" -ge 1 ]; then echo "자동 점검 통과"; exit 0; fi
 echo "자동 점검 실패 (page=$page saved=$saved)"

@@ -118,22 +118,30 @@
     window.addEventListener("unhandledrejection", (e) => errors.push("거부: " + String(e.reason && e.reason.message || e.reason)));
     const origError = console.error;
     console.error = function () { errors.push(Array.from(arguments).join(" ").slice(0, 300)); return origError.apply(this, arguments); };
-    setTimeout(() => {
+    // 로딩 문구가 사라질 때까지(최대 150초) 기다린 뒤 보고
+    const started = Date.now();
+    const check = () => {
       const c = document.querySelector("canvas");
       const text = ((document.body && document.body.innerText) || "").replace(/\s+/g, " ").slice(0, 300);
+      const loading = /Loading PhotoCraft|taking longer|failed to download|stopped/i.test(text);
+      if (loading && Date.now() - started < 150000) { setTimeout(check, 3000); return; }
       post({
         t: "selftest",
         canvas: c ? c.width + "x" + c.height : "none",
+        started: !loading,
+        seconds: Math.round((Date.now() - started) / 1000),
         webgpu: !!navigator.gpu,
+        ua: navigator.userAgent,
         text,
         errors: errors.length,
-        first: errors.slice(0, 3).join(" | ").slice(0, 600),
+        first: errors.slice(0, 4).join(" | ").slice(0, 900),
       });
       // 저장 경로 점검: 작은 파일 하나를 "다운로드"해 봄
       const a = document.createElement("a");
       a.href = URL.createObjectURL(new Blob(["photocraft-android-selftest"], { type: "text/plain" }));
       a.download = "selftest.txt";
       a.click();
-    }, 60000);
+    };
+    setTimeout(check, 10000);
   }
 })();
