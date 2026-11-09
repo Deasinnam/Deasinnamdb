@@ -25,7 +25,10 @@ const codec = require("./codec");
 const PORT = Number(process.env.IEUM_PORT || 0);
 const TOKEN = process.env.IEUM_TOKEN || "";
 const DATA = path.resolve(process.env.IEUM_DATA || path.join(__dirname, "data"));
-const RESOURCES = path.resolve(process.env.IEUM_RESOURCES || path.join(__dirname, "resources"));
+fs.mkdirSync(DATA, { recursive: true });
+// 안드로이드의 /data/user/0 은 /data/data 를 가리키는 링크입니다. Node는 모듈 파일 이름을 실제 경로로 쓰므로 맞춰 둡니다.
+const RESOURCES = realpath(path.resolve(process.env.IEUM_RESOURCES || path.join(__dirname, "resources")));
+function realpath(p) { try { return fs.realpathSync(p); } catch (_) { return p; } }
 const APP_VERSION = process.env.IEUM_APP_VERSION || "0.12.12";
 const MODULES = ["docs", "sheets", "slides", "epub", "mindmap", "diagram"];
 const CUSTOM_SCHEMES = ["genoffice-docx-media", "genoffice-slide-media", "epub-asset", "drawio-app"];

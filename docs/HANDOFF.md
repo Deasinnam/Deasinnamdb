@@ -1,62 +1,90 @@
 # 이음오피스 안드로이드판 — 인수인계
 
-[IeumOffice](https://github.com/pblsketch/ieumoffice) 0.12.12(Apache-2.0, Electron 데스크톱 앱)를
-안드로이드로 옮긴 브랜치입니다. 브랜치 `ieumoffice-android`에 올리면 GitHub Actions가 APK를 만들어
-Releases의 `ieumoffice-latest`에 올립니다.
+[IeumOffice](https://github.com/pblsketch/ieumoffice) v0.12.12(Apache-2.0, Electron 데스크톱 앱)를
+안드로이드로 옮긴 브랜치입니다. 브랜치 `ieumoffice-android`에 올리면 GitHub Actions가
+
+1. 원본 릴리스에서 AppImage와 소스(v0.12.12 태그)를 받고
+2. 편집기 화면(`tools/build_web.py`)과 문서 엔진 묶음(`tools/build_node.py`)을 만들고
+3. 안드로이드용 Node.js(Termux `nodejs-lts`)를 받고(`tools/fetch_android_node.py`)
+4. 엑셀 엔진(Rust `xlsx-sidecar`)을 안드로이드용으로 컴파일하고
+5. 에뮬레이터에서 6개 편집기를 자동 점검(`tools/emulator_selftest.sh`)한 뒤
+6. 휴대폰용(arm64) APK를 Releases의 `ieumoffice-latest`에 올립니다.
+
+원본 AppImage·생성물(`app/src/main/assets/www`, `node.zip`, `jniLibs`)은 저장소에 두지 않습니다.
 
 ## 구조
 
 ```
-web/shim/electron-shim.js   가짜 electron 모듈 + 메인 프로세스 대신 응답하는 핸들러
-web/home/                   앱 첫 화면(파일 열기, 새 문서, 최근 문서)
-tools/build_web.py          AppImage에서 편집기 화면을 뽑아 app/src/main/assets/www 로 만드는 스크립트
-app/src/main/assets/www/    생성물 (커밋해 둠: CI가 AppImage 없이 빌드하도록)
-app/src/main/java/...       WebView 셸 (MainActivity), 문서 번호↔content:// 대응 (DocStore)
+web/shim/electron-shim.js   화면 쪽 가짜 electron (preload를 그대로 쓰게 함)
+web/home/                   첫 화면: 파일 열기, 새 문서, 최근 문서, 자동 점검
+node/host.js                문서 엔진: 데스크톱 메인 코드를 문서마다 불러 돌리는 Node 호스트
+node/fake-electron.js       메인 쪽 가짜 electron (ipcMain·app·BrowserWindow·dialog·protocol·Menu …)
+node/codec.js               IPC 값(바이트 배열·Map 등)을 JSON으로 오가게 하는 규칙
+node/vendor/                독립 실행용 메인 코드가 바깥에서 찾는 패키지 (ajv, zod, jszip, pdf-lib …)
+tools/                      위 생성 스크립트들
+app/src/main/java/...       MainActivity(WebView·중계), NodeRuntime(Node 실행), DocStore(문서 번호·복사·옮겨 쓰기)
 ```
 
-### 동작 방식
+### 편집기 두 종류
 
-1. 데스크톱판 편집기는 모듈마다 `renderer/`(웹 화면)와 `preload/index.js`(Electron 연결)로 나뉩니다.
-2. `build_web.py`가 preload를 `(function(require){...})(window.__ieumRequire)`로 감싸 브라우저에서 돌게 하고,
-   `index.html` 앞에 셈을 끼워 넣습니다. 그래서 `window.hwpApi` 같은 API 모양이 데스크톱과 똑같습니다.
-3. preload가 부르는 `ipcRenderer.invoke("채널")`은 셈의 `HANDLERS`가 받습니다. 없는 채널은 `undefined`
-   (목록 채널은 `[]`)를 돌려주고 콘솔에 `[ieum-shim] ... (미구현)`으로 남깁니다.
-4. 파일 읽기는 `https://appassets.androidplatform.net/doc/<id>`, 쓰기·파일 고르기는 `IeumAndroid` 메시지
-   (`addWebMessageListener`, 앱 출처에서만 보임)로 합니다.
-5. HTML 미리보기는 데스크톱의 `html-preview:` 대신 `https://ieum-preview.local/view/`(다른 출처)로 내보냅니다.
-   문서 속 스크립트가 앱 브리지에 닿지 않게 하려는 것입니다.
+| 종류 | 편집기 | 동작 |
+|---|---|---|
+| 셈만으로 | PDF(보기), 한글, 마크다운, HTML | 화면 코드가 파일을 직접 다룸. 셈이 메인 프로세스 응답을 흉내 냄 |
+| 문서 엔진 | 워드, 엑셀, 파워포인트, EPUB, 마인드맵, 다이어그램 | 데스크톱 메인 코드(`modules/<m>/main`)를 앱 안 Node에서 그대로 실행 |
 
-## 1차 버전 범위
+### 문서 엔진 흐름
 
-| 편집기 | 상태 |
-|---|---|
-| 한글 HWP/HWPX | 열기·편집·저장 (저장은 HWPX 권장, 확장자를 .hwp로 고르면 HWP로) |
-| 마크다운 | 열기·편집·저장 |
-| HTML | 열기·편집·미리보기·저장 |
-| PDF | 보기 (주석 저장은 데스크톱 메인 프로세스가 pdf-lib로 하던 일이라 미구현) |
-| 워드·엑셀·파워포인트·EPUB·마인드맵·다이어그램 | 미이식 (파일 해석을 메인 프로세스가 함) |
+```
+화면(WebView) ──IeumAndroid 메시지──▶ 앱(Java) ──웹소켓(127.0.0.1, 비밀값)──▶ Node 호스트 ──▶ 데스크톱 메인 코드
+화면이 읽는 자체 프로토콜 주소: https://appassets.androidplatform.net/proto/m/<모듈>/<프로토콜>/...
+   └ 앱이 Node의 HTTP로 넘김 → 메인 코드의 protocol.handle 처리기가 응답
+```
 
-AI 도우미·프로젝트·스킬·드라이브 연동은 데스크톱 메인 프로세스 기능이라 꺼져 있습니다(버튼은 보임).
+- 화면은 Node에 직접 붙지 않습니다(크롬의 로컬 네트워크 접근 차단 회피, 비밀값을 화면에 두지 않음).
+- 문서를 열면 앱이 원본(content://)을 `files/docs/<번호>/<이름>`에 복사하고 그 경로로 세션을 엽니다.
+  메인 코드가 그 파일을 고쳐 쓰면 호스트가 알아채고 앱에 "원래 위치로 옮겨 써라"(`android.syncFile`)를 보냅니다.
+- 저장 대화상자(`dialog.showSaveDialog`)는 안드로이드 "파일 만들기"로, 확인 창(`showMessageBox`)은 화면 안 모달로 바뀝니다.
+- 데스크톱 메뉴 막대(Menu.setApplicationMenu)는 화면 오른쪽 아래 ⋯ → "메뉴 전체"로 그대로 펼쳐집니다.
+  "저장"은 메뉴의 Ctrl+S 항목을 누르는 것과 같습니다.
+- 모듈마다 열린 문서는 하나입니다(새 문서를 열면 이전 세션을 닫음).
 
-## 새 버전 IeumOffice로 올리기
+### 원본 코드에 손댄 곳 (빌드 때 자동, `tools/build_web.py`)
+
+- 화면 코드가 직접 만드는 자체 프로토콜 주소(`${LAZY_MEDIA_SCHEME}://` 등) → `/proto/m/<모듈>/...`
+- CSP 안의 자체 프로토콜 출처 → `'self'`/앱 출처
+- 다이어그램의 draw.io 메시지 출처 확인, 슬라이드의 메타파일 주소 판별, EPUB 본문 iframe의 CSP
+- 원본이 바뀌어 고칠 곳을 못 찾으면 빌드가 멈추며 알려 줍니다.
+
+### 호스트가 대신 해 주는 것 (`node/host.js`)
+
+- 엑셀: 독립 실행판은 명령줄 파일을 안 받으므로 첫 `workbook:select`를 `workbook:reopen <경로>`로 돌림(`OPEN_HOOKS`)
+- 데스크톱 껍데기 앱이 답하던 공통 채널(`app:` 등)은 셈의 기본값으로 대답(AI 패널 기본 숨김 포함)
+
+## 안드로이드 쪽 요점
+
+- Node 실행 파일은 `lib/<abi>/libnode.so`(안드로이드 10+는 앱 설치 폴더의 파일만 실행 허용). `useLegacyPackaging=true`.
+- Termux 라이브러리는 `libz_1.so`처럼 이름을 바꿔 넣고, 실행 때 `files/nodelib/libz.so.1 → …/libz_1.so` 링크를 만듦(`assets/nodelibs.txt`).
+- 엑셀 엔진은 `lib/<abi>/libxlsxsidecar.so`, 메인 코드에는 `XLSX_SIDECAR_PATH`로 알려 줌.
+- `node.zip`(약 60MB)은 첫 실행 때 `files/node/app-<버전>`에 풂.
+- 127.0.0.1 평문 통신만 허용(`res/xml/network_security_config.xml`). 문서를 바깥으로 보내지 않습니다.
+
+## PC에서 시험하기
 
 ```bash
-./IeumOffice-x.y.z.AppImage --appimage-extract
+./IeumOffice-0_12_12.AppImage --appimage-extract
 python3 tools/build_web.py squashfs-root/resources
+(cd node && npm ci) && (cd node/vendor && npm ci --ignore-scripts)
+IEUM_PORT=8790 IEUM_TOKEN=tok IEUM_DATA=/tmp/ieum IEUM_RESOURCES=$PWD/squashfs-root/resources \
+  IEUM_SIDECAR=$PWD/squashfs-root/resources/native/xlsx-sidecar node node/host.js
 ```
 
-그 뒤 브라우저 검사(아래)로 각 편집기가 뜨는지 확인하고, 새로 깨지는 채널은 셈 `HANDLERS`에 추가합니다.
-원래 반환 모양은 `resources/app.asar`(npx @electron/asar extract)의 `out/main/index.js`와
-`modules/<모듈>/main/*.js`에서 `ipcMain.handle(` 로 찾으면 됩니다.
+Playwright로 `https://appassets.androidplatform.net/**`를 `app/src/main/assets/www`로, `/proto/`를 호스트로
+가로채고 `window.IeumAndroid`를 흉내 내면(웹소켓 중계 포함) 안드로이드와 같은 경로로 시험할 수 있습니다.
+홈 화면에 `?selftest=0`을 붙이면 6개 편집기를 차례로 열어 결과를 `selftestReport`로 보고합니다.
 
-## 확인 방법 (PC 브라우저)
+## 아직 안 되는 것
 
-Playwright로 `https://appassets.androidplatform.net/**`를 `app/src/main/assets/www`와 테스트 문서로
-가로채 띄우고, `window.IeumAndroid`를 흉내 내면 안드로이드와 같은 출처·같은 경로로 시험할 수 있습니다.
-0.12.12 기준으로 네 편집기 모두 열기 확인, 마크다운·HTML·HWP 저장 확인을 했습니다.
-
-## 다음 단계 후보
-
-- PDF 주석 저장 (pdf-lib을 웹 쪽에서 돌리기)
-- 워드(docs)·시트·슬라이드: 메인 프로세스의 docx/xlsx 처리(`xlsx-sidecar` 네이티브 포함)를 웹으로 옮겨야 함
-- 휴대폰 화면용 툴바 정리 (현재는 데스크톱 화면 그대로)
+- PDF 주석 저장, 인쇄·PDF로 내보내기(`webContents.printToPDF`)
+- AI 도우미(구독 프로그램 실행·API 호출은 데스크톱 전용)
+- 휴대폰 화면용 툴바 정리(지금은 데스크톱 화면 그대로)
+- 32비트 ARM 기기(armeabi-v7a)용 빌드
