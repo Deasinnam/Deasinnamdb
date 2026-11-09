@@ -45,6 +45,11 @@ final class Pipeline {
     }
 
     void run(String id, boolean transcribeAgain, Progress progress) throws Exception {
+        run(id, transcribeAgain, true, progress);
+    }
+
+    /** @param analyze false 이면 받아쓰기까지만 하고 끝냅니다 (ChatGPT·Claude 앱으로 보내 분석하는 방식) */
+    void run(String id, boolean transcribeAgain, boolean analyze, Progress progress) throws Exception {
         String key = new Secrets(context).apiKey();
         if (key == null || key.isEmpty()) throw new IOException("설정에서 OpenAI API 키를 넣어 주세요.");
         OpenAi api = new OpenAi(prefs.baseUrl(), key);
@@ -103,12 +108,22 @@ final class Pipeline {
         if (all.length() == 0) throw new IOException("녹음에서 말소리를 찾지 못했습니다.");
 
         // ---------- 2. 분석 ----------
-        progress.step("회의 내용을 정리하는 중…");
         JSONObject meta = store.meta(id);
         if (myVoice && order.contains(myName) && meta.optString("myLabel").isEmpty()) {
             meta.put("myLabel", myName);
             store.saveMeta(id, meta);
         }
+        if (!analyze) {
+            meta.put("transcribedOnly", true);
+            meta.put("analyzedAt", System.currentTimeMillis());
+            meta.put("myNameUsed", myVoice);
+            meta.put("state", "done");
+            meta.remove("error");
+            meta.remove("step");
+            store.saveMeta(id, meta);
+            return;
+        }
+        progress.step("회의 내용을 정리하는 중…");
         JSONObject analysis = api.analyzeJson(prefs.analysisModel(), INSTRUCTIONS, buildInput(meta, transcript, myName));
         for (String k : new String[]{"keyPoints", "decisions", "speakers", "requestsToMe", "actionItems", "schedules", "openQuestions"}) {
             if (!(analysis.opt(k) instanceof JSONArray)) analysis.put(k, new JSONArray());
@@ -157,6 +172,7 @@ final class Pipeline {
         meta.put("analyzedAt", System.currentTimeMillis());
         meta.put("myNameUsed", myVoice);
         meta.put("state", "done");
+        meta.remove("transcribedOnly");
         meta.remove("error");
         meta.remove("step");
         store.saveMeta(id, meta);

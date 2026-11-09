@@ -124,3 +124,4 @@ details.adv summary { color: var(--muted); padding: 6px 4px; }
 #toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: rgba(23,32,51,.94); color: #fff;
   padding: 10px 16px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 88vw; z-index: 30; }
 #toast.show { opacity: 1; }
+.item .acts .ai { padding: 10px 14px; border-radius: 12px; }

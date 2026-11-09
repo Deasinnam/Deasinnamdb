@@ -238,6 +238,7 @@ public class MainActivity extends ComponentActivity {
                 r.put("meta", store.meta(id));
                 r.put("transcript", store.optJson(id, "transcript.json"));
                 r.put("analysis", store.optJson(id, "analysis.json"));
+                r.put("aiApps", AiShare.apps(this));
                 return r;
             }
             case "retry":
@@ -293,6 +294,8 @@ public class MainActivity extends ComponentActivity {
             }
             case "shareMeeting":
                 return share(a.getString(0));
+            case "sendToAi":
+                return sendToAi(a.getString(0), a.optString(1, ""));
             default:
                 return fail("모르는 요청: " + method);
         }
@@ -380,6 +383,7 @@ public class MainActivity extends ComponentActivity {
         long picked = calendars.pick(prefs.calendarId());
         r.put("calendarId", picked >= 0 ? String.valueOf(picked) : "");
         r.put("autoCalendar", prefs.autoCalendar());
+        r.put("analysisMode", prefs.analysisMode());
         r.put("transcribeModel", prefs.transcribeModel());
         r.put("analysisModel", prefs.analysisModel());
         r.put("baseUrl", prefs.baseUrl());
@@ -394,6 +398,7 @@ public class MainActivity extends ComponentActivity {
         String cal = s.optString("calendarId", "");
         if (!cal.isEmpty() && !"null".equals(cal)) e.putLong("calendarId", Long.parseLong(cal));
         e.putBoolean("autoCalendar", s.optBoolean("autoCalendar", true));
+        e.putString("analysisMode", "external".equals(s.optString("analysisMode")) ? "external" : "auto");
         e.putString("transcribeModel", s.optString("transcribeModel", ""));
         e.putString("analysisModel", s.optString("analysisModel", ""));
         String base = s.optString("baseUrl", "").trim();
@@ -454,6 +459,23 @@ public class MainActivity extends ComponentActivity {
         Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, sb.toString());
         main.post(() -> startActivity(Intent.createChooser(send, "회의 요약 공유")));
         return ok();
+    }
+
+    /** 받아쓴 기록을 ChatGPT·Claude 앱으로 (target: chatgpt / claude / 그 밖은 공유 시트) */
+    private JSONObject sendToAi(String id, String target) throws Exception {
+        JSONObject transcript = store.optJson(id, "transcript.json");
+        if (transcript == null) return fail("아직 받아쓰지 않은 회의입니다.");
+        JSONObject meta = store.meta(id);
+        String text = AiShare.buildText(meta, transcript, prefs.myName());
+        String title = Pipeline.titleOf(meta, store.optJson(id, "analysis.json"));
+        String pkg = "chatgpt".equals(target) ? AiShare.CHATGPT : "claude".equals(target) ? AiShare.CLAUDE : null;
+        Intent chooser = AiShare.intent(this, text, title, null);
+        Intent direct = pkg == null ? chooser : AiShare.intent(this, text, title, pkg);
+        main.post(() -> {
+            AiShare.copy(this, text);
+            AiShare.launch(this, direct, chooser);
+        });
+        return ok().put("chars", text.length());
     }
 
     private static void section(StringBuilder sb, String title, JSONArray arr, String field, Map<String, String> names) {

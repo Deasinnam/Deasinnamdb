@@ -22,6 +22,8 @@ final class Prefs {
     String myName() { return p.getString("myName", ""); }
     long calendarId() { return p.getLong("calendarId", -1); }
     boolean autoCalendar() { return p.getBoolean("autoCalendar", true); }
+    /** "auto" = 앱이 OpenAI로 분석까지, "external" = 받아쓰기만 하고 ChatGPT·Claude 앱으로 보내 분석 */
+    String analysisMode() { return "external".equals(p.getString("analysisMode", "auto")) ? "external" : "auto"; }
     String transcribeModel() { return nonEmpty(p.getString("transcribeModel", ""), DEFAULT_TRANSCRIBE); }
     String analysisModel() { return nonEmpty(p.getString("analysisModel", ""), DEFAULT_ANALYSIS); }
     String baseUrl() {

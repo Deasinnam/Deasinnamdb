@@ -123,6 +123,7 @@ final class Store {
                 row.put("startedAt", m.optLong("startedAt"));
                 row.put("durationMs", m.optLong("durationMs"));
                 row.put("state", m.optString("state"));
+                if (m.optBoolean("transcribedOnly")) row.put("transcribedOnly", true);
                 JSONObject a = optJson(d.getName(), "analysis.json");
                 String title = m.optString("title");
                 if (a != null) {

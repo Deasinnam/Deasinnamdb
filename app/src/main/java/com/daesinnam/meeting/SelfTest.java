@@ -65,6 +65,28 @@ final class SelfTest {
             boolean pass = speakers.length() == 4 && "이대신".equals(meta.optString("myLabel")) && evOk
                     && "done".equals(meta.optString("state")) && an.optString("title").length() > 0;
             Log.i(TAG, (pass ? "PASS" : "FAIL") + " pipeline");
+
+            // 3) 받아쓰기만 모드 (ChatGPT·Claude 앱으로 보내기): 저장된 조각 결과를 다시 써서 API를 부르지 않음
+            prefs.edit().putString("analysisMode", "external").putString("analysisModel", "").commit();
+            //noinspection ResultOfMethodCallIgnored
+            new File(store.dir(id), "analysis.json").delete();
+            store.update(id, "speakerNames", new JSONObject().put("화자1", "김부장"));
+            new Pipeline(c).run(id, false, "auto".equals(prefs.analysisMode()), t -> Log.i(TAG, "step(ext) " + t));
+            JSONObject meta2 = store.meta(id);
+            String text = AiShare.buildText(meta2, store.optJson(id, "transcript.json"), prefs.myName());
+            StringBuilder big = new StringBuilder(text);
+            while (big.length() < 70_000) big.append("가나다라마바사 ");
+            android.content.Intent viaFile = AiShare.intent(c, big.toString(), "점검 회의", AiShare.CLAUDE);
+            android.content.Intent inline = AiShare.intent(c, text, "점검 회의", null);
+            boolean extOk = meta2.optBoolean("transcribedOnly") && "done".equals(meta2.optString("state"))
+                    && store.optJson(id, "analysis.json") == null
+                    && text.contains("[받아쓰기]") && text.contains("나(이대신)에게 요청") && text.contains("김부장: 대신 씨 보고서는")
+                    && text.contains("이대신: 네, 다음 주까지")
+                    && viaFile.hasExtra(android.content.Intent.EXTRA_STREAM) && AiShare.CLAUDE.equals(viaFile.getPackage())
+                    && android.content.Intent.ACTION_CHOOSER.equals(inline.getAction());
+            Log.i(TAG, "external apps=" + AiShare.apps(c) + " chars=" + text.length() + " head=" + text.substring(0, 60).replace('\n', ' '));
+            Log.i(TAG, (extOk ? "PASS" : "FAIL") + " transcribe-only + share text");
+            prefs.edit().putString("analysisMode", "auto").commit();
         } catch (Throwable t) {
             Log.e(TAG, "FAIL exception", t);
         }

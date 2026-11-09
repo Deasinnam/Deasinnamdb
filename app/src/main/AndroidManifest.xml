@@ -12,6 +12,16 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
+    <!-- 받아쓴 기록을 보낼 AI 앱이 깔려 있는지 확인 -->
+    <queries>
+        <package android:name="com.openai.chatgpt" />
+        <package android:name="com.anthropic.claude" />
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -37,5 +47,15 @@
             android:name=".RecorderService"
             android:exported="false"
             android:foregroundServiceType="microphone|dataSync" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

@@ -225,7 +225,8 @@ public class RecorderService extends Service {
             Store store = new Store(this);
             try {
                 store.update(id, "state", "processing");
-                new Pipeline(this).run(id, false, text -> {
+                boolean analyze = reanalyze || "auto".equals(new Prefs(this).analysisMode());
+                new Pipeline(this).run(id, false, analyze, text -> {
                     step = text;
                     try {
                         store.update(id, "step", text);
@@ -338,9 +339,12 @@ public class RecorderService extends Service {
                 Store store = new Store(this);
                 org.json.JSONObject a = store.optJson(id, "analysis.json");
                 org.json.JSONObject m = store.meta(id);
+                if (m.optBoolean("transcribedOnly")) throw new TranscribedOnly();
                 int req = a == null ? 0 : a.optJSONArray("requestsToMe").length();
                 int ev = m.optInt("eventsAdded");
                 body = (req > 0 ? "나에게 요청된 일 " + req + "건" : "요약을 확인하세요") + (ev > 0 ? " · 일정 " + ev + "건 캘린더 등록" : "");
+            } catch (TranscribedOnly t) {
+                body = "받아쓰기를 마쳤습니다. ChatGPT나 Claude로 보내 분석하세요";
             } catch (Exception ignored) {
             }
         } else {
@@ -348,7 +352,7 @@ public class RecorderService extends Service {
         }
         Notification n = new Notification.Builder(this, CH_DONE)
                 .setSmallIcon(ok ? android.R.drawable.stat_sys_download_done : android.R.drawable.stat_notify_error)
-                .setContentTitle(ok ? "회의 분석이 끝났습니다" : "회의를 분석하지 못했습니다")
+                .setContentTitle(ok ? (body.startsWith("받아쓰기") ? "회의 받아쓰기가 끝났습니다" : "회의 분석이 끝났습니다") : "회의를 분석하지 못했습니다")
                 .setContentText(body)
                 .setStyle(new Notification.BigTextStyle().bigText(body))
                 .setAutoCancel(true)
@@ -376,5 +380,8 @@ public class RecorderService extends Service {
 
     static long elapsedMs() {
         return "recording".equals(state) ? SystemClock.elapsedRealtime() - startedElapsed : 0;
+    }
+
+    private static final class TranscribedOnly extends Exception {
     }
 }

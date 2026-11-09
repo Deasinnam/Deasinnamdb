@@ -171,7 +171,7 @@
     const list = (r && r.meetings) || [];
     if (!list.length) { ul.append(h("li", { class: "empty" }, "아직 기록이 없습니다")); return; }
     for (const m of list) {
-      const badge = m.state === "done" ? null
+      const badge = m.state === "done" ? (m.transcribedOnly ? h("span", { class: "badge" }, "받아쓰기만") : null)
         : m.state === "error" ? h("span", { class: "badge err" }, "분석 실패")
         : m.state === "recording" ? h("span", { class: "badge err" }, "녹음 중")
         : h("span", { class: "badge" }, "분석 중");
@@ -210,6 +210,29 @@
     const meta = d.meta || {};
     const a = d.analysis;
     const title = (a && a.title && !meta.titleSetByUser ? a.title : meta.title) || "제목 없는 회의";
+    if (!a && meta.transcribedOnly && d.transcript) {
+      const all = d.transcript.speakers || [];
+      const tabs = [["send", "AI로 보내기"], ["speakers", "화자", all.length], ["transcript", "전체 기록"]];
+      if (!tabs.some(([k]) => k === current.tab)) current.tab = "send";
+      const tabBar = h("div", { class: "tabs" }, tabs.map(([k, label, n]) =>
+        h("button", { class: current.tab === k ? "on" : null, onclick: () => { current.tab = k; renderMeeting(d); } }, label, n ? h("span", { class: "n" }, n) : null)));
+      const body = h("div");
+      if (current.tab === "send") {
+        body.append(aiCard(d, true), h("div", { class: "sec" }, h("div", { class: "item" },
+          h("div", { class: "body" }, "AI 앱 대신 이 앱에서 바로 분석할 수도 있습니다."),
+          h("div", { class: "muted small" }, "OpenAI API로 요약·나에게 요청·일정을 정리하고 캘린더에 등록합니다. API 요금이 나옵니다."),
+          h("div", { class: "acts" }, h("button", { class: "secondary", onclick: async () => { const x = await call("reanalyze", meta.id); toast(x.ok ? "분석을 시작합니다" : x.error); poll(); } }, "앱에서 분석하기")))));
+      } else if (current.tab === "speakers") {
+        body.append(speakerNamer(d, all));
+      } else {
+        viewTranscript(body, d, all);
+      }
+      setMain(title, h("div", { class: "sec" }, h("div", { class: "muted small" }, dateText(meta.startedAt), " · ", clock(meta.durationMs || 0), " · 받아쓰기 완료")), tabBar, body);
+      const more = $("btn-more");
+      more.hidden = false;
+      more.onclick = () => meetingMenu(d);
+      return;
+    }
     if (!a) {
       const box = h("div", { class: "state-box" });
       if (meta.state === "error") {
@@ -244,13 +267,55 @@
     more.onclick = () => meetingMenu(d);
   }
 
+  // ChatGPT·Claude 앱으로 보내는 카드 (분석은 사용자의 구독으로)
+  function aiCard(d, big) {
+    const apps = d.aiApps || {};
+    const send = async (target) => {
+      const r = await call("sendToAi", d.meta.id, target);
+      toast(r.ok ? "기록을 보냈습니다 · 클립보드에도 복사해 두었습니다" : r.error || "보내지 못했습니다");
+    };
+    const btns = [];
+    if (apps.chatgpt) btns.push(h("button", { class: "primary ai", onclick: () => send("chatgpt") }, "ChatGPT로 보내기"));
+    if (apps.claude) btns.push(h("button", { class: "primary ai", onclick: () => send("claude") }, "Claude로 보내기"));
+    btns.push(h("button", { class: "secondary", onclick: () => send("") }, btns.length ? "다른 앱으로" : "공유하기"));
+    return h("div", { class: "sec" }, h("div", { class: "item" },
+      big ? h("h3", { style: "margin:0 0 6px" }, "ChatGPT · Claude로 분석하기") : h("div", { class: "head" }, h("span", null, "AI 앱에서 더 물어보기")),
+      h("div", { class: big ? "body" : "muted small" }, big
+        ? "화자별 받아쓰기와 정리 요청문을 함께 보냅니다. 요약, 화자별 내용, 나에게 요청된 일, 일정을 정리해 달라고 미리 적어 두었으니 보내고 바로 전송하면 됩니다."
+        : "받아쓴 기록 전체를 보내 궁금한 점을 이어서 물어볼 수 있습니다."),
+      big && !apps.chatgpt && !apps.claude ? h("div", { class: "muted small", style: "margin-top:6px" }, "ChatGPT나 Claude 앱을 설치하면 바로 보내는 버튼이 생깁니다.") : null,
+      big ? h("div", { class: "muted small", style: "margin-top:6px" }, "앱이 내용을 받지 못하면 입력창을 길게 눌러 붙여 넣으세요. Claude 앱에 구글 캘린더를 연결해 두면 일정 등록도 부탁할 수 있습니다.") : null,
+      h("div", { class: "acts" }, btns)));
+  }
+
+  function speakerNamer(d, all) {
+    const meta = d.meta;
+    const sec = h("div", { class: "sec" }, h("div", { class: "muted small", style: "margin-bottom:8px" }, "이름을 붙여 두면 AI로 보낼 때 그 이름으로 보냅니다."));
+    for (const label of all) {
+      const isMe = meta.myLabel === label;
+      sec.append(h("div", { class: "item" },
+        h("div", { class: "spk" },
+          h("div", { class: "avatar", style: "background:" + colorOf(label, all) }, nameOf(label).slice(0, 1)),
+          h("div", { style: "flex:1;font-weight:600" }, nameOf(label), isMe ? h("span", { class: "badge me", style: "margin-left:6px" }, "나") : null)),
+        h("div", { class: "acts" },
+          h("button", { class: "secondary", onclick: () => renameSpeaker(d, label, "") }, "이름 바꾸기"),
+          isMe ? null : h("button", { class: "secondary", onclick: async () => { await call("setMe", meta.id, label); toast("'나'로 정했습니다"); showMeeting(meta.id); } }, "이 화자가 나"))));
+    }
+    return sec;
+  }
+
   function meetingMenu(d) {
     const id = d.meta.id;
     sheet("회의", (p, close) => {
+      const toAi = async (target) => { close(); const r = await call("sendToAi", id, target); toast(r.ok ? "기록을 보냈습니다 · 클립보드에도 복사했습니다" : r.error); };
+      const apps = d.aiApps || {};
       p.append(
-        h("button", { class: "opt", onclick: async () => { close(); const r = await call("shareMeeting", id); if (!r.ok) toast(r.error); } }, "요약 공유하기"),
+        apps.chatgpt ? h("button", { class: "opt", onclick: () => toAi("chatgpt") }, "ChatGPT로 기록 보내기") : null,
+        apps.claude ? h("button", { class: "opt", onclick: () => toAi("claude") }, "Claude로 기록 보내기") : null,
+        h("button", { class: "opt", onclick: () => toAi("") }, "기록 + 정리 요청 공유하기"),
+        d.analysis ? h("button", { class: "opt", onclick: async () => { close(); const r = await call("shareMeeting", id); if (!r.ok) toast(r.error); } }, "요약 공유하기") : null,
         h("button", { class: "opt", onclick: () => { close(); renameMeeting(d); } }, "회의 이름 바꾸기"),
-        h("button", { class: "opt", onclick: async () => { close(); const r = await call("reanalyze", id); toast(r.ok ? "다시 분석합니다" : r.error); poll(); } }, "다시 분석하기 (화자 이름 반영)"),
+        h("button", { class: "opt", onclick: async () => { close(); const r = await call("reanalyze", id); toast(r.ok ? "분석합니다" : r.error); poll(); } }, d.analysis ? "다시 분석하기 (화자 이름 반영)" : "앱에서 분석하기 (OpenAI)"),
         h("button", { class: "opt danger", onclick: () => { close(); confirmDelete(id); } }, "회의 삭제"));
     });
   }
@@ -280,6 +345,7 @@
         a.requestsToMe.length > 3 ? h("button", { class: "secondary", onclick: () => { current.tab = "me"; renderMeeting(d); } }, "모두 보기") : null));
     }
     if ((a.openQuestions || []).length) el.append(h("div", { class: "sec" }, h("h3", null, "남은 질문"), h("div", { class: "item" }, list(a.openQuestions))));
+    el.append(aiCard(d, false));
   }
 
   function reqItem(r) {
@@ -409,6 +475,9 @@
       (s.calendars || []).map((c) => h("option", { value: String(c.id), selected: String(c.id) === String(s.calendarId) }, c.name + " (" + c.account + ")")));
     const auto = h("input", { type: "checkbox" });
     auto.checked = !!s.autoCalendar;
+    const mode = h("select", null,
+      h("option", { value: "auto", selected: s.analysisMode !== "external" }, "이 앱에서 자동 분석 (OpenAI API)"),
+      h("option", { value: "external", selected: s.analysisMode === "external" }, "받아쓰기만 → ChatGPT·Claude 앱에서 분석"));
     const tModel = h("input", { type: "text", value: s.transcribeModel || "" });
     const aModel = h("input", { type: "text", value: s.analysisModel || "" });
     const base = h("input", { type: "text", value: s.baseUrl || "" });
@@ -424,6 +493,8 @@
     setMain("설정",
       h("div", { class: "field" }, h("label", null, "OpenAI API 키"), key,
         h("div", { class: "hint" }, "기기 안에 암호화해 저장합니다. 녹음과 기록은 분석을 위해 OpenAI로 전송되며, 사용량만큼 요금이 나옵니다.")),
+      h("div", { class: "field" }, h("label", null, "회의가 끝나면"), mode,
+        h("div", { class: "hint" }, "'받아쓰기만'을 고르면 API는 화자 구분 받아쓰기에만 쓰고, 정리는 쓰고 계신 ChatGPT·Claude 구독으로 합니다. 이때 일정 자동 등록은 하지 않습니다.")),
       h("div", { class: "field" }, h("label", null, "내 이름"), myName,
         h("div", { class: "hint" }, "회의에서 나를 부르는 이름(예: 이 과장, 대신 씨)을 찾아 '나에게 요청된 일'을 정리합니다.")),
       h("div", { class: "field" }, h("label", null, "내 목소리"), voice,
@@ -438,7 +509,7 @@
         h("div", { class: "field" }, h("label", null, "API 주소"), base)),
       h("div", { class: "field" }, h("button", { class: "primary", style: "width:100%", onclick: async () => {
         const r = await call("saveSettings", {
-          apiKey: key.value.trim() || null, myName: myName.value.trim(), calendarId: cal.value || null, autoCalendar: auto.checked,
+          apiKey: key.value.trim() || null, myName: myName.value.trim(), calendarId: cal.value || null, autoCalendar: auto.checked, analysisMode: mode.value,
           transcribeModel: tModel.value.trim(), analysisModel: aModel.value.trim(), baseUrl: base.value.trim(),
         });
         toast(r.ok ? "저장했습니다" : r.error || "저장하지 못했습니다");
