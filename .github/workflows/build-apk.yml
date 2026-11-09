@@ -1,0 +1,93 @@
+name: Build 회의비서 APK
+
+on:
+  push:
+    branches: [meeting-assistant]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 화면 코드 문법 확인
+        run: node --check app/src/main/assets/ui/app.js
+
+      - name: Android SDK 준비
+        run: |
+          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: 시험용 APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk Meeting-test.apk
+
+      - name: 에뮬레이터 KVM 켜기
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: 에뮬레이터 종단 점검 (녹음 → 받아쓰기 → 분석 → 캘린더)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tools/emulator_selftest.sh Meeting-test.apk
+
+      - name: 점검 기록 올리기 (meeting-ci 릴리스)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete meeting-ci --yes --cleanup-tag || true
+          gh release create meeting-ci $(ls meeting-screen.png selftest-result.txt mock-openai.log 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+            --title "회의비서 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
+
+      - name: 서명 키 준비
+        env:
+          AMP_KEYSTORE_BASE64: ${{ secrets.AMP_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$AMP_KEYSTORE_BASE64" ]; then
+            echo "$AMP_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.p12"
+            echo "AMP_KEYSTORE_FILE=$RUNNER_TEMP/release.p12" >> "$GITHUB_ENV"
+            echo "VARIANT=release" >> "$GITHUB_ENV"
+          else
+            echo "VARIANT=debug" >> "$GITHUB_ENV"
+          fi
+
+      - name: 배포용 APK
+        env:
+          AMP_KEYSTORE_PASSWORD: ${{ secrets.AMP_KEYSTORE_PASSWORD }}
+          AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
+          AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
+        run: |
+          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease; fi
+          rm -f "$RUNNER_TEMP/release.p12"
+          cp app/build/outputs/apk/$VARIANT/*.apk Meeting.apk
+
+      - name: Releases에 APK 올리기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete meeting-latest --yes --cleanup-tag || true
+          gh release create meeting-latest Meeting.apk --target "$GITHUB_SHA" \
+            --title "회의비서 (최신 빌드)" --notes "회의 녹음 → 화자 구분 받아쓰기 → 요약·나에게 요청·일정 → 구글 캘린더. 빌드 ${{ github.run_number }} ($VARIANT)"
