@@ -1,0 +1,9 @@
+{
+  "name": "ieum-node-host",
+  "private": true,
+  "version": "0.1.0",
+  "description": "IeumOffice 안드로이드판: 데스크톱 메인 프로세스 코드를 돌리는 Node 호스트",
+  "main": "host.js",
+  "license": "Apache-2.0",
+  "dependencies": { "ws": "8.18.3" }
+}

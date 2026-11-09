@@ -9,3 +9,8 @@ node_modules/
 *.jks
 *.p12
 signing/
+# 빌드 서버가 원본 IeumOffice에서 만드는 것 (tools/build_web.py, build_node.py, fetch_android_node.py)
+app/src/main/assets/www/
+app/src/main/assets/node.zip
+app/src/main/assets/node.zip.version
+app/src/main/jniLibs/

@@ -36,10 +36,14 @@ import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 
 import org.json.JSONArray;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+import okio.ByteString;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -75,6 +80,11 @@ public class MainActivity extends ComponentActivity {
 
     private WebView web;
     private DocStore docs;
+    private NodeRuntime node;
+    private final ExecutorService nodeIo = Executors.newCachedThreadPool();
+    /** 화면이 연 Node 연결 (통로 번호 → 웹소켓) */
+    private final Map<String, WebSocket> nodeChannels = new ConcurrentHashMap<>();
+    private boolean pendingNeedPath;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile String previewHtml = "<!doctype html><meta charset=utf-8>";
@@ -106,6 +116,8 @@ public class MainActivity extends ComponentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         docs = new DocStore(this);
+        node = new NodeRuntime(this);
+        nodeIo.execute(() -> node.ensureStarted(null));
 
         FrameLayout root = new FrameLayout(this);
         web = new WebView(this);
@@ -137,11 +149,20 @@ public class MainActivity extends ComponentActivity {
 
         web.setWebViewClient(new WebViewClient() {
             @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                closeNodeChannels();
+            }
+
+            @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri url = request.getUrl();
                 if (PREVIEW_HOST.equals(url.getHost())) {
                     return new WebResourceResponse("text/html", "utf-8", 200, "OK", noCache(),
                             new ByteArrayInputStream(previewHtml.getBytes(StandardCharsets.UTF_8)));
+                }
+                String path = url.getPath();
+                if ("appassets.androidplatform.net".equals(url.getHost()) && path != null && path.startsWith("/proto/")) {
+                    return proxyToNode(url, request.getMethod());
                 }
                 WebResourceResponse r = loader.shouldInterceptRequest(url);
                 if (r == null && "appassets.androidplatform.net".equals(url.getHost())) return notFound();
@@ -201,7 +222,8 @@ public class MainActivity extends ComponentActivity {
             }
         });
 
-        if (!handleIntent(getIntent())) web.loadUrl(HOME_URL);
+        if (getIntent() != null && getIntent().hasExtra("ieum.selftest")) web.loadUrl(HOME_URL + "?selftest=0");
+        else if (!handleIntent(getIntent())) web.loadUrl(HOME_URL);
     }
 
     @Override
@@ -213,6 +235,9 @@ public class MainActivity extends ComponentActivity {
 
     @Override
     protected void onDestroy() {
+        closeNodeChannels();
+        if (isFinishing()) node.stop();
+        nodeIo.shutdown();
         io.shutdown();
         if (web != null) web.destroy();
         super.onDestroy();
@@ -271,10 +296,12 @@ public class MainActivity extends ComponentActivity {
         switch (method) {
             case "pickDocument":
                 if (!startPending(proxy, id)) return;
+                pendingNeedPath = a.optBoolean(0, false);
                 openDocument.launch(OPEN_TYPES);
                 break;
             case "createDocument": {
                 if (!startPending(proxy, id)) return;
+                pendingNeedPath = a.optBoolean(2, false);
                 Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                         .addCategory(Intent.CATEGORY_OPENABLE)
                         .setType(a.optString(1, "application/octet-stream"))
@@ -309,6 +336,60 @@ public class MainActivity extends ComponentActivity {
             case "setPreview":
                 previewHtml = a.optString(0, "");
                 break;
+            case "materialize":
+                io.execute(() -> {
+                    try {
+                        File f = docs.materialize(a.optString(0));
+                        reply(proxy, id, okWith("path", f.getAbsolutePath()));
+                    } catch (Exception e) {
+                        reply(proxy, id, fail("문서를 준비하지 못했습니다: " + e.getMessage()));
+                    }
+                });
+                break;
+            case "syncFile":
+                io.execute(() -> reply(proxy, id, syncFile(a.optString(0))));
+                break;
+            case "openExternal": {
+                Uri u = Uri.parse(a.optString(0));
+                String sc = u.getScheme();
+                if ("http".equals(sc) || "https".equals(sc) || "mailto".equals(sc)) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, u));
+                    } catch (ActivityNotFoundException ignored) {
+                    }
+                }
+                break;
+            }
+            case "nodeStatus": {
+                JSONObject st = ok();
+                try {
+                    st.put("available", node.isAvailable());
+                    st.put("ready", node.isReady());
+                    if (node.failure() != null) st.put("failure", node.failure());
+                } catch (JSONException ignored) {
+                }
+                reply(proxy, id, st);
+                break;
+            }
+            case "nodeOpen":
+                nodeOpen(proxy, a.optString(0), a.optString(1));
+                break;
+            case "nodeSend": {
+                WebSocket ws = nodeChannels.get(a.optString(0));
+                if (ws != null) ws.send(a.optString(1));
+                break;
+            }
+            case "nodeClose": {
+                WebSocket ws = nodeChannels.remove(a.optString(0));
+                if (ws != null) ws.close(1000, null);
+                break;
+            }
+            case "selftestFiles":
+                io.execute(() -> reply(proxy, id, selftestFiles()));
+                break;
+            case "selftestReport":
+                android.util.Log.i("IEUM_SELFTEST", a.optString(0) + " " + a.optString(1));
+                break;
             default:
                 reply(proxy, id, fail("지원하지 않는 요청: " + method));
         }
@@ -339,13 +420,25 @@ public class MainActivity extends ComponentActivity {
             return;
         }
         String docId = docs.add(uri, true);
-        JSONObject r = ok();
-        try {
-            r.put("id", docId);
-            r.put("name", docs.displayName(docId));
-        } catch (JSONException ignored) {
-        }
-        reply(proxy, id, r);
+        boolean needPath = pendingNeedPath;
+        pendingNeedPath = false;
+        io.execute(() -> {
+            JSONObject r = ok();
+            try {
+                r.put("id", docId);
+                r.put("name", docs.displayName(docId));
+                if (needPath) {
+                    // 열기: 내용을 복사해 둠 / 새로 만들기: 아직 빈 자리 (Node가 쓰면 옮겨 씀)
+                    File f = docs.localFile(docId);
+                    if (canRead(docId) && hasContent(uri)) f = docs.materialize(docId);
+                    r.put("path", f.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                reply(proxy, id, fail("문서를 준비하지 못했습니다: " + e.getMessage()));
+                return;
+            }
+            reply(proxy, id, r);
+        });
     }
 
     private JSONObject write(String docId, byte[] bytes) {
@@ -407,6 +500,148 @@ public class MainActivity extends ComponentActivity {
         try {
             o.put("ok", false);
             o.put("error", error);
+        } catch (JSONException ignored) {
+        }
+        return o;
+    }
+
+    // ---------- Node ----------
+
+    private void nodeOpen(JavaScriptReplyProxy proxy, String channel, String query) {
+        nodeIo.execute(() -> {
+            node.ensureStarted((state, detail) -> push(proxy, channel, "status", state + (detail == null || detail.isEmpty() ? "" : ":" + detail)));
+            if (!node.isReady()) {
+                push(proxy, channel, "close", "1011");
+                return;
+            }
+            WebSocket ws = node.openSocket(query, new WebSocketListener() {
+                @Override
+                public void onOpen(@NonNull WebSocket webSocket, @NonNull okhttp3.Response response) {
+                    push(proxy, channel, "open", null);
+                }
+
+                @Override
+                public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+                    push(proxy, channel, "message", text);
+                }
+
+                @Override
+                public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
+                    push(proxy, channel, "message", bytes.utf8());
+                }
+
+                @Override
+                public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                    webSocket.close(code, null);
+                }
+
+                @Override
+                public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                    nodeChannels.remove(channel);
+                    push(proxy, channel, "close", String.valueOf(code));
+                }
+
+                @Override
+                public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, okhttp3.Response response) {
+                    nodeChannels.remove(channel);
+                    push(proxy, channel, "close", "1006");
+                }
+            });
+            nodeChannels.put(channel, ws);
+        });
+    }
+
+    private void push(JavaScriptReplyProxy proxy, String channel, String ev, String data) {
+        JSONObject m = new JSONObject();
+        try {
+            m.put("node", channel);
+            m.put("ev", ev);
+            if (data != null) m.put("data", data);
+        } catch (JSONException ignored) {
+        }
+        String text = m.toString();
+        main.post(() -> {
+            try {
+                proxy.postMessage(text);
+            } catch (Exception ignored) {
+                // 화면이 바뀐 뒤면 받을 곳이 없음
+            }
+        });
+    }
+
+    private void closeNodeChannels() {
+        for (WebSocket ws : nodeChannels.values()) ws.close(1001, null);
+        nodeChannels.clear();
+    }
+
+    private WebResourceResponse proxyToNode(Uri url, String method) {
+        try {
+            String q = url.getEncodedQuery();
+            NodeRuntime.ProxyResult r = node.proxy(url.getEncodedPath() + (q == null ? "" : "?" + q), method);
+            InputStream body = r.body != null ? r.body : new ByteArrayInputStream(new byte[0]);
+            return new WebResourceResponse(r.mime, r.encoding, r.status, r.reason, r.headers, body);
+        } catch (Exception e) {
+            return new WebResourceResponse("text/plain", "utf-8", 502, "Bad Gateway", noCache(),
+                    new ByteArrayInputStream(new byte[0]));
+        }
+    }
+
+    /** 빌드 서버의 자동 점검용 견본 문서(assets/selftest)를 앱 폴더로 꺼냅니다 */
+    private JSONObject selftestFiles() {
+        try {
+            File dir = new File(getFilesDir(), "selftest");
+            //noinspection ResultOfMethodCallIgnored
+            dir.mkdirs();
+            JSONArray list = new JSONArray();
+            String[] names = getAssets().list("selftest");
+            if (names != null) {
+                java.util.Arrays.sort(names);
+                for (String n : names) {
+                    String module = n.replaceAll("^\\d+-([a-z]+)\\..*$", "$1");
+                    File f = new File(dir, n);
+                    try (InputStream in = getAssets().open("selftest/" + n);
+                         OutputStream out = new java.io.FileOutputStream(f)) {
+                        byte[] b = new byte[8192];
+                        int k;
+                        while ((k = in.read(b)) > 0) out.write(b, 0, k);
+                    }
+                    JSONObject o = new JSONObject();
+                    o.put("module", module);
+                    o.put("path", f.getAbsolutePath());
+                    list.put(o);
+                }
+            }
+            JSONObject r = ok();
+            r.put("files", list);
+            return r;
+        } catch (Exception e) {
+            return fail(String.valueOf(e.getMessage()));
+        }
+    }
+
+    private JSONObject syncFile(String path) {
+        String docId = docs.idForLocal(path);
+        if (docId == null) return fail("앱 밖 파일이라 옮겨 쓰지 않았습니다");
+        try {
+            docs.syncBack(docId, new File(path));
+            return okWith("synced", true);
+        } catch (Exception e) {
+            return fail("원래 위치에 저장하지 못했습니다: " + e.getMessage());
+        }
+    }
+
+    private boolean hasContent(Uri uri) {
+        try (InputStream in = getContentResolver().openInputStream(uri)) {
+            return in != null && in.read() >= 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static JSONObject okWith(String key, Object value) {
+        JSONObject o = ok();
+        try {
+            o.put(key, value);
         } catch (JSONException ignored) {
         }
         return o;

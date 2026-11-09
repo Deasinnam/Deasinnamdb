@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+env:
+  IEUM_VERSION: v0.12.12
+  UPSTREAM: pblsketch/ieumoffice
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -19,11 +23,50 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: 웹 셈 문법 확인
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: 원본 IeumOffice 받기 (AppImage와 소스)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          mkdir -p "$RUNNER_TEMP/up" && cd "$RUNNER_TEMP/up"
+          gh release download "$IEUM_VERSION" -R "$UPSTREAM" --pattern '*.AppImage' --pattern '*.appimage' || {
+            echo "릴리스 파일 목록:"; gh release view "$IEUM_VERSION" -R "$UPSTREAM" --json assets -q '.assets[].name'; exit 1; }
+          APP=$(ls *.AppImage *.appimage 2>/dev/null | head -1)
+          echo "받은 파일: $APP"
+          chmod +x "$APP"
+          ./"$APP" --appimage-extract > /dev/null
+          echo "IEUM_RES=$RUNNER_TEMP/up/squashfs-root/resources" >> "$GITHUB_ENV"
+          git clone --depth 1 --branch "$IEUM_VERSION" "https://github.com/$UPSTREAM" "$RUNNER_TEMP/src"
+
+      - name: 웹 화면·문서 엔진 묶기
+        run: |
+          (cd node && npm ci --omit=dev --no-audit --no-fund)
+          (cd node/vendor && npm ci --omit=dev --no-audit --no-fund --ignore-scripts)
           node --check web/shim/electron-shim.js
           node --check web/home/home.js
-          test -f app/src/main/assets/www/modules/hwp/index.html
+          node --check node/host.js
+          python3 tools/build_web.py "$IEUM_RES"
+          python3 tools/build_node.py "$IEUM_RES"
+
+      - name: 안드로이드용 Node.js 받기 (Termux)
+        run: |
+          sudo apt-get install -y patchelf > /dev/null
+          python3 tools/fetch_android_node.py --arch aarch64 --out app/src/main/jniLibs/arm64-v8a
+          python3 tools/fetch_android_node.py --arch x86_64 --out app/src/main/jniLibs/x86_64
+
+      - name: 엑셀 엔진(xlsx-sidecar)을 안드로이드용으로 컴파일
+        run: |
+          rustup target add aarch64-linux-android x86_64-linux-android
+          cargo install cargo-ndk --locked --quiet
+          export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          cd "$RUNNER_TEMP/src/apps/sheets/native/xlsx-engine"
+          cargo ndk -t arm64-v8a -t x86_64 --platform 26 build --release --locked
+          cp target/aarch64-linux-android/release/xlsx-sidecar "$GITHUB_WORKSPACE/app/src/main/jniLibs/arm64-v8a/libxlsxsidecar.so"
+          cp target/x86_64-linux-android/release/xlsx-sidecar "$GITHUB_WORKSPACE/app/src/main/jniLibs/x86_64/libxlsxsidecar.so"
+          ls -la "$GITHUB_WORKSPACE"/app/src/main/jniLibs/*/
 
       - name: Android SDK 준비
         run: |
@@ -31,6 +74,39 @@ jobs:
           yes | "$SDKM" --licenses > /dev/null || true
           "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
           echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: 시험용 APK (에뮬레이터용 x86_64 포함)
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug -PieumAbis=arm64-v8a,x86_64
+          cp app/build/outputs/apk/debug/app-debug.apk IeumOffice-test.apk
+          ls -la IeumOffice-test.apk
+
+      - name: 에뮬레이터 KVM 켜기
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: 에뮬레이터에서 자동 점검 (6개 편집기 + 문서 엔진 + 엑셀 엔진)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tools/emulator_selftest.sh IeumOffice-test.apk
+
+      - name: 점검 기록 올리기
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: selftest-log
+          path: selftest-*.txt
+          if-no-files-found: ignore
 
       - name: 서명 키 준비 (있으면)
         env:
@@ -41,18 +117,17 @@ jobs:
             echo "AMP_KEYSTORE_FILE=$RUNNER_TEMP/release.p12" >> "$GITHUB_ENV"
             echo "VARIANT=release" >> "$GITHUB_ENV"
           else
-            echo "::warning::서명 키 비밀값이 없어 디버그 APK를 만듭니다."
+            echo "::warning::서명 키 비밀값이 없어 디버그 APK를 올립니다."
             echo "VARIANT=debug" >> "$GITHUB_ENV"
           fi
 
-      - name: Build
+      - name: 배포용 APK (휴대폰 arm64)
         env:
           AMP_KEYSTORE_PASSWORD: ${{ secrets.AMP_KEYSTORE_PASSWORD }}
           AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
           AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
-          chmod +x gradlew
-          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease; else ./gradlew --no-daemon assembleDebug; fi
+          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease -PieumAbis=arm64-v8a; else ./gradlew --no-daemon assembleDebug -PieumAbis=arm64-v8a; fi
           rm -f "$RUNNER_TEMP/release.p12"
           cp app/build/outputs/apk/$VARIANT/*.apk IeumOffice.apk
           ls -la IeumOffice.apk
@@ -70,4 +145,4 @@ jobs:
           gh release create ieumoffice-latest IeumOffice.apk \
             --target "$GITHUB_SHA" \
             --title "이음오피스 안드로이드 (최신 빌드)" \
-            --notes "IeumOffice 0.12.12 안드로이드판 미리보기. 한글(HWP/HWPX)·마크다운·HTML 열기/편집/저장, PDF 보기. 빌드 ${{ github.run_number }} ($VARIANT)"
+            --notes "IeumOffice $IEUM_VERSION 안드로이드판 미리보기 2. 워드·엑셀·파워포인트·한글·EPUB·마인드맵·다이어그램·마크다운·HTML 편집, PDF 보기. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"

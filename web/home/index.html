@@ -10,7 +10,7 @@
 <body>
   <header>
     <h1>이음오피스</h1>
-    <p class="sub">안드로이드판 · 미리보기</p>
+    <p class="sub">안드로이드판 · 미리보기 2</p>
   </header>
 
   <main>
@@ -19,7 +19,12 @@
     <section>
       <h2>새로 만들기</h2>
       <div class="grid">
+        <button class="tile" data-new="docs"><span class="badge doc">DOC</span>워드</button>
+        <button class="tile" data-new="sheets"><span class="badge xls">XLS</span>엑셀</button>
+        <button class="tile" data-new="slides"><span class="badge ppt">PPT</span>파워포인트</button>
         <button class="tile" data-new="hwp"><span class="badge hwp">HWP</span>한글 문서</button>
+        <button class="tile" data-new="mindmap"><span class="badge map">MAP</span>마인드맵</button>
+        <button class="tile" data-new="diagram"><span class="badge dia">DIA</span>다이어그램</button>
         <button class="tile" data-new="markdown"><span class="badge md">MD</span>마크다운</button>
         <button class="tile" data-new="html"><span class="badge html">HTML</span>웹 문서</button>
       </div>
@@ -32,9 +37,9 @@
 
     <section class="note">
       <h2>지원 형식</h2>
-      <p><b>열기·편집·저장</b>: 한글(.hwp, .hwpx), 마크다운(.md), HTML</p>
+      <p><b>열기·편집·저장</b>: 워드(.docx), 엑셀(.xlsx·.xls·.csv), 파워포인트(.pptx), 한글(.hwp·.hwpx), EPUB, 마인드맵(.xmind), 다이어그램(.drawio), 마크다운, HTML</p>
       <p><b>보기</b>: PDF</p>
-      <p class="muted">워드·엑셀·파워포인트·EPUB·마인드맵·다이어그램은 다음 버전에서 옮길 예정입니다.</p>
+      <p class="muted" id="engine"></p>
     </section>
   </main>
 
