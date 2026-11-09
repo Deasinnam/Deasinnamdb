@@ -2698,3 +2698,20 @@ img{height:auto;object-fit:contain}
 .pfd-mini.tiny:not(.off){display:none}
 .pfd-mini .leaflet-control-container{display:none}
 :root[data-split] .pfd-mini{display:none}
+/* 1.51 원형 지도 모양: GTA(주황) / 일반 주간 / 일반 야간 */
+.pfd-mini[data-look="day"] .pm-map{filter:saturate(1.05) contrast(1.02)}
+.pfd-mini[data-look="day"] .pm-ring,.pfd-mini[data-look="day"] .pm-map .leaflet-container{background:#f2efe9}
+.pfd-mini[data-look="day"] .pm-me{background:#1a6dff;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 1px 2px #0008)}
+.pfd-mini[data-look="night"] .pm-map{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.7)}
+.pfd-mini[data-look="night"] .pm-ring,.pfd-mini[data-look="night"] .pm-map .leaflet-container{background:#1b2230}
+.pfd-mini[data-look="night"] .pm-me{background:#7fd3ff}
+.pfd-mini .pm-ring{cursor:pointer}
+/* 오른쪽 아래 총 주행거리(나침반 위, 고도 칸 왼쪽) */
+.pfd-odo{position:absolute;z-index:4;right:calc(var(--pfd-tape,70px) + 10px);bottom:calc(var(--pfd-cmp,50px) + 10px);display:flex;align-items:baseline;gap:6px;
+  min-height:var(--hit,48px);padding:6px 12px;border-radius:7px;border:1px solid #0b0b07;background:linear-gradient(180deg,#141610e6,#090a06e6);
+  box-shadow:0 0 0 1px #b08d4a88,0 3px 8px #000a;color:#e9e2c8;font:600 12px/1 "Noto Sans KR",sans-serif;cursor:pointer}
+.pfd-odo small{font-size:11px;color:#c9bd98;letter-spacing:.02em}
+.pfd-odo b{font:700 clamp(17px,2.2vw,24px)/1 "Barlow Condensed","Rajdhani",Arial,sans-serif;color:#fff;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.pfd-odo i{font-style:normal;font-size:12px;color:#c9bd98}
+:root[data-pfdlook="airforce"] .pfd-odo b{color:#c9ffbd}
+:root[data-split] .pfd-odo{display:none}

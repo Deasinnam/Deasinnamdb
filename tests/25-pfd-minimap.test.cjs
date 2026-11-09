@@ -36,6 +36,22 @@ run('Round map on the speedometer PFD', async ({context, origin, errors}) => {
   const c2 = await p.evaluate(() => PfdMap.map.getCenter());
   assert.ok(Math.abs(c2.lat - 37.501) < 2e-4 && Math.abs(c2.lng - 127.002) < 2e-4, 'Follows GPS in real time ' + JSON.stringify(c2));
   if (SHOT) await p.locator('#pfdHost').screenshot({path: SHOT + '/pfdmap.png'});
+  // 1.51 지도 모양: 기본 GTA → 원 누르면 일반 지도, 스피드미터 주간·야간 따라 자동
+  assert.equal(await p.evaluate(() => PfdMap.look), 'gta');
+  await p.locator('.pfd-mini .pm-ring').click();
+  await p.evaluate(() => AmpPfd.setTheme('day')); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => [PfdMap.style, PfdMap.look, document.getElementById('sPfdMapStyle').value].join()), 'normal,day,normal');
+  if (SHOT) await p.locator('#pfdHost').screenshot({path: SHOT + '/pfdmap_day.png'});
+  await p.evaluate(() => AmpPfd.setTheme('night')); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => PfdMap.look), 'night', 'Night map with the night speedometer');
+  if (SHOT) await p.locator('#pfdHost').screenshot({path: SHOT + '/pfdmap_night.png'});
+  await p.evaluate(() => { const s = document.getElementById('sPfdMapStyle'); s.value = 'gta'; s.dispatchEvent(new Event('change')); }); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => PfdMap.look), 'gta');
+  // 오른쪽 아래 총 주행거리 = 차계부 누적 거리
+  await p.evaluate(() => AmpLog.setOdo(62345.6)); await p.waitForTimeout(400);
+  assert.match((await p.locator('.pfd-odo b').textContent()).trim(), /^62,34\d$/);
+  const o = await p.evaluate(() => { const w = document.querySelector('#pfdHost .pfd-canvas-wrap').getBoundingClientRect(), r = document.querySelector('.pfd-odo').getBoundingClientRect(); return [r.right > w.x + w.width * .6, r.bottom > w.y + w.height * .6, r.height >= 47.5]; });
+  assert.deepEqual(o, [true, true, true], 'Odometer at the lower right');
   // GPS 끊김: 흐리게 GPS 표시
   await p.evaluate(() => Object.assign(__fix, {fix: false}));
   await p.waitForFunction(() => document.querySelector('.pfd-mini.nofix'), null, {timeout: 4000});
