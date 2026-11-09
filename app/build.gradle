@@ -9,8 +9,8 @@ android {
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
         targetSdk 36  // 1.52 구글 플레이: 2026-08-31부터 새 앱은 API 36 이상
-        versionCode 80
-        versionName "1.53.1-one"
+        versionCode 81
+        versionName "1.54-one"
     }
 
     buildFeatures { buildConfig true }

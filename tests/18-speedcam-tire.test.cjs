@@ -42,6 +42,11 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   assert.equal(await p.evaluate(() => __said.length), 0, 'Needs to be getting closer');
   await p.evaluate(() => AmpCam.check(36.1 - 0.0042, 125.0, 70, 0));
   assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 60이에요.', 'Same road, approaching');
+  // 1.54 넓은 간선도로: 길 건너편(진행선에서 50m 옆) 60km/h 카메라도 500m·100m 앞에서 안내
+  await p.evaluate(() => { __said.length = 0; AmpCam.osm = [[36.2, 125.00056, 60]]; AmpCam.check(36.2 - 0.0047, 125.0, 65, 0); AmpCam.check(36.2 - 0.0045, 125.0, 65, 0); });
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 60이에요.', 'Wide arterial road camera (50 m to the side)');
+  await p.evaluate(() => { const n = Date.now; Date.now = () => n() + 8000; AmpCam.check(36.2 - 0.0011, 125.0, 65, 0); Date.now = n; AmpCam.check(36.2 - 0.0009, 125.0, 65, 0); });
+  assert.match(await p.evaluate(() => __said[1] || ''), /^100미터 앞/, 'Second call near the camera even with the side offset');
   // 공공데이터 CSV 형식
   const rows = await p.evaluate(() => AmpCam.parseCsv('무인교통단속카메라관리번호,시도명,단속구분,제한속도,위도,경도\nA1,서울,과속단속,60,37.51,127.01\nA2,서울,신호단속,0,37.52,127.02\nA3,부산,과속단속,"80",35.1,129.0'));
   assert.deepEqual(rows, [[37.51, 127.01, 60], [35.1, 129, 80]]);

@@ -2519,12 +2519,15 @@ const AmpSfx=(()=>{
   const seen=new Map(); // 카메라별 직전 거리(가까워지는지 확인)
   function check(lat,lon,spd,hdg){if(!camOn()){show(null);return}
     if(!osmAt||dist(lat,lon,osmAt[0],osmAt[1])>3000)osmFetch(lat,lon);
-    // 1.49 진행 방향 앞, 같은 길 위의 카메라만: ① 방향 차이 25° 이내 ② 진행선에서 옆으로 벗어난 거리 25~45m 이내(옆길·평행 도로 제외)
+    // 1.49 진행 방향 앞, 같은 길 위의 카메라만: ① 방향 차이 50° 이내 ② 진행선에서 옆으로 벗어난 거리가 속도에 맞춘 허용치 이내(옆길·평행 도로 제외)
     //       ③ 1초 전보다 실제로 가까워지는 중(교차로·건너편 도로의 카메라 제외). 세 가지를 모두 만족해야 안내
     let best=null;const now=Date.now(),seenNow=new Map();
     if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){if(o.d>1200)break;const k=o.c[0].toFixed(5)+','+o.c[1].toFixed(5);seenNow.set(k,o.d);
       const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180)*Math.PI/180,along=o.d*Math.cos(df),cross=Math.abs(o.d*Math.sin(df));
-      if(df>25*Math.PI/180||along<=0||cross>Math.max(25,Math.min(45,along*.08)))continue;
+      // 1.54 넓은 간선도로(왕복 6~10차로)는 카메라가 길 건너편 기둥에 있고 공공데이터 좌표도 수십 m 어긋나는 일이 많아,
+      //      옆으로 벗어난 허용 거리를 속도에 맞춰 넓힘(시속 30 → 42m, 60 → 54m, 80 이상 → 62~70m). 방향은 50° 이내
+      const tol=Math.max(35,Math.min(70,30+spd*.4));
+      if(df>50*Math.PI/180||along<=0||cross>Math.max(tol,along*.1))continue;
       const pd=seen.get(k);if(!(pd&&pd.t>now-3000&&pd.d-o.d>=2))continue;
       best=o;break}
     seen.clear();for(const [k,d] of seenNow)seen.set(k,{d,t:now});
