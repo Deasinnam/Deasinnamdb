@@ -1,0 +1,59 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.daesinnam.photocraft'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.daesinnam.photocraft'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        // 앞부분은 들어 있는 PhotoCraft 웹 빌드 버전 (빌드 서버가 -PphotocraftVersion 으로 넘김)
+        versionName "${project.findProperty('photocraftVersion') ?: 'dev'}-android.1"
+    }
+
+    // 서명 키는 저장소에 두지 않습니다. CI가 GitHub 비밀값에서 꺼내 씁니다 (Daesinnam Amp와 같은 키).
+    def keystore = System.getenv('AMP_KEYSTORE_FILE')
+    signingConfigs {
+        daesinnam {
+            if (keystore) {
+                storeFile file(keystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('AMP_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('AMP_KEY_ALIAS') ?: 'amp'
+                keyPassword System.getenv('AMP_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (keystore) signingConfig signingConfigs.daesinnam
+        }
+    }
+
+    androidResources {
+        // 웹 빌드의 앱 본체는 이미 gzip으로 압축된 조각(app/*.part-aa …)이라 다시 압축하지 않음
+        noCompress 'wasm', 'part-aa', 'part-ab', 'part-ac', 'part-ad'
+        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.core:core:1.13.1'
+}
