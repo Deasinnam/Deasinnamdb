@@ -540,7 +540,7 @@
       <div class="row col"><span><b>과속 경고 속도</b><small>고른 속도를 넘으면 관제탑이 "슬로우 다운"이라고 말하고 속도계가 빨갛게 세 번 깜빡여요. (5km/h 아래로 내려가면 다시 경고)</small></span>
         <div class="chips" id="sSpdMarks"></div></div>
       <label class="row"><span><b>과속 카메라 안내</b><small>앞쪽 단속 카메라를 "500미터 앞 단속 카메라, 50이에요"처럼 짧게 알려 주고, 화면 전체를 붉게 덮어 제한 속도를 크게 보여 줘요. GPS를 켜야 동작해요.</small></span><span class="cam-ctl"><button type="button" class="pill" id="sCamDemo">▶ 예시 보기</button><input type="checkbox" id="sCam" class="sw"></span></label>
-      <div class="row col"><span><b>과속 카메라 자료</b><small>공공데이터포털 "전국무인교통단속카메라표준데이터"(2026-06-19 수정본)의 전국 단속 카메라가 앱에 기본으로 들어 있어요. 인터넷이 되면 주변 지도 자료(OpenStreetMap)도 함께 써요. 더 새 CSV를 받으면 불러와서 바꿀 수 있어요.</small><small id="sCamStat">자료 없음</small></span>
+      <div class="row col"><span><b>과속 카메라 자료</b><small>공공데이터포털 "전국무인교통단속카메라표준데이터"(2026-06-19 수정본)의 전국 단속 카메라가 앱에 기본으로 들어 있어요. 인터넷이 되면 주변 지도 자료(OpenStreetMap)도 함께 써요. 더 새 CSV를 받으면 불러와서 바꿀 수 있어요. 출처: 공공데이터포털(경찰청), 공공누리 제1유형(출처 표시).</small><small id="sCamStat">자료 없음</small></span>
         <span class="permbtns"><button type="button" class="pill" id="sCamCsv">공공데이터 CSV 불러오기</button><button type="button" class="pill" id="sCamClr">기본 자료로 되돌리기</button><input type="file" id="sCamFile" accept=".csv,text/csv" hidden></span></div>
     </section>
     <section id="secRev">
@@ -592,6 +592,8 @@
       <p class="set-note" id="sLib"></p>
     </section>
     <section id="secOss">
+      <h3 id="secPubH" hidden>시험판 정보</h3>
+      <div class="row" id="secPub" hidden><span><b id="pubName">시험판</b><small>기존 대신남 원과 따로 설치되는 시험용 앱이에요. 라디오는 방송사 공식 앱·웹으로 연결하고, 가사는 곡 파일에 들어 있는 것만 보여 줘요.</small></span><button class="pill" id="pubNotice">권한·데이터 안내 다시 보기</button></div>
       <h3>오픈소스 라이선스</h3>
       <p class="set-note">대신남 AMP는 아래 오픈소스와 데이터를 사용합니다. 각 저작권자에게 감사드립니다.</p>
       <ul class="osslist"><li><b>AndroidX WebKit · Media3 (ExoPlayer, Session)</b><small>Copyright The Android Open Source Project</small><em>Apache License 2.0</em></li><li><b>Guava (Media3에 포함)</b><small>Copyright The Guava Authors</small><em>Apache License 2.0</em></li><li><b>Leaflet 1.9.4 (지도)</b><small>Copyright (c) 2010-2023, Volodymyr Agafonkin · Copyright (c) 2010-2011, CloudMade</small><em>BSD 2-Clause</em></li><li><b>jsmediatags 3.9.5 (곡 정보·앨범 아트 읽기)</b><small>Copyright (c) 2009 Opera Software ASA · (c) 2015 António Afonso · (c) 2008 Jacob Seidelin · (c) 2010 Joshua Kifer</small><em>BSD 3-Clause</em></li><li><b>글꼴: Noto Sans KR, Barlow Condensed, Montserrat, Rajdhani, Russo One, Saira, Orbitron, Share Tech Mono</b><small>각 글꼴 저작자. 앱에 포함하지 않고 Google Fonts에서 불러옵니다.</small><em>SIL Open Font License 1.1</em></li><li><b>지도 데이터: OpenStreetMap</b><small>© OpenStreetMap contributors · https://www.openstreetmap.org/copyright</small><em>Open Database License (ODbL) 1.0</em></li><li><b>네이버 지도 · 카카오맵 · TMAP 지도</b><small>사용자가 발급한 키로 각 회사 서버에서 불러오며, 각 회사의 이용약관을 따릅니다.</small><em>각 서비스 약관</em></li></ul>

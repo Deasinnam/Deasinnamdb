@@ -1256,6 +1256,8 @@ public class MainActivity extends Activity {
         extMode = on;
         ExternalEq.I.setActive(on);
         Intent i = new Intent(this, PlaybackService.class).setAction(PlaybackService.ACTION_EXT).putExtra("on", on);
+        // 1.53 안드로이드 등록 테스트판: 다른 앱이 소리를 낼 때는 이 앱이 '음악 재생' 서비스를 띄우지 않음(플레이 포그라운드 서비스 정책)
+        if ("play".equals(BuildConfig.FLAVOR_device)) { main.removeCallbacks(sessionTick); return; }
         try {
             if (on) startForegroundService(i);
             else if (PlaybackService.running) startService(i);
@@ -1639,6 +1641,12 @@ public class MainActivity extends Activity {
                 for (int i = 0; i < 10 && i < g.length(); i++) gains[i] = (float) g.getDouble(i);
                 ExternalEq.I.set(o.optBoolean("on", true), (float) o.optDouble("pre", 0), gains);
             } catch (Exception ignored) {}
+        }
+
+        /** 1.53 빌드 종류: std·fold8(기존) / comm(커뮤니티 배포 테스트) / play(안드로이드 등록 테스트) */
+        @JavascriptInterface
+        public String buildKind() {
+            return BuildConfig.FLAVOR_device;
         }
 
         @JavascriptInterface
@@ -2250,7 +2258,8 @@ public class MainActivity extends Activity {
         public String sosCall(final String number) {
             final String n = number == null ? "" : number.replaceAll("[^0-9+*#]", "");
             if (n.isEmpty()) return "none";
-            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
+            // 1.53 안드로이드 등록 테스트판: 전화 걸기 권한 없이 다이얼 화면만 열어 줌(사용자가 통화 버튼을 누름)
+            if ("play".equals(BuildConfig.FLAVOR_device) || !getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
                 main.post(() -> placeCall(n, false));
                 return "dial";
             }

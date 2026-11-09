@@ -2,6 +2,10 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 const $=s=>document.querySelector(s);
 const NB=window.__AmpNB||window.AndroidBridge||null;
+/* 1.53 빌드 종류: std·fold8(기존 대신남 원) / comm(대신남 배포용 테스트) / play(대신남 원 안드로이드 테스트용)
+   PUB(두 시험판): 인터넷 라디오 직접 재생 대신 방송사 공식 앱·웹, 가사는 곡 파일 것만, 처음 실행 때 권한·데이터 안내 */
+const BUILD=window.__build||(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):'std'}catch(e){return 'std'}})(),PUB=BUILD==='comm'||BUILD==='play',PLAY=BUILD==='play';
+document.documentElement.dataset.build=BUILD;
 /* 갤럭시 Z 폴드8 전용판(보라색은 앱 아이콘·실행 화면만, 앱 안 색은 일반판과 같음): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
 const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
 if(IS_FOLD)document.documentElement.dataset.fold='1';

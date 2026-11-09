@@ -5,6 +5,10 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 const $=s=>document.querySelector(s);
 const NB=window.__AmpNB||window.AndroidBridge||null;
+/* 1.53 빌드 종류: std·fold8(기존 대신남 원) / comm(대신남 배포용 테스트) / play(대신남 원 안드로이드 테스트용)
+   PUB(두 시험판): 인터넷 라디오 직접 재생 대신 방송사 공식 앱·웹, 가사는 곡 파일 것만, 처음 실행 때 권한·데이터 안내 */
+const BUILD=window.__build||(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):'std'}catch(e){return 'std'}})(),PUB=BUILD==='comm'||BUILD==='play',PLAY=BUILD==='play';
+document.documentElement.dataset.build=BUILD;
 /* 갤럭시 Z 폴드8 전용판(보라색은 앱 아이콘·실행 화면만, 앱 안 색은 일반판과 같음): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
 const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
 if(IS_FOLD)document.documentElement.dataset.fold='1';
@@ -53,6 +57,29 @@ function layout(){const w=window.innerWidth;let n=layoutMode==='auto'?(w>=1500?3
 $('#layout').value=layoutMode;$('#layout').onchange=e=>{layoutMode=e.target.value;store.set('layout',layoutMode);layout()};
 window.addEventListener('resize',layout);
 window.addEventListener('resize',()=>{if((skinPref==='tablet'||skinPref==='tablet2')&&((skin===skinPref)!==tabFits())){clearTimeout(window.__tabT);window.__tabT=setTimeout(()=>setSkin0(skinPref),150)}});
+/* ===== 02-build-notice.js ===== */
+/* 1.53 시험판 안내: 처음 실행할 때 한 번, 쓰는 권한과 데이터 처리를 먼저 알려 주고 동의를 받음(권한 요청 전에)
+ *  - 배포용 테스트·안드로이드 테스트용에서만. 설정 맨 아래에 다시 보기 */
+const BuildNotice=(()=>{
+  const PRIV='https://github.com/Deasinnam/Deasinnamdb/blob/daesinnam-one-v1/docs/privacy.md';
+  const NAME=BUILD==='play'?'대신남 원 안드로이드 테스트용':'대신남 배포용 테스트';
+  function html(){return `<div class="bn-card" role="document"><b class="bn-t">${NAME}</b><span class="bn-tag">시험판</span>
+    <p>시험용으로 배포하는 앱이에요. 기능과 화면이 바뀔 수 있고, 기존 대신남 원과 따로 설치돼요.</p>
+    <h4>이 앱이 쓰는 권한과 데이터</h4><ul>
+    <li><b>위치(정밀)</b> — 속도계·지도·과속 카메라 안내·날씨. 위치는 폰 안에서만 쓰고 개발자에게 보내지 않아요. 지도·날씨·과속 카메라 정보를 받을 때 그 지역 좌표가 지도(OpenStreetMap)·날씨 제공처로 전달돼요.</li>
+    <li><b>마이크</b> — 재생 화면 시각화(소리 크기만 읽고 녹음·저장하지 않음). 켤 때만 요청해요.</li>
+    <li><b>카메라</b> — 블랙박스 녹화를 켤 때만. 영상은 폰 안에만 저장돼요.</li>
+    <li><b>블루투스·근처 기기</b> — 차에 연결되면 이어서 재생.</li>
+    <li><b>SOS 연락처</b> — 고른 번호 하나만 이 폰에 저장${BUILD==='play'?', 전화는 다이얼 화면을 열어 직접 걸어요':''}.</li></ul>
+    <p class="bn-s">라디오는 방송사 공식 앱·웹으로 연결하고, 가사는 곡 파일에 들어 있는 것만 보여 줘요. 과속 카메라 자료: 공공데이터포털(경찰청 전국무인교통단속카메라표준데이터, 공공누리 제1유형). 지도 © OpenStreetMap 기여자.</p>
+    <div class="bn-act"><button class="pill" id="bnPriv">개인정보처리방침</button><button class="pill on" id="bnOk">확인하고 시작</button></div></div>`}
+  function show(force){if(!PUB)return;if(!force&&store.get('pubNotice',0)>=1)return;
+    let el=$('#buildNotice');if(!el){el=document.createElement('div');el.id='buildNotice';el.className='bn-wrap';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label',NAME+' 안내');document.body.appendChild(el)}
+    el.innerHTML=html();el.hidden=false;
+    $('#bnOk').onclick=()=>{store.set('pubNotice',1);el.hidden=true};
+    $('#bnPriv').onclick=()=>{try{if(NB&&NB.openUrl)NB.openUrl(PRIV);else window.open(PRIV,'_blank','noopener')}catch(e){}}}
+  return {show,get accepted(){return store.get('pubNotice',0)>=1},PRIV};
+})();
 /* ===== 10-audio-ext.js ===== */
 // 내 음악 소리 연결(Web Audio)과 외부 앱(YouTube Music·Spotify) 연동
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
@@ -1697,6 +1724,7 @@ const AmpLyrics=(()=>{
     if(radio){say('라디오는 가사를 보여 줄 수 없어요');src.textContent='';return}
     // 1) 곡 파일에 든 가사
     try{const it=(typeof mode!=='undefined'&&mode!=='ext'&&cur>=0)?list[cur]:null;if(it&&it.lyrics){const s=it.lyrics;render(/\[\d{1,2}:\d{2}/.test(s)?{synced:s,from:'file'}:{plain:s,from:'file'});say('');return}}catch(e){}
+    if(PUB){say('시험판에서는 곡 파일에 들어 있는 가사만 보여 줘요');src.textContent='';return}
     if(cache.has(k)){const L=cache.get(k);if(L){render(L);say('')}else say('이 곡의 가사를 찾지 못했어요');return}
     say('가사를 찾는 중…');const my=++busy;
     const j=await lrclib(clean(title),firstArtist(artist),npD)||(artist.includes(',')||/feat|&/i.test(artist)?null:await lrclib(clean(title),'',npD));
@@ -2562,7 +2590,7 @@ function rdSay(t){rdSt0=t;const m=RD_SAY[t]||[/할 수 없|끊김/.test(t)?'err'
 async function rdApi(path){let last;for(const s of RD_SERVERS){try{const r=await fetch(s+path,{headers:{'Accept':'application/json'}});if(r.ok)return await r.json();last=r.status}catch(e){last=e}}throw last}
 function rdOk(o){return o&&o.url&&(o.cc||'').toUpperCase()!=='KP'&&!RD_BLOCK.test((o.name||'')+' '+(o.tags||''))}
 function rdNorm(o){return {id:o.stationuuid||o.id||o.url,name:(o.name||'').trim()||'이름 없음',url:o.url_resolved||o.url,fav:o.favicon||o.fav||'',tags:(o.tags||'').split(',').slice(0,3).join(' · '),codec:o.codec||'',br:o.bitrate||0,cc:o.countrycode||o.cc||''}}
-async function rdSearch(q){const cc=$('#rdCountry').value,ul=$('#rdList');ul.innerHTML='<li class="msg">찾는 중…</li>';
+async function rdSearch(q){const cc=$('#rdCountry').value,ul=$('#rdList');if(PUB){rdList=[];rdRenderList();return}ul.innerHTML='<li class="msg">찾는 중…</li>';
   const qs=new URLSearchParams({hidebroken:'true',order:'votes',reverse:'true',limit:'80'});if(cc)qs.set('countrycode',cc);if(q)qs.set('name',q);
   try{rdList=(await rdApi('/json/stations/search?'+qs)).map(rdNorm).filter(rdOk);rdRenderList()}
   catch(e){rdList=[];rdRenderList();const m=ul.querySelector('.msg');if(m)m.textContent='공개 목록을 불러오지 못했어요. 위 공식 방송은 들을 수 있어요.'}}
@@ -2634,7 +2662,12 @@ function rdStart(s){const t=rdTry;if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.
       else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);if(t)t.err=(o.err==='API'?'방송사 주소 받기 실패':o.err?'재생 오류 '+o.err:'응답 없음')+(/^api:/.test(s.url)?' · 공식 주소':' · 공개 목록 주소');rdNextCand()}},500);return}
   if(/^api:/.test(s.url))return rdNextCand(); // 웹 미리보기는 방송사 주소를 직접 받을 수 없어 공개 목록 주소로
   rdAudio.src=s.url;rdAudio.play().then(()=>{if(t!==rdTry)return;rdSay('ON AIR');rdT0=rdT0||Date.now();setTimeout(()=>rdBridge(rdCur),250);rdShow()}).catch(()=>{if(t===rdTry)rdNextCand()})}
-function rdPlay(st){if(!st)return;store.set('lastSrc','radio');rdNoSig=null;rdCur=st;store.set('rdLast',st);try{pauseMusic()}catch(e){}
+/* 1.53 시험판(배포용·안드로이드 등록용): 방송을 앱이 직접 틀지 않고 방송사 공식 앱·웹으로 연결(저작권) */
+const RD_OFFICIAL=[[/^kr-kbs/,'KBS 콩','https://onair.kbs.co.kr'],[/^kr-mbc/,'MBC mini','https://mini.imbc.com'],[/^kr-sbs/,'SBS 고릴라','https://gorealra.sbs.co.kr'],[/^kr-cbs/,'CBS 레인보우','https://www.cbs.co.kr'],[/^kr-ebs/,'EBS 반디','https://home.ebs.co.kr/bandi']];
+function rdOfficial(st){const id=(st&&st.id)||'';const o=RD_OFFICIAL.find(r=>r[0].test(id));
+  if(!o){toast('시험판에서는 인터넷 방송을 직접 재생하지 않아요. 방송사 공식 앱으로 들어 주세요.');return}
+  toast(st.name+' — '+o[1]+'(방송사 공식)로 연결해요.');try{if(NB&&NB.openUrl)NB.openUrl(o[2]);else window.open(o[2],'_blank','noopener')}catch(e){}}
+function rdPlay(st){if(!st)return;if(PUB){rdOfficial(st);return}store.set('lastSrc','radio');rdNoSig=null;rdCur=st;store.set('rdLast',st);try{pauseMusic()}catch(e){}
   rdTry={base:st,list:rdCands(st),i:0,searched:false};rdT0=0;rdNow='';
   rdSay('연결 중…');rdPlaying=true;rdShow();rdRenderList();try{state()}catch(e){}rdStart(rdTry.list[0])}
 // 플레이어 화면(LCD)에 지금 듣는 라디오 표시
@@ -2749,6 +2782,7 @@ window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,resume:rdResume,step:
 
 // 재생 버튼 6개도 키캡 소리(스페셜 2)
 document.querySelectorAll('#wMain .transport .tb').forEach(b=>b.addEventListener('pointerdown',()=>{try{sndKey()}catch(e){}}));
+window.AmpRadioT={play:s=>rdPlay(s),get list(){return RD_KR},get playing(){return rdPlaying}}; // 시험용
 /* ===== 91-swap.js ===== */
 /* 1.34 [전환] 키: 라디오를 듣다가 누르면 듣던 음악 앱(YouTube Music·Spotify)으로, 음악 앱을 듣다가 누르면 라디오로 */
 (function(){const b=$('#bSwap'),t=$('#bSwapT');if(!b)return;
@@ -3290,4 +3324,9 @@ $('#npAdd').onclick=()=>pickMusic(false);$('#npRadio').onclick=()=>{try{openRadi
 function npEmptySync(){const has=(cur>=0&&list[cur])||rdPlaying||(mode==='ext'&&ext&&ext.title);$('#wVis').classList.toggle('np-empty',!has)}
 npEmptySync();setInterval(npEmptySync,1000);
 if(window.__skinNote)setTimeout(()=>{const n=(SKINS.find(x=>x[0]===window.__skinNote)||[,''])[1];toast('스킨을 정리했어요. 지금은 "'+n+'" 스킨이에요. 위 [🎨 스킨]에서 바꿀 수 있어요.')},1800);
+
+/* 1.53 시험판: 처음 실행 안내, 설정의 시험판 정보, 안드로이드 등록용은 '앱이 꺼져 있어도 자동으로 열기'(다른 앱 위에 표시) 숨김 */
+if(PUB){$('#secPub').hidden=false;$('#secPubH').hidden=false;$('#pubName').textContent=BUILD==='play'?'대신남 원 안드로이드 테스트용':'대신남 배포용 테스트';$('#pubNotice').onclick=()=>BuildNotice.show(true);setTimeout(()=>BuildNotice.show(false),400);
+  try{$('#rdQ').placeholder='방송 이름 (KBS, MBC, SBS, CBS, EBS)';$('#rdCountry').closest('.rd-search').classList.add('pub')}catch(e){}}
+if(PLAY){const r=$('#sLaunch');if(r){const row=r.closest('.row');if(row)row.hidden=true}}
 })();

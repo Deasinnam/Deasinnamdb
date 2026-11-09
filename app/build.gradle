@@ -9,8 +9,8 @@ android {
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
         targetSdk 36  // 1.52 구글 플레이: 2026-08-31부터 새 앱은 API 36 이상
-        versionCode 78
-        versionName "1.52-one"
+        versionCode 79
+        versionName "1.53-one"
     }
 
     buildFeatures { buildConfig true }
@@ -37,6 +37,10 @@ android {
     productFlavors {
         std { dimension 'device' }
         fold8 { dimension 'device'; applicationIdSuffix '.fold8'; versionNameSuffix '-fold8' }
+        // 1.53 기존 대신남 원과 따로 설치되는 시험판 두 가지(이름·패키지가 다름)
+        // comm: 대신남 배포용 테스트(커뮤니티 무료 배포) / play: 대신남 원 안드로이드 테스트용(구글 플레이 등록 준비)
+        comm { dimension 'device'; applicationId 'com.daesinnam.dist.test'; versionNameSuffix '-dist-test' }
+        play { dimension 'device'; applicationId 'com.daesinnam.one.androidtest'; versionNameSuffix '-play-test' }
         lite { dimension 'edition' }
         full { dimension 'edition'; versionNameSuffix '-full' }
     }

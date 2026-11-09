@@ -32,7 +32,7 @@ function rdSay(t){rdSt0=t;const m=RD_SAY[t]||[/할 수 없|끊김/.test(t)?'err'
 async function rdApi(path){let last;for(const s of RD_SERVERS){try{const r=await fetch(s+path,{headers:{'Accept':'application/json'}});if(r.ok)return await r.json();last=r.status}catch(e){last=e}}throw last}
 function rdOk(o){return o&&o.url&&(o.cc||'').toUpperCase()!=='KP'&&!RD_BLOCK.test((o.name||'')+' '+(o.tags||''))}
 function rdNorm(o){return {id:o.stationuuid||o.id||o.url,name:(o.name||'').trim()||'이름 없음',url:o.url_resolved||o.url,fav:o.favicon||o.fav||'',tags:(o.tags||'').split(',').slice(0,3).join(' · '),codec:o.codec||'',br:o.bitrate||0,cc:o.countrycode||o.cc||''}}
-async function rdSearch(q){const cc=$('#rdCountry').value,ul=$('#rdList');ul.innerHTML='<li class="msg">찾는 중…</li>';
+async function rdSearch(q){const cc=$('#rdCountry').value,ul=$('#rdList');if(PUB){rdList=[];rdRenderList();return}ul.innerHTML='<li class="msg">찾는 중…</li>';
   const qs=new URLSearchParams({hidebroken:'true',order:'votes',reverse:'true',limit:'80'});if(cc)qs.set('countrycode',cc);if(q)qs.set('name',q);
   try{rdList=(await rdApi('/json/stations/search?'+qs)).map(rdNorm).filter(rdOk);rdRenderList()}
   catch(e){rdList=[];rdRenderList();const m=ul.querySelector('.msg');if(m)m.textContent='공개 목록을 불러오지 못했어요. 위 공식 방송은 들을 수 있어요.'}}
@@ -104,7 +104,12 @@ function rdStart(s){const t=rdTry;if(RD_NATIVE){try{NB.radioVolume(rdVolV());NB.
       else if(o.state==='error'||(o.state==='idle'&&rdPlaying&&Date.now()-t0>20000)){clearInterval(rdPoll);if(t)t.err=(o.err==='API'?'방송사 주소 받기 실패':o.err?'재생 오류 '+o.err:'응답 없음')+(/^api:/.test(s.url)?' · 공식 주소':' · 공개 목록 주소');rdNextCand()}},500);return}
   if(/^api:/.test(s.url))return rdNextCand(); // 웹 미리보기는 방송사 주소를 직접 받을 수 없어 공개 목록 주소로
   rdAudio.src=s.url;rdAudio.play().then(()=>{if(t!==rdTry)return;rdSay('ON AIR');rdT0=rdT0||Date.now();setTimeout(()=>rdBridge(rdCur),250);rdShow()}).catch(()=>{if(t===rdTry)rdNextCand()})}
-function rdPlay(st){if(!st)return;store.set('lastSrc','radio');rdNoSig=null;rdCur=st;store.set('rdLast',st);try{pauseMusic()}catch(e){}
+/* 1.53 시험판(배포용·안드로이드 등록용): 방송을 앱이 직접 틀지 않고 방송사 공식 앱·웹으로 연결(저작권) */
+const RD_OFFICIAL=[[/^kr-kbs/,'KBS 콩','https://onair.kbs.co.kr'],[/^kr-mbc/,'MBC mini','https://mini.imbc.com'],[/^kr-sbs/,'SBS 고릴라','https://gorealra.sbs.co.kr'],[/^kr-cbs/,'CBS 레인보우','https://www.cbs.co.kr'],[/^kr-ebs/,'EBS 반디','https://home.ebs.co.kr/bandi']];
+function rdOfficial(st){const id=(st&&st.id)||'';const o=RD_OFFICIAL.find(r=>r[0].test(id));
+  if(!o){toast('시험판에서는 인터넷 방송을 직접 재생하지 않아요. 방송사 공식 앱으로 들어 주세요.');return}
+  toast(st.name+' — '+o[1]+'(방송사 공식)로 연결해요.');try{if(NB&&NB.openUrl)NB.openUrl(o[2]);else window.open(o[2],'_blank','noopener')}catch(e){}}
+function rdPlay(st){if(!st)return;if(PUB){rdOfficial(st);return}store.set('lastSrc','radio');rdNoSig=null;rdCur=st;store.set('rdLast',st);try{pauseMusic()}catch(e){}
   rdTry={base:st,list:rdCands(st),i:0,searched:false};rdT0=0;rdNow='';
   rdSay('연결 중…');rdPlaying=true;rdShow();rdRenderList();try{state()}catch(e){}rdStart(rdTry.list[0])}
 // 플레이어 화면(LCD)에 지금 듣는 라디오 표시
@@ -219,3 +224,4 @@ window.AmpRadio={open:openRadio,play:rdPlay,stop:radioStop,resume:rdResume,step:
 
 // 재생 버튼 6개도 키캡 소리(스페셜 2)
 document.querySelectorAll('#wMain .transport .tb').forEach(b=>b.addEventListener('pointerdown',()=>{try{sndKey()}catch(e){}}));
+window.AmpRadioT={play:s=>rdPlay(s),get list(){return RD_KR},get playing(){return rdPlaying}}; // 시험용

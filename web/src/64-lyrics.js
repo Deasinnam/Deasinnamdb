@@ -33,6 +33,7 @@ const AmpLyrics=(()=>{
     if(radio){say('라디오는 가사를 보여 줄 수 없어요');src.textContent='';return}
     // 1) 곡 파일에 든 가사
     try{const it=(typeof mode!=='undefined'&&mode!=='ext'&&cur>=0)?list[cur]:null;if(it&&it.lyrics){const s=it.lyrics;render(/\[\d{1,2}:\d{2}/.test(s)?{synced:s,from:'file'}:{plain:s,from:'file'});say('');return}}catch(e){}
+    if(PUB){say('시험판에서는 곡 파일에 들어 있는 가사만 보여 줘요');src.textContent='';return}
     if(cache.has(k)){const L=cache.get(k);if(L){render(L);say('')}else say('이 곡의 가사를 찾지 못했어요');return}
     say('가사를 찾는 중…');const my=++busy;
     const j=await lrclib(clean(title),firstArtist(artist),npD)||(artist.includes(',')||/feat|&/i.test(artist)?null:await lrclib(clean(title),'',npD));
