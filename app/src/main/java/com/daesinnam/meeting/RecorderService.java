@@ -20,7 +20,6 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -165,8 +164,9 @@ public class RecorderService extends Service {
         }
     }
 
+    /** 버퍼 없이 바로 씁니다(0.5초씩): 앱이 갑자기 끝나도 그때까지의 녹음이 파일에 남습니다 */
     private static OutputStream open(File f) throws IOException {
-        OutputStream o = new BufferedOutputStream(new FileOutputStream(f), 1 << 16);
+        OutputStream o = new FileOutputStream(f);
         o.write(Wav.header(0));
         return o;
     }
