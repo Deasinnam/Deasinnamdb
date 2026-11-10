@@ -1,4 +1,4 @@
-package com.daesinnam.photocraft;
+package com.daesinnam.filmcraft;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -55,19 +55,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * PhotoCraft 안드로이드판: PhotoCraft 공식 웹 빌드(WebAssembly)를 WebView로 띄웁니다.
+ * FilmCraft 안드로이드판: FilmCraft 공식 웹 빌드(WebAssembly)를 WebView로 띄웁니다.
  *
  *  https://appassets.androidplatform.net/assets/www/index.html  ← 앱에 넣은 웹 빌드
  *  저장: 웹판의 다운로드를 bridge.js가 가로채 넘기면 안드로이드 "파일 만들기"로 저장
  *  열기: 웹판의 파일 선택(<input type=file>) → 안드로이드 파일 고르기,
- *        다른 앱에서 연 사진은 bridge.js가 캔버스에 끌어다 놓기로 넣음
+ *        다른 앱에서 열거나 공유한 동영상·음악·사진·프로젝트는 bridge.js가 window.filmcraft API로 가져옴
  */
 public class MainActivity extends ComponentActivity {
-    private static final String TAG = "PhotoCraft";
+    private static final String TAG = "FilmCraft";
     private static final String APP_ORIGIN = "https://appassets.androidplatform.net";
     private static final String INDEX = APP_ORIGIN + "/assets/www/index.html";
 
@@ -77,7 +79,7 @@ public class MainActivity extends ComponentActivity {
     private final Handler main = new Handler(Looper.getMainLooper());
 
     private JavaScriptReplyProxy pageProxy;
-    private Uri pendingOpen;
+    private final ArrayDeque<Uri> pendingOpen = new ArrayDeque<>();
 
     // 저장 중인 파일들 (웹 → 앱, 조각으로 옴)
     private final Map<Integer, PendingSave> saves = new HashMap<>();
@@ -121,13 +123,15 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        selftest = getIntent() != null && getIntent().hasExtra("photocraft.selftest");
+        selftest = getIntent() != null && getIntent().hasExtra("filmcraft.selftest");
 
         FrameLayout root = new FrameLayout(this);
         web = new WebView(this);
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        // 편집·내보내기 중에 화면이 꺼지면 WebView가 멈추므로 앱을 보는 동안은 켜 둠
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
                     | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
@@ -209,7 +213,7 @@ public class MainActivity extends ComponentActivity {
         });
 
         if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-            WebViewCompat.addWebMessageListener(web, "PhotoCraftAndroid",
+            WebViewCompat.addWebMessageListener(web, "FilmCraftAndroid",
                     Collections.singleton(APP_ORIGIN), this::onWebMessage);
         } else {
             Toast.makeText(this, "Android System WebView를 업데이트해 주세요 (저장에 필요)", Toast.LENGTH_LONG).show();
@@ -222,24 +226,24 @@ public class MainActivity extends ComponentActivity {
             @Override
             public void handleOnBackPressed() {
                 new AlertDialog.Builder(MainActivity.this)
-                        .setMessage("PhotoCraft를 닫을까요?\n저장하지 않은 작업은 사라집니다.")
+                        .setMessage("FilmCraft를 닫을까요?\n저장하지 않은 변경은 다음에 열 때 복구를 시도하지만, 중요한 작업은 먼저 저장(File › Save)해 두세요.")
                         .setPositiveButton("닫기", (d, w) -> finish())
                         .setNegativeButton("계속 작업", null)
                         .show();
             }
         });
 
-        pendingOpen = incomingUri(getIntent());
+        pendingOpen.addAll(incomingUris(getIntent()));
         web.loadUrl(selftest ? INDEX + "?selftest" : INDEX);
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Uri uri = incomingUri(intent);
-        if (uri == null) return;
-        if (pageProxy != null) sendFileToPage(uri);
-        else pendingOpen = uri;
+        List<Uri> uris = incomingUris(intent);
+        if (uris.isEmpty()) return;
+        if (pageProxy != null) for (Uri u : uris) sendFileToPage(u);
+        else pendingOpen.addAll(uris);
     }
 
     @Override
@@ -249,12 +253,21 @@ public class MainActivity extends ComponentActivity {
         super.onDestroy();
     }
 
-    private static Uri incomingUri(Intent intent) {
-        if (intent == null) return null;
+    @SuppressWarnings("deprecation")
+    private static List<Uri> incomingUris(Intent intent) {
+        List<Uri> out = new ArrayList<>();
+        if (intent == null) return out;
         String action = intent.getAction();
-        if (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_EDIT.equals(action)) return intent.getData();
-        if (Intent.ACTION_SEND.equals(action)) return intent.getParcelableExtra(Intent.EXTRA_STREAM);
-        return null;
+        if (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_EDIT.equals(action)) {
+            if (intent.getData() != null) out.add(intent.getData());
+        } else if (Intent.ACTION_SEND.equals(action)) {
+            Uri u = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (u != null) out.add(u);
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
+            ArrayList<Uri> list = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+            if (list != null) for (Uri u : list) if (u != null) out.add(u);
+        }
+        return out;
     }
 
     // ---------- 웹 → 앱 ----------
@@ -273,11 +286,7 @@ public class MainActivity extends ComponentActivity {
         switch (t) {
             case "ready":
                 pageProxy = proxy;
-                if (pendingOpen != null) {
-                    Uri u = pendingOpen;
-                    pendingOpen = null;
-                    sendFileToPage(u);
-                }
+                while (!pendingOpen.isEmpty()) sendFileToPage(pendingOpen.poll());
                 break;
             case "save-begin":
                 try {
@@ -287,9 +296,10 @@ public class MainActivity extends ComponentActivity {
                     dir.mkdirs();
                     s.temp = File.createTempFile("save-", ".bin", dir);
                     s.out = new FileOutputStream(s.temp);
-                    s.name = safeName(m.optString("name", "image"));
+                    s.name = safeName(m.optString("name", "filmcraft"));
                     s.mime = m.optString("mime", "");
                     saves.put(id, s);
+                    if (m.optLong("size") > 20L * 1024 * 1024) toast("파일을 저장할 준비를 하고 있습니다 (" + (m.optLong("size") >> 20) + "MB)…");
                 } catch (IOException e) {
                     toast("저장 준비 실패: " + e.getMessage());
                 }
@@ -313,18 +323,29 @@ public class MainActivity extends ComponentActivity {
                 } catch (IOException ignored) {
                 }
                 if (selftest) {
-                    Log.i("PHOTOCRAFT_SELFTEST", "save ok name=" + s.name + " bytes=" + s.temp.length());
-                    Log.i("PHOTOCRAFT_SELFTEST", "DONE");
+                    Log.i("FILMCRAFT_SELFTEST", "save ok name=" + s.name + " bytes=" + s.temp.length() + " mime=" + mimeFor(s));
                     break;
                 }
                 readyToSave.add(s);
                 askNextSave();
                 break;
             }
-            case "selftest":
-                Log.i("PHOTOCRAFT_SELFTEST", "page started=" + m.optBoolean("started") + " seconds=" + m.optInt("seconds")
-                        + " canvas=" + m.optString("canvas") + " webgpu=" + m.optBoolean("webgpu") + " ua=" + m.optString("ua")
-                        + " errors=" + m.optInt("errors") + " first=" + m.optString("first") + " text=" + m.optString("text"));
+            case "selftest": {
+                StringBuilder b = new StringBuilder(m.optString("step"));
+                for (java.util.Iterator<String> it = m.keys(); it.hasNext(); ) {
+                    String k = it.next();
+                    if (!"t".equals(k) && !"step".equals(k)) b.append(' ').append(k).append('=').append(m.opt(k));
+                }
+                Log.i("FILMCRAFT_SELFTEST", b.toString());
+                break;
+            }
+            case "selftest-done":
+                Log.i("FILMCRAFT_SELFTEST", "DONE");
+                break;
+            case "opened":
+                if (selftest) Log.i("FILMCRAFT_SELFTEST", "opened " + m);
+                if (!m.optString("error").isEmpty()) toast(m.optString("name") + " 열기 실패: " + m.optString("error"));
+                else toast(m.optString("name") + ("project".equals(m.optString("kind")) ? " 프로젝트를 열었습니다" : " 을(를) 프로젝트 창에 가져왔습니다"));
                 break;
             case "log":
                 Log.i(TAG, m.optString("m"));
@@ -375,7 +396,7 @@ public class MainActivity extends ComponentActivity {
             return;
         }
         io.execute(() -> {
-            String name = displayName(uri, "image");
+            String name = displayName(uri, "media");
             String mime = getContentResolver().getType(uri);
             int id = (int) (System.currentTimeMillis() & 0x7fffffff);
             try (InputStream in = getContentResolver().openInputStream(uri)) {
@@ -388,7 +409,7 @@ public class MainActivity extends ComponentActivity {
                 }
                 post(proxy, json("t", "open-end", "id", id));
             } catch (Exception e) {
-                toast("사진을 열지 못했습니다: " + e.getMessage());
+                toast("파일을 열지 못했습니다: " + e.getMessage());
             }
         });
     }
@@ -469,21 +490,35 @@ public class MainActivity extends ComponentActivity {
         return m != null ? m : "application/octet-stream";
     }
 
+    private static final Map<String, String> SAVE_MIME = new HashMap<>();
+
+    static {
+        String[][] t = {
+                {"mp4", "video/mp4"}, {"m4v", "video/mp4"}, {"mov", "video/quicktime"}, {"mkv", "video/x-matroska"},
+                {"webm", "video/webm"}, {"mxf", "application/mxf"}, {"avi", "video/x-msvideo"}, {"ts", "video/mp2t"},
+                {"wav", "audio/wav"}, {"mp3", "audio/mpeg"}, {"m4a", "audio/mp4"}, {"aac", "audio/aac"}, {"flac", "audio/flac"},
+                {"ogg", "audio/ogg"}, {"opus", "audio/ogg"}, {"aiff", "audio/aiff"},
+                {"png", "image/png"}, {"jpg", "image/jpeg"}, {"jpeg", "image/jpeg"}, {"tif", "image/tiff"}, {"tiff", "image/tiff"},
+                {"webp", "image/webp"}, {"gif", "image/gif"}, {"dpx", "image/x-dpx"}, {"exr", "image/x-exr"},
+                {"srt", "application/x-subrip"}, {"vtt", "text/vtt"}, {"txt", "text/plain"}, {"csv", "text/csv"},
+                {"xml", "text/xml"}, {"json", "application/json"}, {"edl", "text/plain"}, {"zip", "application/zip"},
+        };
+        for (String[] r : t) SAVE_MIME.put(r[0], r[1]);
+    }
+
+    /** 이름의 확장자가 우선 (웹판 Blob 형식은 대개 application/octet-stream) */
     private static String mimeFor(PendingSave s) {
-        if (s.mime != null && !s.mime.isEmpty()) return s.mime;
         String n = s.name.toLowerCase(Locale.ROOT);
-        if (n.endsWith(".png")) return "image/png";
-        if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
-        if (n.endsWith(".webp")) return "image/webp";
-        if (n.endsWith(".psd")) return "image/vnd.adobe.photoshop";
-        if (n.endsWith(".tif") || n.endsWith(".tiff")) return "image/tiff";
-        if (n.endsWith(".gif")) return "image/gif";
+        int dot = n.lastIndexOf('.');
+        String byExt = dot < 0 ? null : SAVE_MIME.get(n.substring(dot + 1));
+        if (byExt != null) return byExt;
+        if (s.mime != null && !s.mime.isEmpty()) return s.mime;
         return "application/octet-stream";
     }
 
     private static String safeName(String n) {
         String s = n.replaceAll("[\\\\/:*?\"<>|\\u0000]", "_").trim();
-        return s.isEmpty() ? "image" : s;
+        return s.isEmpty() ? "filmcraft" : s;
     }
 
     private String displayName(Uri uri, String fallback) {

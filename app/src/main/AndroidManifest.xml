@@ -24,22 +24,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 갤러리·파일 관리자에서 "PhotoCraft로 열기" / 공유 -->
+            <!-- 갤러리·파일 관리자에서 "FilmCraft로 열기" -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="content" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
                 <data android:mimeType="image/*" />
-                <data android:mimeType="image/vnd.adobe.photoshop" />
-                <data android:mimeType="application/x-photoshop" />
+                <data android:mimeType="application/mxf" />
                 <data android:mimeType="application/octet-stream" />
             </intent-filter>
+            <!-- 공유 (여러 개 한꺼번에도) -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
                 <data android:mimeType="image/*" />
-                <data android:mimeType="image/vnd.adobe.photoshop" />
             </intent-filter>
         </activity>
     </application>

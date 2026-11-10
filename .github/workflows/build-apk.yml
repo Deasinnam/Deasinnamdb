@@ -1,15 +1,15 @@
-name: Build PhotoCraft APK
+name: Build FilmCraft APK
 
 on:
   push:
-    branches: [photocraft-android]
+    branches: [filmcraft-android]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 env:
-  UPSTREAM: storytold/photocraft
+  UPSTREAM: storytold/filmcraft
 
 jobs:
   build:
@@ -22,30 +22,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: PhotoCraft 공식 웹 빌드 받기 (최신 릴리스)
+      - name: FilmCraft 공식 웹 빌드 받기 (최신 릴리스)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG=$(gh release view -R "$UPSTREAM" --json tagName -q .tagName)
-          echo "PhotoCraft $TAG"
-          echo "PC_TAG=$TAG" >> "$GITHUB_ENV"
-          echo "PC_VER=${TAG#v}" >> "$GITHUB_ENV"
-          mkdir -p "$RUNNER_TEMP/pc" && cd "$RUNNER_TEMP/pc"
-          gh release download "$TAG" -R "$UPSTREAM" --pattern 'photocraft-web-*.zip'
-          unzip -q photocraft-web-*.zip
-          SITE=$(dirname "$(find . -name index.html -path '*photocraft-web*' | head -1)")
+          echo "FilmCraft $TAG"
+          echo "FC_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "FC_VER=${TAG#v}" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/fc" && cd "$RUNNER_TEMP/fc"
+          gh release download "$TAG" -R "$UPSTREAM" --pattern 'filmcraft-web-*.zip'
+          unzip -q filmcraft-web-*.zip
+          SITE=$(dirname "$(find . -name index.html | head -1)")
           echo "웹 빌드 폴더: $SITE"
-          rm -rf "$GITHUB_WORKSPACE/app/src/main/assets/www"
-          cp -r "$SITE" "$GITHUB_WORKSPACE/app/src/main/assets/www"
-          # 웹 빌드의 app/photocraft-web.js 는 ./snippets/... 를 app/ 기준으로 불러오는데,
-          # 릴리스 zip에는 snippets/ 가 맨 위에만 있어 그대로 두면 앱이 시작되지 않습니다(로딩에서 멈춤).
           W="$GITHUB_WORKSPACE/app/src/main/assets/www"
-          if grep -q '\./snippets/' "$W/app/photocraft-web.js" && [ ! -d "$W/app/snippets" ] && [ -d "$W/snippets" ]; then
-            cp -r "$W/snippets" "$W/app/snippets"; echo "snippets를 app/ 에도 복사"
-          fi
-          ls -la "$GITHUB_WORKSPACE/app/src/main/assets/www" "$GITHUB_WORKSPACE/app/src/main/assets/www/app"
-          cp photocraft-web-*.zip "$GITHUB_WORKSPACE/photocraft-web.zip"
-          for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$GITHUB_WORKSPACE/app/src/main/assets/www/$f.txt" || true; done
+          rm -rf "$W" && cp -r "$SITE" "$W"
+          # 앱 안에서는 쓰지 않는 서버 설정 파일
+          rm -f "$W/_headers" "$W/.htaccess"
+          ls -la "$W"
+          grep -o 'filmcraft_web[^"]*' "$W/index.html" | head -5
+          for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$W/$f.txt" || true; done
 
       - name: Android SDK 준비
         run: |
@@ -57,8 +53,8 @@ jobs:
       - name: 시험용 APK
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug -PphotocraftVersion="$PC_VER"
-          cp app/build/outputs/apk/debug/app-debug.apk PhotoCraft-test.apk
+          ./gradlew --no-daemon assembleDebug -PfilmcraftVersion="$FC_VER"
+          cp app/build/outputs/apk/debug/app-debug.apk FilmCraft-test.apk
 
       - name: 에뮬레이터 KVM 켜기
         run: |
@@ -76,16 +72,16 @@ jobs:
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash tools/emulator_selftest.sh PhotoCraft-test.apk
+          script: bash tools/emulator_selftest.sh FilmCraft-test.apk
 
-      - name: 점검 화면 올리기 (photocraft-ci 릴리스)
+      - name: 점검 화면 올리기 (filmcraft-ci 릴리스)
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete photocraft-ci --yes --cleanup-tag || true
-          gh release create photocraft-ci $(ls photocraft-screen-*.png selftest-result.txt photocraft-web.zip 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
-            --title "PhotoCraft 안드로이드 자동 점검 화면" --notes "빌드 서버 에뮬레이터 점검 결과 (빌드 ${{ github.run_number }})"
+          gh release delete filmcraft-ci --yes --cleanup-tag || true
+          gh release create filmcraft-ci $(ls filmcraft-screen-*.png selftest-result.txt selftest-save-* 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+            --title "FilmCraft 안드로이드 자동 점검 화면" --notes "빌드 서버 에뮬레이터 점검 결과 (빌드 ${{ github.run_number }})"
 
       - name: 서명 키 준비 (있으면)
         env:
@@ -105,16 +101,16 @@ jobs:
           AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
           AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
-          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease -PphotocraftVersion="$PC_VER"; fi
+          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease -PfilmcraftVersion="$FC_VER"; fi
           rm -f "$RUNNER_TEMP/release.p12"
-          cp app/build/outputs/apk/$VARIANT/*.apk PhotoCraft.apk
-          ls -la PhotoCraft.apk
+          cp app/build/outputs/apk/$VARIANT/*.apk FilmCraft.apk
+          ls -la FilmCraft.apk
 
       - name: Releases에 APK 올리기
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete photocraft-latest --yes --cleanup-tag || true
-          gh release create photocraft-latest PhotoCraft.apk --target "$GITHUB_SHA" \
-            --title "PhotoCraft 안드로이드 (최신 빌드)" \
-            --notes "PhotoCraft $PC_TAG 공식 웹 빌드를 감싼 비공식 안드로이드판. 빌드 ${{ github.run_number }} ($VARIANT)"
+          gh release delete filmcraft-latest --yes --cleanup-tag || true
+          gh release create filmcraft-latest FilmCraft.apk --target "$GITHUB_SHA" \
+            --title "FilmCraft 안드로이드 (최신 빌드)" \
+            --notes "FilmCraft $FC_TAG 공식 웹 빌드(동영상 편집)를 감싼 비공식 안드로이드판. 빌드 ${{ github.run_number }} ($VARIANT)"

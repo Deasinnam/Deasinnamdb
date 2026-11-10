@@ -1,16 +1,16 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.daesinnam.photocraft'
+    namespace 'com.daesinnam.filmcraft'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.daesinnam.photocraft'
+        applicationId 'com.daesinnam.filmcraft'
         minSdk 26
         targetSdk 35
         versionCode 1
-        // 앞부분은 들어 있는 PhotoCraft 웹 빌드 버전 (빌드 서버가 -PphotocraftVersion 으로 넘김)
-        versionName "${project.findProperty('photocraftVersion') ?: 'dev'}-android.1"
+        // 앞부분은 들어 있는 FilmCraft 웹 빌드 버전 (빌드 서버가 -PfilmcraftVersion 으로 넘김)
+        versionName "${project.findProperty('filmcraftVersion') ?: 'dev'}-android.1"
     }
 
     // 서명 키는 저장소에 두지 않습니다. CI가 GitHub 비밀값에서 꺼내 씁니다 (Daesinnam Amp와 같은 키).
@@ -35,8 +35,7 @@ android {
     }
 
     androidResources {
-        // 웹 빌드의 앱 본체는 이미 gzip으로 압축된 조각(app/*.part-aa …)이라 다시 압축하지 않음
-        noCompress 'wasm', 'part-aa', 'part-ab', 'part-ac', 'part-ad'
+        // wasm(약 13MB)은 APK 안에서 압축해 두고 읽을 때 풉니다 (APK가 절반 이하로 작아짐)
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
 
