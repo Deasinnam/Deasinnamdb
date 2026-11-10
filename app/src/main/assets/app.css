@@ -2734,3 +2734,9 @@ img{height:auto;object-fit:contain}
 .pfd-mini .pm-ring::after{content:"© OSM";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:6;font:600 8px/1 Arial,sans-serif;color:#fff;opacity:.75;text-shadow:0 0 2px #000;pointer-events:none}
 .rd-search.pub #rdCountry,.rd-search.pub #rdGo{display:none}
 .pfd-odo[hidden]{display:none}
+
+/* 1.55 대신남 AMP(음악 전용 앱): 차량·운전 기능 숨김 */
+:root[data-app="amp"] :is(#wGps,#wCtl,#wAtc,#wCam,#wMap,#wLog,#driveBtn,#revBtn,#secSos,#secAtc,#secRev,#secDrive,#ckRail,#camSign,#recBadge){display:none!important}
+:root[data-app="amp"] :is(#sPfdMap,#sPfdMapStyle){display:none!important}
+:root[data-app="amp"] label.row:has(#sPfdMap),:root[data-app="amp"] label.row:has(#sPfdMapStyle){display:none!important}
+:root[data-app="amp"] label.row:has(#sCarGps){display:none!important}

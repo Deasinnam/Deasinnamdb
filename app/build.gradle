@@ -9,8 +9,8 @@ android {
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
         targetSdk 36  // 1.52 구글 플레이: 2026-08-31부터 새 앱은 API 36 이상
-        versionCode 81
-        versionName "1.54-one"
+        versionCode 82
+        versionName "1.55-one"
     }
 
     buildFeatures { buildConfig true }
@@ -41,6 +41,10 @@ android {
         // comm: 대신남 배포용 테스트(커뮤니티 무료 배포) / play: 대신남 원 안드로이드 테스트용(구글 플레이 등록 준비)
         comm { dimension 'device'; applicationId 'com.daesinnam.dist.test'; versionNameSuffix '-dist-test' }
         play { dimension 'device'; applicationId 'com.daesinnam.one.androidtest'; versionNameSuffix '-play-test' }
+        // 1.55 앱 나누기 — 기존 앱(com.daesinnam.one.v1)과 따로 설치되는 독립 앱 두 개
+        // amp: 대신남 AMP(음악 전용, 오디오 스킨 7개) / one: 대신남 원(차량용, 자동차 모드·에어라인)
+        amp { dimension 'device'; applicationId 'com.daesinnam.ampapp'; versionNameSuffix '-amp' }
+        one { dimension 'device'; applicationId 'com.daesinnam.oneapp'; versionNameSuffix '-one' }
         lite { dimension 'edition' }
         full { dimension 'edition'; versionNameSuffix '-full' }
     }
