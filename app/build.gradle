@@ -1,17 +1,17 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.daesinnam.ieum'
+    namespace 'com.daesinnam.work'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.daesinnam.ieum'
+        applicationId 'com.daesinnam.work'
         minSdk 26
         targetSdk 35
-        versionCode 2
-        versionName "0.12.12-android.2"
-        // 넣을 CPU 종류: 기본은 휴대폰용 arm64. 에뮬레이터 시험 빌드는 -PieumAbis=arm64-v8a,x86_64
-        ndk { abiFilters.addAll((project.findProperty('ieumAbis') ?: 'arm64-v8a').toString().split(',')) }
+        versionCode 1
+        versionName "1.0.0"
+        // 넣을 CPU 종류: 기본은 휴대폰용 arm64. 에뮬레이터 시험 빌드는 -PworkAbis=arm64-v8a,x86_64
+        ndk { abiFilters.addAll((project.findProperty('workAbis') ?: 'arm64-v8a').toString().split(',')) }
     }
 
     packaging {
@@ -45,7 +45,7 @@ android {
         // 편집기 엔진(wasm·js)은 이미 압축돼 있지 않으므로 기본 압축은 그대로 두되,
         // aapt 기본 규칙이 밑줄(_)로 시작하는 폴더를 빼 버리지 않도록 무시 규칙을 줄입니다.
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
-        noCompress 'zip'
+        noCompress 'zip', 'part-aa', 'part-ab', 'part-ac', 'part-ad'
     }
 
     lint {

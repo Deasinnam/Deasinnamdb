@@ -15,3 +15,7 @@ app/src/main/assets/node.zip
 app/src/main/assets/node.zip.version
 app/src/main/jniLibs/
 app/src/main/assets/nodelibs.txt
+# 빌드 서버가 사진·동영상 편집기 웹 빌드와 라이선스를 넣는 곳 (tools/work_assets.py)
+app/src/main/assets/photo/
+app/src/main/assets/film/
+app/src/main/assets/work/licenses/

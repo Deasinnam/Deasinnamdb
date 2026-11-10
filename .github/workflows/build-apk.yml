@@ -1,8 +1,8 @@
-name: Build IeumOffice APK
+name: Build 대신남 워크 APK
 
 on:
   push:
-    branches: [ieumoffice-android]
+    branches: [daesinnam-work]
   workflow_dispatch:
 
 permissions:
@@ -10,11 +10,14 @@ permissions:
 
 env:
   IEUM_VERSION: v0.12.12
-  UPSTREAM: pblsketch/ieumoffice
+  IEUM_UPSTREAM: pblsketch/ieumoffice
+  PHOTO_UPSTREAM: storytold/photocraft
+  FILM_UPSTREAM: storytold/filmcraft
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
 
@@ -27,21 +30,19 @@ jobs:
         with:
           node-version: '22'
 
-      - name: 원본 IeumOffice 받기 (AppImage와 소스)
+      # ===================== 문서 편집 (IeumOffice) =====================
+      - name: 문서 편집 원본 받기 (IeumOffice AppImage와 소스)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$RUNNER_TEMP/up" && cd "$RUNNER_TEMP/up"
-          gh release download "$IEUM_VERSION" -R "$UPSTREAM" --pattern '*.AppImage' --pattern '*.appimage' || {
-            echo "릴리스 파일 목록:"; gh release view "$IEUM_VERSION" -R "$UPSTREAM" --json assets -q '.assets[].name'; exit 1; }
+          gh release download "$IEUM_VERSION" -R "$IEUM_UPSTREAM" --pattern '*.AppImage' --pattern '*.appimage'
           APP=$(ls *.AppImage *.appimage 2>/dev/null | head -1)
-          echo "받은 파일: $APP"
-          chmod +x "$APP"
-          ./"$APP" --appimage-extract > /dev/null
+          chmod +x "$APP" && ./"$APP" --appimage-extract > /dev/null
           echo "IEUM_RES=$RUNNER_TEMP/up/squashfs-root/resources" >> "$GITHUB_ENV"
-          git clone --depth 1 --branch "$IEUM_VERSION" "https://github.com/$UPSTREAM" "$RUNNER_TEMP/src"
+          git clone --depth 1 --branch "$IEUM_VERSION" "https://github.com/$IEUM_UPSTREAM" "$RUNNER_TEMP/src"
 
-      - name: 웹 화면·문서 엔진 묶기
+      - name: 문서 편집 화면·문서 엔진 묶기 (이름 바꾸기 포함)
         run: |
           (cd node && npm ci --omit=dev --no-audit --no-fund)
           (cd node/vendor && npm ci --omit=dev --no-audit --no-fund --ignore-scripts)
@@ -53,8 +54,16 @@ jobs:
 
       - name: 안드로이드용 Node.js 받기 (Termux)
         run: |
-          python3 tools/fetch_android_node.py --arch aarch64 --out app/src/main/jniLibs/arm64-v8a
+          python3 tools/fetch_android_node.py --arch aarch64 --out app/src/main/jniLibs/arm64-v8a | tee "$RUNNER_TEMP/node.txt"
           python3 tools/fetch_android_node.py --arch x86_64 --out app/src/main/jniLibs/x86_64
+          NV=$(head -1 "$RUNNER_TEMP/node.txt" | awk '{print $2}')
+          echo "NODE_VER=$NV" >> "$GITHUB_ENV"
+          NTAG="v${NV%%-*}"
+          gh api "repos/nodejs/node/contents/LICENSE?ref=$NTAG" -H 'Accept: application/vnd.github.raw' > "$RUNNER_TEMP/node-LICENSE.txt" \
+            || gh api "repos/nodejs/node/contents/LICENSE" -H 'Accept: application/vnd.github.raw' > "$RUNNER_TEMP/node-LICENSE.txt"
+          wc -c "$RUNNER_TEMP/node-LICENSE.txt"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: 엑셀 엔진(xlsx-sidecar)을 안드로이드용으로 컴파일
         run: |
@@ -65,8 +74,98 @@ jobs:
           cargo ndk -t arm64-v8a -t x86_64 --platform 26 build --release --locked
           cp target/aarch64-linux-android/release/xlsx-sidecar "$GITHUB_WORKSPACE/app/src/main/jniLibs/arm64-v8a/libxlsxsidecar.so"
           cp target/x86_64-linux-android/release/xlsx-sidecar "$GITHUB_WORKSPACE/app/src/main/jniLibs/x86_64/libxlsxsidecar.so"
-          ls -la "$GITHUB_WORKSPACE"/app/src/main/jniLibs/*/
 
+      # ===================== 사진 편집 (PhotoCraft 공식 웹 빌드) =====================
+      - name: 사진 편집 웹 빌드 받기 (PhotoCraft 최신 릴리스)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release view -R "$PHOTO_UPSTREAM" --json tagName -q .tagName)
+          echo "PHOTO_TAG=$TAG" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/pc" && cd "$RUNNER_TEMP/pc"
+          gh release download "$TAG" -R "$PHOTO_UPSTREAM" --pattern 'photocraft-web-*.zip'
+          unzip -q photocraft-web-*.zip
+          SITE=$(dirname "$(find . -name index.html -path '*photocraft-web*' | head -1)")
+          SITE=$(cd "$SITE" && pwd)
+          # 웹 빌드의 app/photocraft-web.js 는 ./snippets/ 를 app/ 기준으로 불러오므로 app/ 에도 둠
+          if grep -q '\./snippets/' "$SITE/app/photocraft-web.js" 2>/dev/null && [ ! -d "$SITE/app/snippets" ] && [ -d "$SITE/snippets" ]; then
+            cp -r "$SITE/snippets" "$SITE/app/snippets"; echo "snippets를 app/ 에도 복사"
+          fi
+          echo "PHOTO_SITE=$SITE" >> "$GITHUB_ENV"
+          echo "PhotoCraft $TAG → $SITE"
+
+      # ===================== 동영상 편집 (FilmCraft, 소스에서 빌드) =====================
+      - name: 동영상 편집 최신 릴리스 확인
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "FILM_TAG=$(gh release view -R "$FILM_UPSTREAM" --json tagName -q .tagName)" >> "$GITHUB_ENV"
+
+      - name: 동영상 편집 소스 받기
+        uses: actions/checkout@v5
+        with:
+          repository: storytold/filmcraft
+          ref: ${{ env.FILM_TAG }}
+          path: upstream-film
+          lfs: false
+
+      - name: 동영상 편집 수정 넣기 (웹 H.264 내보내기)
+        run: python3 tools/filmcraft_patch.py upstream-film
+
+      - name: Rust · wasm 도구 준비
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+          WB=$(grep -oP 'wasm-bindgen = "=\K[0-9.]+' upstream-film/apps/filmcraft-web/Cargo.toml)
+          echo "WB_VER=$WB" >> "$GITHUB_ENV"
+
+      - name: wasm-bindgen 캐시
+        id: wbcache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/wasm-bindgen
+          key: wasm-bindgen-${{ env.WB_VER }}
+
+      - name: wasm-bindgen 설치
+        if: steps.wbcache.outputs.cache-hit != 'true'
+        run: cargo +stable install wasm-bindgen-cli --version "$WB_VER" --locked
+
+      - name: wasm-opt (binaryen) 준비
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/binaryen" && cd "$RUNNER_TEMP/binaryen"
+          gh release download -R WebAssembly/binaryen --pattern '*x86_64-linux.tar.gz' && tar xzf *.tar.gz
+          BIN=$(dirname "$(find . -name wasm-opt -type f | head -1)")
+          echo "$PWD/$BIN" >> "$GITHUB_PATH"
+
+      - name: Rust 빌드 캐시 (동영상 편집)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: upstream-film -> target
+
+      - name: 동영상 편집 웹 빌드
+        run: |
+          cd upstream-film
+          cargo +stable xtask web
+          ls -la target/web/dist
+
+      # ===================== 합치기 · 크롬 점검 =====================
+      - name: 사진·동영상 에셋 넣기, 이름 바꾸기, 라이선스·정보 화면
+        run: |
+          python3 tools/work_assets.py --photo "$PHOTO_SITE" --film upstream-film/target/web/dist \
+            --office-res "$IEUM_RES" --photo-src "$PHOTO_SITE" --film-src upstream-film \
+            --node-license "$RUNNER_TEMP/node-LICENSE.txt" \
+            --versions "office=$IEUM_VERSION,photo=$PHOTO_TAG,film=$FILM_TAG,node=$NODE_VER" --build "${{ github.run_number }}"
+          du -sh app/src/main/assets/* app/src/main/jniLibs/* | sort -h
+
+      - name: 크롬에서 동영상 편집 점검 (시작·가져오기·열기·MP4 내보내기·저장)
+        run: |
+          cd "$RUNNER_TEMP" && npm init -y >/dev/null && npm i --silent puppeteer-core@23 >/dev/null
+          cp "$GITHUB_WORKSPACE/tools/web_selftest.mjs" "$RUNNER_TEMP/"
+          (cd "$GITHUB_WORKSPACE/app/src/main/assets/film" && python3 -m http.server 8765 --bind 127.0.0.1 >/dev/null 2>&1 &)
+          sleep 2
+          cd "$GITHUB_WORKSPACE" && node "$RUNNER_TEMP/web_selftest.mjs" http://127.0.0.1:8765/index.html app/src/main/assets/film-bridge.js
+
+      # ===================== 안드로이드 =====================
       - name: Android SDK 준비
         run: |
           SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
@@ -77,9 +176,9 @@ jobs:
       - name: 시험용 APK (에뮬레이터용 x86_64 포함)
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug -PieumAbis=arm64-v8a,x86_64
-          cp app/build/outputs/apk/debug/app-debug.apk IeumOffice-test.apk
-          ls -la IeumOffice-test.apk
+          ./gradlew --no-daemon assembleDebug -PworkAbis=arm64-v8a,x86_64
+          cp app/build/outputs/apk/debug/app-debug.apk Work-test.apk
+          ls -la Work-test.apk
 
       - name: 에뮬레이터 KVM 켜기
         run: |
@@ -87,25 +186,26 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: 에뮬레이터에서 자동 점검 (6개 편집기 + 문서 엔진 + 엑셀 엔진)
+      - name: 에뮬레이터에서 자동 점검 (첫 화면 · 문서 6종 · 사진 · 동영상)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
           ram-size: 4096M
-          disk-size: 6000M
+          disk-size: 8000M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash tools/emulator_selftest.sh IeumOffice-test.apk
+          script: bash tools/emulator_selftest.sh Work-test.apk
 
-      - name: 점검 기록 올리기
+      - name: 점검 화면·기록 올리기 (work-ci 릴리스)
         if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: selftest-log
-          path: selftest-*.txt
-          if-no-files-found: ignore
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete work-ci --yes --cleanup-tag || true
+          gh release create work-ci $(ls work-screen-*.png web-screen-*.png selftest-*.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+            --title "대신남 워크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비 (있으면)
         env:
@@ -126,22 +226,16 @@ jobs:
           AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
           AMP_KEY_PASSWORD: ${{ secrets.AMP_KEY_PASSWORD }}
         run: |
-          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease -PieumAbis=arm64-v8a; else ./gradlew --no-daemon assembleDebug -PieumAbis=arm64-v8a; fi
+          if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease -PworkAbis=arm64-v8a; else ./gradlew --no-daemon assembleDebug -PworkAbis=arm64-v8a; fi
           rm -f "$RUNNER_TEMP/release.p12"
-          cp app/build/outputs/apk/$VARIANT/*.apk IeumOffice.apk
-          ls -la IeumOffice.apk
-
-      - uses: actions/upload-artifact@v5
-        with:
-          name: IeumOffice-apk
-          path: IeumOffice.apk
+          cp app/build/outputs/apk/$VARIANT/*.apk DaesinnamWork.apk
+          ls -la DaesinnamWork.apk
 
       - name: Releases에 APK 올리기
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete ieumoffice-latest --yes --cleanup-tag || true
-          gh release create ieumoffice-latest IeumOffice.apk \
-            --target "$GITHUB_SHA" \
-            --title "이음오피스 안드로이드 (최신 빌드)" \
-            --notes "IeumOffice $IEUM_VERSION 안드로이드판 미리보기 2. 워드·엑셀·파워포인트·한글·EPUB·마인드맵·다이어그램·마크다운·HTML 편집, PDF 보기. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+          gh release delete work-latest --yes --cleanup-tag || true
+          gh release create work-latest DaesinnamWork.apk --target "$GITHUB_SHA" \
+            --title "대신남 워크 (최신 빌드)" \
+            --notes "문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264 수정) 편집을 한 앱에. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"

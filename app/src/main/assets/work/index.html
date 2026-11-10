@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:" />
+  <title>대신남 워크</title>
+  <link rel="stylesheet" href="./work.css" />
+</head>
+<body>
+  <header class="top">
+    <img src="./icon.png" alt="" class="logo" />
+    <div>
+      <h1>대신남 워크</h1>
+      <p class="sub">문서 · 사진 · 동영상을 한 앱에서</p>
+    </div>
+  </header>
+
+  <main>
+    <button id="open" class="open">
+      <span class="ico">📂</span>
+      <span><b>파일 열기</b><small>고른 파일 형식에 맞는 편집기로 바로 엽니다</small></span>
+    </button>
+
+    <div class="cards">
+      <button class="card doc" data-go="office">
+        <span class="mark">문서</span>
+        <h2>문서 편집</h2>
+        <p>워드 · 엑셀 · 파워포인트 · 한글 · PDF 보기 · 마인드맵 · 다이어그램 · 마크다운</p>
+      </button>
+      <button class="card photo" data-go="photo">
+        <span class="mark">사진</span>
+        <h2>사진 편집</h2>
+        <p>레이어 · 마스크 · 보정 · 글자 · 브러시 · PSD 열기와 저장</p>
+      </button>
+      <button class="card film" data-go="film">
+        <span class="mark">영상</span>
+        <h2>동영상 편집</h2>
+        <p>컷 편집 · 색 보정 · 효과 · 오디오 · 자막 · MP4 내보내기</p>
+      </button>
+    </div>
+
+    <section class="tips">
+      <h3>알아 두면 좋은 것</h3>
+      <ul>
+        <li>편집은 모두 이 기기 안에서 합니다. 파일을 바깥으로 보내지 않습니다.</li>
+        <li>갤러리·파일 관리자에서 <b>공유</b> 또는 <b>다른 앱으로 열기</b>로 바로 넣을 수 있습니다.</li>
+        <li>사진·동영상 편집은 화면이 넓을수록 편합니다. 폴드는 펼친 화면을 권합니다.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <a href="./about.html">정보 · 오픈소스 라이선스</a>
+  </footer>
+  <script src="./work.js"></script>
+</body>
+</html>

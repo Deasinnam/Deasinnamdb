@@ -1,5 +1,5 @@
 /*
- * IeumOffice 안드로이드판 — Electron 대체 셈
+ * 대신남 워크 문서 편집 — Electron 대체 셈 (IeumOffice 데스크톱 화면을 그대로 쓰기 위한 것)
  *
  * 데스크톱판의 preload 스크립트는 require("electron")으로 contextBridge·ipcRenderer·webUtils만 씁니다.
  * 이 파일이 그 세 가지를 흉내 내고, ipcRenderer.invoke/send가 가는 곳(원래는 Electron 메인 프로세스)을

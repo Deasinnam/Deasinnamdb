@@ -82,6 +82,34 @@ def patch_bundles(m: str, dst: pathlib.Path) -> None:
             sys.exit(f"{m}: 고칠 코드를 찾지 못했습니다 (원본이 바뀌었나요?): {old[:60]}")
 
 
+# 대신남 워크: 편집기 화면에 보이는 원작 제품 이름을 바꿈 (Apache-2.0 제6조: 원작 이름·로고 권리는 받지 않음).
+# 글꼴 이름 등 기능에 쓰이는 "GenOffice ..." 식별자는 건드리지 않습니다.
+BRAND = "대신남 워크"
+BRAND_EN = "Daesinnam Work"
+REBRAND = [
+    ('const PRODUCT_NAME = "IeumOffice"', f'const PRODUCT_NAME = "{BRAND_EN}"', True),
+    ('ko: "이음오피스"', f'ko: "{BRAND}"', True),
+    ("<meta:generator>IeumOffice</meta:generator>", f"<meta:generator>{BRAND_EN}</meta:generator>", False),
+]
+
+
+def rebrand(m: str, dst: pathlib.Path) -> None:
+    hits = {old: 0 for old, _, _ in REBRAND}
+    for f in list(dst.rglob("*.js")) + list(dst.rglob("*.html")):
+        text = f.read_text(encoding="utf-8", errors="surrogateescape")
+        changed = text
+        for old, new, _ in REBRAND:
+            hits[old] += changed.count(old)
+            changed = changed.replace(old, new)
+        # 창 제목: <title>IeumOffice 워드</title> 같은 것
+        changed = re.sub(r"<title>\s*IeumOffice", f"<title>{BRAND}", changed)
+        if changed != text:
+            f.write_text(changed, encoding="utf-8", errors="surrogateescape")
+    for old, _, required in REBRAND:
+        if required and hits[old] == 0:
+            sys.exit(f"{m}: 이름을 바꿀 곳을 찾지 못했습니다 (원본이 바뀌었나요?): {old}")
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -128,6 +156,7 @@ def main() -> None:
                 html = re.sub(r"(?<![\w-])" + re.escape(sc) + r":(?![/\w])", "'self'", html)
         index.write_text(html, encoding="utf-8")
         patch_bundles(m, dst)
+        rebrand(m, dst)
         print(f"  {m}: 완료")
 
     shutil.copytree(ROOT / "web/home", OUT / "home")

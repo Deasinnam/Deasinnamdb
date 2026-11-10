@@ -213,7 +213,7 @@ function createElectron(session) {
     clearStorageData() { return Promise.resolve(); },
     resolveProxy() { return Promise.resolve("DIRECT"); },
     setProxy() { return Promise.resolve(); },
-    getUserAgent() { return "IeumOffice-Android"; },
+    getUserAgent() { return "DaesinnamWork-Android"; },
     setUserAgent() {},
     fetch: (...a) => fetch(...a),
     setPreloads() {},
@@ -229,7 +229,7 @@ function createElectron(session) {
   // ---------- app ----------
   const dirs = session.dirs;
   const app = lenient(Object.assign(new EventEmitter(), {
-    name: "IeumOffice",
+    name: "DaesinnamWork",
     isPackaged: true,
     commandLine: lenient({ appendSwitch() {}, appendArgument() {}, hasSwitch() { return false; }, getSwitchValue() { return ""; }, removeSwitch() {} }, "commandLine"),
     dock: undefined,
@@ -247,7 +247,7 @@ function createElectron(session) {
     getPreferredSystemLanguages() { return ["ko-KR"]; },
     getLocaleCountryCode() { return "KR"; },
     getVersion() { return session.appVersion; },
-    getName() { return "IeumOffice"; },
+    getName() { return "DaesinnamWork"; },
     setName() {},
     quit() { session.log("app.quit() 무시"); },
     exit() { session.log("app.exit() 무시"); },

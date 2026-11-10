@@ -1,4 +1,4 @@
-package com.daesinnam.ieum;
+package com.daesinnam.work;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -67,7 +67,7 @@ import java.util.concurrent.Executors;
  *
  * 웹 ↔ 앱 통신은 addWebMessageListener로, 앱 화면 출처에만 IeumAndroid 객체를 넣어 줍니다.
  */
-public class MainActivity extends ComponentActivity {
+public class OfficeActivity extends ComponentActivity {
     private static final String APP_ORIGIN = "https://appassets.androidplatform.net";
     private static final String HOME_URL = APP_ORIGIN + "/assets/www/home/index.html";
     private static final String PREVIEW_HOST = "ieum-preview.local";

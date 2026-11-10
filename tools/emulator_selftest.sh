@@ -1,39 +1,77 @@
 #!/usr/bin/env bash
-# 에뮬레이터에 시험용 APK를 깔고 자동 점검을 돌립니다. 결과는 selftest-*.txt 로 남깁니다.
-# 성공 조건: 문서 엔진(Node)이 뜨고, 6개 편집기가 모두 "ok"를 보고.
+# 대신남 워크 에뮬레이터 자동 점검: 첫 화면 → 문서 편집 6종 → 사진 편집 → 동영상 편집.
+# 결과는 selftest-*.txt, 화면은 work-screen-*.png 로 남깁니다.
 set -u
 APK="$1"
-PKG=com.daesinnam.ieum
+PKG=com.daesinnam.work
 adb install -r -g "$APK" || exit 1
+fail=0
+
+# ---------- 첫 화면 ----------
 adb logcat -c
-adb shell am start -n "$PKG/.MainActivity" --ez ieum.selftest true
+adb shell am start -n "$PKG/.HomeActivity"
+sleep 10
+adb exec-out screencap -p > work-screen-home.png
+adb shell am force-stop "$PKG"
+
+# ---------- 문서 편집 (6개 편집기 + 문서 엔진 + 엑셀 엔진) ----------
+adb logcat -c
+adb shell am start -n "$PKG/.OfficeActivity" --ez ieum.selftest true
 for i in $(seq 1 60); do
   sleep 5
   if adb logcat -d -s IEUM_SELFTEST:I | grep -q "DONE all"; then break; fi
 done
-adb logcat -d -s IEUM_SELFTEST:I IeumNode:* > selftest-result.txt
-
-echo "===== 진단: 앱 안에서 node 직접 실행 ====="
-NLD=$(adb shell dumpsys package "$PKG" | grep -m1 -o 'legacyNativeLibraryDir=[^ ]*' | cut -d= -f2)
-ABI=$(adb shell getprop ro.product.cpu.abi | tr -d '\r')
-case "$ABI" in x86_64) SUB=x86_64;; arm64-v8a) SUB=arm64;; *) SUB=$ABI;; esac
-LIB="$NLD/$SUB"
-echo "nativeLibraryDir=$LIB"
-adb shell run-as "$PKG" ls -la files/nodelib 2>&1 | head -20
-adb shell run-as "$PKG" sh -c "LD_LIBRARY_PATH=/data/data/$PKG/files/nodelib:$LIB $LIB/libnode.so --version; echo exit=\$?" 2>&1 | head -20
-adb shell run-as "$PKG" sh -c "LD_LIBRARY_PATH=/data/data/$PKG/files/nodelib:$LIB $LIB/libnode.so -e 'console.log(process.version, process.arch, require(\"os\").tmpdir())'; echo exit=\$?" 2>&1 | head -20
-echo "===== 진단: 크래시 기록 ====="
-adb logcat -d -b crash | tail -60
-adb logcat -d > selftest-full.txt
-echo "===== 점검 결과 ====="
-grep -E "IEUM_SELFTEST" selftest-result.txt || true
-echo "===== 문서 엔진 기록 (끝부분) ====="
-grep IeumNode selftest-result.txt | tail -40 || true
-ok=$(grep -c "IEUM_SELFTEST.* ok " selftest-result.txt || true)
-if grep -q "DONE all" selftest-result.txt && [ "$ok" -ge 6 ]; then
-  echo "자동 점검 통과 ($ok/6)"
-  exit 0
+adb exec-out screencap -p > work-screen-office.png
+adb logcat -d -s IEUM_SELFTEST:I IeumNode:* > selftest-office.txt
+echo "===== 문서 편집 ====="
+grep -E "IEUM_SELFTEST" selftest-office.txt || true
+ok=$(grep -c "IEUM_SELFTEST.* ok " selftest-office.txt || true)
+if grep -q "DONE all" selftest-office.txt && [ "$ok" -ge 6 ]; then echo "문서 편집 통과 ($ok/6)"; else
+  echo "문서 편집 실패 ($ok/6)"; fail=1
+  grep IeumNode selftest-office.txt | tail -40
+  adb logcat -d -b crash | tail -40
 fi
-echo "자동 점검 실패 ($ok/6)"
-grep -E "AndroidRuntime|FATAL|chromium" selftest-full.txt | tail -40 || true
+adb shell am force-stop "$PKG"
+
+# ---------- 사진 편집 ----------
+adb logcat -c
+adb shell am start -n "$PKG/.PhotoActivity" --ez photo.selftest true
+for i in $(seq 1 45); do
+  sleep 5
+  [ "$i" = 8 ] && adb exec-out screencap -p > work-screen-photo.png
+  if adb logcat -d -s PHOTO_SELFTEST:I | grep -q "DONE"; then break; fi
+done
+adb exec-out screencap -p > work-screen-photo-end.png
+adb logcat -d -s PHOTO_SELFTEST:I Work-photo:* Work-photoConsole:* > selftest-photo.txt
+echo "===== 사진 편집 ====="
+grep PHOTO_SELFTEST selftest-photo.txt | cut -c1-400 || true
+if grep -qE "PHOTO_SELFTEST: page .*started=true" selftest-photo.txt && grep -q "PHOTO_SELFTEST: save ok" selftest-photo.txt; then
+  echo "사진 편집 통과"; else echo "사진 편집 실패"; fail=1; tail -30 selftest-photo.txt; fi
+adb shell am force-stop "$PKG"
+
+# ---------- 동영상 편집 ----------
+adb logcat -c
+adb shell am start -n "$PKG/.FilmActivity" --ez film.selftest true
+for i in $(seq 1 60); do
+  sleep 5
+  if adb logcat -d -s FILM_SELFTEST:I | grep -q "DONE"; then break; fi
+done
+adb exec-out screencap -p > work-screen-film.png
+adb logcat -d -s FILM_SELFTEST:I Work-film:* Work-filmConsole:* > selftest-film.txt
+echo "===== 동영상 편집 ====="
+grep FILM_SELFTEST selftest-film.txt | cut -c1-400 || true
+saved=$(grep -c "FILM_SELFTEST: save ok" selftest-film.txt || true)
+if grep -qE "FILM_SELFTEST: page .*started=true" selftest-film.txt && grep -qE "FILM_SELFTEST: import items=[1-9]" selftest-film.txt && [ "$saved" -ge 1 ]; then
+  echo "동영상 편집 통과"
+elif grep -q "FILM_SELFTEST: load wasmLoaded=true gpuLimit=true" selftest-film.txt && [ "$saved" -ge 1 ]; then
+  # 에뮬레이터 GPU 텍스처 한도(4096) < 편집기 요구(8192): 앱 연결만 확인, 편집기 동작은 크롬 점검이 맡음
+  echo "동영상 편집 통과 (에뮬레이터 GPU 한도: 앱 연결만 확인)"
+else
+  echo "동영상 편집 실패"; fail=1; tail -30 selftest-film.txt
+fi
+
+adb logcat -d > selftest-full.txt
+if [ "$fail" = 0 ]; then echo "자동 점검 통과"; exit 0; fi
+echo "자동 점검 실패"
+grep -E "AndroidRuntime|FATAL" selftest-full.txt | tail -40 || true
 exit 1

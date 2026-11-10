@@ -193,7 +193,7 @@
     return;
   }
 
-  // 다른 앱에서 "이음오피스로 열기"로 들어온 경우
+  // 다른 앱에서 "대신남 워크 문서로 열기"로 들어온 경우
   if (params.get("open")) {
     if (openDoc(params.get("open"), params.get("name") || "문서", true)) return;
   }

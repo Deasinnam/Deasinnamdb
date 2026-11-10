@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; img-src 'self' data:" />
+  <title>대신남 워크 정보</title>
+  <link rel="stylesheet" href="./work.css" />
+</head>
+<body>
+  <div class="doc-page">
+    <a class="back" href="./index.html">‹ 처음으로</a>
+    <h1>대신남 워크</h1>
+    <p>버전 {{APP_VERSION}} · 빌드 {{BUILD}}</p>
+    <p>대신남 워크는 공개된 오픈소스 편집기 세 가지를 안드로이드용으로 고쳐 한 앱에 묶은 것입니다.
+      아래 원작자들이 공개한 라이선스(Apache License 2.0, MIT)에 따라 배포하며, 각 원작의 저작권 표시와 라이선스 전문을 함께 넣었습니다.</p>
+
+    <h2>포함된 오픈소스 편집기</h2>
+    <table>
+      <tr><th>대신남 워크 기능</th><th>원작 (버전)</th><th>저작권자</th><th>라이선스</th></tr>
+      <tr><td>문서 편집</td><td><a href="https://github.com/pblsketch/ieumoffice">IeumOffice</a> ({{OFFICE_VER}})</td>
+        <td>pblsketch · Mainfunc, Inc. (GenOffice)</td>
+        <td><a href="./licenses/office/LICENSE.txt">Apache-2.0</a> · <a href="./licenses/office/NOTICE.txt">NOTICE</a> ·
+          <a href="./licenses/office/THIRD-PARTY-NOTICES.txt">포함된 제3자 구성요소</a></td></tr>
+      <tr><td>사진 편집</td><td><a href="https://github.com/storytold/photocraft">PhotoCraft</a> ({{PHOTO_VER}})</td>
+        <td>ArtCraft 팀 (storytold)</td>
+        <td><a href="./licenses/photo/LICENSE-MIT.txt">MIT</a> 또는 <a href="./licenses/photo/LICENSE-APACHE.txt">Apache-2.0</a> · <a href="./licenses/photo/NOTICE.txt">NOTICE</a></td></tr>
+      <tr><td>동영상 편집</td><td><a href="https://github.com/storytold/filmcraft">FilmCraft</a> ({{FILM_VER}})</td>
+        <td>ArtCraft 팀 (storytold)</td>
+        <td><a href="./licenses/film/LICENSE-MIT.txt">MIT</a> 또는 <a href="./licenses/film/LICENSE-APACHE.txt">Apache-2.0</a> · <a href="./licenses/film/NOTICE.txt">NOTICE</a></td></tr>
+      <tr><td>문서 엔진 실행</td><td><a href="https://nodejs.org">Node.js</a> ({{NODE_VER}}, Termux 안드로이드 빌드)</td>
+        <td>Node.js contributors</td><td><a href="./licenses/node/LICENSE.txt">MIT 외 (포함 구성요소 고지)</a></td></tr>
+    </table>
+
+    <h2>원작에서 바꾼 것</h2>
+    <p class="muted">Apache License 2.0 제4조에 따라, 대신남 워크가 원작을 고친 내용을 알립니다.</p>
+    <ul>
+      <li>공통: 데스크톱·웹 프로그램을 안드로이드 WebView 안에서 돌도록 감싸고, 저장·열기·공유를 안드로이드 방식(파일 만들기·파일 고르기)으로 바꿨습니다.
+        제품 이름·아이콘·시작 화면 문구를 대신남 워크 것으로 바꿨습니다.</li>
+      <li>문서 편집(IeumOffice): Electron 대신 앱 안의 Node.js에서 데스크톱 메인 코드를 돌리는 호스트를 더했고,
+        편집기 화면이 쓰는 자체 프로토콜 주소·CSP를 앱 주소로 바꿨으며, 엑셀 엔진(xlsx-sidecar)을 안드로이드용으로 컴파일했습니다.
+        편집기 안에 표시되는 제품 이름을 바꿨습니다.</li>
+      <li>사진 편집(PhotoCraft): 공식 웹 빌드를 그대로 쓰고, 로딩 문구만 바꿨습니다.</li>
+      <li>동영상 편집(FilmCraft): 소스에서 직접 빌드하면서, 웹(wasm)에서 H.264 내보내기가 스레드 풀을 만들지 못해 실패하던 부분을 고쳤습니다
+        (웹에서는 스레드 풀 없이 인코딩). 로딩 문구를 바꿨습니다.</li>
+    </ul>
+
+    <h2>상표</h2>
+    <p class="muted">대신남 워크는 pblsketch, Mainfunc, Inc., ArtCraft 팀(storytold)과 관련이 없으며 그들의 후원이나 보증을 받지 않았습니다.
+      "IeumOffice", "이음오피스", "GenOffice", "PhotoCraft", "FilmCraft", "ArtCraft"는 각 소유자의 이름이며, 위 표에서는 출처를 밝히려는 목적으로만 씁니다.
+      편집기 안의 일부 메뉴·안내 문구에는 원작 이름이 그대로 남아 있을 수 있습니다.
+      Microsoft, Word, Excel, PowerPoint, 한글, HWP, Adobe, Photoshop 등은 각 회사의 상표이며, 여는 파일 형식을 설명하는 데만 씁니다.</p>
+  </div>
+</body>
+</html>

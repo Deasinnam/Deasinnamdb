@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 화면과 앱 안 문서 엔진(Node)이 기기 안(127.0.0.1)에서만 주고받는 데 필요합니다.
-         문서를 바깥으로 보내지 않습니다. -->
+    <!-- 문서 편집 화면과 앱 안 문서 엔진(Node)이 기기 안(127.0.0.1)에서만 주고받는 데 필요합니다.
+         파일을 바깥으로 보내지 않습니다. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -12,21 +12,31 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:name=".WorkApp"
+        android:largeHeap="true"
         android:theme="@style/AppTheme">
 
+        <!-- 첫 화면: 문서·사진·동영상 편집 고르기 -->
         <activity
-            android:name=".MainActivity"
+            android:name=".HomeActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".OfficeActivity"
+            android:label="@string/office_name"
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection"
             android:windowSoftInputMode="adjustResize">
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-            <!-- 파일 관리자·메신저에서 "이음오피스로 열기" -->
+            <!-- 파일 관리자·메신저에서 "대신남 워크 문서로 열기" -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
@@ -34,6 +44,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="content" />
                 <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+                <data android:mimeType="application/msword" />
+                <data android:mimeType="application/vnd.ms-excel" />
+                <data android:mimeType="application/epub+zip" />
+                <data android:mimeType="text/csv" />
                 <data android:mimeType="application/x-hwp" />
                 <data android:mimeType="application/haansofthwp" />
                 <data android:mimeType="application/vnd.hancom.hwp" />
@@ -52,6 +69,13 @@
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+                <data android:mimeType="application/msword" />
+                <data android:mimeType="application/vnd.ms-excel" />
+                <data android:mimeType="application/epub+zip" />
+                <data android:mimeType="text/csv" />
                 <data android:mimeType="application/x-hwp" />
                 <data android:mimeType="application/haansofthwp" />
                 <data android:mimeType="application/vnd.hancom.hwp" />
@@ -60,6 +84,61 @@
                 <data android:mimeType="text/markdown" />
                 <data android:mimeType="text/html" />
                 <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+        </activity>
+        <!-- 사진 편집: 따로 된 프로세스 -->
+        <activity
+            android:name=".PhotoActivity"
+            android:label="@string/photo_name"
+            android:process=":photo"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:hardwareAccelerated="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="image/vnd.adobe.photoshop" />
+                <data android:mimeType="application/x-photoshop" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="image/vnd.adobe.photoshop" />
+            </intent-filter>
+        </activity>
+
+        <!-- 동영상 편집: 따로 된 프로세스 -->
+        <activity
+            android:name=".FilmActivity"
+            android:label="@string/film_name"
+            android:process=":film"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:hardwareAccelerated="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/mxf" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
             </intent-filter>
         </activity>
     </application>
