@@ -2740,3 +2740,16 @@ img{height:auto;object-fit:contain}
 :root[data-app="amp"] :is(#sPfdMap,#sPfdMapStyle){display:none!important}
 :root[data-app="amp"] label.row:has(#sPfdMap),:root[data-app="amp"] label.row:has(#sPfdMapStyle){display:none!important}
 :root[data-app="amp"] label.row:has(#sCarGps){display:none!important}
+/* AMP 전용: 상단 시계·날씨·밝기 계기 숨김, 도구 버튼 아이콘 없이 한 줄 */
+:root[data-app="amp"] header.top #clock{display:none!important}
+:root[data-app="amp"] header.top .tools :is(.emo,.ico,svg){display:none!important}
+:root[data-app="amp"] header.top .tools label.selw[for="skin"]{display:none!important}
+:root[data-app="amp"] header.top .tools{--af:clamp(10.5px,2.85vw,15px);display:flex!important;flex-wrap:nowrap!important;gap:3px!important;align-items:stretch!important;overflow-x:auto;scrollbar-width:none;grid-template-columns:none!important;width:100%}
+:root[data-app="amp"] header.top .tools::-webkit-scrollbar{display:none}
+:root[data-app="amp"] header.top .tools>*{flex:1 0 auto!important;min-width:0!important;width:auto!important;margin:0!important;white-space:nowrap!important;padding:0 4px!important;font-size:var(--af)!important;min-height:44px;letter-spacing:-.02em}
+:root[data-app="amp"] header.top .tools .seg{display:flex!important;padding:0!important}
+:root[data-app="amp"] header.top .tools .seg[hidden]{display:none!important}
+:root[data-app="amp"] header.top .tools .seg>button{flex:1 0 auto;padding:0 6px!important;white-space:nowrap;font-size:var(--af)!important;min-width:0!important}
+:root[data-app="amp"] header.top .tools .selw{display:flex!important;align-items:stretch;font-size:0!important;flex:0 0 auto!important;padding:0!important;gap:0!important}
+:root[data-app="amp"] header.top .tools .selw .sel{font-size:var(--af)!important;width:4.3em!important;min-width:0!important;max-width:4.3em!important;padding:0 1.3em 0 .55em!important;letter-spacing:0!important;-webkit-appearance:none!important;appearance:none!important;text-overflow:ellipsis;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%),var(--amp-selbg,linear-gradient(180deg,var(--metal-b),var(--metal-c)))!important;background-size:5px 5px,5px 5px,100% 100%!important;background-position:calc(100% - 10px) 52%,calc(100% - 5px) 52%,0 0!important;background-repeat:no-repeat!important}
+:root[data-app="amp"] header.top .tools>.pill,:root[data-app="amp"] header.top .tools .seg>button{letter-spacing:-.03em!important}

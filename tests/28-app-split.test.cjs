@@ -17,6 +17,12 @@ run('App split: AMP audio skins only, One car skins only', async ({context, orig
     if (kind === 'amp') assert.deepEqual(vis, [false, false, false, false], 'AMP hides car features');
     else assert.deepEqual(vis.slice(0, 3), [true, true, true], 'One keeps car features');
     assert.equal(await p.evaluate(() => document.documentElement.dataset.app), kind);
+    if (kind === 'amp') {
+      const top = await p.evaluate(() => { document.getElementById('srcSeg').hidden = false; const t = document.querySelector('header.top .tools'); const it = [...t.children].filter(e => e.offsetParent);
+        return { clock: getComputedStyle(document.getElementById('clock')).display, rows: new Set(it.map(e => Math.round(e.getBoundingClientRect().top))).size, emo: [...t.querySelectorAll('.emo,.ico')].some(e => e.offsetParent), fit: t.scrollWidth <= t.clientWidth + 1 }; });
+      assert.equal(top.clock, 'none', 'AMP hides clock/weather/brightness');
+      assert.equal(top.rows, 1, 'AMP tool buttons in one row'); assert.equal(top.emo, false, 'no emoji icons'); assert.ok(top.fit, 'row fits');
+    }
     await p.close();
   }
 });
