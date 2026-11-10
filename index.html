@@ -4,113 +4,210 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>덜누름 Software — 덜 누르고, 더 편하게</title>
-<meta name="description" content="덜누름은 누를 일을 줄이는 안드로이드 앱을 만듭니다. 대신남 워크, 회의비서, Daesinnam Amp, 대신남 로드를 무료로 내려받으세요.">
+<meta name="description" content="덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 워크, 회의비서, Daesinnam Amp, 대신남 로드를 무료로 내려받으세요.">
 <meta property="og:title" content="덜누름 Software — 덜 누르고, 더 편하게">
-<meta property="og:description" content="누를 일을 줄이는 안드로이드 앱. 만든 앱을 바로 내려받을 수 있습니다.">
+<meta property="og:description" content="누를 일을 줄이는 앱. 만든 앱을 바로 내려받을 수 있습니다.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* 시안 B — 스위스 인덱스: 12칸 격자, 굵기 대비(300 ↔ 900)만으로 위계를 만들고 장식은 가는 선 하나.
-   앱은 카드가 아니라 번호 매긴 목록 줄. 각 줄의 주인공은 "누름 수" 큰 숫자. */
+/* 덜누름: 흰 바탕, 검정 한 색. 모든 버튼은 "키" — 누르면 그림자만큼 내려간다.
+   레이아웃: 왼쪽 정렬 단일 칼럼(최대 1120px), 앱은 2열 그리드 → 폰에서 1열. */
 :root {
   --paper: #ffffff;
-  --ink: #0a0a0a;
-  --ink-2: #555555;
-  --ink-3: #9a9a9a;
-  --rule: #0a0a0a;
-  --hair: #e8e8e8;
-  --font-display: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --ink: #111111;
+  --ink-2: #4a4a4a;
+  --ink-3: #8a8a8a;
+  --line: #e4e4e4;
+  --wash: #f5f5f4;
+  --font-display: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --travel: 5px;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); }
-body { font: 400 15px/1.7 var(--font-body); -webkit-font-smoothing: antialiased; }
+body { font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
-h1, h2, h3 { margin: 0; font-family: var(--font-display); text-wrap: balance; }
-.wrap { max-width: 1200px; margin: 0 auto; padding: 0 28px; }
-.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 20px; }
-.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-/* 머리줄 */
-.top { padding: 22px 0; border-bottom: 1.5px solid var(--rule); }
-.top .grid { align-items: center; }
-.mark { grid-column: span 4; display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.mark i { width: 22px; height: 22px; border: 2px solid var(--ink); border-radius: 6px; box-shadow: inset 0 -5px 0 var(--ink); display: block; }
-.mark b { font: 900 18px/1 var(--font-display); letter-spacing: -0.04em; }
-.top nav { grid-column: span 8; display: flex; justify-content: flex-end; gap: 28px; font: 400 12px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
-.top nav a { text-decoration: none; color: var(--ink-2); }
-.top nav a:hover { color: var(--ink); }
-
-/* 첫 화면 */
-.hero { padding: 64px 0 40px; border-bottom: 1px solid var(--hair); }
-.hero h1 { grid-column: 1 / span 12; display: flex; align-items: flex-end; flex-wrap: wrap; gap: 0 .22em; font-size: clamp(72px, 15vw, 210px); line-height: .9; letter-spacing: -0.035em; font-weight: 900; }
-.hero h1 .sw { font-size: .27em; font-weight: 300; letter-spacing: -0.02em; line-height: 1; padding-bottom: .16em; }
-.hero .slogan { grid-column: 1 / span 12; margin: 40px 0 0; font: 700 clamp(26px, 3.6vw, 48px)/1.15 var(--font-display); letter-spacing: -0.05em; }
-.hero .slogan .thin { font-weight: 300; }
-.hero .lede { grid-column: 1 / span 5; margin-top: 36px; font-size: 17px; color: var(--ink-2); }
-.hero .facts { grid-column: 8 / span 5; margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-self: end; }
-.fact { border-top: 1.5px solid var(--rule); padding-top: 10px; }
-.fact b { display: block; font: 600 30px/1.1 var(--font-mono); letter-spacing: -0.03em; }
-.fact span { font-size: 12px; color: var(--ink-2); }
-
-/* 앱 목록 */
-.index-head { padding: 52px 0 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-.index-head h2 { font-size: 13px; font-family: var(--font-mono); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; }
-.index-head p { margin: 0; font-size: 13px; color: var(--ink-2); }
-.cols { border-top: 1.5px solid var(--rule); padding: 8px 0; font: 400 11px/1.4 var(--font-mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
-.row { border-top: 1px solid var(--hair); padding: 30px 0; }
-.row:last-of-type { border-bottom: 1.5px solid var(--rule); }
-.no { grid-column: span 1; font: 400 13px/1.9 var(--font-mono); color: var(--ink-3); }
-.name { grid-column: span 4; }
-.name h3 { font-size: 30px; line-height: 1.15; letter-spacing: -0.04em; font-weight: 900; }
-.name .kind { display: block; margin-top: 6px; font-size: 13px; color: var(--ink-2); }
-.name .tag { display: inline-block; margin-top: 10px; font: 400 11px/1 var(--font-mono); border: 1px solid var(--ink); padding: 4px 6px; text-transform: uppercase; letter-spacing: .06em; }
-.desc { grid-column: span 4; }
-.desc p { margin: 0 0 10px; font-size: 15px; }
-.desc ul { margin: 0; padding: 0; list-style: none; color: var(--ink-2); font-size: 13.5px; display: grid; gap: 3px; }
-.desc ul li::before { content: "— "; color: var(--ink-3); }
-.desc .note { margin-top: 10px; font-size: 12px; color: var(--ink-3); }
-.press { grid-column: span 3; display: grid; align-content: start; justify-items: end; text-align: right; gap: 6px; }
-.press .n { font: 900 76px/.9 var(--font-display); letter-spacing: -0.06em; }
-.press .n small { font-size: 34px; font-weight: 300; letter-spacing: 0; }
-.press .why { font-size: 12px; color: var(--ink-2); max-width: 16em; }
-.press .n.none { font-size: 40px; font-weight: 300; color: var(--ink-3); }
-.dl { grid-column: 2 / span 11; margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 22px; }
-.btn {
-  display: inline-flex; align-items: baseline; gap: 10px; text-decoration: none;
-  background: var(--ink); color: var(--paper); padding: 13px 20px; border-radius: 999px;
-  font: 500 14px/1 var(--font-body); transition: transform .12s ease, background .12s ease;
+/* ---------- 키 ---------- */
+.key {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 15px/1 var(--font-body); color: var(--ink); text-decoration: none;
+  background: var(--paper); border: 1.5px solid var(--ink); border-radius: 12px;
+  padding: 14px 20px; box-shadow: 0 var(--travel) 0 var(--ink);
+  transform: translateY(0); transition: transform .08s ease, box-shadow .08s ease;
+  cursor: pointer; user-select: none;
 }
-.btn small { font: 400 11px/1 var(--font-mono); opacity: .65; }
-.btn:hover { background: #333; }
-.btn:active { transform: scale(.97) translateY(1px); }
-.btn:focus-visible, .link:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.meta { font: 400 12px/1.5 var(--font-mono); color: var(--ink-2); display: flex; gap: 18px; flex-wrap: wrap; }
-.meta span b { color: var(--ink-3); font-weight: 400; margin-right: 6px; }
-.link { font-size: 13px; color: var(--ink-2); text-underline-offset: 4px; }
+.key.dark { background: var(--ink); color: var(--paper); box-shadow: 0 var(--travel) 0 #000, 0 var(--travel) 0 1.5px var(--ink); }
+.key:hover { transform: translateY(1px); box-shadow: 0 calc(var(--travel) - 1px) 0 var(--ink); }
+.key:active, .key.is-down { transform: translateY(calc(var(--travel) - 1px)); box-shadow: 0 1px 0 var(--ink); }
+.key:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.key small { font: 500 12px/1 var(--font-mono); opacity: .7; }
 
-/* 아래 구역 */
-.lower { padding: 64px 0; }
-.lower h2 { grid-column: span 4; font-size: 34px; letter-spacing: -0.045em; font-weight: 900; line-height: 1.15; }
-.lower .body { grid-column: 6 / span 7; display: grid; gap: 0; }
-.item { display: grid; grid-template-columns: 56px 1fr; gap: 12px; border-top: 1px solid var(--hair); padding: 18px 0; }
-.item:first-child { border-top: 1.5px solid var(--rule); }
-.item .k { font: 400 12px/1.9 var(--font-mono); color: var(--ink-3); }
-.item h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
-.item p { margin: 4px 0 0; color: var(--ink-2); font-size: 14px; }
-.sep { border-top: 1px solid var(--hair); }
-footer { border-top: 1.5px solid var(--rule); padding: 22px 0 40px; }
-footer .grid { font: 400 12px/1.6 var(--font-mono); color: var(--ink-2); }
-footer .l { grid-column: span 6; }
-footer .r { grid-column: span 6; text-align: right; }
-footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink); letter-spacing: -0.03em; }
+/* ---------- 머리 ---------- */
+header.top { border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand svg { width: 34px; height: 34px; }
+.brand b { font: 700 21px/1 var(--font-display); letter-spacing: -0.03em; }
+.brand .sw { font: 400 15px/1 var(--font-display); color: var(--ink-2); letter-spacing: -0.01em; margin-left: -4px; }
+nav { display: flex; gap: 24px; font-size: 14px; }
+nav a { text-decoration: none; color: var(--ink-2); }
+nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------- 첫 부분 ---------- */
+.hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: end; }
+.hero h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 1.06; letter-spacing: -0.045em; font-weight: 700; }
+.hero h1 .soft { color: var(--ink-3); font-weight: 500; }
+.hero p { margin: 22px 0 0; max-width: 34em; color: var(--ink-2); font-size: 17px; }
+.hero .actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 14px; }
+.press-demo { justify-self: end; display: grid; gap: 30px; justify-items: end; }
+/* "덜" 키: 누를수록 낮아지고(--h), 기울고(--tilt), 금이 가다가(--crack) 결국 빠진다 */
+.keywell { position: relative; width: 220px; height: 236px; }
+/* 키캡이 빠진 자리: 납작한 소켓 판 위에 가운데 정렬된 작은 ＋ 홈 (위로 튀어나오는 부분 없음) */
+.stem {
+  position: absolute; left: 50%; bottom: 0; width: 150px; height: 26px; transform: translateX(-50%);
+  border: 2px solid var(--ink); border-radius: 8px; background: var(--wash);
+  opacity: 0; transition: opacity .3s ease .25s;
+}
+.stem::before, .stem::after { content: ""; position: absolute; left: 50%; top: 50%; background: var(--ink-3); border-radius: 1px; transform: translate(-50%, -50%); }
+.stem::before { width: 14px; height: 4px; } .stem::after { width: 4px; height: 14px; }
+.bigkey {
+  --h: 16px; --tilt: 0deg; --dx: 0px; --lx: 0px; --ly: 0px; --lr: 0deg; --crack: 0;
+  position: absolute; left: 0; bottom: 0;
+  width: 220px; height: 220px; border-radius: 40px; border: 2px solid var(--ink); background: var(--paper);
+  box-shadow: 0 var(--h) 0 var(--ink);
+  transform: translate(var(--dx), calc(16px - var(--h) - 16px)) rotate(var(--tilt));
+  transform-origin: 30% 100%;
+  transition: transform .09s ease, box-shadow .09s ease;
+  display: grid; place-items: center; cursor: pointer; font: inherit; color: inherit; padding: 0; overflow: visible;
+}
+.bigkey span { font: 700 64px/1 var(--font-display); letter-spacing: -0.05em; transform: translate(var(--lx), var(--ly)) rotate(var(--lr)); transition: transform .2s ease; }
+.bigkey .cracks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: var(--crack); transition: opacity .2s ease; }
+.bigkey:hover { transform: translate(var(--dx), calc(16px - var(--h) - 16px + 2px)) rotate(var(--tilt)); box-shadow: 0 calc(var(--h) - 2px) 0 var(--ink); }
+.bigkey:active, .bigkey.is-down { transform: translate(var(--dx), calc(-3px)) rotate(var(--tilt)); box-shadow: 0 3px 0 var(--ink); }
+.bigkey:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
+.bigkey.wobble { animation: wobble .28s ease; }
+@keyframes wobble { 25% { rotate: -2.5deg; } 60% { rotate: 2deg; } }
+.bigkey.broken, .bigkey.broken:hover, .bigkey.broken:active {
+  transform: translate(-78px, 44px) rotate(-16deg) scale(.82); box-shadow: 0 2px 0 var(--ink);
+  transition: transform .55s cubic-bezier(.3, 1.6, .5, 1), box-shadow .3s ease; cursor: default;
+}
+.keywell.is-broken .stem { opacity: 1; }
+.keywell { transition: margin .4s ease; }
+.keywell.is-broken { margin-bottom: 46px; }
+.fix { display: none; }
+.fix.show { display: inline-flex; }
+.counter { font: 500 13px/1.4 var(--font-mono); color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- 구역 ---------- */
+section.block { padding: 64px 0; border-top: 1px solid var(--line); }
+.block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+.block-head h2 { font-size: 30px; letter-spacing: -0.03em; }
+.block-head p { margin: 0; color: var(--ink-2); max-width: 36em; }
+
+/* ---------- 앱 ---------- */
+.apps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.app { border: 1.5px solid var(--ink); border-radius: 20px; padding: 26px; display: grid; gap: 18px; align-content: start; background: var(--paper); }
+.app-top { display: flex; gap: 18px; align-items: center; }
+.glyph {
+  flex: none; width: 64px; height: 64px; border-radius: 16px; border: 1.5px solid var(--ink);
+  box-shadow: 0 5px 0 var(--ink); display: grid; place-items: center; font: 700 26px/1 var(--font-display); letter-spacing: -0.04em;
+}
+.app.featured .glyph { background: var(--ink); color: var(--paper); }
+.app h3 { font-size: 22px; letter-spacing: -0.025em; }
+.app .kind { font: 500 12px/1.4 var(--font-mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.app .lead { margin: 0; font-size: 16px; }
+.app ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--ink-2); font-size: 15px; }
+.app li { padding-left: 18px; position: relative; }
+.app li::before { content: ""; position: absolute; left: 0; top: .72em; width: 8px; height: 1.5px; background: var(--ink); }
+.presses { display: flex; align-items: center; gap: 10px; background: var(--wash); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+.presses .n { font: 600 13px/1 var(--font-mono); border: 1.5px solid var(--ink); border-radius: 7px; padding: 5px 7px; background: var(--paper); box-shadow: 0 2px 0 var(--ink); }
+.meta { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 4px 22px; font: 400 13px/1.5 var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.meta dt { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.meta dd { margin: 0; }
+.meta div { display: grid; }
+.app .note { margin: 0; font-size: 13px; color: var(--ink-3); }
+.app .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 4px; }
+.app .row a.text { font-size: 14px; color: var(--ink-2); text-underline-offset: 4px; }
+.tag { font: 500 11px/1 var(--font-mono); border: 1px solid var(--ink-3); color: var(--ink-2); border-radius: 999px; padding: 5px 8px; margin-left: 8px; vertical-align: 3px; }
+
+/* ---------- 원칙 ---------- */
+.rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; counter-reset: rule; }
+.rule h3 { font-size: 19px; margin: 14px 0 8px; letter-spacing: -0.02em; }
+.rule p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.rule .k { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1.5px solid var(--ink); border-radius: 10px; box-shadow: 0 4px 0 var(--ink); font: 600 14px/1 var(--font-mono); }
+
+/* ---------- 설치 ---------- */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1.5px solid var(--ink); border-radius: 20px; overflow: hidden; }
+.step { padding: 24px; border-right: 1px solid var(--line); }
+.step:last-child { border-right: 0; }
+.step .num { font: 500 12px/1 var(--font-mono); color: var(--ink-3); }
+.step h3 { font-size: 17px; margin: 10px 0 6px; }
+.step p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.fineprint { margin: 20px 0 0; font-size: 13px; color: var(--ink-3); max-width: 60em; }
+
+footer { border-top: 1px solid var(--line); padding: 32px 0 48px; font-size: 13px; color: var(--ink-3); }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+footer b { color: var(--ink); font-family: var(--font-display); }
+
+/* ---------- 앱 화면 쇼케이스: 가운데 크게, 양옆은 기울여 뒤로. 저절로 돌고, 누르면 그 앱 소개로 ---------- */
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+.show { background: #0b0b0c; color: #f4f4f5; padding: 64px 0 56px; overflow: hidden; }
+.show-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.show-head .eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: #a1a1aa; }
+.show-head h2 { margin-top: 12px; font-size: clamp(26px, 3.4vw, 40px); letter-spacing: -0.04em; color: #fff; }
+.show-head p { margin: 0; color: #a1a1aa; font-size: 14px; }
+.deck { position: relative; aspect-ratio: 16 / 7.6; perspective: 1600px; touch-action: pan-y; }
+.deck:focus-visible { outline: 2px solid #fff; outline-offset: 6px; border-radius: 12px; }
+.slide {
+  position: absolute; left: 50%; top: 50%; width: min(72%, 760px); aspect-ratio: 16 / 10; margin: 0;
+  transform: translate(-50%, -50%); display: block; color: inherit; text-decoration: none;
+  border-radius: 18px; overflow: hidden; border: 1px solid #3f3f46; background: #18181b;
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,.9);
+  transition: transform .6s cubic-bezier(.2, .7, .2, 1), opacity .6s ease, filter .6s ease;
+}
+.slide img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; user-select: none; -webkit-user-drag: none; }
+.slide img.fit { object-fit: contain; background: #000; }
+.slide:not(.is-center) { cursor: pointer; filter: brightness(.5); }
+.slide:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.slide .label { position: absolute; right: 14px; bottom: 14px; background: rgba(11,11,12,.82); border: 1px solid #3f3f46; color: #e4e4e7; font: 600 12px/1 var(--font-mono); padding: 8px 12px; border-radius: 999px; }
+.slide .enter { position: absolute; left: 14px; bottom: 14px; background: #fff; color: #0b0b0c; padding: 10px 15px; border-radius: 999px; font: 700 13px/1 var(--font-body); box-shadow: 0 4px 0 #52525b; opacity: 0; transition: opacity .3s ease; }
+.slide.is-center .enter { opacity: 1; }
+.slide.is-center:hover .enter { transform: translateY(1px); box-shadow: 0 3px 0 #52525b; }
+.ph { width: 100%; height: 100%; background: #f5f5f4; color: #111; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; padding: 20px; }
+.ph .g { width: clamp(64px, 9vw, 104px); aspect-ratio: 1; border: 2px solid #111; border-radius: 24px; box-shadow: 0 7px 0 #111; display: grid; place-items: center; font: 700 clamp(30px, 4.4vw, 48px)/1 var(--font-display); background: #fff; letter-spacing: -0.04em; }
+.ph b { font: 700 clamp(18px, 2.6vw, 30px)/1.2 var(--font-display); letter-spacing: -0.03em; margin-top: 6px; }
+.ph span { font-size: clamp(12px, 1.4vw, 15px); color: #4a4a4a; max-width: 24em; }
+.ph small { font: 500 11px/1 var(--font-mono); color: #8a8a8a; letter-spacing: .04em; }
+.show-bar { margin-top: 26px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.show-count { font: 600 13px/1 var(--font-mono); color: #71717a; font-variant-numeric: tabular-nums; }
+.show-count b { color: #fff; font-weight: 600; }
+.show-name { flex: 1; min-width: 10em; font: 600 15px/1.3 var(--font-body); color: #fff; }
+.show-name span { color: #a1a1aa; font-weight: 400; margin-left: 8px; font-size: 13px; }
+.show-ctrl { display: flex; gap: 8px; }
+.show-ctrl button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #3f3f46; background: #18181b; color: #fff; cursor: pointer; display: grid; place-items: center; box-shadow: 0 4px 0 #000; transition: transform .08s ease, box-shadow .08s ease; }
+.show-ctrl button:hover { transform: translateY(1px); box-shadow: 0 3px 0 #000; }
+.show-ctrl button:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+.show-ctrl button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.show-ctrl .pp { background: #fff; color: #0b0b0c; border-color: #fff; box-shadow: 0 4px 0 #52525b; }
+.show-ctrl svg { width: 16px; height: 16px; }
+.show-prog { margin-top: 14px; height: 2px; background: #27272a; position: relative; overflow: hidden; }
+.show-prog i { position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(0); }
+.show + .amp-stage { border-top: 1px solid #2a2a2e; }
+@media (max-width: 700px) {
+  .deck { aspect-ratio: 16 / 10.4; }
+  .slide { width: 84%; }
+}
+@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
 
 /* ---------- 대표 앱: Daesinnam Amp (어두운 무대 위에 실제 앱 화면) ---------- */
 .amp-stage { background: #0b0b0c; color: #f4f4f5; padding: 72px 0 80px; }
@@ -135,220 +232,590 @@ footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink)
 .amp-shot { margin: 0; }
 .amp-shot img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid #2a2a2e; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
 .amp-shot figcaption { margin-top: 10px; font: 400 12px/1.4 var(--font-mono); color: #8a8a93; }
-.amp-hero-shot { grid-column: span 7; align-self: center; }
+.amp-hero-shot { grid-column: span 5; align-self: center; }
+.amp-side { grid-column: span 2; align-self: center; }
+.amp-side img { border-radius: 22px; }
+.amp-stage + .amp-stage { border-top: 1px solid #2a2a2e; }
+.amp-soon { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #52525b; color: #d4d4d8; border-radius: 999px; padding: 12px 18px; font: 600 14px/1 var(--font-body); }
+.amp-soon::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #a1a1aa; }
 .amp-row { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 2.2fr; gap: 20px; align-items: start; margin-top: 12px; }
 .amp-phone img { aspect-ratio: 560 / 900; object-fit: cover; object-position: top; border-radius: 22px; }
 .amp-note { grid-column: 1 / -1; margin: 0; font-size: 12px; color: #71717a; }
 @media (max-width: 900px) {
   .amp-copy, .amp-hero-shot { grid-column: 1 / -1; }
+  .amp-side { grid-column: span 6; }
   .amp-row { grid-template-columns: 1fr 1fr; }
   .amp-row .amp-wide { grid-column: 1 / -1; }
 }
 @media (max-width: 480px) { .amp-wrap { padding: 0 16px; } .amp-stage { padding: 52px 0 60px; } }
 @media (prefers-reduced-motion: reduce) { .amp-btn { transition: none; } }
 
-@media (max-width: 900px) {
-  .hero .lede, .hero .facts { grid-column: 1 / -1; }
-  .no { grid-column: span 12; }
-  .name, .desc { grid-column: span 12; }
-  .desc { margin-top: 14px; }
-  .press { grid-column: span 12; justify-items: start; text-align: left; margin-top: 16px; }
-  .dl { grid-column: 1 / -1; }
-  .lower h2, .lower .body { grid-column: 1 / -1; }
-  .lower .body { margin-top: 24px; }
-  .cols { display: none; }
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 36px; }
+  .press-demo { justify-self: start; justify-items: start; }
+  .counter { text-align: left; }
+  .apps, .rules { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .step { border-right: 0; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: 0; }
 }
 @media (max-width: 480px) {
   .wrap { padding: 0 16px; }
-  .top nav { gap: 14px; }
-  .mark { grid-column: span 5; } .top nav { grid-column: span 7; }
-  .hero .facts { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .fact b { font-size: 24px; }
-  .name h3 { font-size: 26px; }
-  footer .l, footer .r { grid-column: 1 / -1; text-align: left; }
+  nav { gap: 14px; }
+  nav a.hide-sm { display: none; }
+  .keywell { width: 160px; height: 176px; }
+  .bigkey { width: 160px; height: 160px; border-radius: 32px; }
+  .bigkey span { font-size: 46px; }
+  .app { padding: 20px; }
+  .meta { grid-template-columns: repeat(2, auto); }
 }
-@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .key, .bigkey { transition: none; }
+}
 </style>
 </head>
 <body>
+
 <header class="top">
-  <div class="wrap grid">
-    <a class="mark" href="#top" aria-label="덜누름 처음으로"><i aria-hidden="true"></i><b>덜누름</b></a>
-    <nav aria-label="주요 메뉴"><a href="#amp">Amp</a><a href="#apps">Apps</a><a href="#how">Install</a><a href="#about">About</a></nav>
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="덜누름 처음으로">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="3" y="9" width="34" height="28" rx="8" fill="#111"/>
+        <rect x="4.25" y="6.25" width="31.5" height="27.5" rx="7" fill="#fff" stroke="#111" stroke-width="2.5"/>
+      </svg>
+      <b>덜누름</b><span class="sw">Software</span>
+    </a>
+    <nav aria-label="주요 메뉴">
+      <a href="#show">앱 화면</a>
+      <a href="#apps">앱</a>
+      <a href="#rules" class="hide-sm">원칙</a>
+      <a href="#install">설치 안내</a>
+    </nav>
   </div>
 </header>
 
 <main id="top">
-  <section class="hero">
-    <div class="wrap grid">
-      <h1><span>덜누름</span><span class="sw">Software</span></h1>
-      <p class="slogan">덜 누르고, <span class="thin">더 편하게.</span></p>
-      <p class="lede">덜누름은 누를 일을 줄이는 안드로이드 앱을 만드는 작은 스튜디오입니다. 버튼을 하나 더 넣기 전에, 빼도 되는지부터 묻습니다.</p>
-      <div class="facts">
-        <div class="fact"><b class="mono">4</b><span>배포 중인 앱</span></div>
-        <div class="fact"><b class="mono">₩0</b><span>모든 앱 무료</span></div>
-        <div class="fact"><b class="mono">2×</b><span>회의 정리까지 누름</span></div>
+  <div class="wrap hero">
+    <div>
+      <h1>덜 누르고,<br><span class="soft">더 편하게.</span></h1>
+      <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 회의는 버튼 두 번으로 정리되고, 파일은 한 번 눌러 맞는 편집기로 열립니다. 만든 앱은 이 페이지에서 바로 내려받을 수 있습니다.</p>
+      <div class="actions">
+        <a class="key dark" href="#show">앱 둘러보기</a>
+        <a class="key" href="#install">설치 방법</a>
       </div>
     </div>
-  </section>
-
-  <section class="amp-stage" id="amp" aria-labelledby="amp-title">
-    <div class="amp-wrap">
-      <div class="amp-copy">
-        <div class="amp-eyebrow">대표 앱 · Featured</div>
-        <h2 id="amp-title">Daesinnam Amp</h2>
-        <p class="amp-kind">레트로 스킨 MP3 플레이어 · 차량 모드</p>
-        <p class="amp-lead">차에 타면 마지막 곡부터 이어서.<br>스킨을 바꾸면 계기판이 됩니다.</p>
-        <ul class="amp-points">
-          <li><b>01</b><span>LED 스펙트럼 · 10밴드 EQ · 스킨 10종</span></li>
-          <li><b>02</b><span>차에 연결되면 이어서 재생, 핸들 버튼으로 조작</span></li>
-          <li><b>03</b><span>자동차 스킨: GPS 속도계 · 주행 기록 · 콕핏 계기판</span></li>
-          <li><b>04</b><span>주행 중에는 큰 버튼만 남는 간편 모드</span></li>
-          <li><b>05</b><span>YouTube Music · Spotify로 들어도 곡 정보와 시각화</span></li>
-        </ul>
-        <div class="amp-cta">
-          <a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk">APK 내려받기 <small>4.0MB</small></a>
-          <span class="amp-meta">v6.2 · Android 8.0+ · 무료</span>
-          <a class="amp-link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/latest">배포 정보</a>
-        </div>
+    <div class="press-demo">
+      <div class="keywell" id="keywell">
+        <div class="stem" aria-hidden="true"></div>
+        <button class="bigkey" id="bigkey" type="button" aria-label="눌러 보기"><span>덜</span>
+          <svg class="cracks" viewBox="0 0 220 220" aria-hidden="true" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 62 L52 78 L46 104 L78 122 L72 150"/>
+            <path d="M52 78 L74 70"/>
+            <path d="M202 140 L170 132 L160 156 L134 162"/>
+            <path d="M160 156 L166 184 L150 204"/>
+            <path d="M120 4 L114 30 L128 46"/>
+          </svg>
+        </button>
       </div>
-      <figure class="amp-shot amp-hero-shot">
-        <img src="amp/amp-tablet-neon.webp" width="1400" height="875" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어, 10밴드 이퀄라이저, 지금 재생 중, 재생 목록">
-        <figcaption>네온 시티 스킨 · 태블릿 가로 화면</figcaption>
-      </figure>
-      <div class="amp-row">
-        <figure class="amp-shot amp-phone">
-          <img src="amp/amp-phone-blue.webp" width="560" height="1243" alt="휴대폰 화면: 대신남 블루 스킨의 재생 화면" loading="lazy">
-          <figcaption>대신남 블루 · 휴대폰</figcaption>
-        </figure>
-        <figure class="amp-shot amp-phone">
-          <img src="amp/amp-phone-car.webp" width="560" height="1243" alt="휴대폰 화면: 자동차 모드 스킨의 GPS 속도계와 주행 기록" loading="lazy">
-          <figcaption>자동차 모드 · GPS 속도계</figcaption>
-        </figure>
-        <figure class="amp-shot amp-wide">
-          <img src="amp/amp-tablet-cockpit.webp" width="1400" height="612" alt="태블릿 화면: 콕핏 스킨의 비행 계기판(PFD) 속도계와 주행 정보" loading="lazy">
-          <figcaption>콕핏 스킨 · 비행 계기판 속도계</figcaption>
-        </figure>
-      </div>
-      <p class="amp-note">화면은 실제 앱 화면이며, 곡 목록은 예시입니다.</p>
+      <div class="counter" id="counter" aria-live="polite">눌러 보세요(소리 켜기). 한 번이면 충분합니다.</div>
+      <button class="key fix" id="fix" type="button">키 새로 끼우기</button>
     </div>
-  </section>
+  </div>
 
-  <section id="apps">
+  <section class="show" id="show" aria-labelledby="show-title" aria-roledescription="carousel">
     <div class="wrap">
-      <div class="index-head">
-        <h2>Apps — 앱 목록</h2>
-        <p>오른쪽 숫자는 핵심 기능까지 필요한 누름 수입니다.</p>
+      <div class="show-head">
+        <div>
+          <div class="eyebrow">Apps · 덜누름이 만든 앱</div>
+          <h2 id="show-title">앱 화면을 둘러보세요</h2>
+        </div>
+        <p>가운데 화면을 누르면 그 앱 소개로 들어갑니다.</p>
       </div>
-      <div class="cols grid"><span style="grid-column:span 1">No.</span><span style="grid-column:span 4">앱</span><span style="grid-column:span 4">하는 일</span><span style="grid-column:span 3;text-align:right">누름</span></div>
+      <div class="deck" id="deck" tabindex="0" aria-label="앱 화면 모음. 왼쪽·오른쪽 화살표 키로 넘깁니다">
+        <a class="slide" href="#app-amp" data-name="Daesinnam Amp" data-kind="음악 플레이어">
+          <img src="amp/amp-tablet-neon.webp" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어와 이퀄라이저" draggable="false">
+          <span class="enter">자세히 보기 →</span><span class="label">Music</span>
+        </a>
+        <a class="slide" href="#app-speed" data-name="대신남 스피드미터" data-kind="GPS 조종석 계기 · 개발 중">
+          <img class="fit" src="amp/amp-tablet-cockpit.webp" alt="대신남 스피드미터 화면: 비행 계기판 모양의 속도계와 주행 정보" draggable="false" loading="lazy">
+          <span class="enter">자세히 보기 →</span><span class="label">Drive</span>
+        </a>
+        <a class="slide" href="#app-work" data-name="대신남 워크" data-kind="문서 · 사진 · 동영상">
+          <div class="ph"><div class="g">작</div><b>대신남 워크</b><span>파일을 고르면 맞는 편집기가 열립니다</span><small>화면 캡처 준비 중</small></div>
+          <span class="enter">자세히 보기 →</span><span class="label">Office</span>
+        </a>
+        <a class="slide" href="#app-meeting" data-name="회의비서" data-kind="회의 녹음 · 정리">
+          <div class="ph"><div class="g">회</div><b>회의비서</b><span>회의 시작, 회의 종료. 정리는 알림으로</span><small>화면 캡처 준비 중</small></div>
+          <span class="enter">자세히 보기 →</span><span class="label">Meeting</span>
+        </a>
+        <a class="slide" href="#app-lords" data-name="대신남 로드" data-kind="디펜스 게임 · 미리보기">
+          <div class="ph"><div class="g">성</div><b>대신남 로드</b><span>끌기만 하면 영웅이 알아서 활을 쏩니다</span><small>화면 캡처 준비 중</small></div>
+          <span class="enter">자세히 보기 →</span><span class="label">Game</span>
+        </a>
+      </div>
+      <div class="show-bar">
+        <div class="show-count"><b id="showCur">01</b> / <span id="showTotal">05</span></div>
+        <div class="show-name" id="showName" aria-live="polite">Daesinnam Amp</div>
+        <div class="show-ctrl">
+          <button type="button" id="showPrev" aria-label="이전 앱"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button>
+          <button type="button" id="showNext" aria-label="다음 앱"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></button>
+          <button type="button" class="pp" id="showPlay" aria-label="자동 넘김 멈추기"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="1"/><rect x="9.5" y="3" width="3" height="10" rx="1"/></svg></button>
+        </div>
+      </div>
+      <div class="show-prog" aria-hidden="true"><i id="showProg"></i></div>
+    </div>
+  </section>
 
-      <article class="row grid">
-        <div class="no">01</div>
-        <div class="name"><h3>Daesinnam Amp</h3><span class="kind">음악 플레이어</span></div>
-        <div class="desc">
-          <p>레트로 스킨 MP3 플레이어. 차에 타면 마지막 곡부터 이어서 재생합니다.</p>
+  <section class="block" id="apps">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>앱</h2>
+        <p>모두 무료이고, 안드로이드 휴대폰·태블릿에서 동작합니다. 내려받기는 덜누름의 GitHub 배포 페이지에서 바로 이어집니다.</p>
+      </div>
+
+      <div class="apps">
+        <article class="app" id="app-amp">
+          <div class="app-top">
+            <div class="glyph" aria-hidden="true">♪</div>
+            <div>
+              <div class="kind">음악 플레이어</div>
+              <h3>Daesinnam Amp</h3>
+            </div>
+          </div>
+          <p class="lead">레트로 스킨 MP3 플레이어. 차에 타면 마지막 곡부터 이어서 재생합니다.</p>
           <ul>
-            <li>LED 스펙트럼 · 10밴드 EQ · 스킨 6종</li>
-            <li>차 연결 시 이어서 재생 · 핸들 버튼</li>
+            <li>LED 스펙트럼, 10밴드 EQ, 레트로 스킨</li>
+            <li>차 연결 시 이어서 재생, 핸들 버튼 조작</li>
             <li>주행 중 큰 버튼만 남는 간편 모드</li>
+            <li>YouTube Music · Spotify 재생에도 곡 정보와 시각화</li>
           </ul>
-        </div>
-        <div class="press"><div class="n none">—</div><div class="why">차에 타면 저절로 이어서 재생</div></div>
-        <div class="dl">
-          <a class="btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk">APK 내려받기 <small>4.0MB</small></a>
-          <div class="meta"><span><b>VER</b>6.2</span><span><b>OS</b>Android 8.0+</span></div>
-          <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/latest">배포 정보</a>
-        </div>
-      </article>
-      <article class="row grid">
-        <div class="no">02</div>
-        <div class="name"><h3>대신남 워크</h3><span class="kind">문서 · 사진 · 동영상 편집</span></div>
-        <div class="desc">
-          <p>세 가지 편집기를 한 앱에. 파일을 고르면 형식에 맞는 편집기가 열립니다.</p>
+          <dl class="meta">
+            <div><dt>버전</dt><dd>6.2</dd></div>
+            <div><dt>크기</dt><dd>4.0 MB</dd></div>
+            <div><dt>필요</dt><dd>Android 8.0+</dd></div>
+          </dl>
+          <div class="row">
+            <a class="key dark" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk">APK 내려받기 <small>4.0MB</small></a>
+            <a class="text" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/latest">배포 정보</a>
+          </div>
+        </article>
+        <article class="app" id="app-speed">
+          <div class="app-top">
+            <div class="glyph" aria-hidden="true">속</div>
+            <div>
+              <div class="kind">GPS 조종석 계기 <span class="tag">개발 중</span></div>
+              <h3>대신남 스피드미터</h3>
+            </div>
+          </div>
+          <p class="lead">차가 달리면 조종석 계기판이 움직입니다. 실제 속도·고도·진행 방향을 콕핏 PFD와 HUD로 보여 줍니다.</p>
+          <div class="presses"><span class="n">0×</span> 출발하면 알아서 이륙·상승·순항 단계로</div>
           <ul>
-            <li>워드 · 엑셀 · 파워포인트 · 한글 · PDF 보기</li>
-            <li>레이어 · 마스크 · 보정 · PSD</li>
+            <li>최고·평균 속도, 거리, 시간, 고도 주행 기록과 차계부</li>
+            <li>진행 방향이 위로 오는 원형 지도 · 나침반</li>
+            <li>에어라인 · 에어포스 스킨, 주간·야간 하늘 자동</li>
+            <li>T맵 · 네이버지도 · 블랙박스 바로가기</li>
+          </ul>
+          <p class="note">아직 배포 전입니다. 공개되면 이곳에 내려받기가 생깁니다.</p>
+        </article>
+        <article class="app featured" id="app-work">
+          <div class="app-top">
+            <div class="glyph" aria-hidden="true">작</div>
+            <div>
+              <div class="kind">문서 · 사진 · 동영상</div>
+              <h3>대신남 워크</h3>
+            </div>
+          </div>
+          <p class="lead">문서, 사진, 동영상 편집을 앱 하나에. 파일을 고르면 형식에 맞는 편집기가 알아서 열립니다.</p>
+          <div class="presses"><span class="n">1×</span> 파일 열기 한 번으로 워드·사진·영상 편집기 선택까지</div>
+          <ul>
+            <li>워드 · 엑셀 · 파워포인트 · 한글 · PDF 보기 · 마인드맵 · 다이어그램</li>
+            <li>레이어 · 마스크 · 보정 · PSD 사진 편집</li>
             <li>컷 편집 · 색 보정 · 자막 · MP4 내보내기</li>
+            <li>편집은 모두 기기 안에서, 파일을 바깥으로 보내지 않음</li>
           </ul>
-          <div class="note">오픈소스 IeumOffice · PhotoCraft · FilmCraft를 고쳐 만들었습니다. 라이선스는 앱 정보 화면에.</div>
-        </div>
-        <div class="press"><div class="n">1<small>×</small></div><div class="why">파일 열기 한 번이면 맞는 편집기까지</div></div>
-        <div class="dl">
-          <a class="btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">APK 내려받기 <small>187MB</small></a>
-          <div class="meta"><span><b>VER</b>1.0.0</span><span><b>OS</b>Android 8.0+ · 64bit</span></div>
-          <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/work-latest">배포 정보</a>
-        </div>
-      </article>
-      <article class="row grid">
-        <div class="no">03</div>
-        <div class="name"><h3>회의비서</h3><span class="kind">회의 녹음 · 정리</span></div>
-        <div class="desc">
-          <p>녹음하면 화자를 나눠 받아쓰고, 요약과 나에게 온 요청, 일정을 정리합니다.</p>
+          <dl class="meta">
+            <div><dt>버전</dt><dd>1.0.0</dd></div>
+            <div><dt>크기</dt><dd>187 MB</dd></div>
+            <div><dt>필요</dt><dd>Android 8.0+ · 64비트</dd></div>
+          </dl>
+          <div class="row">
+            <a class="key dark" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">APK 내려받기 <small>187MB</small></a>
+            <a class="text" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/work-latest">배포 정보</a>
+          </div>
+          <p class="note">오픈소스 IeumOffice · PhotoCraft · FilmCraft를 고쳐 만들었습니다. 원작 라이선스는 앱의 정보 화면에 있습니다.</p>
+        </article>
+        <article class="app" id="app-meeting">
+          <div class="app-top">
+            <div class="glyph" aria-hidden="true">회</div>
+            <div>
+              <div class="kind">회의 녹음 · 정리</div>
+              <h3>회의비서</h3>
+            </div>
+          </div>
+          <p class="lead">회의를 녹음하면 화자를 나눠 받아쓰고, 요약과 나에게 온 요청, 일정까지 정리합니다.</p>
+          <div class="presses"><span class="n">2×</span> 회의 시작, 회의 종료. 정리는 끝나면 알림으로</div>
           <ul>
-            <li>화자별 발언 · 요약 · 나에게 요청된 일</li>
+            <li>화자별 발언과 요약, 나에게 요청된 일</li>
             <li>정해진 일정을 구글 캘린더에 자동 등록</li>
-            <li>받아쓴 기록을 ChatGPT · Claude 앱으로 보내기</li>
+            <li>받아쓴 기록을 ChatGPT · Claude 앱으로 바로 보내기</li>
+            <li>폴드 펼친 화면에서 목록과 내용을 나란히</li>
           </ul>
-          <div class="note">받아쓰기에 본인의 OpenAI API 키가 필요하고, 녹음은 OpenAI로 보내져 처리됩니다(사용량만큼 요금).</div>
-        </div>
-        <div class="press"><div class="n">2<small>×</small></div><div class="why">회의 시작, 회의 종료. 정리는 알림으로</div></div>
-        <div class="dl">
-          <a class="btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/meeting-latest/Meeting.apk">APK 내려받기 <small>5.8MB</small></a>
-          <div class="meta"><span><b>VER</b>1.0</span><span><b>OS</b>Android 10+</span></div>
-          <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/meeting-latest">배포 정보</a>
-        </div>
-      </article>
-      <article class="row grid">
-        <div class="no">04</div>
-        <div class="name"><h3>대신남 로드</h3><span class="kind">디펜스 게임</span><span class="tag">Preview</span></div>
-        <div class="desc">
-          <p>다리를 지키는 디펜스 게임. 좌우로 끌기만 하면 영웅이 알아서 활을 쏩니다.</p>
+          <dl class="meta">
+            <div><dt>버전</dt><dd>1.0</dd></div>
+            <div><dt>크기</dt><dd>5.8 MB</dd></div>
+            <div><dt>필요</dt><dd>Android 10+</dd></div>
+          </dl>
+          <div class="row">
+            <a class="key dark" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/meeting-latest/Meeting.apk">APK 내려받기 <small>5.8MB</small></a>
+            <a class="text" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/meeting-latest">배포 정보</a>
+          </div>
+          <p class="note">받아쓰기에 본인의 OpenAI API 키가 필요하며, 녹음은 OpenAI로 보내져 처리됩니다(사용량만큼 요금).</p>
+        </article>
+        <article class="app" id="app-lords">
+          <div class="app-top">
+            <div class="glyph" aria-hidden="true">성</div>
+            <div>
+              <div class="kind">게임 <span class="tag">미리보기</span></div>
+              <h3>대신남 로드</h3>
+            </div>
+          </div>
+          <p class="lead">다리를 지키는 디펜스 게임. 화면을 좌우로 끌기만 하면 영웅이 알아서 활을 쏩니다.</p>
+          <div class="presses"><span class="n">0×</span> 공격 버튼 없음. 끌어서 움직이면 자동 사격</div>
           <ul>
-            <li>게이트를 지나며 병력을 늘리는 전투 · 보스전</li>
+            <li>게이트를 지나며 병력을 늘리는 전투</li>
+            <li>스테이지 끝 보스전</li>
             <li>영지에서 건물을 짓고 강화</li>
             <li>진행 상황 자동 저장</li>
           </ul>
-        </div>
-        <div class="press"><div class="n">0<small>×</small></div><div class="why">공격 버튼 없음. 끌어서 움직이면 자동 사격</div></div>
-        <div class="dl">
-          <a class="btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/lords-latest/DaesinnamLords.apk">APK 내려받기 <small>29KB</small></a>
-          <div class="meta"><span><b>VER</b>1.1</span><span><b>OS</b>Android 8.0+</span></div>
-          <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/lords-latest">배포 정보</a>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="lower" id="how">
-    <div class="wrap grid">
-      <h2>설치는<br>세 번이면 됩니다.</h2>
-      <div class="body">
-        <div class="item"><span class="k">01</span><div><h3>APK 내려받기</h3><p>휴대폰에서 원하는 앱의 내려받기를 누릅니다.</p></div></div>
-        <div class="item"><span class="k">02</span><div><h3>설치 허용</h3><p>"출처를 알 수 없는 앱" 안내가 나오면, 설정에서 그 브라우저의 설치를 허용합니다.</p></div></div>
-        <div class="item"><span class="k">03</span><div><h3>설치</h3><p>새 버전도 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다. 서명이 다르다는 안내가 나오면 설치하지 마세요.</p></div></div>
+          <dl class="meta">
+            <div><dt>버전</dt><dd>1.1</dd></div>
+            <div><dt>크기</dt><dd>0.03 MB</dd></div>
+            <div><dt>필요</dt><dd>Android 8.0+</dd></div>
+          </dl>
+          <div class="row">
+            <a class="key dark" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/lords-latest/DaesinnamLords.apk">APK 내려받기 <small>29KB</small></a>
+            <a class="text" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/lords-latest">배포 정보</a>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <div class="sep"></div>
-
-  <section class="lower" id="about">
-    <div class="wrap grid">
-      <h2>덜누름이<br>지키는 것.</h2>
-      <div class="body">
-        <div class="item"><span class="k">A</span><div><h3>누를 일을 줄입니다</h3><p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p></div></div>
-        <div class="item"><span class="k">B</span><div><h3>필요한 것만 묻습니다</h3><p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다.</p></div></div>
-        <div class="item"><span class="k">C</span><div><h3>무엇을 하는지 말합니다</h3><p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p></div></div>
+  <section class="block" id="rules">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>덜누름의 원칙</h2>
+        <p>앱을 만들 때마다 세 가지를 확인합니다.</p>
       </div>
+      <div class="rules">
+        <div class="rule">
+          <span class="k">01</span>
+          <h3>누를 일을 줄입니다</h3>
+          <p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">02</span>
+          <h3>필요한 것만 묻습니다</h3>
+          <p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다. 처음 켰을 때 긴 설정 화면을 띄우지 않습니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">03</span>
+          <h3>무엇을 하는지 말합니다</h3>
+          <p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="install">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>설치 안내</h2>
+        <p>플레이 스토어 밖에서 받는 앱이라 처음 한 번은 설치 허용이 필요합니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">STEP 1</div>
+          <h3>APK 내려받기</h3>
+          <p>휴대폰에서 원하는 앱의 내려받기를 누릅니다. 브라우저가 파일을 받습니다.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 2</div>
+          <h3>설치 허용</h3>
+          <p>받은 파일을 열면 "출처를 알 수 없는 앱" 안내가 나옵니다. 설정에서 그 브라우저의 설치를 허용합니다.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 3</div>
+          <h3>설치와 업데이트</h3>
+          <p>설치를 누르면 끝입니다. 새 버전은 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다.</p>
+        </div>
+      </div>
+      <p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p>
     </div>
   </section>
 </main>
 
 <footer>
-  <div class="wrap grid">
-    <div class="l"><b>덜누름</b> Software — 덜 누르고, 더 편하게</div>
-    <div class="r">© 2026 덜누름 · <a href="https://github.com/Deasinnam/Deasinnamdb/releases">전체 배포 목록</a></div>
+  <div class="wrap">
+    <span><b>덜누름</b> Software · 덜 누르고, 더 편하게</span>
+    <span>© 2026 덜누름 · <a href="https://github.com/Deasinnam/Deasinnamdb/releases">전체 배포 목록</a></span>
   </div>
 </footer>
+
+<script>
+// ---------- 앱 화면 쇼케이스 ----------
+(function () {
+  "use strict";
+  var deck = document.getElementById("deck");
+  if (!deck) return;
+  var slides = Array.prototype.slice.call(deck.querySelectorAll(".slide"));
+  var N = slides.length;
+  var curEl = document.getElementById("showCur");
+  var nameEl = document.getElementById("showName");
+  var prog = document.getElementById("showProg");
+  var playBtn = document.getElementById("showPlay");
+  var DUR = 4500;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cur = 0, elapsed = 0, playing = !reduce, hold = false, last = 0;
+  document.getElementById("showTotal").textContent = (N < 10 ? "0" : "") + N;
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function place() {
+    slides.forEach(function (s, i) {
+      var d = i - cur;
+      if (d > N / 2) d -= N;
+      if (d < -N / 2) d += N;
+      var a = Math.abs(d);
+      s.style.transform = "translate(-50%, -50%) translateX(" + (d * 62) + "%) translateZ(" + (-a * 220) + "px) rotateY(" + (-d * 24) + "deg) scale(" + (1 - a * 0.06) + ")";
+      s.style.opacity = a > 2 ? "0" : a === 2 ? "0.35" : "1";
+      s.style.zIndex = String(10 - a);
+      s.style.pointerEvents = a > 1 ? "none" : "auto";
+      s.classList.toggle("is-center", a === 0);
+      s.setAttribute("tabindex", a === 0 ? "0" : "-1");
+      s.setAttribute("aria-hidden", a === 0 ? "false" : "true");
+    });
+    var c = slides[cur];
+    curEl.textContent = pad(cur + 1);
+    nameEl.innerHTML = "";
+    nameEl.appendChild(document.createTextNode(c.getAttribute("data-name")));
+    var k = document.createElement("span");
+    k.textContent = c.getAttribute("data-kind");
+    nameEl.appendChild(k);
+  }
+  function go(i) { cur = (i + N) % N; elapsed = 0; place(); }
+  function setPlaying(p) {
+    playing = p;
+    playBtn.setAttribute("aria-label", p ? "자동 넘김 멈추기" : "자동 넘김 켜기");
+    playBtn.innerHTML = p
+      ? '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="1"/><rect x="9.5" y="3" width="3" height="10" rx="1"/></svg>'
+      : '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.8v10.4L13 8z"/></svg>';
+  }
+  function tick(t) {
+    var dt = last ? Math.min(100, t - last) : 0;
+    last = t;
+    if (playing && !hold) {
+      elapsed += dt;
+      if (elapsed >= DUR) go(cur + 1);
+    }
+    prog.style.transform = "scaleX(" + Math.min(1, elapsed / DUR).toFixed(4) + ")";
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById("showPrev").addEventListener("click", function () { go(cur - 1); });
+  document.getElementById("showNext").addEventListener("click", function () { go(cur + 1); });
+  playBtn.addEventListener("click", function () { setPlaying(!playing); });
+
+  // 옆 화면을 누르면 가운데로, 가운데 화면을 누르면 그 앱 소개로
+  var dragged = false;
+  slides.forEach(function (s, i) {
+    s.addEventListener("click", function (e) {
+      if (dragged) { e.preventDefault(); dragged = false; return; }
+      if (i !== cur) { e.preventDefault(); go(i); }
+    });
+  });
+
+  // 끌어서 넘기기
+  var sx = null;
+  deck.addEventListener("pointerdown", function (e) { sx = e.clientX; dragged = false; });
+  deck.addEventListener("pointerup", function (e) {
+    if (sx === null) return;
+    var dx = e.clientX - sx;
+    sx = null;
+    if (Math.abs(dx) > 40) { dragged = true; go(cur + (dx < 0 ? 1 : -1)); }
+  });
+  deck.addEventListener("pointercancel", function () { sx = null; });
+
+  // 마우스를 올리거나 키보드로 보는 동안에는 잠시 멈춤
+  deck.addEventListener("mouseenter", function () { hold = true; });
+  deck.addEventListener("mouseleave", function () { hold = false; });
+  deck.addEventListener("focusin", function () { hold = true; });
+  deck.addEventListener("focusout", function () { hold = false; });
+  deck.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") { e.preventDefault(); go(cur - 1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); go(cur + 1); }
+  });
+
+  setPlaying(playing);
+  place();
+  requestAnimationFrame(tick);
+})();
+
+(function () {
+  "use strict";
+  var key = document.getElementById("bigkey");
+  var well = document.getElementById("keywell");
+  var out = document.getElementById("counter");
+  var fix = document.getElementById("fix");
+  var n = 0;
+  var BREAK_AT = 12;
+  var held = false;
+
+  // 누른 횟수 → 키 상태 (높이·기울기·글자 어긋남·금)
+  var LINES = [
+    "눌러 보세요(소리 켜기). 한 번이면 충분합니다.",
+    "한 번. 이걸로 충분합니다.",
+    "두 번. 회의비서는 여기서 정리를 시작합니다.",
+    "세 번. 이제 그만 눌러도 됩니다.",
+    "키가 조금 낮아졌습니다.",
+    "더 낮아졌습니다. 덜 누르세요.",
+    "글자가 비뚤어지기 시작합니다.",
+    "키가 흔들립니다.",
+    "금이 갔습니다.",
+    "금이 번집니다. 정말 덜 누르셔야 합니다.",
+    "바닥이 거의 보입니다.",
+    "한 번만 더 누르면…",
+  ];
+  function wear() { return Math.min(1, n / (BREAK_AT - 1)); }
+  function render() {
+    var w = wear();
+    var h = Math.max(3, 16 - 13 * w);                       // 16px → 3px
+    var tilt = n >= 6 ? -(n - 5) * 0.9 : 0;                  // 서서히 기욺
+    key.style.setProperty("--h", h.toFixed(1) + "px");
+    key.style.setProperty("--tilt", tilt.toFixed(1) + "deg");
+    key.style.setProperty("--dx", (n >= 6 ? (n - 5) * 0.8 : 0).toFixed(1) + "px");
+    key.style.setProperty("--lx", (n >= 5 ? (n - 4) * 1.2 : 0).toFixed(1) + "px");
+    key.style.setProperty("--ly", (n >= 5 ? (n - 4) * 0.9 : 0).toFixed(1) + "px");
+    key.style.setProperty("--lr", (n >= 5 ? (n - 4) * 2.2 : 0).toFixed(1) + "deg");
+    key.style.setProperty("--crack", n >= 8 ? Math.min(1, (n - 7) / 3).toFixed(2) : "0");
+    if (n < LINES.length) out.textContent = LINES[n];
+  }
+
+  function breakKey() {
+    key.classList.add("broken");
+    key.classList.remove("is-down");
+    well.classList.add("is-broken");
+    key.setAttribute("aria-disabled", "true");
+    key.setAttribute("aria-label", "망가진 키");
+    out.textContent = "고장 났습니다. 그러게, 덜 누르셨어야죠.";
+    fix.classList.add("show");
+    crunch();
+  }
+
+  function press() {
+    if (key.classList.contains("broken")) return;
+    n += 1;
+    if (n >= BREAK_AT) { breakKey(); return; }
+    render();
+    if (n >= 7) { key.classList.remove("wobble"); void key.offsetWidth; key.classList.add("wobble"); }
+  }
+  key.addEventListener("click", press);
+
+  fix.addEventListener("click", function () {
+    n = 0;
+    key.classList.remove("broken", "wobble");
+    well.classList.remove("is-broken");
+    key.removeAttribute("aria-disabled");
+    key.setAttribute("aria-label", "눌러 보기");
+    fix.classList.remove("show");
+    render();
+    out.textContent = "새 키로 바꿨습니다. 이번엔 덜 눌러 주세요.";
+    clack(true, 0);
+  });
+
+  // ---------- 타건음: Web Audio로 직접 합성 (파일 없음). 닳을수록 낮고 덜그럭거림 ----------
+  var ctx = null;
+  function audio() {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    } catch (e) { return null; }
+  }
+  function noise(ac, seconds, power) {
+    var len = Math.floor(ac.sampleRate * seconds);
+    var buf = ac.createBuffer(1, len, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, power || 3);
+    return buf;
+  }
+  function burst(ac, t, dur, freq, q, gain) {
+    var src = ac.createBufferSource();
+    src.buffer = noise(ac, dur);
+    var f = ac.createBiquadFilter();
+    f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
+    var g = ac.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    src.connect(f); f.connect(g); g.connect(ac.destination);
+    src.start(t);
+  }
+  function thump(ac, t, from, to, dur, gain) {
+    var o = ac.createOscillator();
+    o.type = "sine";
+    o.frequency.setValueAtTime(from, t);
+    o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    var g = ac.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  // down: 바닥에 닿는 "탁", up: 올라오는 "틱". w(닳은 정도 0~1)가 클수록 낮고 둔하고 덜그럭
+  function clack(down, w) {
+    var ac = audio();
+    if (!ac) return;
+    w = w == null ? wear() : w;
+    var t = ac.currentTime + 0.001;
+    var v = 0.92 + Math.random() * 0.16;
+    var bright = 1 - 0.55 * w;
+    if (down) {
+      burst(ac, t, 0.045, 3200 * v * bright, 0.9, 0.55);
+      thump(ac, t, 190 * v * (1 - 0.3 * w), 60, 0.09, 0.5);
+      if (w > 0.45) burst(ac, t + 0.018 + Math.random() * 0.02, 0.03, 1400 * v, 2.5, 0.35 * w);   // 덜그럭
+      if (w > 0.7) burst(ac, t + 0.045 + Math.random() * 0.02, 0.025, 900 * v, 3, 0.3 * w);      // 한 번 더 튐
+    } else {
+      burst(ac, t, 0.03, 4200 * v * bright, 0.9, 0.28 * (1 - 0.5 * w));
+    }
+  }
+  // 망가질 때: 플라스틱이 쪼개지고, 키캡이 바닥에 떨어져 두 번 튐
+  function crunch() {
+    var ac = audio();
+    if (!ac) return;
+    var t = ac.currentTime + 0.001;
+    burst(ac, t, 0.12, 2600, 0.7, 0.7);
+    burst(ac, t + 0.02, 0.08, 5200, 1.2, 0.4);
+    thump(ac, t, 140, 45, 0.18, 0.6);
+    burst(ac, t + 0.32, 0.05, 1800, 1.5, 0.35);
+    thump(ac, t + 0.32, 120, 60, 0.07, 0.3);
+    burst(ac, t + 0.46, 0.04, 2000, 1.5, 0.18);
+  }
+
+  key.addEventListener("pointerdown", function () {
+    if (key.classList.contains("broken")) return;
+    held = true; clack(true);
+  });
+  window.addEventListener("pointerup", function () { if (held) { held = false; clack(false); } });
+  key.addEventListener("pointercancel", function () { held = false; });
+  // 키보드 스페이스·엔터를 누르는 동안 눌린 모양 유지
+  key.addEventListener("keydown", function (e) {
+    if ((e.key === " " || e.key === "Enter") && !e.repeat && !key.classList.contains("broken")) { key.classList.add("is-down"); clack(true); }
+  });
+  key.addEventListener("keyup", function (e) {
+    if ((e.key === " " || e.key === "Enter") && key.classList.contains("is-down")) { key.classList.remove("is-down"); clack(false); }
+  });
+  key.addEventListener("blur", function () { key.classList.remove("is-down"); });
+  render();
+})();
+</script>
 </body>
 </html>
