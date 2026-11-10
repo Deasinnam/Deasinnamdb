@@ -112,6 +112,41 @@ footer .l { grid-column: span 6; }
 footer .r { grid-column: span 6; text-align: right; }
 footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink); letter-spacing: -0.03em; }
 
+/* ---------- 대표 앱: Daesinnam Amp (어두운 무대 위에 실제 앱 화면) ---------- */
+.amp-stage { background: #0b0b0c; color: #f4f4f5; padding: 72px 0 80px; }
+.amp-wrap { max-width: 1200px; margin: 0 auto; padding: 0 28px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 28px 20px; }
+.amp-copy { grid-column: span 5; align-self: center; }
+.amp-eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: #a1a1aa; display: flex; align-items: center; gap: 10px; }
+.amp-eyebrow::before { content: ""; width: 26px; height: 1.5px; background: #f4f4f5; }
+.amp-copy h2 { margin: 18px 0 0; font: 900 clamp(40px, 5.4vw, 68px)/1 var(--font-display); letter-spacing: -0.045em; color: #fff; }
+.amp-kind { margin: 12px 0 0; font-size: 15px; color: #a1a1aa; }
+.amp-lead { margin: 22px 0 0; font: 700 clamp(20px, 2.2vw, 26px)/1.4 var(--font-display); letter-spacing: -0.03em; color: #fff; }
+.amp-points { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 0; border-top: 1px solid #2a2a2e; }
+.amp-points li { display: grid; grid-template-columns: 34px 1fr; gap: 8px; padding: 11px 0; border-bottom: 1px solid #2a2a2e; font-size: 14.5px; color: #d4d4d8; }
+.amp-points li b { font: 500 12px/1.9 var(--font-mono); color: #71717a; }
+.amp-cta { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.amp-btn { display: inline-flex; align-items: baseline; gap: 10px; text-decoration: none; background: #fff; color: #0b0b0c; padding: 15px 24px; border-radius: 999px; font: 700 15px/1 var(--font-body); box-shadow: 0 5px 0 #52525b; transition: transform .08s ease, box-shadow .08s ease; }
+.amp-btn small { font: 500 11px/1 var(--font-mono); opacity: .6; }
+.amp-btn:hover { transform: translateY(1px); box-shadow: 0 4px 0 #52525b; }
+.amp-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #52525b; }
+.amp-btn:focus-visible, .amp-link:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.amp-meta { font: 400 12px/1.6 var(--font-mono); color: #a1a1aa; }
+.amp-link { font-size: 13px; color: #d4d4d8; text-underline-offset: 4px; }
+.amp-shot { margin: 0; }
+.amp-shot img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid #2a2a2e; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+.amp-shot figcaption { margin-top: 10px; font: 400 12px/1.4 var(--font-mono); color: #8a8a93; }
+.amp-hero-shot { grid-column: span 7; align-self: center; }
+.amp-row { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 2.2fr; gap: 20px; align-items: start; margin-top: 12px; }
+.amp-phone img { aspect-ratio: 560 / 900; object-fit: cover; object-position: top; border-radius: 22px; }
+.amp-note { grid-column: 1 / -1; margin: 0; font-size: 12px; color: #71717a; }
+@media (max-width: 900px) {
+  .amp-copy, .amp-hero-shot { grid-column: 1 / -1; }
+  .amp-row { grid-template-columns: 1fr 1fr; }
+  .amp-row .amp-wide { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) { .amp-wrap { padding: 0 16px; } .amp-stage { padding: 52px 0 60px; } }
+@media (prefers-reduced-motion: reduce) { .amp-btn { transition: none; } }
+
 @media (max-width: 900px) {
   .hero .lede, .hero .facts { grid-column: 1 / -1; }
   .no { grid-column: span 12; }
@@ -139,7 +174,7 @@ footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink)
 <header class="top">
   <div class="wrap grid">
     <a class="mark" href="#top" aria-label="덜누름 처음으로"><i aria-hidden="true"></i><b>덜누름</b></a>
-    <nav aria-label="주요 메뉴"><a href="#apps">Apps</a><a href="#how">Install</a><a href="#about">About</a></nav>
+    <nav aria-label="주요 메뉴"><a href="#amp">Amp</a><a href="#apps">Apps</a><a href="#how">Install</a><a href="#about">About</a></nav>
   </div>
 </header>
 
@@ -157,6 +192,48 @@ footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink)
     </div>
   </section>
 
+  <section class="amp-stage" id="amp" aria-labelledby="amp-title">
+    <div class="amp-wrap">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">대표 앱 · Featured</div>
+        <h2 id="amp-title">Daesinnam Amp</h2>
+        <p class="amp-kind">레트로 스킨 MP3 플레이어 · 차량 모드</p>
+        <p class="amp-lead">차에 타면 마지막 곡부터 이어서.<br>스킨을 바꾸면 계기판이 됩니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>LED 스펙트럼 · 10밴드 EQ · 스킨 10종</span></li>
+          <li><b>02</b><span>차에 연결되면 이어서 재생, 핸들 버튼으로 조작</span></li>
+          <li><b>03</b><span>자동차 스킨: GPS 속도계 · 주행 기록 · 콕핏 계기판</span></li>
+          <li><b>04</b><span>주행 중에는 큰 버튼만 남는 간편 모드</span></li>
+          <li><b>05</b><span>YouTube Music · Spotify로 들어도 곡 정보와 시각화</span></li>
+        </ul>
+        <div class="amp-cta">
+          <a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk">APK 내려받기 <small>4.0MB</small></a>
+          <span class="amp-meta">v6.2 · Android 8.0+ · 무료</span>
+          <a class="amp-link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/latest">배포 정보</a>
+        </div>
+      </div>
+      <figure class="amp-shot amp-hero-shot">
+        <img src="amp/amp-tablet-neon.webp" width="1400" height="875" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어, 10밴드 이퀄라이저, 지금 재생 중, 재생 목록">
+        <figcaption>네온 시티 스킨 · 태블릿 가로 화면</figcaption>
+      </figure>
+      <div class="amp-row">
+        <figure class="amp-shot amp-phone">
+          <img src="amp/amp-phone-blue.webp" width="560" height="1243" alt="휴대폰 화면: 대신남 블루 스킨의 재생 화면" loading="lazy">
+          <figcaption>대신남 블루 · 휴대폰</figcaption>
+        </figure>
+        <figure class="amp-shot amp-phone">
+          <img src="amp/amp-phone-car.webp" width="560" height="1243" alt="휴대폰 화면: 자동차 모드 스킨의 GPS 속도계와 주행 기록" loading="lazy">
+          <figcaption>자동차 모드 · GPS 속도계</figcaption>
+        </figure>
+        <figure class="amp-shot amp-wide">
+          <img src="amp/amp-tablet-cockpit.webp" width="1400" height="612" alt="태블릿 화면: 콕핏 스킨의 비행 계기판(PFD) 속도계와 주행 정보" loading="lazy">
+          <figcaption>콕핏 스킨 · 비행 계기판 속도계</figcaption>
+        </figure>
+      </div>
+      <p class="amp-note">화면은 실제 앱 화면이며, 곡 목록은 예시입니다.</p>
+    </div>
+  </section>
+
   <section id="apps">
     <div class="wrap">
       <div class="index-head">
@@ -167,6 +244,24 @@ footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink)
 
       <article class="row grid">
         <div class="no">01</div>
+        <div class="name"><h3>Daesinnam Amp</h3><span class="kind">음악 플레이어</span></div>
+        <div class="desc">
+          <p>레트로 스킨 MP3 플레이어. 차에 타면 마지막 곡부터 이어서 재생합니다.</p>
+          <ul>
+            <li>LED 스펙트럼 · 10밴드 EQ · 스킨 6종</li>
+            <li>차 연결 시 이어서 재생 · 핸들 버튼</li>
+            <li>주행 중 큰 버튼만 남는 간편 모드</li>
+          </ul>
+        </div>
+        <div class="press"><div class="n none">—</div><div class="why">차에 타면 저절로 이어서 재생</div></div>
+        <div class="dl">
+          <a class="btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk">APK 내려받기 <small>4.0MB</small></a>
+          <div class="meta"><span><b>VER</b>6.2</span><span><b>OS</b>Android 8.0+</span></div>
+          <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/latest">배포 정보</a>
+        </div>
+      </article>
+      <article class="row grid">
+        <div class="no">02</div>
         <div class="name"><h3>대신남 워크</h3><span class="kind">문서 · 사진 · 동영상 편집</span></div>
         <div class="desc">
           <p>세 가지 편집기를 한 앱에. 파일을 고르면 형식에 맞는 편집기가 열립니다.</p>
@@ -184,9 +279,8 @@ footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink)
           <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/work-latest">배포 정보</a>
         </div>
       </article>
-
       <article class="row grid">
-        <div class="no">02</div>
+        <div class="no">03</div>
         <div class="name"><h3>회의비서</h3><span class="kind">회의 녹음 · 정리</span></div>
         <div class="desc">
           <p>녹음하면 화자를 나눠 받아쓰고, 요약과 나에게 온 요청, 일정을 정리합니다.</p>
@@ -204,26 +298,6 @@ footer b { font-family: var(--font-display); font-weight: 900; color: var(--ink)
           <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/meeting-latest">배포 정보</a>
         </div>
       </article>
-
-      <article class="row grid">
-        <div class="no">03</div>
-        <div class="name"><h3>Daesinnam Amp</h3><span class="kind">음악 플레이어</span></div>
-        <div class="desc">
-          <p>레트로 스킨 MP3 플레이어. 차에 타면 마지막 곡부터 이어서 재생합니다.</p>
-          <ul>
-            <li>LED 스펙트럼 · 10밴드 EQ · 스킨 6종</li>
-            <li>차 연결 시 이어서 재생 · 핸들 버튼</li>
-            <li>주행 중 큰 버튼만 남는 간편 모드</li>
-          </ul>
-        </div>
-        <div class="press"><div class="n none">—</div><div class="why">차에 타면 저절로 이어서 재생</div></div>
-        <div class="dl">
-          <a class="btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk">APK 내려받기 <small>4.0MB</small></a>
-          <div class="meta"><span><b>VER</b>6.2</span><span><b>OS</b>Android 8.0+</span></div>
-          <a class="link" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/latest">배포 정보</a>
-        </div>
-      </article>
-
       <article class="row grid">
         <div class="no">04</div>
         <div class="name"><h3>대신남 로드</h3><span class="kind">디펜스 게임</span><span class="tag">Preview</span></div>
