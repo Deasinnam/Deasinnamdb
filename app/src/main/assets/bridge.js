@@ -215,9 +215,10 @@
 
       // 실제 동영상 내보내기 (데모 프로젝트, 시간이 넉넉할 때만 — 결과는 참고용)
       try {
-        const ex = await window.filmcraft.execute("file.exportMedia", { format: "h264", path: "/exports/selftest-export.mp4", bitrateKbps: 1500 });
+        const ex = await window.filmcraft.execute("file.exportMedia", { format: "h264", path: "/exports/selftest-export.mp4", bitrateKbps: 1500, range: "custom", startSeconds: 0, endSeconds: 2 });
         const done = await until(() => window.filmcraft.execute("jobs.list").then((js) => js.some((j) => j.id === ex.job && j.finished)), 240000);
-        post({ t: "selftest", step: "export", job: ex && ex.job, finished: done });
+        const job = done ? (await window.filmcraft.execute("jobs.list")).find((j) => j.id === ex.job) : null;
+        post({ t: "selftest", step: "export", job: ex && ex.job, finished: done, detail: job ? JSON.stringify(job).slice(0, 300) : "" });
         if (done) await new Promise((r) => setTimeout(r, 15000)); // 내보낸 파일이 앱으로 넘어갈 시간
       } catch (e) {
         post({ t: "selftest", step: "export", error: String(e && e.message || e).slice(0, 300) });

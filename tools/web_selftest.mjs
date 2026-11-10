@@ -84,5 +84,5 @@ console.log((pageStep.started ? "PASS" : "FAIL") + " web start");
 console.log((imp.items > 0 ? "PASS" : "FAIL") + " web import (filmcraft.importFiles)");
 console.log((openedOk ? "PASS" : "FAIL") + " web open from app (chunks → importFiles)");
 console.log((txt ? "PASS" : "FAIL") + " web save hook");
-console.log((mp4 ? "PASS" : "WARN") + " web export mp4 → app");
-process.exit(pageStep.started && imp.items > 0 && openedOk && txt ? 0 : 1);
+console.log((mp4 ? "PASS" : "FAIL") + " web export mp4 (H.264) → app");
+process.exit(pageStep.started && imp.items > 0 && openedOk && txt && mp4 ? 0 : 1);

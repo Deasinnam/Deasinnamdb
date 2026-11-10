@@ -22,7 +22,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: FilmCraft 공식 웹 빌드 받기 (최신 릴리스)
+      - name: FilmCraft 최신 릴리스 확인
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -30,18 +30,53 @@ jobs:
           echo "FilmCraft $TAG"
           echo "FC_TAG=$TAG" >> "$GITHUB_ENV"
           echo "FC_VER=${TAG#v}" >> "$GITHUB_ENV"
-          mkdir -p "$RUNNER_TEMP/fc" && cd "$RUNNER_TEMP/fc"
-          gh release download "$TAG" -R "$UPSTREAM" --pattern 'filmcraft-web-*.zip'
-          unzip -q filmcraft-web-*.zip
-          SITE=$(dirname "$(find . -name index.html | head -1)")
-          echo "웹 빌드 폴더: $SITE"
+
+      - name: FilmCraft 소스 받기
+        uses: actions/checkout@v5
+        with:
+          repository: storytold/filmcraft
+          ref: ${{ env.FC_TAG }}
+          path: upstream
+          lfs: false
+
+      - name: 안드로이드판 수정 넣기
+        run: python3 patches/apply.py upstream
+
+      - name: Rust · wasm 도구 준비
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+          rustup default stable
+          rustc --version
+          WB=$(grep -oP 'wasm-bindgen = "=\K[0-9.]+' upstream/apps/filmcraft-web/Cargo.toml)
+          echo "wasm-bindgen $WB"
+          echo "WB_VER=$WB" >> "$GITHUB_ENV"
+
+      - name: wasm-bindgen 캐시
+        id: wbcache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/wasm-bindgen
+          key: wasm-bindgen-${{ env.WB_VER }}
+
+      - name: wasm-bindgen 설치
+        if: steps.wbcache.outputs.cache-hit != 'true'
+        run: cargo install wasm-bindgen-cli --version "$WB_VER" --locked
+
+      - name: Rust 빌드 캐시
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: upstream -> target
+
+      - name: FilmCraft 웹 빌드 (소스에서, 수정 포함)
+        run: |
+          cd upstream
+          cargo xtask web
+          ls -la target/web/dist
           W="$GITHUB_WORKSPACE/app/src/main/assets/www"
-          rm -rf "$W" && cp -r "$SITE" "$W"
-          # 앱 안에서는 쓰지 않는 서버 설정 파일
+          rm -rf "$W" && cp -r target/web/dist "$W"
           rm -f "$W/_headers" "$W/.htaccess"
-          ls -la "$W"
-          grep -o 'filmcraft_web[^"]*' "$W/index.html" | head -5
-          for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$W/$f.txt" || true; done
+          for f in LICENSE-MIT LICENSE-APACHE NOTICE; do cp "$f" "$W/$f.txt" 2>/dev/null || true; done
+          du -sh "$W"
 
       - name: 크롬에서 웹 빌드 + 연결 스크립트 점검 (시작·가져오기·열기·내보내기·저장)
         run: |
@@ -122,4 +157,4 @@ jobs:
           gh release delete filmcraft-latest --yes --cleanup-tag || true
           gh release create filmcraft-latest FilmCraft.apk --target "$GITHUB_SHA" \
             --title "FilmCraft 안드로이드 (최신 빌드)" \
-            --notes "FilmCraft $FC_TAG 공식 웹 빌드(동영상 편집)를 감싼 비공식 안드로이드판. 빌드 ${{ github.run_number }} ($VARIANT)"
+            --notes "FilmCraft $FC_TAG(동영상 편집) 웹 빌드를 감싼 비공식 안드로이드판 (웹에서 H.264 내보내기 수정 포함). 빌드 ${{ github.run_number }} ($VARIANT)"
