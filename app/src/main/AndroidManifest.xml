@@ -20,7 +20,7 @@
         <activity
             android:name=".HomeActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,13 +30,14 @@
 
         <activity
             android:name=".OfficeActivity"
+            android:taskAffinity="com.daesinnam.work.office"
             android:label="@string/office_name"
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection"
             android:windowSoftInputMode="adjustResize">
 
-            <!-- 파일 관리자·메신저에서 "대신남 워크 문서로 열기" -->
+            <!-- 파일 관리자·메신저에서 "덜누름 워크 문서로 열기" -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
@@ -89,6 +90,7 @@
         <!-- 사진 편집: 따로 된 프로세스 -->
         <activity
             android:name=".PhotoActivity"
+            android:taskAffinity="com.daesinnam.work.photo"
             android:label="@string/photo_name"
             android:process=":photo"
             android:exported="true"
@@ -117,6 +119,7 @@
         <!-- 동영상 편집: 따로 된 프로세스 -->
         <activity
             android:name=".FilmActivity"
+            android:taskAffinity="com.daesinnam.work.film"
             android:label="@string/film_name"
             android:process=":film"
             android:exported="true"

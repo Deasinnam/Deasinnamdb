@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">대신남 워크</string>
-    <string name="office_name">대신남 워크 문서</string>
-    <string name="photo_name">대신남 워크 사진</string>
-    <string name="film_name">대신남 워크 동영상</string>
+    <string name="app_name">덜누름 워크</string>
+    <string name="office_name">덜누름 워크 문서</string>
+    <string name="photo_name">덜누름 워크 사진</string>
+    <string name="film_name">덜누름 워크 동영상</string>
 </resources>

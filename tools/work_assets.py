@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""대신남 워크: 사진·동영상 편집기 웹 빌드를 에셋에 넣고, 보이는 이름을 바꾸고, 라이선스·정보 화면을 채웁니다.
+"""덜누름 워크: 사진·동영상 편집기 웹 빌드를 에셋에 넣고, 보이는 이름을 바꾸고, 라이선스·정보 화면을 채웁니다.
 
 사용법:
   python3 tools/work_assets.py --photo <PhotoCraft 웹 빌드 폴더> --film <FilmCraft 웹 빌드 폴더> \
@@ -57,7 +57,7 @@ def main() -> None:
     # ---------- 사진 편집 ----------
     photo = copy_site(pathlib.Path(a.photo), "photo")
     replace_all(photo / "index.html", [
-        ("<title>PhotoCraft</title>", "<title>대신남 워크 사진</title>", True),
+        ("<title>PhotoCraft</title>", "<title>덜누름 워크 사진</title>", True),
         ("Loading PhotoCraft&hellip;", "사진 편집을 준비하는 중&hellip;", True),
         ("This is taking longer than usual. If PhotoCraft doesn't start, its files may have failed to",
          "평소보다 오래 걸립니다. 시작하지 않으면 앱을 닫았다가 다시 열어 주세요. If the editor doesn't start, its files may have failed to", False),
@@ -69,7 +69,7 @@ def main() -> None:
     # ---------- 동영상 편집 ----------
     film = copy_site(pathlib.Path(a.film), "film")
     replace_all(film / "index.html", [
-        ("<title>FilmCraft</title>", "<title>대신남 워크 동영상</title>", True),
+        ("<title>FilmCraft</title>", "<title>덜누름 워크 동영상</title>", True),
         ("Loading FilmCraft…", "동영상 편집을 준비하는 중…", True),
         ("FilmCraft stopped working", "동영상 편집이 멈췄습니다", False),
         ('"FilmCraft failed to start:\\n"', '"동영상 편집을 시작하지 못했습니다:\\n"', False),
@@ -106,7 +106,7 @@ def main() -> None:
         ("{{OFFICE_VER}}", ver.get("office", "?"), True), ("{{PHOTO_VER}}", ver.get("photo", "?"), True),
         ("{{FILM_VER}}", ver.get("film", "?"), True), ("{{NODE_VER}}", ver.get("node", "?"), True),
     ], "about.html")
-    print("대신남 워크 에셋 완료:", ", ".join(f"{k} {v}" for k, v in ver.items()))
+    print("덜누름 워크 에셋 완료:", ", ".join(f"{k} {v}" for k, v in ver.items()))
 
 
 if __name__ == "__main__":

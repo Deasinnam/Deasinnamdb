@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 대신남 워크 에뮬레이터 자동 점검: 첫 화면 → 문서 편집 6종 → 사진 편집 → 동영상 편집.
+# 덜누름 워크 에뮬레이터 자동 점검: 첫 화면 → 문서 편집 6종 → 사진 편집 → 동영상 편집.
 # 결과는 selftest-*.txt, 화면은 work-screen-*.png 로 남깁니다.
 set -u
 APK="$1"
@@ -22,6 +22,16 @@ for i in $(seq 1 60); do
   if adb logcat -d -s IEUM_SELFTEST:I | grep -q "DONE all"; then break; fi
 done
 adb exec-out screencap -p > work-screen-office.png
+# 떠 있는 "홈" 버튼이 있는지, 누르면 첫 화면으로 가는지
+adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb shell cat /sdcard/ui.xml > ui-office.xml 2>/dev/null
+if grep -q '덜누름 워크 첫 화면으로' ui-office.xml; then
+  B=$(grep -o 'content-desc="덜누름 워크 첫 화면으로"[^>]*bounds="\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]"' ui-office.xml | grep -o '\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]' | tr '[],' '   ')
+  set -- $B; adb shell input tap $(( ($1+$3)/2 )) $(( ($2+$4)/2 )); sleep 3
+  if adb shell dumpsys activity activities | grep -m1 -E "topResumedActivity|mResumedActivity" | grep -q HomeActivity; then echo "홈 버튼 통과"; else echo "홈 버튼 실패 (첫 화면으로 가지 않음)"; fail=1; fi
+  adb exec-out screencap -p > work-screen-home-after.png
+else
+  echo "홈 버튼 실패 (버튼 없음)"; fail=1
+fi
 adb logcat -d -s IEUM_SELFTEST:I IeumNode:* > selftest-office.txt
 echo "===== 문서 편집 ====="
 grep -E "IEUM_SELFTEST" selftest-office.txt || true

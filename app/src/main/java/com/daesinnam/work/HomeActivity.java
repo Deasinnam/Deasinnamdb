@@ -40,7 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 대신남 워크 첫 화면: 문서·사진·동영상 편집 중 하나를 고르거나, 파일을 열면 형식에 맞는 편집기로 보냅니다.
+ * 덜누름 워크 첫 화면: 문서·사진·동영상 편집 중 하나를 고르거나, 파일을 열면 형식에 맞는 편집기로 보냅니다.
  * 화면은 assets/work/ (HTML), 앱과는 WorkAndroid 메시지로 주고받습니다.
  */
 public class HomeActivity extends ComponentActivity {

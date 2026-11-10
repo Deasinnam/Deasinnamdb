@@ -61,7 +61,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 대신남 워크의 사진·동영상 편집 화면 공통 부분: 앱에 넣은 웹(WebAssembly) 편집기를 WebView로 띄웁니다.
+ * 덜누름 워크의 사진·동영상 편집 화면 공통 부분: 앱에 넣은 웹(WebAssembly) 편집기를 WebView로 띄웁니다.
  *
  *  https://appassets.androidplatform.net/assets/<폴더>/index.html  ← 앱에 넣은 편집기
  *  저장: 편집기의 다운로드를 연결 스크립트가 가로채 넘기면 안드로이드 "파일 만들기"로 저장
@@ -146,6 +146,7 @@ public abstract class CraftActivity extends ComponentActivity {
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        HomeButton.attach(this, root, assetDir());
         // 편집·내보내기 중에 화면이 꺼지면 WebView가 멈추므로 앱을 보는 동안은 켜 둠
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
@@ -243,7 +244,8 @@ public abstract class CraftActivity extends ComponentActivity {
             public void handleOnBackPressed() {
                 new AlertDialog.Builder(CraftActivity.this)
                         .setMessage(closeQuestion())
-                        .setPositiveButton("닫기", (d, w) -> finish())
+                        .setPositiveButton("닫기", (d, w) -> { HomeButton.goHome(CraftActivity.this); finish(); })
+                        .setNeutralButton("홈으로 (열어 두기)", (d, w) -> HomeButton.goHome(CraftActivity.this))
                         .setNegativeButton("계속 작업", null)
                         .show();
             }

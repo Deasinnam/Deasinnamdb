@@ -124,6 +124,7 @@ public class OfficeActivity extends ComponentActivity {
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        HomeButton.attach(this, root, "office");
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
                     | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
@@ -217,6 +218,8 @@ public class OfficeActivity extends ComponentActivity {
                     web.evaluateJavascript("(window.__ieumIsDirty && window.__ieumIsDirty()) || false",
                             v -> goHome("true".equals(v)));
                 } else {
+                    // 문서 첫 화면에서 뒤로: 문서 편집을 닫고 덜누름 워크 첫 화면으로
+                    HomeButton.goHome(OfficeActivity.this);
                     finish();
                 }
             }

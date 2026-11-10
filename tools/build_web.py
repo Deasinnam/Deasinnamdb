@@ -82,10 +82,10 @@ def patch_bundles(m: str, dst: pathlib.Path) -> None:
             sys.exit(f"{m}: 고칠 코드를 찾지 못했습니다 (원본이 바뀌었나요?): {old[:60]}")
 
 
-# 대신남 워크: 편집기 화면에 보이는 원작 제품 이름을 바꿈 (Apache-2.0 제6조: 원작 이름·로고 권리는 받지 않음).
+# 덜누름 워크: 편집기 화면에 보이는 원작 제품 이름을 바꿈 (Apache-2.0 제6조: 원작 이름·로고 권리는 받지 않음).
 # 글꼴 이름 등 기능에 쓰이는 "GenOffice ..." 식별자는 건드리지 않습니다.
-BRAND = "대신남 워크"
-BRAND_EN = "Daesinnam Work"
+BRAND = "덜누름 워크"
+BRAND_EN = "Deolnureum Work"
 REBRAND = [
     ('const PRODUCT_NAME = "IeumOffice"', f'const PRODUCT_NAME = "{BRAND_EN}"', True),
     ('ko: "이음오피스"', f'ko: "{BRAND}"', True),
