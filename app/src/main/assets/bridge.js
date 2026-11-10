@@ -89,7 +89,8 @@
       const tick = () => {
         if (appReady()) return resolve();
         const L = window.filmcraftLoad || {};
-        if (L.error || L.fatal) return reject(new Error(L.error || L.fatal));
+        const willRetry = L.error && /Limit '[^']+' value/.test(L.error) && !/[?&](webgl|cpu)\b/.test(location.search);
+        if ((L.error && !willRetry) || L.fatal) return reject(new Error(L.error || L.fatal));
         if (Date.now() - t0 > maxMs) return reject(new Error("FilmCraft가 시작되지 않았습니다"));
         setTimeout(tick, 400);
       };
@@ -135,6 +136,26 @@
   }
   if (!wire()) document.addEventListener("DOMContentLoaded", wire);
 
+  // ---------- 시작 실패 시 다시 시도 ----------
+  // WebGPU가 있다고 나오지만 장치 한도가 모자라 시작하지 못하면(일부 기기·에뮬레이터) WebGL2로 한 번 더 시도합니다.
+  // 웹판 index.html 은 오류 문구에 wgpu/webgpu 가 있을 때만 이렇게 하므로, 한도 오류도 같은 길로 보냅니다.
+  (function retryOnLimit() {
+    const params = new URLSearchParams(location.search);
+    const t0 = Date.now();
+    const tick = () => {
+      const L = window.filmcraftLoad;
+      if (L && L.readyMs) return;
+      if (L && L.error && /Limit '[^']+' value/.test(L.error) && !params.has("webgl") && !params.has("cpu")) {
+        log("시작 실패(장치 한도) → WebGL2로 다시 시도: " + L.error);
+        params.set("webgl", "");
+        location.replace(location.pathname + "?" + params.toString().replace(/=(&|$)/g, "$1") + location.hash);
+        return;
+      }
+      if (Date.now() - t0 < 60000) setTimeout(tick, 300);
+    };
+    setTimeout(tick, 300);
+  })();
+
   // ---------- 3) 자동 점검 ----------
   if (/[?&]selftest\b/.test(location.search)) {
     const errors = [];
@@ -166,7 +187,8 @@
       try { info = ok ? await window.filmcraft.info() : null; } catch (e) { errors.push("info: " + e); }
       post({
         t: "selftest", step: "page", started: ok, seconds: Math.round((Date.now() - started) / 1000),
-        canvas: c ? c.width + "x" + c.height : "none", webgpu: !!navigator.gpu, ua: navigator.userAgent,
+        canvas: c ? c.width + "x" + c.height : "none", webgpu: !!navigator.gpu, ua: navigator.userAgent, url: location.search,
+        glMaxTex: (() => { try { const g = document.createElement("canvas").getContext("webgl2"); return g ? g.getParameter(g.MAX_TEXTURE_SIZE) : "no-webgl2"; } catch (e) { return String(e); } })(),
         info: info ? JSON.stringify(info).slice(0, 600) : "", errors: errors.length, first: errors.slice(0, 4).join(" | ").slice(0, 900),
         text: ((document.body && document.body.innerText) || "").replace(/\s+/g, " ").slice(0, 200),
       });
