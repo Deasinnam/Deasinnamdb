@@ -392,7 +392,7 @@ public class MainActivity extends ComponentActivity {
     private void sendFileToPage(Uri uri) {
         JavaScriptReplyProxy proxy = pageProxy;
         if (proxy == null) {
-            pendingOpen = uri;
+            pendingOpen.add(uri);
             return;
         }
         io.execute(() -> {
