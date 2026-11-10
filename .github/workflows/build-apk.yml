@@ -3,7 +3,6 @@ name: Build FilmCraft APK
 on:
   push:
     branches: [filmcraft-android]
-    paths-ignore: [".github/workflows/probe.yml"]
   workflow_dispatch:
 
 permissions:
@@ -44,6 +43,15 @@ jobs:
           grep -o 'filmcraft_web[^"]*' "$W/index.html" | head -5
           for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$W/$f.txt" || true; done
 
+      - name: 크롬에서 웹 빌드 + 연결 스크립트 점검 (시작·가져오기·열기·내보내기·저장)
+        run: |
+          cd "$RUNNER_TEMP" && npm init -y >/dev/null && npm i --silent puppeteer-core@23 >/dev/null
+          cp "$GITHUB_WORKSPACE/tools/web_selftest.mjs" "$RUNNER_TEMP/"
+          (cd "$GITHUB_WORKSPACE/app/src/main/assets/www" && python3 -m http.server 8765 --bind 127.0.0.1 >/dev/null 2>&1 &)
+          sleep 2
+          google-chrome --version
+          cd "$GITHUB_WORKSPACE" && node "$RUNNER_TEMP/web_selftest.mjs" http://127.0.0.1:8765/index.html app/src/main/assets/bridge.js
+
       - name: Android SDK 준비
         run: |
           SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
@@ -71,7 +79,7 @@ jobs:
           target: google_apis
           ram-size: 4096M
           disk-size: 6000M
-          emulator-options: -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash tools/emulator_selftest.sh FilmCraft-test.apk
 
@@ -81,7 +89,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete filmcraft-ci --yes --cleanup-tag || true
-          gh release create filmcraft-ci $(ls filmcraft-screen-*.png selftest-result.txt selftest-save-* 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+          gh release create filmcraft-ci $(ls filmcraft-screen-*.png web-screen-*.png selftest-result.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
             --title "FilmCraft 안드로이드 자동 점검 화면" --notes "빌드 서버 에뮬레이터 점검 결과 (빌드 ${{ github.run_number }})"
 
       - name: 서명 키 준비 (있으면)

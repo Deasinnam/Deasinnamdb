@@ -192,7 +192,18 @@
         info: info ? JSON.stringify(info).slice(0, 600) : "", errors: errors.length, first: errors.slice(0, 4).join(" | ").slice(0, 900),
         text: ((document.body && document.body.innerText) || "").replace(/\s+/g, " ").slice(0, 200),
       });
-      if (!ok) { post({ t: "selftest-done" }); return; }
+      // 저장 경로: 작은 파일 하나를 "다운로드" (편집기가 시작하지 못해도 앱 연결은 확인)
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob(["filmcraft-android-selftest"], { type: "text/plain" }));
+      a.download = "selftest.txt";
+      a.click();
+      if (!ok) {
+        const L = window.filmcraftLoad || {};
+        post({ t: "selftest", step: "load", wasmLoaded: !!L.wasmMs, gpuLimit: /Limit '[^']+' value/.test(String(L.error || "")) });
+        await saveChain;
+        post({ t: "selftest-done" });
+        return;
+      }
 
       // 가져오기
       try {
@@ -201,12 +212,6 @@
       } catch (e) {
         post({ t: "selftest", step: "import", items: 0, errors: String(e) });
       }
-
-      // 저장 경로: 작은 파일 하나를 "다운로드"
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob(["filmcraft-android-selftest"], { type: "text/plain" }));
-      a.download = "selftest.txt";
-      a.click();
 
       // 실제 동영상 내보내기 (데모 프로젝트, 시간이 넉넉할 때만 — 결과는 참고용)
       try {
