@@ -1,0 +1,81 @@
+name: FilmCraft GPU probe
+
+on:
+  push:
+    branches: [filmcraft-android]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  UPSTREAM: storytold/filmcraft
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        gpu: [guest, angle_indirect, swiftshader_indirect]
+        api: [34, 35]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: FilmCraft 공식 웹 빌드 받기 (최신 릴리스)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release view -R "$UPSTREAM" --json tagName -q .tagName)
+          echo "FilmCraft $TAG"
+          echo "FC_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "FC_VER=${TAG#v}" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/fc" && cd "$RUNNER_TEMP/fc"
+          gh release download "$TAG" -R "$UPSTREAM" --pattern 'filmcraft-web-*.zip'
+          unzip -q filmcraft-web-*.zip
+          SITE=$(dirname "$(find . -name index.html | head -1)")
+          echo "웹 빌드 폴더: $SITE"
+          W="$GITHUB_WORKSPACE/app/src/main/assets/www"
+          rm -rf "$W" && cp -r "$SITE" "$W"
+          # 앱 안에서는 쓰지 않는 서버 설정 파일
+          rm -f "$W/_headers" "$W/.htaccess"
+          ls -la "$W"
+          grep -o 'filmcraft_web[^"]*' "$W/index.html" | head -5
+          for f in LICENSE-MIT LICENSE-APACHE NOTICE; do gh api "repos/$UPSTREAM/contents/$f?ref=$TAG" -H 'Accept: application/vnd.github.raw' > "$W/$f.txt" || true; done
+
+      - name: Android SDK 준비
+        run: |
+          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: 시험용 APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug -PfilmcraftVersion="$FC_VER"
+          cp app/build/outputs/apk/debug/app-debug.apk FilmCraft-test.apk
+
+      - name: 에뮬레이터 KVM 켜기
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: 에뮬레이터에서 자동 점검
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu ${{ matrix.gpu }} -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tools/emulator_selftest.sh FilmCraft-test.apk
+

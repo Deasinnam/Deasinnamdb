@@ -3,6 +3,7 @@ name: Build FilmCraft APK
 on:
   push:
     branches: [filmcraft-android]
+    paths-ignore: [".github/workflows/probe.yml"]
   workflow_dispatch:
 
 permissions:
