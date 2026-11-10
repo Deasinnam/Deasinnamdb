@@ -72,6 +72,18 @@ await waitFor(() => window.__fc.done, 400000);
 await sleep(3000);
 await page.screenshot({ path: "web-screen-end.png" });
 const r = await page.evaluate(() => window.__fc);
+
+// 화면 확인용: 헤드리스 크롬은 WebGPU 캔버스를 스크린샷에 못 담는 경우가 많아 WebGL2로 한 번 더 띄워 찍음
+try {
+  const p2 = await browser.newPage();
+  await p2.setViewport({ width: 1344, height: 1100, deviceScaleFactor: 1.5, hasTouch: true });
+  await p2.evaluateOnNewDocument(fake);
+  await p2.evaluateOnNewDocument(bridge);
+  await p2.goto(url + "?webgl&norecover", { waitUntil: "load" });
+  for (let i = 0; i < 60 && !(await p2.evaluate(() => !!(window.filmcraftLoad && window.filmcraftLoad.readyMs)).catch(() => false)); i++) await sleep(1000);
+  await sleep(6000);
+  await p2.screenshot({ path: "web-screen-ui.png" });
+} catch (e) { console.log("screenshot " + e); }
 await browser.close();
 
 const pageStep = r.selftest.find((s) => s.step === "page") || {};

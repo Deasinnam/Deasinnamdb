@@ -67,6 +67,16 @@ jobs:
         with:
           workspaces: upstream -> target
 
+      - name: wasm-opt (binaryen) 준비 — 웹 본체를 공식판처럼 줄이고 빠르게
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/binaryen" && cd "$RUNNER_TEMP/binaryen"
+          gh release download -R WebAssembly/binaryen --pattern '*x86_64-linux.tar.gz' && tar xzf *.tar.gz
+          BIN=$(dirname "$(find . -name wasm-opt -type f | head -1)")
+          echo "$PWD/$BIN" >> "$GITHUB_PATH"
+          "$BIN/wasm-opt" --version
+
       - name: FilmCraft 웹 빌드 (소스에서, 수정 포함)
         run: |
           cd upstream
