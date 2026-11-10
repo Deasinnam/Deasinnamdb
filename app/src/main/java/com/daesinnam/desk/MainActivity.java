@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.ImageDecoder;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -36,6 +37,9 @@ import android.widget.FrameLayout;
 
 import androidx.activity.ComponentActivity;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -52,6 +56,9 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -88,6 +95,10 @@ public class MainActivity extends ComponentActivity {
     private JavaScriptReplyProxy pageProxy;
     private boolean selftest;
     private int cascade;
+
+    /** 배경으로 쓸 사진 고르기 (안드로이드 사진 고르기 창 — 저장소 권한이 필요 없음) */
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickWallpaper =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), this::onWallpaperPicked);
 
     private final BroadcastReceiver packages = new BroadcastReceiver() {
         @Override
@@ -132,6 +143,7 @@ public class MainActivity extends ComponentActivity {
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", this::serveAsset)
                 .addPathHandler("/appicon/", this::serveIcon)
+                .addPathHandler("/wallpaper/", this::serveWallpaper)
                 .build();
         web.setWebViewClient(new WebViewClient() {
             @Override
@@ -280,6 +292,21 @@ public class MainActivity extends ComponentActivity {
                 return openSettings(a.optString(0));
             case "makeDefault":
                 return makeDefault();
+            case "pickWallpaper":
+                pickWallpaper.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+                return true;
+            case "clearWallpaper":
+                //noinspection ResultOfMethodCallIgnored
+                wallpaperFile().delete();
+                return true;
+            case "testWallpaper": { // 자동 점검 전용: 사진 고르기 대신 만든 그림을 같은 길로 저장
+                if (!selftest) throw new IllegalStateException("점검 전용");
+                Bitmap b = Bitmap.createBitmap(900, 1600, Bitmap.Config.ARGB_8888);
+                new Canvas(b).drawColor(0xFF2E7D6B);
+                saveWallpaper(b);
+                return true;
+            }
             default:
                 throw new IllegalArgumentException("모르는 요청: " + method);
         }
@@ -327,6 +354,54 @@ public class MainActivity extends ComponentActivity {
             Map<String, String> h = new HashMap<>();
             h.put("Cache-Control", "max-age=600");
             return new WebResourceResponse("image/png", null, 200, "OK", h, new ByteArrayInputStream(png));
+        } catch (Exception e) {
+            return notFound();
+        }
+    }
+
+    // ---------- 내 사진 배경 ----------
+    private File wallpaperFile() {
+        return new File(getFilesDir(), "wallpaper.jpg");
+    }
+
+    private void onWallpaperPicked(Uri uri) {
+        if (uri == null) return; // 고르지 않고 닫음
+        io.execute(() -> {
+            try {
+                // 화면보다 지나치게 큰 사진은 줄여서 저장 (긴 쪽 2600px 이하). 사진의 회전 정보는 자동 반영됩니다.
+                Bitmap b = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver(), uri), (decoder, info, src) -> {
+                    decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
+                    int longSide = Math.max(info.getSize().getWidth(), info.getSize().getHeight());
+                    int sample = 1;
+                    while (longSide / sample > 2600) sample *= 2;
+                    decoder.setTargetSampleSize(sample);
+                });
+                saveWallpaper(b);
+                push("wallpaper");
+            } catch (Exception e) {
+                Log.w(TAG, "배경 사진을 읽지 못했습니다", e);
+                push("wallpaper-failed");
+            }
+        });
+    }
+
+    private void saveWallpaper(Bitmap b) throws java.io.IOException {
+        File tmp = new File(getFilesDir(), "wallpaper.tmp");
+        try (FileOutputStream out = new FileOutputStream(tmp)) {
+            b.compress(Bitmap.CompressFormat.JPEG, 90, out);
+        }
+        b.recycle();
+        if (!tmp.renameTo(wallpaperFile())) throw new java.io.IOException("배경 파일을 저장하지 못했습니다");
+    }
+
+    /** /wallpaper/current.jpg → 저장해 둔 배경 사진 */
+    private WebResourceResponse serveWallpaper(@NonNull String path) {
+        try {
+            File f = wallpaperFile();
+            if (!f.exists()) return notFound();
+            Map<String, String> h = new HashMap<>();
+            h.put("Cache-Control", "no-cache");
+            return new WebResourceResponse("image/jpeg", null, 200, "OK", h, new FileInputStream(f));
         } catch (Exception e) {
             return notFound();
         }
@@ -418,6 +493,8 @@ public class MainActivity extends ComponentActivity {
         r.put("net", net);
         r.put("freeform", freeformSupported());
         r.put("isDefault", isDefaultHome());
+        File wp = wallpaperFile();
+        r.put("wallpaper", wp.exists() ? wp.lastModified() : 0); // 내 사진 배경이 있으면 바뀐 시각(화면이 새 사진을 다시 읽게)
         r.put("version", BuildConfig.VERSION_NAME);
         return r;
     }

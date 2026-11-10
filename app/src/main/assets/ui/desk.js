@@ -30,7 +30,7 @@
       const names = ["갤러리", "계산기 앱", "날씨", "메시지", "브라우저", "설정", "시계", "연락처", "음악", "전화", "지도", "카메라", "캘린더", "파일", "Play 스토어", "YouTube"];
       return Promise.resolve(names.map((label, i) => ({ pkg: "demo.app" + i, cls: "Main", label, glyph: label[0], color: i % 4 })));
     }
-    if (method === "status") return Promise.resolve({ battery: 82, charging: false, net: "wifi", freeform: true, isDefault: false, version: "미리보기" });
+    if (method === "status") return Promise.resolve({ battery: 82, charging: false, net: "wifi", freeform: true, isDefault: false, wallpaper: 0, version: "미리보기" });
     if (method === "launch") return Promise.resolve({ ok: true, mode: args[2], freeform: true });
     return Promise.resolve(true);
   }
@@ -529,14 +529,23 @@
     draw();
   }
 
+  const customUrl = () => 'url("/wallpaper/current.jpg?v=' + (status.wallpaper || 0) + '")';
   function applyLook() {
-    document.body.className = "wp-" + (S.wallpaper | 0) + (S.theme === "light" ? " light" : "");
+    const custom = S.wallpaper === "custom" && status.wallpaper > 0;
+    document.body.className = (custom ? "wp-custom" : "wp-" + (S.wallpaper === "custom" ? 0 : S.wallpaper | 0)) + (S.theme === "light" ? " light" : "");
+    document.body.style.backgroundImage = custom ? customUrl() : "";
   }
+  const pickWallpaper = () => { closePanels(); call("pickWallpaper"); };
   function buildSettings(body) {
     const draw = () => {
       body.textContent = "";
       const seg = (cur, options, set) => h("div", { class: "seg" }, options.map(([v, label]) => h("button", { class: cur === v ? "on" : null, onclick: () => { set(v); save(); applyLook(); draw(); } }, label)));
       const sw = h("div", { class: "swatches" }, [0, 1, 2, 3, 4].map((i) => h("button", { class: "wp-" + i + (S.wallpaper === i ? " on" : ""), "aria-label": "배경 " + (i + 1), onclick: () => { S.wallpaper = i; save(); applyLook(); draw(); } })));
+      if (status.wallpaper > 0) {
+        const mine = h("button", { class: "photo" + (S.wallpaper === "custom" ? " on" : ""), "aria-label": "내 사진 배경", onclick: () => { S.wallpaper = "custom"; save(); applyLook(); draw(); } });
+        mine.style.backgroundImage = customUrl();
+        sw.append(mine);
+      }
       body.append(h("div", { class: "set" },
         h("h4", { text: "앱을 누르면" }),
         seg(S.openMode, [["window", "창으로 열기"], ["full", "전체 화면으로 열기"]], (v) => { S.openMode = v; }),
@@ -545,6 +554,10 @@
           "이 기기는 '자유 창'을 지원한다고 알려 오지 않았습니다. 창으로 열어도 전체 화면으로 뜨면, 개발자 옵션에서 '자유 형식 창 사용'(freeform windows)을 켠 뒤 기기를 다시 시작해 보세요. ",
           h("button", { class: "btn", onclick: () => call("openSettings", "developer") }, "개발자 옵션 열기")),
         h("h4", { text: "배경" }), sw,
+        h("div", null,
+          h("button", { class: "btn primary", onclick: pickWallpaper }, status.wallpaper > 0 ? "다른 사진으로 바꾸기" : "내 사진으로 배경 바꾸기"),
+          status.wallpaper > 0 ? h("button", { class: "btn", onclick: async () => { await call("clearWallpaper"); if (S.wallpaper === "custom") S.wallpaper = 0; save(); await refreshStatus(); applyLook(); draw(); } }, "내 사진 지우기") : null),
+        h("p", { text: "고른 사진은 이 기기 안에만 복사해 두며, 화면에 꽉 차게 맞춥니다." }),
         h("h4", { text: "색" }),
         seg(S.theme, [["dark", "어둡게"], ["light", "밝게"]], (v) => { S.theme = v; }),
         h("h4", { text: "홈 앱" }),
@@ -560,9 +573,18 @@
   }
 
   // ---------- 이벤트 ----------
+  function redrawSettings() {
+    const w = wins.find((x) => x.key === "in:settings");
+    if (w) w.el.querySelector(".win-body")._redraw();
+  }
   function onPush(what) {
     if (what === "apps") loadApps();
-    else if (what === "status") refreshStatus().then(() => { const w = wins.find((x) => x.key === "in:settings"); if (w) w.el.querySelector(".win-body")._redraw(); });
+    else if (what === "wallpaper") {
+      S.wallpaper = "custom"; save();
+      refreshStatus().then(() => { applyLook(); redrawSettings(); toast("배경을 바꿨습니다"); });
+    }
+    else if (what === "wallpaper-failed") toast("이 사진은 읽지 못했습니다. 다른 사진을 골라 주세요.");
+    else if (what === "status") refreshStatus().then(() => { applyLook(); redrawSettings(); });
     else if (what === "home") { closePanels(); }
     else if (what === "back") {
       if (!$("ctx").hidden) { $("ctx").hidden = true; return; }
@@ -592,7 +614,7 @@
     const c = $("ctx");
     c.textContent = "";
     const item = (label, fn) => h("button", { role: "menuitem", onclick: () => { c.hidden = true; fn(); } }, label);
-    c.append(item("데스크 설정", () => openApp("in:settings")), item("배경 바꾸기", () => { S.wallpaper = ((S.wallpaper | 0) + 1) % 5; save(); applyLook(); }), item("모든 창 내리기", showDesktop));
+    c.append(item("내 사진으로 배경 바꾸기", pickWallpaper), item("기본 배경 넘겨 보기", () => { S.wallpaper = (S.wallpaper === "custom" ? 0 : ((S.wallpaper | 0) + 1) % 5); save(); applyLook(); }), item("데스크 설정", () => openApp("in:settings")), item("모든 창 내리기", showDesktop));
     c.hidden = false;
     const r = c.getBoundingClientRect();
     c.style.left = Math.max(6, Math.min(e.clientX, innerWidth - r.width - 6)) + "px";
@@ -610,7 +632,7 @@
   renderDesk(); renderTaskbar(); renderTray(); tick();
   setInterval(tick, 10000);
   setInterval(refreshStatus, 60000);
-  refreshStatus();
+  refreshStatus().then(applyLook);
   loadApps().then(selftest);
 
   // ---------- 자동 점검 (시험용 빌드, ?selftest) ----------
@@ -644,7 +666,16 @@
       openBuiltin("in:notes");
       const tb = $("task-items").querySelectorAll(".titem.run").length;
       log((tb >= 2 && wins.length === 2 ? "PASS" : "FAIL") + " taskbar running=" + tb + " windows=" + wins.length);
+      // 내 사진 배경: 사진 고르기 대신 점검용 그림을 같은 길로 저장 → 화면에 걸리는지
+      await call("testWallpaper");
+      onPush("wallpaper");
       await wait(1200);
+      const wpOk = await new Promise((r) => { const im = new Image(); im.onload = () => r(im.naturalWidth === 900); im.onerror = () => r(false); im.src = "/wallpaper/current.jpg?t=" + Date.now(); });
+      const bg = getComputedStyle(document.body).backgroundImage;
+      log((wpOk && document.body.classList.contains("wp-custom") && bg.includes("/wallpaper/current.jpg") ? "PASS" : "FAIL") + " custom wallpaper loaded=" + wpOk + " bg=" + bg.slice(0, 80));
+      for (const x of wins) { x.max = false; x.min = true; x.el.hidden = true; }
+      renderTaskbar();
+      await wait(600);
       log("SHOT");            // 여기서 화면을 찍음
       await wait(4000);
       const settings = apps.find((a) => a.pkg === "com.android.settings") || apps[0];

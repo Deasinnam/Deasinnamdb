@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 덜누름 데스크 에뮬레이터 점검: 앱 목록·아이콘, 시작 메뉴·검색, 내부 창, 바깥 앱 띄우기.
+# 덜누름 데스크 에뮬레이터 점검: 앱 목록·아이콘, 시작 메뉴·검색, 내부 창, 내 사진 배경, 바깥 앱 띄우기.
 set -u
 APK="$1"
 PKG=com.daesinnam.desk
@@ -29,7 +29,7 @@ adb exec-out screencap -p > desk-screen-home.png
 pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn"
-if grep -q "DESK_SELFTEST: DONE" selftest-result.txt && [ "$pass" -ge 6 ] && [ "$failn" = 0 ]; then echo "자동 점검 통과"; exit 0; fi
+if grep -q "DESK_SELFTEST: DONE" selftest-result.txt && [ "$pass" -ge 7 ] && [ "$failn" = 0 ]; then echo "자동 점검 통과"; exit 0; fi
 echo "자동 점검 실패"
 grep -v DESK_SELFTEST selftest-result.txt | tail -30
 adb logcat -d | grep -E "AndroidRuntime|FATAL" | tail -30
