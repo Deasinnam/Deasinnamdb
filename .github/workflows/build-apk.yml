@@ -1,8 +1,8 @@
-name: Build 회의비서 APK
+name: Build 덜누름 데스크 APK
 
 on:
   push:
-    branches: [meeting-assistant]
+    branches: [deolnureum-desk]
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
 
       - name: 화면 코드 문법 확인
-        run: node --check app/src/main/assets/ui/app.js
+        run: node --check app/src/main/assets/ui/desk.js
 
       - name: Android SDK 준비
         run: |
@@ -33,7 +33,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk Meeting-test.apk
+          cp app/build/outputs/apk/debug/app-debug.apk Desk-test.apk
 
       - name: 에뮬레이터 KVM 켜기
         run: |
@@ -41,26 +41,26 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: 에뮬레이터 종단 점검 (녹음 → 받아쓰기 → 분석 → 캘린더)
+      - name: 에뮬레이터 점검 (앱 목록 · 시작 메뉴 · 내부 창 · 앱 띄우기)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 34
           arch: x86_64
           target: google_apis
           ram-size: 4096M
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash tools/emulator_selftest.sh Meeting-test.apk
+          script: bash tools/emulator_selftest.sh Desk-test.apk
 
-      - name: 점검 기록 올리기 (meeting-ci 릴리스)
+      - name: 점검 기록 올리기 (desk-ci 릴리스)
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete meeting-ci --yes --cleanup-tag || true
-          gh release create meeting-ci $(ls meeting-screen.png selftest-result.txt mock-openai.log 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
-            --title "회의비서 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
+          gh release delete desk-ci --yes --cleanup-tag || true
+          gh release create desk-ci $(ls desk-screen-*.png selftest-result.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+            --title "덜누름 데스크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비
         env:
@@ -82,12 +82,12 @@ jobs:
         run: |
           if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease; fi
           rm -f "$RUNNER_TEMP/release.p12"
-          cp app/build/outputs/apk/$VARIANT/*.apk Meeting.apk
+          cp app/build/outputs/apk/$VARIANT/*.apk DeolnureumDesk.apk
 
       - name: Releases에 APK 올리기
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete meeting-latest --yes --cleanup-tag || true
-          gh release create meeting-latest Meeting.apk --target "$GITHUB_SHA" \
-            --title "회의비서 (최신 빌드)" --notes "회의 녹음 → 화자 구분 받아쓰기 → 요약·나에게 요청·일정 → 구글 캘린더. 빌드 ${{ github.run_number }} ($VARIANT)"
+          gh release delete desk-latest --yes --cleanup-tag || true
+          gh release create desk-latest DeolnureumDesk.apk --target "$GITHUB_SHA" \
+            --title "덜누름 데스크 (최신 빌드)" --notes "안드로이드를 데스크톱처럼: 바탕화면 · 작업 표시줄 · 시작 메뉴 · 창. 빌드 ${{ github.run_number }} ($VARIANT)"

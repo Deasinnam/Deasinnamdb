@@ -1,12 +1,12 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.daesinnam.meeting'
+    namespace 'com.daesinnam.desk'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.daesinnam.meeting'
-        minSdk 29
+        applicationId 'com.daesinnam.desk'
+        minSdk 30
         targetSdk 35
         versionCode 1
         versionName "1.0"
@@ -51,5 +51,4 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.12.1'
     implementation 'androidx.activity:activity:1.9.3'
     implementation 'androidx.core:core:1.13.1'
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 }

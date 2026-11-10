@@ -2,62 +2,40 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:" />
-  <title>회의비서</title>
-  <link rel="stylesheet" href="./app.css" />
+  <title>덜누름 데스크</title>
+  <link rel="stylesheet" href="./desk.css" />
 </head>
-<body>
-  <div id="app">
-    <!-- 왼쪽(넓은 화면) / 기본 화면: 녹음 버튼과 회의 목록 -->
-    <aside id="side">
-      <header class="bar">
-        <h1>회의비서</h1>
-        <button id="btn-settings" class="icon" aria-label="설정">⚙</button>
-      </header>
+<body class="wp-0">
+  <div id="desk" aria-label="바탕화면"></div>
+  <div id="snap-preview" hidden></div>
+  <div id="windows"></div>
 
-      <section id="recorder" class="card">
-        <div id="rec-idle">
-          <input id="rec-title" type="text" placeholder="회의 이름 (선택)" maxlength="60" />
-          <button id="btn-record" class="record" aria-label="회의 녹음 시작">
-            <span class="dot"></span><span>회의 시작</span>
-          </button>
-          <p id="key-warning" class="warn" hidden>설정에서 OpenAI API 키를 먼저 넣어 주세요.</p>
-        </div>
-        <div id="rec-live" hidden>
-          <div class="live-head"><span class="pulse"></span><span id="rec-name">녹음 중</span></div>
-          <div id="rec-time" class="time">00:00</div>
-          <div class="meter"><div id="rec-level"></div></div>
-          <div class="row">
-            <button id="btn-cancel" class="ghost">취소</button>
-            <button id="btn-stop" class="stop">회의 종료 · 분석</button>
-          </div>
-          <p class="muted small">화면을 끄거나 다른 앱을 써도 녹음은 계속됩니다.</p>
-        </div>
-        <div id="rec-busy" hidden>
-          <div class="spinner"></div>
-          <div id="busy-step">분석 중…</div>
-          <p class="muted small">끝나면 알림으로 알려 드립니다.</p>
-        </div>
-      </section>
+  <section id="start" hidden aria-label="시작 메뉴">
+    <div class="start-search">
+      <input id="search" type="search" placeholder="앱 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" />
+    </div>
+    <div class="start-body" id="start-body"></div>
+    <div class="start-foot">
+      <button id="btn-desk-settings" class="foot-btn">데스크 설정</button>
+      <button id="btn-sys-settings" class="foot-btn">기기 설정</button>
+    </div>
+  </section>
 
-      <h2 class="list-title">지난 회의</h2>
-      <ul id="meetings"><li class="empty">아직 기록이 없습니다</li></ul>
-    </aside>
+  <section id="quick" hidden aria-label="빠른 설정"></section>
+  <div id="ctx" hidden role="menu"></div>
+  <div id="toast" hidden></div>
 
-    <!-- 오른쪽(넓은 화면) / 따로 여는 화면: 회의 상세, 설정 -->
-    <main id="main" hidden>
-      <header class="bar">
-        <button id="btn-back" class="icon back" aria-label="뒤로">‹</button>
-        <h1 id="main-title"></h1>
-        <button id="btn-more" class="icon" aria-label="더 보기" hidden>⋯</button>
-      </header>
-      <div id="main-body"></div>
-    </main>
-  </div>
-
-  <div id="sheet" hidden></div>
-  <div id="toast"></div>
-  <script src="./app.js"></script>
+  <nav id="taskbar" aria-label="작업 표시줄">
+    <button id="start-btn" aria-label="시작"><span>덜</span></button>
+    <div id="task-items"></div>
+    <button id="tray" aria-label="상태와 빠른 설정">
+      <span id="tray-net"></span>
+      <span id="tray-batt"><i></i><b></b></span>
+      <span id="tray-clock"><b id="clock-time">--:--</b><small id="clock-date"></small></span>
+    </button>
+  </nav>
+  <script src="./desk.js"></script>
 </body>
 </html>
