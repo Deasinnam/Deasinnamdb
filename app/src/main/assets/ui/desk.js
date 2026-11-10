@@ -646,8 +646,8 @@
       toggleStart(true);
       await wait(600);
       const shown = $("start-body").querySelectorAll(".litem").length;
-      const icon = $("start-body").querySelector(".litem img");
-      const iconOk = !!icon && await new Promise((r) => { if (icon.complete) return r(icon.naturalWidth > 0); icon.onload = () => r(true); icon.onerror = () => r(false); setTimeout(() => r(false), 4000); });
+      // 목록의 아이콘은 보일 때 읽으므로(lazy), 점검은 첫 앱 아이콘을 직접 읽어 봄
+      const iconOk = apps.length > 0 && await new Promise((r) => { const im = new Image(); im.onload = () => r(im.naturalWidth > 0); im.onerror = () => r(false); im.src = "/appicon/" + apps[0].pkg + "/" + apps[0].cls; setTimeout(() => r(false), 6000); });
       log((shown > 0 && shown === apps.length && iconOk ? "PASS" : "FAIL") + " start menu items=" + shown + " iconLoaded=" + iconOk);
       $("search").value = "계산"; renderStart();
       const found = $("start-body").querySelectorAll(".litem").length;
