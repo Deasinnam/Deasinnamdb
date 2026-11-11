@@ -179,6 +179,10 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .center-head h1 { margin-top: 14px; font-size: clamp(44px, 7vw, 84px); line-height: 1; letter-spacing: -0.05em; }
 .center-head p { margin: 18px 0 0; color: var(--ink-2); max-width: 36em; font-size: 17px; }
 .speed-home .amp-copy { grid-column: span 6; }
+.speed-req { margin: 26px 0 0; display: grid; gap: 0; border-top: 1px solid #2a2a2e; }
+.speed-req div { display: grid; grid-template-columns: 7.5em 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #2a2a2e; font-size: 13.5px; }
+.speed-req dt { font: 500 12px/1.7 var(--font-mono); color: #a1a1aa; }
+.speed-req dd { margin: 0; color: #e4e4e7; }
 .speed-video { grid-column: span 6; align-self: center; }
 .speed-video video { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #2a2a2e; background: #000; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
 @media (max-width: 900px) { .speed-home .amp-copy, .speed-video { grid-column: 1 / -1; } }
@@ -404,6 +408,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="amp-soon">준비 중</span>
           <a class="amp-btn" href="#app-center">앱센터에서 모든 앱 보기 →</a>
         </div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>권장 화면</dt><dd>8인치 이상 태블릿</dd></div>
+          <div><dt>필수</dt><dd>LTE(모바일 데이터) · GPS · 방향 센서</dd></div>
+        </dl>
       </div>
       <div class="ul" id="ul" role="img" aria-label="펼쳐진 폴더블 휴대폰 화면에서 대신남 스피드미터 주행 영상이 재생됩니다">
         <div class="ul-spot"></div>
@@ -579,6 +588,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
             <li>에어라인 · 에어포스 스킨, 주간·야간 하늘 자동</li>
             <li>T맵 · 네이버지도 · 블랙박스 바로가기</li>
           </ul>
+          <p class="note">삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라에 최적화했으며, 8인치 이상 태블릿에서 쓰시길 권장합니다. LTE(모바일 데이터) · GPS · 방향 센서가 꼭 필요합니다.</p>
           <p class="note">위 앱 화면 모음에서 실제 주행 영상을 볼 수 있습니다. 아직 배포 전이며, 공개되면 이곳에 내려받기가 생깁니다.</p>
         </article>
         <article class="app featured" id="app-work">
