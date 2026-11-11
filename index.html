@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<script>if (location.protocol === "http:" && location.hostname === "deolnureum.com") location.replace("https://deolnureum.com" + location.pathname + location.search + location.hash);</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>덜누름 Software — 덜 누르고, 더 편하게</title>
 <meta name="description" content="덜누름은 누를 일을 줄이는 앱을 개발합니다. Daesinnam Amp, 덜누름 워크를 무료로 내려받으세요.">
@@ -284,8 +285,12 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 
 /* ---------- 이륙 장면: 노을 바다 위 3D 비행 (three.js, 화면에 들어올 때만 불러옴) ---------- */
 .takeoff { position: relative; height: min(88vh, 820px); min-height: 440px; overflow: hidden; background: linear-gradient(180deg, #1f5fc0 0%, #6fb0ee 42%, #cfe6f8 56%, #1c6aa8 57%, #0b3a6e 100%); }
-.takeoff iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; pointer-events: none; }
-.takeoff-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 12%; pointer-events: none; background: linear-gradient(180deg, transparent, #0b0b0c); }
+.takeoff video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.takeoff-fade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 60%, rgba(3,22,54,.5) 86%, #0b0b0c 100%); }
+.takeoff-copy { position: absolute; left: 0; right: 0; bottom: 11%; text-align: center; color: #fff; padding: 0 20px; transition: opacity .5s ease; }
+.takeoff-copy.is-off { opacity: 0; }
+.takeoff-copy b { display: block; font: 600 clamp(14px, 1.7vw, 26px)/1 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .3em; color: #fff6d8; text-shadow: 0 1px 12px rgba(3,20,50,.8); }
+.takeoff-copy h2 { margin-top: 16px; font: 600 clamp(22px, 3.5vw, 54px)/1.35 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .1em; text-shadow: 0 1px 3px rgba(3,20,50,.6), 0 2px 30px rgba(3,20,50,.9); }
 .takeoff-go { position: absolute; right: 24px; top: 24px; padding: 11px 18px; font-size: 13px; }
 @media (max-width: 480px) { .takeoff-go { right: 12px; top: 12px; padding: 9px 14px; } }
 .amp-soon.as-link { text-decoration: none; } .amp-soon.as-link::before { display: none; }
@@ -457,8 +462,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 
   <div class="theme-dark">
   <section class="takeoff" id="takeoff" aria-label="대신남 스피드미터: 이제 차 안에서 이륙하세요">
-    <iframe src="takeoff.html" title="맑은 낮 푸른 바다 위를 나는 A-1H 스카이레이더와, 조종석에서 바라본 대신남 스피드미터 화면" loading="lazy" tabindex="-1"></iframe>
+    <video id="tkVid" src="media/takeoff.mp4" poster="media/takeoff-poster.jpg" muted loop playsinline preload="none" aria-label="맑은 낮 푸른 바다 위를 나는 A-1H 스카이레이더와, 조종석에서 바라본 대신남 스피드미터 화면"></video>
     <div class="takeoff-fade"></div>
+    <div class="takeoff-copy" id="tkCopy"><b>대신남 스피드미터!</b><h2>이제 차 안에서 이륙하세요.</h2></div>
     <a class="amp-btn takeoff-go" href="#speed">바로가기 →</a>
   </section>
   <section class="amp-stage speed-home" id="speed" aria-labelledby="speed-title">
@@ -1185,6 +1191,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       if (visible) { if (t0 < 0) start(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
     }, { threshold: 0.35 }).observe(box);
   } else { visible = true; start(); }
+})();
+</script>
+<script>
+// ---------- 이륙 장면 영상: 화면에 보일 때만 재생. 조종석 시점(8~16.5초)에서는 글자를 치움 ----------
+(function () {
+  "use strict";
+  var v = document.getElementById("tkVid"), copy = document.getElementById("tkCopy");
+  if (!v) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  v.addEventListener("timeupdate", function () { var t = v.currentTime; copy.classList.toggle("is-off", t > 8.0 && t < 16.4); });
+  if (reduce) return;
+  function play() { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { if (en[0].isIntersecting) play(); else v.pause(); }, { threshold: 0.2 }).observe(v);
+  else play();
 })();
 </script>
 </body>
