@@ -3,6 +3,11 @@ package com.daesinnam.desk;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.app.role.RoleManager;
+import android.appwidget.AppWidgetHost;
+import android.appwidget.AppWidgetHostView;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProviderInfo;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,6 +30,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
@@ -64,9 +72,11 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -78,7 +88,11 @@ import java.util.concurrent.Executors;
  *  - 설치된 앱 목록과 아이콘을 넘겨주고 (/appicon/<패키지>/<액티비티>)
  *  - 앱을 창 모드(자유 창)·반쪽·전체 화면으로 띄우고
  *  - 배터리·연결 상태를 알려 줍니다.
+ *  - 다른 앱의 위젯을 바탕화면에 올립니다 (안드로이드 위젯 호스트).
  * 화면과는 DeskAndroid 메시지로 주고받습니다: {id, method, args} → {id, result}, 앱 → 화면은 {push:…}.
+ *
+ * 뷰는 세 겹입니다: 맨 아래 배경(작은 WebView) → 위젯(안드로이드 뷰) → 바탕화면 화면(투명한 WebView).
+ * 그래서 창·시작 메뉴는 위젯 위에 그려지고, 위젯이 드러난 곳을 누르면 위젯이 받습니다(PassWebView).
  */
 public class MainActivity extends ComponentActivity {
     private static final String TAG = "Desk";
@@ -90,8 +104,34 @@ public class MainActivity extends ComponentActivity {
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Map<String, byte[]> iconCache = new ConcurrentHashMap<>();
-    private WebView web;
+    private PassWebView web;
+    private WebView wallWeb;
     private FrameLayout root;
+
+    // ---- 위젯 ----
+    private static final int WIDGET_HOST_ID = 0x44454B; // "DEK"
+    private static final int REQ_WIDGET_CONFIG = 21;
+    private AppWidgetManager widgetManager;
+    private AppWidgetHost widgetHost;
+    private FrameLayout widgetLayer;
+    private final Map<Integer, AppWidgetHostView> widgetViews = new HashMap<>();
+    /** 올리는 중인 위젯: 화면이 자기 목록에 넣었다고 알려 오기 전에는 지우지 않습니다 */
+    private final Set<Integer> protectedIds = new HashSet<>();
+    private volatile List<AppWidgetProviderInfo> providers = new ArrayList<>();
+    private int pendingWidgetId = -1;
+    private AppWidgetProviderInfo pendingWidgetInfo;
+    private boolean wallReady;
+    private String wallLook;
+
+    /** "이 앱이 위젯을 만들도록 허용할까요?" 확인 창 */
+    private final ActivityResultLauncher<Intent> bindWidget =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                int id = pendingWidgetId;
+                AppWidgetProviderInfo info = pendingWidgetInfo;
+                if (id < 0 || info == null) return;
+                if (result.getResultCode() == RESULT_OK) afterWidgetBound(id, info);
+                else cancelWidget(id, "denied");
+            });
     private JavaScriptReplyProxy pageProxy;
     private boolean selftest;
     private int cascade;
@@ -122,10 +162,20 @@ public class MainActivity extends ComponentActivity {
 
         root = new FrameLayout(this);
         root.setBackgroundColor(0xFF0E0F13);
-        web = new WebView(this);
-        web.setBackgroundColor(0xFF0E0F13);
+        // 아래부터: 배경 → 위젯 → 바탕화면 화면(투명)
+        wallWeb = new WebView(this);
+        wallWeb.setBackgroundColor(0xFF0E0F13);
+        wallWeb.setFocusable(false);
+        wallWeb.setOnTouchListener((v, e) -> true);
+        root.addView(wallWeb, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        widgetLayer = new FrameLayout(this);
+        root.addView(widgetLayer, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        web = new PassWebView(this);
+        web.setBackgroundColor(0x00000000);
         root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        widgetManager = AppWidgetManager.getInstance(this);
+        widgetHost = new Host(this);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
@@ -144,7 +194,30 @@ public class MainActivity extends ComponentActivity {
                 .addPathHandler("/assets/", this::serveAsset)
                 .addPathHandler("/appicon/", this::serveIcon)
                 .addPathHandler("/wallpaper/", this::serveWallpaper)
+                .addPathHandler("/widgetpreview/", this::serveWidgetPreview)
                 .build();
+        wallWeb.getSettings().setJavaScriptEnabled(true);
+        wallWeb.getSettings().setAllowFileAccess(false);
+        wallWeb.getSettings().setAllowContentAccess(false);
+        wallWeb.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                WebResourceResponse r = loader.shouldInterceptRequest(request.getUrl());
+                return r != null ? r : notFound();
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                wallReady = true;
+                applyWallLook();
+            }
+        });
+        wallWeb.loadUrl(APP_ORIGIN + "/assets/ui/wallpaper.html");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -200,6 +273,38 @@ public class MainActivity extends ComponentActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            widgetHost.startListening(); // 위젯 내용이 바뀌면 받아서 다시 그림
+        } catch (RuntimeException e) {
+            Log.w(TAG, "위젯 듣기를 시작하지 못했습니다", e);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        try {
+            widgetHost.stopListening();
+        } catch (RuntimeException ignored) {
+        }
+        super.onStop();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQ_WIDGET_CONFIG) return;
+        // 위젯이 자기 설정 화면을 띄운 뒤 돌아옴
+        int id = pendingWidgetId;
+        AppWidgetProviderInfo info = pendingWidgetInfo;
+        if (id < 0 || info == null) return;
+        if (resultCode == RESULT_OK) finishWidget(id, info);
+        else cancelWidget(id, "canceled");
+    }
+
+    @Override
     protected void onDestroy() {
         try {
             unregisterReceiver(packages);
@@ -208,6 +313,7 @@ public class MainActivity extends ComponentActivity {
         }
         io.shutdownNow();
         if (web != null) web.destroy();
+        if (wallWeb != null) wallWeb.destroy();
         super.onDestroy();
     }
 
@@ -228,6 +334,10 @@ public class MainActivity extends ComponentActivity {
             if (a == null) a = new JSONArray();
             if ("apps".equals(method)) {
                 io.execute(() -> reply(id, safe(this::listApps)));
+            } else if ("widgetProviders".equals(method)) {
+                io.execute(() -> reply(id, safe(this::listWidgetProviders)));
+            } else if ("lookProbe".equals(method)) { // 자동 점검: 배경 층에 실제로 걸린 배경
+                wallWeb.evaluateJavascript("getComputedStyle(document.body).backgroundImage + ' / ' + document.body.className", v -> reply(id, v));
             } else {
                 final JSONArray args = a;
                 reply(id, safe(() -> call(method, args)));
@@ -265,10 +375,16 @@ public class MainActivity extends ComponentActivity {
     }
 
     private void push(String what) {
+        push(what, null);
+    }
+
+    private void push(String what, JSONObject data) {
         main.post(() -> {
             if (pageProxy == null) return;
             try {
-                pageProxy.postMessage(new JSONObject().put("push", what).toString());
+                JSONObject m = new JSONObject().put("push", what);
+                if (data != null) m.put("data", data);
+                pageProxy.postMessage(m.toString());
             } catch (JSONException ignored) {
             }
         });
@@ -300,6 +416,16 @@ public class MainActivity extends ComponentActivity {
                 //noinspection ResultOfMethodCallIgnored
                 wallpaperFile().delete();
                 return true;
+            case "look": // 배경 층에 배경 걸기 (기본 배경 번호 또는 내 사진)
+                wallLook = "setLook(" + JSONObject.quote(a.optString(0)) + "," + JSONObject.quote(a.optString(1)) + ")";
+                applyWallLook();
+                return true;
+            case "addWidget":
+                return addWidget(a.getInt(0));
+            case "widgetSync":
+                return widgetSync(a.getJSONArray(0), a.getJSONArray(1), a.optDouble(2, 0), a.optBoolean(3, false), a.optBoolean(4, false));
+            case "widgetProbe":
+                return widgetProbe();
             case "testWallpaper": { // 자동 점검 전용: 사진 고르기 대신 만든 그림을 같은 길로 저장
                 if (!selftest) throw new IllegalStateException("점검 전용");
                 Bitmap b = Bitmap.createBitmap(900, 1600, Bitmap.Config.ARGB_8888);
@@ -357,6 +483,325 @@ public class MainActivity extends ComponentActivity {
         } catch (Exception e) {
             return notFound();
         }
+    }
+
+    // ---------- 위젯 ----------
+
+    /** 위젯 하나를 감싸는 뷰: 길게 누르거나 마우스 오른쪽 단추로 누르면 "위젯 편집"을 엽니다 */
+    private final class WidgetView extends AppWidgetHostView {
+        private final int slop;
+        private float downX, downY;
+        private boolean fired;
+        private final Runnable longPress = () -> {
+            fired = true;
+            performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            editWidget(getAppWidgetId());
+        };
+
+        WidgetView(Context context) {
+            super(context);
+            slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent ev) {
+            switch (ev.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    fired = false;
+                    downX = ev.getX();
+                    downY = ev.getY();
+                    removeCallbacks(longPress);
+                    if ((ev.getButtonState() & MotionEvent.BUTTON_SECONDARY) != 0) {
+                        fired = true;
+                        editWidget(getAppWidgetId());
+                    } else {
+                        postDelayed(longPress, ViewConfiguration.getLongPressTimeout() + 150L);
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (Math.hypot(ev.getX() - downX, ev.getY() - downY) > slop) removeCallbacks(longPress);
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    removeCallbacks(longPress);
+                    break;
+                default:
+                    break;
+            }
+            return fired; // 편집을 열었으면 위젯 안의 단추는 눌리지 않게
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent ev) {
+            int a = ev.getActionMasked();
+            if (a == MotionEvent.ACTION_UP || a == MotionEvent.ACTION_CANCEL) removeCallbacks(longPress);
+            return true; // 위젯 안의 아무것도 받지 않는 곳도 길게 누름을 알아채도록
+        }
+    }
+
+    private final class Host extends AppWidgetHost {
+        Host(Context context) {
+            super(context, WIDGET_HOST_ID);
+        }
+
+        @Override
+        protected AppWidgetHostView onCreateView(Context context, int appWidgetId, AppWidgetProviderInfo appWidget) {
+            return new WidgetView(context);
+        }
+    }
+
+    private void editWidget(int id) {
+        try {
+            push("widget-edit", new JSONObject().put("id", id));
+        } catch (JSONException ignored) {
+        }
+    }
+
+    private int toDp(int px) {
+        return Math.round(px / getResources().getDisplayMetrics().density);
+    }
+
+    /** 올릴 수 있는 위젯 목록 (앱 이름 → 위젯 이름 순) */
+    private JSONArray listWidgetProviders() throws JSONException {
+        PackageManager pm = getPackageManager();
+        List<AppWidgetProviderInfo> found = new ArrayList<>(widgetManager.getInstalledProviders());
+        Map<String, String> appNames = new HashMap<>();
+        List<Object[]> rows = new ArrayList<>();
+        for (AppWidgetProviderInfo info : found) {
+            if (info == null || info.provider == null) continue;
+            String pkg = info.provider.getPackageName();
+            String app = appNames.get(pkg);
+            if (app == null) {
+                try {
+                    app = String.valueOf(pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)));
+                } catch (PackageManager.NameNotFoundException e) {
+                    app = pkg;
+                }
+                appNames.put(pkg, app);
+            }
+            String label = info.loadLabel(pm);
+            rows.add(new Object[]{info, app, label == null ? app : label});
+        }
+        Collator col = Collator.getInstance(Locale.KOREAN);
+        rows.sort((x, y) -> {
+            int c = col.compare((String) x[1], (String) y[1]);
+            return c != 0 ? c : col.compare((String) x[2], (String) y[2]);
+        });
+        List<AppWidgetProviderInfo> ordered = new ArrayList<>();
+        JSONArray out = new JSONArray();
+        for (Object[] r : rows) {
+            AppWidgetProviderInfo info = (AppWidgetProviderInfo) r[0];
+            JSONObject o = new JSONObject().put("i", ordered.size()).put("app", r[1]).put("label", r[2])
+                    .put("pkg", info.provider.getPackageName())
+                    .put("w", toDp(info.minWidth)).put("h", toDp(info.minHeight));
+            if (android.os.Build.VERSION.SDK_INT >= 31) o.put("cw", info.targetCellWidth).put("ch", info.targetCellHeight);
+            ordered.add(info);
+            out.put(o);
+        }
+        providers = ordered;
+        return out;
+    }
+
+    /** /widgetpreview/<번호> → 위젯 미리보기 그림 (없으면 위젯·앱 아이콘) */
+    private WebResourceResponse serveWidgetPreview(@NonNull String path) {
+        try {
+            List<AppWidgetProviderInfo> list = providers;
+            AppWidgetProviderInfo info = list.get(Integer.parseInt(path));
+            Drawable d = info.loadPreviewImage(this, 0);
+            if (d == null) d = info.loadIcon(this, 0);
+            if (d == null) d = getPackageManager().getApplicationIcon(info.provider.getPackageName());
+            int w = d.getIntrinsicWidth(), h = d.getIntrinsicHeight();
+            if (w <= 0 || h <= 0) {
+                w = 144;
+                h = 144;
+            }
+            float k = Math.min(1f, 360f / Math.max(w, h));
+            int bw = Math.max(1, Math.round(w * k)), bh = Math.max(1, Math.round(h * k));
+            Bitmap bmp = Bitmap.createBitmap(bw, bh, Bitmap.Config.ARGB_8888);
+            d.setBounds(0, 0, bw, bh);
+            d.draw(new Canvas(bmp));
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            bmp.recycle();
+            Map<String, String> h2 = new HashMap<>();
+            h2.put("Cache-Control", "max-age=300");
+            return new WebResourceResponse("image/png", null, 200, "OK", h2, new ByteArrayInputStream(out.toByteArray()));
+        } catch (Exception e) {
+            return notFound();
+        }
+    }
+
+    /** 위젯 올리기 시작: 번호 받기 → (필요하면 허용 확인) → (필요하면 위젯 자체 설정) → 화면에 알림 */
+    private boolean addWidget(int index) {
+        List<AppWidgetProviderInfo> list = providers;
+        if (index < 0 || index >= list.size()) throw new IllegalArgumentException("위젯 목록이 바뀌었습니다. 다시 열어 주세요.");
+        AppWidgetProviderInfo info = list.get(index);
+        int id = widgetHost.allocateAppWidgetId();
+        protectedIds.add(id);
+        pendingWidgetId = id;
+        pendingWidgetInfo = info;
+        boolean bound;
+        try {
+            bound = widgetManager.bindAppWidgetIdIfAllowed(id, info.getProfile(), info.provider, null);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "위젯 연결 실패", e);
+            cancelWidget(id, "failed");
+            return true;
+        }
+        if (bound) {
+            afterWidgetBound(id, info);
+            return true;
+        }
+        // 처음 한 번: 안드로이드가 "덜누름 데스크가 위젯을 만들도록 허용" 확인 창을 띄웁니다
+        try {
+            bindWidget.launch(new Intent(AppWidgetManager.ACTION_APPWIDGET_BIND)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, info.provider)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, info.getProfile()));
+        } catch (ActivityNotFoundException e) {
+            cancelWidget(id, "failed");
+        }
+        return true;
+    }
+
+    private void afterWidgetBound(int id, AppWidgetProviderInfo info) {
+        boolean optional = android.os.Build.VERSION.SDK_INT >= 31
+                && (info.widgetFeatures & AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL) != 0
+                && (info.widgetFeatures & AppWidgetProviderInfo.WIDGET_FEATURE_RECONFIGURABLE) != 0;
+        if (info.configure != null && !optional) {
+            try {
+                widgetHost.startAppWidgetConfigureActivityForResult(this, id, 0, REQ_WIDGET_CONFIG, null);
+                return; // 결과는 onActivityResult로
+            } catch (RuntimeException e) {
+                Log.w(TAG, "위젯 설정 화면을 열지 못해 그대로 올립니다: " + e);
+            }
+        }
+        finishWidget(id, info);
+    }
+
+    private void finishWidget(int id, AppWidgetProviderInfo info) {
+        pendingWidgetId = -1;
+        pendingWidgetInfo = null;
+        try {
+            String label = info.loadLabel(getPackageManager());
+            JSONObject o = new JSONObject().put("id", id).put("label", label == null ? "" : label)
+                    .put("w", toDp(info.minWidth)).put("h", toDp(info.minHeight));
+            if (android.os.Build.VERSION.SDK_INT >= 31) o.put("cw", info.targetCellWidth).put("ch", info.targetCellHeight);
+            push("widget-added", o);
+        } catch (JSONException ignored) {
+        }
+    }
+
+    private void cancelWidget(int id, String reason) {
+        pendingWidgetId = -1;
+        pendingWidgetInfo = null;
+        protectedIds.remove(id);
+        try {
+            widgetHost.deleteAppWidgetId(id);
+        } catch (RuntimeException ignored) {
+        }
+        try {
+            push("widget-failed", new JSONObject().put("reason", reason));
+        } catch (JSONException ignored) {
+        }
+    }
+
+    /**
+     * 화면이 알려 준 대로 위젯을 놓습니다.
+     *  layout:   [{id, x, y, w, h}]  (화면 좌표, CSS 픽셀)
+     *  blockers: [[왼쪽, 위, 오른쪽, 아래]]  위젯을 덮는 것들(창·아이콘·작업 표시줄)
+     *  cssWidth: 화면 너비(CSS 픽셀) — 실제 픽셀과의 비율 계산용
+     *  blockAll: 메뉴가 열려 있거나 위젯 편집 중 → 위젯이 누름을 받지 않음
+     *  dragging: 끌어서 옮기거나 크기를 바꾸는 중 → 위젯에 크기 알림은 놓은 뒤에
+     * 돌려주는 값: {missing: [불러올 수 없는 위젯 번호]}
+     */
+    private JSONObject widgetSync(JSONArray layout, JSONArray blockers, double cssWidth, boolean blockAll, boolean dragging) throws JSONException {
+        float density = getResources().getDisplayMetrics().density;
+        float scale = web.getWidth() > 0 && cssWidth > 0 ? (float) (web.getWidth() / cssWidth) : density;
+        Set<Integer> keep = new HashSet<>();
+        JSONArray missing = new JSONArray();
+        List<Rect> rects = new ArrayList<>();
+        for (int i = 0; i < layout.length(); i++) {
+            JSONObject o = layout.getJSONObject(i);
+            int id = o.getInt("id");
+            int x = Math.round((float) o.getDouble("x") * scale), y = Math.round((float) o.getDouble("y") * scale);
+            int w = Math.max(1, Math.round((float) o.getDouble("w") * scale)), h = Math.max(1, Math.round((float) o.getDouble("h") * scale));
+            keep.add(id);
+            protectedIds.remove(id); // 화면이 자기 목록에 넣었음
+            AppWidgetHostView v = widgetViews.get(id);
+            if (v == null) {
+                AppWidgetProviderInfo info = widgetManager.getAppWidgetInfo(id);
+                if (info == null) { // 그 앱이 지워졌거나 아직 준비되지 않음
+                    missing.put(id);
+                    continue;
+                }
+                v = widgetHost.createView(this, id, info);
+                widgetViews.put(id, v);
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h);
+                lp.leftMargin = x;
+                lp.topMargin = y;
+                widgetLayer.addView(v, lp);
+                v.setTag(null);
+            } else {
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) v.getLayoutParams();
+                if (lp.width != w || lp.height != h || lp.leftMargin != x || lp.topMargin != y) {
+                    lp.width = w;
+                    lp.height = h;
+                    lp.leftMargin = x;
+                    lp.topMargin = y;
+                    v.setLayoutParams(lp);
+                }
+            }
+            String size = w + "x" + h;
+            if (!dragging && !size.equals(v.getTag())) {
+                // 위젯에게 자기 크기를 알려 줌 (크기에 맞춰 내용을 바꾸는 위젯용)
+                int wd = Math.round(w / density), hd = Math.round(h / density);
+                try {
+                    v.updateAppWidgetSize(null, wd, hd, wd, hd);
+                } catch (RuntimeException ignored) {
+                }
+                v.setTag(size);
+            }
+            rects.add(new Rect(x, y, x + w, y + h));
+        }
+        // 목록에서 빠진 위젯은 뷰도, 위젯 번호도 정리
+        List<Integer> gone = new ArrayList<>();
+        for (Integer id : widgetViews.keySet()) if (!keep.contains(id)) gone.add(id);
+        for (Integer id : gone) widgetLayer.removeView(widgetViews.remove(id));
+        try {
+            for (int id : widgetHost.getAppWidgetIds()) {
+                if (!keep.contains(id) && !protectedIds.contains(id)) widgetHost.deleteAppWidgetId(id);
+            }
+        } catch (RuntimeException e) {
+            Log.w(TAG, "위젯 정리 실패", e);
+        }
+        List<Rect> blocks = new ArrayList<>();
+        for (int i = 0; i < blockers.length(); i++) {
+            JSONArray b = blockers.getJSONArray(i);
+            blocks.add(new Rect((int) Math.floor(b.getDouble(0) * scale), (int) Math.floor(b.getDouble(1) * scale),
+                    (int) Math.ceil(b.getDouble(2) * scale), (int) Math.ceil(b.getDouble(3) * scale)));
+        }
+        web.setRegions(rects, blocks, blockAll);
+        return new JSONObject().put("missing", missing);
+    }
+
+    /** 자동 점검: 실제로 놓인 위젯 뷰 */
+    private JSONArray widgetProbe() throws JSONException {
+        JSONArray out = new JSONArray();
+        int[] at = new int[2];
+        for (Map.Entry<Integer, AppWidgetHostView> e : widgetViews.entrySet()) {
+            AppWidgetHostView v = e.getValue();
+            v.getLocationOnScreen(at);
+            out.put(new JSONObject().put("id", e.getKey()).put("sx", at[0]).put("sy", at[1])
+                    .put("w", v.getWidth()).put("h", v.getHeight()).put("kids", v.getChildCount())
+                    .put("shown", v.isShown()));
+        }
+        return out;
+    }
+
+    // ---------- 배경 층 ----------
+    private void applyWallLook() {
+        if (wallReady && wallLook != null) wallWeb.evaluateJavascript(wallLook, null);
     }
 
     // ---------- 내 사진 배경 ----------
@@ -496,6 +941,7 @@ public class MainActivity extends ComponentActivity {
         File wp = wallpaperFile();
         r.put("wallpaper", wp.exists() ? wp.lastModified() : 0); // 내 사진 배경이 있으면 바뀐 시각(화면이 새 사진을 다시 읽게)
         r.put("version", BuildConfig.VERSION_NAME);
+        r.put("pkg", getPackageName());
         return r;
     }
 

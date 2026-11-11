@@ -9,6 +9,11 @@
 </head>
 <body class="wp-0">
   <div id="desk" aria-label="바탕화면"></div>
+  <div id="wlayer" aria-label="위젯"></div>
+  <div id="wbar" hidden>
+    <b>위젯 편집</b><span>끌어서 옮기고, 모서리로 크기를 바꿉니다</span>
+    <button id="wbar-add">위젯 추가</button><button id="wbar-done" class="primary">완료</button>
+  </div>
   <div id="snap-preview" hidden></div>
   <div id="windows"></div>
 
@@ -18,12 +23,18 @@
     </div>
     <div class="start-body" id="start-body"></div>
     <div class="start-foot">
+      <button id="btn-widgets" class="foot-btn">위젯 추가</button>
       <button id="btn-desk-settings" class="foot-btn">데스크 설정</button>
       <button id="btn-sys-settings" class="foot-btn">기기 설정</button>
     </div>
   </section>
 
   <section id="quick" hidden aria-label="빠른 설정"></section>
+  <section id="wpick" hidden aria-label="위젯 고르기">
+    <div class="wpick-head"><b>위젯 추가</b><button id="wpick-close" aria-label="닫기">✕</button></div>
+    <div class="start-search"><input id="wsearch" type="search" placeholder="위젯·앱 이름으로 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
+    <div class="start-body" id="wpick-body"></div>
+  </section>
   <div id="ctx" hidden role="menu"></div>
   <div id="toast" hidden></div>
 

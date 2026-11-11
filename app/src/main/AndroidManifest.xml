@@ -12,6 +12,10 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- 바탕화면에 올릴 수 있는 위젯을 가진 앱 -->
+        <intent>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        </intent>
     </queries>
 
     <application

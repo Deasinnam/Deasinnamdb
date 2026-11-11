@@ -19,7 +19,7 @@
     A.onmessage = (ev) => {
       let m;
       try { m = JSON.parse(ev.data); } catch (_) { return; }
-      if (m.push) return onPush(m.push);
+      if (m.push) return onPush(m.push, m.data);
       const r = waiting.get(m.id);
       if (r) { waiting.delete(m.id); r(m.result); }
     };
@@ -32,6 +32,15 @@
     }
     if (method === "status") return Promise.resolve({ battery: 82, charging: false, net: "wifi", freeform: true, isDefault: false, wallpaper: 0, version: "미리보기" });
     if (method === "launch") return Promise.resolve({ ok: true, mode: args[2], freeform: true });
+    if (method === "widgetProviders") return Promise.resolve([
+      { i: 0, app: "시계", label: "디지털 시계", pkg: "demo.clock", w: 180, h: 80 },
+      { i: 1, app: "날씨", label: "오늘 날씨", pkg: "demo.weather", w: 250, h: 110 },
+      { i: 2, app: "캘린더", label: "일정", pkg: "demo.cal", w: 250, h: 250 }]);
+    if (method === "addWidget") {
+      const names = ["디지털 시계", "오늘 날씨", "일정"], sizes = [[180, 80], [250, 110], [250, 250]];
+      setTimeout(() => onPush("widget-added", { id: Date.now() % 100000, label: names[args[0]], w: sizes[args[0]][0], h: sizes[args[0]][1] }), 200);
+      return Promise.resolve(true);
+    }
     return Promise.resolve(true);
   }
 
@@ -71,9 +80,11 @@
   }
 
   // ---------- 저장되는 설정 ----------
-  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {} };
+  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [] };
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem("desk_state") || "{}")); } catch (_) {}
+  if (!Array.isArray(S.widgets)) S.widgets = [];
+  if (A) document.documentElement.classList.add("native"); // 앱 안: 배경은 아래 층이 그림
   const save = () => { try { localStorage.setItem("desk_state", JSON.stringify(S)); } catch (_) {} };
 
   // ---------- 앱 목록 ----------
@@ -313,7 +324,7 @@
     $("tray").classList.add("on");
   }
   function closePanels() {
-    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true;
+    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true;
     $("start-btn").classList.remove("on"); $("tray").classList.remove("on");
   }
   function showDesktop() {
@@ -532,8 +543,10 @@
   const customUrl = () => 'url("/wallpaper/current.jpg?v=' + (status.wallpaper || 0) + '")';
   function applyLook() {
     const custom = S.wallpaper === "custom" && status.wallpaper > 0;
-    document.body.className = (custom ? "wp-custom" : "wp-" + (S.wallpaper === "custom" ? 0 : S.wallpaper | 0)) + (S.theme === "light" ? " light" : "");
-    document.body.style.backgroundImage = custom ? customUrl() : "";
+    const wp = custom ? "wp-custom" : "wp-" + (S.wallpaper === "custom" ? 0 : S.wallpaper | 0);
+    document.body.className = wp + (S.theme === "light" ? " light" : "");
+    if (A) call("look", wp, custom ? customUrl() : "");   // 앱 안: 맨 아래 배경 층에 걸기
+    else document.body.style.backgroundImage = custom ? customUrl() : "";
   }
   const pickWallpaper = () => { closePanels(); call("pickWallpaper"); };
   function buildSettings(body) {
@@ -558,6 +571,11 @@
           h("button", { class: "btn primary", onclick: pickWallpaper }, status.wallpaper > 0 ? "다른 사진으로 바꾸기" : "내 사진으로 배경 바꾸기"),
           status.wallpaper > 0 ? h("button", { class: "btn", onclick: async () => { await call("clearWallpaper"); if (S.wallpaper === "custom") S.wallpaper = 0; save(); await refreshStatus(); applyLook(); draw(); } }, "내 사진 지우기") : null),
         h("p", { text: "고른 사진은 이 기기 안에만 복사해 두며, 화면에 꽉 차게 맞춥니다." }),
+        h("h4", { text: "위젯" }),
+        h("div", null,
+          h("button", { class: "btn primary", onclick: openWidgetPicker }, "위젯 추가"),
+          S.widgets.length ? h("button", { class: "btn", onclick: () => enterWidgetEdit() }, "위젯 옮기기·크기 바꾸기") : null),
+        h("p", { text: "다른 앱의 위젯(시계·날씨·일정 등)을 바탕화면에 올립니다. 올린 위젯을 길게 누르면(마우스는 오른쪽 누름) 옮기거나 크기를 바꾸고 지울 수 있습니다." }),
         h("h4", { text: "색" }),
         seg(S.theme, [["dark", "어둡게"], ["light", "밝게"]], (v) => { S.theme = v; }),
         h("h4", { text: "홈 앱" }),
@@ -572,22 +590,197 @@
     body._redraw = draw;
   }
 
+
+  // ---------- 위젯 ----------
+  // 실제 위젯(안드로이드 뷰)은 이 화면 아래 층에 놓입니다. 여기서는 자리(x·y·크기)를 정해 앱에 알려 주고,
+  // 위젯을 덮는 것(창·아이콘·메뉴)도 알려 줘서 드러난 곳을 누를 때만 위젯이 받게 합니다.
+  let wEdit = false, wSel = null, wDragging = false;
+  let lastSync = "", syncQueued = false;
+  const wMissing = new Set();
+  const wArea = () => { const r = $("wlayer").getBoundingClientRect(); return { w: r.width, h: r.height }; };
+  const snap = (v) => Math.round(v / 8) * 8;
+
+  function clampWidgets() {
+    const a = wArea();
+    if (a.w < 50 || a.h < 50) return;
+    for (const d of S.widgets) {
+      d.w = Math.max(56, Math.min(d.w, a.w - 8)); d.h = Math.max(40, Math.min(d.h, a.h - 8));
+      d.x = Math.max(4, Math.min(d.x, a.w - d.w - 4)); d.y = Math.max(4, Math.min(d.y, a.h - d.h - 4));
+    }
+  }
+  function syncNative() {
+    if (!A || syncQueued) return;
+    syncQueued = true;
+    requestAnimationFrame(async () => {
+      syncQueued = false;
+      const layout = S.widgets.map((d) => ({ id: d.id, x: d.x, y: d.y, w: d.w, h: d.h }));
+      const blockers = [];
+      const add = (el) => {
+        if (!el || el.hidden) return;
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) blockers.push([Math.floor(r.left), Math.floor(r.top), Math.ceil(r.right), Math.ceil(r.bottom)]);
+      };
+      if (layout.length) { document.querySelectorAll(".win, .dicon").forEach(add); add($("taskbar")); add($("toast")); }
+      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden;
+      const key = JSON.stringify([layout, blockers, innerWidth, blockAll, wDragging]);
+      if (key === lastSync) return;
+      lastSync = key;
+      const r = await call("widgetSync", layout, blockers, innerWidth, blockAll, wDragging);
+      if (r && Array.isArray(r.missing)) {
+        const before = [...wMissing].join();
+        wMissing.clear();
+        for (const id of r.missing) wMissing.add(id);
+        if (before !== [...wMissing].join()) renderWidgetShells();
+      }
+    });
+  }
+  const place = (el, d) => Object.assign(el.style, { left: d.x + "px", top: d.y + "px", width: d.w + "px", height: d.h + "px" });
+
+  function renderWidgetShells() {
+    const layer = $("wlayer");
+    layer.textContent = "";
+    layer.classList.toggle("edit", wEdit);
+    $("wbar").hidden = !wEdit;
+    for (const d of S.widgets) {
+      if (!A) { const m = h("div", { class: "wshell mock", text: d.label || "위젯" }); place(m, d); layer.append(m); }
+      else if (wMissing.has(d.id)) { const m = h("div", { class: "wshell miss", text: (d.label || "위젯") + " — 불러올 수 없습니다 (앱이 지워졌을 수 있음)" }); place(m, d); layer.append(m); }
+      if (wEdit) layer.append(widgetFrame(d));
+    }
+  }
+  function widgetFrame(d) {
+    const size = h("span", { class: "wsize", hidden: "" });
+    const del = h("button", { class: "wdel", "aria-label": (d.label || "위젯") + " 지우기", onclick: () => removeWidget(d.id) }, "✕");
+    const rz = h("div", { class: "wrz", "aria-label": "크기 바꾸기" });
+    const f = h("div", { class: "wframe" + (wSel === d.id ? " sel" : "") }, h("span", { class: "wname", text: d.label || "위젯" }), size, del, rz);
+    place(f, d);
+    del.addEventListener("pointerdown", (e) => e.stopPropagation());
+    const track = (el, resize) => {
+      let g = null;
+      el.addEventListener("pointerdown", (e) => {
+        if (e.button === 2) return;
+        e.stopPropagation();
+        el.setPointerCapture(e.pointerId);
+        g = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x: d.x, y: d.y, w: d.w, h: d.h };
+        wSel = d.id;
+        for (const x of $("wlayer").querySelectorAll(".wframe")) x.classList.toggle("sel", x === f);
+      });
+      el.addEventListener("pointermove", (e) => {
+        if (!g || e.pointerId !== g.id) return;
+        const dx = e.clientX - g.sx, dy = e.clientY - g.sy, a = wArea();
+        if (resize) {
+          d.w = Math.max(56, Math.min(snap(g.w + dx), a.w - d.x - 4)); d.h = Math.max(40, Math.min(snap(g.h + dy), a.h - d.y - 4));
+          size.hidden = false; size.textContent = Math.round(d.w) + " × " + Math.round(d.h);
+        } else {
+          d.x = Math.max(4, Math.min(snap(g.x + dx), a.w - d.w - 4)); d.y = Math.max(4, Math.min(snap(g.y + dy), a.h - d.h - 4));
+        }
+        place(f, d);
+        wDragging = true;
+        syncNative();
+      });
+      const end = (e) => {
+        if (!g || e.pointerId !== g.id) return;
+        g = null; size.hidden = true;
+        wDragging = false;
+        save(); syncNative();
+        if (!A) renderWidgetShells();
+      };
+      el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+    };
+    track(f, false); track(rz, true);
+    return f;
+  }
+  function enterWidgetEdit(id) {
+    if (!S.widgets.length) return openWidgetPicker();
+    closePanels();
+    for (const w of wins) { w.min = true; w.el.hidden = true; }   // 위젯이 보이게 창은 내려 둠
+    renderTaskbar();
+    wEdit = true; wSel = id == null ? null : id;
+    renderWidgetShells(); syncNative();
+  }
+  function exitWidgetEdit() {
+    if (!wEdit) return;
+    wEdit = false; wSel = null; wDragging = false;
+    save(); renderWidgetShells(); syncNative();
+  }
+  function removeWidget(id) {
+    S.widgets = S.widgets.filter((d) => d.id !== id);
+    wMissing.delete(id);
+    save();
+    if (!S.widgets.length) wEdit = false;
+    renderWidgetShells(); syncNative(); redrawSettings();
+  }
+  function onWidgetAdded(info) {
+    if (info.id == null || S.widgets.some((d) => d.id === info.id)) return;
+    const a = wArea();
+    // 크기: 위젯이 바라는 칸 수(있으면) 또는 최소 크기에서 시작
+    let w = Math.max(info.w || 0, (info.cw || 0) * 76, 120), ht = Math.max(info.h || 0, (info.ch || 0) * 88, 72);
+    w = Math.min(snap(w), a.w - 16); ht = Math.min(snap(ht), a.h - 16);
+    // 자리: 오른쪽 위부터, 다른 위젯과 겹치지 않는 곳
+    const hit = (x, y) => S.widgets.some((d) => x < d.x + d.w + 8 && x + w + 8 > d.x && y < d.y + d.h + 8 && y + ht + 8 > d.y);
+    let x = Math.max(8, a.w - w - 16), y = 16, found = false;
+    for (let cx = x; cx >= 8 && !found; cx -= 48) for (let cy = 16; cy + ht <= a.h - 8; cy += 16) if (!hit(cx, cy)) { x = cx; y = cy; found = true; break; }
+    S.widgets.push({ id: info.id, x: snap(x), y: snap(y), w, h: ht, label: info.label || "" });
+    clampWidgets(); save();
+    renderWidgetShells(); syncNative(); redrawSettings();
+    toast("위젯을 올렸습니다. 길게 누르면 옮기거나 크기를 바꿀 수 있습니다.");
+  }
+
+  // 위젯 고르기
+  let wProviders = [];
+  async function openWidgetPicker() {
+    closePanels();
+    $("wpick").hidden = false;
+    $("wsearch").value = "";
+    $("wpick-body").textContent = "";
+    $("wpick-body").append(h("div", { class: "empty", text: "위젯 목록을 불러오는 중입니다…" }));
+    const list = await call("widgetProviders");
+    wProviders = Array.isArray(list) ? list : [];
+    renderWidgetPicker();
+  }
+  function renderWidgetPicker() {
+    const body = $("wpick-body");
+    const q = $("wsearch").value.trim().toLowerCase();
+    body.textContent = "";
+    const list = q ? wProviders.filter((p) => (p.label + " " + p.app).toLowerCase().includes(q)) : wProviders;
+    if (!list.length) return body.append(h("div", { class: "empty", text: wProviders.length ? "찾는 위젯이 없습니다." : "이 기기에 올릴 수 있는 위젯이 없습니다." }));
+    let app = null, grid = null;
+    for (const p of list) {
+      if (p.app !== app) { app = p.app; grid = h("div", { class: "wlist" }); body.append(h("h3", { text: app }), grid); }
+      const sizeText = p.cw && p.ch ? p.cw + " × " + p.ch + "칸" : p.w + " × " + p.h;
+      grid.append(h("button", { class: "witem", title: p.label, onclick: () => pickWidget(p) },
+        A ? h("img", { src: "/widgetpreview/" + p.i, alt: "", loading: "lazy", draggable: "false" }) : h("span", { class: "ico tile c" + (p.i % 4), text: p.label[0] }),
+        h("b", { text: p.label }), h("small", { text: sizeText })));
+    }
+  }
+  async function pickWidget(p) {
+    $("wpick").hidden = true;
+    const r = await call("addWidget", p.i);
+    if (r && r.error) toast("올리지 못했습니다: " + r.error);
+  }
+  // 창을 옮기거나 메뉴가 열리고 닫힐 때마다 위젯을 덮는 것이 달라지므로, 화면이 바뀌면 다시 알려 줍니다
+  if (A) new MutationObserver(syncNative).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "style", "class"] });
+
   // ---------- 이벤트 ----------
   function redrawSettings() {
     const w = wins.find((x) => x.key === "in:settings");
     if (w) w.el.querySelector(".win-body")._redraw();
   }
-  function onPush(what) {
-    if (what === "apps") loadApps();
+  function onPush(what, data) {
+    if (what === "apps") { loadApps(); lastSync = ""; syncNative(); }
+    else if (what === "widget-added") onWidgetAdded(data || {});
+    else if (what === "widget-failed") toast(data && data.reason === "denied" ? "위젯을 올리려면 확인 창에서 '허용'을 눌러 주세요." : data && data.reason === "canceled" ? "위젯 설정을 마치지 않아 올리지 않았습니다." : "이 위젯은 올리지 못했습니다.");
+    else if (what === "widget-edit") enterWidgetEdit(data && data.id);
     else if (what === "wallpaper") {
       S.wallpaper = "custom"; save();
       refreshStatus().then(() => { applyLook(); redrawSettings(); toast("배경을 바꿨습니다"); });
     }
     else if (what === "wallpaper-failed") toast("이 사진은 읽지 못했습니다. 다른 사진을 골라 주세요.");
     else if (what === "status") refreshStatus().then(() => { applyLook(); redrawSettings(); });
-    else if (what === "home") { closePanels(); }
+    else if (what === "home") { closePanels(); exitWidgetEdit(); }
     else if (what === "back") {
       if (!$("ctx").hidden) { $("ctx").hidden = true; return; }
+      if (!$("wpick").hidden) { $("wpick").hidden = true; return; }
+      if (wEdit) return exitWidgetEdit();
       if (!$("start").hidden || !$("quick").hidden) return closePanels();
       const t = topWin();
       if (t) { t.min = true; t.el.hidden = true; const n = topWin(); if (n) focusWin(n); else renderTaskbar(); }
@@ -601,12 +794,18 @@
     if (e.key === "Escape") closePanels();
   });
   $("btn-desk-settings").addEventListener("click", () => openApp("in:settings"));
+  $("btn-widgets").addEventListener("click", openWidgetPicker);
+  $("wpick-close").addEventListener("click", () => { $("wpick").hidden = true; });
+  $("wsearch").addEventListener("input", renderWidgetPicker);
+  $("wbar-add").addEventListener("click", openWidgetPicker);
+  $("wbar-done").addEventListener("click", exitWidgetEdit);
   $("btn-sys-settings").addEventListener("click", () => { closePanels(); call("openSettings", "all"); });
   document.addEventListener("pointerdown", (e) => {
     const t = e.target;
     if (!$("ctx").hidden && !$("ctx").contains(t)) $("ctx").hidden = true;
     if (!$("start").hidden && !$("start").contains(t) && !$("start-btn").contains(t) && !$("ctx").contains(t)) { $("start").hidden = true; $("start-btn").classList.remove("on"); }
     if (!$("quick").hidden && !$("quick").contains(t) && !$("tray").contains(t)) { $("quick").hidden = true; $("tray").classList.remove("on"); }
+    if (!$("wpick").hidden && !$("wpick").contains(t)) $("wpick").hidden = true;
   }, true);
   $("desk").addEventListener("contextmenu", (e) => {
     if (e.target !== $("desk")) return;
@@ -614,6 +813,8 @@
     const c = $("ctx");
     c.textContent = "";
     const item = (label, fn) => h("button", { role: "menuitem", onclick: () => { c.hidden = true; fn(); } }, label);
+    c.append(item("위젯 추가", openWidgetPicker));
+    if (S.widgets.length) c.append(item("위젯 옮기기·크기 바꾸기", () => enterWidgetEdit()));
     c.append(item("내 사진으로 배경 바꾸기", pickWallpaper), item("기본 배경 넘겨 보기", () => { S.wallpaper = (S.wallpaper === "custom" ? 0 : ((S.wallpaper | 0) + 1) % 5); save(); applyLook(); }), item("데스크 설정", () => openApp("in:settings")), item("모든 창 내리기", showDesktop));
     c.hidden = false;
     const r = c.getBoundingClientRect();
@@ -621,15 +822,18 @@
     c.style.top = Math.max(6, Math.min(e.clientY, innerHeight - r.height - 6)) + "px";
   });
   document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("wpick").hidden) { $("wpick").hidden = true; return; }
+    if (e.key === "Escape" && wEdit && $("start").hidden && $("quick").hidden) return exitWidgetEdit();
     if (e.key === "Meta" || (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden))) { e.preventDefault(); if (e.key === "Meta") toggleStart(); else closePanels(); }
   });
-  addEventListener("resize", () => { for (const w of wins) applyRect(w); });
+  addEventListener("resize", () => { for (const w of wins) applyRect(w); clampWidgets(); renderWidgetShells(); syncNative(); });
 
   // ---------- 시작 ----------
   applyLook();
   for (const b of BUILTIN) byKey.set(b.key, b);
   if (!S.desktop) S.desktop = BUILTIN.map((b) => b.key);
   renderDesk(); renderTaskbar(); renderTray(); tick();
+  clampWidgets(); renderWidgetShells(); syncNative();
   setInterval(tick, 10000);
   setInterval(refreshStatus, 60000);
   refreshStatus().then(applyLook);
@@ -671,16 +875,55 @@
       onPush("wallpaper");
       await wait(1200);
       const wpOk = await new Promise((r) => { const im = new Image(); im.onload = () => r(im.naturalWidth === 900); im.onerror = () => r(false); im.src = "/wallpaper/current.jpg?t=" + Date.now(); });
-      const bg = getComputedStyle(document.body).backgroundImage;
+      const bg = A ? String(await call("lookProbe")) : getComputedStyle(document.body).backgroundImage;
       log((wpOk && document.body.classList.contains("wp-custom") && bg.includes("/wallpaper/current.jpg") ? "PASS" : "FAIL") + " custom wallpaper loaded=" + wpOk + " bg=" + bg.slice(0, 80));
       for (const x of wins) { x.max = false; x.min = true; x.el.hidden = true; }
       renderTaskbar();
+      // 위젯: 시험용 위젯을 고르기 → 올리기 → 실제 뷰가 놓였는지 → 누르면 위젯이 받는지 → 메뉴가 열려 있으면 받지 않는지
+      const provs = await call("widgetProviders");
+      const mine = Array.isArray(provs) ? provs.find((p) => p.pkg === status.pkg) : null;
+      let wd = null;
+      if (!mine) log("FAIL widget: 시험용 위젯이 목록에 없음 (목록 " + (Array.isArray(provs) ? provs.length : provs) + "개)");
+      else {
+        await call("addWidget", mine.i);
+        for (let i = 0; i < 40 && !S.widgets.length; i++) await wait(250);
+        await wait(1500);
+        let probe = await call("widgetProbe");
+        let v = Array.isArray(probe) ? probe[0] : null;
+        wd = S.widgets[0] || null;
+        const ok = !!(v && wd && v.id === wd.id && v.shown && v.kids > 0 && v.w > 50);
+        log((ok ? "PASS" : "FAIL") + " widget added probe=" + JSON.stringify(probe) + " state=" + JSON.stringify(S.widgets) + " providers=" + provs.length);
+        if (ok) {
+          log("WIDGET-AT " + Math.round(v.sx + v.w / 2) + " " + Math.round(v.sy + v.h / 2));   // 점검 스크립트가 여기를 누름 → 위젯이 받아야 함
+          await wait(9000);
+          toggleQuick();
+          await wait(600);
+          log("WIDGET-BLOCKED-AT " + Math.round(v.sx + v.w / 2) + " " + Math.round(v.sy + v.h / 2)); // 메뉴가 열려 있을 때는 위젯이 받지 않아야 함
+          await wait(9000);
+          closePanels();
+          enterWidgetEdit(wd.id);
+          const frames = $("wlayer").querySelectorAll(".wframe").length;
+          wd.w += 24; wd.x -= 32;
+          renderWidgetShells(); syncNative();
+          await wait(1000);
+          probe = await call("widgetProbe");
+          const v2 = Array.isArray(probe) ? probe[0] : null;
+          log((frames === 1 && v2 && v2.w > v.w && v2.sx < v.sx ? "PASS" : "FAIL") + " widget edit frames=" + frames + " width " + v.w + "→" + (v2 && v2.w) + " x " + v.sx + "→" + (v2 && v2.sx));
+          exitWidgetEdit();
+        }
+      }
       await wait(600);
       log("SHOT");            // 여기서 화면을 찍음
       await wait(4000);
       const settings = apps.find((a) => a.pkg === "com.android.settings") || apps[0];
       const r = settings ? await openApp(settings.key, "window") : null;
       log((r && r.ok ? "PASS" : "FAIL") + " launch " + (settings && settings.pkg) + " → " + JSON.stringify(r));
+      if (wd) {
+        removeWidget(wd.id);
+        await wait(1000);
+        const left = await call("widgetProbe");
+        log((Array.isArray(left) && left.length === 0 && S.widgets.length === 0 ? "PASS" : "FAIL") + " widget removed native=" + JSON.stringify(left));
+      }
     } catch (e) {
       log("FAIL exception " + (e && e.stack || e));
     }
