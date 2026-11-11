@@ -183,6 +183,36 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .speed-video video { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #2a2a2e; background: #000; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
 @media (max-width: 900px) { .speed-home .amp-copy, .speed-video { grid-column: 1 / -1; } }
 
+/* ---------- 스피드미터 잠금 해제 장면: 폴더블이 펼쳐지고 금빛 입자. 커서를 향해 기우는 단단한 3D 물체 ---------- */
+.ul { grid-column: span 6; align-self: center; position: relative; display: grid; justify-items: center; gap: 26px; padding: 30px 0 6px; perspective: 1400px; touch-action: pan-y; }
+.ul-spot { position: absolute; inset: -12% -8%; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; background: radial-gradient(55% 50% at 50% 45%, rgba(233,196,106,.22), rgba(233,196,106,.05) 50%, transparent 72%); }
+.ul.on .ul-spot { opacity: 1; }
+.ul-fx { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; pointer-events: none; }
+.ul-rig { position: relative; width: min(100%, 440px); aspect-ratio: 1080 / 1120; transform-style: preserve-3d; will-change: transform; opacity: 0; }
+.ul-shadow { position: absolute; left: 6%; right: 6%; bottom: -9%; height: 12%; border-radius: 50%; background: rgba(0,0,0,.8); filter: blur(22px); opacity: 0; }
+.ul-half { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; will-change: transform; }
+.ul-half.l { left: 0; transform-origin: 100% 50%; } .ul-half.r { right: 0; transform-origin: 0 50%; }
+.ul-half > i { position: absolute; inset: 0; display: block; background: linear-gradient(180deg, #5b5b60, #2b2b2f 50%, #18181b); }
+.ul-half.l > i { border-radius: 30px 3px 3px 30px; } .ul-half.r > i { border-radius: 3px 30px 30px 3px; }
+.ul-half > .face { background: #050506; box-shadow: inset 0 0 0 2px #3a3a40, inset 0 0 0 9px #0b0b0d; }
+.ul-half > .back { background: linear-gradient(135deg, #2a2a2e, #101012 60%, #1c1c20); }
+.ul-screen { position: absolute; inset: 9px; border-radius: 22px; overflow: hidden; transform: translateZ(1px); background: #000; opacity: 0; }
+.ul-screen video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ul-gloss { position: absolute; inset: 0; border-radius: 30px; transform: translateZ(2px); pointer-events: none; mix-blend-mode: screen; opacity: 0; background: radial-gradient(60% 50% at var(--gx, 30%) var(--gy, 10%), rgba(255,255,255,.26), rgba(255,255,255,.05) 45%, transparent 70%); }
+.ul-sweep { position: absolute; inset: 9px; border-radius: 22px; overflow: hidden; transform: translateZ(2.5px); pointer-events: none; }
+.ul-sweep::before { content: ""; position: absolute; top: -20%; bottom: -20%; left: 0; width: 34%; transform: translateX(-160%) skewX(-18deg); background: linear-gradient(90deg, transparent, rgba(246,227,161,.55), rgba(255,255,255,.85), rgba(246,227,161,.55), transparent); }
+.ul.lit .ul-sweep::before { animation: ulSweep .9s cubic-bezier(.3,.6,.2,1) .05s both; }
+@keyframes ulSweep { to { transform: translateX(420%) skewX(-18deg); } }
+.ul-ring { position: absolute; left: 50%; top: 50%; width: 118%; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid #e9c46a; transform: translate(-50%, -50%) translateZ(-40px) scale(.6); opacity: 0; pointer-events: none; }
+.ul.lit .ul-ring { animation: ulRing 1.1s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ulRing { 0% { opacity: .9; transform: translate(-50%, -50%) translateZ(-40px) scale(.6); } 100% { opacity: 0; transform: translate(-50%, -50%) translateZ(-40px) scale(1.5); } }
+.ul-again { position: relative; font: 600 13px/1 var(--font-body); color: #0a0a0b; background: linear-gradient(180deg, #f6e3a1, #e9c46a); border: 0; border-radius: 999px; padding: 11px 16px; cursor: pointer; box-shadow: 0 4px 0 #8a6d1f; opacity: 0; transition: opacity .5s ease .3s; }
+.ul.lit .ul-again { opacity: 1; }
+.ul-again:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a6d1f; }
+.ul-again:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.speed-home { overflow: hidden; }
+@media (max-width: 900px) { .ul { grid-column: 1 / -1; } .ul-rig { width: min(86%, 400px); } }
+
 /* ---------- 앱 화면 쇼케이스: 가운데 크게, 양옆은 기울여 뒤로. 저절로 돌고, 누르면 그 앱 소개로 ---------- */
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 .show { background: #0b0b0c; color: #f4f4f5; padding: 64px 0 56px; overflow: hidden; }
@@ -375,10 +405,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <a class="amp-btn" href="#app-center">앱센터에서 모든 앱 보기 →</a>
         </div>
       </div>
-      <figure class="amp-shot speed-video">
-        <video id="speedVideo" src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted playsinline controls preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상"></video>
-        <figcaption>실제 주행 화면 · 2분 35초</figcaption>
-      </figure>
+      <div class="ul" id="ul" role="img" aria-label="펼쳐진 폴더블 휴대폰 화면에서 대신남 스피드미터 주행 영상이 재생됩니다">
+        <div class="ul-spot"></div>
+        <canvas class="ul-fx" id="ulFx" aria-hidden="true"></canvas>
+        <div class="ul-rig" id="ulRig">
+          <div class="ul-ring"></div>
+          <div class="ul-shadow" id="ulShadow"></div>
+          <div class="ul-half l" id="ulL"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-half r" id="ulR"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-screen" id="ulScreen"><video id="ulVid" src="media/fold-speedometer.mp4" poster="media/fold-poster.jpg" muted loop playsinline preload="metadata"></video></div>
+          <div class="ul-sweep"></div>
+          <div class="ul-gloss" id="ulGloss"></div>
+        </div>
+        <button class="ul-again" id="ulAgain" type="button">↻ 다시 보기</button>
+      </div>
     </div>
   </section>
 
@@ -926,6 +966,100 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   });
   key.addEventListener("blur", function () { key.classList.remove("is-down"); });
   render();
+})();
+</script>
+<script>
+// ---------- 스피드미터 잠금 해제 장면 ----------
+(function () {
+  "use strict";
+  var box = document.getElementById("ul"); if (!box) return;
+  var rig = document.getElementById("ulRig"), hl = document.getElementById("ulL"), hr = document.getElementById("ulR");
+  var screen = document.getElementById("ulScreen"), gloss = document.getElementById("ulGloss"), shadow = document.getElementById("ulShadow");
+  var vid = document.getElementById("ulVid"), cv = document.getElementById("ulFx"), cx = cv.getContext("2d");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches, T = 12;
+  [hl, hr].forEach(function (h) {
+    var face = h.querySelector(".face"); h.querySelector(".back").style.transform = "translateZ(" + (-T) + "px)";
+    for (var i = 1; i < 6; i++) { var e = document.createElement("i"); e.style.transform = "translateZ(" + (-T * i / 6) + "px)"; h.insertBefore(e, face); }
+  });
+  var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+  var easeOut = function (x) { return 1 - Math.pow(1 - x, 4); };
+  var smooth = function (x) { return x * x * (3 - 2 * x); };
+  // 기울기: 임계 감쇠 스프링 (넘치지 않고 빠르게 멈춤)
+  var tx = 0, ty = 0, rx = 0, ry = 0, vx = 0, vy = 0, K = 140, MAX = 13, lastMove = 0;
+  function aim(e) {
+    var r = rig.getBoundingClientRect();
+    ty = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.9), -1, 1) * MAX;
+    tx = -clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 0.9), -1, 1) * MAX; lastMove = performance.now();
+  }
+  var zone = box.closest("section") || box;
+  zone.addEventListener("pointermove", aim);
+  zone.addEventListener("pointerleave", function () { tx = 0; ty = 0; });
+  zone.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { tx = 0; ty = 0; } });
+  // 금빛 입자
+  var P = [], dpr = Math.min(2, window.devicePixelRatio || 1), W = 0, H = 0;
+  function size() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  window.addEventListener("resize", size);
+  function burst() {
+    if (reduce) return; size();
+    var r = rig.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    var ox = r.left + r.width / 2 - c.left, oy = r.top + r.height / 2 - c.top, n = window.innerWidth < 600 ? 100 : 160;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, sp = 220 + Math.random() * 520, flake = Math.random() < 0.55;
+      P.push({ x: ox + Math.cos(a) * r.width * 0.36, y: oy + Math.sin(a) * r.height * 0.36, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 160,
+        s: flake ? 3 + Math.random() * 5 : 1.2 + Math.random() * 2.2, flake: flake, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 14,
+        life: 0, max: 1.4 + Math.random() * 1.5, hue: 40 + Math.random() * 10, lum: 58 + Math.random() * 22 });
+    }
+  }
+  function particles(dt) {
+    if (!P.length && !W) return;
+    cx.clearRect(0, 0, W, H);
+    for (var i = P.length - 1; i >= 0; i--) {
+      var q = P[i]; q.life += dt;
+      if (q.life > q.max) { P.splice(i, 1); continue; }
+      var drag = Math.exp(-2.6 * dt); q.vx *= drag; q.vy = q.vy * drag + 520 * dt;
+      q.x += q.vx * dt; q.y += q.vy * dt; q.rot += q.vr * dt;
+      cx.save(); cx.translate(q.x, q.y); cx.globalAlpha = Math.min(1, (q.max - q.life) / 0.5);
+      if (q.flake) { cx.rotate(q.rot); var w = q.s * (0.25 + 0.75 * Math.abs(Math.cos(q.rot * 1.7)));
+        cx.fillStyle = "hsl(" + q.hue + ",78%," + (q.lum + 14 * Math.cos(q.rot * 1.7)) + "%)"; cx.fillRect(-w / 2, -q.s / 2, w, q.s); }
+      else { cx.fillStyle = "hsl(" + q.hue + ",90%,82%)"; cx.beginPath(); cx.arc(0, 0, q.s, 0, 6.283); cx.fill(); }
+      cx.restore();
+    }
+  }
+  var t0 = -1, lit = false, last = 0, visible = false, running = false;
+  function start() {
+    t0 = performance.now(); lit = false; box.classList.remove("lit"); box.classList.add("on"); P.length = 0; screen.style.opacity = 0;
+    try { vid.pause(); vid.currentTime = 0; } catch (e) {}
+    if (!running) { running = true; requestAnimationFrame(frame); }
+  }
+  function frame(now) {
+    if (!visible) { running = false; vid.pause(); return; } // 화면 밖이면 멈춰서 배터리를 아낌
+    var dt = Math.min(0.033, (now - last) / 1000 || 0.016); last = now;
+    var t = reduce ? 10 : (now - t0) / 1000;
+    var rise = easeOut(clamp((t - 0.25) / 0.9, 0, 1)), open = easeOut(clamp((t - 0.75) / 0.95, 0, 1)), fold = (1 - open) * 86;
+    hl.style.transform = "rotateY(" + fold + "deg)"; hr.style.transform = "rotateY(" + (-fold) + "deg)";
+    if (!lit && open > 0.985) { lit = true; box.classList.add("lit"); burst(); }
+    if (lit && vid.paused) { var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    screen.style.opacity = smooth(clamp((t - 1.58) / 0.35, 0, 1)); gloss.style.opacity = rise;
+    var gxT = tx, gyT = ty;
+    if (now - lastMove > 1800 && !reduce) { gyT = Math.sin(now / 1700) * 5; gxT = Math.cos(now / 2300) * 3; }
+    var c = 2 * Math.sqrt(K);
+    vx += (K * (gxT - rx) - c * vx) * dt; rx += vx * dt; vy += (K * (gyT - ry) - c * vy) * dt; ry += vy * dt;
+    rig.style.transform = "translateY(" + ((1 - rise) * 60) + "px) scale(" + (0.86 + 0.14 * rise) + ") rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg)";
+    rig.style.opacity = clamp((t - 0.25) / 0.3, 0, 1);
+    gloss.style.setProperty("--gx", (30 - ry * 3.2) + "%"); gloss.style.setProperty("--gy", (12 + rx * 3.2) + "%");
+    shadow.style.opacity = 0.9 * rise * open;
+    shadow.style.transform = "translate(" + (-ry * 1.6) + "px," + (rx * 1.2) + "px) translateZ(-60px) scaleX(" + (0.5 + 0.5 * open) + ")";
+    particles(dt);
+    requestAnimationFrame(frame);
+  }
+  document.getElementById("ulAgain").addEventListener("click", start);
+  // 화면에 들어올 때 처음 한 번 펼쳐짐. 이후에는 보일 때만 움직임
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (en) {
+      visible = en[0].isIntersecting;
+      if (visible) { if (t0 < 0) start(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+    }, { threshold: 0.35 }).observe(box);
+  } else { visible = true; start(); }
 })();
 </script>
 </body>
