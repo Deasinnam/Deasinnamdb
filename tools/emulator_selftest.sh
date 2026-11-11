@@ -9,9 +9,14 @@ PKG=com.daesinnam.browser
 fail=0
 
 adb install -r -g "$DEBUG_APK" || exit 1
+# 에뮬레이터가 막 켜진 직후에는 인터넷(이름 찾기)이 아직 안 될 수 있어 잠시 기다립니다
+for i in $(seq 1 30); do
+  if adb shell ping -c 1 -W 2 example.com >/dev/null 2>&1; then echo "인터넷 연결 확인 (${i}번째 시도)"; break; fi
+  sleep 3
+done
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez browser.selftest true --es browser.url "https://example.com/"
-for i in $(seq 1 40); do
+for i in $(seq 1 60); do
   sleep 3
   if adb logcat -d -s BROWSER_SELFTEST:I | grep -q "DONE"; then break; fi
 done
@@ -24,8 +29,8 @@ failn=$(grep -c "BROWSER_SELFTEST: FAIL" selftest-result.txt || true)
 skip=$(grep -c "BROWSER_SELFTEST: SKIP page load" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn"
 if ! grep -q "BROWSER_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ]; then fail=1; fi
-if [ "$skip" = 0 ] && [ "$pass" -lt 3 ]; then fail=1; fi
-if [ "$skip" != 0 ]; then echo "참고: 에뮬레이터에서 시험 페이지를 불러오지 못해 화면 배치만 확인했습니다"; fi
+if [ "$pass" -lt 3 ]; then fail=1; fi
+if [ "$skip" != 0 ]; then echo "에뮬레이터에서 시험 페이지를 불러오지 못해 PC 모드를 확인하지 못했습니다 (다시 돌려야 함)"; fail=1; fi
 
 # 실제 첫 화면(네이버)이 PC 화면으로 뜨는 모습 (기록용)
 adb shell am force-stop "$PKG"

@@ -109,6 +109,7 @@ public class MainActivity extends Activity {
     private long uploadGeneration;
     private boolean selftest;
     private boolean selftestDone;
+    private int selftestRetries;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -131,6 +132,7 @@ public class MainActivity extends Activity {
         });
 
         setupWeb();
+        if (selftest) root.postDelayed(this::layoutSelftest, 2500);
         if (state != null && web.restoreState(state) != null) {
             if (!UrlPolicy.isAllowed(web.getUrl())) web.loadUrl(HOME);
         } else {
@@ -343,9 +345,14 @@ public class MainActivity extends Activity {
                 if (!request.isForMainFrame()) return;
                 Toast.makeText(MainActivity.this, "페이지를 불러오지 못했습니다. 연결을 확인하고 새로고침하세요.", Toast.LENGTH_LONG).show();
                 if (selftest && !selftestDone) {
-                    selftestDone = true;
-                    Log.i(TAG, "SKIP page load failed (" + error.getErrorCode() + " " + error.getDescription() + ")");
-                    Log.i(TAG, "DONE");
+                    // 에뮬레이터가 막 켜져 인터넷이 아직 안 될 수 있음 → 몇 번 다시 시도
+                    if (selftestRetries++ < 8) {
+                        web.postDelayed(() -> web.reload(), 5000);
+                    } else {
+                        selftestDone = true;
+                        Log.i(TAG, "SKIP page load failed (" + error.getErrorCode() + " " + error.getDescription() + ")");
+                        Log.i(TAG, "DONE");
+                    }
                 }
             }
 
@@ -831,13 +838,16 @@ public class MainActivity extends Activity {
 
     // ---------- 자동 점검 (시험용 빌드) ----------
 
-    private void runSelftest(String url) {
-        if (selftestDone) return;
-        selftestDone = true;
+    private void layoutSelftest() {
         float d = getResources().getDisplayMetrics().density;
         int top = Math.round(topBar.getHeight() / d), bottom = Math.round(bottomBar.getHeight() / d);
         int above = Math.round((stage.getTop() - root.getPaddingTop()) / d);
         Log.i(TAG, (top == 40 && above == 40 && bottom == 44 ? "PASS" : "FAIL") + " layout topBar=" + top + "dp webStartsAt=" + above + "dp bottomBar=" + bottom + "dp");
+    }
+
+    private void runSelftest(String url) {
+        if (selftestDone) return;
+        selftestDone = true;
         web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({w:window.innerWidth,ua:navigator.userAgent,"
                 + "mobile:navigator.userAgentData?navigator.userAgentData.mobile:null,"
                 + "platform:navigator.userAgentData?navigator.userAgentData.platform:null,"
