@@ -109,6 +109,7 @@
     plus: ["M12 5v14", "M5 12h14"],
     home: ["M3 11l9-8 9 8", "M5 9v12h14V9"],
     close: ["M2.5 2.5l7 7", "M9.5 2.5l-7 7"],
+    split: ["M3 4h18v16H3z", "M12 4v16", "M12 12h9"],
   };
   let toastTimer = 0;
   function toast(text) {
@@ -171,7 +172,10 @@
     closePanels();
     S.lately = [{ k: key, t: Date.now() }].concat(lately().filter((x) => x.k !== key)).slice(0, 12); save();
     if (key.startsWith("in:")) return openBuiltin(key);
-    const r = await call("launch", app.pkg, app.cls, mode || S.openMode);
+    let m = mode || S.openMode, zone = null;
+    if (m === "left" || m === "right") m = "zone:" + m;
+    if (m.startsWith("zone:")) { zone = ZONES[m.slice(5)]; m = "zone"; }
+    const r = await call("launch", app.pkg, app.cls, m, zone, tbSpace());
     if (r && r.error) return toast("열지 못했습니다: " + r.error);
     const i = recent.indexOf(key);
     if (i >= 0) recent.splice(i, 1);
@@ -227,8 +231,7 @@
     if (ext) {
       c.append(item("열기", IC.open, () => openApp(key)));
       c.append(item("창으로 열기", IC.win, () => openApp(key, "window")));
-      c.append(item("왼쪽 반에 열기", IC.halfL, () => openApp(key, "left")));
-      c.append(item("오른쪽 반에 열기", IC.halfR, () => openApp(key, "right")));
+      if (splitCap() >= 2) c.append(item("화면 나눠 열기…", IC.split, () => splitOpen(key, { x, y, below: where !== "task" })));
       c.append(item("전체 화면으로 열기", IC.full, () => openApp(key, "full")));
     } else {
       c.append(item("열기", IC.open, () => openApp(key)));
@@ -341,7 +344,7 @@
     const r = await call("status");
     if (my < statusShown) return;
     statusShown = my;
-    if (r && !r.error) { status = r; renderTray(); }
+    if (r && !r.error) { status = r; renderTray(); $("splitblock").hidden = !status.split; }
     refreshQuick();
   }
 
@@ -388,6 +391,7 @@
       h("div", { class: "acts" },
         act("열기", IC.open, () => openApp(app.key)),
         ext ? act("창으로 열기", IC.win, () => openApp(app.key, "window")) : null,
+        ext && splitCap() >= 2 ? act("화면 나눠 열기…", IC.split, () => { const r = $("start").getBoundingClientRect(); splitOpen(app.key, { x: r.left + r.width / 2, y: r.top + 80, below: true }); }) : null,
         ext ? act("전체 화면으로 열기", IC.full, () => openApp(app.key, "full")) : null,
         act(pinned ? "작업 표시줄에서 고정 해제" : "작업 표시줄에 고정", pinned ? IC.unpin : IC.pin, () => togglePin(app.key)),
         ext ? act("앱 정보", IC.info, () => { closePanels(); call("appInfo", app.pkg); }) : null));
@@ -602,7 +606,7 @@
     t.hidden = false;
   }
   function closePanels() {
-    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true; $("calfly").hidden = true; $("snapfly").hidden = true; $("taskview").hidden = true;
+    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true; $("calfly").hidden = true; $("snapfly").hidden = true; $("taskview").hidden = true; $("assist").hidden = true;
     $("start-btn").classList.remove("on"); $("tray").classList.remove("on"); $("tray-clock").classList.remove("on");
     hideTip();
   }
@@ -704,9 +708,14 @@
     const snapAt = (e) => {
       const r = layer().getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
+      const quarter = splitCap() >= 4, cy = r.height * 0.18;
+      if (x < 14 || x > r.width - 14) {
+        const side = x < 14 ? "l" : "r";
+        if (quarter && y < cy) return "t" + side;
+        if (quarter && y > r.height - cy) return "b" + side;
+        return side === "l" ? "left" : "right";
+      }
       if (y < 10) return "max";
-      if (x < 14) return "left";
-      if (x > r.width - 14) return "right";
       return null;
     };
     bar.addEventListener("pointerdown", (e) => {
@@ -735,7 +744,7 @@
       applyRect(w);
       const s = snapAt(e), a2 = area();
       preview.hidden = !s;
-      if (s) Object.assign(preview.style, { top: "6px", height: a2.h - 12 + "px", left: (s === "right" ? a2.w / 2 + 3 : 6) + "px", width: (s === "max" ? a2.w - 12 : a2.w / 2 - 9) + "px" });
+      if (s) { const z = ZONES[s]; Object.assign(preview.style, { left: (a2.w * z[0] + 6) + "px", top: (a2.h * z[1] + 6) + "px", width: (a2.w * (z[2] - z[0]) - 12) + "px", height: (a2.h * (z[3] - z[1]) - 12) + "px" }); }
     });
     const endDrag = (e) => {
       if (!drag || e.pointerId !== drag.id) return;
@@ -770,31 +779,121 @@
   }
 
   // 창 배치: 화면을 나눠 붙이기 (반·반, ⅔·⅓, ⅓·⅔, 전체)
-  const ZONES = { left: [0, .5], right: [.5, 1], left2: [0, 2 / 3], right1: [2 / 3, 1], left1: [0, 1 / 3], right2: [1 / 3, 1] };
+  // 화면 나누기 자리: [왼, 위, 오른, 아래] 비율 (작업 표시줄 위 넓이 기준)
+  const ZONES = {
+    max: [0, 0, 1, 1], left: [0, 0, .5, 1], right: [.5, 0, 1, 1], top: [0, 0, 1, .5], bottom: [0, .5, 1, 1],
+    left2: [0, 0, 2 / 3, 1], right1: [2 / 3, 0, 1, 1], left1: [0, 0, 1 / 3, 1], right2: [1 / 3, 0, 1, 1],
+    tl: [0, 0, .5, .5], tr: [.5, 0, 1, .5], bl: [0, .5, .5, 1], br: [.5, .5, 1, 1],
+  };
+  const ZONE_NAME = { max: "전체", left: "왼쪽 반", right: "오른쪽 반", top: "위쪽 반", bottom: "아래쪽 반", left2: "왼쪽 넓게", right1: "오른쪽 좁게",
+    left1: "왼쪽 좁게", right2: "오른쪽 넓게", tl: "왼쪽 위", tr: "오른쪽 위", bl: "왼쪽 아래", br: "오른쪽 아래" };
+  // 배치: 몇 개로 나누는지와 자리들
+  const LAYOUTS = {
+    L2: ["left", "right"], V2: ["top", "bottom"], T21: ["left2", "right1"], T12: ["left1", "right2"],
+    L3: ["left", "tr", "br"], Q4: ["tl", "tr", "bl", "br"], F1: ["max"],
+  };
+  /** 화면 크기에 따라 나눌 수 있는 최대 개수: 좁으면 1(세로로 길면 위·아래 2), 보통 2, 넓으면 4 */
+  function splitCap(a) {
+    a = a || area();
+    if (a.w >= 800 && a.h >= 560) return 4;
+    if (a.w >= 600) return 2;
+    return a.h >= 640 ? 2 : 1;
+  }
+  function layoutsFor(a) {
+    a = a || area();
+    const cap = splitCap(a), L = [];
+    if (cap >= 2 && a.w >= 600) L.push("L2");
+    if (cap >= 2 && (a.h > a.w || a.w < 600)) L.push("V2");
+    if (cap >= 2 && a.w >= 900) L.push("T21", "T12");
+    if (cap >= 4) L.push("L3", "Q4");
+    L.push("F1");
+    return L;
+  }
   function snapTo(w, kind) {
     closePanels();
     if (kind === "max") w.max = true;
     else {
       const a = area(), z = ZONES[kind];
       w.max = false;
-      Object.assign(w, { x: Math.round(a.w * z[0]), y: 0, w: Math.round(a.w * (z[1] - z[0])), h: Math.round(a.h) });
+      Object.assign(w, { x: Math.round(a.w * z[0]), y: Math.round(a.h * z[1]), w: Math.round(a.w * (z[2] - z[0])), h: Math.round(a.h * (z[3] - z[1])) });
     }
     w.min = false; w.el.hidden = false;
+    w.snap = kind;
     applyRect(w); remember(w); focusWin(w);
   }
-  function showSnap(w) {
+  /** 윈도우 11식 배치 고르기 판. pick(zoneKey, layoutKey) */
+  function showLayouts(anchor, title, pick) {
     const f = $("snapfly");
     f.textContent = "";
-    const zone = (kind, grow) => h("button", { class: grow, "aria-label": { left: "왼쪽 반", right: "오른쪽 반", left2: "왼쪽 넓게", right1: "오른쪽 좁게", left1: "왼쪽 좁게", right2: "오른쪽 넓게", max: "전체" }[kind], onclick: (e) => { e.stopPropagation(); snapTo(w, kind); } });
-    f.append(
-      h("div", { class: "sl" }, zone("left", "f1"), zone("right", "f1")),
-      h("div", { class: "sl" }, zone("left2", "f2"), zone("right1", "f1")),
-      h("div", { class: "sl" }, zone("left1", "f1"), zone("right2", "f2")),
-      h("div", { class: "sl" }, zone("max", "f1")));
+    if (title) f.append(h("div", { class: "sl-title", text: title }));
+    for (const lk of layoutsFor()) {
+      const box = h("div", { class: "sl", "data-layout": lk });
+      for (const zk of LAYOUTS[lk]) {
+        const z = ZONES[zk];
+        const b = h("button", { "aria-label": ZONE_NAME[zk], "data-zone": zk, onclick: (e) => { e.stopPropagation(); f.hidden = true; pick(zk, lk); } });
+        Object.assign(b.style, { left: "calc(" + (z[0] * 100) + "% + 2px)", top: "calc(" + (z[1] * 100) + "% + 2px)", width: "calc(" + ((z[2] - z[0]) * 100) + "% - 4px)", height: "calc(" + ((z[3] - z[1]) * 100) + "% - 4px)" });
+        box.append(b);
+      }
+      f.append(box);
+    }
     f.hidden = false;
-    const b = w.maxBtn.getBoundingClientRect(), r = f.getBoundingClientRect();
-    f.style.left = Math.max(6, Math.min(b.left + b.width / 2 - r.width / 2, innerWidth - r.width - 6)) + "px";
-    f.style.top = Math.min(b.bottom + 6, innerHeight - r.height - 6) + "px";
+    const r = f.getBoundingClientRect();
+    f.style.left = Math.max(6, Math.min(anchor.x - r.width / 2, innerWidth - r.width - 6)) + "px";
+    f.style.top = Math.max(6, Math.min(anchor.below ? anchor.y + 6 : anchor.y - r.height - 8, innerHeight - r.height - 6)) + "px";
+  }
+  function showSnap(w) {
+    const b = w.maxBtn.getBoundingClientRect();
+    showLayouts({ x: b.left + b.width / 2, y: b.bottom, below: true }, null, (zk) => snapTo(w, zk));
+  }
+  // 다른 앱을 화면 나누기 자리에 띄우기
+  const tbSpace = () => Math.max(0, innerHeight - $("windows").getBoundingClientRect().bottom);
+  async function launchZone(key, zk) {
+    const app = byKey.get(key);
+    if (!app) return null;
+    if (key.startsWith("in:")) { const w = openBuiltin(key); if (w) snapTo(w, zk); return { ok: true }; }
+    if (zk === "max") return openApp(key, "full");
+    return openApp(key, "zone:" + zk);
+  }
+  function splitOpen(key, anchor) {
+    const app = byKey.get(key);
+    if (!app) return;
+    if (splitCap() < 2) return toast("화면이 좁아 나눠 열 수 없습니다. 펼친 화면이나 DeX에서 쓸 수 있습니다.");
+    showLayouts(anchor, app.label + " — 띄울 자리 고르기", async (zk, lk) => {
+      await launchZone(key, zk);
+      const rest = LAYOUTS[lk].filter((z) => z !== zk);
+      if (rest.length) setTimeout(() => showAssist(rest, [key]), 350);
+    });
+  }
+  /** 남은 자리 채우기: 남은 자리마다 띄울 앱을 고름 (윈도우 11의 "스냅 도우미"처럼) */
+  function showAssist(zones, used) {
+    const box = $("assist");
+    box.textContent = "";
+    const a = area();
+    const cands = () => {
+      const keys = [];
+      for (const k of recent.concat(lately().map((x) => x.k), S.pins || [])) if (!keys.includes(k) && !used.includes(k) && byKey.has(k)) keys.push(k);
+      for (const b of BUILTIN.concat(apps)) if (keys.length < 16 && !keys.includes(b.key) && !used.includes(b.key)) keys.push(b.key);
+      return keys.slice(0, 16);
+    };
+    const left = new Set(zones);
+    const draw = () => {
+      box.textContent = "";
+      if (!left.size) { box.hidden = true; return; }
+      for (const zk of left) {
+        const z = ZONES[zk];
+        const cell = h("div", { class: "as-zone" },
+          h("div", { class: "as-head" }, h("b", { text: ZONE_NAME[zk] + "에 띄울 앱" }),
+            h("button", { class: "pill", onclick: () => { left.delete(zk); draw(); } }, "건너뛰기")),
+          h("div", { class: "as-grid" }, cands().map((k) => {
+            const app = byKey.get(k);
+            return h("button", { class: "gitem", title: app.label, onclick: async () => { used.push(k); left.delete(zk); draw(); await launchZone(k, zk); } }, iconOf(app), h("span", { text: app.label }));
+          })));
+        Object.assign(cell.style, { left: (a.w * z[0] + 6) + "px", top: (a.h * z[1] + 6) + "px", width: (a.w * (z[2] - z[0]) - 12) + "px", height: (a.h * (z[3] - z[1]) - 12) + "px" });
+        box.append(cell);
+      }
+      box.hidden = false;
+    };
+    draw();
   }
 
   // ---------- 내부 앱 ----------
@@ -909,7 +1008,7 @@
       body.append(h("div", { class: "set" },
         h("h4", { text: "앱을 누르면" }),
         seg(S.openMode, [["window", "창으로 열기"], ["full", "전체 화면으로 열기"]], (v) => { S.openMode = v; }),
-        h("p", { text: "앱을 길게 누르면(마우스는 오른쪽 누름) 창·왼쪽 반·오른쪽 반·전체 화면을 골라 열 수 있습니다." }),
+        h("p", { text: "앱을 길게 누르면(마우스는 오른쪽 누름) 창·화면 나눠 열기·전체 화면을 고를 수 있습니다. 화면 나누기는 이 화면 안에서 다른 앱을 나눠 띄우며, 화면이 넓을수록 많이 나눕니다 (좁은 화면 1~2개, 펼친 화면·DeX 최대 4개). 덜누름 데스크 자체는 화면 나누기에 넣지 않습니다." }),
         status.freeform ? null : h("div", { class: "note" },
           "이 기기는 '자유 창'을 지원한다고 알려 오지 않았습니다. 창으로 열어도 전체 화면으로 뜨면, 개발자 옵션에서 '자유 형식 창 사용'(freeform windows)을 켠 뒤 기기를 다시 시작해 보세요. ",
           h("button", { class: "btn", onclick: () => call("openSettings", "developer") }, "개발자 옵션 열기")),
@@ -1052,7 +1151,7 @@
         if (r.width > 0 && r.height > 0) blockers.push([Math.floor(r.left), Math.floor(r.top), Math.ceil(r.right), Math.ceil(r.bottom)]);
       };
       if (layout.length) { document.querySelectorAll(".win, .dicon").forEach(add); add($("taskbar")); add($("toast")); }
-      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden || !$("calfly").hidden || !$("snapfly").hidden || !$("taskview").hidden;
+      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden || !$("calfly").hidden || !$("snapfly").hidden || !$("taskview").hidden || !$("assist").hidden;
       const key = JSON.stringify([layout, blockers, innerWidth, innerHeight, devicePixelRatio, blockAll, wDragging]);
       if (key === lastSync) return;
       lastSync = key;
@@ -1225,6 +1324,7 @@
       if (wEdit) return exitWidgetEdit();
       if (!$("snapfly").hidden) { $("snapfly").hidden = true; return; }
       if (!$("taskview").hidden) { $("taskview").hidden = true; return; }
+      if (!$("assist").hidden) { $("assist").hidden = true; return; }
       if (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden) return closePanels();
       const t = topWin();
       if (t) { t.min = true; t.el.hidden = true; const n = topWin(); if (n) focusWin(n); else renderTaskbar(); }
@@ -1242,6 +1342,7 @@
   $("me-ava").append(svg(IC.person));
   $("tb-search").addEventListener("click", () => toggleStart($("start").hidden ? true : false, true));
   $("tb-taskview").addEventListener("click", toggleTaskView);
+  $("split-exit").addEventListener("click", () => call("exitSplit"));
   $("tb-widgets").addEventListener("click", () => (S.widgets.length ? enterWidgetEdit() : openWidgetPicker()));
   $("btn-power").addEventListener("click", (e) => { e.stopPropagation(); powerMenu(); });
   $("me").addEventListener("click", () => openApp("in:settings"));
@@ -1266,6 +1367,7 @@
     if (!$("calfly").hidden && !$("calfly").contains(t) && !$("tray-clock").contains(t)) { $("calfly").hidden = true; $("tray-clock").classList.remove("on"); }
     if (!$("snapfly").hidden && !$("snapfly").contains(t)) $("snapfly").hidden = true;
     if (!$("taskview").hidden && !$("taskview").contains(t) && !$("tb-taskview").contains(t)) $("taskview").hidden = true;
+    if (!$("assist").hidden && !$("assist").contains(t) && !$("snapfly").contains(t)) $("assist").hidden = true;
     if (!$("wpick").hidden && !$("wpick").contains(t)) $("wpick").hidden = true;
   }, true);
   $("desk").addEventListener("contextmenu", (e) => {
@@ -1299,13 +1401,23 @@
       else if (k === "n") { e.preventDefault(); toggleCal(); }
       else if (k === "s") { e.preventDefault(); toggleStart(true, true); }
       else if (e.key === "Tab") { e.preventDefault(); toggleTaskView(); }
-      else if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp") {
+      else if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") {
         const w = topWin();
-        if (w) { e.preventDefault(); snapTo(w, e.key === "ArrowLeft" ? "left" : e.key === "ArrowRight" ? "right" : "max"); }
+        if (!w) return;
+        e.preventDefault();
+        // 윈도우처럼: 반쪽에 붙인 뒤 ↑/↓ 누르면 그쪽 위·아래 4분의 1 (넓은 화면)
+        const now = w.snap || "";
+        let next = null;
+        if (e.key === "ArrowLeft") next = now === "right" ? null : now === "tr" ? "tl" : now === "br" ? "bl" : "left";
+        else if (e.key === "ArrowRight") next = now === "left" ? null : now === "tl" ? "tr" : now === "bl" ? "br" : "right";
+        else if (e.key === "ArrowUp") next = splitCap() >= 4 && (now === "left" || now === "right") ? (now === "left" ? "tl" : "tr") : "max";
+        else next = splitCap() >= 4 && (now === "left" || now === "right") ? (now === "left" ? "bl" : "br") : (now === "tl" ? "left" : now === "tr" ? "right" : null);
+        if (next) { snapTo(w, next); w.snap = next; }
+        else { w.max = false; w.snap = ""; Object.assign(w, { x: Math.round(area().w / 4), y: 40, w: Math.round(area().w / 2), h: Math.round(area().h * 0.7) }); applyRect(w); remember(w); }
       }
       return;
     }
-    if (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden || !$("snapfly").hidden || !$("taskview").hidden)) { e.preventDefault(); closePanels(); }
+    if (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden || !$("snapfly").hidden || !$("taskview").hidden || !$("assist").hidden)) { e.preventDefault(); closePanels(); }
   });
   document.addEventListener("keyup", (e) => {
     if (e.key === "Meta" && metaAlone) { metaAlone = false; e.preventDefault(); toggleStart(); }
@@ -1472,6 +1584,14 @@
       const settings = apps.find((a) => a.pkg === "com.android.settings") || apps[0];
       const r = settings ? await openApp(settings.key, "window") : null;
       log((r && r.ok ? "PASS" : "FAIL") + " launch " + (settings && settings.pkg) + " → " + JSON.stringify(r));
+      // 화면 나누기: 넓은 화면은 4분할까지, 왼쪽 위 4분의 1 자리에 띄우면 그 자리 크기로 뜨는지 · 바탕화면 자체는 화면 나누기 아님
+      await wait(1500);
+      const z = settings ? await launchZone(settings.key, "tl") : null;
+      const bb = String(z && z.bounds || "").split(" ").map(Number), half = Math.round(innerWidth * devicePixelRatio / 2);
+      log((z && z.ok && bb[0] === 0 && Math.abs(bb[2] - half) <= 3 && bb[3] < innerHeight * devicePixelRatio * 0.6 && status.split === false && splitCap() === 4 && layoutsFor().includes("Q4") ? "PASS" : "FAIL") +
+        " split launch tl bounds=" + (z && z.bounds) + " half=" + half + " cap=" + splitCap() + " layouts=" + layoutsFor().join() + " deskSplit=" + status.split);
+      await wait(2500);
+      log("SHOT3");
 
     } catch (e) {
       log("FAIL exception " + (e && e.stack || e));

@@ -16,6 +16,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ImageDecoder;
@@ -427,7 +428,9 @@ public class MainActivity extends ComponentActivity {
             case "status":
                 return status();
             case "launch":
-                return launch(a.getString(0), a.getString(1), a.optString(2, "window"));
+                return launch(a.getString(0), a.getString(1), a.optString(2, "window"), a.optJSONArray(3), a.optDouble(4, 0));
+            case "exitSplit":
+                return exitSplit();
             case "appInfo":
                 startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.getString(0), null))
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -925,8 +928,13 @@ public class MainActivity extends ComponentActivity {
         return Settings.Global.getInt(getContentResolver(), "enable_freeform_support", 0) == 1;
     }
 
-    /** mode: window(자유 창) · left · right(반쪽 창) · full(전체 화면) */
-    private JSONObject launch(String pkg, String cls, String mode) throws JSONException {
+    /**
+     * mode: window(자유 창) · left · right(반쪽 창) · full(전체 화면) · zone(화면 나누기 자리)
+     * zone: [왼, 위, 오른, 아래] 비율(0~1) — 작업 표시줄 위 넓이 안에서. reserveCss: 아래에 비워 둘 높이(CSS 픽셀, 작업 표시줄)
+     */
+    private JSONObject launch(String pkg, String cls, String mode, JSONArray zone, double reserveCss) throws JSONException {
+        zoneArg = zone;
+        reserveArg = reserveCss;
         Intent i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
                 .setComponent(new ComponentName(pkg, cls))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
@@ -958,13 +966,21 @@ public class MainActivity extends ComponentActivity {
         return r.put("ok", true).put("freeform", freeformSupported());
     }
 
+    private JSONArray zoneArg;
+    private double reserveArg;
+
     private Rect boundsFor(String mode) {
         Rect screen = getWindowManager().getMaximumWindowMetrics().getBounds();
         float dp = getResources().getDisplayMetrics().density;
         int top = root.getPaddingTop(), bottom = root.getPaddingBottom();
-        int bar = Math.round(64 * dp); // 작업 표시줄 자리는 비워 둠
+        int bar = reserveArg > 0 ? (int) Math.round(reserveArg * dp) : Math.round(64 * dp); // 작업 표시줄 자리는 비워 둠
         int W = screen.width(), H = screen.height();
         int usableTop = top, usableBottom = H - bottom - bar;
+        if ("zone".equals(mode) && zoneArg != null && zoneArg.length() == 4) {
+            int uh = usableBottom - usableTop;
+            return new Rect((int) Math.round(W * zoneArg.optDouble(0)), usableTop + (int) Math.round(uh * zoneArg.optDouble(1)),
+                    (int) Math.round(W * zoneArg.optDouble(2)), usableTop + (int) Math.round(uh * zoneArg.optDouble(3)));
+        }
         if ("left".equals(mode)) return new Rect(0, usableTop, W / 2, usableBottom);
         if ("right".equals(mode)) return new Rect(W / 2, usableTop, W, usableBottom);
         boolean narrow = W < 600 * dp;
@@ -978,6 +994,41 @@ public class MainActivity extends ComponentActivity {
         x = Math.max(0, x);
         y = Math.max(usableTop, y);
         return new Rect(x, y, x + w, y + h);
+    }
+
+    // ---------- 화면 나누기(분할 화면) 막기 ----------
+    // 덜누름 데스크는 바탕화면이라 화면 나누기 안에서 쓰지 않습니다(안에서 다른 앱을 나눠 띄움).
+    // 큰 화면에서는 안드로이드가 앱 설정만으로 막을 수 없게 해 두어, 들어가면 알아채서 화면에 안내를 띄웁니다.
+    private boolean inSplit() {
+        if (!isInMultiWindowMode()) return false;
+        String c = getResources().getConfiguration().toString();
+        if (c.contains("mWindowingMode=freeform")) return false; // DeX 창·팝업 창은 괜찮음
+        return c.contains("mWindowingMode=multi-window") || c.contains("mWindowingMode=split-screen") || !c.contains("mWindowingMode=");
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode, @NonNull Configuration newConfig) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
+        push("status");
+    }
+
+    /** 화면 나누기에서 빠져나와 전체 화면으로 다시 띄우기 */
+    private boolean exitSplit() {
+        try {
+            ActivityOptions o = ActivityOptions.makeBasic();
+            Bundle b = o.toBundle();
+            b.putInt(KEY_WINDOWING_MODE, 1);
+            startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT), b);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "전체 화면으로 다시 띄우지 못함", e);
+        }
+        if (isDefaultHome()) { // 기본 홈이면 홈으로 가면 전체 화면 바탕화면이 나옴
+            try {
+                startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (RuntimeException ignored) {
+            }
+        }
+        return true;
     }
 
     // ---------- 상태·설정 ----------
@@ -1004,6 +1055,7 @@ public class MainActivity extends ComponentActivity {
         }
         r.put("net", net);
         r.put("freeform", freeformSupported());
+        r.put("split", inSplit());
         r.put("isDefault", isDefaultHome());
         File wp = wallpaperFile();
         r.put("wallpaper", wp.exists() ? wp.lastModified() : 0); // 내 사진 배경이 있으면 바뀐 시각(화면이 새 사진을 다시 읽게)
