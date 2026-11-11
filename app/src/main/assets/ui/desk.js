@@ -281,8 +281,13 @@
     $("clock-time").textContent = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
     $("clock-date").textContent = (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + "일월화수목금토"[now.getDay()];
   }
+  // 상태는 여러 번 겹쳐 물을 수 있어, 늦게 도착한 옛 응답이 새 응답을 덮지 않게 합니다 (예: 배경 사진이 방금 생겼는데 "없음"으로 돌아가던 일)
+  let statusSeq = 0, statusShown = 0;
   async function refreshStatus() {
+    const my = ++statusSeq;
     const r = await call("status");
+    if (my < statusShown) return;
+    statusShown = my;
     if (r && !r.error) { status = r; renderTray(); }
   }
 
@@ -1122,7 +1127,7 @@
       // 내 사진 배경: 사진 고르기 대신 점검용 그림을 같은 길로 저장 → 화면에 걸리는지
       await call("testWallpaper");
       onPush("wallpaper");
-      await wait(1200);
+      for (let i = 0; i < 20; i++) { await wait(300); if (!A || String(await call("lookProbe")).includes("/wallpaper/current.jpg")) break; }
       const wpOk = await new Promise((r) => { const im = new Image(); im.onload = () => r(im.naturalWidth === 900); im.onerror = () => r(false); im.src = "/wallpaper/current.jpg?t=" + Date.now(); });
       const bg = A ? String(await call("lookProbe")) : getComputedStyle(document.body).backgroundImage;
       log((wpOk && document.body.classList.contains("wp-custom") && bg.includes("/wallpaper/current.jpg") ? "PASS" : "FAIL") + " custom wallpaper loaded=" + wpOk + " bg=" + bg.slice(0, 80));
