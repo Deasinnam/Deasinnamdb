@@ -50,7 +50,7 @@ def main() -> None:
     ap.add_argument("--node-license", required=True)
     ap.add_argument("--versions", required=True)
     ap.add_argument("--build", default="dev")
-    ap.add_argument("--app-version", default="1.0.0")
+    ap.add_argument("--app-version", default="1.0.1")
     a = ap.parse_args()
     ver = dict(kv.split("=", 1) for kv in a.versions.split(","))
 
@@ -106,6 +106,8 @@ def main() -> None:
         ("{{OFFICE_VER}}", ver.get("office", "?"), True), ("{{PHOTO_VER}}", ver.get("photo", "?"), True),
         ("{{FILM_VER}}", ver.get("film", "?"), True), ("{{NODE_VER}}", ver.get("node", "?"), True),
     ], "about.html")
+    # 문제 진단 화면에 보이는 빌드 번호
+    (WORK.parent / "build.txt").write_text(f"{a.build} ({ver.get('office', '?')}, node {ver.get('node', '?')})\n", encoding="utf-8")
     print("덜누름 워크 에셋 완료:", ", ".join(f"{k} {v}" for k, v in ver.items()))
 
 

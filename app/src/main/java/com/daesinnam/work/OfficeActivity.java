@@ -85,6 +85,7 @@ public class OfficeActivity extends ComponentActivity {
     /** 화면이 연 Node 연결 (통로 번호 → 웹소켓) */
     private final Map<String, WebSocket> nodeChannels = new ConcurrentHashMap<>();
     private boolean pendingNeedPath;
+    private String pendingFlow;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile String previewHtml = "<!doctype html><meta charset=utf-8>";
@@ -116,7 +117,8 @@ public class OfficeActivity extends ComponentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         docs = new DocStore(this);
-        node = new NodeRuntime(this);
+        node = NodeRuntime.get(this);
+        node.acquire();
         nodeIo.execute(() -> node.ensureStarted(null));
 
         FrameLayout root = new FrameLayout(this);
@@ -152,6 +154,24 @@ public class OfficeActivity extends ComponentActivity {
             @Override
             public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
                 closeNodeChannels();
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                // 자동 점검(시험용 빌드): 사람이 누르는 것과 같은 길로 편집기를 엽니다
+                String flow = pendingFlow;
+                if (flow == null || url == null || !url.startsWith(HOME_URL)) return;
+                pendingFlow = null;
+                String sel = "diag".equals(flow) ? "#diag" : "[data-new=\"" + flow.replaceAll("[^a-z]", "") + "\"]";
+                view.evaluateJavascript("(function(){var b=document.querySelector('" + sel + "');if(b)b.click();return !!b})()", null);
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                // 화면을 그리는 프로세스가 죽은 경우(메모리 부족 등): 앱이 꺼지지 않게 하고 문서 첫 화면으로
+                node.note("화면 프로세스 종료 crash=" + (android.os.Build.VERSION.SDK_INT >= 26 && detail.didCrash()));
+                recreate();
+                return true;
             }
 
             @Override
@@ -225,6 +245,7 @@ public class OfficeActivity extends ComponentActivity {
             }
         });
 
+        node.note("문서 화면 열림 " + windowInfo());
         if (getIntent() != null && getIntent().hasExtra("ieum.selftest")) web.loadUrl(HOME_URL + "?selftest=0");
         else if (!handleIntent(getIntent())) web.loadUrl(HOME_URL);
     }
@@ -239,7 +260,7 @@ public class OfficeActivity extends ComponentActivity {
     @Override
     protected void onDestroy() {
         closeNodeChannels();
-        if (isFinishing()) node.stop();
+        node.release();
         nodeIo.shutdown();
         io.shutdown();
         if (web != null) web.destroy();
@@ -250,6 +271,12 @@ public class OfficeActivity extends ComponentActivity {
 
     private boolean handleIntent(Intent intent) {
         if (intent == null) return false;
+        String flow = intent.getStringExtra("ieum.flow");
+        if (flow != null && (getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            pendingFlow = flow;
+            web.loadUrl(HOME_URL);
+            return true;
+        }
         Uri uri = null;
         String action = intent.getAction();
         if (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_EDIT.equals(action)) {
@@ -374,6 +401,33 @@ public class OfficeActivity extends ComponentActivity {
                 reply(proxy, id, st);
                 break;
             }
+            case "nodeDiag":
+                io.execute(() -> reply(proxy, id, diag()));
+                break;
+            case "pageReport":
+                // 편집기 화면이 스스로 알리는 상태 (열림/연결 실패/오류). 문제 진단 기록에 남깁니다.
+                node.note("화면 " + clip(a.optString(0), 20) + " " + clip(a.optString(1), 20) + " " + clip(a.optString(2), 300));
+                android.util.Log.i("IEUM_PAGE", a.optString(0) + " " + a.optString(1) + " " + a.optString(2));
+                break;
+            case "diagReport": {
+                String text = a.optString(0);
+                for (String line : text.split("\n")) android.util.Log.i("IEUM_DIAG", line);
+                break;
+            }
+            case "copyText": {
+                android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("덜누름 워크 진단", a.optString(0)));
+                reply(proxy, id, ok());
+                break;
+            }
+            case "shareText":
+                try {
+                    startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain")
+                            .putExtra(Intent.EXTRA_SUBJECT, "덜누름 워크 진단 결과")
+                            .putExtra(Intent.EXTRA_TEXT, a.optString(0)), "진단 결과 보내기"));
+                } catch (ActivityNotFoundException ignored) {
+                }
+                break;
             case "nodeOpen":
                 nodeOpen(proxy, a.optString(0), a.optString(1));
                 break;
@@ -511,47 +565,135 @@ public class OfficeActivity extends ComponentActivity {
     // ---------- Node ----------
 
     private void nodeOpen(JavaScriptReplyProxy proxy, String channel, String query) {
-        nodeIo.execute(() -> {
-            node.ensureStarted((state, detail) -> push(proxy, channel, "status", state + (detail == null || detail.isEmpty() ? "" : ":" + detail)));
-            if (!node.isReady()) {
-                push(proxy, channel, "close", "1011");
-                return;
+        // 세션에 붙는 연결(편집기 화면)은 엔진을 다시 시작하면 세션이 사라지므로 다시 시도하지 않습니다
+        runNodeIo(() -> connectNode(proxy, channel, query, query == null || query.isEmpty()));
+    }
+
+    private void runNodeIo(Runnable r) {
+        try {
+            nodeIo.execute(r);
+        } catch (java.util.concurrent.RejectedExecutionException ignored) {
+            // 화면이 이미 닫힘
+        }
+    }
+
+    private void connectNode(JavaScriptReplyProxy proxy, String channel, String query, boolean mayRetry) {
+        NodeRuntime.Listener status = (state, detail) ->
+                push(proxy, channel, "status", state + (detail == null || detail.isEmpty() ? "" : ":" + detail));
+        node.ensureStarted(status);
+        if (!node.isReady()) {
+            push(proxy, channel, "error", node.failure() == null ? "문서 엔진을 시작하지 못했습니다" : node.failure());
+            push(proxy, channel, "close", "1011");
+            return;
+        }
+        final boolean[] opened = {false};
+        WebSocket ws = node.openSocket(query, new WebSocketListener() {
+            @Override
+            public void onOpen(@NonNull WebSocket webSocket, @NonNull okhttp3.Response response) {
+                opened[0] = true;
+                push(proxy, channel, "open", null);
             }
-            WebSocket ws = node.openSocket(query, new WebSocketListener() {
-                @Override
-                public void onOpen(@NonNull WebSocket webSocket, @NonNull okhttp3.Response response) {
-                    push(proxy, channel, "open", null);
-                }
 
-                @Override
-                public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
-                    push(proxy, channel, "message", text);
-                }
+            @Override
+            public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+                push(proxy, channel, "message", text);
+            }
 
-                @Override
-                public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
-                    push(proxy, channel, "message", bytes.utf8());
-                }
+            @Override
+            public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
+                push(proxy, channel, "message", bytes.utf8());
+            }
 
-                @Override
-                public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-                    webSocket.close(code, null);
-                }
+            @Override
+            public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                webSocket.close(code, null);
+            }
 
-                @Override
-                public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-                    nodeChannels.remove(channel);
-                    push(proxy, channel, "close", String.valueOf(code));
-                }
+            @Override
+            public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                nodeChannels.remove(channel, webSocket);
+                push(proxy, channel, "close", String.valueOf(code));
+            }
 
-                @Override
-                public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, okhttp3.Response response) {
-                    nodeChannels.remove(channel);
-                    push(proxy, channel, "close", "1006");
+            @Override
+            public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, okhttp3.Response response) {
+                // 화면이 바뀌어 우리가 끊은 연결이면 알릴 필요 없음
+                if (!nodeChannels.remove(channel, webSocket)) return;
+                String why = t + (response == null ? "" : " (응답 " + response.code() + ")");
+                node.markBroken((opened[0] ? "연결 끊김: " : "연결 실패: ") + why);
+                if (!opened[0] && mayRetry) {
+                    // 엔진이 응답하지 않음 → 한 번 다시 시작해서 붙어 봅니다
+                    runNodeIo(() -> {
+                        node.restart(status);
+                        connectNode(proxy, channel, query, false);
+                    });
+                    return;
                 }
-            });
-            nodeChannels.put(channel, ws);
+                push(proxy, channel, "error", (opened[0] ? "문서 엔진 연결이 끊겼습니다: " : "문서 엔진에 연결하지 못했습니다: ") + why);
+                push(proxy, channel, "close", "1006");
+            }
         });
+        nodeChannels.put(channel, ws);
+    }
+
+    /** 문제 진단: 기기·앱·문서 엔진 상태 (문서 내용·파일 이름은 넣지 않음) */
+    private JSONObject diag() {
+        JSONObject o = ok();
+        try {
+            String build = "?";
+            try (InputStream in = getAssets().open("build.txt")) {
+                byte[] b = new byte[64];
+                int n = in.read(b);
+                build = new String(b, 0, Math.max(n, 0), StandardCharsets.UTF_8).trim();
+            } catch (Exception ignored) {
+            }
+            android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+            o.put("app", pi.versionName + " 빌드 " + build
+                    + ((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0 ? " (시험용)" : ""));
+            o.put("device", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
+            o.put("android", android.os.Build.VERSION.RELEASE + " (API " + android.os.Build.VERSION.SDK_INT + ")");
+            o.put("abis", android.text.TextUtils.join(",", android.os.Build.SUPPORTED_ABIS));
+            android.content.pm.PackageInfo wv = WebViewCompat.getCurrentWebViewPackage(this);
+            o.put("webview", wv == null ? "?" : wv.packageName + " " + wv.versionName);
+            o.put("window", windowInfo());
+            o.put("node", node.diag());
+        } catch (Exception e) {
+            try {
+                o.put("error", String.valueOf(e));
+            } catch (JSONException ignored) {
+            }
+        }
+        return o;
+    }
+
+    /** 창·화면 상태 (DeX, 여러 창, 키보드·마우스 연결 여부) */
+    private String windowInfo() {
+        try {
+            android.content.res.Configuration c = getResources().getConfiguration();
+            StringBuilder sb = new StringBuilder();
+            sb.append(c.screenWidthDp).append("x").append(c.screenHeightDp).append("dp ").append(c.densityDpi).append("dpi");
+            if (android.os.Build.VERSION.SDK_INT >= 30 && getDisplay() != null) sb.append(" 화면#").append(getDisplay().getDisplayId());
+            if (isInMultiWindowMode()) sb.append(" 창모드");
+            if ((c.uiMode & android.content.res.Configuration.UI_MODE_TYPE_MASK) == android.content.res.Configuration.UI_MODE_TYPE_DESK) sb.append(" 데스크");
+            if (c.keyboard == android.content.res.Configuration.KEYBOARD_QWERTY) sb.append(" 키보드");
+            if (c.touchscreen == android.content.res.Configuration.TOUCHSCREEN_NOTOUCH) sb.append(" 터치없음");
+            if (c.navigation != android.content.res.Configuration.NAVIGATION_NONAV) sb.append(" 내비=").append(c.navigation);
+            try {
+                // 삼성 DeX 여부 (삼성 기기에만 있는 값)
+                Class<?> k = c.getClass();
+                int on = k.getField("SEM_DESKTOP_MODE_ENABLED").getInt(k);
+                if (k.getField("semDesktopModeEnabled").getInt(c) == on) sb.append(" DeX");
+            } catch (Throwable ignored) {
+            }
+            return sb.toString();
+        } catch (Throwable t) {
+            return "?";
+        }
+    }
+
+    private static String clip(String s, int max) {
+        if (s == null) return "";
+        return s.length() > max ? s.substring(0, max) + "…" : s;
     }
 
     private void push(JavaScriptReplyProxy proxy, String channel, String ev, String data) {

@@ -41,12 +41,43 @@
       <p><b>보기</b>: PDF</p>
       <p class="muted" id="engine"></p>
     </section>
+
+    <section class="note">
+      <h2>문제가 있나요?</h2>
+      <p>워드·엑셀·파워포인트·마인드맵이 열리지 않으면 아래 진단을 눌러 주세요. 무엇이 막혔는지 확인합니다.</p>
+      <button id="diag" class="ghost">문제 진단</button>
+    </section>
   </main>
 
   <footer>
     <p class="muted">문서 편집은 오픈소스 IeumOffice(pblsketch, Apache-2.0)를 고쳐 만들었습니다.
       <a href="../licenses/NOTICE.txt">고지</a> · <a href="../licenses/LICENSE.txt">라이선스</a></p>
   </footer>
+
+  <div id="problem" class="sheet" hidden>
+    <div class="sheet-box">
+      <h3>문서를 열지 못했습니다</h3>
+      <p id="problem-text"></p>
+      <div class="row">
+        <button id="problem-retry" class="solid">다시 시도</button>
+        <button id="problem-diag">문제 진단</button>
+        <button id="problem-close">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="diag-panel" class="sheet" hidden>
+    <div class="sheet-box wide">
+      <h3>문제 진단</h3>
+      <p class="muted">문서 엔진이 이 기기에서 제대로 도는지 확인합니다. 문서 내용과 파일 이름은 담기지 않습니다.</p>
+      <pre id="diag-out"></pre>
+      <div class="row">
+        <button id="diag-copy" class="solid">결과 복사</button>
+        <button id="diag-share">보내기</button>
+        <button id="diag-close">닫기</button>
+      </div>
+    </div>
+  </div>
 
   <div id="toast"></div>
   <script src="./home.js"></script>

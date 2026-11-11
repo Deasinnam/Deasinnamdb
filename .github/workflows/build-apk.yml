@@ -30,6 +30,19 @@ jobs:
         with:
           node-version: '22'
 
+      # 앱 코드에 컴파일 오류가 있으면 오래 걸리는 준비 전에 바로 알 수 있게 먼저 확인합니다
+      - name: Android SDK 준비
+        run: |
+          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: 앱 코드 컴파일 확인
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon -q compileDebugJavaWithJavac -PworkAbis=arm64-v8a
+
       # ===================== 문서 편집 (IeumOffice) =====================
       - name: 문서 편집 원본 받기 (IeumOffice AppImage와 소스)
         env:
@@ -166,16 +179,8 @@ jobs:
           cd "$GITHUB_WORKSPACE" && node "$RUNNER_TEMP/web_selftest.mjs" http://127.0.0.1:8765/index.html app/src/main/assets/film-bridge.js
 
       # ===================== 안드로이드 =====================
-      - name: Android SDK 준비
-        run: |
-          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
-          yes | "$SDKM" --licenses > /dev/null || true
-          "$SDKM" "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
-
       - name: 시험용 APK (에뮬레이터용 x86_64 포함)
         run: |
-          chmod +x gradlew
           ./gradlew --no-daemon assembleDebug -PworkAbis=arm64-v8a,x86_64
           cp app/build/outputs/apk/debug/app-debug.apk Work-test.apk
           ls -la Work-test.apk
@@ -198,6 +203,31 @@ jobs:
           disable-animations: true
           script: bash tools/emulator_selftest.sh Work-test.apk
 
+      # 최신 안드로이드(16)에서도 문서 편집이 열리는지: 실제 휴대폰과 더 가까운 환경
+      - name: 에뮬레이터 정리 (안드로이드 16 점검 준비)
+        if: always()
+        run: |
+          rm -rf ~/.android/avd/* "$ANDROID_HOME/system-images/android-34" || true
+          df -h / | tail -1
+
+      - name: 에뮬레이터에서 자동 점검 — 안드로이드 16 (문서 편집)
+        id: api36
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 8000M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tools/emulator_selftest.sh Work-test.apk office -api36
+
+      - name: 안드로이드 16 점검 결과
+        if: always()
+        run: echo "안드로이드 16 문서 편집 점검 → ${{ steps.api36.outcome }}"
+
       - name: 점검 화면·기록 올리기 (work-ci 릴리스)
         if: always()
         env:
@@ -205,7 +235,7 @@ jobs:
         run: |
           gh release delete work-ci --yes --cleanup-tag || true
           gh release create work-ci $(ls work-screen-*.png web-screen-*.png selftest-*.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
-            --title "덜누름 워크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
+            --title "덜누름 워크 자동 점검 기록" --notes "빌드 ${{ github.run_number }} · 안드로이드 16 점검: ${{ steps.api36.outcome }}"
 
       - name: 서명 키 준비 (있으면)
         env:

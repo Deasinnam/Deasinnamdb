@@ -87,6 +87,9 @@
   let currentPath = params.get("doc") ? pathFor(params.get("doc"), params.get("name")) : null;
   let dirty = false;
   let nodeOpenSeen = false;
+  let nodeCloses = 0;
+  let nodeLastClose = 0;
+  let sessionLost = false;
 
   async function fetchDoc(path) {
     const id = idOf(path);
@@ -386,7 +389,20 @@
       ws.onopen = () => { open = true; nodeOpenSeen = true; while (queue.length) ws.send(queue.shift()); };
       ws.onclose = (ev) => {
         open = false;
-        if (ev.code === 4004) { toast("편집기 세션이 끝났습니다. 홈에서 다시 열어 주세요."); return; }
+        nodeCloses++;
+        nodeLastClose = ev.code;
+        if (ev.code === 4004) {
+          // 문서 엔진이 이 편집기(세션)를 모름: 엔진이 다시 시작됐거나 같은 종류의 다른 문서를 새로 연 경우
+          nodeOpenSeen = false;
+          sessionLost = true;
+          notifyAndroid("pageReport", MOD, "session-lost", "closes=" + nodeCloses);
+          messageBox({
+            message: "편집기 연결이 끝났습니다",
+            detail: "문서 엔진이 다시 시작되어 이 편집 화면과의 연결이 끊겼습니다. 문서 첫 화면에서 다시 열어 주세요.",
+            buttons: ["문서 첫 화면으로"],
+          }).then(() => { if (bridge()) notifyAndroid("goHome", false); else location.href = "../../home/index.html"; });
+          return;
+        }
         setTimeout(connect, 800); // Node가 잠깐 끊겨도 다시 붙음
       };
       ws.onmessage = (ev) => {
@@ -529,14 +545,15 @@
         });
         box.appendChild(row);
         wrap.appendChild(box);
-        document.body.appendChild(wrap);
+        if (document.body) document.body.appendChild(wrap);
+        else document.addEventListener("DOMContentLoaded", () => document.body.appendChild(wrap));
       });
     }
 
     let appMenu = null;
     window.__ieumProtoBase = (scheme) => PROTO + scheme + "/";
     return {
-      invoke, send,
+      invoke, send, messageBox,
       menu: () => appMenu,
       clickMenu: (path) => post({ t: "menu", path }),
     };
@@ -733,6 +750,38 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installMenu);
   else installMenu();
+
+  // ---------- 화면 상태 알림 (문제 진단 기록용. 문서 내용은 보내지 않습니다) ----------
+  const pageErrors = [];
+  function reportError(text) {
+    if (pageErrors.length >= 5) return;
+    pageErrors.push(text);
+    notifyAndroid("pageReport", MOD, "error", String(text).slice(0, 280));
+  }
+  window.addEventListener("error", (e) => reportError(String(e.message || e) + (e.filename ? " @" + String(e.filename).split("/").pop() + ":" + e.lineno : "")));
+  window.addEventListener("unhandledrejection", (e) => reportError("거부: " + String(e.reason && e.reason.message || e.reason)));
+  function pageState() {
+    const len = ((document.body && document.body.innerText) || "").length;
+    return (NODE ? "node=" + nodeOpenSeen + " closes=" + nodeCloses + (nodeLastClose ? " code=" + nodeLastClose : "") + " " : "") + "text=" + len + " errors=" + pageErrors.length;
+  }
+  setTimeout(() => notifyAndroid("pageReport", MOD, "state", pageState()), 6000);
+  setTimeout(() => notifyAndroid("pageReport", MOD, "settled", pageState()), 18000);
+  if (NODE && params.get("selftest") === null) {
+    // 편집기가 문서 엔진에 붙지 못한 채 멈춰 있으면 빈 화면 대신 이유를 보여 줍니다
+    const watch = (after) => setTimeout(async () => {
+      if (nodeOpenSeen || sessionLost) return;
+      notifyAndroid("pageReport", MOD, "stuck", pageState());
+      const pick = await NODE.messageBox({
+        message: "문서 엔진에 연결하지 못했습니다",
+        detail: "편집기가 문서 엔진의 응답을 받지 못했습니다" + (nodeLastClose ? " (코드 " + nodeLastClose + ", " + nodeCloses + "번 끊김)" : "") +
+          ".\n문서 첫 화면으로 돌아가 다시 열어 보시고, 계속 안 되면 첫 화면 아래의 '문제 진단'을 눌러 결과를 보내 주세요.",
+        buttons: ["문서 첫 화면으로", "더 기다리기"],
+      });
+      if (pick && pick.response === 0) { if (bridge()) notifyAndroid("goHome", false); else location.href = "../../home/index.html"; }
+      else watch(20000);
+    }, after);
+    watch(12000);
+  }
 
   // 자동 점검: 화면이 뜬 뒤 결과를 앱 로그로 보내고 다음 문서로 넘어갑니다
   if (params.get("selftest") !== null) {

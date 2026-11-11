@@ -32,3 +32,18 @@ footer { padding: 8px 20px 32px; font-size:13px; color:var(--muted); }
 footer a { color: var(--accent); }
 #toast { position:fixed; left:50%; bottom:32px; transform:translateX(-50%); background:rgba(26,32,44,.92); color:#fff; padding:10px 16px; border-radius:18px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; max-width:86vw; }
 #toast.show { opacity:1; }
+
+/* 문제 알림 · 진단 */
+[hidden] { display: none !important; }
+.ghost { border:1px solid var(--line); background:var(--card); border-radius:12px; padding:10px 16px; font-size:14px; margin-top:6px; }
+.sheet { position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; padding:16px; }
+.sheet-box { background:var(--card); color:var(--fg); border-radius:16px; padding:20px; width:100%; max-width:480px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,.3); }
+.sheet-box.wide { max-width:760px; }
+.sheet-box h3 { margin:0 0 8px; font-size:18px; }
+.sheet-box p { margin:0 0 12px; font-size:14px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.sheet-box pre { flex:1; min-height:120px; overflow:auto; margin:0 0 12px; padding:12px; border-radius:10px; background:var(--bg); border:1px solid var(--line); font:12px/1.5 ui-monospace, monospace; white-space:pre-wrap; overflow-wrap:anywhere; user-select:text; }
+.row { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+.row button { border:1px solid var(--line); background:var(--card); border-radius:10px; padding:10px 14px; font-size:14px; }
+.row button.solid { background:var(--accent); border-color:var(--accent); color:#fff; }
+.row button[disabled] { opacity:.5; }
+#busy { flex-direction:column; gap:10px; text-align:center; padding:24px; }

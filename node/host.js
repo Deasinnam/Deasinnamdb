@@ -46,6 +46,17 @@ if (process.env.IEUM_SIDECAR) process.env.XLSX_SIDECAR_PATH = process.env.IEUM_S
 process.env.GENOFFICE_LANG = process.env.GENOFFICE_LANG || "ko";
 const realExit = process.exit.bind(process);
 process.exit = (code) => { log(`process.exit(${code}) 무시`); };
+// 앱이 끄라고 하면(SIGTERM) 바로 끝냅니다. 편집기 코드가 이 신호를 가로채 app.quit()만 부르면 꺼지지 않고 남기 때문입니다.
+process.on("SIGTERM", () => realExit(0));
+// 앱(부모)이 사라지면 입력 통로가 닫힙니다 → 혼자 남아 있지 않게 끝냅니다.
+if (process.env.IEUM_PARENT_WATCH) {
+  try {
+    process.stdin.on("end", () => realExit(0));
+    process.stdin.on("close", () => realExit(0));
+    process.stdin.on("error", () => {});
+    process.stdin.resume();
+  } catch (_) { /* 입력 통로가 없는 환경 */ }
+}
 process.on("uncaughtException", (err) => log("처리 안 된 오류: " + (err && err.stack || err)));
 process.on("unhandledRejection", (err) => log("처리 안 된 거부: " + (err && err.stack || err)));
 
