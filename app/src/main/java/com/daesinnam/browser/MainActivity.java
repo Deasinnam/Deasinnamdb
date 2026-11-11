@@ -439,14 +439,21 @@ public class MainActivity extends Activity {
 
     // ---------- PC 화면 폭 ----------
 
+    /**
+     * 화면 폭 설정(meta viewport)을 PC 폭으로 맞추는 스크립트.
+     * 브라우저는 "가장 나중에 읽은" 설정을 따르므로, 사이트가 넣어 둔 설정까지 모두 PC 폭으로 바꿉니다.
+     * 페이지를 읽는 동안에는 새로 나타나는 설정도 지켜보다가, 다 읽으면 지켜보기를 멈춥니다.
+     */
     private String viewportJs() {
         return "(function(){var c='width=" + desktopWidth + ", user-scalable=yes';"
-                + "function f(){var r=document.head||document.documentElement;if(!r)return false;"
-                + "var m=document.querySelector('meta[name=viewport]');"
-                + "if(!m){m=document.createElement('meta');m.name='viewport';r.appendChild(m);}"
-                + "if(m.content!==c)m.content=c;return true;}"
-                + "if(!f()){var o=new MutationObserver(function(){if(f())o.disconnect();});o.observe(document,{childList:true,subtree:true});}"
-                + "document.addEventListener('DOMContentLoaded',f);})()";
+                + "function f(){var r=document.head||document.documentElement;if(!r)return;"
+                + "var ms=document.querySelectorAll('meta[name=viewport]');"
+                + "if(!ms.length){var m=document.createElement('meta');m.name='viewport';m.content=c;r.appendChild(m);return;}"
+                + "for(var i=0;i<ms.length;i++)if(ms[i].content!==c)ms[i].content=c;}"
+                + "f();"
+                + "if(document.readyState==='loading'){var o=new MutationObserver(f);o.observe(document,{childList:true,subtree:true});"
+                + "document.addEventListener('DOMContentLoaded',function(){f();o.disconnect();});}"
+                + "window.addEventListener('load',f);})()";
     }
 
     /**
