@@ -19,33 +19,43 @@
 
   <section id="start" hidden aria-label="시작 메뉴">
     <div class="start-search">
-      <input id="search" type="search" placeholder="앱 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <span class="sicon" id="search-icon"></span>
+      <input id="search" type="search" placeholder="앱, 도구 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" />
     </div>
     <div class="start-body" id="start-body"></div>
     <div class="start-foot">
-      <button id="btn-widgets" class="foot-btn">위젯 추가</button>
-      <button id="btn-desk-settings" class="foot-btn">데스크 설정</button>
-      <button id="btn-sys-settings" class="foot-btn">기기 설정</button>
+      <div class="me"><span class="me-ava">덜</span><span>덜누름 데스크</span></div>
+      <button id="btn-widgets" class="foot-btn" title="위젯 추가" aria-label="위젯 추가"></button>
+      <button id="btn-desk-settings" class="foot-btn" title="데스크 설정" aria-label="데스크 설정"></button>
+      <button id="btn-sys-settings" class="foot-btn" title="기기 설정" aria-label="기기 설정"></button>
     </div>
   </section>
 
   <section id="quick" hidden aria-label="빠른 설정"></section>
+  <section id="calfly" hidden aria-label="달력"></section>
+  <div id="snapfly" hidden aria-label="창 배치 고르기"></div>
   <section id="wpick" hidden aria-label="위젯 고르기">
     <div class="wpick-head"><b>위젯 추가</b><button id="wpick-close" aria-label="닫기">✕</button></div>
-    <div class="start-search"><input id="wsearch" type="search" placeholder="위젯·앱 이름으로 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
+    <div class="start-search"><span class="sicon" id="wsearch-icon"></span><input id="wsearch" type="search" placeholder="위젯·앱 이름으로 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
     <div class="start-body" id="wpick-body"></div>
   </section>
   <div id="ctx" hidden role="menu"></div>
   <div id="toast" hidden></div>
 
   <nav id="taskbar" aria-label="작업 표시줄">
-    <button id="start-btn" aria-label="시작"><span>덜</span></button>
-    <div id="task-items"></div>
-    <button id="tray" aria-label="상태와 빠른 설정">
-      <span id="tray-net"></span>
-      <span id="tray-batt"><i></i><b></b></span>
-      <span id="tray-clock"><b id="clock-time">--:--</b><small id="clock-date"></small></span>
-    </button>
+    <div id="tb-left"></div>
+    <div id="tb-center">
+      <button id="start-btn" aria-label="시작"><span>덜</span></button>
+      <div id="task-items"></div>
+    </div>
+    <div id="tb-right">
+      <button id="tray" aria-label="연결·배터리·빠른 설정">
+        <span id="tray-net"></span>
+        <span id="tray-batt"><i></i><b></b></span>
+      </button>
+      <button id="tray-clock" aria-label="시계와 달력"><b id="clock-time">--:--</b><small id="clock-date"></small></button>
+      <button id="peek" aria-label="바탕화면 보기" title="바탕화면 보기"></button>
+    </div>
   </nav>
   <script src="./desk.js"></script>
 </body>

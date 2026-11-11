@@ -274,6 +274,7 @@ public class MainActivity extends ComponentActivity {
     protected void onResume() {
         super.onResume();
         push("status");
+        push("resume"); // 창을 내렸다가 다시 띄웠을 때 등: 화면이 위젯 자리를 다시 맞추게
     }
 
     @Override
@@ -427,7 +428,8 @@ public class MainActivity extends ComponentActivity {
             case "addWidget":
                 return addWidget(a.getInt(0));
             case "widgetSync":
-                return widgetSync(a.getJSONArray(0), a.getJSONArray(1), a.optDouble(2, 0), a.optBoolean(3, false), a.optBoolean(4, false));
+                return widgetSync(a.getJSONArray(0), a.getJSONArray(1), a.optDouble(2, 0), a.optBoolean(3, false), a.optBoolean(4, false),
+                        a.optDouble(5, 0), a.optDouble(6, 0));
             case "widgetProbe":
                 return widgetProbe();
             case "testWallpaper": { // 자동 점검 전용: 사진 고르기 대신 만든 그림을 같은 길로 저장
@@ -717,11 +719,23 @@ public class MainActivity extends ComponentActivity {
      *  cssWidth: 화면 너비(CSS 픽셀) — 실제 픽셀과의 비율 계산용
      *  blockAll: 메뉴가 열려 있거나 위젯 편집 중 → 위젯이 누름을 받지 않음
      *  dragging: 끌어서 옮기거나 크기를 바꾸는 중 → 위젯에 크기 알림은 놓은 뒤에
-     * 돌려주는 값: {missing: [불러올 수 없는 위젯 번호]}
+     *  dpr, cssHeight: 화면의 CSS 픽셀 1개가 실제 몇 픽셀인지, 화면 높이(CSS 픽셀)
+     * 돌려주는 값: {missing: [불러올 수 없는 위젯 번호], stale?: 이 뷰 크기와 화면이 아는 크기가 다름}
+     *
+     * 비율은 화면이 알려 준 값(dpr)을 씁니다. 예전처럼 "지금 뷰 너비 ÷ 화면 너비"로 계산하면, 화면 크기가 바뀌는
+     * 도중(접기·펴기, 창 내리기·올리기)에 뷰 너비만 먼저 바뀐 순간 비율이 틀어져 위젯이 엉뚱한 자리(왼쪽 위 쪽)에 놓일 수 있습니다.
      */
-    private JSONObject widgetSync(JSONArray layout, JSONArray blockers, double cssWidth, boolean blockAll, boolean dragging) throws JSONException {
+    private JSONObject widgetSync(JSONArray layout, JSONArray blockers, double cssWidth, boolean blockAll, boolean dragging,
+                                  double dpr, double cssHeight) throws JSONException {
         float density = getResources().getDisplayMetrics().density;
-        float scale = web.getWidth() > 0 && cssWidth > 0 ? (float) (web.getWidth() / cssWidth) : density;
+        float scale = dpr > 0 ? (float) dpr : web.getWidth() > 0 && cssWidth > 0 ? (float) (web.getWidth() / cssWidth) : density;
+        String stale = null;
+        if (dpr > 0 && cssWidth > 0 && web.getWidth() > 0) {
+            float tol = (float) Math.ceil(dpr) + 2;
+            if (Math.abs(web.getWidth() - cssWidth * dpr) > tol || (cssHeight > 0 && Math.abs(web.getHeight() - cssHeight * dpr) > tol)) {
+                stale = Math.round(cssWidth * dpr) + "x" + Math.round(cssHeight * dpr);
+            }
+        }
         Set<Integer> keep = new HashSet<>();
         JSONArray missing = new JSONArray();
         List<Rect> rects = new ArrayList<>();
@@ -786,7 +800,9 @@ public class MainActivity extends ComponentActivity {
                     (int) Math.ceil(b.getDouble(2) * scale), (int) Math.ceil(b.getDouble(3) * scale)));
         }
         web.setRegions(rects, blocks, blockAll);
-        return new JSONObject().put("missing", missing);
+        JSONObject out = new JSONObject().put("missing", missing);
+        if (stale != null) out.put("stale", stale).put("view", web.getWidth() + "x" + web.getHeight());
+        return out;
     }
 
     /** 자동 점검: 실제로 놓인 위젯 뷰 */

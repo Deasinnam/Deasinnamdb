@@ -71,6 +71,20 @@
     }
     return s;
   }
+  // 선 그림 아이콘 (직접 그린 것)
+  const IC = {
+    search: ["M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z", "M20 20l-4.8-4.8"],
+    right: "M4 2l4 4-4 4", left: "M8 2L4 6l4 4",
+    widgets: ["M4 4h7v7H4z", "M13 4h7v7h-7z", "M4 13h7v7H4z", "M16.5 13v7", "M13 16.5h7"],
+    gear: ["M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", "M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"],
+    device: ["M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z", "M11 18h2"],
+    bt: "M7 7l10 10-5 5V2l5 5L7 17",
+    sun: ["M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z", "M12 2v2", "M12 20v2", "M4.9 4.9l1.4 1.4", "M17.7 17.7l1.4 1.4", "M2 12h2", "M20 12h2", "M4.9 19.1l1.4-1.4", "M17.7 6.3l1.4-1.4"],
+    sound: ["M11 5L6 9H2v6h4l5 4V5z", "M15.5 8.5a5 5 0 0 1 0 7", "M19 5a10 10 0 0 1 0 14"],
+    batt: ["M3 7h15a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z", "M22 11v2", "M6 10v4", "M9 10v4"],
+    cal: ["M4 5h16v15H4z", "M4 10h16", "M8 3v4", "M16 3v4"],
+    desktop: ["M3 4h18v12H3z", "M8 20h8", "M12 16v4"],
+  };
   let toastTimer = 0;
   function toast(text) {
     const t = $("toast");
@@ -80,7 +94,7 @@
   }
 
   // ---------- 저장되는 설정 ----------
-  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [] };
+  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [], lately: [], tbAlign: "center", tbStyle: "dock" };
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem("desk_state") || "{}")); } catch (_) {}
   if (!Array.isArray(S.widgets)) S.widgets = [];
@@ -95,6 +109,7 @@
     { key: "in:cal", label: "달력", glyph: "달", color: 2 },
     { key: "in:settings", label: "데스크 설정", glyph: "설", color: 3 },
   ];
+  const HIDDEN = [{ key: "in:wlog", label: "위젯 자리 기록", glyph: "기", color: 3 }]; // 목록에는 안 나오는 내부 창
   let apps = [];                 // 설치된 앱 {key, pkg, cls, label}
   const byKey = new Map();
   let status = { battery: -1, charging: false, net: "none", freeform: false, isDefault: false, version: "" };
@@ -109,7 +124,7 @@
     const list = (await call("apps")) || [];
     apps = Array.isArray(list) ? list.map((a) => Object.assign({ key: a.pkg + "/" + a.cls }, a)) : [];
     byKey.clear();
-    for (const b of BUILTIN) byKey.set(b.key, b);
+    for (const b of BUILTIN.concat(HIDDEN)) byKey.set(b.key, b);
     for (const a of apps) byKey.set(a.key, a);
     if (!S.pins) {
       // 처음 한 번: 흔히 쓰는 앱을 작업 표시줄에 올려 둠
@@ -129,6 +144,7 @@
     const app = byKey.get(key);
     if (!app) return toast("앱을 찾지 못했습니다. 제거된 앱일 수 있습니다.");
     closePanels();
+    S.lately = [key].concat((S.lately || []).filter((k) => k !== key)).slice(0, 8); save();
     if (key.startsWith("in:")) return openBuiltin(key);
     const r = await call("launch", app.pkg, app.cls, mode || S.openMode);
     if (r && r.error) return toast("열지 못했습니다: " + r.error);
@@ -276,6 +292,22 @@
     bindItem(el, app.key, "start");
     return el;
   }
+  // 앱 이름의 첫 소리로 묶기 (ㄱ·ㄴ·… / A·B·… / #)
+  const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ", CHO1 = "ㄱㄱㄴㄷㄷㄹㅁㅂㅂㅅㅅㅇㅈㅈㅊㅋㅌㅍㅎ";
+  function letterOf(label) {
+    const c = (label || "").trim().charCodeAt(0);
+    if (c >= 0xac00 && c <= 0xd7a3) return CHO1[Math.floor((c - 0xac00) / 588)];
+    const ch = (label || "").trim().charAt(0).toUpperCase();
+    if (/[A-Z]/.test(ch)) return ch;
+    if (CHO.includes(ch)) return CHO1[CHO.indexOf(ch)];
+    return "#";
+  }
+  let startView = "home";
+  function recItem(app) {
+    const el = h("button", { class: "ritem", title: app.label }, iconOf(app), h("span", null, h("b", { text: app.label }), h("small", { text: app.key.startsWith("in:") ? "덜누름 데스크 도구" : "최근에 연 앱" })));
+    bindItem(el, app.key, "start");
+    return el;
+  }
   function renderStart() {
     const body = $("start-body");
     const q = $("search").value.trim().toLowerCase();
@@ -287,11 +319,34 @@
       body.append(h("h3", { text: "찾은 앱 " + hit.length + "개" }), h("div", { class: "list" }, hit.map((a) => gridItem(a, "litem"))));
       return;
     }
-    const pins = (S.pins || []).map((k) => byKey.get(k)).filter(Boolean);
-    if (pins.length) body.append(h("h3", { text: "고정한 앱" }), h("div", { class: "grid" }, pins.map((a) => gridItem(a, "gitem"))));
-    body.append(h("h3", { text: "덜누름 데스크 도구" }), h("div", { class: "grid" }, BUILTIN.map((a) => gridItem(a, "gitem"))));
-    body.append(h("h3", { text: "모든 앱 " + apps.length + "개" }));
-    body.append(apps.length ? h("div", { class: "list" }, apps.map((a) => gridItem(a, "litem"))) : h("div", { class: "empty", text: "앱 목록을 불러오는 중입니다…" }));
+    if (startView === "all") {
+      body.append(h("div", { class: "shead" }, h("h3", { text: "모든 앱" }),
+        h("button", { class: "pill", id: "back-home", onclick: () => { startView = "home"; renderStart(); body.scrollTop = 0; } }, svg(IC.left, "0 0 12 12"), "뒤로")));
+      if (!apps.length) return body.append(h("div", { class: "empty", text: "앱 목록을 불러오는 중입니다…" }));
+      const sorted = all.slice().sort((a, b) => a.label.localeCompare(b.label, "ko"));
+      const order = (l) => (l === "#" ? 2 : /[A-Z]/.test(l) ? 1 : 0);
+      sorted.sort((a, b) => order(letterOf(a.label)) - order(letterOf(b.label)) || a.label.localeCompare(b.label, "ko"));
+      const list = h("div", { class: "list" });
+      let cur = null;
+      for (const a of sorted) {
+        const l = letterOf(a.label);
+        if (l !== cur) { cur = l; list.append(h("div", { class: "letter", text: l })); }
+        list.append(gridItem(a, "litem"));
+      }
+      body.append(list);
+      return;
+    }
+    // 처음 화면: 고정됨 + 추천
+    const seen = new Set();
+    const pinned = [];
+    for (const k of (S.pins || []).concat(BUILTIN.map((b) => b.key))) { const a = byKey.get(k); if (a && !seen.has(k)) { seen.add(k); pinned.push(a); } }
+    body.append(h("div", { class: "shead" }, h("h3", { text: "고정됨" }),
+      h("button", { class: "pill", id: "all-apps", onclick: () => { startView = "all"; renderStart(); body.scrollTop = 0; } }, "모든 앱", svg(IC.right, "0 0 12 12"))));
+    body.append(h("div", { class: "grid" }, pinned.map((a) => gridItem(a, "gitem"))));
+    body.append(h("div", { class: "shead" }, h("h3", { text: "추천" })));
+    const lately = (S.lately || []).map((k) => byKey.get(k)).filter(Boolean).slice(0, 6);
+    if (lately.length) body.append(h("div", { class: "rec" }, lately.map(recItem)));
+    else body.append(h("div", { class: "hint", text: "앱을 열면 최근에 연 앱이 여기에 나옵니다." }));
   }
   function toggleStart(open) {
     const s = $("start");
@@ -301,6 +356,7 @@
     s.hidden = false;
     $("start-btn").classList.add("on");
     $("search").value = "";
+    startView = "home";
     renderStart();
     $("start-body").scrollTop = 0;
   }
@@ -312,20 +368,42 @@
     closePanels();
     if (!want) return;
     q.textContent = "";
-    const netName = { wifi: "와이파이 연결됨", cell: "모바일 데이터", wired: "유선 연결", other: "연결됨", none: "인터넷 연결 없음" }[status.net] || "";
-    q.append(h("div", { class: "qinfo" }, h("span", { text: netName }), h("span", { text: status.battery >= 0 ? "배터리 " + status.battery + "%" + (status.charging ? " · 충전 중" : "") : "" })));
-    const btn = (label, kind) => h("button", { class: "qbtn", onclick: () => { closePanels(); call("openSettings", kind); } }, label);
-    q.append(h("div", { class: "qgrid" }, btn("와이파이", "wifi"), btn("블루투스", "bluetooth"), btn("디스플레이", "display"), btn("소리", "sound"), btn("배터리", "battery"), btn("전체 설정", "all")));
+    const netName = { wifi: "와이파이", cell: "모바일 데이터", wired: "유선 연결", other: "연결됨", none: "연결 안 됨" }[status.net] || "인터넷";
+    // 누르면 해당 기기 설정 화면이 열립니다 (직접 켜고 끄지는 않음)
+    const tile = (icon, label, fn, on) => h("button", { class: "qtile" + (on ? " on" : ""), title: label, onclick: () => { closePanels(); fn(); } }, h("span", null, svg(icon)), h("span", { text: label }));
     q.append(h("div", { class: "qgrid" },
-      h("button", { class: "qbtn", onclick: () => openApp("in:cal") }, "달력"),
-      h("button", { class: "qbtn", onclick: () => openApp("in:settings") }, "데스크 설정"),
-      h("button", { class: "qbtn", onclick: () => { closePanels(); showDesktop(); } }, "바탕화면 보기")));
+      tile(NET_ICON[status.net] || NET_ICON.none, netName, () => call("openSettings", "wifi"), status.net === "wifi"),
+      tile(IC.bt, "블루투스", () => call("openSettings", "bluetooth")),
+      tile(IC.sun, "화면", () => call("openSettings", "display")),
+      tile(IC.sound, "소리", () => call("openSettings", "sound")),
+      tile(IC.batt, "배터리", () => call("openSettings", "battery"), status.charging),
+      tile(IC.desktop, "바탕화면 보기", showDesktop),
+      tile(IC.cal, "달력", () => openApp("in:cal")),
+      tile(IC.widgets, "위젯 추가", openWidgetPicker),
+      tile(IC.device, "기기 설정", () => call("openSettings", "all"))));
+    q.append(h("div", { class: "qfoot" },
+      h("span", { text: status.battery >= 0 ? "배터리 " + status.battery + "%" + (status.charging ? " · 충전 중" : "") : "" }),
+      h("button", { title: "데스크 설정", "aria-label": "데스크 설정", onclick: () => openApp("in:settings") }, svg(IC.gear))));
     q.hidden = false;
     $("tray").classList.add("on");
   }
+  function toggleCal() {
+    const c = $("calfly");
+    const want = c.hidden;
+    closePanels();
+    if (!want) return;
+    c.textContent = "";
+    const now = new Date();
+    c.append(h("div", { class: "calfly-head", text: (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + "일월화수목금토"[now.getDay()] + "요일" }));
+    const body = h("div");
+    buildCal(body);
+    c.append(body.firstChild);
+    c.hidden = false;
+    $("tray-clock").classList.add("on");
+  }
   function closePanels() {
-    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true;
-    $("start-btn").classList.remove("on"); $("tray").classList.remove("on");
+    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true; $("calfly").hidden = true; $("snapfly").hidden = true;
+    $("start-btn").classList.remove("on"); $("tray").classList.remove("on"); $("tray-clock").classList.remove("on");
   }
   function showDesktop() {
     for (const w of wins) { w.min = true; w.el.hidden = true; }
@@ -381,7 +459,14 @@
 
     const bar = h("div", { class: "win-bar" }, iconOf(app), h("div", { class: "win-title", text: app.label }));
     const minBtn = h("button", { class: "win-ctl", "aria-label": "최소화", onclick: () => { w.min = true; w.el.hidden = true; const t = topWin(); if (t) focusWin(t); else renderTaskbar(); } }, svg(CTL.min, "0 0 12 12"));
-    w.maxBtn = h("button", { class: "win-ctl", onclick: () => { w.max = !w.max; applyRect(w); remember(w); } });
+    let snapTimer = 0, snapShown = false;
+    w.maxBtn = h("button", { class: "win-ctl", onclick: () => { if (snapShown) { snapShown = false; return; } w.max = !w.max; applyRect(w); remember(w); } });
+    // 최대화 단추: 마우스를 잠깐 올려 두거나 길게 누르면(오른쪽 누름) 창 배치 고르기
+    w.maxBtn.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { clearTimeout(snapTimer); snapTimer = setTimeout(() => showSnap(w), 600); } });
+    w.maxBtn.addEventListener("pointerleave", () => clearTimeout(snapTimer));
+    w.maxBtn.addEventListener("pointerdown", (e) => { snapShown = false; if (e.pointerType !== "mouse") { clearTimeout(snapTimer); snapTimer = setTimeout(() => { snapShown = true; showSnap(w); }, 450); } });
+    w.maxBtn.addEventListener("pointerup", () => { if (!snapShown) clearTimeout(snapTimer); });
+    w.maxBtn.addEventListener("contextmenu", (e) => { e.preventDefault(); clearTimeout(snapTimer); snapShown = true; showSnap(w); });
     const closeBtn = h("button", { class: "win-ctl close", "aria-label": "닫기", onclick: () => closeWin(w) }, svg(CTL.close, "0 0 12 12"));
     bar.append(minBtn, w.maxBtn, closeBtn);
     const body = h("div", { class: "win-body" });
@@ -433,11 +518,8 @@
       const moved = drag.moved;
       drag = null; preview.hidden = true;
       if (!moved) return;
-      const s = snapAt(e), a2 = area();
-      if (s === "max") w.max = true;
-      else if (s === "left") Object.assign(w, { x: 0, y: 0, w: Math.round(a2.w / 2), h: a2.h });
-      else if (s === "right") Object.assign(w, { x: Math.round(a2.w / 2), y: 0, w: Math.round(a2.w / 2), h: a2.h });
-      applyRect(w); remember(w);
+      const s = snapAt(e);
+      if (s) snapTo(w, s); else { applyRect(w); remember(w); }
     };
     bar.addEventListener("pointerup", endDrag); bar.addEventListener("pointercancel", endDrag);
 
@@ -463,6 +545,34 @@
     return w;
   }
 
+  // 창 배치: 화면을 나눠 붙이기 (반·반, ⅔·⅓, ⅓·⅔, 전체)
+  const ZONES = { left: [0, .5], right: [.5, 1], left2: [0, 2 / 3], right1: [2 / 3, 1], left1: [0, 1 / 3], right2: [1 / 3, 1] };
+  function snapTo(w, kind) {
+    closePanels();
+    if (kind === "max") w.max = true;
+    else {
+      const a = area(), z = ZONES[kind];
+      w.max = false;
+      Object.assign(w, { x: Math.round(a.w * z[0]), y: 0, w: Math.round(a.w * (z[1] - z[0])), h: Math.round(a.h) });
+    }
+    w.min = false; w.el.hidden = false;
+    applyRect(w); remember(w); focusWin(w);
+  }
+  function showSnap(w) {
+    const f = $("snapfly");
+    f.textContent = "";
+    const zone = (kind, grow) => h("button", { class: grow, "aria-label": { left: "왼쪽 반", right: "오른쪽 반", left2: "왼쪽 넓게", right1: "오른쪽 좁게", left1: "왼쪽 좁게", right2: "오른쪽 넓게", max: "전체" }[kind], onclick: (e) => { e.stopPropagation(); snapTo(w, kind); } });
+    f.append(
+      h("div", { class: "sl" }, zone("left", "f1"), zone("right", "f1")),
+      h("div", { class: "sl" }, zone("left2", "f2"), zone("right1", "f1")),
+      h("div", { class: "sl" }, zone("left1", "f1"), zone("right2", "f2")),
+      h("div", { class: "sl" }, zone("max", "f1")));
+    f.hidden = false;
+    const b = w.maxBtn.getBoundingClientRect(), r = f.getBoundingClientRect();
+    f.style.left = Math.max(6, Math.min(b.left + b.width / 2 - r.width / 2, innerWidth - r.width - 6)) + "px";
+    f.style.top = Math.min(b.bottom + 6, innerHeight - r.height - 6) + "px";
+  }
+
   // ---------- 내부 앱 ----------
   function openBuiltin(key) {
     if (key === "in:notes") return openWindow(key, { w: 420, h: 360 }, (body) => {
@@ -474,6 +584,13 @@
     if (key === "in:calc") return openWindow(key, { w: 300, h: 420 }, buildCalc);
     if (key === "in:cal") return openWindow(key, { w: 340, h: 380 }, buildCal);
     if (key === "in:settings") return openWindow(key, { w: 460, h: 520 }, buildSettings);
+    if (key === "in:wlog") return openWindow(key, { w: 560, h: 420 }, (body) => {
+      let L = [];
+      try { L = JSON.parse(localStorage.getItem("desk_wlog") || "[]"); } catch (_) {}
+      const t = h("textarea", { class: "notes mono", readonly: "", spellcheck: "false" });
+      t.value = "시각 | 일 | 위젯 넓이 | 화면(CSS)@비율 | 위젯 번호:x,y 너비x높이\n" + (L.length ? L.slice().reverse().map((r) => r.join(" | ")).join("\n") : "(기록 없음)");
+      body.append(t);
+    });
   }
 
   function buildCalc(body) {
@@ -545,6 +662,11 @@
     const custom = S.wallpaper === "custom" && status.wallpaper > 0;
     const wp = custom ? "wp-custom" : "wp-" + (S.wallpaper === "custom" ? 0 : S.wallpaper | 0);
     document.body.className = wp + (S.theme === "light" ? " light" : "");
+    document.documentElement.classList.toggle("tb-left", S.tbAlign === "left");
+    document.documentElement.classList.toggle("tb-float", S.tbStyle === "float");
+    // 작업 표시줄 모양이 바뀌면 바탕화면 넓이가 달라지므로 창·위젯 자리를 다시 맞춤
+    for (const w of wins) applyRect(w);
+    layoutWidgets(); renderWidgetShells(); syncNative();
     if (A) call("look", wp, custom ? customUrl() : "");   // 앱 안: 맨 아래 배경 층에 걸기
     else document.body.style.backgroundImage = custom ? customUrl() : "";
   }
@@ -578,13 +700,18 @@
         h("p", { text: "다른 앱의 위젯(시계·날씨·일정 등)을 바탕화면에 올립니다. 올린 위젯을 길게 누르면(마우스는 오른쪽 누름) 옮기거나 크기를 바꾸고 지울 수 있습니다." }),
         h("h4", { text: "색" }),
         seg(S.theme, [["dark", "어둡게"], ["light", "밝게"]], (v) => { S.theme = v; }),
+        h("h4", { text: "작업 표시줄" }),
+        seg(S.tbAlign, [["center", "아이콘 가운데"], ["left", "아이콘 왼쪽"]], (v) => { S.tbAlign = v; }),
+        seg(S.tbStyle, [["dock", "화면 아래에 붙임"], ["float", "떠 있는 둥근 모양"]], (v) => { S.tbStyle = v; }),
         h("h4", { text: "홈 앱" }),
         h("p", { text: status.isDefault ? "덜누름 데스크가 기본 홈 앱입니다. 홈 버튼을 누르면 이 화면으로 옵니다." : "기본 홈 앱으로 정하면 홈 버튼을 누를 때 이 화면이 나옵니다. 언제든 기기 설정에서 원래 홈으로 되돌릴 수 있습니다." }),
         h("div", null,
           status.isDefault ? null : h("button", { class: "btn primary", onclick: () => call("makeDefault") }, "기본 홈 앱으로 정하기"),
           h("button", { class: "btn", onclick: () => call("openSettings", "home") }, "홈 앱 설정 열기")),
         h("h4", { text: "정보" }),
-        h("p", { text: "덜누름 데스크 " + (status.version || "") + " · 인터넷 권한 없이 기기 안에서만 동작합니다." })));
+        h("p", { text: "덜누름 데스크 " + (status.version || "") + " · 인터넷 권한 없이 기기 안에서만 동작합니다." }),
+        S.widgets.length ? h("div", null, h("button", { class: "btn", onclick: () => openBuiltin("in:wlog") }, "위젯 자리 기록 보기")) : null,
+        S.widgets.length ? h("p", { text: "위젯이 엉뚱한 자리로 가면, 그 직후 이 기록을 찍어 보내 주세요. 화면 크기와 위젯 자리가 바뀐 때가 적혀 있습니다." }) : null));
     };
     draw();
     body._redraw = draw;
@@ -604,31 +731,44 @@
   // 화면이 잠깐 작아지거나(키보드, 켜지는 도중) 다른 화면(접은 화면·펼친 화면·DeX)에서 열려도
   // 저장해 둔 자리는 건드리지 않고, 보여 줄 때만 그 화면에 맞춰 계산합니다. 원래 화면으로 돌아오면 원래 자리 그대로입니다.
   const classKey = (a) => Math.round(a.w / 80) + "x" + Math.round(a.h / 80);
+  // 너무 작은 화면(창을 내리는 중, 켜지는 도중)에서는 자리를 새로 계산하지 않고 그대로 둡니다
+  const tooSmall = (a) => a.w < 160 || a.h < 120;
   function clampRect(r, a) {
     const w = Math.max(56, Math.min(r.w, a.w - 8)), ht = Math.max(40, Math.min(r.h, a.h - 8));
     return { x: Math.max(4, Math.min(r.x, a.w - w - 4)), y: Math.max(4, Math.min(r.y, a.h - ht - 4)), w, h: ht };
   }
+  /** 저장해 둔 자리 p(그때 화면 aw×ah)를 지금 화면 a에 맞춤.
+   *  가까운 가장자리에서의 거리를 지킵니다 — 오른쪽 위에 놓은 위젯은 화면 너비가 달라져도 오른쪽 위에 남습니다. */
+  function fitFrom(p, a) {
+    if (p.aw === Math.round(a.w) && p.ah === Math.round(a.h)) return clampRect(p, a);
+    const right = p.x + p.w / 2 > p.aw / 2, bottom = p.y + p.h / 2 > p.ah / 2;
+    if (Math.abs(p.aw - a.w) <= p.aw * 0.12 && Math.abs(p.ah - a.h) <= p.ah * 0.12) {
+      const x = right ? a.w - (p.aw - p.x - p.w) - p.w : p.x;
+      const y = bottom ? a.h - (p.ah - p.y - p.h) - p.h : p.y;
+      return clampRect({ x, y, w: p.w, h: p.h }, a);
+    }
+    // 크기가 많이 다른 화면(접은 화면 등): 크기는 유지하고, 가장자리에서 떨어진 비율로 자리를 옮김
+    const c = clampRect({ x: 0, y: 0, w: p.w, h: p.h }, a);
+    const fx = right ? 1 - Math.min(1, (p.aw - p.x - p.w) / Math.max(1, p.aw - p.w)) : Math.min(1, p.x / Math.max(1, p.aw - p.w));
+    const fy = bottom ? 1 - Math.min(1, (p.ah - p.y - p.h) / Math.max(1, p.ah - p.h)) : Math.min(1, p.y / Math.max(1, p.ah - p.h));
+    return clampRect({ x: Math.round((a.w - c.w) * fx), y: Math.round((a.h - c.h) * fy), w: c.w, h: c.h }, a);
+  }
   function rectFor(d, a) {
     const pos = d.pos || {};
-    const own = pos[classKey(a)];
-    if (own) return clampRect(own, a);
-    // 이 화면 크기에서 놓은 적이 없음 → 가장 비슷한 화면에서 놓은 자리를 바탕으로
-    let best = null, score = Infinity;
+    // 이 화면 크기에서 놓은 자리, 없으면 가장 비슷한 화면에서 놓은 자리를 바탕으로
+    let best = pos[classKey(a)] || null, score = best ? Math.abs(best.aw - a.w) + Math.abs(best.ah - a.h) : Infinity;
     for (const k in pos) {
       const sc = Math.abs(pos[k].aw - a.w) + Math.abs(pos[k].ah - a.h);
       if (sc < score) { score = sc; best = pos[k]; }
     }
     if (!best) return clampRect({ x: d.x || 16, y: d.y || 16, w: d.w || 160, h: d.h || 80 }, a);
-    if (Math.abs(best.aw - a.w) <= best.aw * 0.12 && Math.abs(best.ah - a.h) <= best.ah * 0.12) return clampRect(best, a);
-    // 크기가 많이 다른 화면: 크기는 유지하고, 가장자리에서 떨어진 비율로 자리를 옮김 (오른쪽에 붙여 둔 것은 오른쪽에)
-    const c = clampRect({ x: 0, y: 0, w: best.w, h: best.h }, a);
-    const fx = Math.min(1, best.x / Math.max(1, best.aw - best.w)), fy = Math.min(1, best.y / Math.max(1, best.ah - best.h));
-    return clampRect({ x: Math.round((a.w - c.w) * fx), y: Math.round((a.h - c.h) * fy), w: c.w, h: c.h }, a);
+    return fitFrom(best, a);
   }
   /** 지금 화면에 맞춰 보여 줄 자리를 계산 (저장된 자리는 바꾸지 않음) */
-  function layoutWidgets(area) {
+  function layoutWidgets(area, why) {
     const a = area || wArea();
-    if (a.w < 50 || a.h < 50) return;
+    if (tooSmall(a)) { if (!area && S.widgets.length) wlog("skip-small " + (why || ""), a); return; }
+    const before = S.widgets.map((d) => [d.x, d.y, d.w, d.h].join()).join("|");
     for (const d of S.widgets) {
       if (!d.pos || !Object.keys(d.pos).length) { // 예전 버전에서 올린 위젯: 지금 자리를 이 화면의 자리로
         d.pos = {};
@@ -636,20 +776,40 @@
       }
       Object.assign(d, rectFor(d, a));
     }
+    if (!area && S.widgets.length && before !== S.widgets.map((d) => [d.x, d.y, d.w, d.h].join()).join("|")) wlog("layout " + (why || ""), a);
   }
-  /** 사용자가 놓은 자리를 지금 화면 크기의 자리로 기억 */
-  function commitWidgets() {
+  /** 사용자가 놓은 자리를 지금 화면 크기의 자리로 기억 (옮긴 위젯 하나만) */
+  function commitWidget(d) {
     const a = wArea();
-    if (a.w < 50 || a.h < 50) return;
+    if (tooSmall(a) || !d) return;
     const k = classKey(a), t = Date.now();
-    for (const d of S.widgets) {
-      d.pos = d.pos || {};
-      d.pos[k] = { x: d.x, y: d.y, w: d.w, h: d.h, aw: Math.round(a.w), ah: Math.round(a.h), t };
-      const keys = Object.keys(d.pos);
-      if (keys.length > 6) { keys.sort((p, q) => (d.pos[p].t || 0) - (d.pos[q].t || 0)); for (const old of keys.slice(0, keys.length - 6)) delete d.pos[old]; }
-    }
+    d.pos = d.pos || {};
+    d.pos[k] = { x: d.x, y: d.y, w: d.w, h: d.h, aw: Math.round(a.w), ah: Math.round(a.h), t };
+    const keys = Object.keys(d.pos);
+    if (keys.length > 6) { keys.sort((p, q) => (d.pos[p].t || 0) - (d.pos[q].t || 0)); for (const old of keys.slice(0, keys.length - 6)) delete d.pos[old]; }
     save();
+    wlog("commit " + d.id, a);
   }
+  // 위젯 자리 기록 (문제가 생기면 설정 > 정보에서 볼 수 있음). 최근 80건만 이 기기에 둡니다.
+  function wlog(ev, a) {
+    try {
+      const L = JSON.parse(localStorage.getItem("desk_wlog") || "[]");
+      const t = new Date();
+      L.push([String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") + ":" + String(t.getSeconds()).padStart(2, "0"), ev,
+        a ? Math.round(a.w) + "x" + Math.round(a.h) : "", innerWidth + "x" + innerHeight + "@" + devicePixelRatio,
+        S.widgets.map((d) => d.id + ":" + Math.round(d.x) + "," + Math.round(d.y) + " " + Math.round(d.w) + "x" + Math.round(d.h)).join(" ")]);
+      localStorage.setItem("desk_wlog", JSON.stringify(L.slice(-80)));
+    } catch (_) {}
+  }
+  // 화면 크기가 바뀐 직후에는 크기 값이 늦게 따라오는 기기가 있어, 조금 뒤에 한 번 더 맞춥니다
+  let relayoutTimers = [];
+  function relayout(why) {
+    const run = (w) => { for (const x of wins) applyRect(x); layoutWidgets(null, w); renderWidgetShells(); lastSync = ""; syncNative(); };
+    run(why);
+    for (const t of relayoutTimers) clearTimeout(t);
+    relayoutTimers = [250, 900].map((ms) => setTimeout(() => run(why + "+" + ms), ms));
+  }
+  let staleTries = 0;
   function syncNative() {
     if (!A || syncQueued) return;
     syncQueued = true;
@@ -663,11 +823,16 @@
         if (r.width > 0 && r.height > 0) blockers.push([Math.floor(r.left), Math.floor(r.top), Math.ceil(r.right), Math.ceil(r.bottom)]);
       };
       if (layout.length) { document.querySelectorAll(".win, .dicon").forEach(add); add($("taskbar")); add($("toast")); }
-      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden;
-      const key = JSON.stringify([layout, blockers, innerWidth, blockAll, wDragging]);
+      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden || !$("calfly").hidden || !$("snapfly").hidden;
+      const key = JSON.stringify([layout, blockers, innerWidth, innerHeight, devicePixelRatio, blockAll, wDragging]);
       if (key === lastSync) return;
       lastSync = key;
-      const r = await call("widgetSync", layout, blockers, innerWidth, blockAll, wDragging);
+      const r = await call("widgetSync", layout, blockers, innerWidth, blockAll, wDragging, devicePixelRatio, innerHeight);
+      if (r && r.stale) {
+        // 앱 쪽 화면 크기와 이 화면이 아는 크기가 아직 다름(크기가 바뀌는 중) → 잠시 뒤 다시 계산해서 알려 줌
+        wlog("stale view=" + r.view + " " + r.stale);
+        if (staleTries++ < 12) setTimeout(() => { layoutWidgets(null, "stale"); renderWidgetShells(); lastSync = ""; syncNative(); }, 200);
+      } else if (r) staleTries = 0;
       if (r && Array.isArray(r.missing)) {
         const before = [...wMissing].join();
         wMissing.clear();
@@ -702,7 +867,7 @@
         if (e.button === 2) return;
         e.stopPropagation();
         el.setPointerCapture(e.pointerId);
-        g = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x: d.x, y: d.y, w: d.w, h: d.h };
+        g = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x: d.x, y: d.y, w: d.w, h: d.h, moved: false };
         wSel = d.id;
         for (const x of $("wlayer").querySelectorAll(".wframe")) x.classList.toggle("sel", x === f);
       });
@@ -716,14 +881,17 @@
           d.x = Math.max(4, Math.min(snap(g.x + dx), a.w - d.w - 4)); d.y = Math.max(4, Math.min(snap(g.y + dy), a.h - d.h - 4));
         }
         place(f, d);
+        g.moved = true;
         wDragging = true;
         syncNative();
       });
       const end = (e) => {
         if (!g || e.pointerId !== g.id) return;
+        const moved = g.moved;
         g = null; size.hidden = true;
         wDragging = false;
-        commitWidgets(); syncNative();
+        if (moved) commitWidget(d);
+        syncNative();
         if (!A) renderWidgetShells();
       };
       el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
@@ -763,7 +931,7 @@
     for (let cx = x; cx >= 8 && !found; cx -= 48) for (let cy = 16; cy + ht <= a.h - 8; cy += 16) if (!hit(cx, cy)) { x = cx; y = cy; found = true; break; }
     S.widgets.push({ id: info.id, x: snap(x), y: snap(y), w, h: ht, label: info.label || "", pos: {} });
     Object.assign(S.widgets[S.widgets.length - 1], clampRect(S.widgets[S.widgets.length - 1], a));
-    commitWidgets();
+    commitWidget(S.widgets[S.widgets.length - 1]);
     renderWidgetShells(); syncNative(); redrawSettings();
     toast("위젯을 올렸습니다. 길게 누르면 옮기거나 크기를 바꿀 수 있습니다.");
   }
@@ -810,7 +978,7 @@
   }
   function onPush(what, data) {
     if (what === "apps") { loadApps(); lastSync = ""; syncNative(); }
-    else if (what === "layout") { layoutWidgets(); renderWidgetShells(); lastSync = ""; syncNative(); }
+    else if (what === "layout") relayout("view-size");
     else if (what === "widget-added") onWidgetAdded(data || {});
     else if (what === "widget-failed") toast(data && data.reason === "denied" ? "위젯을 올리려면 확인 창에서 '허용'을 눌러 주세요." : data && data.reason === "canceled" ? "위젯 설정을 마치지 않아 올리지 않았습니다." : "이 위젯은 올리지 못했습니다.");
     else if (what === "widget-edit") enterWidgetEdit(data && data.id);
@@ -820,18 +988,24 @@
     }
     else if (what === "wallpaper-failed") toast("이 사진은 읽지 못했습니다. 다른 사진을 골라 주세요.");
     else if (what === "status") refreshStatus().then(() => { applyLook(); redrawSettings(); });
+    else if (what === "resume") relayout("resume");
     else if (what === "home") { closePanels(); exitWidgetEdit(); }
     else if (what === "back") {
       if (!$("ctx").hidden) { $("ctx").hidden = true; return; }
       if (!$("wpick").hidden) { $("wpick").hidden = true; return; }
       if (wEdit) return exitWidgetEdit();
-      if (!$("start").hidden || !$("quick").hidden) return closePanels();
+      if (!$("snapfly").hidden) { $("snapfly").hidden = true; return; }
+      if (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden) return closePanels();
       const t = topWin();
       if (t) { t.min = true; t.el.hidden = true; const n = topWin(); if (n) focusWin(n); else renderTaskbar(); }
     }
   }
   $("start-btn").addEventListener("click", () => toggleStart());
   $("tray").addEventListener("click", toggleQuick);
+  $("tray-clock").addEventListener("click", toggleCal);
+  $("peek").addEventListener("click", () => { closePanels(); showDesktop(); });
+  $("search-icon").append(svg(IC.search)); $("wsearch-icon").append(svg(IC.search));
+  $("btn-widgets").append(svg(IC.widgets)); $("btn-desk-settings").append(svg(IC.gear)); $("btn-sys-settings").append(svg(IC.device));
   $("search").addEventListener("input", renderStart);
   $("search").addEventListener("keydown", (e) => {
     if (e.key === "Enter") { const first = $("start-body").querySelector(".litem, .gitem"); if (first) first.click(); }
@@ -849,6 +1023,8 @@
     if (!$("ctx").hidden && !$("ctx").contains(t)) $("ctx").hidden = true;
     if (!$("start").hidden && !$("start").contains(t) && !$("start-btn").contains(t) && !$("ctx").contains(t)) { $("start").hidden = true; $("start-btn").classList.remove("on"); }
     if (!$("quick").hidden && !$("quick").contains(t) && !$("tray").contains(t)) { $("quick").hidden = true; $("tray").classList.remove("on"); }
+    if (!$("calfly").hidden && !$("calfly").contains(t) && !$("tray-clock").contains(t)) { $("calfly").hidden = true; $("tray-clock").classList.remove("on"); }
+    if (!$("snapfly").hidden && !$("snapfly").contains(t)) $("snapfly").hidden = true;
     if (!$("wpick").hidden && !$("wpick").contains(t)) $("wpick").hidden = true;
   }, true);
   $("desk").addEventListener("contextmenu", (e) => {
@@ -867,14 +1043,15 @@
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !$("wpick").hidden) { $("wpick").hidden = true; return; }
-    if (e.key === "Escape" && wEdit && $("start").hidden && $("quick").hidden) return exitWidgetEdit();
-    if (e.key === "Meta" || (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden))) { e.preventDefault(); if (e.key === "Meta") toggleStart(); else closePanels(); }
+    if (e.key === "Escape" && wEdit && $("start").hidden && $("quick").hidden && $("calfly").hidden) return exitWidgetEdit();
+    if (e.key === "Meta" || (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden || !$("snapfly").hidden))) { e.preventDefault(); if (e.key === "Meta") toggleStart(); else closePanels(); }
   });
-  addEventListener("resize", () => { for (const w of wins) applyRect(w); layoutWidgets(); renderWidgetShells(); syncNative(); });
+  addEventListener("resize", () => relayout("resize"));
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) relayout("shown"); });
 
   // ---------- 시작 ----------
   applyLook();
-  for (const b of BUILTIN) byKey.set(b.key, b);
+  for (const b of BUILTIN.concat(HIDDEN)) byKey.set(b.key, b);
   if (!S.desktop) S.desktop = BUILTIN.map((b) => b.key);
   renderDesk(); renderTaskbar(); renderTray(); tick();
   layoutWidgets(); renderWidgetShells(); syncNative();
@@ -914,8 +1091,12 @@
     try {
       log("apps count=" + apps.length + " status=" + JSON.stringify(status));
       toggleStart(true);
-      await wait(600);
-      const shown = $("start-body").querySelectorAll(".litem").length;
+      await wait(400);
+      const pinnedShown = $("start-body").querySelectorAll(".gitem").length;
+      $("all-apps").click();
+      await wait(400);
+      const shown = $("start-body").querySelectorAll(".litem").length - BUILTIN.length;
+      log((pinnedShown >= BUILTIN.length && Math.abs(($("start").getBoundingClientRect().left + $("start").getBoundingClientRect().right) / 2 - innerWidth / 2) <= 2 ? "PASS" : "FAIL") + " start home pinned=" + pinnedShown + " centered left=" + Math.round($("start").getBoundingClientRect().left));
       // 목록의 아이콘은 보일 때 읽으므로(lazy), 점검은 첫 앱 아이콘을 직접 읽어 봄
       const iconOk = apps.length > 0 && await new Promise((r) => { const im = new Image(); im.onload = () => r(im.naturalWidth > 0); im.onerror = () => r(false); im.src = "/appicon/" + apps[0].pkg + "/" + apps[0].cls; setTimeout(() => r(false), 6000); });
       log((shown > 0 && shown === apps.length && iconOk ? "PASS" : "FAIL") + " start menu items=" + shown + " iconLoaded=" + iconOk);
@@ -970,7 +1151,7 @@
           enterWidgetEdit(wd.id);
           const frames = $("wlayer").querySelectorAll(".wframe").length;
           wd.w += 24; wd.x -= 32;
-          commitWidgets(); renderWidgetShells(); syncNative();
+          commitWidget(wd); renderWidgetShells(); syncNative();
           await wait(1000);
           probe = await call("widgetProbe");
           const v2 = Array.isArray(probe) ? probe[0] : null;
@@ -987,6 +1168,12 @@
           wd.pos = JSON.parse(saved); layoutWidgets();
           const restored = wd.x === keep.x && wd.y === keep.y && wd.w === keep.w && wd.h === keep.h;
           log((back && restored ? "PASS" : "FAIL") + " widget place survives small screen low=" + low + " squeezed=" + squeezed + " back=" + wd.y + " restored=" + restored);
+          // 오른쪽 위에 놓은 위젯: 화면이 조금 넓어지거나(+70) 많이 좁아져도(접은 화면) 오른쪽에 붙어 있는지
+          const gapR = a0.w - wd.x - wd.w;
+          layoutWidgets({ w: a0.w + 70, h: a0.h - 30 }); const gapWide = a0.w + 70 - wd.x - wd.w;
+          layoutWidgets({ w: Math.round(a0.w * 0.45), h: Math.round(a0.h * 1.6) }); const narrowRight = wd.x + wd.w / 2 > a0.w * 0.45 / 2;
+          layoutWidgets();
+          log((gapWide === gapR && narrowRight && wd.x === keep.x ? "PASS" : "FAIL") + " widget stays on right edge gap=" + gapR + " wider=" + gapWide + " narrowRight=" + narrowRight);
           save(); renderWidgetShells(); lastSync = ""; syncNative();
           await wait(800);
           // 실제로 화면이 작아졌다가(접은 화면·팝업 창) 다시 커져도 위젯 뷰가 같은 자리에 있는지
