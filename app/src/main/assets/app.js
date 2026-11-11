@@ -8,7 +8,10 @@ const NB=window.__AmpNB||window.AndroidBridge||null;
 /* 1.53 빌드 종류: std·fold8(기존 대신남 원) / comm(대신남 배포용 테스트) / play(대신남 원 안드로이드 테스트용)
    PUB(두 시험판): 인터넷 라디오 직접 재생 대신 방송사 공식 앱·웹, 가사는 곡 파일 것만, 처음 실행 때 권한·데이터 안내 */
 const BUILD=window.__build||(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):'std'}catch(e){return 'std'}})(),PUB=BUILD==='comm'||BUILD==='play',PLAY=BUILD==='play';
-document.documentElement.dataset.build=BUILD;document.documentElement.dataset.app=BUILD==='amp'?'amp':BUILD==='one'?'one':'all';
+/* 1.56: 앱 나누기 — amp(대신남 AMP: 오디오 스킨만) / one·std·fold8(대신남 원·대신남원: 자동차 모드·에어라인만). 웹 미리보기·시험판(comm·play)은 전부 */
+const NATIVE_KIND=(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):''}catch(e){return ''}})();
+const APP=BUILD==='amp'?'amp':(BUILD==='one'||((BUILD==='std'||BUILD==='fold8')&&(NATIVE_KIND==='std'||NATIVE_KIND==='fold8')))?'one':'all';
+document.documentElement.dataset.build=BUILD;document.documentElement.dataset.app=APP;
 /* 갤럭시 Z 폴드8 전용판(보라색은 앱 아이콘·실행 화면만, 앱 안 색은 일반판과 같음): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
 const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
 if(IS_FOLD)document.documentElement.dataset.fold='1';
@@ -38,9 +41,9 @@ let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',fa
 const RETIRED=['carnival5','carnival4','carnival6','tablet','tablet2'],ALL_SKINS=!!window.__allSkins;
 /* 1.55 앱 나누기: 대신남 AMP(build 'amp') = 오디오 스킨 7개만, 대신남 원(build 'one') = 자동차 모드·에어라인만. 기존 통합 앱은 그대로 */
 const AUDIO_SKINS=['blue','amber','base','neon','ice','red','wood'],ONE_SKINS=['carnival','carnival7'];
-const APP=BUILD==='amp'?'amp':BUILD==='one'?'one':'all';
 const skinOk=k=>APP==='amp'?AUDIO_SKINS.includes(k):APP==='one'?ONE_SKINS.includes(k):(ALL_SKINS||!RETIRED.includes(k));
 const SKIN_DEF=APP==='amp'?'blue':'carnival7';
+if(APP==='one')store.set('ckFocus','gps'); /* 1.56: 대신남 원은 켤 때마다 스피드미터 화면(폴드7에서 가장 보기 편한 비율)으로 시작 */
 const SKIN_LIST=SKINS.filter(s=>skinOk(s[0]));
 let skin=store.get('skin2',SKIN_DEF), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
 // 1.18: 스킨 정리 — 콕핏·콕핏 2는 콕핏(예전 콕핏 수정판)으로, 드라이브는 자동차 모드로
@@ -2018,7 +2021,8 @@ const rzT={};
 const fxOn=w=>appEl.classList.contains('FX')&&w.classList.contains('fx');
 function fxSetH(h,live){const r=document.documentElement;h=h?Math.max(200,Math.min(2400,Math.round(h))):0;if(h)r.style.setProperty('--fxH',h+'px');else r.style.removeProperty('--fxH');
   if(!live)store.set('fxH',h);clearTimeout(fxSetH.t);fxSetH.t=setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}window.dispatchEvent(new Event('resize'))},live?120:40)}
-{const h=store.get('fxH',0);if(h)document.documentElement.style.setProperty('--fxH',h+'px')}
+{const h=store.get('fxH',0);if(APP==='one')document.documentElement.style.setProperty('--fxH','calc(100dvh - 6px)'); /* 1.56 대신남 원: 켤 때는 스피드미터 창이 화면 한가득(폴드7 기준 비율) */
+  else if(h)document.documentElement.style.setProperty('--fxH',h+'px')}
 function rzStep(w,d){if(fxOn(w)){fxSetH(d===0?0:w.getBoundingClientRect().height+d);clearTimeout(rzT[w.id]);rzT[w.id]=setTimeout(()=>winRz(w,false),15000);return}
   const r=w.getBoundingClientRect();let h=d===0?0:Math.max(140,Math.round(r.height+d));
   if(!h){delete sizeMap()[w.id];saveSizes();applySizes()}else{w.style.height=h+'px';w.classList.add('sized');sizeMap()[w.id]=h;saveSizes()}
@@ -3173,7 +3177,15 @@ function atcMiniSync(){const w=$('#atcWarn'),c=$('#atcClr'),li=[...document.quer
   else if(c&&!c.hidden){t='이륙 허가';k='ok'}
   else if(li){t=li.textContent.replace(/\s+/g,' ').trim().replace(/^TWR\s*/,'');k='run'}
   else t=($('#atcSt')&&$('#atcSt').textContent.replace(/^·\s*/,''))||'대기';
-  atcMini.querySelector('span').textContent=t;atcMini.dataset.k=k}
+  atcMini.dataset.k=k;atcMiniText(t)}
+/* 1.56: 관제탑 문구 — 칸 크기는 고정, 넘치는 글은 전광판처럼 옆으로 흘려 보냄(제목줄이 늘었다 줄었다 하지 않게) */
+function atcMiniText(t){const sp=atcMini.querySelector('span');if(sp.dataset.t===t){atcMiniFit();return}sp.dataset.t=t;sp.title=t;
+  sp.innerHTML='';const i=document.createElement('i');i.textContent=t;sp.append(i);atcMiniFit()}
+function atcMiniFit(){const sp=atcMini.querySelector('span'),i=sp&&sp.firstElementChild;if(!i)return;
+  sp.classList.remove('mq');i.querySelectorAll('u').forEach(u=>u.remove());const over=i.scrollWidth-sp.clientWidth;
+  if(over>2&&sp.clientWidth>0){const w0=i.scrollWidth,u=document.createElement('u');u.textContent=sp.dataset.t;i.append(u);const d=i.scrollWidth-w0;
+    sp.style.setProperty('--mqd',(-d)+'px');sp.style.setProperty('--mqs',Math.max(5,d/38).toFixed(1)+'s');sp.classList.add('mq')}}
+window.addEventListener('resize',()=>{clearTimeout(atcMiniFit.t);atcMiniFit.t=setTimeout(atcMiniFit,150)});
 if($('#wAtc'))new MutationObserver(()=>atcMiniSync()).observe($('#wAtc'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 atcMiniSync();
 let cksWas=false;
@@ -3338,4 +3350,8 @@ if(window.__skinNote)setTimeout(()=>{const n=(SKINS.find(x=>x[0]===window.__skin
 if(PUB){$('#secPub').hidden=false;$('#secPubH').hidden=false;$('#pubName').textContent=BUILD==='play'?'대신남 원 안드로이드 테스트용':'대신남 배포용 테스트';$('#pubNotice').onclick=()=>BuildNotice.show(true);setTimeout(()=>BuildNotice.show(false),400);
   try{$('#rdQ').placeholder='방송 이름 (KBS, MBC, SBS, CBS, EBS)';$('#rdCountry').closest('.rd-search').classList.add('pub')}catch(e){}}
 if(PLAY){const r=$('#sLaunch');if(r){const row=r.closest('.row');if(row)row.hidden=true}}
+/* 1.56 대신남 원: 켜면 스피드미터 창이 화면 맨 위에 꽉 차게(위 계기·버튼은 위로 밀어 올리면 보임) */
+if(APP==='one'&&isCk2()){let touched=false;const stop=()=>{touched=true};['pointerdown','wheel','keydown','touchstart'].forEach(ev=>window.addEventListener(ev,stop,{once:true,passive:true}));
+  const go=()=>{if(touched||!appEl.classList.contains('FX'))return;const w=$('#wGps');if(!w)return;let y=0;for(let e=w;e;e=e.offsetParent)y+=e.offsetTop;y=Math.max(0,y-4);window.scrollTo(0,y);document.body.scrollTop=y};
+  [60,350,900,1600].forEach(t=>setTimeout(go,t))}
 })();

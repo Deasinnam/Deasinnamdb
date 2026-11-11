@@ -5,7 +5,10 @@ const NB=window.__AmpNB||window.AndroidBridge||null;
 /* 1.53 빌드 종류: std·fold8(기존 대신남 원) / comm(대신남 배포용 테스트) / play(대신남 원 안드로이드 테스트용)
    PUB(두 시험판): 인터넷 라디오 직접 재생 대신 방송사 공식 앱·웹, 가사는 곡 파일 것만, 처음 실행 때 권한·데이터 안내 */
 const BUILD=window.__build||(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):'std'}catch(e){return 'std'}})(),PUB=BUILD==='comm'||BUILD==='play',PLAY=BUILD==='play';
-document.documentElement.dataset.build=BUILD;document.documentElement.dataset.app=BUILD==='amp'?'amp':BUILD==='one'?'one':'all';
+/* 1.56: 앱 나누기 — amp(대신남 AMP: 오디오 스킨만) / one·std·fold8(대신남 원·대신남원: 자동차 모드·에어라인만). 웹 미리보기·시험판(comm·play)은 전부 */
+const NATIVE_KIND=(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):''}catch(e){return ''}})();
+const APP=BUILD==='amp'?'amp':(BUILD==='one'||((BUILD==='std'||BUILD==='fold8')&&(NATIVE_KIND==='std'||NATIVE_KIND==='fold8')))?'one':'all';
+document.documentElement.dataset.build=BUILD;document.documentElement.dataset.app=APP;
 /* 갤럭시 Z 폴드8 전용판(보라색은 앱 아이콘·실행 화면만, 앱 안 색은 일반판과 같음): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
 const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
 if(IS_FOLD)document.documentElement.dataset.fold='1';
@@ -35,9 +38,9 @@ let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',fa
 const RETIRED=['carnival5','carnival4','carnival6','tablet','tablet2'],ALL_SKINS=!!window.__allSkins;
 /* 1.55 앱 나누기: 대신남 AMP(build 'amp') = 오디오 스킨 7개만, 대신남 원(build 'one') = 자동차 모드·에어라인만. 기존 통합 앱은 그대로 */
 const AUDIO_SKINS=['blue','amber','base','neon','ice','red','wood'],ONE_SKINS=['carnival','carnival7'];
-const APP=BUILD==='amp'?'amp':BUILD==='one'?'one':'all';
 const skinOk=k=>APP==='amp'?AUDIO_SKINS.includes(k):APP==='one'?ONE_SKINS.includes(k):(ALL_SKINS||!RETIRED.includes(k));
 const SKIN_DEF=APP==='amp'?'blue':'carnival7';
+if(APP==='one')store.set('ckFocus','gps'); /* 1.56: 대신남 원은 켤 때마다 스피드미터 화면(폴드7에서 가장 보기 편한 비율)으로 시작 */
 const SKIN_LIST=SKINS.filter(s=>skinOk(s[0]));
 let skin=store.get('skin2',SKIN_DEF), layoutMode=store.get('layout','auto'), mode=HAS_EXT?store.get('mode','local'):'local'; // 처음 설치: 콕핏 2(전체 보기·콕핏 PFD·아날로그 시계)
 // 1.18: 스킨 정리 — 콕핏·콕핏 2는 콕핏(예전 콕핏 수정판)으로, 드라이브는 자동차 모드로

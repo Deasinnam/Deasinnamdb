@@ -22,7 +22,15 @@ function atcMiniSync(){const w=$('#atcWarn'),c=$('#atcClr'),li=[...document.quer
   else if(c&&!c.hidden){t='이륙 허가';k='ok'}
   else if(li){t=li.textContent.replace(/\s+/g,' ').trim().replace(/^TWR\s*/,'');k='run'}
   else t=($('#atcSt')&&$('#atcSt').textContent.replace(/^·\s*/,''))||'대기';
-  atcMini.querySelector('span').textContent=t;atcMini.dataset.k=k}
+  atcMini.dataset.k=k;atcMiniText(t)}
+/* 1.56: 관제탑 문구 — 칸 크기는 고정, 넘치는 글은 전광판처럼 옆으로 흘려 보냄(제목줄이 늘었다 줄었다 하지 않게) */
+function atcMiniText(t){const sp=atcMini.querySelector('span');if(sp.dataset.t===t){atcMiniFit();return}sp.dataset.t=t;sp.title=t;
+  sp.innerHTML='';const i=document.createElement('i');i.textContent=t;sp.append(i);atcMiniFit()}
+function atcMiniFit(){const sp=atcMini.querySelector('span'),i=sp&&sp.firstElementChild;if(!i)return;
+  sp.classList.remove('mq');i.querySelectorAll('u').forEach(u=>u.remove());const over=i.scrollWidth-sp.clientWidth;
+  if(over>2&&sp.clientWidth>0){const w0=i.scrollWidth,u=document.createElement('u');u.textContent=sp.dataset.t;i.append(u);const d=i.scrollWidth-w0;
+    sp.style.setProperty('--mqd',(-d)+'px');sp.style.setProperty('--mqs',Math.max(5,d/38).toFixed(1)+'s');sp.classList.add('mq')}}
+window.addEventListener('resize',()=>{clearTimeout(atcMiniFit.t);atcMiniFit.t=setTimeout(atcMiniFit,150)});
 if($('#wAtc'))new MutationObserver(()=>atcMiniSync()).observe($('#wAtc'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 atcMiniSync();
 let cksWas=false;

@@ -50,3 +50,7 @@ if(window.__skinNote)setTimeout(()=>{const n=(SKINS.find(x=>x[0]===window.__skin
 if(PUB){$('#secPub').hidden=false;$('#secPubH').hidden=false;$('#pubName').textContent=BUILD==='play'?'대신남 원 안드로이드 테스트용':'대신남 배포용 테스트';$('#pubNotice').onclick=()=>BuildNotice.show(true);setTimeout(()=>BuildNotice.show(false),400);
   try{$('#rdQ').placeholder='방송 이름 (KBS, MBC, SBS, CBS, EBS)';$('#rdCountry').closest('.rd-search').classList.add('pub')}catch(e){}}
 if(PLAY){const r=$('#sLaunch');if(r){const row=r.closest('.row');if(row)row.hidden=true}}
+/* 1.56 대신남 원: 켜면 스피드미터 창이 화면 맨 위에 꽉 차게(위 계기·버튼은 위로 밀어 올리면 보임) */
+if(APP==='one'&&isCk2()){let touched=false;const stop=()=>{touched=true};['pointerdown','wheel','keydown','touchstart'].forEach(ev=>window.addEventListener(ev,stop,{once:true,passive:true}));
+  const go=()=>{if(touched||!appEl.classList.contains('FX'))return;const w=$('#wGps');if(!w)return;let y=0;for(let e=w;e;e=e.offsetParent)y+=e.offsetTop;y=Math.max(0,y-4);window.scrollTo(0,y);document.body.scrollTop=y};
+  [60,350,900,1600].forEach(t=>setTimeout(go,t))}

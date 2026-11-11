@@ -132,7 +132,8 @@ const rzT={};
 const fxOn=w=>appEl.classList.contains('FX')&&w.classList.contains('fx');
 function fxSetH(h,live){const r=document.documentElement;h=h?Math.max(200,Math.min(2400,Math.round(h))):0;if(h)r.style.setProperty('--fxH',h+'px');else r.style.removeProperty('--fxH');
   if(!live)store.set('fxH',h);clearTimeout(fxSetH.t);fxSetH.t=setTimeout(()=>{try{window.AmpPfd&&AmpPfd.panel.resize()}catch(e){}try{if(mapObj)mapObj.invalidateSize()}catch(e){}window.dispatchEvent(new Event('resize'))},live?120:40)}
-{const h=store.get('fxH',0);if(h)document.documentElement.style.setProperty('--fxH',h+'px')}
+{const h=store.get('fxH',0);if(APP==='one')document.documentElement.style.setProperty('--fxH','calc(100dvh - 6px)'); /* 1.56 대신남 원: 켤 때는 스피드미터 창이 화면 한가득(폴드7 기준 비율) */
+  else if(h)document.documentElement.style.setProperty('--fxH',h+'px')}
 function rzStep(w,d){if(fxOn(w)){fxSetH(d===0?0:w.getBoundingClientRect().height+d);clearTimeout(rzT[w.id]);rzT[w.id]=setTimeout(()=>winRz(w,false),15000);return}
   const r=w.getBoundingClientRect();let h=d===0?0:Math.max(140,Math.round(r.height+d));
   if(!h){delete sizeMap()[w.id];saveSizes();applySizes()}else{w.style.height=h+'px';w.classList.add('sized');sizeMap()[w.id]=h;saveSizes()}
