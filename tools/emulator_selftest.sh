@@ -99,6 +99,18 @@ if grep -q "결과: 모두 통과" "selftest-diag${SUF}.txt"; then echo "문제 
 engines=$(adb shell ps -A 2>/dev/null | grep -c "libnode.so" || true)
 echo "떠 있는 문서 엔진: $engines"
 if [ "${engines:-0}" -gt 1 ]; then echo "문서 엔진이 여러 개 남아 있음"; fail=1; fi
+# 덮어 설치(업데이트) 뒤에도 열리는지: 설치 위치가 바뀌면 예전 라이브러리 링크가 끊어집니다
+# (실제 휴대폰에서 "라이브러리 폴더를 만들 수 없습니다"로 문서 엔진이 뜨지 않던 경우)
+before=$(adb shell pm path "$PKG" | head -1)
+adb install -r -g "$APK" >/dev/null || fail=1
+after=$(adb shell pm path "$PKG" | head -1)
+if [ "$before" = "$after" ]; then echo "참고: 덮어 설치해도 설치 위치가 그대로임"; else echo "설치 위치 바뀜 (업데이트 상황)"; fi
+adb logcat -c
+adb shell am start -n "$PKG/.HomeActivity" >/dev/null; sleep 5
+adb shell am start -n "$PKG/.OfficeActivity" --es ieum.flow docs >/dev/null
+page_wait docs 40
+adb logcat -d -s IEUM_PAGE:I IeumNode:I >> "selftest-flow${SUF}.txt"
+page_check docs "덮어 설치 뒤 열기" || fail=1
 adb shell am force-stop "$PKG"
 
 if [ "$MODE" = office ]; then

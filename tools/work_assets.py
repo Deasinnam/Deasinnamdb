@@ -50,7 +50,7 @@ def main() -> None:
     ap.add_argument("--node-license", required=True)
     ap.add_argument("--versions", required=True)
     ap.add_argument("--build", default="dev")
-    ap.add_argument("--app-version", default="1.0.1")
+    ap.add_argument("--app-version", default="1.0.2")
     a = ap.parse_args()
     ver = dict(kv.split("=", 1) for kv in a.versions.split(","))
 

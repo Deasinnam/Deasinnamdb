@@ -22,6 +22,9 @@ import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
@@ -423,9 +426,17 @@ final class NodeRuntime {
      *  - copy: 링크가 통하지 않는 기기를 위해 파일을 그대로 복사
      */
     private File prepareLibraries(boolean copy) throws IOException {
-        File dir = new File(context.getFilesDir(), "nodelib");
+        // 링크는 앱 설치 위치를 가리키므로, 설치 위치(업데이트마다 바뀜)별로 폴더를 따로 둡니다
+        File base = new File(context.getFilesDir(), "nodelib");
+        File dir = new File(base, Integer.toHexString(nativeDir.getAbsolutePath().hashCode()) + (copy ? "c" : "l"));
+        File[] old = base.listFiles();
+        if (old != null) for (File o : old) if (!o.getName().equals(dir.getName())) deleteTree(o);
         deleteTree(dir);
-        if (!dir.mkdirs()) throw new IOException("라이브러리 폴더를 만들 수 없습니다");
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            // 그래도 못 만들면 임시 폴더 쪽에 새 이름으로
+            dir = new File(context.getCacheDir(), "nodelib-" + System.nanoTime());
+            if (!dir.mkdirs()) throw new IOException("라이브러리 폴더를 만들 수 없습니다: " + dir);
+        }
         String map = new String(readAll(context.getAssets().open("nodelibs.txt")), StandardCharsets.UTF_8);
         for (String line : map.split("\n")) {
             int eq = line.indexOf('=');
@@ -433,6 +444,7 @@ final class NodeRuntime {
             File target = new File(nativeDir, line.substring(eq + 1).trim());
             if (!target.exists()) continue;
             File link = new File(dir, line.substring(0, eq).trim());
+            Files.deleteIfExists(link.toPath());
             if (copy) {
                 byte[] buf = new byte[1 << 16];
                 try (InputStream in = new java.io.FileInputStream(target); OutputStream o = new FileOutputStream(link)) {
@@ -601,11 +613,22 @@ final class NodeRuntime {
         }
     }
 
+    /**
+     * 폴더를 통째로 지웁니다. 가리키는 곳이 사라진 심볼릭 링크도 지웁니다.
+     * (앱을 업데이트하면 설치 위치가 바뀌어 예전 링크가 끊어집니다. File.exists()는 끊어진 링크를
+     *  "없다"고 답하므로, 링크 자체를 보고 지워야 폴더가 비워집니다.)
+     */
     private static void deleteTree(File f) {
-        if (!f.exists()) return;
-        File[] kids = f.listFiles();
-        if (kids != null) for (File k : kids) deleteTree(k);
-        //noinspection ResultOfMethodCallIgnored
-        f.delete();
+        Path p = f.toPath();
+        if (!Files.exists(p, LinkOption.NOFOLLOW_LINKS)) return;
+        if (Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS)) {
+            File[] kids = f.listFiles();
+            if (kids != null) for (File k : kids) deleteTree(k);
+        }
+        try {
+            Files.deleteIfExists(p);
+        } catch (IOException e) {
+            Log.w(TAG, "지우지 못함: " + f + " " + e);
+        }
     }
 }
