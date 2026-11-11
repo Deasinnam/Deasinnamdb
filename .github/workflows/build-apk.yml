@@ -28,7 +28,9 @@ jobs:
         run: |
           npm ci
           npm run check
-          npx playwright install --with-deps chromium
+          # 우분투 패키지 서버가 잠시 안 될 때도 빌드가 멈추지 않게: 의존 패키지 설치를 몇 번 다시 해 보고, 끝내 안 되면 러너에 이미 있는 것으로 진행
+          for i in 1 2 3; do npx playwright install --with-deps chromium && break; echo "retry $i"; sleep 20; done || true
+          npx playwright install chromium
           npm test
 
       - uses: actions/setup-java@v5
