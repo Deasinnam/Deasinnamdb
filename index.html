@@ -1208,8 +1208,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     visible = en[0].isIntersecting;
     if (visible) host.classList.add("is-in");
     if (visible && !started) { started = true;
-      load("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js", function () {
-        load("https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js", build); }); }
+      load("vendor/three.min.js", function () { try { build(); } catch (e) { if (window.console) console.error(e); } }); }
     else if (visible && tick && !running) { running = true; requestAnimationFrame(tick); }
   }, { rootMargin: "300px" }).observe(host);
 
@@ -1221,7 +1220,14 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
     var scene = new T.Scene(), cam = new T.PerspectiveCamera(42, 2, 1, 5200);
     scene.fog = new T.FogExp2(new T.Color(0x6a3f7a).convertSRGBToLinear(), 0.0016);
-    if (T.RoomEnvironment) { var pm = new T.PMREMGenerator(renderer); scene.environment = pm.fromScene(new T.RoomEnvironment(), 0.04).texture; }
+    // 반사용 환경: 노을빛 방을 코드로 만들어 구움 (바깥 파일에 기대지 않음)
+    try {
+      var env = new T.Scene(), eb = function (c, w, hh, d, x, y, z) { var m = new T.Mesh(new T.BoxGeometry(w, hh, d), new T.MeshBasicMaterial({ color: c, side: T.DoubleSide })); m.position.set(x, y, z); env.add(m); };
+      eb(0x1a1238, 40, 40, 40, 0, 0, 0);                      // 어두운 보라 방
+      eb(0xffb070, 14, 6, 0.5, -8, -2, -19); eb(0xfff0d0, 5, 3, 0.5, -8, -2, -18.5); // 해 쪽 따뜻한 창
+      eb(0x7a5cc8, 30, 0.5, 30, 0, 19, 0); eb(0x3a2a70, 0.5, 20, 30, 19, 0, 0); eb(0xd06a8a, 0.5, 10, 16, -19, 2, 4);
+      scene.environment = new T.PMREMGenerator(renderer).fromScene(env, 0.04).texture;
+    } catch (e) {}
     var SUN = new T.Vector3(-0.32, 0.105, -0.94).normalize(), SUNXZ = new T.Vector3(SUN.x, 0, SUN.z).normalize();
     var SKY = [
       "vec3 skyCol(vec3 d){ float h = max(d.y, 0.0);",
