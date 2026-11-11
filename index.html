@@ -362,6 +362,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-sub { margin-top: 72px; padding-top: 64px !important; border-top: 1px solid #2a2a2e; align-items: center; }
 .ap-sub .ap-media { position: static; align-self: center; }
 .ap-sub .amp-copy { align-self: center; }
+.ap-sub .ap-widewrap { grid-column: 1 / -1; }
+.ap-dev.wide { width: 100%; max-width: 960px; aspect-ratio: 960 / 356; border-radius: 22px; border-width: 6px; }
+.ap-sub .ap-widewrap ~ .amp-copy { align-self: start; }
+.amp-points.ap-points-top { margin-top: 0; }
+.amp-points strong { color: #fff; font-weight: 700; margin-right: 6px; }
 .ap-dev.tall { width: min(72%, 300px); aspect-ratio: 420 / 898; border-radius: 30px; }
 .af { grid-column: span 6; align-self: start; padding-top: 8px; position: sticky; top: 84px; }
 .af .ul-rig { width: min(100%, 430px); }
@@ -851,6 +856,26 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <div class="ap-media">
         <div class="ap-dev"><video src="media/spd-night.mp4" poster="media/spd-night-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 야간 비행 화면: 달과 별이 뜬 밤하늘, 이어서 FM 라디오 화면과 오디오 시각화 화면"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media ap-widewrap">
+        <div class="ap-dev wide"><video src="media/spd-control.mp4" poster="media/spd-control-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 조종석 패널: 미디어 볼륨 다이얼을 돌리고, 주행 녹화 스위치를 올려 녹화한 뒤 영상을 저장하고, 음소거와 주간·야간 스위치를 넘기고, EMERGENCY 덮개를 열어 SOS 버튼을 꺼내는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">COCKPIT CONTROL 패널을 크게 본 실제 화면</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">COCKPIT CONTROL · 조종석 스위치</div>
+        <h2>자주 쓰는 조작은<br>스위치 하나로.</h2>
+        <p class="ap-desc">볼륨, 녹화, 비상 전화, 음소거, 주야간 전환을 조종석 패널 한 줄에 모았습니다. 메뉴를 찾아 들어가지 않고 스위치 한 번으로 끝냅니다.</p>
+      </div>
+      <div class="amp-copy">
+        <ul class="amp-points ap-points-top">
+          <li><b>01</b><span><strong>미디어 볼륨</strong> 다이얼을 돌려 음량을 맞춥니다</span></li>
+          <li><b>02</b><span><strong>주행 녹화</strong> 스위치를 올리면 블랙박스처럼 녹화가 시작되고, 내리면 영상이 저장됩니다</span></li>
+          <li><b>03</b><span><strong>EMERGENCY</strong> 덮개를 열고 SOS를 누르면 미리 지정한 사람에게 바로 전화를 겁니다</span></li>
+          <li><b>04</b><span><strong>미디어 음소거</strong> 스위치 한 번으로 소리를 끕니다</span></li>
+          <li><b>05</b><span><strong>주간 · 야간</strong> 활주로의 낮과 밤이 바뀌고 기기 밝기도 함께 조정됩니다</span></li>
+        </ul>
       </div>
     </div>
     <div class="amp-wrap ap-sub">
