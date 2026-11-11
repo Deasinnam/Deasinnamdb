@@ -62,6 +62,7 @@ header.top .wrap { display: flex; align-items: center; justify-content: space-be
 nav { display: flex; gap: 24px; font-size: 14px; }
 nav a { text-decoration: none; color: var(--ink-2); }
 nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
 
 /* ---------- 첫 부분 ---------- */
 .hero { padding-top: 72px; padding-bottom: 56px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: end; }
@@ -167,6 +168,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .reel-sound { position: absolute; right: 18px; top: 18px; padding: 10px 14px; font-size: 13px; }
 .reel-sound svg { width: 16px; height: 16px; }
 @media (max-width: 480px) { .reel { padding-top: 16px; } .reel-frame { border-radius: 16px; } .reel-sound { right: 10px; top: 10px; padding: 7px 10px; font-size: 12px; } }
+
+/* ---------- 홈/앱센터 화면 나누기 ---------- */
+.view[hidden] { display: none !important; }
+.center-head { padding: 28px 0 40px; border-bottom: 1px solid var(--line); }
+.fly-frame { aspect-ratio: 1440 / 1152; max-width: 1000px; margin: 0 auto 44px; background: #f6f7f8; }
+.fly-again { right: auto !important; left: 18px; }
+@media (max-width: 480px) { .fly-again { left: 10px; } }
+.center-head .eyebrow-ink { font: 600 12px/1 var(--font-mono); letter-spacing: .14em; color: var(--ink-3); }
+.center-head h1 { margin-top: 14px; font-size: clamp(44px, 7vw, 84px); line-height: 1; letter-spacing: -0.05em; }
+.center-head p { margin: 18px 0 0; color: var(--ink-2); max-width: 36em; font-size: 17px; }
+.speed-home .amp-copy { grid-column: span 6; }
+.speed-video { grid-column: span 6; align-self: center; }
+.speed-video video { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #2a2a2e; background: #000; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+@media (max-width: 900px) { .speed-home .amp-copy, .speed-video { grid-column: 1 / -1; } }
 
 /* ---------- 앱 화면 쇼케이스: 가운데 크게, 양옆은 기울여 뒤로. 저절로 돌고, 누르면 그 앱 소개로 ---------- */
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
@@ -296,19 +311,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <b>덜누름</b><span class="sw">Software</span>
     </a>
     <nav aria-label="주요 메뉴">
-      <a href="#show">앱 화면</a>
-      <a href="#apps">앱</a>
-      <a href="#rules" class="hide-sm">원칙</a>
-      <a href="#install">설치 안내</a>
+      <a href="#top" data-view="home">홈</a>
+      <a href="#app-center" data-view="apps">앱센터</a>
+      <a href="#rules" class="hide-sm" data-view="home">원칙</a>
+      <a href="#install" data-view="home">설치 안내</a>
     </nav>
   </div>
 </header>
 
 <main id="top">
+  <div class="view" id="view-home">
   <section class="reel" aria-label="덜누름 소개 영상">
     <div class="wrap">
       <div class="reel-frame">
-        <video id="reel" src="media/hero-reel.mp4" poster="media/hero-reel-poster.jpg" autoplay muted loop playsinline preload="auto" aria-label="덜누름 15초 소개 영상: 키를 한 번 누르고, 앱 세 개를 보여 준 뒤 덜 누르고 더 편하게라는 문구와 로고로 끝납니다"></video>
+        <video id="reel" src="media/hero-reel.mp4" poster="media/hero-reel-poster.jpg" autoplay muted playsinline preload="auto" aria-label="덜누름 15초 소개 영상: 키를 한 번 누르고, 앱 세 개를 보여 준 뒤 덜 누르고 더 편하게라는 문구와 로고로 끝납니다"></video>
         <button class="key reel-sound" id="reelSound" type="button" aria-pressed="false">소리 켜기</button>
       </div>
     </div>
@@ -316,9 +332,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   <div class="wrap hero">
     <div>
       <h1>덜 누르고,<br><span class="soft">더 편하게.</span></h1>
-      <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 파일은 한 번 눌러 맞는 편집기로 열리고, 차에 타면 음악이 알아서 이어집니다. 만든 앱은 이 페이지에서 바로 내려받을 수 있습니다.</p>
+      <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 파일은 한 번 눌러 맞는 편집기로 열리고, 차에 타면 음악이 알아서 이어집니다. 만든 앱은 앱센터에서 바로 내려받을 수 있습니다.</p>
       <div class="actions">
-        <a class="key dark" href="#show">앱 둘러보기</a>
+        <a class="key dark" href="#app-center">앱센터</a>
         <a class="key" href="#install">설치 방법</a>
       </div>
     </div>
@@ -340,12 +356,106 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     </div>
   </div>
 
+  <section class="amp-stage speed-home" id="speed" aria-labelledby="speed-title">
+    <div class="amp-wrap">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">새 앱 · 개발 중</div>
+        <h2 id="speed-title">대신남 스피드미터</h2>
+        <p class="amp-kind">GPS 조종석 계기 · 주행 기록</p>
+        <p class="amp-lead">차가 달리면<br>조종석 계기판이 움직입니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>실제 속도·고도·진행 방향으로 움직이는 콕핏 PFD · HUD</span></li>
+          <li><b>02</b><span>출발하면 알아서 대기 → 이륙 → 상승 → 순항, 효과음까지</span></li>
+          <li><b>03</b><span>최고·평균 속도, 거리, 시간을 남기는 주행 기록과 차계부</span></li>
+          <li><b>04</b><span>진행 방향이 위로 오는 원형 지도와 나침반</span></li>
+          <li><b>05</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
+        </ul>
+        <div class="amp-cta">
+          <span class="amp-soon">준비 중</span>
+          <a class="amp-btn" href="#app-center">앱센터에서 모든 앱 보기 →</a>
+        </div>
+      </div>
+      <figure class="amp-shot speed-video">
+        <video id="speedVideo" src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted playsinline controls preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상"></video>
+        <figcaption>실제 주행 화면 · 2분 35초</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" id="rules">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>덜누름의 원칙</h2>
+        <p>앱을 만들 때마다 세 가지를 확인합니다.</p>
+      </div>
+      <div class="rules">
+        <div class="rule">
+          <span class="k">01</span>
+          <h3>누를 일을 줄입니다</h3>
+          <p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">02</span>
+          <h3>필요한 것만 묻습니다</h3>
+          <p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다. 처음 켰을 때 긴 설정 화면을 띄우지 않습니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">03</span>
+          <h3>무엇을 하는지 말합니다</h3>
+          <p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="install">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>설치 안내</h2>
+        <p>플레이 스토어 밖에서 받는 앱이라 처음 한 번은 설치 허용이 필요합니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">STEP 1</div>
+          <h3>APK 내려받기</h3>
+          <p>휴대폰에서 원하는 앱의 내려받기를 누릅니다. 브라우저가 파일을 받습니다.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 2</div>
+          <h3>설치 허용</h3>
+          <p>받은 파일을 열면 "출처를 알 수 없는 앱" 안내가 나옵니다. 설정에서 그 브라우저의 설치를 허용합니다.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 3</div>
+          <h3>설치와 업데이트</h3>
+          <p>설치를 누르면 끝입니다. 새 버전은 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다.</p>
+        </div>
+      </div>
+      <p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p>
+    </div>
+  </section>
+  </div>
+
+  <div class="view" id="view-apps" hidden>
+  <section class="center-head" id="app-center">
+    <div class="wrap">
+      <div class="reel-frame fly-frame">
+        <video id="flyReel" src="media/appcenter-fly.mp4" poster="media/appcenter-fly-poster.jpg" muted playsinline preload="metadata" aria-label="덜누름 앱센터 페이지 위를 3D로 날아가며 둘러보고, Less pressing, more living 문구로 끝나는 14.5초 영상"></video>
+        <button class="key reel-sound" id="flySound" type="button" aria-pressed="false">소리 켜기</button>
+        <button class="key reel-sound fly-again" id="flyAgain" type="button" hidden>↻ 다시 보기</button>
+      </div>
+      <div class="eyebrow-ink">APP CENTER</div>
+      <h1>앱센터</h1>
+      <p>덜누름이 만든 앱을 한곳에 모았습니다. 화면을 넘겨 보고, 마음에 드는 앱을 내려받으세요.</p>
+    </div>
+  </section>
+
   <section class="show" id="show" aria-labelledby="show-title" aria-roledescription="carousel">
     <div class="wrap">
       <div class="show-head">
         <div>
-          <div class="eyebrow">Apps · 덜누름이 만든 앱</div>
-          <h2 id="show-title">앱 화면을 둘러보세요</h2>
+          <div class="eyebrow">Screens · 앱 화면</div>
+          <h2 id="show-title">준비된 앱을 둘러보세요</h2>
         </div>
         <p>가운데 화면을 누르면 그 앱 소개로 들어갑니다.</p>
       </div>
@@ -355,12 +465,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="enter">자세히 보기 →</span><span class="label">Music</span>
         </a>
         <a class="slide" href="#app-speed" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 개발 중" data-dur="20000">
-          <video src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted loop playsinline preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video>
+          <video src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted playsinline preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video>
           <span class="enter">자세히 보기 →</span><span class="label">▶ 주행 영상</span>
         </a>
         <a class="slide" href="#app-work" data-name="덜누름 워크" data-kind="안드로이드를 윈도우 PC처럼">
           <div class="ph"><div class="g">작</div><b>덜누름 워크</b><span>안드로이드를 윈도우 PC처럼 사용해보세요</span><small>화면 캡처 준비 중</small></div>
           <span class="enter">자세히 보기 →</span><span class="label">Office</span>
+        </a>
+        <a class="slide" href="#app-desktop" data-name="덜누름 데스크탑앱" data-kind="PC용 · 준비 중">
+          <div class="ph"><div class="g">PC</div><b>덜누름 데스크탑앱</b><span>덜누름을 PC에서도</span><small>화면 캡처 준비 중</small></div>
+          <span class="enter">자세히 보기 →</span><span class="label">Desktop</span>
         </a>
       </div>
       <div class="show-bar">
@@ -379,8 +493,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   <section class="block" id="apps">
     <div class="wrap">
       <div class="block-head">
-        <h2>앱</h2>
-        <p>모두 무료이고, 안드로이드 휴대폰·태블릿에서 동작합니다. 내려받기는 덜누름의 GitHub 배포 페이지에서 바로 이어집니다.</p>
+        <h2>앱 목록</h2>
+        <p>모두 무료입니다. 휴대폰 앱은 안드로이드 휴대폰·태블릿에서 동작합니다. 내려받기는 덜누름의 GitHub 배포 페이지에서 바로 이어집니다.</p>
       </div>
 
       <div class="apps">
@@ -454,62 +568,22 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           </div>
           <p class="note">오픈소스 IeumOffice · PhotoCraft · FilmCraft를 고쳐 만들었습니다. 원작 라이선스는 앱의 정보 화면에 있습니다.</p>
         </article>
+        <article class="app" id="app-desktop">
+          <div class="app-top">
+            <div class="glyph" aria-hidden="true">PC</div>
+            <div>
+              <div class="kind">PC 앱 <span class="tag">준비 중</span></div>
+              <h3>덜누름 데스크탑앱</h3>
+            </div>
+          </div>
+          <p class="lead">덜누름을 PC에서도 씁니다. 자세한 소개와 내려받기를 준비하고 있습니다.</p>
+          <p class="note">공개되면 이곳에 내려받기가 생깁니다.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="block" id="rules">
-    <div class="wrap">
-      <div class="block-head">
-        <h2>덜누름의 원칙</h2>
-        <p>앱을 만들 때마다 세 가지를 확인합니다.</p>
-      </div>
-      <div class="rules">
-        <div class="rule">
-          <span class="k">01</span>
-          <h3>누를 일을 줄입니다</h3>
-          <p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
-        </div>
-        <div class="rule">
-          <span class="k">02</span>
-          <h3>필요한 것만 묻습니다</h3>
-          <p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다. 처음 켰을 때 긴 설정 화면을 띄우지 않습니다.</p>
-        </div>
-        <div class="rule">
-          <span class="k">03</span>
-          <h3>무엇을 하는지 말합니다</h3>
-          <p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="install">
-    <div class="wrap">
-      <div class="block-head">
-        <h2>설치 안내</h2>
-        <p>플레이 스토어 밖에서 받는 앱이라 처음 한 번은 설치 허용이 필요합니다.</p>
-      </div>
-      <div class="steps">
-        <div class="step">
-          <div class="num">STEP 1</div>
-          <h3>APK 내려받기</h3>
-          <p>휴대폰에서 원하는 앱의 내려받기를 누릅니다. 브라우저가 파일을 받습니다.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 2</div>
-          <h3>설치 허용</h3>
-          <p>받은 파일을 열면 "출처를 알 수 없는 앱" 안내가 나옵니다. 설정에서 그 브라우저의 설치를 허용합니다.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 3</div>
-          <h3>설치와 업데이트</h3>
-          <p>설치를 누르면 끝입니다. 새 버전은 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다.</p>
-        </div>
-      </div>
-      <p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p>
-    </div>
-  </section>
+  </div>
 </main>
 
 <footer>
@@ -520,6 +594,55 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 </footer>
 
 <script>
+// ---------- 앱센터 3D 영상: 앱센터에 들어올 때 한 번만 재생 ----------
+(function () {
+  "use strict";
+  var v = document.getElementById("flyReel"), snd = document.getElementById("flySound"), again = document.getElementById("flyAgain");
+  if (!v) return;
+  var played = false, reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function play() { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+  document.addEventListener("viewchange", function (e) {
+    if (e.detail === "apps") { if (!played && !reduce) { played = true; v.currentTime = 0; play(); } }
+    else v.pause();
+  });
+  v.addEventListener("ended", function () { again.hidden = false; });
+  again.addEventListener("click", function () { again.hidden = true; v.currentTime = 0; play(); });
+  snd.addEventListener("click", function () {
+    v.muted = !v.muted;
+    if (!v.muted) { again.hidden = true; v.currentTime = 0; play(); }
+    snd.textContent = v.muted ? "소리 켜기" : "소리 끄기";
+    snd.setAttribute("aria-pressed", v.muted ? "false" : "true");
+  });
+})();
+
+// ---------- 홈 / 앱센터 전환 (#app-center, #app-… 는 앱센터) ----------
+(function () {
+  "use strict";
+  var home = document.getElementById("view-home"), center = document.getElementById("view-apps");
+  var links = document.querySelectorAll("nav a[data-view]");
+  var current = null;
+  function route() {
+    var hsh = location.hash || "";
+    var isApps = hsh === "#app-center" || hsh.indexOf("#app-") === 0;
+    var view = isApps ? "apps" : "home";
+    home.hidden = isApps; center.hidden = !isApps;
+    for (var i = 0; i < links.length; i++) {
+      var on = links[i].getAttribute("data-view") === view && (view === "apps" || links[i].getAttribute("href") === "#top");
+      links[i].classList.toggle("is-on", on);
+    }
+    var target = hsh && hsh !== "#top" && hsh !== "#app-center" ? document.getElementById(hsh.slice(1)) : null;
+    if (target) target.scrollIntoView();
+    else window.scrollTo(0, 0);
+    if (view !== current) {
+      current = view;
+      var ev; try { ev = new CustomEvent("viewchange", { detail: view }); } catch (e) { ev = document.createEvent("CustomEvent"); ev.initCustomEvent("viewchange", false, false, view); }
+      document.dispatchEvent(ev);
+    }
+  }
+  window.addEventListener("hashchange", route);
+  route();
+})();
+
 // ---------- 메인 쇼릴 소리 켜기/끄기 ----------
 (function () {
   "use strict";
@@ -531,6 +654,14 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     b.textContent = v.muted ? "소리 켜기" : "소리 끄기";
     b.setAttribute("aria-pressed", v.muted ? "false" : "true");
   });
+  // 한 번만 재생하고 마지막 장면(로고)에서 멈춤. 다시 보기 버튼 제공
+  var again = document.createElement("button");
+  again.type = "button"; again.className = "key reel-sound"; again.textContent = "↻ 다시 보기";
+  again.style.right = "auto"; again.style.left = "18px"; again.hidden = true;
+  v.parentNode.appendChild(again);
+  v.addEventListener("ended", function () { again.hidden = false; });
+  again.addEventListener("click", function () { again.hidden = true; v.currentTime = 0; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); });
+  document.addEventListener("viewchange", function (e) { if (e.detail !== "home") v.pause(); });
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { v.removeAttribute("autoplay"); v.pause(); }
 })();
 
@@ -539,6 +670,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   "use strict";
   var deck = document.getElementById("deck");
   if (!deck) return;
+  var centerView = document.getElementById("view-apps");
   var slides = Array.prototype.slice.call(deck.querySelectorAll(".slide"));
   var N = slides.length;
   var curEl = document.getElementById("showCur");
@@ -566,7 +698,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       s.setAttribute("aria-hidden", a === 0 ? "false" : "true");
       var v = s.querySelector("video");
       if (v) {
-        if (a === 0) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+        if (a === 0 && !centerView.hidden) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
         else v.pause();
       }
     });
@@ -591,7 +723,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   function tick(t) {
     var dt = last ? Math.min(100, t - last) : 0;
     last = t;
-    if (playing && !hold) {
+    if (playing && !hold && !centerView.hidden) {
       elapsed += dt;
       if (elapsed >= dur()) go(cur + 1);
     }
@@ -633,6 +765,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     if (e.key === "ArrowRight") { e.preventDefault(); go(cur + 1); }
   });
 
+  document.addEventListener("viewchange", function () { elapsed = 0; place(); });
   setPlaying(playing);
   place();
   requestAnimationFrame(tick);
