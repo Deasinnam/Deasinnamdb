@@ -175,6 +175,49 @@ nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; t
 .reel { padding-bottom: 12px; }
 body[data-view="home"] footer, body[data-view="apps"] footer, body[data-view="app"] footer { background: #0b0b0c; border-top-color: #2a2a2e; color: #7c7c85; }
 body[data-view="home"] footer b, body[data-view="apps"] footer b, body[data-view="app"] footer b { color: #f4f4f5; }
+/* ---------- 의견 보내기 ---------- */
+.fb-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.fb-form { display: grid; gap: 30px; }
+.fb-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.fb-form legend, .fb-field label { display: block; padding: 0; margin-bottom: 12px; font: 700 17px/1.4 var(--font-display); letter-spacing: -0.02em; }
+.fb-form legend b, .fb-field label b { font: 500 12px/1 var(--font-mono); color: var(--ink-3); margin-right: 8px; letter-spacing: .04em; }
+.fb-field label small { font: 500 11px/1 var(--font-mono); color: var(--ink-3); border: 1px solid var(--ink-3); border-radius: 999px; padding: 4px 7px; margin-left: 6px; vertical-align: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span { display: block; border: 1.5px solid var(--ink); border-radius: 999px; padding: 10px 15px; font: 600 14px/1 var(--font-body); background: var(--paper); transition: background .12s ease, color .12s ease; }
+.chip input:checked + span { background: var(--ink); color: var(--paper); }
+.chip input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 3px; }
+.fb-field input, .fb-field textarea { display: block; width: 100%; font: 400 16px/1.6 var(--font-body); color: var(--ink); background: var(--paper); border: 1.5px solid var(--ink); border-radius: 14px; padding: 13px 15px; }
+.fb-field textarea { resize: vertical; min-height: 150px; }
+.fb-field input::placeholder, .fb-field textarea::placeholder { color: var(--ink-3); }
+.fb-field input:focus-visible, .fb-field textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.fb-hint { margin: 8px 0 0; font-size: 13px; color: var(--ink-3); }
+.fb-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.fb-send { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.fb-send .key { cursor: pointer; }
+.fb-send .key[disabled] { opacity: .5; cursor: default; }
+.fb-status { margin: 0; font-size: 14px; color: var(--ink-2); }
+.fb-status.ok { color: var(--ink); font-weight: 600; }
+.fb-status.bad { color: #b42318; font-weight: 600; }
+.fb-notify { display: grid; gap: 18px; border: 1.5px solid var(--ink); border-radius: 20px; padding: 26px; background: var(--wash); position: sticky; top: 24px; }
+.fb-notify h2 { font-size: 24px; letter-spacing: -0.03em; }
+.fb-notify p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.fb-notify .eyebrow-ink { font: 600 12px/1 var(--font-mono); letter-spacing: .14em; color: var(--ink-3); }
+.fb-notify .fb-field label { font-size: 14px; margin-bottom: 8px; }
+.fb-notify .chip span { padding: 9px 13px; font-size: 13px; }
+.fb-agree { display: grid; grid-template-columns: auto 1fr; gap: 10px; font-size: 13.5px; line-height: 1.5; cursor: pointer; }
+.fb-agree input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: #111; }
+.fb-agree small { display: block; margin-top: 4px; color: var(--ink-3); font-size: 12px; }
+/* 받는 곳이 연결되기 전에는 실제 사이트에서 의견 창구를 숨김(body.no-fb) */
+.fb-off { display: none; }
+body.no-fb .fb-on, body.no-fb .ap-fb { display: none !important; }
+body.no-fb nav a.fb-off { display: inline; }
+@media (max-width: 480px) { body.no-fb nav a.fb-off.hide-sm { display: none; } }
+.ap-fb { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.ap-fb .amp-btn { padding: 13px 20px; font-size: 14px; }
+@media (max-width: 860px) { .fb-grid { grid-template-columns: 1fr; gap: 36px; } .fb-notify { position: static; } }
+@media (max-width: 420px) { .brand .sw { display: none; } }
 /* ---------- 소개 페이지 ---------- */
 .about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: end; }
 .about-head p { max-width: 34em; }
@@ -314,6 +357,21 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap .amp-copy { grid-column: span 6; align-self: start; }
 .ap .amp-copy h1 { margin: 18px 0 0; font: 900 clamp(38px, 5vw, 64px)/1.04 var(--font-display); letter-spacing: -0.045em; color: #fff; word-break: keep-all; }
 .ap .amp-points li b { color: #a1a1aa; }
+.ap-desc { margin: 16px 0 0; font-size: 15.5px; line-height: 1.7; color: #c4c4cb; max-width: 30em; word-break: keep-all; }
+.ap .amp-copy h2 { margin: 18px 0 0; font: 900 clamp(30px, 3.8vw, 48px)/1.12 var(--font-display); letter-spacing: -0.04em; color: #fff; word-break: keep-all; }
+.ap-sub { margin-top: 72px; padding-top: 64px !important; border-top: 1px solid #2a2a2e; align-items: center; }
+.ap-sub .ap-media { position: static; align-self: center; }
+.ap-sub .amp-copy { align-self: center; }
+.ap-dev.tall { width: min(72%, 300px); aspect-ratio: 420 / 898; border-radius: 30px; }
+.af { grid-column: span 6; align-self: start; padding-top: 8px; position: sticky; top: 84px; }
+.af .ul-rig { width: min(100%, 430px); }
+.af-cover { position: absolute; top: 0; bottom: 0; left: 50%; aspect-ratio: 420 / 898; border-radius: 30px; background: #050506; box-shadow: inset 0 0 0 2px #3a3a40, 0 30px 60px -24px #000; overflow: hidden; backface-visibility: hidden; transform: translateX(-50%); }
+.af-cover video { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); border-radius: 23px; object-fit: cover; display: block; background: #000; }
+.af-ctrl { position: relative; display: inline-flex; padding: 4px; border: 1px solid #3f3f46; border-radius: 999px; background: #121214; }
+.af-btn { font: 600 13px/1 var(--font-body); color: #a1a1aa; background: transparent; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+.af-btn[aria-pressed="true"] { color: #0a0a0b; background: linear-gradient(180deg, #f6e3a1, #e9c46a); box-shadow: 0 3px 0 #8a6d1f; }
+.af-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (max-width: 900px) { .af { grid-column: 1 / -1; position: relative; top: 0; order: -1; } .ap-sub { margin-top: 48px; padding-top: 44px !important; } .ap-sub .ap-media { order: 0; } .ap-skin-copy { order: -1; } }
 .ap-note { margin: 18px 0 0; font-size: 12.5px; line-height: 1.6; color: #8a8a93; }
 .ap-media { grid-column: span 6; align-self: start; display: grid; justify-items: center; gap: 14px; position: sticky; top: 84px; padding-top: 8px; }
 .ap-dev { position: relative; width: min(100%, 470px); aspect-ratio: 720 / 728; border-radius: 26px; border: 8px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 40px 80px -30px #000, 0 0 90px -30px rgba(96,165,250,.35); overflow: hidden; background: #000; }
@@ -368,6 +426,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .fold-copy small { font: 600 clamp(10px, 1vw, 11px)/1.5 var(--font-mono); letter-spacing: .02em; color: #93c5fd; }
 .fold-copy b { font: 700 clamp(15px, 2.5vw, 27px)/1.18 var(--font-display); letter-spacing: -0.035em; color: #fff; }
 .fold-copy span { font-size: clamp(11px, 1.25vw, 14px); line-height: 1.55; color: #a1a1aa; }
+.slide.duo .fold-dev { top: 12%; bottom: 12%; right: 13%; }
+.fold-cover { position: absolute; right: 4%; bottom: 7%; height: 64%; aspect-ratio: 420 / 898; border-radius: 12px; border: 4px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 22px 44px -14px #000; overflow: hidden; background: #000; z-index: 2; }
+.slide .fold-cover video { object-fit: cover; }
 .ph { width: 100%; height: 100%; background: #f5f5f4; color: #111; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; padding: 20px; }
 .ph .g { width: clamp(64px, 9vw, 104px); aspect-ratio: 1; border: 2px solid #111; border-radius: 24px; box-shadow: 0 7px 0 #111; display: grid; place-items: center; font: 700 clamp(30px, 4.4vw, 48px)/1 var(--font-display); background: #fff; letter-spacing: -0.04em; }
 .ph b { font: 700 clamp(18px, 2.6vw, 30px)/1.2 var(--font-display); letter-spacing: -0.03em; margin-top: 6px; }
@@ -394,6 +455,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   .fold-dev { border-width: 3px; border-radius: 9px; right: 4%; }
   .fold-copy { left: 5%; top: 40%; gap: 7px; }
   .fold-copy span { display: none; }
+  .fold-cover { border-width: 3px; border-radius: 8px; right: 3%; }
 }
 @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
 
@@ -450,7 +512,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 @media (max-width: 480px) {
   .wrap { padding: 0 16px; }
   nav { gap: 14px; }
-  nav a.hide-sm { display: none; }
+  nav .hide-sm { display: none; }
   .keywell { width: 160px; height: 176px; }
   .bigkey { width: 160px; height: 160px; border-radius: 32px; }
   .bigkey span { font-size: 46px; }
@@ -475,7 +537,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <a href="#top" data-view="home">홈</a>
       <a href="#app-center" data-view="apps">앱센터</a>
       <a href="#about" data-view="about">소개</a>
-      <a href="#install" class="hide-sm" data-view="home">설치 안내</a>
+      <a href="#install" class="hide-sm fb-off" data-view="home">설치 안내</a>
+      <a href="#feedback" class="fb-on" data-view="feedback">의견<span class="hide-sm"> 보내기</span></a>
     </nav>
   </div>
 </header>
@@ -608,9 +671,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <p>갤럭시 Z 폴드7 · Z 폴드8 울트라 화면에 맞춰 다듬은 실제 앱 화면입니다. 가운데 화면의 자세히 보기를 누르면 그 앱의 소개 페이지로 들어갑니다.</p>
       </div>
       <div class="deck" id="deck" tabindex="0" aria-label="앱 화면 모음. 왼쪽·오른쪽 화살표 키로 넘깁니다">
-        <a class="slide" href="#app-amp" data-name="Daesinnam Amp" data-kind="음악 플레이어 · 개발 중">
-          <img src="amp/amp-tablet-neon.webp" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어와 이퀄라이저" draggable="false">
-          <span class="enter">자세히 보기 →</span><span class="label">Music</span>
+        <a class="slide fold duo" href="#app-amp" data-name="Daesinnam Amp" data-kind="음악 플레이어 · 개발 중" data-dur="12500">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>Daesinnam Amp</b><span>펼쳐도, 접어도 듣기 좋게. 닫은 폰의 바깥 화면에서도 그대로</span></div>
+          <div class="fold-dev"><video src="media/amp-open.mp4" poster="media/amp-open-poster.jpg" muted playsinline preload="metadata" aria-label="펼친 폴드에서 본 Daesinnam Amp 실제 화면 영상: 플레이어, 시각화, 라디오 패널"></video></div>
+          <div class="fold-cover"><video src="media/amp-cover.mp4" poster="media/amp-cover-poster.jpg" muted playsinline preload="metadata" aria-label="접은 폴드의 바깥 화면에서 본 Daesinnam Amp 실제 화면 영상"></video></div>
+          <span class="enter">자세히 보기 →</span>
         </a>
         <a class="slide fold" href="#app-speed" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 개발 중" data-dur="20000">
           <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>대신남 스피드미터</b><span>차가 달리면 조종석 계기판이 움직입니다</span></div>
@@ -618,7 +683,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="enter">자세히 보기 →</span>
         </a>
         <a class="slide fold" href="#app-work" data-name="덜누름 워크" data-kind="안드로이드를 윈도우 PC처럼 · 개발 중" data-dur="22000">
-          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 워크</b><span>안드로이드를 윈도우 PC처럼. 문서 · 사진 · 동영상 편집을 앱 하나에서</span></div>
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 워크</b><span>이음오피스와 아트크래프트를 하나로. 문서 · 그래픽 작업을 스마트폰에서 한 번에</span></div>
           <div class="fold-dev"><video src="media/app-work.mp4" poster="media/app-work-poster.jpg" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 워드, 엑셀, 한글 문서 편집기와 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video></div>
           <span class="enter">자세히 보기 →</span>
         </a>
@@ -656,7 +721,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <div class="amp-eyebrow">음악 플레이어 · 개발 중</div>
         <h1 id="ap-amp-t">Daesinnam Amp</h1>
         <p class="amp-kind">레트로 스킨 MP3 플레이어</p>
-        <p class="amp-lead">차에 타면<br>마지막 곡부터 이어서 재생합니다.</p>
+        <p class="amp-lead">펼쳐도, 접어도<br>듣기 좋게.</p>
+        <p class="ap-desc">폴드를 펼치면 플레이어와 시각화, 라디오가 한 화면에 들어옵니다. 접으면 바깥 화면에 맞춘 세로 배치로 바뀝니다. 어느 쪽이든 고르고, 넘기고, 보는 일은 그대로입니다.</p>
         <ul class="amp-points">
           <li><b>01</b><span>LED 스펙트럼, 10밴드 EQ, 레트로 스킨</span></li>
           <li><b>02</b><span>차 연결 시 이어서 재생, 핸들 버튼 조작</span></li>
@@ -664,12 +730,56 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>YouTube Music · Spotify 재생에도 곡 정보와 시각화</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="Daesinnam Amp">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="Daesinnam Amp">공개되면 알림 받기</a></div>
         <dl class="speed-req">
-          <div><dt>화면</dt><dd>휴대폰 · 태블릿 · 폴드</dd></div>
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>화면</dt><dd>펼친 화면 · 접은 바깥 화면 · 태블릿 · 휴대폰</dd></div>
           <div><dt>필요</dt><dd>Android 8.0 이상 · 무료</dd></div>
         </dl>
       </div>
-      <div class="ap-media">
+      <div class="ul af" id="af" role="img" aria-label="접힌 폴더블의 바깥 화면에서 Daesinnam Amp가 재생되다가, 펼쳐지면서 안쪽 큰 화면으로 이어집니다">
+        <div class="ul-spot"></div>
+        <canvas class="ul-fx" aria-hidden="true"></canvas>
+        <div class="ul-rig">
+          <div class="ul-ring"></div>
+          <div class="ul-shadow"></div>
+          <div class="ul-half l"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-half r"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-screen"><video class="af-open" src="media/amp-open.mp4" poster="media/amp-open-poster.jpg" muted loop playsinline preload="none"></video></div>
+          <div class="ul-sweep"></div>
+          <div class="ul-gloss"></div>
+          <div class="af-cover"><video class="af-shut" src="media/amp-cover.mp4" poster="media/amp-cover-poster.jpg" muted loop playsinline preload="none"></video></div>
+        </div>
+        <div class="af-ctrl" role="group" aria-label="화면 상태">
+          <button type="button" class="af-btn" data-open="0" aria-pressed="true">접었을 때</button>
+          <button type="button" class="af-btn" data-open="1" aria-pressed="false">펼쳤을 때</button>
+        </div>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media ap-tallwrap">
+        <div class="ap-dev tall"><video src="media/amp-cover.mp4" poster="media/amp-cover-poster.jpg" muted playsinline preload="none" aria-label="접은 폴드의 바깥 화면에서 본 Daesinnam Amp: 재생 버튼, 곡 정보, 화면 가득한 시각화가 세로로 놓여 있습니다"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">접은 폴드 바깥 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">COVER DISPLAY · 접었을 때</div>
+        <h2>폰을 닫아도<br>음악은 그대로.</h2>
+        <p class="ap-desc">음악 들으려고 폰을 펼칠 필요가 없습니다. 접은 채 바깥 화면만으로 고르고, 넘기고, 봅니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>세로로 긴 바깥 화면에 맞춰 위에서 아래로 한 줄 배치</span></li>
+          <li><b>02</b><span>곡 정보 바로 아래, 엄지에 닿는 큰 이전 · 일시정지 · 다음 버튼</span></li>
+          <li><b>03</b><span>아래 절반을 가득 채우는 시각화, 좌우로 넘겨 바꾸기</span></li>
+          <li><b>04</b><span>펼치면 보던 곡 그대로 큰 화면으로 이어짐</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy ap-skin-copy">
+        <div class="amp-eyebrow">SKINS · 스킨</div>
+        <h2>스킨을 바꾸면<br>다른 플레이어.</h2>
+        <p class="ap-desc">같은 플레이어가 네온 시티가 되고, 블루가 됩니다. 태블릿과 휴대폰에서도 같은 배치로 씁니다.</p>
+      </div>
+      <div class="ap-media ap-static">
         <div class="ap-duo">
           <img src="amp/amp-tablet-neon.webp" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어와 이퀄라이저" loading="lazy">
           <img class="ap-duo-phone" src="amp/amp-phone-blue.webp" alt="Daesinnam Amp 휴대폰 화면: 대신남 블루 스킨" loading="lazy">
@@ -697,6 +807,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>06</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>권장 화면</dt><dd>8인치 이상 태블릿</dd></div>
@@ -717,8 +828,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <div class="amp-copy">
         <div class="amp-eyebrow">문서 · 사진 · 동영상 · 개발 중</div>
         <h1 id="ap-work-t">덜누름 워크</h1>
-        <p class="amp-kind">문서, 사진, 동영상 편집을 앱 하나에</p>
+        <p class="amp-kind">이음오피스 + 아트크래프트, 안드로이드 통합판</p>
         <p class="amp-lead">안드로이드를 윈도우 PC처럼<br>사용해보세요.</p>
+        <p class="ap-desc">덜누름 워크는 이음오피스와 아트크래프트를 안드로이드용으로 하나로 합치고 최적화한 앱입니다. 문서 작업과 그래픽 작업을 스마트폰 한 대에서, 앱을 오가지 않고 한 번에 끝냅니다.</p>
         <ul class="amp-points">
           <li><b>1×</b><span>파일 열기 한 번이면 형식에 맞는 편집기가 알아서 열립니다</span></li>
           <li><b>01</b><span>워드 · 엑셀 · 파워포인트 · 한글 · PDF 보기 · 마인드맵 · 다이어그램</span></li>
@@ -727,6 +839,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>편집은 모두 기기 안에서, 파일을 바깥으로 보내지 않음</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 워크">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>필요</dt><dd>Android 8.0 이상 · 64비트 · 무료</dd></div>
@@ -755,6 +868,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>03</b><span>브라우저를 창으로 열고, 한 번에 전체 화면으로</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 데스크탑앱">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 데스크탑앱">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
@@ -782,6 +896,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>주소줄 옆 자주 가는 사이트 바로가기</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 브라우저">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 브라우저">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
@@ -791,6 +906,54 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면 · 광고 속 사진은 흐리게 처리</p>
       </div>
       <div class="ap-nav"><a href="#app-center">← 앱센터로</a><a href="#app-amp">다음 앱 · Daesinnam Amp →</a></div>
+    </div>
+  </section>
+  </div>
+  <div class="view" id="view-feedback" hidden>
+  <section class="center-head fb-head" id="feedback">
+    <div class="wrap">
+      <div class="eyebrow-ink">FEEDBACK</div>
+      <h1>의견 보내기</h1>
+      <p>덜누름의 앱은 모두 개발 중입니다. 바라는 기능, 불편할 것 같은 점, 무엇이든 알려 주세요. 읽고 개발에 반영합니다.</p>
+    </div>
+  </section>
+  <section class="block" style="border-top:0">
+    <div class="wrap fb-grid">
+      <form class="fb-form" id="fbForm" novalidate>
+        <fieldset>
+          <legend><b>01</b> 어떤 앱에 대한 의견인가요?</legend>
+          <div class="chips"><label class="chip"><input type="radio" name="fbApp" value="Daesinnam Amp"><span>Daesinnam Amp</span></label><label class="chip"><input type="radio" name="fbApp" value="대신남 스피드미터"><span>대신남 스피드미터</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 워크"><span>덜누름 워크</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 데스크탑앱"><span>덜누름 데스크탑앱</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 브라우저"><span>덜누름 브라우저</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 전체" checked><span>덜누름 전체 · 사이트</span></label></div>
+        </fieldset>
+        <fieldset>
+          <legend><b>02</b> 어떤 의견인가요?</legend>
+          <div class="chips"><label class="chip"><input type="radio" name="fbKind" value="바라는 기능" checked><span>바라는 기능</span></label><label class="chip"><input type="radio" name="fbKind" value="불편한 점"><span>불편한 점</span></label><label class="chip"><input type="radio" name="fbKind" value="기타"><span>기타</span></label></div>
+        </fieldset>
+        <div class="fb-field">
+          <label for="fbText"><b>03</b> 내용</label>
+          <textarea id="fbText" name="fbText" rows="6" maxlength="1000" required placeholder="예: 스피드미터에 주유 기록이 있으면 좋겠어요."></textarea>
+        </div>
+        <div class="fb-field">
+          <label for="fbContact"><b>04</b> 연락처 <small>선택</small></label>
+          <input id="fbContact" name="fbContact" type="email" autocomplete="email" inputmode="email" placeholder="답을 받고 싶을 때만 이메일을 적어 주세요">
+          <p class="fb-hint">연락처는 답장을 드릴 때만 씁니다.</p>
+        </div>
+        <input class="fb-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="fb-send"><button class="key dark" type="submit">의견 보내기</button><p class="fb-status" id="fbStatus" role="status" aria-live="polite"></p></div>
+      </form>
+
+      <form class="fb-notify" id="notify" novalidate>
+        <div class="eyebrow-ink">NOTIFY</div>
+        <h2>공개되면 알림 받기</h2>
+        <p>기다리는 앱을 고르고 이메일을 남기면, 공개되는 날 한 번 알려 드립니다.</p>
+        <div class="chips"><label class="chip"><input type="checkbox" name="ntApp" value="Daesinnam Amp"><span>Daesinnam Amp</span></label><label class="chip"><input type="checkbox" name="ntApp" value="대신남 스피드미터"><span>대신남 스피드미터</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 워크"><span>덜누름 워크</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 데스크탑앱"><span>덜누름 데스크탑앱</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 브라우저"><span>덜누름 브라우저</span></label></div>
+        <div class="fb-field">
+          <label for="ntMail">이메일</label>
+          <input id="ntMail" name="ntMail" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com">
+        </div>
+        <label class="fb-agree"><input type="checkbox" id="ntAgree" required><span>알림을 보내는 데 이메일을 쓰는 것에 동의합니다. <small>수집 항목: 이메일 · 목적: 앱 공개 알림 · 보관: 알림을 보낸 뒤 삭제</small></span></label>
+        <input class="fb-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="fb-send"><button class="key" type="submit">알림 신청</button><p class="fb-status" id="ntStatus" role="status" aria-live="polite"></p></div>
+      </form>
     </div>
   </section>
   </div>
@@ -885,7 +1048,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <footer>
   <div class="wrap">
     <span class="foot-brand"><svg viewBox="0 0 778 236" role="img" aria-label="덜누름"><use href="#lg-word"/></svg>Software · 덜 누르고, 더 편하게</span>
-    <span>© 2026 덜누름</span>
+    <span>© 2026 덜누름<span class="fb-on"> · <a href="#feedback">의견 보내기</a></span></span>
   </div>
 </footer>
 
@@ -920,8 +1083,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   var links = document.querySelectorAll("nav a[data-view]");
   var current = null;
   function play(v) { try { v.currentTime = 0; } catch (e) {} var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
-  pages.forEach(function (pg) {
-    var v = pg.querySelector("video"), again = pg.querySelector(".ap-again");
+  var devs = Array.prototype.slice.call(appView.querySelectorAll(".ap-dev"));
+  devs.forEach(function (d) {
+    var v = d.querySelector("video"), again = d.querySelector(".ap-again");
     if (!v || !again) return;
     v.addEventListener("ended", function () { again.hidden = false; });
     again.addEventListener("click", function () { again.hidden = true; play(v); });
@@ -931,13 +1095,15 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     var page = null;
     for (var j = 0; j < pages.length; j++) if ("#" + pages[j].id === hsh) page = pages[j];
     var isAbout = hsh === "#about" || hsh === "#rules";
-    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : "home";
+    var isFb = hsh === "#feedback" || hsh === "#notify";
+    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : "home";
+    document.getElementById("view-feedback").hidden = view !== "feedback";
     home.hidden = view !== "home"; center.hidden = view !== "apps"; appView.hidden = view !== "app"; about.hidden = view !== "about";
-    pages.forEach(function (pg) {
-      var on = pg === page, v = pg.querySelector("video"), again = pg.querySelector(".ap-again");
-      pg.hidden = !on;
+    pages.forEach(function (pg) { pg.hidden = pg !== page; });
+    devs.forEach(function (d) {
+      var v = d.querySelector("video"), again = d.querySelector(".ap-again");
       if (!v) return;
-      if (on) { if (again) again.hidden = true; play(v); } else v.pause();
+      if (page && page.contains(d)) { if (again) again.hidden = true; play(v); } else v.pause();
     });
     var showEl = document.getElementById("show"); if (showEl) showEl.scrollLeft = 0;
     document.body.setAttribute("data-view", view);
@@ -946,7 +1112,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       var on = (dv === view || (view === "app" && dv === "apps")) && (view !== "home" || links[i].getAttribute("href") === "#top");
       links[i].classList.toggle("is-on", on);
     }
-    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" ? document.getElementById(hsh.slice(1)) : null;
+    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" ? document.getElementById(hsh.slice(1)) : null;
     if (target) target.scrollIntoView();
     else { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } }
     if (view !== current) {
@@ -957,6 +1123,61 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   }
   window.addEventListener("hashchange", route);
   route();
+})();
+
+// ---------- 의견 보내기 · 공개 알림 ----------
+(function () {
+  "use strict";
+  // 받는 곳(구글 설문) 연결 정보. action이 비어 있으면 전송하지 않고 안내만 보여 줌.
+  var FB = { action: "", f: { app: "", kind: "", text: "", contact: "" } };
+  var form = document.getElementById("fbForm"), nform = document.getElementById("notify");
+  if (!form || !nform) return;
+  // 연결 전: 실제 사이트(deolnureum.com)에서는 메뉴·버튼을 숨기고, 시안에서만 보임
+  if (!FB.action && /(^|\.)deolnureum\.com$/.test(location.hostname)) document.body.classList.add("no-fb");
+  function say(el, cls, msg) { el.className = "fb-status" + (cls ? " " + cls : ""); el.textContent = msg; }
+  function send(d, done) {
+    if (!FB.action) { done("none"); return; }
+    var body = new URLSearchParams();
+    body.append(FB.f.app, d.app); body.append(FB.f.kind, d.kind); body.append(FB.f.text, d.text); body.append(FB.f.contact, d.contact);
+    fetch(FB.action, { method: "POST", mode: "no-cors", body: body }).then(function () { done("ok"); }, function () { done("fail"); });
+  }
+  function wire(f, status, collect, okMsg) {
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (f.querySelector(".fb-trap").value) return;
+      var d = collect(); if (!d) return;
+      var btn = f.querySelector("button[type=submit]"); btn.disabled = true; say(status, "", "보내는 중…");
+      send(d, function (r) {
+        btn.disabled = false;
+        if (r === "ok") { say(status, "ok", okMsg); f.reset(); }
+        else if (r === "none") say(status, "bad", "아직 받는 곳이 연결되지 않아 전송되지 않았습니다.");
+        else say(status, "bad", "보내지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
+      });
+    });
+  }
+  var okMail = function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); };
+  var fbStatus = document.getElementById("fbStatus"), ntStatus = document.getElementById("ntStatus");
+  wire(form, fbStatus, function () {
+    var text = form.fbText.value.trim(), contact = form.fbContact.value.trim();
+    if (text.length < 5) { say(fbStatus, "bad", "내용을 조금만 더 적어 주세요."); form.fbText.focus(); return null; }
+    if (contact && !okMail(contact)) { say(fbStatus, "bad", "이메일 주소를 확인해 주세요."); form.fbContact.focus(); return null; }
+    return { app: form.fbApp.value, kind: form.fbKind.value, text: text, contact: contact };
+  }, "보냈습니다. 고맙습니다.");
+  wire(nform, ntStatus, function () {
+    var picked = Array.prototype.filter.call(nform.querySelectorAll("input[name=ntApp]"), function (c) { return c.checked; }).map(function (c) { return c.value; });
+    var mail = nform.ntMail.value.trim();
+    if (!picked.length) { say(ntStatus, "bad", "기다리는 앱을 하나 이상 골라 주세요."); return null; }
+    if (!okMail(mail)) { say(ntStatus, "bad", "이메일 주소를 확인해 주세요."); nform.ntMail.focus(); return null; }
+    if (!document.getElementById("ntAgree").checked) { say(ntStatus, "bad", "이메일 사용에 동의해 주세요."); return null; }
+    return { app: picked.join(", "), kind: "공개 알림 신청", text: "", contact: mail };
+  }, "신청했습니다. 공개되는 날 알려 드릴게요.");
+  // 앱 소개 페이지의 버튼으로 들어오면 그 앱을 미리 골라 둠
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-fb-app]"); if (!a) return;
+    var name = a.getAttribute("data-fb-app");
+    Array.prototype.forEach.call(form.querySelectorAll("input[name=fbApp]"), function (r) { r.checked = r.value === name; });
+    Array.prototype.forEach.call(nform.querySelectorAll("input[name=ntApp]"), function (c) { c.checked = c.value === name; });
+  });
 })();
 
 // ---------- 메인 쇼릴 소리 켜기/끄기 ----------
@@ -1012,13 +1233,14 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       s.classList.toggle("is-center", a === 0);
       s.setAttribute("tabindex", a === 0 ? "0" : "-1");
       s.setAttribute("aria-hidden", a === 0 ? "false" : "true");
-      var v = s.querySelector("video");
-      if (v) {
-        if (a === 0 && !centerView.hidden) {
-          if (!s._on) { s._on = true; try { v.currentTime = 0; } catch (e) {} }
+      var on = a === 0 && !centerView.hidden, first = on && !s._on;
+      s._on = on;
+      Array.prototype.forEach.call(s.querySelectorAll("video"), function (v) {
+        if (on) {
+          if (first) { try { v.currentTime = 0; } catch (e) {} }
           var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
-        } else { s._on = false; v.pause(); }
-      }
+        } else v.pause();
+      });
     });
     var c = slides[cur];
     curEl.textContent = pad(cur + 1);
@@ -1247,6 +1469,114 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 })();
 </script>
 <script>
+// ---------- Daesinnam Amp: 접은 바깥 화면 → 펼친 화면 (홈의 폴더블 장면과 같은 효과) ----------
+(function () {
+  "use strict";
+  var box = document.getElementById("af"); if (!box) return;
+  var q = function (c) { return box.querySelector(c); };
+  var rig = q(".ul-rig"), hl = q(".ul-half.l"), hr = q(".ul-half.r"), screen = q(".ul-screen"), gloss = q(".ul-gloss"), shadow = q(".ul-shadow");
+  var cover = q(".af-cover"), vOpen = q(".af-open"), vShut = q(".af-shut"), cv = q(".ul-fx"), cx = cv.getContext("2d");
+  var btns = Array.prototype.slice.call(box.querySelectorAll(".af-btn"));
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches, T = 12;
+  [hl, hr].forEach(function (h) {
+    var face = h.querySelector(".face"); h.querySelector(".back").style.transform = "translateZ(" + (-T) + "px)";
+    for (var i = 1; i < 6; i++) { var e = document.createElement("i"); e.style.transform = "translateZ(" + (-T * i / 6) + "px)"; h.insertBefore(e, face); }
+  });
+  var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+  var easeOut = function (x) { return 1 - Math.pow(1 - x, 4); };
+  var smooth = function (x) { return x * x * (3 - 2 * x); };
+  var tx = 0, ty = 0, rx = 0, ry = 0, vx = 0, vy = 0, K = 140, MAX = 13, lastMove = 0;
+  function aim(e) {
+    var r = rig.getBoundingClientRect();
+    ty = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.9), -1, 1) * MAX;
+    tx = -clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 0.9), -1, 1) * MAX; lastMove = performance.now();
+  }
+  var zone = box.closest(".amp-wrap") || box;
+  zone.addEventListener("pointermove", aim);
+  zone.addEventListener("pointerleave", function () { tx = 0; ty = 0; });
+  zone.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { tx = 0; ty = 0; } });
+  var P = [], dpr = Math.min(2, window.devicePixelRatio || 1), W = 0, H = 0;
+  function size() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  window.addEventListener("resize", size);
+  function burst() {
+    if (reduce) return; size();
+    var r = rig.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    var ox = r.left + r.width / 2 - c.left, oy = r.top + r.height / 2 - c.top, n = window.innerWidth < 600 ? 100 : 160;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, sp = 220 + Math.random() * 520, flake = Math.random() < 0.55;
+      P.push({ x: ox + Math.cos(a) * r.width * 0.36, y: oy + Math.sin(a) * r.height * 0.36, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 160,
+        s: flake ? 3 + Math.random() * 5 : 1.2 + Math.random() * 2.2, flake: flake, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 14,
+        life: 0, max: 1.4 + Math.random() * 1.5, hue: 40 + Math.random() * 10, lum: 58 + Math.random() * 22 });
+    }
+  }
+  function particles(dt) {
+    if (!P.length && !W) return;
+    cx.clearRect(0, 0, W, H);
+    for (var i = P.length - 1; i >= 0; i--) {
+      var p = P[i]; p.life += dt;
+      if (p.life > p.max) { P.splice(i, 1); continue; }
+      var drag = Math.exp(-2.6 * dt); p.vx *= drag; p.vy = p.vy * drag + 520 * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      cx.save(); cx.translate(p.x, p.y); cx.globalAlpha = Math.min(1, (p.max - p.life) / 0.5);
+      if (p.flake) { cx.rotate(p.rot); var w = p.s * (0.25 + 0.75 * Math.abs(Math.cos(p.rot * 1.7)));
+        cx.fillStyle = "hsl(" + p.hue + ",78%," + (p.lum + 14 * Math.cos(p.rot * 1.7)) + "%)"; cx.fillRect(-w / 2, -p.s / 2, w, p.s); }
+      else { cx.fillStyle = "hsl(" + p.hue + ",90%,82%)"; cx.beginPath(); cx.arc(0, 0, p.s, 0, 6.283); cx.fill(); }
+      cx.restore();
+    }
+  }
+  function playV(v, on) { if (on) { if (v.paused) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } } else if (!v.paused) v.pause(); }
+  // u: 0 = 접힘(바깥 화면), 1 = 펼침(안쪽 화면)
+  var u = 0, target = 0, lit = false, last = 0, visible = false, running = false, started = false, autoAt = 0, rise0 = 0;
+  function setTarget(t, byUser) {
+    target = t; if (byUser) autoAt = 0;
+    btns.forEach(function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-open") === t)); });
+  }
+  btns.forEach(function (b) { b.addEventListener("click", function () { setTarget(+b.getAttribute("data-open"), true); }); });
+  function begin() {
+    started = true; u = reduce ? 1 : 0; lit = false; box.classList.remove("lit"); box.classList.add("on"); P.length = 0;
+    rise0 = performance.now(); setTarget(reduce ? 1 : 0); autoAt = reduce ? 0 : rise0 + 3200;
+    try { vShut.currentTime = 0; vOpen.currentTime = 0; } catch (e) {}
+    if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
+  }
+  function frame(now) {
+    if (!visible) { running = false; vOpen.pause(); vShut.pause(); return; }
+    var dt = Math.min(0.033, (now - last) / 1000 || 0.016); last = now;
+    if (autoAt && now > autoAt) { autoAt = 0; setTarget(1); }
+    var sp = dt / 1.5; u = target > u ? Math.min(target, u + sp) : Math.max(target, u - sp);
+    var rise = easeOut(clamp((now - rise0) / 900, 0, 1));
+    var flip = smooth(clamp(u / 0.3, 0, 1)), open = easeOut(clamp((u - 0.28) / 0.72, 0, 1)), fold = (1 - open) * 86;
+    cover.style.transform = "translateX(-50%) rotateY(" + (flip * 88) + "deg) scale(" + (1 - flip * 0.04) + ")";
+    cover.style.opacity = 1 - smooth(clamp((flip - 0.7) / 0.3, 0, 1));
+    cover.style.visibility = flip >= 1 ? "hidden" : "visible";
+    var hv = smooth(clamp((flip - 0.6) / 0.4, 0, 1));
+    hl.style.opacity = hr.style.opacity = hv;
+    hl.style.transform = "rotateY(" + fold + "deg)"; hr.style.transform = "rotateY(" + (-fold) + "deg)";
+    if (!lit && u >= 0.999) { lit = true; box.classList.add("lit"); burst(); }
+    if (lit && u < 0.9) { lit = false; box.classList.remove("lit"); }
+    screen.style.opacity = smooth(clamp((open - 0.86) / 0.14, 0, 1)); gloss.style.opacity = open;
+    playV(vShut, u < 0.25); playV(vOpen, u > 0.9);
+    var gxT = tx, gyT = ty;
+    if (now - lastMove > 1800 && !reduce) { gyT = Math.sin(now / 1700) * 5; gxT = Math.cos(now / 2300) * 3; }
+    var c = 2 * Math.sqrt(K);
+    vx += (K * (gxT - rx) - c * vx) * dt; rx += vx * dt; vy += (K * (gyT - ry) - c * vy) * dt; ry += vy * dt;
+    rig.style.transform = "translateY(" + ((1 - rise) * 60) + "px) scale(" + (0.86 + 0.14 * rise) + ") rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg)";
+    rig.style.opacity = rise;
+    gloss.style.setProperty("--gx", (30 - ry * 3.2) + "%"); gloss.style.setProperty("--gy", (12 + rx * 3.2) + "%");
+    shadow.style.opacity = 0.9 * rise * (0.45 + 0.55 * open);
+    shadow.style.transform = "translate(" + (-ry * 1.6) + "px," + (rx * 1.2) + "px) translateZ(-60px) scaleX(" + (0.5 + 0.5 * open) + ")";
+    particles(dt);
+    requestAnimationFrame(frame);
+  }
+  // 소개 페이지가 열릴 때마다 접힌 상태에서 다시 시작
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (en) {
+      var was = visible; visible = en[0].isIntersecting;
+      if (visible && !was) { if (!started) begin(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+    }, { threshold: 0.2 }).observe(box);
+  } else { visible = true; begin(); }
+  window.addEventListener("hashchange", function () { if (location.hash !== "#app-amp") started = false; });
+})();
+
 // ---------- 스피드미터 잠금 해제 장면 ----------
 (function () {
   "use strict";
