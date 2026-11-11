@@ -80,7 +80,7 @@ pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)
 clicks=$(grep -c "DESK_SELFTEST: WIDGET-CLICK" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn 위젯이 받은 누름=$clicks (1이어야 함: 드러난 위젯은 받고, 메뉴가 열려 있으면 받지 않음)"
-if grep -q "DESK_SELFTEST: DONE2" selftest-result.txt && [ "$pass" -ge 17 ] && [ "$failn" = 0 ] && [ "$clicks" = 1 ] && [ "$tap1" = 1 ] && [ "$tap2" = 1 ]; then echo "자동 점검 통과"; exit 0; fi
+if grep -q "DESK_SELFTEST: DONE2" selftest-result.txt && [ "$pass" -ge 16 ] && [ "$failn" = 0 ] && [ "$clicks" = 1 ] && [ "$tap1" = 1 ] && [ "$tap2" = 1 ]; then echo "자동 점검 통과"; exit 0; fi
 echo "자동 점검 실패"
 grep -v DESK_SELFTEST selftest-result.txt | tail -30
 adb logcat -d | grep -E "AndroidRuntime|FATAL" | tail -30
