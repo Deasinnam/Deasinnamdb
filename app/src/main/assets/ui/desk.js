@@ -31,6 +31,7 @@
       return Promise.resolve(names.map((label, i) => ({ pkg: "demo.app" + i, cls: "Main", label, glyph: label[0], color: i % 4 })));
     }
     if (method === "status") return Promise.resolve({ battery: 82, charging: false, net: "wifi", freeform: true, isDefault: false, wallpaper: 0, version: "미리보기" });
+    if (method === "quick") return Promise.resolve({ vol: 7, volMax: 15, bright: 180, canWrite: true, airplane: false, saver: false, hasTorch: true, torch: false });
     if (method === "launch") return Promise.resolve({ ok: true, mode: args[2], freeform: true });
     if (method === "widgetProviders") return Promise.resolve([
       { i: 0, app: "시계", label: "디지털 시계", pkg: "demo.clock", w: 180, h: 80 },
@@ -74,16 +75,40 @@
   // 선 그림 아이콘 (직접 그린 것)
   const IC = {
     search: ["M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z", "M20 20l-4.8-4.8"],
-    right: "M4 2l4 4-4 4", left: "M8 2L4 6l4 4",
+    right: "M4 2l4 4-4 4", left: "M8 2L4 6l4 4", up: "M2 8l4-4 4 4", down: "M2 4l4 4 4-4",
     widgets: ["M4 4h7v7H4z", "M13 4h7v7h-7z", "M4 13h7v7H4z", "M16.5 13v7", "M13 16.5h7"],
     gear: ["M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", "M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"],
     device: ["M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z", "M11 18h2"],
     bt: "M7 7l10 10-5 5V2l5 5L7 17",
     sun: ["M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z", "M12 2v2", "M12 20v2", "M4.9 4.9l1.4 1.4", "M17.7 17.7l1.4 1.4", "M2 12h2", "M20 12h2", "M4.9 19.1l1.4-1.4", "M17.7 6.3l1.4-1.4"],
     sound: ["M11 5L6 9H2v6h4l5 4V5z", "M15.5 8.5a5 5 0 0 1 0 7", "M19 5a10 10 0 0 1 0 14"],
+    mute: ["M11 5L6 9H2v6h4l5 4V5z", "M16 9l6 6", "M22 9l-6 6"],
     batt: ["M3 7h15a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z", "M22 11v2", "M6 10v4", "M9 10v4"],
     cal: ["M4 5h16v15H4z", "M4 10h16", "M8 3v4", "M16 3v4"],
     desktop: ["M3 4h18v12H3z", "M8 20h8", "M12 16v4"],
+    taskview: ["M3 5h12v10H3z", "M9 9h12v10H9"],
+    power: ["M12 3v8", "M6.3 6.8a8 8 0 1 0 11.4 0"],
+    person: ["M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", "M3.5 22a8.5 8.5 0 0 1 17 0"],
+    plane: ["M10.5 3.5a1.5 1.5 0 0 1 3 0V9l8 5v2l-8-2.5V19l2.5 2v1.5L12 21.5l-4 1V21l2.5-2v-5.5l-8 2.5v-2l8-5z"],
+    leaf: ["M5 20c0-9 6-15 15-15 0 9-6 15-15 15z", "M5 20l8-8"],
+    torch: ["M7 2h10l-1.5 6h-7z", "M8.5 8h7v12a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2z", "M12 12v3"],
+    access: ["M12 2.5a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6z", "M4 8.5l8 2 8-2", "M12 10.5v5", "M8.5 21.5l3.5-6 3.5 6"],
+    pencil: ["M4 20h4L19 9l-4-4L4 16z", "M14 6l4 4"],
+    open: ["M14 4h6v6", "M20 4l-9 9", "M18 14v6H4V6h6"],
+    pin: ["M9 3h6l-1 6 3 3H7l3-3z", "M12 12v9"],
+    unpin: ["M9 3h6l-1 6 3 3H7l3-3z", "M12 12v9", "M3 3l18 18"],
+    info: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M12 11v6", "M12 7.5v.01"],
+    trash: ["M4 7h16", "M9 7V4h6v3", "M6 7l1 13h10l1-13"],
+    win: ["M3 5h18v14H3z", "M3 9h18"],
+    halfL: ["M3 5h18v14H3z", "M12 5v14", "M5 8h5"],
+    halfR: ["M3 5h18v14H3z", "M12 5v14", "M14 8h5"],
+    full: ["M3 3h7", "M3 3v7", "M21 3h-7", "M21 3v7", "M3 21h7", "M3 21v-7", "M21 21h-7", "M21 21v-7"],
+    photo: ["M3 5h18v14H3z", "M3 16l5-5 4 4 3-3 6 6", "M15.5 9h.01"],
+    refresh: ["M20 11a8 8 0 1 0-2.3 5.7", "M20 4v7h-7"],
+    brush: ["M18 3l3 3-9 9-3-3z", "M9 12c-3 0-5 2-5 5 0 1.5-1 2.5-2 3 4 1 9 0 9-5"],
+    plus: ["M12 5v14", "M5 12h14"],
+    home: ["M3 11l9-8 9 8", "M5 9v12h14V9"],
+    close: ["M2.5 2.5l7 7", "M9.5 2.5l-7 7"],
   };
   let toastTimer = 0;
   function toast(text) {
@@ -94,7 +119,7 @@
   }
 
   // ---------- 저장되는 설정 ----------
-  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [], lately: [], tbAlign: "center", tbStyle: "dock" };
+  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [], lately: [], tbAlign: "center", tbStyle: "dock", accent: "blue", userName: "사용자" };
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem("desk_state") || "{}")); } catch (_) {}
   if (!Array.isArray(S.widgets)) S.widgets = [];
@@ -144,7 +169,7 @@
     const app = byKey.get(key);
     if (!app) return toast("앱을 찾지 못했습니다. 제거된 앱일 수 있습니다.");
     closePanels();
-    S.lately = [key].concat((S.lately || []).filter((k) => k !== key)).slice(0, 8); save();
+    S.lately = [{ k: key, t: Date.now() }].concat(lately().filter((x) => x.k !== key)).slice(0, 12); save();
     if (key.startsWith("in:")) return openBuiltin(key);
     const r = await call("launch", app.pkg, app.cls, mode || S.openMode);
     if (r && r.error) return toast("열지 못했습니다: " + r.error);
@@ -176,40 +201,56 @@
     });
   }
 
+  function menuItem(label, icon, fn, cls) {
+    const c = $("ctx");
+    return h("button", { class: cls || null, role: "menuitem", onclick: () => { c.hidden = true; fn(); } }, h("i", null, icon ? svg(icon) : null), h("span", { text: label }));
+  }
+  function placeMenu(x, y, above) {
+    const c = $("ctx");
+    c.hidden = false;
+    const W = innerWidth, H = innerHeight, r = c.getBoundingClientRect();
+    c.style.left = Math.max(6, Math.min(x, W - r.width - 6)) + "px";
+    c.style.top = Math.max(6, Math.min(above ? y - r.height - 8 : y, H - r.height - 6)) + "px";
+  }
+  function togglePin(key) {
+    if (S.pins.includes(key)) S.pins = S.pins.filter((k) => k !== key); else S.pins.push(key);
+    save(); renderTaskbar(); if (!$("start").hidden) renderStart();
+  }
   function showCtx(key, where, x, y) {
     const app = byKey.get(key);
     if (!app) return;
     const c = $("ctx");
     c.textContent = "";
-    const item = (label, fn, cls) => h("button", { class: cls || null, role: "menuitem", onclick: () => { c.hidden = true; fn(); } }, label);
+    const item = menuItem;
     c.append(h("div", { class: "ctx-title", text: app.label }));
     const ext = !key.startsWith("in:");
     if (ext) {
-      c.append(item("창으로 열기", () => openApp(key, "window")));
-      c.append(item("왼쪽 반에 열기", () => openApp(key, "left")));
-      c.append(item("오른쪽 반에 열기", () => openApp(key, "right")));
-      c.append(item("전체 화면으로 열기", () => openApp(key, "full")));
+      c.append(item("열기", IC.open, () => openApp(key)));
+      c.append(item("창으로 열기", IC.win, () => openApp(key, "window")));
+      c.append(item("왼쪽 반에 열기", IC.halfL, () => openApp(key, "left")));
+      c.append(item("오른쪽 반에 열기", IC.halfR, () => openApp(key, "right")));
+      c.append(item("전체 화면으로 열기", IC.full, () => openApp(key, "full")));
     } else {
-      c.append(item("열기", () => openApp(key)));
+      c.append(item("열기", IC.open, () => openApp(key)));
     }
+    c.append(h("hr"));
     const pinned = S.pins.includes(key), onDesk = S.desktop.includes(key);
-    c.append(item(pinned ? "작업 표시줄에서 떼기" : "작업 표시줄에 고정", () => {
-      if (pinned) S.pins = S.pins.filter((k) => k !== key); else S.pins.push(key);
-      save(); renderTaskbar(); if (!$("start").hidden) renderStart();
-    }));
-    c.append(item(onDesk ? "바탕화면에서 빼기" : "바탕화면에 추가", () => {
+    c.append(item(pinned ? "작업 표시줄에서 고정 해제" : "작업 표시줄에 고정", pinned ? IC.unpin : IC.pin, () => togglePin(key)));
+    c.append(item(onDesk ? "바탕화면에서 빼기" : "바탕화면에 추가", IC.desktop, () => {
       if (onDesk) S.desktop = S.desktop.filter((k) => k !== key); else S.desktop.push(key);
       save(); renderDesk();
     }));
-    if (where === "task" && !pinned && recent.includes(key)) c.append(item("작업 표시줄에서 지우기", () => { recent.splice(recent.indexOf(key), 1); renderTaskbar(); }));
-    if (ext) {
-      c.append(item("앱 정보", () => call("appInfo", app.pkg)));
-      c.append(item("제거", () => call("uninstall", app.pkg), "danger"));
+    if (where === "task") {
+      const w = wins.find((x) => x.key === key);
+      if (w) c.append(item("창 닫기", IC.close, () => closeWin(w)));
+      else if (!pinned && recent.includes(key)) c.append(item("작업 표시줄에서 지우기", IC.close, () => { recent.splice(recent.indexOf(key), 1); renderTaskbar(); }));
     }
-    c.hidden = false;
-    const W = innerWidth, H = innerHeight, r = c.getBoundingClientRect();
-    c.style.left = Math.max(6, Math.min(x, W - r.width - 6)) + "px";
-    c.style.top = Math.max(6, Math.min(y, H - r.height - 6)) + "px";
+    if (ext) {
+      c.append(h("hr"));
+      c.append(item("앱 정보", IC.info, () => call("appInfo", app.pkg)));
+      c.append(item("제거", IC.trash, () => call("uninstall", app.pkg), "danger"));
+    }
+    placeMenu(x, y, where === "task");
   }
 
   // ---------- 바탕화면 ----------
@@ -242,7 +283,7 @@
       const w = wins.find((x) => x.key === key);
       const running = !!w || recent.includes(key);
       const active = !!w && !w.min && w === topWin();
-      const el = h("button", { class: "titem" + (running ? " run" : "") + (active ? " active" : ""), title: app.label, "aria-label": app.label }, iconOf(app));
+      const el = h("button", { class: "tbtn titem" + (running ? " run" : "") + (active ? " active" : ""), "data-tip": app.label, "aria-label": app.label }, iconOf(app));
       bindItem(el, key, "task");
       box.append(el);
     };
@@ -266,20 +307,32 @@
     other: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M3 12h18"],
     none: ["M2 8.5a15 15 0 0 1 20 0", "M9 16.2a5 5 0 0 1 6 0", "M4 4l16 16"],
   };
+  let qs = {};   // 빠른 설정 상태 (음량·밝기·비행기 모드·절전·손전등)
   function renderTray() {
     const n = $("tray-net");
     n.textContent = "";
     n.append(svg(NET_ICON[status.net] || NET_ICON.none));
+    const v = $("tray-vol");
+    v.textContent = "";
+    v.append(svg(qs.vol === 0 ? IC.mute : IC.sound));
     const b = $("tray-batt");
     b.hidden = status.battery < 0;
     b.className = (status.charging ? "chg" : status.battery <= 15 ? "low" : "");
     b.querySelector("i").style.setProperty("--lv", Math.max(6, status.battery) + "%");
     b.querySelector("b").textContent = status.battery + "%";
+    $("tray").dataset.tip = ({ wifi: "와이파이 연결됨", cell: "모바일 데이터", wired: "유선 연결", other: "인터넷 연결됨", none: "인터넷 연결 없음" }[status.net] || "") +
+      (status.battery >= 0 ? "\n배터리 " + status.battery + "%" + (status.charging ? " 충전 중" : "") : "");
   }
   function tick() {
-    const now = new Date();
-    $("clock-time").textContent = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
-    $("clock-date").textContent = (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + "일월화수목금토"[now.getDay()];
+    const now = new Date(), hh = now.getHours();
+    $("clock-time").textContent = (hh < 12 ? "오전 " : "오후 ") + (hh % 12 || 12) + ":" + String(now.getMinutes()).padStart(2, "0");
+    $("clock-date").textContent = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+    $("tray-clock").dataset.tip = now.getFullYear() + "년 " + (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + "일월화수목금토"[now.getDay()] + "요일";
+  }
+  async function refreshQuick() {
+    const r = await call("quick");
+    if (r && !r.error) { qs = r; renderTray(); }
+    return qs;
   }
   // 상태는 여러 번 겹쳐 물을 수 있어, 늦게 도착한 옛 응답이 새 응답을 덮지 않게 합니다 (예: 배경 사진이 방금 생겼는데 "없음"으로 돌아가던 일)
   let statusSeq = 0, statusShown = 0;
@@ -289,6 +342,7 @@
     if (my < statusShown) return;
     statusShown = my;
     if (r && !r.error) { status = r; renderTray(); }
+    refreshQuick();
   }
 
   // ---------- 시작 메뉴 ----------
@@ -307,11 +361,36 @@
     if (CHO.includes(ch)) return CHO1[CHO.indexOf(ch)];
     return "#";
   }
-  let startView = "home";
-  function recItem(app) {
-    const el = h("button", { class: "ritem", title: app.label }, iconOf(app), h("span", null, h("b", { text: app.label }), h("small", { text: app.key.startsWith("in:") ? "덜누름 데스크 도구" : "최근에 연 앱" })));
+  let startView = "home", pinPage = 0;
+  const lately = () => (S.lately || []).map((x) => (typeof x === "string" ? { k: x, t: 0 } : x)).filter((x) => byKey.has(x.k));
+  function relTime(t) {
+    if (!t) return "최근에 연 앱";
+    const m = Math.floor((Date.now() - t) / 60000);
+    if (m < 1) return "방금";
+    if (m < 60) return m + "분 전";
+    if (m < 60 * 24 && new Date(t).getDate() === new Date().getDate()) return Math.floor(m / 60) + "시간 전";
+    const d = new Date(t), y = new Date(); y.setDate(y.getDate() - 1);
+    if (d.toDateString() === y.toDateString()) return "어제 " + (d.getHours() < 12 ? "오전 " : "오후 ") + (d.getHours() % 12 || 12) + ":" + String(d.getMinutes()).padStart(2, "0");
+    return (d.getMonth() + 1) + "월 " + d.getDate() + "일";
+  }
+  function recItem(x) {
+    const app = byKey.get(x.k);
+    const el = h("button", { class: "ritem", title: app.label }, iconOf(app), h("span", null, h("b", { text: app.label }), h("small", { text: relTime(x.t) })));
     bindItem(el, app.key, "start");
     return el;
+  }
+  const pinCols = () => (innerWidth <= 380 ? 3 : innerWidth <= 600 ? 4 : 6);
+  const kindOf = (a) => (a.key.startsWith("in:") ? "덜누름 데스크 도구" : "앱");
+  function detailOf(app) {
+    const ext = !app.key.startsWith("in:"), pinned = S.pins.includes(app.key);
+    const act = (label, icon, fn) => h("button", { onclick: () => { fn(); } }, svg(icon), h("span", { text: label }));
+    return h("div", { class: "sdetail" }, iconOf(app), h("b", { text: app.label }), h("small", { text: kindOf(app) }),
+      h("div", { class: "acts" },
+        act("열기", IC.open, () => openApp(app.key)),
+        ext ? act("창으로 열기", IC.win, () => openApp(app.key, "window")) : null,
+        ext ? act("전체 화면으로 열기", IC.full, () => openApp(app.key, "full")) : null,
+        act(pinned ? "작업 표시줄에서 고정 해제" : "작업 표시줄에 고정", pinned ? IC.unpin : IC.pin, () => togglePin(app.key)),
+        ext ? act("앱 정보", IC.info, () => { closePanels(); call("appInfo", app.pkg); }) : null));
   }
   function renderStart() {
     const body = $("start-body");
@@ -319,18 +398,39 @@
     body.textContent = "";
     const all = BUILTIN.concat(apps);
     if (q) {
-      const hit = all.filter((a) => a.label.toLowerCase().includes(q));
-      if (!hit.length) return body.append(h("div", { class: "empty", text: "'" + $("search").value.trim() + "'에 맞는 앱이 없습니다." }));
-      body.append(h("h3", { text: "찾은 앱 " + hit.length + "개" }), h("div", { class: "list" }, hit.map((a) => gridItem(a, "litem"))));
+      const hit = all.filter((a) => a.label.toLowerCase().includes(q))
+        .sort((a, b) => (b.label.toLowerCase().startsWith(q) - a.label.toLowerCase().startsWith(q)) || a.label.localeCompare(b.label, "ko"));
+      if (!hit.length) return body.append(h("div", { class: "empty", text: "'" + $("search").value.trim() + "'에 맞는 결과가 없습니다." }));
+      const first = hit[0];
+      const best = h("button", { class: "litem best" }, iconOf(first), h("span", null, h("b", { text: first.label }), h("small", { text: kindOf(first) })));
+      bindItem(best, first.key, "start");
+      const left = h("div", null, h("h4", { text: "가장 일치하는 항목" }), best);
+      const detail = h("div", null, detailOf(first));
+      if (hit.length > 1) {
+        const list = h("div", { class: "list" });
+        for (const a of hit.slice(1)) {
+          const el = gridItem(a, "litem");
+          el.addEventListener("pointerenter", () => { detail.textContent = ""; detail.append(detailOf(a)); });
+          list.append(el);
+        }
+        left.append(h("h4", { text: "앱" }), list);
+      }
+      best.addEventListener("pointerenter", () => { detail.textContent = ""; detail.append(detailOf(first)); });
+      body.append(h("div", { class: "sres" }, left, detail));
       return;
     }
-    if (startView === "all") {
-      body.append(h("div", { class: "shead" }, h("h3", { text: "모든 앱" }),
-        h("button", { class: "pill", id: "back-home", onclick: () => { startView = "home"; renderStart(); body.scrollTop = 0; } }, svg(IC.left, "0 0 12 12"), "뒤로")));
+    if (startView === "all" || startView === "rec") {
+      const back = () => { startView = "home"; renderStart(); body.scrollTop = 0; };
+      body.append(h("div", { class: "shead" }, h("h3", { text: startView === "all" ? "모든 앱" : "추천" }),
+        h("button", { class: "pill back", id: "back-home", onclick: back }, svg(IC.left, "0 0 12 12"), "뒤로")));
+      if (startView === "rec") {
+        const L = lately();
+        body.append(L.length ? h("div", { class: "rec" }, L.map(recItem)) : h("div", { class: "hint", text: "앱을 열면 최근에 연 앱이 여기에 나옵니다." }));
+        return;
+      }
       if (!apps.length) return body.append(h("div", { class: "empty", text: "앱 목록을 불러오는 중입니다…" }));
-      const sorted = all.slice().sort((a, b) => a.label.localeCompare(b.label, "ko"));
       const order = (l) => (l === "#" ? 2 : /[A-Z]/.test(l) ? 1 : 0);
-      sorted.sort((a, b) => order(letterOf(a.label)) - order(letterOf(b.label)) || a.label.localeCompare(b.label, "ko"));
+      const sorted = all.slice().sort((a, b) => order(letterOf(a.label)) - order(letterOf(b.label)) || a.label.localeCompare(b.label, "ko"));
       const list = h("div", { class: "list" });
       let cur = null;
       for (const a of sorted) {
@@ -341,19 +441,30 @@
       body.append(list);
       return;
     }
-    // 처음 화면: 고정됨 + 추천
-    const seen = new Set();
-    const pinned = [];
+    // 처음 화면: 고정됨(쪽마다 6×3) + 추천
+    const seen = new Set(), pinned = [];
     for (const k of (S.pins || []).concat(BUILTIN.map((b) => b.key))) { const a = byKey.get(k); if (a && !seen.has(k)) { seen.add(k); pinned.push(a); } }
+    const per = pinCols() * 3, pages = Math.max(1, Math.ceil(pinned.length / per));
+    pinPage = Math.min(pinPage, pages - 1);
     body.append(h("div", { class: "shead" }, h("h3", { text: "고정됨" }),
       h("button", { class: "pill", id: "all-apps", onclick: () => { startView = "all"; renderStart(); body.scrollTop = 0; } }, "모든 앱", svg(IC.right, "0 0 12 12"))));
-    body.append(h("div", { class: "grid" }, pinned.map((a) => gridItem(a, "gitem"))));
-    body.append(h("div", { class: "shead" }, h("h3", { text: "추천" })));
-    const lately = (S.lately || []).map((k) => byKey.get(k)).filter(Boolean).slice(0, 6);
-    if (lately.length) body.append(h("div", { class: "rec" }, lately.map(recItem)));
+    const wrap = h("div", { class: "pinwrap" }, h("div", { class: "grid" }, pinned.slice(pinPage * per, pinPage * per + per).map((a) => gridItem(a, "gitem"))));
+    if (pages > 1) {
+      wrap.append(h("div", { class: "dots" }, Array.from({ length: pages }, (_, i) => h("button", { class: i === pinPage ? "on" : null, "aria-label": (i + 1) + "쪽", onclick: () => { pinPage = i; renderStart(); } }))));
+      let wheelAt = 0;
+      wrap.addEventListener("wheel", (e) => { e.preventDefault(); if (Date.now() - wheelAt < 300) return; wheelAt = Date.now(); pinPage = Math.max(0, Math.min(pages - 1, pinPage + (e.deltaY > 0 ? 1 : -1))); renderStart(); }, { passive: false });
+      let sy = null;
+      wrap.addEventListener("pointerdown", (e) => { sy = e.clientY; });
+      wrap.addEventListener("pointerup", (e) => { if (sy != null && Math.abs(e.clientY - sy) > 40) { pinPage = Math.max(0, Math.min(pages - 1, pinPage + (e.clientY < sy ? 1 : -1))); renderStart(); } sy = null; });
+    }
+    body.append(wrap);
+    body.append(h("div", { class: "shead" }, h("h3", { text: "추천" }),
+      h("button", { class: "pill", onclick: () => { startView = "rec"; renderStart(); body.scrollTop = 0; } }, "자세히", svg(IC.right, "0 0 12 12"))));
+    const L = lately().slice(0, 6);
+    if (L.length) body.append(h("div", { class: "rec" }, L.map(recItem)));
     else body.append(h("div", { class: "hint", text: "앱을 열면 최근에 연 앱이 여기에 나옵니다." }));
   }
-  function toggleStart(open) {
+  function toggleStart(open, focusSearch) {
     const s = $("start");
     const want = open == null ? s.hidden : open;
     closePanels();
@@ -361,36 +472,91 @@
     s.hidden = false;
     $("start-btn").classList.add("on");
     $("search").value = "";
-    startView = "home";
+    startView = "home"; pinPage = 0;
+    $("me-name").textContent = S.userName || "사용자";
     renderStart();
     $("start-body").scrollTop = 0;
+    if (focusSearch) setTimeout(() => $("search").focus(), 30);
+  }
+  function powerMenu() {
+    const c = $("ctx");
+    c.textContent = "";
+    c.append(menuItem("데스크 설정", IC.gear, () => openApp("in:settings")),
+      menuItem("기기 설정", IC.device, () => call("openSettings", "all")),
+      menuItem("위젯 추가", IC.widgets, openWidgetPicker),
+      h("hr"),
+      menuItem("홈 앱 설정", IC.home, () => call("openSettings", "home")));
+    const r = $("btn-power").getBoundingClientRect();
+    placeMenu(r.left - 60, r.top, true);
   }
 
   // ---------- 빠른 설정 ----------
-  function toggleQuick() {
+  let brightAsked = false, volBefore = 0;
+  async function toggleQuick() {
     const q = $("quick");
     const want = q.hidden;
     closePanels();
     if (!want) return;
-    q.textContent = "";
-    const netName = { wifi: "와이파이", cell: "모바일 데이터", wired: "유선 연결", other: "연결됨", none: "연결 안 됨" }[status.net] || "인터넷";
-    // 누르면 해당 기기 설정 화면이 열립니다 (직접 켜고 끄지는 않음)
-    const tile = (icon, label, fn, on) => h("button", { class: "qtile" + (on ? " on" : ""), title: label, onclick: () => { closePanels(); fn(); } }, h("span", null, svg(icon)), h("span", { text: label }));
-    q.append(h("div", { class: "qgrid" },
-      tile(NET_ICON[status.net] || NET_ICON.none, netName, () => call("openSettings", "wifi"), status.net === "wifi"),
-      tile(IC.bt, "블루투스", () => call("openSettings", "bluetooth")),
-      tile(IC.sun, "화면", () => call("openSettings", "display")),
-      tile(IC.sound, "소리", () => call("openSettings", "sound")),
-      tile(IC.batt, "배터리", () => call("openSettings", "battery"), status.charging),
-      tile(IC.desktop, "바탕화면 보기", showDesktop),
-      tile(IC.cal, "달력", () => openApp("in:cal")),
-      tile(IC.widgets, "위젯 추가", openWidgetPicker),
-      tile(IC.device, "기기 설정", () => call("openSettings", "all"))));
-    q.append(h("div", { class: "qfoot" },
-      h("span", { text: status.battery >= 0 ? "배터리 " + status.battery + "%" + (status.charging ? " · 충전 중" : "") : "" }),
-      h("button", { title: "데스크 설정", "aria-label": "데스크 설정", onclick: () => openApp("in:settings") }, svg(IC.gear))));
     q.hidden = false;
     $("tray").classList.add("on");
+    await refreshQuick();
+    if (q.hidden) return;
+    drawQuick();
+  }
+  function drawQuick() {
+    const q = $("quick");
+    q.textContent = "";
+    const netName = { wifi: "와이파이", cell: "모바일 데이터", wired: "유선", other: "연결됨", none: "와이파이" }[status.net] || "와이파이";
+    // 타일: 왼쪽 = 켜고 끄기(또는 설정 열기), 오른쪽 ">" = 자세한 설정
+    const tile = (icon, label, on, main, more) => h("div", { class: "qtile" + (on ? " on" : "") },
+      h("div", { class: "qb" },
+        h("button", { "aria-label": label, onclick: main }, svg(icon)),
+        more ? h("button", { "aria-label": label + " 자세히", onclick: more }, svg(IC.right, "0 0 12 12")) : null),
+      h("span", { text: label }));
+    const open = (kind) => () => { closePanels(); call("openSettings", kind); };
+    const tiles = [
+      tile(NET_ICON[status.net === "none" ? "wifi" : status.net] || NET_ICON.wifi, netName, status.net === "wifi", open("internet"), open("wifi")),
+      tile(IC.bt, "블루투스", false, open("bluetooth"), open("bluetooth")),
+      tile(IC.plane, "비행기 모드", !!qs.airplane, open("airplane")),
+      tile(IC.leaf, "절전 모드", !!qs.saver, open("saver")),
+      qs.hasTorch ? tile(IC.torch, "손전등", !!qs.torch, async () => { const r = await call("torch", !qs.torch); if (r && r.error) toast(r.error); else { qs.torch = !qs.torch; drawQuick(); } })
+        : tile(IC.desktop, "바탕화면 보기", false, () => { closePanels(); showDesktop(); }),
+      tile(IC.access, "접근성", false, open("accessibility")),
+    ];
+    q.append(h("div", { class: "qgrid" }, tiles));
+    const slider = (min, max, val, set) => {
+      const r = h("input", { type: "range", min, max, value: val, "aria-label": "막대" });
+      const paint = () => r.style.setProperty("--p", ((r.value - min) * 100 / Math.max(1, max - min)) + "%");
+      paint();
+      let t = 0;
+      r.addEventListener("input", () => { paint(); clearTimeout(t); t = setTimeout(() => set(+r.value), 40); });
+      return r;
+    };
+    const bright = slider(1, 255, qs.bright || 128, async (v) => {
+      if (!qs.canWrite) {
+        if (!brightAsked) { brightAsked = true; toast("밝기를 바꾸려면 다음 화면에서 '시스템 설정 변경'을 허용해 주세요."); call("openSettings", "write"); }
+        return;
+      }
+      await call("setBrightness", v); qs.bright = v;
+    });
+    const volMax = qs.volMax || 15;
+    const vol = slider(0, volMax, qs.vol == null ? 7 : qs.vol, async (v) => { await call("setVolume", v); qs.vol = v; renderTray(); volIcon(); });
+    const volBtn = h("button", { "aria-label": "음소거", onclick: async () => {
+      const v = qs.vol > 0 ? 0 : (volBefore || Math.round(volMax / 2));
+      if (qs.vol > 0) volBefore = qs.vol;
+      await call("setVolume", v); qs.vol = v; vol.value = v; vol.dispatchEvent(new Event("input")); renderTray(); volIcon();
+    } });
+    const volIcon = () => { volBtn.textContent = ""; volBtn.append(svg(qs.vol === 0 ? IC.mute : IC.sound)); };
+    volIcon();
+    q.append(h("div", { class: "qslide" + (qs.canWrite ? "" : " dim"), title: qs.canWrite ? "밝기" : "누르면 '시스템 설정 변경' 허용 화면이 열립니다" },
+      h("button", { "aria-label": "디스플레이 설정", onclick: open("display") }, svg(IC.sun)), bright, h("span", { class: "more" })));
+    q.append(h("div", { class: "qslide" }, volBtn, vol,
+      h("button", { class: "more", "aria-label": "소리 출력 고르기", onclick: open("volume") }, svg(IC.right, "0 0 12 12"))));
+    if (!qs.canWrite) bright.addEventListener("pointerdown", () => { if (!brightAsked) { brightAsked = true; toast("밝기를 바꾸려면 다음 화면에서 '시스템 설정 변경'을 허용해 주세요."); call("openSettings", "write"); } });
+    q.append(h("div", { class: "qfoot" },
+      h("span", { class: "qbat" }, svg(IC.batt), h("span", { text: status.battery >= 0 ? status.battery + "%" + (status.charging ? " · 충전 중" : "") : "" })),
+      h("button", { title: "데스크 설정", "aria-label": "데스크 설정", onclick: () => openApp("in:settings") }, svg(IC.pencil)),
+      h("button", { title: "기기 설정", "aria-label": "기기 설정", onclick: open("all") }, svg(IC.gear))));
   }
   function toggleCal() {
     const c = $("calfly");
@@ -399,16 +565,69 @@
     if (!want) return;
     c.textContent = "";
     const now = new Date();
-    c.append(h("div", { class: "calfly-head", text: (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + "일월화수목금토"[now.getDay()] + "요일" }));
     const body = h("div");
     buildCal(body);
-    c.append(body.firstChild);
+    const cal = body.firstChild;
+    const nav = cal.querySelectorAll(".cal-head button");
+    if (nav.length === 2) { nav[0].textContent = ""; nav[0].append(svg(IC.up, "0 0 12 12")); nav[1].textContent = ""; nav[1].append(svg(IC.down, "0 0 12 12")); }
+    const fold = h("button", { class: "tbtn", "aria-label": "달력 접기", onclick: () => { cal.hidden = !cal.hidden; fold.textContent = ""; fold.append(svg(cal.hidden ? IC.up : IC.down, "0 0 12 12")); } }, svg(IC.down, "0 0 12 12"));
+    c.append(h("div", { class: "calfly-head" }, h("span", { text: (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + "일월화수목금토"[now.getDay()] + "요일" }), fold), cal);
     c.hidden = false;
     $("tray-clock").classList.add("on");
   }
+  function toggleTaskView() {
+    const t = $("taskview");
+    const want = t.hidden;
+    closePanels();
+    if (!want) return;
+    t.textContent = "";
+    const card = (app, onopen, onclose) => {
+      const c = h("button", { class: "tv-card", onclick: () => { closePanels(); onopen(); } },
+        h("div", { class: "tv-top" }, iconOf(app), h("span", { text: app.label }),
+          onclose ? h("i", { "aria-label": "닫기", onclick: (e) => { e.stopPropagation(); onclose(); toggleTaskView(); toggleTaskView(); } }, svg(IC.close, "0 0 12 12")) : null),
+        h("div", { class: "tv-shot" }, iconOf(app)));
+      return c;
+    };
+    if (wins.length) {
+      t.append(h("div", { class: "tv-head", text: "열린 창" }));
+      t.append(h("div", { class: "tv-grid" }, wins.slice().sort((a, b) => b.z - a.z).map((w) => card(byKey.get(w.key), () => { w.min = false; w.el.hidden = false; focusWin(w); }, () => closeWin(w)))));
+    }
+    const ext = recent.filter((k) => byKey.has(k));
+    if (ext.length) {
+      t.append(h("div", { class: "tv-head", text: "이번에 연 앱" }));
+      t.append(h("div", { class: "tv-grid" }, ext.map((k) => card(byKey.get(k), () => openApp(k)))));
+    }
+    if (!wins.length && !ext.length) t.append(h("div", { class: "tv-head", text: "열린 창이 없습니다" }));
+    t.addEventListener("click", (e) => { if (e.target === t) closePanels(); }, { once: true });
+    t.hidden = false;
+  }
   function closePanels() {
-    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true; $("calfly").hidden = true; $("snapfly").hidden = true;
+    $("start").hidden = true; $("quick").hidden = true; $("ctx").hidden = true; $("wpick").hidden = true; $("calfly").hidden = true; $("snapfly").hidden = true; $("taskview").hidden = true;
     $("start-btn").classList.remove("on"); $("tray").classList.remove("on"); $("tray-clock").classList.remove("on");
+    hideTip();
+  }
+  // 작업 표시줄 풍선 도움말 (마우스를 잠깐 올려 두면 위에 뜸)
+  let tipTimer = 0;
+  function hideTip() { clearTimeout(tipTimer); const t = $("tip"); if (t) t.hidden = true; }
+  function bindTips() {
+    const bar = $("taskbar");
+    for (const el of bar.querySelectorAll("[title]")) { el.dataset.tip = el.getAttribute("title"); el.removeAttribute("title"); }
+    bar.addEventListener("pointerover", (e) => {
+      if (e.pointerType !== "mouse") return;
+      const el = e.target.closest("[data-tip]");
+      hideTip();
+      if (!el || !el.dataset.tip) return;
+      tipTimer = setTimeout(() => {
+        const t = $("tip"), r = el.getBoundingClientRect();
+        t.textContent = el.dataset.tip; t.hidden = false;
+        t.style.whiteSpace = "pre";
+        const tr = t.getBoundingClientRect();
+        t.style.left = Math.max(4, Math.min(r.left + r.width / 2 - tr.width / 2, innerWidth - tr.width - 4)) + "px";
+        t.style.top = (r.top - tr.height - 10) + "px";
+      }, 550);
+    });
+    bar.addEventListener("pointerout", hideTip);
+    bar.addEventListener("pointerdown", hideTip);
   }
   function showDesktop() {
     for (const w of wins) { w.min = true; w.el.hidden = true; }
@@ -666,7 +885,8 @@
   function applyLook() {
     const custom = S.wallpaper === "custom" && status.wallpaper > 0;
     const wp = custom ? "wp-custom" : "wp-" + (S.wallpaper === "custom" ? 0 : S.wallpaper | 0);
-    document.body.className = wp + (S.theme === "light" ? " light" : "");
+    document.body.className = wp + (S.theme === "light" ? " light" : "") + (S.accent && S.accent !== "blue" ? " acc-" + S.accent : "");
+    $("me-name").textContent = S.userName || "사용자";
     document.documentElement.classList.toggle("tb-left", S.tbAlign === "left");
     document.documentElement.classList.toggle("tb-float", S.tbStyle === "float");
     // 작업 표시줄 모양이 바뀌면 바탕화면 넓이가 달라지므로 창·위젯 자리를 다시 맞춤
@@ -705,6 +925,10 @@
         h("p", { text: "다른 앱의 위젯(시계·날씨·일정 등)을 바탕화면에 올립니다. 올린 위젯을 길게 누르면(마우스는 오른쪽 누름) 옮기거나 크기를 바꾸고 지울 수 있습니다." }),
         h("h4", { text: "색" }),
         seg(S.theme, [["dark", "어둡게"], ["light", "밝게"]], (v) => { S.theme = v; }),
+        h("h4", { text: "강조색" }),
+        seg(S.accent || "blue", [["blue", "파랑"], ["purple", "보라"], ["green", "초록"], ["orange", "주황"], ["pink", "분홍"]], (v) => { S.accent = v; }),
+        h("h4", { text: "시작 메뉴에 보일 이름" }),
+        (() => { const i = h("input", { class: "field", type: "text", maxlength: "20", value: S.userName || "사용자", "aria-label": "이름" }); i.addEventListener("change", () => { S.userName = i.value.trim() || "사용자"; save(); applyLook(); }); return i; })(),
         h("h4", { text: "작업 표시줄" }),
         seg(S.tbAlign, [["center", "아이콘 가운데"], ["left", "아이콘 왼쪽"]], (v) => { S.tbAlign = v; }),
         seg(S.tbStyle, [["dock", "화면 아래에 붙임"], ["float", "떠 있는 둥근 모양"]], (v) => { S.tbStyle = v; }),
@@ -828,7 +1052,7 @@
         if (r.width > 0 && r.height > 0) blockers.push([Math.floor(r.left), Math.floor(r.top), Math.ceil(r.right), Math.ceil(r.bottom)]);
       };
       if (layout.length) { document.querySelectorAll(".win, .dicon").forEach(add); add($("taskbar")); add($("toast")); }
-      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden || !$("calfly").hidden || !$("snapfly").hidden;
+      const blockAll = wEdit || !$("start").hidden || !$("quick").hidden || !$("ctx").hidden || !$("wpick").hidden || !$("calfly").hidden || !$("snapfly").hidden || !$("taskview").hidden;
       const key = JSON.stringify([layout, blockers, innerWidth, innerHeight, devicePixelRatio, blockAll, wDragging]);
       if (key === lastSync) return;
       lastSync = key;
@@ -1000,6 +1224,7 @@
       if (!$("wpick").hidden) { $("wpick").hidden = true; return; }
       if (wEdit) return exitWidgetEdit();
       if (!$("snapfly").hidden) { $("snapfly").hidden = true; return; }
+      if (!$("taskview").hidden) { $("taskview").hidden = true; return; }
       if (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden) return closePanels();
       const t = topWin();
       if (t) { t.min = true; t.el.hidden = true; const n = topWin(); if (n) focusWin(n); else renderTaskbar(); }
@@ -1010,7 +1235,17 @@
   $("tray-clock").addEventListener("click", toggleCal);
   $("peek").addEventListener("click", () => { closePanels(); showDesktop(); });
   $("search-icon").append(svg(IC.search)); $("wsearch-icon").append(svg(IC.search));
-  $("btn-widgets").append(svg(IC.widgets)); $("btn-desk-settings").append(svg(IC.gear)); $("btn-sys-settings").append(svg(IC.device));
+  $("tb-search").querySelector(".sico").append(svg(IC.search));
+  $("tb-taskview").append(svg(IC.taskview));
+  $("tb-widgets-ico").append(svg(IC.widgets));
+  $("btn-power").append(svg(IC.power));
+  $("me-ava").append(svg(IC.person));
+  $("tb-search").addEventListener("click", () => toggleStart($("start").hidden ? true : false, true));
+  $("tb-taskview").addEventListener("click", toggleTaskView);
+  $("tb-widgets").addEventListener("click", () => (S.widgets.length ? enterWidgetEdit() : openWidgetPicker()));
+  $("btn-power").addEventListener("click", (e) => { e.stopPropagation(); powerMenu(); });
+  $("me").addEventListener("click", () => openApp("in:settings"));
+  bindTips();
   $("search").addEventListener("input", renderStart);
   $("search").addEventListener("keydown", (e) => {
     if (e.key === "Enter") { const first = $("start-body").querySelector(".litem, .gitem"); if (first) first.click(); }
@@ -1030,6 +1265,7 @@
     if (!$("quick").hidden && !$("quick").contains(t) && !$("tray").contains(t)) { $("quick").hidden = true; $("tray").classList.remove("on"); }
     if (!$("calfly").hidden && !$("calfly").contains(t) && !$("tray-clock").contains(t)) { $("calfly").hidden = true; $("tray-clock").classList.remove("on"); }
     if (!$("snapfly").hidden && !$("snapfly").contains(t)) $("snapfly").hidden = true;
+    if (!$("taskview").hidden && !$("taskview").contains(t) && !$("tb-taskview").contains(t)) $("taskview").hidden = true;
     if (!$("wpick").hidden && !$("wpick").contains(t)) $("wpick").hidden = true;
   }, true);
   $("desk").addEventListener("contextmenu", (e) => {
@@ -1037,19 +1273,42 @@
     e.preventDefault();
     const c = $("ctx");
     c.textContent = "";
-    const item = (label, fn) => h("button", { role: "menuitem", onclick: () => { c.hidden = true; fn(); } }, label);
-    c.append(item("위젯 추가", openWidgetPicker));
-    if (S.widgets.length) c.append(item("위젯 옮기기·크기 바꾸기", () => enterWidgetEdit()));
-    c.append(item("내 사진으로 배경 바꾸기", pickWallpaper), item("기본 배경 넘겨 보기", () => { S.wallpaper = (S.wallpaper === "custom" ? 0 : ((S.wallpaper | 0) + 1) % 5); save(); applyLook(); }), item("데스크 설정", () => openApp("in:settings")), item("모든 창 내리기", showDesktop));
-    c.hidden = false;
-    const r = c.getBoundingClientRect();
-    c.style.left = Math.max(6, Math.min(e.clientX, innerWidth - r.width - 6)) + "px";
-    c.style.top = Math.max(6, Math.min(e.clientY, innerHeight - r.height - 6)) + "px";
+    const item = menuItem;
+    c.append(item("위젯 추가", IC.plus, openWidgetPicker));
+    if (S.widgets.length) c.append(item("위젯 옮기기·크기 바꾸기", IC.widgets, () => enterWidgetEdit()));
+    c.append(item("새로 고침", IC.refresh, () => { loadApps(); relayout("refresh"); }));
+    c.append(h("hr"));
+    c.append(item("디스플레이 설정", IC.desktop, () => call("openSettings", "display")),
+      item("개인 설정", IC.brush, () => openApp("in:settings")),
+      item("내 사진으로 배경 바꾸기", IC.photo, pickWallpaper),
+      item("다음 배경", IC.right, () => { S.wallpaper = (S.wallpaper === "custom" ? 0 : ((S.wallpaper | 0) + 1) % 5); save(); applyLook(); }));
+    c.append(h("hr"));
+    c.append(item("모든 창 내리기", IC.taskview, showDesktop));
+    placeMenu(e.clientX, e.clientY);
   });
+  let metaAlone = false;
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !$("wpick").hidden) { $("wpick").hidden = true; return; }
     if (e.key === "Escape" && wEdit && $("start").hidden && $("quick").hidden && $("calfly").hidden) return exitWidgetEdit();
-    if (e.key === "Meta" || (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden || !$("snapfly").hidden))) { e.preventDefault(); if (e.key === "Meta") toggleStart(); else closePanels(); }
+    if (e.key === "Meta") { metaAlone = true; return; }
+    if (e.metaKey) {
+      metaAlone = false;
+      const k = e.key.toLowerCase();
+      if (k === "d") { e.preventDefault(); closePanels(); showDesktop(); }
+      else if (k === "a") { e.preventDefault(); toggleQuick(); }
+      else if (k === "n") { e.preventDefault(); toggleCal(); }
+      else if (k === "s") { e.preventDefault(); toggleStart(true, true); }
+      else if (e.key === "Tab") { e.preventDefault(); toggleTaskView(); }
+      else if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp") {
+        const w = topWin();
+        if (w) { e.preventDefault(); snapTo(w, e.key === "ArrowLeft" ? "left" : e.key === "ArrowRight" ? "right" : "max"); }
+      }
+      return;
+    }
+    if (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden || !$("calfly").hidden || !$("snapfly").hidden || !$("taskview").hidden)) { e.preventDefault(); closePanels(); }
+  });
+  document.addEventListener("keyup", (e) => {
+    if (e.key === "Meta" && metaAlone) { metaAlone = false; e.preventDefault(); toggleStart(); }
   });
   addEventListener("resize", () => relayout("resize"));
   document.addEventListener("visibilitychange", () => { if (!document.hidden) relayout("shown"); });
@@ -1124,6 +1383,14 @@
       openBuiltin("in:notes");
       const tb = $("task-items").querySelectorAll(".titem.run").length;
       log((tb >= 2 && wins.length === 2 ? "PASS" : "FAIL") + " taskbar running=" + tb + " windows=" + wins.length);
+      // 윈도우 11식 판: 빠른 설정(타일 6 + 막대 2, 앱 쪽 상태 읽기), 작업 보기(열린 창 카드)
+      await toggleQuick();
+      const qt = $("quick").querySelectorAll(".qtile").length, qsl = $("quick").querySelectorAll("input[type=range]").length;
+      closePanels();
+      toggleTaskView();
+      const tv = $("taskview").querySelectorAll(".tv-card").length;
+      closePanels();
+      log((qt === 6 && qsl === 2 && qs.volMax > 0 && tv >= 2 ? "PASS" : "FAIL") + " quick tiles=" + qt + " sliders=" + qsl + " state=" + JSON.stringify(qs) + " taskview=" + tv);
       // 내 사진 배경: 사진 고르기 대신 점검용 그림을 같은 길로 저장 → 화면에 걸리는지
       await call("testWallpaper");
       onPush("wallpaper");

@@ -20,19 +20,20 @@
   <section id="start" hidden aria-label="시작 메뉴">
     <div class="start-search">
       <span class="sicon" id="search-icon"></span>
-      <input id="search" type="search" placeholder="앱, 도구 찾기" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <input id="search" type="search" placeholder="앱, 설정, 도구 검색" autocomplete="off" autocapitalize="off" spellcheck="false" />
     </div>
     <div class="start-body" id="start-body"></div>
     <div class="start-foot">
-      <div class="me"><span class="me-ava">덜</span><span>덜누름 데스크</span></div>
-      <button id="btn-widgets" class="foot-btn" title="위젯 추가" aria-label="위젯 추가"></button>
-      <button id="btn-desk-settings" class="foot-btn" title="데스크 설정" aria-label="데스크 설정"></button>
-      <button id="btn-sys-settings" class="foot-btn" title="기기 설정" aria-label="기기 설정"></button>
+      <button class="me" id="me" title="데스크 설정"><span class="me-ava" id="me-ava"></span><span id="me-name">사용자</span></button>
+      <button id="btn-power" class="foot-btn" title="전원" aria-label="전원"></button>
     </div>
   </section>
+  <!-- 예전 이름의 단추(점검·설정에서 씀) -->
+  <div hidden><button id="btn-widgets"></button><button id="btn-desk-settings"></button><button id="btn-sys-settings"></button></div>
 
   <section id="quick" hidden aria-label="빠른 설정"></section>
   <section id="calfly" hidden aria-label="달력"></section>
+  <section id="taskview" hidden aria-label="작업 보기"></section>
   <div id="snapfly" hidden aria-label="창 배치 고르기"></div>
   <section id="wpick" hidden aria-label="위젯 고르기">
     <div class="wpick-head"><b>위젯 추가</b><button id="wpick-close" aria-label="닫기">✕</button></div>
@@ -40,20 +41,24 @@
     <div class="start-body" id="wpick-body"></div>
   </section>
   <div id="ctx" hidden role="menu"></div>
+  <div id="tip" hidden></div>
   <div id="toast" hidden></div>
 
   <nav id="taskbar" aria-label="작업 표시줄">
-    <div id="tb-left"></div>
+    <div id="tb-left"><button id="tb-widgets" class="tbtn wide" title="위젯"><span id="tb-widgets-ico"></span><span class="tb-label">위젯</span></button></div>
     <div id="tb-center">
-      <button id="start-btn" aria-label="시작"><span>덜</span></button>
+      <button id="start-btn" class="tbtn" aria-label="시작" title="시작"><span>덜</span></button>
+      <button id="tb-search" class="tbtn" aria-label="검색" title="검색"><span class="sico"></span><span class="tb-label">검색</span></button>
+      <button id="tb-taskview" class="tbtn" aria-label="작업 보기" title="작업 보기"></button>
       <div id="task-items"></div>
     </div>
     <div id="tb-right">
-      <button id="tray" aria-label="연결·배터리·빠른 설정">
+      <button id="tray" class="tbtn" aria-label="연결·음량·배터리" title="빠른 설정">
         <span id="tray-net"></span>
+        <span id="tray-vol"></span>
         <span id="tray-batt"><i></i><b></b></span>
       </button>
-      <button id="tray-clock" aria-label="시계와 달력"><b id="clock-time">--:--</b><small id="clock-date"></small></button>
+      <button id="tray-clock" class="tbtn" aria-label="시계와 달력"><b id="clock-time">--:--</b><small id="clock-date"></small></button>
       <button id="peek" aria-label="바탕화면 보기" title="바탕화면 보기"></button>
     </div>
   </nav>

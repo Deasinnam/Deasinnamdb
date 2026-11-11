@@ -20,6 +20,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ImageDecoder;
 import android.graphics.Rect;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.media.AudioManager;
+import android.os.PowerManager;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -455,6 +459,26 @@ public class MainActivity extends ComponentActivity {
                         a.optDouble(5, 0), a.optDouble(6, 0));
             case "widgetProbe":
                 return widgetProbe();
+            case "quick":
+                return quickState();
+            case "setVolume": {
+                AudioManager am = getSystemService(AudioManager.class);
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, Math.max(0, Math.min(a.getInt(0), am.getStreamMaxVolume(AudioManager.STREAM_MUSIC))), 0);
+                return true;
+            }
+            case "setBrightness": {
+                if (!Settings.System.canWrite(this)) return new JSONObject().put("need", "write");
+                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, Math.max(1, Math.min(255, a.getInt(0))));
+                return true;
+            }
+            case "torch": {
+                String cam = torchCamera();
+                if (cam == null) return new JSONObject().put("error", "손전등이 없는 기기입니다");
+                getSystemService(CameraManager.class).setTorchMode(cam, a.getBoolean(0));
+                torchOn = a.getBoolean(0);
+                return true;
+            }
             case "testWallpaper": { // 자동 점검 전용: 사진 고르기 대신 만든 그림을 같은 길로 저장
                 if (!selftest) throw new IllegalStateException("점검 전용");
                 Bitmap b = Bitmap.createBitmap(900, 1600, Bitmap.Config.ARGB_8888);
@@ -1007,6 +1031,55 @@ public class MainActivity extends ComponentActivity {
         return true;
     }
 
+    // ---------- 빠른 설정 ----------
+    private volatile boolean torchOn;
+    private String torchId;
+    private boolean torchListening;
+
+    private String torchCamera() {
+        if (torchId != null) return torchId;
+        try {
+            CameraManager cm = getSystemService(CameraManager.class);
+            for (String id : cm.getCameraIdList()) {
+                Boolean flash = cm.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                if (Boolean.TRUE.equals(flash)) {
+                    torchId = id;
+                    if (!torchListening) {
+                        torchListening = true;
+                        cm.registerTorchCallback(new CameraManager.TorchCallback() {
+                            @Override
+                            public void onTorchModeChanged(@NonNull String cameraId, boolean enabled) {
+                                if (cameraId.equals(torchId)) torchOn = enabled;
+                            }
+                        }, main);
+                    }
+                    return id;
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "손전등 찾기 실패", e);
+        }
+        return null;
+    }
+
+    /** 빠른 설정에 보여 줄 상태: 음량·밝기·비행기 모드·절전·손전등 */
+    private JSONObject quickState() throws JSONException {
+        JSONObject r = new JSONObject();
+        AudioManager am = getSystemService(AudioManager.class);
+        r.put("vol", am.getStreamVolume(AudioManager.STREAM_MUSIC)).put("volMax", am.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+        try {
+            r.put("bright", Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS));
+        } catch (Settings.SettingNotFoundException e) {
+            r.put("bright", 128);
+        }
+        r.put("canWrite", Settings.System.canWrite(this));
+        r.put("airplane", Settings.Global.getInt(getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0) != 0);
+        PowerManager pm = getSystemService(PowerManager.class);
+        r.put("saver", pm != null && pm.isPowerSaveMode());
+        r.put("hasTorch", torchCamera() != null).put("torch", torchOn);
+        return r;
+    }
+
     private boolean openSettings(String kind) {
         String action;
         switch (kind) {
@@ -1016,6 +1089,15 @@ public class MainActivity extends ComponentActivity {
             case "sound": action = Settings.ACTION_SOUND_SETTINGS; break;
             case "battery": action = Intent.ACTION_POWER_USAGE_SUMMARY; break;
             case "home": action = Settings.ACTION_HOME_SETTINGS; break;
+            case "internet": action = Settings.Panel.ACTION_INTERNET_CONNECTIVITY; break;   // 화면 아래에 뜨는 인터넷 패널
+            case "volume": action = Settings.Panel.ACTION_VOLUME; break;
+            case "airplane": action = Settings.ACTION_AIRPLANE_MODE_SETTINGS; break;
+            case "saver": action = Settings.ACTION_BATTERY_SAVER_SETTINGS; break;
+            case "accessibility": action = Settings.ACTION_ACCESSIBILITY_SETTINGS; break;
+            case "notifications": action = Settings.ACTION_APP_NOTIFICATION_SETTINGS; break;
+            case "write": // 밝기를 바꾸려면 "시스템 설정 변경" 허용이 필요
+                startActivity(new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getPackageName())).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                return true;
             case "developer": action = Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS; break;
             default: action = Settings.ACTION_SETTINGS;
         }
