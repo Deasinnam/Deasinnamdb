@@ -362,6 +362,14 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-sub { margin-top: 72px; padding-top: 64px !important; border-top: 1px solid #2a2a2e; align-items: center; }
 .ap-sub .ap-media { position: static; align-self: center; }
 .ap-sub .amp-copy { align-self: center; }
+.ap .amp-copy.ap-wide { grid-column: 1 / -1; }
+.ap-trio { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; margin-top: 12px; }
+.ap-trio figure { margin: 0; display: grid; gap: 18px; align-content: start; }
+.ap-trio .ap-dev { width: 100%; border-radius: 20px; border-width: 6px; }
+.ap-trio small { font: 600 11px/1 var(--font-mono); letter-spacing: .1em; color: #93c5fd; }
+.ap-trio h3 { margin-top: 10px; font: 800 22px/1.25 var(--font-display); letter-spacing: -0.03em; color: #fff; }
+.ap-trio p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.65; color: #c4c4cb; word-break: keep-all; }
+@media (max-width: 900px) { .ap-trio { grid-template-columns: 1fr; gap: 40px; } .ap-trio .ap-dev { max-width: 420px; justify-self: center; } }
 .ap-sub .ap-widewrap { grid-column: 1 / -1; }
 .ap-dev.wide { width: 100%; max-width: 960px; aspect-ratio: 960 / 356; border-radius: 22px; border-width: 6px; }
 .ap-sub .ap-widewrap ~ .amp-copy { align-self: start; }
@@ -856,6 +864,27 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <div class="ap-media">
         <div class="ap-dev"><video src="media/spd-night.mp4" poster="media/spd-night-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 야간 비행 화면: 달과 별이 뜬 밤하늘, 이어서 FM 라디오 화면과 오디오 시각화 화면"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">SOUND · 이퀄라이저 · 스트리밍 · 라디오</div>
+        <h2>소리까지<br>조종석에서.</h2>
+        <p class="ap-desc">달리는 동안 듣는 소리도 계기판 안에서 고릅니다. 이퀄라이저로 취향을 맞추고, 스트리밍 음원에 시각화를 입히고, 끊기지 않는 디지털 라디오를 듣습니다.</p>
+      </div>
+      <div class="ap-trio">
+        <figure>
+          <div class="ap-dev"><video src="media/spd-eq.mp4" poster="media/spd-eq-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 이퀄라이저 화면: 10밴드 슬라이더를 움직이고 Rock, Dance, Bass Boost, Vocal, Classical 같은 프리셋을 차례로 고르는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+          <figcaption><small>01 · EQUALIZER</small><h3>내 취향의 소리로.</h3><p>10밴드 이퀄라이저와 Rock · Pop · Dance · Bass Boost · Vocal · Classical 같은 프리셋으로, 라디오와 음악을 나만의 감성에 맞춥니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev"><video src="media/spd-stream.mp4" poster="media/spd-stream-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터가 유튜브 뮤직, 스포티파이와 연결되어 재생 중인 곡 이름과 가수를 띄우고 파형과 막대 시각화를 보여 주는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+          <figcaption><small>02 · STREAMING</small><h3>MP3가 없어도 풍성하게.</h3><p>유튜브 뮤직 · 스포티파이와 연동해 재생 중인 곡 정보를 띄우고 실시간 시각화 효과를 입힙니다. MP3 파일이 없어도 스트리밍 음원으로 충분합니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev"><video src="media/spd-radio.mp4" poster="media/spd-radio-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 디지털 라디오 화면: 다이얼을 돌려 FM 주파수를 옮기면 방송국 이름이 바뀌며 이어지는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+          <figcaption><small>03 · DIGITAL RADIO</small><h3>주파수 끊김 걱정 끝.</h3><p>다이얼은 FM 그대로, 소리는 디지털로 받습니다. 달리는 중에도 주파수가 끊길 걱정 없이 방송을 듣습니다.</p></figcaption>
+        </figure>
       </div>
     </div>
     <div class="amp-wrap ap-sub">
