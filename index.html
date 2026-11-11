@@ -109,6 +109,71 @@ nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; t
 .fix.show { display: inline-flex; }
 .counter { font: 500 13px/1.4 var(--font-mono); color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
 
+/* ---------- 하단 첫 화면 시안 (쇼릴과 겹치지 않게: 슬로건·큰 키를 빼고 한 줄 소개로) ---------- */
+.hero-eyebrow, .statement, .hero-stats { display: none; }
+.hero[class*="v"] { padding-top: 56px; align-items: start; }
+.hero[class*="v"] h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.hero[class*="v"] .hero-eyebrow { display: block; font: 500 12px/1 var(--font-mono); letter-spacing: .16em; color: var(--ink-3); }
+.hero[class*="v"] .statement { display: block; margin: 18px 0 0; max-width: none; color: var(--ink); font: 700 clamp(30px, 4.2vw, 54px)/1.18 var(--font-display); letter-spacing: -0.045em; }
+.hero[class*="v"] .hero-copy > p:not(.statement) { font-size: 16px; margin-top: 18px; }
+.hero-stats { margin: 0; }
+.hero-stats dt { font: 500 clamp(30px, 3.4vw, 44px)/1 var(--font-mono); letter-spacing: -0.04em; }
+.hero-stats dd { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+/* 시안 1: 왼쪽 한 줄 소개, 오른쪽 숫자 세 줄 */
+.hero.v1 { grid-template-columns: 1.5fr 1fr; gap: 72px; }
+.hero.v1 .hero-stats { display: grid; align-self: end; }
+.hero.v1 .hero-stats div { display: grid; grid-template-columns: 4.6em 1fr; align-items: baseline; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); }
+.hero.v1 .hero-stats div:first-child { border-top: 1.5px solid var(--ink); }
+.hero.v1 .hero-stats dd { margin: 0; font-size: 14px; }
+/* 시안 2: 큰 한 줄 + 버튼, 아래에 숫자 띠 */
+.hero.v2 { grid-template-columns: 1fr; gap: 44px; }
+.hero.v2 .hero-copy > p:not(.statement) { display: none; }
+.hero.v2 .hero-copy { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px 32px; }
+.hero.v2 .hero-eyebrow { grid-column: 1 / -1; }
+.hero.v2 .statement { margin-top: 6px; font-size: clamp(32px, 5vw, 64px); }
+.hero.v2 .actions { margin: 0 0 8px; }
+.hero.v2 .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1.5px solid var(--ink); }
+.hero.v2 .hero-stats div { padding: 20px 24px 0 0; }
+.hero.v2 .hero-stats div + div { padding-left: 24px; border-left: 1px solid var(--line); }
+/* 시안 3: 가운데 정렬, 작은 덜 키를 장난감처럼 남김 */
+.hero.v3 { grid-template-columns: 1fr; gap: 30px; justify-items: center; text-align: center; }
+.hero.v3 .hero-copy > p:not(.statement) { margin-left: auto; margin-right: auto; }
+.hero.v3 .actions { justify-content: center; }
+.hero.v3 .hero-stats { display: grid; grid-template-columns: repeat(3, auto); gap: 0 56px; text-align: center; }
+@media (max-width: 860px) {
+  .hero.v1 { grid-template-columns: 1fr; gap: 36px; }
+  .hero.v2 .hero-copy { grid-template-columns: 1fr; }
+  .hero.v2 .hero-stats { grid-template-columns: 1fr; }
+  .hero.v2 .hero-stats div, .hero.v2 .hero-stats div + div { padding: 14px 0; border-left: 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 4.6em 1fr; align-items: baseline; }
+  .hero.v2 .hero-stats div:first-child { border-top: 0; }
+}
+/* ---------- 홈: 쇼릴만 흰색, 그 아래는 검정 ---------- */
+.theme-dark { --paper: #0b0b0c; --ink: #f4f4f5; --ink-2: #b4b4bb; --ink-3: #7c7c85; --line: #2a2a2e; --wash: #18181b; background: var(--paper); color: var(--ink); }
+.theme-dark .key.dark { box-shadow: 0 var(--travel) 0 #6b6b72; }
+.theme-dark .key.dark:hover { box-shadow: 0 calc(var(--travel) - 1px) 0 #6b6b72; }
+.theme-dark .key.dark:active { box-shadow: 0 1px 0 #6b6b72; }
+.dark section.block { border-top-color: var(--line); }
+.theme-dark .speed-home { border-top: 1px solid var(--line); }
+.speed-home .amp-wrap { max-width: 1120px; padding: 0 24px; }
+@media (max-width: 480px) { .speed-home .amp-wrap { padding: 0 16px; } }
+.reel { padding-bottom: 12px; }
+body[data-view="home"] footer { background: #0b0b0c; border-top-color: #2a2a2e; color: #7c7c85; }
+body[data-view="home"] footer b { color: #f4f4f5; }
+/* ---------- 소개 페이지 ---------- */
+.about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: end; }
+.about-head p { max-width: 34em; }
+.about-head .about-slogan { margin-top: 22px; font: 700 clamp(26px, 3.6vw, 44px)/1.15 var(--font-display); letter-spacing: -0.04em; color: var(--ink); }
+.about-slogan span { color: var(--ink-3); font-weight: 500; }
+.about-facts { margin: 0; border-top: 1.5px solid var(--ink); }
+.about-facts div { display: grid; grid-template-columns: 9em 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.about-facts dt { font: 500 12px/1.9 var(--font-mono); color: var(--ink-3); letter-spacing: .06em; }
+.about-facts dd { margin: 0; }
+@media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; } .about-facts div { grid-template-columns: 6em 1fr; } .hero.v3 .hero-stats { grid-template-columns: 1fr; gap: 18px; } }
+/* 시안 고르기 (미리보기에서만) */
+.pick { border: 1px solid #3f3f46; position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; display: flex; gap: 4px; padding: 6px; background: #111; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+.pick button { font: 600 13px/1 var(--font-body); color: #d4d4d8; background: none; border: 0; border-radius: 999px; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
+.pick button[aria-pressed="true"] { background: #fff; color: #111; }
+
 /* ---------- 구역 ---------- */
 section.block { padding: 64px 0; border-top: 1px solid var(--line); }
 .block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
@@ -172,7 +237,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 /* ---------- 홈/앱센터 화면 나누기 ---------- */
 [hidden] { display: none !important; }
 .center-head { padding: 28px 0 40px; border-bottom: 1px solid var(--line); }
-.fly-frame { aspect-ratio: 1440 / 1152; max-width: 1000px; margin: 0 auto 44px; background: #f6f7f8; }
+.fly-frame { aspect-ratio: 16 / 9; margin: 0 auto 44px; background: #0b0b0c; }
 .fly-again { right: auto !important; left: 18px; }
 @media (max-width: 480px) { .fly-again { left: 10px; } }
 .center-head .eyebrow-ink { font: 600 12px/1 var(--font-mono); letter-spacing: .14em; color: var(--ink-3); }
@@ -216,6 +281,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ul-again:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .speed-home { overflow: hidden; }
 @media (max-width: 900px) { .ul { grid-column: 1 / -1; } .ul-rig { width: min(86%, 400px); } }
+
+/* ---------- 이륙 장면: 노을 바다 위 3D 비행 (three.js, 화면에 들어올 때만 불러옴) ---------- */
+.takeoff { position: relative; height: min(82vh, 760px); min-height: 440px; overflow: hidden; background: linear-gradient(180deg, #2a2260 0%, #7a4a9e 38%, #e9706f 62%, #ffb060 72%, #3a2a5e 73%, #151226 100%); }
+.takeoff canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.takeoff-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(180deg, transparent, rgba(11,11,12,.55) 60%, #0b0b0c); pointer-events: none; }
+.takeoff-copy { position: absolute; left: 0; right: 0; bottom: 56px; color: #fff; }
+.takeoff-eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .16em; color: #ffd9a8; }
+.takeoff-copy h2 { margin: 14px 0 24px; font-size: clamp(34px, 6vw, 76px); line-height: 1.08; letter-spacing: -0.045em; text-shadow: 0 2px 30px rgba(20,10,40,.55); }
+.amp-soon.as-link { text-decoration: none; } .amp-soon.as-link::before { display: none; }
+@media (max-width: 480px) { .takeoff-copy { bottom: 36px; } }
 
 /* ---------- 앱 화면 쇼케이스: 가운데 크게, 양옆은 기울여 뒤로. 저절로 돌고, 누르면 그 앱 소개로 ---------- */
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
@@ -347,8 +422,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     <nav aria-label="주요 메뉴">
       <a href="#top" data-view="home">홈</a>
       <a href="#app-center" data-view="apps">앱센터</a>
-      <a href="#rules" class="hide-sm" data-view="home">원칙</a>
-      <a href="#install" data-view="home">설치 안내</a>
+      <a href="#about" data-view="about">소개</a>
+      <a href="#install" class="hide-sm" data-view="home">설치 안내</a>
     </nav>
   </div>
 </header>
@@ -363,8 +438,10 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       </div>
     </div>
   </section>
-  <div class="wrap hero">
-    <div>
+  <div class="wrap hero v1" id="hero">
+    <div class="hero-copy">
+      <div class="hero-eyebrow">DEOLNUREUM SOFTWARE</div>
+      <p class="statement">누를 일을 줄이는 앱을<br>개발합니다.</p>
       <h1>덜 누르고,<br><span class="soft">더 편하게.</span></h1>
       <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 파일은 한 번 눌러 맞는 편집기로 열리고, 차에 타면 음악이 알아서 이어집니다. 만든 앱은 앱센터에서 바로 내려받을 수 있습니다.</p>
       <div class="actions">
@@ -372,24 +449,23 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <a class="key" href="#install">설치 방법</a>
       </div>
     </div>
-    <div class="press-demo">
-      <div class="keywell" id="keywell">
-        <div class="stem" aria-hidden="true"></div>
-        <button class="bigkey" id="bigkey" type="button" aria-label="눌러 보기"><span>덜</span>
-          <svg class="cracks" viewBox="0 0 220 220" aria-hidden="true" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 62 L52 78 L46 104 L78 122 L72 150"/>
-            <path d="M52 78 L74 70"/>
-            <path d="M202 140 L170 132 L160 156 L134 162"/>
-            <path d="M160 156 L166 184 L150 204"/>
-            <path d="M120 4 L114 30 L128 46"/>
-          </svg>
-        </button>
-      </div>
-      <div class="counter" id="counter" aria-live="polite">눌러 보세요(소리 켜기). 한 번이면 충분합니다.</div>
-      <button class="key fix" id="fix" type="button">키 새로 끼우기</button>
-    </div>
+    <dl class="hero-stats">
+      <div><dt>4</dt><dd>앱센터에 준비된 앱</dd></div>
+      <div><dt>₩0</dt><dd>모든 앱 무료</dd></div>
+      <div><dt>0×</dt><dd>스피드미터는 출발하면 알아서</dd></div>
+    </dl>
   </div>
 
+  <div class="theme-dark">
+  <section class="takeoff" id="takeoff" aria-label="노을 진 바다 위를 나는 프로펠러 비행기 두 대의 3D 장면">
+    <canvas id="skyfx" aria-hidden="true"></canvas>
+    <div class="takeoff-fade"></div>
+    <div class="wrap takeoff-copy">
+      <div class="takeoff-eyebrow">대신남 스피드미터</div>
+      <h2>이제 차 안에서<br>이륙해보세요.</h2>
+      <a class="amp-btn" href="#speed">바로가기 →</a>
+    </div>
+  </section>
   <section class="amp-stage speed-home" id="speed" aria-labelledby="speed-title">
     <div class="amp-wrap">
       <div class="amp-copy">
@@ -405,8 +481,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>05</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
         </ul>
         <div class="amp-cta">
-          <span class="amp-soon">준비 중</span>
-          <a class="amp-btn" href="#app-center">앱센터에서 모든 앱 보기 →</a>
+          <a class="amp-btn" href="#app-speed">바로가기 →</a>
+          <a class="amp-soon as-link" href="#app-center">앱센터에서 모든 앱 보기</a>
         </div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
@@ -427,32 +503,6 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <div class="ul-gloss" id="ulGloss"></div>
         </div>
         <button class="ul-again" id="ulAgain" type="button">↻ 다시 보기</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="rules">
-    <div class="wrap">
-      <div class="block-head">
-        <h2>덜누름의 원칙</h2>
-        <p>앱을 만들 때마다 세 가지를 확인합니다.</p>
-      </div>
-      <div class="rules">
-        <div class="rule">
-          <span class="k">01</span>
-          <h3>누를 일을 줄입니다</h3>
-          <p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
-        </div>
-        <div class="rule">
-          <span class="k">02</span>
-          <h3>필요한 것만 묻습니다</h3>
-          <p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다. 처음 켰을 때 긴 설정 화면을 띄우지 않습니다.</p>
-        </div>
-        <div class="rule">
-          <span class="k">03</span>
-          <h3>무엇을 하는지 말합니다</h3>
-          <p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p>
-        </div>
       </div>
     </div>
   </section>
@@ -484,12 +534,13 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     </div>
   </section>
   </div>
+  </div>
 
   <div class="view" id="view-apps" hidden>
   <section class="center-head" id="app-center">
     <div class="wrap">
       <div class="reel-frame fly-frame">
-        <video id="flyReel" src="media/appcenter-fly.mp4" poster="media/appcenter-fly-poster.jpg" muted playsinline preload="metadata" aria-label="덜누름 앱센터 페이지 위를 3D로 날아가며 둘러보고, Less pressing, more living 문구로 끝나는 14.5초 영상"></video>
+        <video id="flyReel" src="media/appcenter-reel.mp4" poster="media/appcenter-reel-poster.jpg" muted playsinline preload="metadata" aria-label="덜누름 앱센터 20초 소개 영상: Daesinnam Amp와 대신남 스피드미터의 실제 화면, 앱 네 개, 덜 누르고 더 편하게 문구로 끝납니다"></video>
         <button class="key reel-sound" id="flySound" type="button" aria-pressed="false">소리 켜기</button>
         <button class="key reel-sound fly-again" id="flyAgain" type="button" hidden>↻ 다시 보기</button>
       </div>
@@ -634,6 +685,72 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   </section>
 
   </div>
+  <div class="view" id="view-about" hidden>
+  <section class="center-head about-head" id="about">
+    <div class="wrap about-grid">
+      <div>
+        <div class="eyebrow-ink">ABOUT</div>
+        <h1>덜누름</h1>
+        <p class="about-slogan">덜 누르고, <span>더 편하게.</span></p>
+        <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 버튼을 하나 더 넣기 전에, 빼도 되는지부터 묻습니다. 같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
+        <div class="actions" style="margin-top:28px;display:flex;gap:14px;flex-wrap:wrap"><a class="key dark" href="#app-center">앱센터</a><a class="key" href="#install">설치 방법</a></div>
+      </div>
+    <div class="press-demo">
+      <div class="keywell" id="keywell">
+        <div class="stem" aria-hidden="true"></div>
+        <button class="bigkey" id="bigkey" type="button" aria-label="눌러 보기"><span>덜</span>
+          <svg class="cracks" viewBox="0 0 220 220" aria-hidden="true" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 62 L52 78 L46 104 L78 122 L72 150"/>
+            <path d="M52 78 L74 70"/>
+            <path d="M202 140 L170 132 L160 156 L134 162"/>
+            <path d="M160 156 L166 184 L150 204"/>
+            <path d="M120 4 L114 30 L128 46"/>
+          </svg>
+        </button>
+      </div>
+      <div class="counter" id="counter" aria-live="polite">눌러 보세요(소리 켜기). 한 번이면 충분합니다.</div>
+      <button class="key fix" id="fix" type="button">키 새로 끼우기</button>
+    </div>
+    </div>
+  </section>
+  <section class="block" id="rules" style="border-top:0">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>덜누름의 원칙</h2>
+        <p>앱을 만들 때마다 세 가지를 확인합니다.</p>
+      </div>
+      <div class="rules">
+        <div class="rule">
+          <span class="k">01</span>
+          <h3>누를 일을 줄입니다</h3>
+          <p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">02</span>
+          <h3>필요한 것만 묻습니다</h3>
+          <p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다. 처음 켰을 때 긴 설정 화면을 띄우지 않습니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">03</span>
+          <h3>무엇을 하는지 말합니다</h3>
+          <p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><h2>한눈에</h2></div>
+      <dl class="about-facts">
+        <div><dt>이름</dt><dd>덜누름 Software (deolnureum)</dd></div>
+        <div><dt>슬로건</dt><dd>덜 누르고, 더 편하게</dd></div>
+        <div><dt>만드는 앱</dt><dd>Daesinnam Amp · 대신남 스피드미터 · 덜누름 워크 · 덜누름 데스크탑앱 — <a href="#app-center">앱센터에서 보기</a></dd></div>
+        <div><dt>사이트</dt><dd>deolnureum.com</dd></div>
+      </dl>
+    </div>
+  </section>
+  </div>
 </main>
 
 <footer>
@@ -674,13 +791,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   function route() {
     var hsh = location.hash || "";
     var isApps = hsh === "#app-center" || hsh.indexOf("#app-") === 0;
-    var view = isApps ? "apps" : "home";
-    home.hidden = isApps; center.hidden = !isApps;
+    var isAbout = hsh === "#about" || hsh === "#rules";
+    var view = isApps ? "apps" : isAbout ? "about" : "home";
+    var about = document.getElementById("view-about");
+    home.hidden = view !== "home"; center.hidden = view !== "apps"; about.hidden = view !== "about";
+    document.body.setAttribute("data-view", view);
     for (var i = 0; i < links.length; i++) {
-      var on = links[i].getAttribute("data-view") === view && (view === "apps" || links[i].getAttribute("href") === "#top");
+      var on = links[i].getAttribute("data-view") === view && (view !== "home" || links[i].getAttribute("href") === "#top");
       links[i].classList.toggle("is-on", on);
     }
-    var target = hsh && hsh !== "#top" && hsh !== "#app-center" ? document.getElementById(hsh.slice(1)) : null;
+    var target = hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" ? document.getElementById(hsh.slice(1)) : null;
     if (target) target.scrollIntoView();
     else window.scrollTo(0, 0);
     if (view !== current) {
@@ -1070,6 +1190,177 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       if (visible) { if (t0 < 0) start(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
     }, { threshold: 0.35 }).observe(box);
   } else { visible = true; start(); }
+})();
+</script>
+<script>
+// ---------- 이륙 장면 (three.js): 노을 바다 위 추격 비행. 영화 카메라처럼 샷 단위로 움직임 ----------
+(function () {
+  "use strict";
+  var host = document.getElementById("takeoff"), canvas = document.getElementById("skyfx");
+  if (!host || !canvas || !("IntersectionObserver" in window)) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var started = false, visible = false, running = false, tick = null;
+  function load(src, cb) { var s = document.createElement("script"); s.src = src; s.onload = cb; document.head.appendChild(s); }
+  new IntersectionObserver(function (en) {
+    visible = en[0].isIntersecting;
+    if (visible && !started) { started = true;
+      load("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js", function () {
+        load("https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js", build); }); }
+    else if (visible && tick && !running) { running = true; requestAnimationFrame(tick); }
+  }, { rootMargin: "300px" }).observe(host);
+
+  function build() {
+    var T = window.THREE, renderer;
+    try { renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true }); } catch (e) { return; } // WebGL이 없으면 CSS 노을 배경만
+    renderer.setPixelRatio(Math.min(1.75, window.devicePixelRatio || 1));
+    renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    var scene = new T.Scene(), cam = new T.PerspectiveCamera(42, 2, 1, 5200);
+    scene.fog = new T.FogExp2(new T.Color(0xd98a78).convertSRGBToLinear(), 0.0014);
+    if (T.RoomEnvironment) { var pm = new T.PMREMGenerator(renderer); scene.environment = pm.fromScene(new T.RoomEnvironment(), 0.04).texture; }
+    var SUN = new T.Vector3(-0.32, 0.105, -0.94).normalize(), SUNXZ = new T.Vector3(SUN.x, 0, SUN.z).normalize();
+    var SKY = [
+      "vec3 skyCol(vec3 d){ float h = max(d.y, 0.0);",
+      "  vec3 c = mix(vec3(1.0,0.66,0.30), vec3(0.95,0.43,0.47), smoothstep(0.0,0.16,h));",
+      "  c = mix(c, vec3(0.46,0.29,0.64), smoothstep(0.10,0.42,h));",
+      "  c = mix(c, vec3(0.15,0.13,0.38), smoothstep(0.38,0.95,h));",
+      "  float s = max(dot(d, SUN), 0.0);",
+      "  c += vec3(1.0,0.62,0.28) * pow(s, 10.0) * 0.55; return c; }"].join("\n");
+    var U = { SUN: { value: SUN }, uT: { value: 0 } };
+    var sky = new T.Mesh(new T.SphereGeometry(4000, 32, 20), new T.ShaderMaterial({ side: T.BackSide, depthWrite: false, fog: false, uniforms: U,
+      vertexShader: "varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+      fragmentShader: "uniform vec3 SUN; varying vec3 vD;\n" + SKY + "\nvoid main(){ vec3 d = normalize(vD); vec3 c = skyCol(d); float s = dot(d, SUN); c = mix(c, vec3(1.0,0.93,0.74), smoothstep(0.9990,0.9994,s)); gl_FragColor = vec4(c,1.0); }" }));
+    scene.add(sky);
+    // 바다: 하늘을 비추고, 해 쪽으로 반짝이는 빛길 (붓으로 칠한 듯 굵은 결 + 잔물결)
+    var sea = new T.Mesh(new T.PlaneGeometry(9000, 9000), new T.ShaderMaterial({ uniforms: U,
+      vertexShader: "varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+      fragmentShader: "uniform vec3 SUN; uniform float uT; varying vec3 vW;\n" + SKY + [
+        "void main(){ vec3 V = normalize(cameraPosition - vW); float dist = length(cameraPosition - vW);",
+        "  vec2 p = vW.xz; float t = uT; float k = 1.0 / (1.0 + dist * 0.004);",
+        "  p += 7.0 * vec2(sin(p.y*0.037 + t*0.21) + sin(p.y*0.011 - t*0.1), cos(p.x*0.029 - t*0.17) + cos(p.x*0.013));",
+        "  float dx = 0.0, dz = 0.0, w;",
+        "  w = cos(dot(p, vec2(0.80,0.60))*0.085 + t*0.8)*0.070; dx += w*0.80; dz += w*0.60;",
+        "  w = cos(dot(p, vec2(-0.50,0.86))*0.21 - t*1.1)*0.060; dx -= w*0.50; dz += w*0.86;",
+        "  w = cos(dot(p, vec2(0.31,-0.95))*0.57 + t*1.6)*0.075*k; dx += w*0.31; dz -= w*0.95;",
+        "  w = cos(dot(p, vec2(-0.92,-0.38))*1.31 - t*2.1)*0.085*k; dx -= w*0.92; dz -= w*0.38;",
+        "  w = cos(dot(p, vec2(0.62,0.78))*2.77 + t*2.9)*0.090*k*k; dx += w*0.62; dz += w*0.78;",
+        "  vec3 N = normalize(vec3(dx, 1.0, dz)); vec3 R = reflect(-V, N); R.y = abs(R.y);",
+        "  float fr = pow(1.0 - max(dot(N, V), 0.0), 3.0);",
+        "  vec3 c = mix(vec3(0.07,0.06,0.20), skyCol(R), 0.30 + 0.70*fr);",
+        "  float s = max(dot(R, SUN), 0.0); c += vec3(1.0,0.72,0.40) * (pow(s, 260.0)*2.6 + pow(s, 28.0)*0.42);",
+        "  c = mix(c, skyCol(vec3(-V.x, 0.0, -V.z)), smoothstep(600.0, 3800.0, dist)); gl_FragColor = vec4(c,1.0); }"].join("\n") }));
+    sea.rotation.x = -Math.PI / 2; scene.add(sea);
+    // 보라색 뭉게구름 (난수는 씨앗 고정 → 언제 열어도 같은 하늘)
+    var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    var cloudMat = new T.ShaderMaterial({ uniforms: U,
+      vertexShader: "varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+      fragmentShader: "uniform vec3 SUN; varying vec3 vN; varying vec3 vW;\n" + SKY + "\nvoid main(){ vec3 n = normalize(vN); float l = dot(n, normalize(SUN + vec3(0.0,0.35,0.0)))*0.5+0.5; vec3 c = mix(vec3(0.31,0.21,0.53), vec3(0.58,0.37,0.69), smoothstep(0.28,0.46,l)); c = mix(c, vec3(1.0,0.71,0.60), smoothstep(0.60,0.80,l)); c += vec3(0.10,0.05,0.12) * smoothstep(0.2,-0.8,n.y); vec3 d = normalize(vW - cameraPosition); c = mix(c, skyCol(vec3(d.x, 0.02, d.z)), smoothstep(400.0, 2600.0, length(vW - cameraPosition))*0.75); gl_FragColor = vec4(c,1.0); }" });
+    var ball = new T.IcosahedronGeometry(1, 3), clouds = [];
+    for (var i = 0; i < 16; i++) {
+      var g = new T.Group(), n = 9 + Math.floor(rnd() * 8), sc = 14 + rnd() * 26;
+      for (var j = 0; j < n; j++) { var m = new T.Mesh(ball, cloudMat), r = (0.6 + rnd() * 0.9) * sc;
+        m.scale.set(r, r * 0.78, r); m.position.set((rnd() - 0.5) * sc * 4.2, rnd() * sc * 0.9, (rnd() - 0.5) * sc * 1.6); g.add(m); }
+      var a = rnd() * Math.PI * 2, d = 230 + rnd() * 850;
+      g.position.set(Math.cos(a) * d, 40 + rnd() * 110 + d * 0.05, Math.sin(a) * d - 30); g.rotation.y = rnd() * 6.28; scene.add(g); clouds.push(g);
+    }
+    // 빛: 주광(노을, 그림자) · 보조광(하늘의 보라) · 윤곽광(뒤에서 분홍)
+    var key = new T.DirectionalLight(new T.Color(0xffb070).convertSRGBToLinear(), 2.6); key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0006; key.shadow.normalBias = 0.03; key.shadow.radius = 4;
+    var sc0 = key.shadow.camera; sc0.left = -16; sc0.right = 16; sc0.top = 16; sc0.bottom = -16; sc0.near = 10; sc0.far = 140;
+    scene.add(key); scene.add(key.target);
+    scene.add(new T.HemisphereLight(new T.Color(0x9a80e6).convertSRGBToLinear(), new T.Color(0x3a2c66).convertSRGBToLinear(), 1.1));
+    var rim = new T.DirectionalLight(new T.Color(0xff9ecb).convertSRGBToLinear(), 1.3); rim.position.set(0.5, 0.55, 0.7); scene.add(rim);
+    // 비행기 (기수 +Z). 도장은 클리어코트, 금속·유리·고무는 거칠기를 달리함
+    function lin(c) { return new T.Color(c).convertSRGBToLinear(); }
+    function paint(c) { return new T.MeshPhysicalMaterial({ color: lin(c), roughness: 0.42, metalness: 0.05, clearcoat: 0.7, clearcoatRoughness: 0.28, envMapIntensity: 0.35 }); }
+    var WHITE = 0xf1e9dc, GREEN = 0x1f8a4c, RED = 0xd22f27;
+    var metal = new T.MeshPhysicalMaterial({ color: lin(0xcfc8be), metalness: 0.9, roughness: 0.3, envMapIntensity: 0.7 });
+    var glass = new T.MeshPhysicalMaterial({ color: lin(0x7fc4e0), roughness: 0.06, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.78, envMapIntensity: 1.4 });
+    var rubber = new T.MeshPhysicalMaterial({ color: 0x1c1a20, roughness: 0.85, metalness: 0 });
+    var blur = new T.MeshBasicMaterial({ color: 0xffe9cc, transparent: true, opacity: 0.13, side: T.DoubleSide, depthWrite: false });
+    function plane(body, band1, band2, noseC) {
+      var out = new T.Group(), g = new T.Group(); out.add(g);
+      var mBody = paint(body), m1 = paint(band1), m2 = paint(band2), mNose = paint(noseC);
+      function add(geo, mat, x, y, z) { var m = new T.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); m.castShadow = true; m.receiveShadow = true; g.add(m); return m; }
+      var prof = [[0.04, -2.75], [0.16, -2.3], [0.34, -1.3], [0.5, -0.2], [0.58, 0.9], [0.6, 2.0], [0.57, 2.5]].map(function (q) { return new T.Vector2(q[0], q[1]); });
+      add(new T.LatheGeometry(prof, 20), mBody).rotation.x = Math.PI / 2;
+      [[m1, -0.5], [m2, -0.92]].forEach(function (b) { var r = add(new T.CylinderGeometry(0.515, 0.47, 0.36, 20), b[0], 0, 0, b[1]); r.rotation.x = Math.PI / 2; });
+      add(new T.CylinderGeometry(0.61, 0.585, 0.75, 20), mNose, 0, 0, 2.82).rotation.x = Math.PI / 2;
+      add(new T.ConeGeometry(0.3, 0.62, 16), metal, 0, 0, 3.5).rotation.x = Math.PI / 2;
+      var prop = new T.Group(); prop.position.z = 3.28; g.add(prop);
+      prop.add(new T.Mesh(new T.CircleGeometry(1.5, 28), blur));
+      var bl = new T.Mesh(new T.BoxGeometry(3.0, 0.17, 0.05), rubber); prop.add(bl);
+      [-1, 1].forEach(function (s) { // 위로 살짝 꺾인 날개 + 끝의 두 색 띠
+        var w = new T.Group(); w.position.set(0, -0.2, 0.55); w.rotation.z = s * 0.075; g.add(w);
+        function wb(len, mat, x, th, dp) { var m = new T.Mesh(new T.BoxGeometry(len, th, dp), mat); m.position.x = s * x; m.castShadow = true; m.receiveShadow = true; w.add(m); }
+        wb(3.4, mBody, 1.7, 0.15, 1.6); wb(0.62, m1, 3.7, 0.155, 1.52); wb(0.62, m2, 4.3, 0.15, 1.42);
+        var leg = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 0.75, 8), metal); leg.position.set(s * 1.1, -0.42, 0.2); w.add(leg);
+        var wheel = new T.Mesh(new T.CylinderGeometry(0.27, 0.27, 0.16, 16), rubber); wheel.rotation.z = Math.PI / 2; wheel.position.set(s * 1.1, -0.82, 0.2); wheel.castShadow = true; w.add(wheel);
+      });
+      add(new T.BoxGeometry(3.3, 0.1, 0.9), mBody, 0, 0.06, -2.3);
+      var fin = new T.Shape(); fin.moveTo(0.55, 0); fin.lineTo(-0.5, 0); fin.quadraticCurveTo(-0.62, 1.15, -0.25, 1.25); fin.quadraticCurveTo(0.1, 1.25, 0.55, 0);
+      add(new T.ExtrudeGeometry(fin, { depth: 0.1, bevelEnabled: false }), mBody, 0.05, 0.08, -2.3).rotation.y = -Math.PI / 2;
+      add(new T.BoxGeometry(0.125, 0.95, 0.22), m1, 0, 0.6, -2.32); add(new T.BoxGeometry(0.125, 0.8, 0.22), m2, 0, 0.55, -2.58);
+      var can = add(new T.SphereGeometry(1, 20, 14), glass, 0, 0.5, 0.35); can.scale.set(0.4, 0.4, 0.9);
+      out.userData = { inner: g, prop: prop, roll: 0, rollV: 0 }; scene.add(out); return out;
+    }
+    var p1 = plane(WHITE, GREEN, RED, RED), p2 = plane(GREEN, WHITE, RED, WHITE);
+    // ---- 비행 경로와 샷 ----
+    var LOOP = 30, SHOT = 6;
+    function sm(x) { x = Math.max(0, Math.min(1, x)); return x * x * x * (x * (x * 6 - 15) + 10); }
+    function low(t) { var u = ((t % LOOP) + LOOP) % LOOP; return sm((u - 4.5) / 2.5) * (1 - sm((u - 11.5) / 2.5)); } // 2번 샷 동안 수면 가까이 내려옴
+    function path(t, o) {
+      var hi = 36 + Math.sin(t * 0.63) * 11 + Math.cos(t * 1.1) * 3, lo = 7.5 + Math.sin(t * 0.9) * 1.2, k = low(t);
+      return o.set(Math.sin(t * 0.42) * 95 + Math.sin(t * 0.9) * 14, hi + (lo - hi) * k, Math.sin(t * 0.84) * 55 - 30);
+    }
+    var A = new T.Vector3(), B = new T.Vector3(), C = new T.Vector3(), look = new T.Vector3(), F0 = new T.Vector3(), R0 = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
+    var chase = new T.Vector3(), chaseV = new T.Vector3(), tgt = new T.Vector3(), tmp = new T.Vector3(), inited = false;
+    function orient(p, t, dt) {
+      path(t, A); path(t + 0.05, B); path(t + 0.10, C);
+      var turn = (B.x - A.x) * (C.z - B.z) - (B.z - A.z) * (C.x - B.x), want = Math.max(-1.1, Math.min(1.1, turn * 2.6)), d = p.userData;
+      if (dt > 0) { var K = 34, c = 2 * Math.sqrt(K); d.rollV += (K * (want - d.roll) - c * d.rollV) * dt; d.roll += d.rollV * dt; } else d.roll = want; // 기울기는 스프링으로
+      d.inner.rotation.z = d.roll; d.prop.rotation.z = t * 38;
+    }
+    function resize() { var w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+    window.addEventListener("resize", resize); resize();
+    var t0 = performance.now(), last = 0;
+    function frame(now) {
+      var t = reduce ? 9 : (now - t0) / 1000 + 5.2, dt = last && !reduce ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
+      U.uT.value = t;
+      // 앞 비행기
+      orient(p1, t, dt); p1.position.copy(A); p1.lookAt(B);
+      // 뒤 비행기: 앞 비행기가 지나간 자리를 스프링으로 따라붙음 (급선회에는 살짝 늦게 반응)
+      path(t - 0.55, tgt); tgt.y -= 1.5;
+      if (!inited || dt === 0) { chase.copy(tgt); chaseV.set(0, 0, 0); inited = true; }
+      else { var K2 = 60, c2 = 2 * Math.sqrt(K2); tmp.copy(tgt).sub(chase).multiplyScalar(K2).addScaledVector(chaseV, -c2); chaseV.addScaledVector(tmp, dt); chase.addScaledVector(chaseV, dt); }
+      orient(p2, t - 0.55, dt); p2.position.copy(chase); path(t - 0.5, tmp); tmp.y -= 1.5; p2.lookAt(tmp);
+      // 샷: 6초마다 컷. 샷마다 카메라 움직임은 하나, 시작과 끝은 부드럽게
+      var u = ((t % LOOP) + LOOP) % LOOP, s = Math.floor(u / SHOT), e = sm((u - s * SHOT) / SHOT), ts = t - (u - s * SHOT);
+      path(ts + 3, F0); path(ts + 3.1, tmp); F0.subVectors(tmp, F0).setY(0).normalize(); R0.crossVectors(F0, UP);
+      var L = p1.position, fov = 42;
+      if (s === 0) {        // 1 전경 — 크레인 다운: 높은 곳에서 수면 쪽으로
+        cam.position.copy(L).addScaledVector(F0, -44).addScaledVector(R0, 32); cam.position.y = 74 - 58 * e; look.copy(L);
+      } else if (s === 1) { // 2 대표 장면 — 달리: 수면 바로 위에서 해를 등진 비행기를 따라 미끄러짐
+        cam.position.copy(L).addScaledVector(SUNXZ, -27).addScaledVector(F0, -6 + 12 * e); cam.position.y = 2.7; look.copy(L).lerp(p2.position, 0.35); fov = 36;
+      } else if (s === 2) { // 3 푸시 인: 뒤에서 앞 비행기 쪽으로 다가감
+        cam.position.copy(L).addScaledVector(F0, -(36 - 22 * e)).addScaledVector(R0, 5); cam.position.y = L.y + 8 - 5 * e; look.copy(L);
+      } else if (s === 3) { // 4 오비트: 뒤 비행기 둘레를 반 바퀴
+        var an = 0.4 + 2.0 * e; cam.position.copy(p2.position).addScaledVector(F0, Math.cos(an) * 14).addScaledVector(R0, Math.sin(an) * 14); cam.position.y = p2.position.y + 2.5; look.copy(p2.position).lerp(L, 0.25);
+      } else {              // 5 마지막 전경 — 크레인 업: 구름 높이로 올라가 빛길 전체를 봄
+        cam.position.copy(L).addScaledVector(SUNXZ, -30).addScaledVector(R0, -10); cam.position.y = L.y - 3 + 24 * e; look.copy(L).addScaledVector(SUNXZ, 160 * e); look.y = L.y + 4 * e;
+      }
+      if (cam.position.y < 2.5) cam.position.y = 2.5;
+      if (cam.aspect < 1) fov += 18; if (cam.fov !== fov) { cam.fov = fov; cam.updateProjectionMatrix(); }
+      cam.lookAt(look);
+      key.target.position.copy(L).lerp(p2.position, 0.5); key.position.copy(key.target.position).addScaledVector(SUN, 70);
+      sky.position.copy(cam.position); sea.position.set(cam.position.x, 0, cam.position.z);
+      for (var i = 0; i < clouds.length; i++) clouds[i].position.x += dt * 0.7;
+      renderer.render(scene, cam);
+      if (visible && !reduce) { running = true; requestAnimationFrame(frame); } else { running = false; last = 0; }
+    }
+    tick = frame; frame(performance.now());
+    window.__skyReady = true; window.__skyDbg = function () { return [cam.position.toArray().map(Math.round), p1.position.toArray().map(Math.round), look.toArray().map(Math.round)]; }; window.__skyAt = function (sec) { t0 = performance.now() - (sec - 5.2) * 1000; last = 0; inited = false; };
+  }
 })();
 </script>
 </body>
