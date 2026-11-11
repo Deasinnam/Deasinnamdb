@@ -20,7 +20,7 @@ jobs:
           mkdir t/app && unzip -q apk/assets/node.zip -d t/app
           cp apk/assets/nodelibs.txt t/
           mv apk/assets/selftest t/samples
-          chmod -R a+rwX t
+          chmod -R a+rwX t && chmod 755 t/lib/*.so
           ls t t/app | head -40
       - name: 안드로이드(arm64) 환경에서 실행
         run: |

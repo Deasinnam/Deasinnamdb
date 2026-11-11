@@ -3,7 +3,6 @@
 cd /t
 mkdir -p links data tmp
 while IFS='=' read -r old new; do [ -n "$old" ] && ln -sf /t/lib/"$new" /t/links/"$old"; done < nodelibs.txt
-chmod 755 lib/*.so
 export LD_LIBRARY_PATH=/t/links:/t/lib
 echo "== node --version"; ./lib/libnode.so --version; echo "exit=$?"
 echo "== sidecar"; ./lib/libxlsxsidecar.so --version 2>&1 | head -5; echo "exit=$?"
