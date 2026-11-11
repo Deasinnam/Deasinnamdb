@@ -46,6 +46,8 @@ done
 sleep 4
 adb exec-out screencap -p > desk-screen-launched.png
 adb logcat -d -s DESK_SELFTEST:I Desk:* DeskConsole:* > selftest-result.txt
+adb logcat -d -b crash > crash-1.txt 2>/dev/null
+adb logcat -d | grep -E "chromium|WebView|cr_|Desk|ActivityManager.*daesinnam|libc " | tail -150 > logcat-1.txt
 # 2단계: 앱을 완전히 껐다 켠 뒤 위젯이 놓아 둔 자리에 그대로 있는지
 adb shell am force-stop "$PKG"
 sleep 2
@@ -71,6 +73,9 @@ adb shell input keyevent KEYCODE_META_LEFT >/dev/null 2>&1; sleep 1
 adb exec-out screencap -p > desk-screen-start.png
 adb shell input keyevent KEYCODE_ESCAPE >/dev/null 2>&1
 adb shell wm size reset; adb shell wm density reset
+echo "===== 앱이 꺼진 까닭 (exit-info) ====="
+adb shell dumpsys activity exit-info "$PKG" | grep -E "ApplicationExitInfo|reason=|description=|timestamp=|pid=" | head -40 | tee exit-info.txt
+echo "===== crash ====="; cat crash-1.txt | head -40
 pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)
 clicks=$(grep -c "DESK_SELFTEST: WIDGET-CLICK" selftest-result.txt || true)

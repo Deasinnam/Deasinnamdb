@@ -35,6 +35,7 @@ import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -216,6 +217,11 @@ public class MainActivity extends ComponentActivity {
                 wallReady = true;
                 applyWallLook();
             }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                return rendererGone("배경", detail);
+            }
         });
         wallWeb.loadUrl(APP_ORIGIN + "/assets/ui/wallpaper.html");
         web.setWebViewClient(new WebViewClient() {
@@ -228,6 +234,11 @@ public class MainActivity extends ComponentActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return !"appassets.androidplatform.net".equals(request.getUrl().getHost());
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                return rendererGone("바탕화면", detail);
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -261,6 +272,18 @@ public class MainActivity extends ComponentActivity {
             if (r - l != or - ol || b - t != ob - ot) push("layout");
         });
         web.loadUrl(INDEX + (selftest ? ("2".equals(getIntent().getStringExtra("desk.phase")) ? "?selftest=2" : "?selftest") : ""));
+    }
+
+    /**
+     * 화면을 그리는 프로세스(WebView 렌더러)가 메모리 부족 등으로 꺼졌을 때.
+     * 그대로 두면 안드로이드가 앱 전체를 닫으므로, 화면만 새로 만듭니다 (위젯 자리·설정은 저장돼 있어 그대로 돌아옴).
+     */
+    private boolean rendererGone(String which, RenderProcessGoneDetail detail) {
+        Log.w(TAG, which + " 화면 렌더러가 꺼짐 (crash=" + detail.didCrash() + ", priority=" + detail.rendererPriorityAtExit() + ") → 화면을 새로 만듭니다");
+        if (selftest) Log.i("DESK_SELFTEST", "FAIL renderer gone " + which + " crash=" + detail.didCrash());
+        pageProxy = null;
+        if (!isFinishing() && !isDestroyed()) main.post(this::recreate);
+        return true;
     }
 
     @Override

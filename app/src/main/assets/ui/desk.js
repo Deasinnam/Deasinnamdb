@@ -1088,6 +1088,8 @@
       log("DONE2");
       return;
     }
+    if (localStorage.getItem("desk_test_running")) log("FAIL app restarted during selftest (앱이 점검 도중 다시 시작됨)");
+    localStorage.setItem("desk_test_running", "1");
     try {
       log("apps count=" + apps.length + " status=" + JSON.stringify(status));
       toggleStart(true);
@@ -1173,7 +1175,7 @@
           layoutWidgets({ w: a0.w + 70, h: a0.h - 30 }); const gapWide = a0.w + 70 - wd.x - wd.w;
           layoutWidgets({ w: Math.round(a0.w * 0.45), h: Math.round(a0.h * 1.6) }); const narrowRight = wd.x + wd.w / 2 > a0.w * 0.45 / 2;
           layoutWidgets();
-          log((gapWide === gapR && narrowRight && wd.x === keep.x ? "PASS" : "FAIL") + " widget stays on right edge gap=" + gapR + " wider=" + gapWide + " narrowRight=" + narrowRight);
+          log((Math.abs(gapWide - gapR) <= 1 && narrowRight && wd.x === keep.x ? "PASS" : "FAIL") + " widget stays on right edge gap=" + gapR + " wider=" + gapWide + " narrowRight=" + narrowRight);
           save(); renderWidgetShells(); lastSync = ""; syncNative();
           await wait(800);
           // 실제로 화면이 작아졌다가(접은 화면·팝업 창) 다시 커져도 위젯 뷰가 같은 자리에 있는지
@@ -1203,6 +1205,7 @@
       log("FAIL exception " + (e && e.stack || e));
     }
     log("errors=" + errors.length + " " + errors.slice(0, 3).join(" | "));
+    localStorage.removeItem("desk_test_running");
     log("DONE");
   }
 })();

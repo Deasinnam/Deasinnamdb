@@ -59,7 +59,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete desk-ci --yes --cleanup-tag || true
-          gh release create desk-ci $(ls desk-screen-*.png selftest-result.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+          gh release create desk-ci $(ls desk-screen-*.png selftest-result.txt exit-info.txt crash-1.txt logcat-1.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
             --title "덜누름 데스크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비
