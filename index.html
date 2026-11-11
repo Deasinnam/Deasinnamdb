@@ -321,6 +321,13 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .slide .enter { position: absolute; left: 14px; bottom: 14px; background: #fff; color: #0b0b0c; padding: 10px 15px; border-radius: 999px; font: 700 13px/1 var(--font-body); box-shadow: 0 4px 0 #52525b; opacity: 0; transition: opacity .3s ease; }
 .slide.is-center .enter { opacity: 1; }
 .slide.is-center:hover .enter { transform: translateY(1px); box-shadow: 0 3px 0 #52525b; }
+.slide.fold { background: radial-gradient(120% 100% at 82% 45%, #1e2532 0%, #121214 52%, #0b0b0c 100%); }
+.fold-dev { position: absolute; right: 5%; top: 8%; bottom: 8%; aspect-ratio: 720 / 728; border-radius: 14px; border: 5px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 26px 50px -20px #000; overflow: hidden; background: #000; }
+.slide .fold-dev video { object-fit: cover; }
+.fold-copy { position: absolute; left: 6%; top: 46%; transform: translateY(-50%); width: 34%; display: grid; gap: 10px; text-align: left; word-break: keep-all; }
+.fold-copy small { font: 600 clamp(10px, 1vw, 11px)/1.5 var(--font-mono); letter-spacing: .02em; color: #93c5fd; }
+.fold-copy b { font: 700 clamp(15px, 2.5vw, 27px)/1.18 var(--font-display); letter-spacing: -0.035em; color: #fff; }
+.fold-copy span { font-size: clamp(11px, 1.25vw, 14px); line-height: 1.55; color: #a1a1aa; }
 .ph { width: 100%; height: 100%; background: #f5f5f4; color: #111; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; padding: 20px; }
 .ph .g { width: clamp(64px, 9vw, 104px); aspect-ratio: 1; border: 2px solid #111; border-radius: 24px; box-shadow: 0 7px 0 #111; display: grid; place-items: center; font: 700 clamp(30px, 4.4vw, 48px)/1 var(--font-display); background: #fff; letter-spacing: -0.04em; }
 .ph b { font: 700 clamp(18px, 2.6vw, 30px)/1.2 var(--font-display); letter-spacing: -0.03em; margin-top: 6px; }
@@ -344,6 +351,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 @media (max-width: 700px) {
   .deck { aspect-ratio: 16 / 10.4; }
   .slide { width: 84%; }
+  .fold-dev { border-width: 3px; border-radius: 9px; right: 4%; }
+  .fold-copy { left: 5%; top: 40%; gap: 7px; }
+  .fold-copy span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
 
@@ -558,24 +568,27 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <div class="eyebrow">Screens · 앱 화면</div>
           <h2 id="show-title">준비된 앱을 둘러보세요</h2>
         </div>
-        <p>가운데 화면을 누르면 그 앱 소개로 들어갑니다.</p>
+        <p>갤럭시 Z 폴드7 · Z 폴드8 울트라 화면에 맞춰 다듬은 실제 앱 화면입니다. 가운데 화면을 누르면 그 앱 소개로 들어갑니다.</p>
       </div>
       <div class="deck" id="deck" tabindex="0" aria-label="앱 화면 모음. 왼쪽·오른쪽 화살표 키로 넘깁니다">
         <a class="slide" href="#app-amp" data-name="Daesinnam Amp" data-kind="음악 플레이어">
           <img src="amp/amp-tablet-neon.webp" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어와 이퀄라이저" draggable="false">
           <span class="enter">자세히 보기 →</span><span class="label">Music</span>
         </a>
-        <a class="slide" href="#app-speed" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 개발 중" data-dur="20000">
-          <video src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted playsinline preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video>
-          <span class="enter">자세히 보기 →</span><span class="label">▶ 주행 영상</span>
+        <a class="slide fold" href="#app-speed" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 개발 중" data-dur="20000">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>대신남 스피드미터</b><span>차가 달리면 조종석 계기판이 움직입니다</span></div>
+          <div class="fold-dev"><video src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted playsinline preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video></div>
+          <span class="enter">자세히 보기 →</span>
         </a>
-        <a class="slide" href="#app-work" data-name="덜누름 워크" data-kind="안드로이드를 윈도우 PC처럼">
-          <div class="ph"><div class="g">작</div><b>덜누름 워크</b><span>안드로이드를 윈도우 PC처럼 사용해보세요</span><small>화면 캡처 준비 중</small></div>
-          <span class="enter">자세히 보기 →</span><span class="label">Office</span>
+        <a class="slide fold" href="#app-work" data-name="덜누름 워크" data-kind="안드로이드를 윈도우 PC처럼 · 실제 화면" data-dur="22000">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 워크</b><span>안드로이드를 윈도우 PC처럼. 문서 · 사진 · 동영상 편집을 앱 하나에서</span></div>
+          <div class="fold-dev"><video src="media/app-work.mp4" poster="media/app-work-poster.jpg" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 워드, 엑셀, 한글 문서 편집기와 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video></div>
+          <span class="enter">자세히 보기 →</span>
         </a>
-        <a class="slide" href="#app-desktop" data-name="덜누름 데스크탑앱" data-kind="PC용 · 준비 중">
-          <div class="ph"><div class="g">PC</div><b>덜누름 데스크탑앱</b><span>덜누름을 PC에서도</span><small>화면 캡처 준비 중</small></div>
-          <span class="enter">자세히 보기 →</span><span class="label">Desktop</span>
+        <a class="slide fold" href="#app-desktop" data-name="덜누름 데스크탑앱" data-kind="PC 같은 바탕화면 · 준비 중" data-dur="16700">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 데스크탑앱</b><span>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창으로 뜨는 브라우저</span></div>
+          <div class="fold-dev"><video src="media/app-desk.mp4" poster="media/app-desk-poster.jpg" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video></div>
+          <span class="enter">자세히 보기 →</span>
         </a>
       </div>
       <div class="show-bar">
@@ -668,18 +681,25 @@ footer b { color: var(--ink); font-family: var(--font-display); }
             <a class="key dark" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">APK 내려받기 <small>187MB</small></a>
             <a class="text" href="https://github.com/Deasinnam/Deasinnamdb/releases/tag/work-latest">배포 정보</a>
           </div>
+          <p class="note">삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라의 펼친 화면에 맞춰 최적화했습니다. 위 앱 화면 모음에서 실제 화면을 볼 수 있습니다.</p>
           <p class="note">오픈소스 IeumOffice · PhotoCraft · FilmCraft를 고쳐 만들었습니다. 원작 라이선스는 앱의 정보 화면에 있습니다.</p>
         </article>
         <article class="app" id="app-desktop">
           <div class="app-top">
             <div class="glyph" aria-hidden="true">PC</div>
             <div>
-              <div class="kind">PC 앱 <span class="tag">준비 중</span></div>
+              <div class="kind">PC 같은 바탕화면 <span class="tag">준비 중</span></div>
               <h3>덜누름 데스크탑앱</h3>
             </div>
           </div>
-          <p class="lead">덜누름을 PC에서도 씁니다. 자세한 소개와 내려받기를 준비하고 있습니다.</p>
-          <p class="note">공개되면 이곳에 내려받기가 생깁니다.</p>
+          <p class="lead">펼친 폴드를 PC 바탕화면처럼 씁니다. 시작 메뉴와 작업 표시줄에서 앱을 찾고, 창으로 띄워 나란히 봅니다.</p>
+          <ul>
+            <li>시작 메뉴 · 작업 표시줄 · 바탕화면 아이콘</li>
+            <li>위젯을 바탕화면에 올리고 끌어서 크기 조절</li>
+            <li>브라우저를 창으로 열고, 한 번에 전체 화면으로</li>
+          </ul>
+          <p class="note">삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라의 펼친 화면에 맞춰 최적화했습니다. 위 앱 화면 모음에서 실제 화면을 볼 수 있습니다.</p>
+          <p class="note">아직 배포 전이며, 공개되면 이곳에 내려받기가 생깁니다.</p>
         </article>
       </div>
     </div>
@@ -869,8 +889,10 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       s.setAttribute("aria-hidden", a === 0 ? "false" : "true");
       var v = s.querySelector("video");
       if (v) {
-        if (a === 0 && !centerView.hidden) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
-        else v.pause();
+        if (a === 0 && !centerView.hidden) {
+          if (!s._on) { s._on = true; try { v.currentTime = 0; } catch (e) {} }
+          var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+        } else { s._on = false; v.pause(); }
       }
     });
     var c = slides[cur];
