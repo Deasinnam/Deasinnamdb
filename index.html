@@ -13,7 +13,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* 덜누름: 흰 바탕, 검정 한 색. 모든 버튼은 "키" — 누르면 그림자만큼 내려간다.
    레이아웃: 왼쪽 정렬 단일 칼럼(최대 1120px), 앱은 2열 그리드 → 폰에서 1열. */
@@ -283,12 +283,15 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 @media (max-width: 900px) { .ul { grid-column: 1 / -1; } .ul-rig { width: min(86%, 400px); } }
 
 /* ---------- 이륙 장면: 노을 바다 위 3D 비행 (three.js, 화면에 들어올 때만 불러옴) ---------- */
-.takeoff { position: relative; height: min(82vh, 760px); min-height: 440px; overflow: hidden; background: linear-gradient(180deg, #2a2260 0%, #7a4a9e 38%, #e9706f 62%, #ffb060 72%, #3a2a5e 73%, #151226 100%); }
+.takeoff { position: relative; height: min(88vh, 820px); min-height: 460px; overflow: hidden; background: radial-gradient(60% 50% at 38% 62%, #f08a4a 0%, #8a3f78 30%, #2c1c56 62%, #0f0b24 100%); }
 .takeoff canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.takeoff-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(180deg, transparent, rgba(11,11,12,.55) 60%, #0b0b0c); pointer-events: none; }
-.takeoff-copy { position: absolute; left: 0; right: 0; bottom: 56px; color: #fff; }
-.takeoff-eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .16em; color: #ffd9a8; }
-.takeoff-copy h2 { margin: 14px 0 24px; font-size: clamp(34px, 6vw, 76px); line-height: 1.08; letter-spacing: -0.045em; text-shadow: 0 2px 30px rgba(20,10,40,.55); }
+.takeoff-fade { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 45%, transparent 45%, rgba(8,5,22,.55) 100%), linear-gradient(180deg, rgba(11,11,12,.25), transparent 18%, transparent 72%, #0b0b0c); }
+.takeoff-copy { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); color: #fff; text-align: center; opacity: 0; transition: opacity 2.4s ease 1.4s; }
+.takeoff.is-in .takeoff-copy { opacity: 1; }
+.takeoff-eyebrow { font: 500 11px/1 var(--font-mono); letter-spacing: .42em; color: rgba(255,225,190,.85); text-transform: uppercase; }
+.takeoff-copy h2 { margin: 18px 0 26px; font: 600 clamp(22px, 3.3vw, 42px)/1.5 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .14em; text-shadow: 0 1px 3px rgba(10,5,30,.55), 0 2px 28px rgba(10,5,30,.85); }
+.takeoff-copy .amp-btn { background: rgba(255,255,255,.12); color: #fff; box-shadow: none; border: 1px solid rgba(255,255,255,.55); padding: 11px 20px; font-size: 13px; font-weight: 600; letter-spacing: .08em; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.takeoff-copy .amp-btn:hover { background: rgba(255,255,255,.22); transform: none; box-shadow: none; }
 .amp-soon.as-link { text-decoration: none; } .amp-soon.as-link::before { display: none; }
 @media (max-width: 480px) { .takeoff-copy { bottom: 36px; } }
 
@@ -462,7 +465,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     <div class="takeoff-fade"></div>
     <div class="wrap takeoff-copy">
       <div class="takeoff-eyebrow">대신남 스피드미터</div>
-      <h2>이제 차 안에서<br>이륙해보세요.</h2>
+      <h2>이제 차 안에서<br>이륙해보세요</h2>
       <a class="amp-btn" href="#speed">바로가기 →</a>
     </div>
   </section>
@@ -1203,6 +1206,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   function load(src, cb) { var s = document.createElement("script"); s.src = src; s.onload = cb; document.head.appendChild(s); }
   new IntersectionObserver(function (en) {
     visible = en[0].isIntersecting;
+    if (visible) host.classList.add("is-in");
     if (visible && !started) { started = true;
       load("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js", function () {
         load("https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js", build); }); }
@@ -1216,16 +1220,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
     var scene = new T.Scene(), cam = new T.PerspectiveCamera(42, 2, 1, 5200);
-    scene.fog = new T.FogExp2(new T.Color(0xd98a78).convertSRGBToLinear(), 0.0014);
+    scene.fog = new T.FogExp2(new T.Color(0x6a3f7a).convertSRGBToLinear(), 0.0016);
     if (T.RoomEnvironment) { var pm = new T.PMREMGenerator(renderer); scene.environment = pm.fromScene(new T.RoomEnvironment(), 0.04).texture; }
     var SUN = new T.Vector3(-0.32, 0.105, -0.94).normalize(), SUNXZ = new T.Vector3(SUN.x, 0, SUN.z).normalize();
     var SKY = [
       "vec3 skyCol(vec3 d){ float h = max(d.y, 0.0);",
-      "  vec3 c = mix(vec3(1.0,0.66,0.30), vec3(0.95,0.43,0.47), smoothstep(0.0,0.16,h));",
-      "  c = mix(c, vec3(0.46,0.29,0.64), smoothstep(0.10,0.42,h));",
-      "  c = mix(c, vec3(0.15,0.13,0.38), smoothstep(0.38,0.95,h));",
+      "  vec3 c = mix(vec3(0.98,0.52,0.24), vec3(0.66,0.27,0.50), smoothstep(0.0,0.11,h));",
+      "  c = mix(c, vec3(0.27,0.16,0.47), smoothstep(0.07,0.34,h));",
+      "  c = mix(c, vec3(0.07,0.06,0.21), smoothstep(0.30,0.90,h));",
       "  float s = max(dot(d, SUN), 0.0);",
-      "  c += vec3(1.0,0.62,0.28) * pow(s, 10.0) * 0.55; return c; }"].join("\n");
+      "  c += vec3(1.0,0.50,0.20) * (pow(s, 5.0) * 0.50 + pow(s, 48.0) * 0.55); return c; }"].join("\n");
     var U = { SUN: { value: SUN }, uT: { value: 0 } };
     var sky = new T.Mesh(new T.SphereGeometry(4000, 32, 20), new T.ShaderMaterial({ side: T.BackSide, depthWrite: false, fog: false, uniforms: U,
       vertexShader: "varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
@@ -1235,41 +1239,50 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     var sea = new T.Mesh(new T.PlaneGeometry(9000, 9000), new T.ShaderMaterial({ uniforms: U,
       vertexShader: "varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
       fragmentShader: "uniform vec3 SUN; uniform float uT; varying vec3 vW;\n" + SKY + [
+        "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }",
+        "float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1.0,0.0)), f.x), mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), f.x), f.y); }",
+        "float H(vec2 p, float t, float k){ return vn(p*0.055 + vec2(t*0.10, t*0.04)) + vn(p*0.16 - vec2(t*0.19, 0.0))*0.5 + vn(p*0.47 + vec2(0.0, t*0.33))*0.26*k + vn(p*1.3 - vec2(t*0.5, t*0.2))*0.13*k*k; }",
         "void main(){ vec3 V = normalize(cameraPosition - vW); float dist = length(cameraPosition - vW);",
         "  vec2 p = vW.xz; float t = uT; float k = 1.0 / (1.0 + dist * 0.004);",
-        "  p += 7.0 * vec2(sin(p.y*0.037 + t*0.21) + sin(p.y*0.011 - t*0.1), cos(p.x*0.029 - t*0.17) + cos(p.x*0.013));",
-        "  float dx = 0.0, dz = 0.0, w;",
-        "  w = cos(dot(p, vec2(0.80,0.60))*0.085 + t*0.8)*0.070; dx += w*0.80; dz += w*0.60;",
-        "  w = cos(dot(p, vec2(-0.50,0.86))*0.21 - t*1.1)*0.060; dx -= w*0.50; dz += w*0.86;",
-        "  w = cos(dot(p, vec2(0.31,-0.95))*0.57 + t*1.6)*0.075*k; dx += w*0.31; dz -= w*0.95;",
-        "  w = cos(dot(p, vec2(-0.92,-0.38))*1.31 - t*2.1)*0.085*k; dx -= w*0.92; dz -= w*0.38;",
-        "  w = cos(dot(p, vec2(0.62,0.78))*2.77 + t*2.9)*0.090*k*k; dx += w*0.62; dz += w*0.78;",
+        "  vec2 q = vec2(p.x, p.y * 2.1); float e = 0.9;",                       // 한쪽으로 길게 늘인 붓결
+        "  float h0 = H(q, t, k), hx = H(q + vec2(e, 0.0), t, k), hz = H(q + vec2(0.0, e), t, k);",
+        "  float dx = (hx - h0) * 1.5, dz = (hz - h0) * 1.5;",
         "  vec3 N = normalize(vec3(dx, 1.0, dz)); vec3 R = reflect(-V, N); R.y = abs(R.y);",
         "  float fr = pow(1.0 - max(dot(N, V), 0.0), 3.0);",
-        "  vec3 c = mix(vec3(0.07,0.06,0.20), skyCol(R), 0.30 + 0.70*fr);",
-        "  float s = max(dot(R, SUN), 0.0); c += vec3(1.0,0.72,0.40) * (pow(s, 260.0)*2.6 + pow(s, 28.0)*0.42);",
+        "  vec3 c = mix(vec3(0.04,0.035,0.13), skyCol(R), 0.22 + 0.78*fr);",
+        "  float s = max(dot(R, SUN), 0.0); c += vec3(1.0,0.66,0.34) * (pow(s, 260.0)*3.0 + pow(s, 24.0)*0.50);",
         "  c = mix(c, skyCol(vec3(-V.x, 0.0, -V.z)), smoothstep(600.0, 3800.0, dist)); gl_FragColor = vec4(c,1.0); }"].join("\n") }));
     sea.rotation.x = -Math.PI / 2; scene.add(sea);
     // 보라색 뭉게구름 (난수는 씨앗 고정 → 언제 열어도 같은 하늘)
     var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
     var cloudMat = new T.ShaderMaterial({ uniforms: U,
       vertexShader: "varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: "uniform vec3 SUN; varying vec3 vN; varying vec3 vW;\n" + SKY + "\nvoid main(){ vec3 n = normalize(vN); float l = dot(n, normalize(SUN + vec3(0.0,0.35,0.0)))*0.5+0.5; vec3 c = mix(vec3(0.31,0.21,0.53), vec3(0.58,0.37,0.69), smoothstep(0.28,0.46,l)); c = mix(c, vec3(1.0,0.71,0.60), smoothstep(0.60,0.80,l)); c += vec3(0.10,0.05,0.12) * smoothstep(0.2,-0.8,n.y); vec3 d = normalize(vW - cameraPosition); c = mix(c, skyCol(vec3(d.x, 0.02, d.z)), smoothstep(400.0, 2600.0, length(vW - cameraPosition))*0.75); gl_FragColor = vec4(c,1.0); }" });
+      fragmentShader: "uniform vec3 SUN; varying vec3 vN; varying vec3 vW;\n" + SKY + [
+        "void main(){ vec3 n = normalize(vN); vec3 d = normalize(vW - cameraPosition);",
+        "  float l = dot(n, normalize(SUN + vec3(0.0,0.30,0.0)))*0.5+0.5;",
+        "  vec3 c = mix(vec3(0.16,0.10,0.34), vec3(0.40,0.23,0.58), smoothstep(0.26,0.50,l));",
+        "  c = mix(c, vec3(0.98,0.56,0.46), smoothstep(0.62,0.84,l));",
+        "  c += vec3(0.09,0.05,0.13) * smoothstep(0.1,-0.9,n.y);",                                   // 아래쪽에 바다빛이 살짝 올라옴
+        "  c += vec3(0.55,0.22,0.10) * pow(max(dot(d, SUN), 0.0), 6.0) * smoothstep(0.45, 0.0, l);", // 해 쪽을 볼 때 그늘진 구름에 스미는 빛
+        "  float dist = length(vW - cameraPosition);",
+        "  c = mix(c, skyCol(vec3(d.x, 0.03, d.z)), smoothstep(350.0, 2400.0, dist)*0.8); gl_FragColor = vec4(c,1.0); }"].join("\n") });
     var ball = new T.IcosahedronGeometry(1, 3), clouds = [];
-    for (var i = 0; i < 16; i++) {
-      var g = new T.Group(), n = 9 + Math.floor(rnd() * 8), sc = 14 + rnd() * 26;
+    for (var i = 0; i < 44; i++) {
+      var g = new T.Group(), n = 8 + Math.floor(rnd() * 8), sc = 18 + rnd() * 34, half = sc * 2.4;
       for (var j = 0; j < n; j++) { var m = new T.Mesh(ball, cloudMat), r = (0.6 + rnd() * 0.9) * sc;
-        m.scale.set(r, r * 0.78, r); m.position.set((rnd() - 0.5) * sc * 4.2, rnd() * sc * 0.9, (rnd() - 0.5) * sc * 1.6); g.add(m); }
-      var a = rnd() * Math.PI * 2, d = 230 + rnd() * 850;
-      g.position.set(Math.cos(a) * d, 40 + rnd() * 110 + d * 0.05, Math.sin(a) * d - 30); g.rotation.y = rnd() * 6.28; scene.add(g); clouds.push(g);
+        m.scale.set(r, r * 0.8, r); m.position.set((rnd() - 0.5) * sc * 3.6, rnd() * sc * 1.0, (rnd() - 0.5) * sc * 1.8); g.add(m); }
+      // 비행 길(타원)과 카메라가 지나는 곳은 비워 두고, 그 바깥을 겹겹이 둘러쌈
+      var a = rnd() * Math.PI * 2, ring = i < 20 ? 1.0 + rnd() * 0.35 : 1.4 + rnd() * 2.6;
+      var ex = (215 + half) * ring, ez = (150 + half) * ring;
+      g.position.set(Math.cos(a) * ex, (i % 3 === 0 ? -sc * 0.2 : 20 + rnd() * 90), Math.sin(a) * ez - 30); g.rotation.y = rnd() * 6.28; scene.add(g); clouds.push(g);
     }
     // 빛: 주광(노을, 그림자) · 보조광(하늘의 보라) · 윤곽광(뒤에서 분홍)
-    var key = new T.DirectionalLight(new T.Color(0xffb070).convertSRGBToLinear(), 2.6); key.castShadow = true;
+    var key = new T.DirectionalLight(new T.Color(0xff9a55).convertSRGBToLinear(), 2.9); key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0006; key.shadow.normalBias = 0.03; key.shadow.radius = 4;
     var sc0 = key.shadow.camera; sc0.left = -16; sc0.right = 16; sc0.top = 16; sc0.bottom = -16; sc0.near = 10; sc0.far = 140;
     scene.add(key); scene.add(key.target);
-    scene.add(new T.HemisphereLight(new T.Color(0x9a80e6).convertSRGBToLinear(), new T.Color(0x3a2c66).convertSRGBToLinear(), 1.1));
-    var rim = new T.DirectionalLight(new T.Color(0xff9ecb).convertSRGBToLinear(), 1.3); rim.position.set(0.5, 0.55, 0.7); scene.add(rim);
+    scene.add(new T.HemisphereLight(new T.Color(0x9a80e6).convertSRGBToLinear(), new T.Color(0x2a1f55).convertSRGBToLinear(), 0.8));
+    var rim = new T.DirectionalLight(new T.Color(0xc79aff).convertSRGBToLinear(), 1.1); rim.position.set(0.5, 0.55, 0.7); scene.add(rim);
     // 비행기 (기수 +Z). 도장은 클리어코트, 금속·유리·고무는 거칠기를 달리함
     function lin(c) { return new T.Color(c).convertSRGBToLinear(); }
     function paint(c) { return new T.MeshPhysicalMaterial({ color: lin(c), roughness: 0.42, metalness: 0.05, clearcoat: 0.7, clearcoatRoughness: 0.28, envMapIntensity: 0.35 }); }
@@ -1305,12 +1318,26 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       out.userData = { inner: g, prop: prop, roll: 0, rollV: 0 }; scene.add(out); return out;
     }
     var p1 = plane(WHITE, GREEN, RED, RED), p2 = plane(GREEN, WHITE, RED, WHITE);
+    // 날개 끝 비행운: 지나온 길을 따라 가늘게 남았다가 사라짐
+    var TN = 56, trails = [];
+    function trail() { var geo = new T.BufferGeometry(), pos = new Float32Array(TN * 3), col = new Float32Array(TN * 3);
+      for (var i = 0; i < TN; i++) { var f = Math.pow(1 - i / (TN - 1), 1.6); col[i * 3] = f; col[i * 3 + 1] = 0.86 * f; col[i * 3 + 2] = 0.72 * f; }
+      geo.setAttribute("position", new T.BufferAttribute(pos, 3)); geo.setAttribute("color", new T.BufferAttribute(col, 3));
+      var ln = new T.Line(geo, new T.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85, blending: T.AdditiveBlending, depthWrite: false, fog: false })); ln.frustumCulled = false; scene.add(ln); return ln; }
+    for (var q = 0; q < 4; q++) trails.push(trail());
+    var tip = new T.Vector3(), off = new T.Vector3(), tp = new T.Vector3();
+    function drawTrail(ln, p, side, tBase, drop) {
+      tip.set(side * 4.55, 0.12, 0.3); p.userData.inner.localToWorld(tip); off.copy(tip).sub(p.position);
+      var arr = ln.geometry.attributes.position.array;
+      for (var i = 0; i < TN; i++) { path(tBase - i * 0.022, tp); arr[i * 3] = tp.x + off.x; arr[i * 3 + 1] = tp.y - drop + off.y; arr[i * 3 + 2] = tp.z + off.z; }
+      ln.geometry.attributes.position.needsUpdate = true;
+    }
     // ---- 비행 경로와 샷 ----
     var LOOP = 30, SHOT = 6;
     function sm(x) { x = Math.max(0, Math.min(1, x)); return x * x * x * (x * (x * 6 - 15) + 10); }
     function low(t) { var u = ((t % LOOP) + LOOP) % LOOP; return sm((u - 4.5) / 2.5) * (1 - sm((u - 11.5) / 2.5)); } // 2번 샷 동안 수면 가까이 내려옴
     function path(t, o) {
-      var hi = 36 + Math.sin(t * 0.63) * 11 + Math.cos(t * 1.1) * 3, lo = 7.5 + Math.sin(t * 0.9) * 1.2, k = low(t);
+      var hi = 36 + Math.sin(t * 0.63) * 11 + Math.cos(t * 1.1) * 3, lo = 16 + Math.sin(t * 0.9) * 1.5, k = low(t);
       return o.set(Math.sin(t * 0.42) * 95 + Math.sin(t * 0.9) * 14, hi + (lo - hi) * k, Math.sin(t * 0.84) * 55 - 30);
     }
     var A = new T.Vector3(), B = new T.Vector3(), C = new T.Vector3(), look = new T.Vector3(), F0 = new T.Vector3(), R0 = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
@@ -1323,9 +1350,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     }
     function resize() { var w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
     window.addEventListener("resize", resize); resize();
-    var t0 = performance.now(), last = 0;
+    var t0 = performance.now(), last = 0, frozen = null;
     function frame(now) {
-      var t = reduce ? 9 : (now - t0) / 1000 + 5.2, dt = last && !reduce ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
+      var t = frozen != null ? frozen : reduce ? 9 : (now - t0) / 1000 + 5.2, dt = last && !reduce && frozen == null ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
       U.uT.value = t;
       // 앞 비행기
       orient(p1, t, dt); p1.position.copy(A); p1.lookAt(B);
@@ -1338,20 +1365,21 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       var u = ((t % LOOP) + LOOP) % LOOP, s = Math.floor(u / SHOT), e = sm((u - s * SHOT) / SHOT), ts = t - (u - s * SHOT);
       path(ts + 3, F0); path(ts + 3.1, tmp); F0.subVectors(tmp, F0).setY(0).normalize(); R0.crossVectors(F0, UP);
       var L = p1.position, fov = 42;
-      if (s === 0) {        // 1 전경 — 크레인 다운: 높은 곳에서 수면 쪽으로
-        cam.position.copy(L).addScaledVector(F0, -44).addScaledVector(R0, 32); cam.position.y = 74 - 58 * e; look.copy(L);
-      } else if (s === 1) { // 2 대표 장면 — 달리: 수면 바로 위에서 해를 등진 비행기를 따라 미끄러짐
-        cam.position.copy(L).addScaledVector(SUNXZ, -27).addScaledVector(F0, -6 + 12 * e); cam.position.y = 2.7; look.copy(L).lerp(p2.position, 0.35); fov = 36;
-      } else if (s === 2) { // 3 푸시 인: 뒤에서 앞 비행기 쪽으로 다가감
-        cam.position.copy(L).addScaledVector(F0, -(36 - 22 * e)).addScaledVector(R0, 5); cam.position.y = L.y + 8 - 5 * e; look.copy(L);
-      } else if (s === 3) { // 4 오비트: 뒤 비행기 둘레를 반 바퀴
-        var an = 0.4 + 2.0 * e; cam.position.copy(p2.position).addScaledVector(F0, Math.cos(an) * 14).addScaledVector(R0, Math.sin(an) * 14); cam.position.y = p2.position.y + 2.5; look.copy(p2.position).lerp(L, 0.25);
-      } else {              // 5 마지막 전경 — 크레인 업: 구름 높이로 올라가 빛길 전체를 봄
-        cam.position.copy(L).addScaledVector(SUNXZ, -30).addScaledVector(R0, -10); cam.position.y = L.y - 3 + 24 * e; look.copy(L).addScaledVector(SUNXZ, 160 * e); look.y = L.y + 4 * e;
+      if (s === 0) {        // 1 전경 — 크레인 다운: 구름 사이로 내려오며 두 대를 발견
+        cam.position.copy(L).addScaledVector(F0, -30).addScaledVector(R0, 20); cam.position.y = L.y + 34 - 28 * e; look.copy(L).lerp(p2.position, 0.4);
+      } else if (s === 1) { // 2 대표 장면 — 달리: 날개 바로 위에서, 빛나는 바다를 배경으로 비스듬히 내려다봄
+        cam.position.copy(L).addScaledVector(F0, -13 + 5 * e).addScaledVector(R0, 9); cam.position.y = L.y + 11; look.copy(L).addScaledVector(F0, 2); fov = 44;
+      } else if (s === 2) { // 3 푸시 인: 뒤 비행기 어깨 너머에서 앞 비행기 쪽으로
+        cam.position.copy(L).addScaledVector(F0, -(24 - 14 * e)).addScaledVector(R0, 3.5); cam.position.y = L.y + 5 - 3 * e; look.copy(L);
+      } else if (s === 3) { // 4 오비트: 뒤 비행기 둘레를 반 바퀴, 해가 날개 뒤로 지나감
+        var an = 0.4 + 2.0 * e; cam.position.copy(p2.position).addScaledVector(F0, Math.cos(an) * 10.5).addScaledVector(R0, Math.sin(an) * 10.5); cam.position.y = p2.position.y + 1.8; look.copy(p2.position).lerp(L, 0.2);
+      } else {              // 5 마지막 전경 — 크레인 업: 구름 높이로 올라가 해와 빛길을 봄
+        cam.position.copy(L).addScaledVector(SUNXZ, -20).addScaledVector(R0, -7); cam.position.y = L.y - 1 + 9 * e; look.copy(L).lerp(p2.position, 0.4).addScaledVector(SUNXZ, 12 * e); look.y += 2.5 * e;
       }
       if (cam.position.y < 2.5) cam.position.y = 2.5;
       if (cam.aspect < 1) fov += 18; if (cam.fov !== fov) { cam.fov = fov; cam.updateProjectionMatrix(); }
       cam.lookAt(look);
+      drawTrail(trails[0], p1, -1, t, 0); drawTrail(trails[1], p1, 1, t, 0); drawTrail(trails[2], p2, -1, t - 0.55, 1.5); drawTrail(trails[3], p2, 1, t - 0.55, 1.5);
       key.target.position.copy(L).lerp(p2.position, 0.5); key.position.copy(key.target.position).addScaledVector(SUN, 70);
       sky.position.copy(cam.position); sea.position.set(cam.position.x, 0, cam.position.z);
       for (var i = 0; i < clouds.length; i++) clouds[i].position.x += dt * 0.7;
@@ -1359,7 +1387,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       if (visible && !reduce) { running = true; requestAnimationFrame(frame); } else { running = false; last = 0; }
     }
     tick = frame; frame(performance.now());
-    window.__skyReady = true; window.__skyDbg = function () { return [cam.position.toArray().map(Math.round), p1.position.toArray().map(Math.round), look.toArray().map(Math.round)]; }; window.__skyAt = function (sec) { t0 = performance.now() - (sec - 5.2) * 1000; last = 0; inited = false; };
+    window.__skyReady = true; window.__skyDbg = function () { return [cam.position.toArray().map(Math.round), p1.position.toArray().map(Math.round), look.toArray().map(Math.round)]; }; window.__skyAt = function (sec) { frozen = sec; inited = false; };
   }
 })();
 </script>
