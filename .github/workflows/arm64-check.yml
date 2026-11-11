@@ -1,0 +1,28 @@
+name: arm64 문서 엔진 점검
+on:
+  push:
+    branches: [arm64-check]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: 배포된 APK에서 폰용 파일 꺼내기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download work-latest -R "$GITHUB_REPOSITORY" --pattern DeolnureumWork.apk
+          unzip -q DeolnureumWork.apk 'lib/arm64-v8a/*' 'assets/node.zip' 'assets/nodelibs.txt' 'assets/selftest/*' -d apk
+          mv apk/lib/arm64-v8a t/lib
+          mkdir t/app && unzip -q apk/assets/node.zip -d t/app
+          cp apk/assets/nodelibs.txt t/
+          mv apk/assets/selftest t/samples
+          chmod -R a+rwX t
+          ls t t/app | head -40
+      - name: 안드로이드(arm64) 환경에서 실행
+        run: |
+          uname -m
+          docker run --rm -v "$PWD/t:/t" termux/termux-docker:aarch64 sh /t/run.sh
