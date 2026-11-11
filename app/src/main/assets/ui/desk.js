@@ -600,13 +600,55 @@
   const wArea = () => { const r = $("wlayer").getBoundingClientRect(); return { w: r.width, h: r.height }; };
   const snap = (v) => Math.round(v / 8) * 8;
 
-  function clampWidgets() {
-    const a = wArea();
+  // 위젯 자리는 "화면 크기별로" 따로 기억합니다 (d.pos[화면 크기 구분] = 사용자가 놓은 자리).
+  // 화면이 잠깐 작아지거나(키보드, 켜지는 도중) 다른 화면(접은 화면·펼친 화면·DeX)에서 열려도
+  // 저장해 둔 자리는 건드리지 않고, 보여 줄 때만 그 화면에 맞춰 계산합니다. 원래 화면으로 돌아오면 원래 자리 그대로입니다.
+  const classKey = (a) => Math.round(a.w / 80) + "x" + Math.round(a.h / 80);
+  function clampRect(r, a) {
+    const w = Math.max(56, Math.min(r.w, a.w - 8)), ht = Math.max(40, Math.min(r.h, a.h - 8));
+    return { x: Math.max(4, Math.min(r.x, a.w - w - 4)), y: Math.max(4, Math.min(r.y, a.h - ht - 4)), w, h: ht };
+  }
+  function rectFor(d, a) {
+    const pos = d.pos || {};
+    const own = pos[classKey(a)];
+    if (own) return clampRect(own, a);
+    // 이 화면 크기에서 놓은 적이 없음 → 가장 비슷한 화면에서 놓은 자리를 바탕으로
+    let best = null, score = Infinity;
+    for (const k in pos) {
+      const sc = Math.abs(pos[k].aw - a.w) + Math.abs(pos[k].ah - a.h);
+      if (sc < score) { score = sc; best = pos[k]; }
+    }
+    if (!best) return clampRect({ x: d.x || 16, y: d.y || 16, w: d.w || 160, h: d.h || 80 }, a);
+    if (Math.abs(best.aw - a.w) <= best.aw * 0.12 && Math.abs(best.ah - a.h) <= best.ah * 0.12) return clampRect(best, a);
+    // 크기가 많이 다른 화면: 크기는 유지하고, 가장자리에서 떨어진 비율로 자리를 옮김 (오른쪽에 붙여 둔 것은 오른쪽에)
+    const c = clampRect({ x: 0, y: 0, w: best.w, h: best.h }, a);
+    const fx = Math.min(1, best.x / Math.max(1, best.aw - best.w)), fy = Math.min(1, best.y / Math.max(1, best.ah - best.h));
+    return clampRect({ x: Math.round((a.w - c.w) * fx), y: Math.round((a.h - c.h) * fy), w: c.w, h: c.h }, a);
+  }
+  /** 지금 화면에 맞춰 보여 줄 자리를 계산 (저장된 자리는 바꾸지 않음) */
+  function layoutWidgets(area) {
+    const a = area || wArea();
     if (a.w < 50 || a.h < 50) return;
     for (const d of S.widgets) {
-      d.w = Math.max(56, Math.min(d.w, a.w - 8)); d.h = Math.max(40, Math.min(d.h, a.h - 8));
-      d.x = Math.max(4, Math.min(d.x, a.w - d.w - 4)); d.y = Math.max(4, Math.min(d.y, a.h - d.h - 4));
+      if (!d.pos || !Object.keys(d.pos).length) { // 예전 버전에서 올린 위젯: 지금 자리를 이 화면의 자리로
+        d.pos = {};
+        if (!area) d.pos[classKey(a)] = { x: d.x || 16, y: d.y || 16, w: d.w || 160, h: d.h || 80, aw: Math.round(a.w), ah: Math.round(a.h), t: Date.now() };
+      }
+      Object.assign(d, rectFor(d, a));
     }
+  }
+  /** 사용자가 놓은 자리를 지금 화면 크기의 자리로 기억 */
+  function commitWidgets() {
+    const a = wArea();
+    if (a.w < 50 || a.h < 50) return;
+    const k = classKey(a), t = Date.now();
+    for (const d of S.widgets) {
+      d.pos = d.pos || {};
+      d.pos[k] = { x: d.x, y: d.y, w: d.w, h: d.h, aw: Math.round(a.w), ah: Math.round(a.h), t };
+      const keys = Object.keys(d.pos);
+      if (keys.length > 6) { keys.sort((p, q) => (d.pos[p].t || 0) - (d.pos[q].t || 0)); for (const old of keys.slice(0, keys.length - 6)) delete d.pos[old]; }
+    }
+    save();
   }
   function syncNative() {
     if (!A || syncQueued) return;
@@ -681,7 +723,7 @@
         if (!g || e.pointerId !== g.id) return;
         g = null; size.hidden = true;
         wDragging = false;
-        save(); syncNative();
+        commitWidgets(); syncNative();
         if (!A) renderWidgetShells();
       };
       el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
@@ -719,8 +761,9 @@
     const hit = (x, y) => S.widgets.some((d) => x < d.x + d.w + 8 && x + w + 8 > d.x && y < d.y + d.h + 8 && y + ht + 8 > d.y);
     let x = Math.max(8, a.w - w - 16), y = 16, found = false;
     for (let cx = x; cx >= 8 && !found; cx -= 48) for (let cy = 16; cy + ht <= a.h - 8; cy += 16) if (!hit(cx, cy)) { x = cx; y = cy; found = true; break; }
-    S.widgets.push({ id: info.id, x: snap(x), y: snap(y), w, h: ht, label: info.label || "" });
-    clampWidgets(); save();
+    S.widgets.push({ id: info.id, x: snap(x), y: snap(y), w, h: ht, label: info.label || "", pos: {} });
+    Object.assign(S.widgets[S.widgets.length - 1], clampRect(S.widgets[S.widgets.length - 1], a));
+    commitWidgets();
     renderWidgetShells(); syncNative(); redrawSettings();
     toast("위젯을 올렸습니다. 길게 누르면 옮기거나 크기를 바꿀 수 있습니다.");
   }
@@ -767,6 +810,7 @@
   }
   function onPush(what, data) {
     if (what === "apps") { loadApps(); lastSync = ""; syncNative(); }
+    else if (what === "layout") { layoutWidgets(); renderWidgetShells(); lastSync = ""; syncNative(); }
     else if (what === "widget-added") onWidgetAdded(data || {});
     else if (what === "widget-failed") toast(data && data.reason === "denied" ? "위젯을 올리려면 확인 창에서 '허용'을 눌러 주세요." : data && data.reason === "canceled" ? "위젯 설정을 마치지 않아 올리지 않았습니다." : "이 위젯은 올리지 못했습니다.");
     else if (what === "widget-edit") enterWidgetEdit(data && data.id);
@@ -826,14 +870,14 @@
     if (e.key === "Escape" && wEdit && $("start").hidden && $("quick").hidden) return exitWidgetEdit();
     if (e.key === "Meta" || (e.key === "Escape" && (!$("start").hidden || !$("quick").hidden))) { e.preventDefault(); if (e.key === "Meta") toggleStart(); else closePanels(); }
   });
-  addEventListener("resize", () => { for (const w of wins) applyRect(w); clampWidgets(); renderWidgetShells(); syncNative(); });
+  addEventListener("resize", () => { for (const w of wins) applyRect(w); layoutWidgets(); renderWidgetShells(); syncNative(); });
 
   // ---------- 시작 ----------
   applyLook();
   for (const b of BUILTIN) byKey.set(b.key, b);
   if (!S.desktop) S.desktop = BUILTIN.map((b) => b.key);
   renderDesk(); renderTaskbar(); renderTray(); tick();
-  clampWidgets(); renderWidgetShells(); syncNative();
+  layoutWidgets(); renderWidgetShells(); syncNative();
   setInterval(tick, 10000);
   setInterval(refreshStatus, 60000);
   refreshStatus().then(applyLook);
@@ -845,6 +889,28 @@
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const errors = [];
     addEventListener("error", (e) => errors.push(String(e.message)));
+    if (/[?&]selftest=2/.test(location.search)) {
+      // 2단계: 앱을 완전히 껐다 켠 뒤 — 위젯이 놓아 둔 자리에 그대로 있는지
+      try {
+        await wait(3000);
+        const was = JSON.parse(localStorage.getItem("desk_test_probe") || "null");
+        const probe = await call("widgetProbe");
+        const v = Array.isArray(probe) ? probe[0] : null;
+        const same = !!(was && v && v.id === was.id && v.sx === was.sx && v.sy === was.sy && v.w === was.w && v.h === was.h && v.shown && v.kids > 0);
+        log((same ? "PASS" : "FAIL") + " widget kept place after restart before=" + JSON.stringify(was) + " after=" + JSON.stringify(v));
+        log("SHOT2");
+        await wait(4000);
+        if (S.widgets[0]) removeWidget(S.widgets[0].id);
+        await wait(1000);
+        const left = await call("widgetProbe");
+        log((Array.isArray(left) && left.length === 0 && S.widgets.length === 0 ? "PASS" : "FAIL") + " widget removed native=" + JSON.stringify(left));
+      } catch (e) {
+        log("FAIL exception " + (e && e.stack || e));
+      }
+      log("errors=" + errors.length + " " + errors.slice(0, 3).join(" | "));
+      log("DONE2");
+      return;
+    }
     try {
       log("apps count=" + apps.length + " status=" + JSON.stringify(status));
       toggleStart(true);
@@ -904,12 +970,27 @@
           enterWidgetEdit(wd.id);
           const frames = $("wlayer").querySelectorAll(".wframe").length;
           wd.w += 24; wd.x -= 32;
-          renderWidgetShells(); syncNative();
+          commitWidgets(); renderWidgetShells(); syncNative();
           await wait(1000);
           probe = await call("widgetProbe");
           const v2 = Array.isArray(probe) ? probe[0] : null;
           log((frames === 1 && v2 && v2.w > v.w && v2.sx < v.sx ? "PASS" : "FAIL") + " widget edit frames=" + frames + " width " + v.w + "→" + (v2 && v2.w) + " x " + v.sx + "→" + (v2 && v2.sx));
           exitWidgetEdit();
+          // 화면이 잠깐 작아져도(키보드·켜지는 도중) 놓아 둔 자리가 바뀌지 않는지
+          const a0 = wArea(), keep = { x: wd.x, y: wd.y, w: wd.w, h: wd.h }, saved = JSON.stringify(wd.pos);
+          wd.pos[classKey(a0)].y = a0.h - wd.h - 12; layoutWidgets();      // 맨 아래에 놓았다고 치고
+          const low = wd.y;
+          layoutWidgets({ w: a0.w, h: 220 });                             // 화면 높이가 220으로 줄었다가
+          const squeezed = wd.y;
+          layoutWidgets();                                                // 원래대로 돌아옴
+          const back = wd.y === low && squeezed < low && squeezed + wd.h <= 220;
+          wd.pos = JSON.parse(saved); layoutWidgets();
+          const restored = wd.x === keep.x && wd.y === keep.y && wd.w === keep.w && wd.h === keep.h;
+          log((back && restored ? "PASS" : "FAIL") + " widget place survives small screen low=" + low + " squeezed=" + squeezed + " back=" + wd.y + " restored=" + restored);
+          save(); renderWidgetShells(); lastSync = ""; syncNative();
+          await wait(800);
+          const pv = await call("widgetProbe");
+          localStorage.setItem("desk_test_probe", JSON.stringify(Array.isArray(pv) ? pv[0] : null));
         }
       }
       await wait(600);
@@ -918,12 +999,7 @@
       const settings = apps.find((a) => a.pkg === "com.android.settings") || apps[0];
       const r = settings ? await openApp(settings.key, "window") : null;
       log((r && r.ok ? "PASS" : "FAIL") + " launch " + (settings && settings.pkg) + " → " + JSON.stringify(r));
-      if (wd) {
-        removeWidget(wd.id);
-        await wait(1000);
-        const left = await call("widgetProbe");
-        log((Array.isArray(left) && left.length === 0 && S.widgets.length === 0 ? "PASS" : "FAIL") + " widget removed native=" + JSON.stringify(left));
-      }
+
     } catch (e) {
       log("FAIL exception " + (e && e.stack || e));
     }

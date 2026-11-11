@@ -256,7 +256,11 @@ public class MainActivity extends ComponentActivity {
         registerReceiver(packages, pf);
         registerReceiver(battery, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
-        web.loadUrl(INDEX + (selftest ? "?selftest" : ""));
+        // 화면 크기가 바뀌면(접기·펴기, 창 크기) 위젯 자리를 다시 맞추게 알림
+        web.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (r - l != or - ol || b - t != ob - ot) push("layout");
+        });
+        web.loadUrl(INDEX + (selftest ? ("2".equals(getIntent().getStringExtra("desk.phase")) ? "?selftest=2" : "?selftest") : ""));
     }
 
     @Override

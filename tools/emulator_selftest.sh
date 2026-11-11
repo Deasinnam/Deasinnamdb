@@ -29,6 +29,18 @@ done
 sleep 4
 adb exec-out screencap -p > desk-screen-launched.png
 adb logcat -d -s DESK_SELFTEST:I Desk:* DeskConsole:* > selftest-result.txt
+# 2단계: 앱을 완전히 껐다 켠 뒤 위젯이 놓아 둔 자리에 그대로 있는지
+adb shell am force-stop "$PKG"
+sleep 2
+adb logcat -c
+adb shell am start -n "$PKG/.MainActivity" --ez desk.selftest true --es desk.phase 2
+shot2=0
+for i in $(seq 1 20); do
+  sleep 2
+  if [ "$shot2" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT2"; then adb exec-out screencap -p > desk-screen-restart.png; shot2=1; fi
+  if adb logcat -d -s DESK_SELFTEST:I | grep -q "DONE2"; then break; fi
+done
+adb logcat -d -s DESK_SELFTEST:I Desk:* DeskConsole:* >> selftest-result.txt
 echo "===== 점검 결과 ====="
 grep DESK_SELFTEST selftest-result.txt | cut -c1-400
 echo "===== 홈 앱으로 고를 수 있는지 ====="
@@ -41,7 +53,7 @@ pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)
 clicks=$(grep -c "DESK_SELFTEST: WIDGET-CLICK" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn 위젯이 받은 누름=$clicks (1이어야 함: 드러난 위젯은 받고, 메뉴가 열려 있으면 받지 않음)"
-if grep -q "DESK_SELFTEST: DONE" selftest-result.txt && [ "$pass" -ge 10 ] && [ "$failn" = 0 ] && [ "$clicks" = 1 ] && [ "$tap1" = 1 ] && [ "$tap2" = 1 ]; then echo "자동 점검 통과"; exit 0; fi
+if grep -q "DESK_SELFTEST: DONE2" selftest-result.txt && [ "$pass" -ge 12 ] && [ "$failn" = 0 ] && [ "$clicks" = 1 ] && [ "$tap1" = 1 ] && [ "$tap2" = 1 ]; then echo "자동 점검 통과"; exit 0; fi
 echo "자동 점검 실패"
 grep -v DESK_SELFTEST selftest-result.txt | tail -30
 adb logcat -d | grep -E "AndroidRuntime|FATAL" | tail -30
