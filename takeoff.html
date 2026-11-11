@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>대신남 스피드미터 — 이제 차 안에서 이륙하세요</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #0b0b0c; overflow: hidden; }
+.stage { position: fixed; inset: 0; background: linear-gradient(180deg, #1f5fc0 0%, #6fb0ee 42%, #cfe6f8 56%, #1c6aa8 57%, #0b3a6e 100%); }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.shade { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130% 100% at 50% 45%, transparent 60%, rgba(4,24,60,.28) 100%), linear-gradient(180deg, transparent 62%, rgba(3,22,54,.62)); }
+.copy { position: absolute; left: 0; right: 0; bottom: 8.5%; text-align: center; color: #fff; padding: 0 20px; opacity: 0; }
+.copy b { display: block; font: 600 clamp(14px, 1.7vw, 26px)/1 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .3em; color: #fff6d8; text-shadow: 0 1px 12px rgba(3,20,50,.8); }
+.copy h1 { margin-top: 16px; font: 600 clamp(24px, 3.5vw, 54px)/1.35 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .1em; text-shadow: 0 1px 3px rgba(3,20,50,.6), 0 2px 30px rgba(3,20,50,.9); }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <canvas id="c" aria-label="맑은 낮 푸른 바다 위를 선회하는 A-1H 스카이레이더 축소 모형의 3D 장면"></canvas>
+  <div class="shade"></div>
+  <div class="copy" id="copy"><b>대신남 스피드미터!</b><h1>이제 차 안에서 이륙하세요.</h1></div>
+</div>
+<script src="vendor/three.min.js"></script>
+<script>
+"use strict";
+// A-1H 스카이레이더 축소 모형이 맑은 낮 푸른 바다 위를 천천히 선회한다.
+// 모든 값은 시간 t 하나로 계산(상태·시계 없음) → ?render 모드에서 프레임 단위로 그대로 재현된다.
+(function () {
+  var T = window.THREE, canvas = document.getElementById("c"), copy = document.getElementById("copy");
+  var RENDER = /[?&]render/.test(location.search), LOOP = 20;
+  var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(RENDER ? 1 : Math.min(window.innerWidth < 700 ? 1.5 : 1.75, window.devicePixelRatio || 1));
+  renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+  var scene = new T.Scene(), cam = new T.PerspectiveCamera(38, 16 / 9, 1.2, 5200);
+  function lin(c) { return new T.Color(c).convertSRGBToLinear(); }
+  scene.fog = new T.FogExp2(lin(0xa8cdf0), 0.0011);
+  var SUN = new T.Vector3(-0.32, 0.72, -0.94).normalize(), SUNXZ = new T.Vector3(SUN.x, 0, SUN.z).normalize();
+  // 반사용 환경(코드로 만든 노을빛 방)
+  (function () { var env = new T.Scene(); function eb(c, w, h, d, x, y, z) { var m = new T.Mesh(new T.BoxGeometry(w, h, d), new T.MeshBasicMaterial({ color: c, side: T.DoubleSide })); m.position.set(x, y, z); env.add(m); }
+    eb(0x8fbdf0, 40, 40, 40, 0, 0, 0); eb(0xffffff, 12, 0.5, 12, -6, 19, -10);            // 맑은 하늘빛 방, 위쪽에 해
+    eb(0xdcecff, 30, 0.5, 30, 0, 19.5, 0); eb(0x1f5f9f, 30, 0.5, 30, 0, -19, 0); eb(0xf4f8ff, 0.5, 8, 14, 19, 4, 0);
+    scene.environment = new T.PMREMGenerator(renderer).fromScene(env, 0.04).texture; })();
+
+  // ---------- 하늘 · 바다 · 구름 ----------
+  var SKY = ["vec3 skyCol(vec3 d){ float h = max(d.y, 0.0);",
+    "  vec3 c = mix(vec3(0.78,0.90,0.98), vec3(0.36,0.63,0.94), smoothstep(0.0,0.22,h));",
+    "  c = mix(c, vec3(0.12,0.36,0.78), smoothstep(0.18,0.75,h));",
+    "  float s = max(dot(d, SUN), 0.0);",
+    "  c += vec3(1.0,0.97,0.88) * (pow(s, 10.0) * 0.16 + pow(s, 220.0) * 0.5); return c; }"].join("\n");
+  var U = { SUN: { value: SUN }, uT: { value: 0 } };
+  var sky = new T.Mesh(new T.SphereGeometry(4000, 32, 20), new T.ShaderMaterial({ side: T.BackSide, depthWrite: false, fog: false, uniforms: U,
+    vertexShader: "varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+    fragmentShader: "uniform vec3 SUN; varying vec3 vD;\n" + SKY + "\nvoid main(){ vec3 d = normalize(vD); vec3 c = skyCol(d); float s = dot(d, SUN); c = mix(c, vec3(1.0,1.0,0.96), smoothstep(0.9988,0.9993,s)); gl_FragColor = vec4(c,1.0); }" }));
+  scene.add(sky);
+  var sea = new T.Mesh(new T.PlaneGeometry(9000, 9000), new T.ShaderMaterial({ uniforms: U,
+    vertexShader: "varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+    fragmentShader: "uniform vec3 SUN; uniform float uT; varying vec3 vW;\n" + SKY + [
+      "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }",
+      "float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1.0,0.0)), f.x), mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), f.x), f.y); }",
+      "float H(vec2 p, float t, float k){ return vn(p*0.055 + vec2(t*0.10, t*0.04)) + vn(p*0.16 - vec2(t*0.19, 0.0))*0.5 + vn(p*0.47 + vec2(0.0, t*0.33))*0.26*k + vn(p*1.3 - vec2(t*0.5, t*0.2))*0.13*k*k; }",
+      "void main(){ vec3 V = normalize(cameraPosition - vW); float dist = length(cameraPosition - vW);",
+      "  vec2 p = vW.xz; float t = uT; float k = 1.0 / (1.0 + dist * 0.004);",
+      "  vec2 q = vec2(p.x, p.y * 2.1); float e = 0.9;",
+      "  float h0 = H(q, t, k), hx = H(q + vec2(e, 0.0), t, k), hz = H(q + vec2(0.0, e), t, k);",
+      "  vec3 N = normalize(vec3((hx - h0) * 1.5, 1.0, (hz - h0) * 1.5)); vec3 R = reflect(-V, N); R.y = abs(R.y);",
+      "  float fr = pow(1.0 - max(dot(N, V), 0.0), 3.0);",
+      "  vec3 c = mix(vec3(0.015,0.20,0.42), skyCol(R), 0.20 + 0.80*fr);",
+      "  c += vec3(0.0,0.11,0.12) * (1.0 - fr) * (0.6 + 0.8*(h0 - 0.9));",
+      "  float s = max(dot(R, SUN), 0.0); c += vec3(1.0,0.98,0.92) * (pow(s, 520.0)*3.2 + pow(s, 60.0)*0.22);",
+      "  c = mix(c, skyCol(vec3(-V.x, 0.0, -V.z)), smoothstep(600.0, 3800.0, dist)); gl_FragColor = vec4(c,1.0); }"].join("\n") }));
+  sea.rotation.x = -Math.PI / 2; scene.add(sea);
+  var seed = 11; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  var cloudMat = new T.ShaderMaterial({ uniforms: U,
+    vertexShader: "varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+    fragmentShader: "uniform vec3 SUN; varying vec3 vN; varying vec3 vW;\n" + SKY + [
+      "void main(){ vec3 n = normalize(vN); vec3 d = normalize(vW - cameraPosition);",
+      "  float l = dot(n, normalize(SUN + vec3(0.0,0.30,0.0)))*0.5+0.5;",
+      "  vec3 c = mix(vec3(0.60,0.69,0.84), vec3(0.86,0.90,0.96), smoothstep(0.24,0.50,l));",
+      "  c = mix(c, vec3(1.0,1.0,0.99), smoothstep(0.58,0.82,l));",
+      "  c -= vec3(0.10,0.07,0.03) * smoothstep(-0.1,-0.9,n.y);",
+      "  c = mix(c, skyCol(vec3(d.x, 0.03, d.z)), smoothstep(300.0, 2600.0, length(vW - cameraPosition))*0.7); gl_FragColor = vec4(c,1.0); }"].join("\n") });
+  var ball = new T.IcosahedronGeometry(1, 3), clouds = [];
+  for (var i = 0; i < 40; i++) {
+    var g = new T.Group(), n = 8 + Math.floor(rnd() * 8), sc = 18 + rnd() * 34, half = sc * 2.4;
+    for (var j = 0; j < n; j++) { var m = new T.Mesh(ball, cloudMat), r = (0.6 + rnd() * 0.9) * sc; m.scale.set(r, r * 0.8, r); m.position.set((rnd() - 0.5) * sc * 3.6, rnd() * sc, (rnd() - 0.5) * sc * 1.8); g.add(m); }
+    var a = rnd() * Math.PI * 2, d = (175 + half) * (i < 18 ? 1.0 + rnd() * 0.3 : 1.4 + rnd() * 2.6); // 선회 길과 카메라 자리는 비워 둠
+    g.position.set(Math.cos(a) * d, (i % 3 === 0 ? -sc * 0.2 : 22 + rnd() * 90), Math.sin(a) * d); g.rotation.y = rnd() * 6.28; g.userData.x0 = g.position.x; scene.add(g); clouds.push(g);
+  }
+
+  // ---------- 빛 ----------
+  var key = new T.DirectionalLight(lin(0xfff3df), 2.1); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.04; key.shadow.radius = 3;
+  var sc0 = key.shadow.camera; sc0.left = -11; sc0.right = 11; sc0.top = 11; sc0.bottom = -11; sc0.near = 20; sc0.far = 110;
+  scene.add(key); scene.add(key.target);
+  scene.add(new T.HemisphereLight(lin(0xbcd9ff), lin(0x3f78ad), 0.75));
+  var rim = new T.DirectionalLight(lin(0xffffff), 0.7); rim.position.set(0.5, 0.55, 0.7); scene.add(rim);
+
+  // ---------- 질감: 패널선과 리벳을 캔버스에 그려 색·요철 지도로 씀 ----------
+  var GRAY = "#7f8990", WHITE = "#ecebe6";
+  function insignia(x, cx, cy, r, rot) { x.save(); x.translate(cx, cy); x.rotate(rot);
+    x.fillStyle = "#fff"; x.strokeStyle = "#1d2b52"; x.lineWidth = r * 0.14; x.fillRect(-r * 2.1, -r * 0.42, r * 4.2, r * 0.84); x.strokeRect(-r * 2.1, -r * 0.42, r * 4.2, r * 0.84);
+    x.fillStyle = "#b3262b"; x.fillRect(-r * 2.03, -r * 0.1, r * 4.06, r * 0.2);
+    x.fillStyle = "#1d2b52"; x.beginPath(); x.arc(0, 0, r, 0, 6.283); x.fill();
+    x.fillStyle = "#fff"; x.beginPath(); for (var k = 0; k < 10; k++) { var rr = k % 2 ? r * 0.38 : r * 0.98, an = -Math.PI / 2 + k * Math.PI / 5; x[k ? "lineTo" : "moveTo"](Math.cos(an) * rr, Math.sin(an) * rr); } x.closePath(); x.fill(); x.restore(); }
+  function fuselageMaps() {
+    var W = 2048, H = 2048, c = document.createElement("canvas"), b = document.createElement("canvas"); c.width = b.width = W; c.height = b.height = H;
+    var x = c.getContext("2d"), y = b.getContext("2d");
+    x.fillStyle = WHITE; x.fillRect(0, 0, W, H); x.fillStyle = GRAY; x.fillRect(W * 0.175, 0, W * 0.65, H);          // 위쪽 회색, 아래쪽 흰색
+    var gy = function (v) { return (1 - v) * H; };
+    x.fillStyle = "#26292c"; x.fillRect(W * 0.455, gy(0.80), W * 0.09, gy(0.655) - gy(0.80));                          // 조종석 앞 무광 검정(눈부심 방지)
+    y.fillStyle = "#808080"; y.fillRect(0, 0, W, H);
+    var rings = [0.06, 0.12, 0.19, 0.27, 0.35, 0.43, 0.50, 0.57, 0.64, 0.70, 0.755, 0.80, 0.815, 0.86, 0.905, 0.93];
+    function line(ctx, x0, y0, x1, y1, col, w) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }
+    rings.forEach(function (v) { line(x, 0, gy(v), W, gy(v), "rgba(20,24,30,.42)", 2.5); line(y, 0, gy(v), W, gy(v), "#3c3c3c", 4);
+      for (var px = 6; px < W; px += 22) { x.fillStyle = "rgba(20,24,30,.30)"; x.beginPath(); x.arc(px, gy(v) - 9, 1.7, 0, 6.283); x.fill(); y.fillStyle = "#b4b4b4"; y.beginPath(); y.arc(px, gy(v) - 9, 2.2, 0, 6.283); y.fill(); } });
+    for (var s = 0; s < 16; s++) { var px = (s + 0.5) / 16 * W; line(x, px, gy(0.80), px, gy(0.03), "rgba(20,24,30,.26)", 2); line(y, px, gy(0.80), px, gy(0.03), "#505050", 3);
+      for (var py = gy(0.80); py < gy(0.03); py += 24) { x.fillStyle = "rgba(20,24,30,.22)"; x.beginPath(); x.arc(px + 8, py, 1.5, 0, 6.283); x.fill(); } }
+    for (var f = 0; f < 40; f++) { var fx = (f + 0.5) / 40 * W; line(x, fx, gy(0.815), fx, gy(0.80), "rgba(20,24,30,.5)", 2); }   // 카울 플랩
+    insignia(x, W * 0.27, gy(0.36), 62, Math.PI / 2); insignia(x, W * 0.73, gy(0.36), 62, -Math.PI / 2);
+    var map = new T.CanvasTexture(c), bump = new T.CanvasTexture(b); map.encoding = T.sRGBEncoding; map.anisotropy = bump.anisotropy = 8; return { map: map, bump: bump };
+  }
+  function panelTile() { var S = 512, c = document.createElement("canvas"); c.width = c.height = S; var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, S, S);
+    x.strokeStyle = "rgba(20,24,30,.42)"; x.lineWidth = 3; x.strokeRect(0, 0, S, S); x.strokeStyle = "rgba(20,24,30,.22)"; x.lineWidth = 2; x.beginPath(); x.moveTo(0, S * 0.5); x.lineTo(S, S * 0.5); x.moveTo(S * 0.62, 0); x.lineTo(S * 0.62, S); x.stroke();
+    x.fillStyle = "rgba(20,24,30,.26)"; for (var p = 10; p < S; p += 26) { [12, S * 0.5 + 12].forEach(function (q) { x.beginPath(); x.arc(p, q, 2, 0, 6.283); x.fill(); }); x.beginPath(); x.arc(12, p, 2, 0, 6.283); x.fill(); }
+    var t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(0.62, 0.62); t.encoding = T.sRGBEncoding; t.anisotropy = 8; return t; }
+  var fm = fuselageMaps(), tile = panelTile();
+  function paint(c, o) { var p = { color: lin(c), roughness: 0.5, metalness: 0.08, clearcoat: 0.35, clearcoatRoughness: 0.4, envMapIntensity: 0.45 }; for (var k in o) p[k] = o[k]; return new T.MeshPhysicalMaterial(p); }
+  var mFus = paint(0xffffff, { map: fm.map, bumpMap: fm.bump, bumpScale: 0.012 });
+  var mGray = paint(GRAY, { map: tile }), mWhite = paint(WHITE, { map: tile, roughness: 0.46 });
+  var mBare = new T.MeshPhysicalMaterial({ color: lin(0xb9b4ac), metalness: 0.92, roughness: 0.34, envMapIntensity: 0.8 });
+  var mDark = new T.MeshPhysicalMaterial({ color: lin(0x232326), metalness: 0.6, roughness: 0.62, envMapIntensity: 0.5 });
+  var mExh = new T.MeshPhysicalMaterial({ color: lin(0x3a2c26), metalness: 0.7, roughness: 0.7, emissive: new T.Color(1, 0.32, 0.08), emissiveIntensity: 0 });
+  var mGlass = new T.MeshPhysicalMaterial({ color: lin(0x9fd0e2), roughness: 0.05, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.42, envMapIntensity: 1.5, depthWrite: false });
+  var mRubber = new T.MeshPhysicalMaterial({ color: lin(0x18181b), roughness: 0.88 });
+  var mBlade = new T.MeshPhysicalMaterial({ color: lin(0x151517), roughness: 0.55, metalness: 0.3, transparent: true, opacity: 0.5 });
+  var mTip = new T.MeshPhysicalMaterial({ color: lin(0xf2c230), roughness: 0.5, transparent: true, opacity: 0.6 });
+  var mFabric = new T.MeshPhysicalMaterial({ color: lin(0x5a5f48), roughness: 0.95 });
+
+  // ---------- 기체 (기수 +Z, 단위 m: 길이 약 11.8, 날개폭 약 15.2) ----------
+  var plane = new T.Group(), body = new T.Group(); plane.add(body); scene.add(plane);
+  function add(geo, mat, x, y, z, parent) { var m = new T.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); m.castShadow = true; m.receiveShadow = true; (parent || body).add(m); return m; }
+  // 동체: 반지름 곡선을 돌려 만든 회전체(세로로 조금 더 큼)
+  var CP = [[-6.6, 0.08], [-5.7, 0.30], [-4.2, 0.54], [-2.5, 0.76], [-0.8, 0.90], [0.8, 0.97], [2.55, 0.98], [2.75, 1.05], [3.95, 1.07], [4.35, 0.95]];
+  function rad(z) { for (var i = 0; i < CP.length - 1; i++) if (z <= CP[i + 1][0]) { var u = (z - CP[i][0]) / (CP[i + 1][0] - CP[i][0]); u = u * u * (3 - 2 * u); return CP[i][1] + (CP[i + 1][1] - CP[i][1]) * u; } return CP[CP.length - 1][1]; }
+  var prof = []; for (var k = 0; k <= 46; k++) { var z = -6.6 + (4.35 + 6.6) * k / 46; prof.push(new T.Vector2(rad(z), z)); }
+  prof.push(new T.Vector2(0.80, 4.40), new T.Vector2(0.74, 4.2));
+  var fus = add(new T.LatheGeometry(prof, 48), mFus); fus.rotation.x = Math.PI / 2; fus.scale.set(1, 1, 1.13);
+  // 엔진: 카울 안쪽의 성형 엔진 실린더와 기어 박스
+  add(new T.CircleGeometry(0.78, 32), mDark, 0, 0, 3.9);
+  for (var e = 0; e < 18; e++) { var an = e / 18 * 6.283, cy = add(new T.CylinderGeometry(0.085, 0.1, 0.36, 10), e % 2 ? mBare : mDark, Math.cos(an) * 0.5, Math.sin(an) * 0.5, 4.0 + (e % 2) * 0.1); cy.rotation.z = an - Math.PI / 2; }
+  add(new T.CylinderGeometry(0.3, 0.34, 0.5, 20), mBare, 0, 0, 4.3).rotation.x = Math.PI / 2;
+  var exh = []; [-1, 1].forEach(function (s) { for (var q = 0; q < 6; q++) { var ex = add(new T.CylinderGeometry(0.05, 0.06, 0.34, 8), mExh, s * 1.045, -0.42 + q * 0.17, 2.62); ex.rotation.x = Math.PI / 2; exh.push(ex); } });
+  // 프로펠러: 네 날, 끝은 노랑. 돌 때는 반투명 원반이 겹쳐 보임
+  var prop = new T.Group(); prop.position.z = 4.62; body.add(prop);
+  var bs = new T.Shape(); bs.moveTo(-0.09, 0.2); bs.quadraticCurveTo(-0.23, 1.1, -0.13, 1.96); bs.quadraticCurveTo(0, 2.1, 0.13, 1.96); bs.quadraticCurveTo(0.23, 1.1, 0.09, 0.2); bs.closePath();
+  var bladeGeo = new T.ExtrudeGeometry(bs, { depth: 0.05, bevelEnabled: false }); bladeGeo.translate(0, 0, -0.025);
+  for (var b4 = 0; b4 < 4; b4++) { var arm = new T.Group(); arm.rotation.z = b4 * Math.PI / 2; prop.add(arm); var bl = new T.Mesh(bladeGeo, mBlade); bl.rotation.y = 0.5; arm.add(bl);
+    var tp = new T.Mesh(new T.BoxGeometry(0.2, 0.13, 0.06), mTip); tp.position.y = 1.96; tp.rotation.y = 0.5; arm.add(tp); }
+  add(new T.CylinderGeometry(0.2, 0.24, 0.42, 16), mBare, 0, 0, 0, prop).rotation.x = Math.PI / 2;
+  var dc = document.createElement("canvas"); dc.width = dc.height = 256; (function () { var x = dc.getContext("2d"), g = x.createRadialGradient(128, 128, 14, 128, 128, 127);
+    g.addColorStop(0, "rgba(20,20,24,0)"); g.addColorStop(0.2, "rgba(20,20,24,.20)"); g.addColorStop(0.86, "rgba(20,20,24,.11)"); g.addColorStop(0.9, "rgba(242,194,48,.55)"); g.addColorStop(0.955, "rgba(242,194,48,.5)"); g.addColorStop(1, "rgba(242,194,48,0)");
+    x.fillStyle = g; x.fillRect(0, 0, 256, 256); })();
+  var disc = new T.Mesh(new T.CircleGeometry(2.12, 48), new T.MeshBasicMaterial({ map: new T.CanvasTexture(dc), transparent: true, side: T.DoubleSide, depthWrite: false, fog: false })); disc.position.z = 4.63; body.add(disc);
+  // 조종석: 물방울형 덮개, 좌석과 조종사
+  add(new T.BoxGeometry(0.86, 0.1, 2.5), mDark, 0, 0.99, 0.35);
+  var pilot = [add(new T.BoxGeometry(0.5, 0.62, 0.12), mFabric, 0, 1.2, -0.25)];
+  pilot.push(add(new T.SphereGeometry(0.19, 16, 12), paint(0xe8e4da, { roughness: 0.35 }), 0, 1.36, 0.02));
+  pilot.push(add(new T.BoxGeometry(0.4, 0.3, 0.3), mFabric, 0, 1.08, 0.02));
+  add(new T.BoxGeometry(0.6, 0.22, 0.3), mDark, 0, 1.08, 0.95);
+  var can = add(new T.SphereGeometry(1, 28, 18), mGlass, 0, 1.0, 0.3); can.scale.set(0.46, 0.62, 1.42); can.castShadow = false; can.renderOrder = 2;
+  var arc = add(new T.TorusGeometry(0.47, 0.03, 8, 24, Math.PI), mGray, 0, 1.0, 1.02); arc.scale.y = 1.32;
+  // 조종석 앞 유리판(HUD): 대신남 스피드미터 앱 화면이 반투명하게 떠 있고, 그 너머로 바다와 하늘이 비침
+  // 앱 화면은 녹화 영상이 아니라 매 프레임 직접 그림 → 실제 기울기·방향·속도와 맞물리고, 화면 속 풍경도 바다
+  var HW = 720, HH = 728, hc = document.createElement("canvas"); hc.width = HW; hc.height = HH; var hx = hc.getContext("2d");
+  var hudTex = new T.CanvasTexture(hc); hudTex.encoding = T.sRGBEncoding; hudTex.anisotropy = 8;
+  var SANS = '"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif', SERIF = '"Noto Serif KR",Georgia,serif', GOLD = "#b99c4c", INK = "#1b1c15";
+  function rr(x, y, w, hh, r) { hx.beginPath(); hx.moveTo(x + r, y); hx.arcTo(x + w, y, x + w, y + hh, r); hx.arcTo(x + w, y + hh, x, y + hh, r); hx.arcTo(x, y + hh, x, y, r); hx.arcTo(x, y, x + w, y, r); hx.closePath(); }
+  function tx(s, x, y, font, col, al) { hx.font = font; hx.fillStyle = col; hx.textAlign = al || "left"; hx.fillText(s, x, y); }
+  function tape(x0, label, val, unit, step, col) { var y0 = 164, w = 102, hh = 446, cy = y0 + hh / 2 + 10;
+    hx.fillStyle = "#14150f"; hx.fillRect(x0, y0, w, hh); hx.strokeStyle = GOLD; hx.lineWidth = 1.5; hx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, hh - 1);
+    hx.fillStyle = "#2c3020"; hx.fillRect(x0 + 2, y0 + 2, w - 4, 30); tx(label, x0 + w / 2, y0 + 23, "700 17px " + SANS, "#cfe58f", "center");
+    hx.save(); hx.beginPath(); hx.rect(x0, y0 + 34, w, hh - 36); hx.clip();
+    var ppu = 46 / step; for (var v = Math.floor(val / step) * step - step * 5; v <= val + step * 5; v += step) { var y = cy - (v - val) * ppu; if (v < 0) continue;
+      hx.strokeStyle = "#d9d9cf"; hx.lineWidth = 2; hx.beginPath(); hx.moveTo(x0 + w - 22, y); hx.lineTo(x0 + w - 4, y); hx.stroke(); tx(String(v), x0 + w - 28, y + 7, "700 20px " + SANS, "#f0f0e6", "right"); }
+    hx.restore();
+    hx.fillStyle = "#0a0b08"; hx.strokeStyle = "#f2f2ea"; hx.lineWidth = 2; hx.beginPath(); hx.moveTo(x0 + 2, cy - 44); hx.lineTo(x0 + w - 12, cy - 44); hx.lineTo(x0 + w - 2, cy); hx.lineTo(x0 + w - 12, cy + 44); hx.lineTo(x0 + 2, cy + 44); hx.closePath(); hx.fill(); hx.stroke();
+    tx(String(Math.round(val)), x0 + w / 2 - 4, cy + 12, "700 44px " + SANS, col, "center"); tx(unit, x0 + w / 2 - 4, cy + 36, "500 14px " + SANS, "#d6d6cc", "center"); }
+  function drawHud(t, roll, pitch, hdg, spd, alt, dist) {
+    hx.clearRect(0, 0, HW, HH); hx.fillStyle = "#26271c"; rr(0, 0, HW, HH, 14); hx.fill(); hx.strokeStyle = GOLD; hx.lineWidth = 3; rr(2, 2, HW - 4, HH - 4, 13); hx.stroke();
+    hx.textBaseline = "alphabetic";
+    tx("S P E E D O M E T E R", 22, 38, "700 19px " + SERIF, "#d8cfa8"); tx("· GPS 수신", 250, 38, "500 16px " + SANS, "#a9d17a");
+    hx.fillStyle = "#0e0f0a"; rr(384, 12, 168, 38, 6); hx.fill(); hx.strokeStyle = GOLD; hx.lineWidth = 2; hx.stroke(); tx("콕핏 PFD", 398, 38, "700 19px " + SANS, "#f4f4ea");
+    var sec = Math.floor(t * 1 + 22967), hhm = function (n) { return (n < 10 ? "0" : "") + n; };
+    var stats = [["최고 속도", "342", "km/h"], ["평균 속도", "296", "km/h"], ["주행 거리", dist.toFixed(1), "km"], ["주행 시간", hhm(Math.floor(sec / 3600)) + ":" + hhm(Math.floor(sec / 60) % 60) + ":" + hhm(sec % 60), ""], ["고도", String(Math.round(alt)), "m"], ["GPS 정확도", "±4", "m"]];
+    stats.forEach(function (s, i) { var x = 8 + i * 118; hx.fillStyle = "#12130d"; rr(x, 62, 114, 56, 6); hx.fill(); hx.strokeStyle = GOLD; hx.lineWidth = 1.5; hx.stroke();
+      tx(s[0], x + 9, 82, "500 13px " + SANS, "#b9c7a0"); tx(s[1], x + 9, 108, "700 " + (s[1].length > 6 ? 19 : 23) + "px " + SANS, "#e3efae"); if (s[2]) { var w = hx.measureText(s[1]).width; tx(s[2], x + 13 + w, 108, "500 11px " + SANS, "#b9c7a0"); } });
+    hx.fillStyle = "#12130d"; hx.fillRect(8, 124, HW - 16, 34); hx.strokeStyle = GOLD; hx.lineWidth = 1.5; hx.strokeRect(8.5, 124.5, HW - 17, 33);
+    tx("GPS", 24, 148, "700 18px " + SERIF, "#f1eedf"); tx("TRK " + Math.round(hdg) + "°", HW / 2, 148, "700 18px " + SERIF, "#f1eedf", "center"); tx("LIM OFF", HW - 24, 148, "700 18px " + SERIF, "#f1eedf", "right");
+    // 가운데 합성 시야: 바다와 하늘. 실제 기울기(roll)와 기수 각도(pitch)를 따라 움직임
+    var vx = 116, vy = 164, vw = 488, vh = 446, cx = vx + vw / 2, cy = vy + vh / 2, PPD = 8.5;
+    hx.save(); hx.beginPath(); hx.rect(vx, vy, vw, vh); hx.clip();
+    hx.translate(cx, cy); hx.rotate(-roll); hx.translate(0, pitch * 57.3 * PPD);
+    var g = hx.createLinearGradient(0, -520, 0, 0); g.addColorStop(0, "#1c58b8"); g.addColorStop(0.7, "#5c9fe6"); g.addColorStop(1, "#cfe6f7"); hx.fillStyle = g; hx.fillRect(-700, -700, 1400, 700);
+    g = hx.createLinearGradient(0, 0, 0, 520); g.addColorStop(0, "#3f8fc8"); g.addColorStop(0.12, "#1f6fb2"); g.addColorStop(1, "#0a3566"); hx.fillStyle = g; hx.fillRect(-700, 0, 1400, 700);
+    for (var c = 0; c < 7; c++) { var px = ((c * 263 - hdg * 9) % 1400 + 1400) % 1400 - 700, sz = 34 + (c * 37 % 30); hx.fillStyle = "rgba(255,255,255,.92)";    // 수평선 위 구름(방위에 따라 흘러감)
+      hx.beginPath(); hx.ellipse(px, -14 - (c % 3) * 26, sz * 1.5, sz * 0.42, 0, 0, 6.283); hx.ellipse(px + sz * 0.5, -30 - (c % 3) * 26, sz * 0.8, sz * 0.4, 0, 0, 6.283); hx.fill(); }
+    for (var w2 = 0; w2 < 16; w2++) { var ph = ((w2 / 16 + t * 0.16) % 1), yy = ph * ph * 430 + 3; hx.strokeStyle = "rgba(255,255,255," + (0.07 + 0.16 * ph).toFixed(3) + ")"; hx.lineWidth = 1 + ph * 2.2;                 // 다가오는 물결
+      for (var seg = 0; seg < 5; seg++) { var sx = ((seg * 331 + w2 * 127) % 1200) - 600, sl = 50 + ((seg * 53 + w2 * 31) % 120) * (0.4 + ph); hx.beginPath(); hx.moveTo(sx, yy); hx.lineTo(sx + sl, yy); hx.stroke(); } }
+    hx.strokeStyle = "rgba(255,255,255,.9)"; hx.lineWidth = 2; hx.beginPath(); hx.moveTo(-700, 0); hx.lineTo(700, 0); hx.stroke();
+    [-20, -10, 10, 20].forEach(function (d) { var y = -d * PPD; hx.strokeStyle = "#fff"; hx.lineWidth = 2; hx.beginPath(); hx.moveTo(-120, y); hx.lineTo(120, y); hx.stroke(); tx(String(Math.abs(d)), -134, y + 7, "700 19px " + SANS, "#fff", "right"); tx(String(Math.abs(d)), 134, y + 7, "700 19px " + SANS, "#fff", "left"); });
+    [-15, -5, 5, 15].forEach(function (d) { var y = -d * PPD; hx.strokeStyle = "rgba(255,255,255,.85)"; hx.lineWidth = 1.5; hx.beginPath(); hx.moveTo(-56, y); hx.lineTo(56, y); hx.stroke(); });
+    hx.restore();
+    hx.save(); hx.beginPath(); hx.rect(vx, vy, vw, vh); hx.clip();
+    hx.strokeStyle = "#fff"; hx.lineWidth = 2; hx.beginPath(); hx.arc(cx, cy + 40, 250, -Math.PI / 2 - 0.52, -Math.PI / 2 + 0.52); hx.stroke();                                   // 기울기 눈금과 바늘
+    [-30, -20, -10, 0, 10, 20, 30].forEach(function (d) { var a = -Math.PI / 2 + d / 57.3; hx.beginPath(); hx.moveTo(cx + Math.cos(a) * 250, cy + 40 + Math.sin(a) * 250); hx.lineTo(cx + Math.cos(a) * 264, cy + 40 + Math.sin(a) * 264); hx.stroke(); });
+    var ba = -Math.PI / 2 - Math.max(-0.52, Math.min(0.52, roll)); hx.fillStyle = "#f2c230"; hx.beginPath(); hx.moveTo(cx + Math.cos(ba) * 246, cy + 40 + Math.sin(ba) * 246); hx.lineTo(cx + Math.cos(ba - 0.035) * 228, cy + 40 + Math.sin(ba - 0.035) * 228); hx.lineTo(cx + Math.cos(ba + 0.035) * 228, cy + 40 + Math.sin(ba + 0.035) * 228); hx.closePath(); hx.fill();
+    hx.strokeStyle = "#1a1a12"; hx.lineWidth = 9; hx.lineJoin = "miter"; [[-1], [1]].forEach(function (s) { hx.beginPath(); hx.moveTo(cx + s[0] * 96, cy); hx.lineTo(cx + s[0] * 36, cy); hx.lineTo(cx + s[0] * 36, cy + 26); hx.stroke(); });   // 고정된 기체 표시(노랑)
+    hx.strokeStyle = "#f2c230"; hx.lineWidth = 5; [[-1], [1]].forEach(function (s) { hx.beginPath(); hx.moveTo(cx + s[0] * 96, cy); hx.lineTo(cx + s[0] * 36, cy); hx.lineTo(cx + s[0] * 36, cy + 26); hx.stroke(); });
+    hx.fillStyle = "#f2c230"; hx.strokeStyle = "#1a1a12"; hx.lineWidth = 2; hx.fillRect(cx - 6, cy - 6, 12, 12); hx.strokeRect(cx - 6, cy - 6, 12, 12);
+    hx.fillStyle = "rgba(14,22,34,.86)"; rr(vx + 12, vy + 44, 148, 30, 6); hx.fill(); hx.fillStyle = "#6fb6ff"; hx.beginPath(); hx.arc(vx + 28, vy + 59, 5, 0, 6.283); hx.fill(); tx("CRUISE · 순항", vx + 40, vy + 65, "700 15px " + SANS, "#fff");
+    hx.fillStyle = "#e9b54a"; rr(vx + vw - 132, vy + 40, 58, 32, 5); hx.fill(); tx("착륙", vx + vw - 103, vy + 63, "700 17px " + SANS, "#1a1a12", "center"); hx.fillStyle = "#39424c"; rr(vx + vw - 70, vy + 40, 58, 32, 5); hx.fill(); tx("시연", vx + vw - 41, vy + 63, "700 17px " + SANS, "#fff", "center");
+    var mx = vx + 92, my = vy + vh - 96; hx.save(); hx.beginPath(); hx.arc(mx, my, 74, 0, 6.283); hx.clip(); hx.fillStyle = "#0c3f78"; hx.fillRect(mx - 80, my - 80, 160, 160);                      // 원형 지도: 바다 위
+    hx.strokeStyle = "rgba(160,205,255,.28)"; hx.lineWidth = 1; for (var q = -3; q <= 3; q++) { var o = ((dist * 60) % 26); hx.beginPath(); hx.moveTo(mx - 80, my + q * 26 + o); hx.lineTo(mx + 80, my + q * 26 + o); hx.stroke(); hx.beginPath(); hx.moveTo(mx + q * 26, my - 80); hx.lineTo(mx + q * 26, my + 80); hx.stroke(); }
+    hx.restore(); hx.strokeStyle = GOLD; hx.lineWidth = 3; hx.beginPath(); hx.arc(mx, my, 74, 0, 6.283); hx.stroke();
+    hx.fillStyle = "#fff"; hx.beginPath(); hx.moveTo(mx, my - 15); hx.lineTo(mx + 10, my + 12); hx.lineTo(mx, my + 6); hx.lineTo(mx - 10, my + 12); hx.closePath(); hx.fill();
+    hx.fillStyle = "rgba(10,12,10,.82)"; rr(vx + vw - 150, vy + vh - 52, 138, 34, 6); hx.fill(); tx("총 주행", vx + vw - 138, vy + vh - 29, "500 13px " + SANS, "#cfd4c4"); tx(Math.round(dist) + " km", vx + vw - 22, vy + vh - 28, "700 19px " + SANS, "#fff", "right");
+    hx.restore(); hx.strokeStyle = GOLD; hx.lineWidth = 2; hx.strokeRect(vx, vy, vw, vh);
+    tape(8, "주행 속도", spd, "km/h", 20, "#ffffff"); tape(610, "GPS 고도", alt, "m", 50, "#bff09a");
+    // 나침반 띠와 아래 바로가기 줄
+    hx.fillStyle = "#12130d"; hx.fillRect(8, 616, HW - 16, 40); hx.strokeStyle = GOLD; hx.lineWidth = 1.5; hx.strokeRect(8.5, 616.5, HW - 17, 39);
+    hx.save(); hx.beginPath(); hx.rect(10, 618, HW - 20, 36); hx.clip(); var NAMES = { 0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW" };
+    for (var d2 = Math.floor(hdg / 15) * 15 - 60; d2 <= hdg + 60; d2 += 15) { var xx = HW / 2 + (d2 - hdg) * 5.4, dd = ((d2 % 360) + 360) % 360; hx.strokeStyle = "#d9d9cf"; hx.lineWidth = 1.5; hx.beginPath(); hx.moveTo(xx, 618); hx.lineTo(xx, 628); hx.stroke(); tx(NAMES[dd] || String(dd), xx, 648, "700 13px " + SANS, "#d9d9cf", "center"); }
+    hx.restore(); hx.fillStyle = "#0a0b08"; rr(HW / 2 - 56, 618, 112, 36, 4); hx.fill(); hx.strokeStyle = "#f2f2ea"; hx.lineWidth = 1.5; hx.stroke();
+    var h8 = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(hdg / 45) % 8]; tx(Math.round(hdg) + "° " + h8, HW / 2, 644, "700 20px " + SANS, "#bff09a", "center");
+    ["전체", "스피드미터", "지도", "라디오", "NOW PLAYING", "T맵", "네이버지도", "DASHCAM"].forEach(function (n, i) { var x = 8 + i * 88.5; hx.fillStyle = i === 1 ? "#3a3418" : "#1a1b13"; rr(x, 664, 84, 54, 6); hx.fill(); hx.strokeStyle = i === 1 ? "#e9c46a" : GOLD; hx.lineWidth = i === 1 ? 2.5 : 1.2; hx.stroke();
+      tx(n, x + 42, 698, "700 " + (n.length > 6 ? 10 : 13) + "px " + SANS, i === 1 ? "#f6e3a1" : "#e6e6da", "center"); });
+    hudTex.needsUpdate = true;
+  }
+  var hud = new T.Mesh(new T.PlaneGeometry(0.46, 0.465), new T.MeshBasicMaterial({ map: hudTex, transparent: true, opacity: 0.74, side: T.DoubleSide, toneMapped: false, fog: false, depthWrite: false }));
+  hud.position.set(0, 1.43, 0.9); hud.rotation.y = Math.PI; hud.renderOrder = 3; body.add(hud);
+  [[0.25, 0, 0.012, 0.49], [-0.25, 0, 0.012, 0.49], [0, -0.245, 0.5, 0.012]].forEach(function (f) { add(new T.BoxGeometry(f[2], f[3], 0.012), mBare, f[0], 1.43 + f[1], 0.9); });
+  // 주날개: 위 회색·아래 흰색 두 겹, 끝으로 갈수록 좁아지고 위로 살짝 꺾임
+  function wingShape() { var s = new T.Shape(); s.moveTo(0.55, -2.05); s.lineTo(7.2, -1.08); s.quadraticCurveTo(7.72, -0.3, 7.2, 0.5); s.lineTo(0.55, 1.4); s.closePath(); return s; }
+  var wOpt = { depth: 0.13, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.07, bevelSegments: 3, curveSegments: 16 };
+  var wTop = new T.ExtrudeGeometry(wingShape(), wOpt), wBot = new T.ExtrudeGeometry(wingShape(), wOpt);
+  [-1, 1].forEach(function (s) { var w = new T.Group(); w.position.set(0, -0.55, 0.45); w.rotation.z = s * 0.1; w.scale.x = s; body.add(w);
+    var top = new T.Mesh(wTop, mGray); top.rotation.x = -Math.PI / 2; top.position.y = 0.0; top.castShadow = top.receiveShadow = true; w.add(top);
+    var bot = new T.Mesh(wBot, mWhite); bot.rotation.x = -Math.PI / 2; bot.position.y = -0.2; bot.castShadow = bot.receiveShadow = true; w.add(bot);
+    for (var q = 0; q < 6; q++) add(new T.BoxGeometry(0.1, 0.24, 0.95), mWhite, 1.7 + q * 0.92, -0.42, 0.45 - q * 0.05, w);                // 날개 밑 파일런
+    [2.9, 4.0].forEach(function (cx) { add(new T.CylinderGeometry(0.035, 0.045, 1.0, 8), mDark, cx, 0.0, 2.05 - (cx - 0.55) * 0.146, w).rotation.x = Math.PI / 2; }); // 20mm 기관포
+    add(new T.BoxGeometry(2.4, 0.02, 0.42), mWhite, 5.3, 0.25, -0.92 + 0.3, w).rotation.y = -0.13;                                         // 보조날개
+  });
+  // 날개 위 국적 표식(왼쪽 위)
+  (function () { var c = document.createElement("canvas"); c.width = 512; c.height = 256; insignia(c.getContext("2d"), 256, 128, 56, 0); var t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding;
+    var d = new T.Mesh(new T.PlaneGeometry(2.6, 1.3), new T.MeshPhysicalMaterial({ map: t, transparent: true, roughness: 0.5, polygonOffset: true, polygonOffsetFactor: -4 })); d.rotation.x = -Math.PI / 2; d.rotation.z = Math.PI / 2; d.position.set(5.0, 0.14, 0.4); d.receiveShadow = true;
+    var holder = new T.Group(); holder.position.set(0, -0.55, 0.45); holder.rotation.z = 0.1; holder.add(d); body.add(holder); })();
+  // 꼬리: 수평 꼬리날개, 둥근 수직 꼬리날개(방향타는 흰색), 꼬리바퀴
+  var ts = new T.Shape(); ts.moveTo(0.15, -0.95); ts.lineTo(2.5, -0.42); ts.quadraticCurveTo(2.78, 0.05, 2.5, 0.5); ts.lineTo(0.15, 0.72); ts.closePath();
+  var tGeo = new T.ExtrudeGeometry(ts, { depth: 0.1, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.04, bevelSegments: 2 });
+  [-1, 1].forEach(function (s) { var t = new T.Mesh(tGeo, mGray); t.rotation.x = -Math.PI / 2; t.position.set(0, 0.42, -5.35); t.scale.x = s; t.castShadow = t.receiveShadow = true; body.add(t); });
+  var fs = new T.Shape(); fs.moveTo(4.0, 0.5); fs.quadraticCurveTo(5.0, 1.0, 5.55, 2.55); fs.quadraticCurveTo(5.75, 2.95, 6.15, 2.95); fs.lineTo(6.2, 0.35); fs.closePath();
+  var fin = add(new T.ExtrudeGeometry(fs, { depth: 0.12, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2 }), mGray, -0.06, 0, 0); fin.rotation.y = Math.PI / 2;
+  var rs = new T.Shape(); rs.moveTo(6.15, 0.3); rs.lineTo(6.15, 2.95); rs.quadraticCurveTo(6.75, 2.9, 6.85, 2.2); rs.lineTo(6.75, 0.25); rs.closePath();
+  var rud = add(new T.ExtrudeGeometry(rs, { depth: 0.1, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.025, bevelSegments: 2 }), mWhite, -0.05, 0, 0); rud.rotation.y = Math.PI / 2;
+  add(new T.CylinderGeometry(0.16, 0.16, 0.1, 14), mRubber, 0, -0.62, -5.6).rotation.z = Math.PI / 2;
+  add(new T.CylinderGeometry(0.03, 0.03, 0.4, 6), mBare, 0, -0.45, -5.55);
+  // 동체 밑 보조 연료 탱크
+  var tk = []; for (var q2 = 0; q2 <= 20; q2++) { var u2 = q2 / 20; tk.push(new T.Vector2(0.36 * Math.pow(Math.sin(Math.PI * u2), 0.6), -1.9 + 3.8 * u2)); }
+  add(new T.LatheGeometry(tk, 20), mWhite, 0, -1.42, 0.5).rotation.x = Math.PI / 2;
+  add(new T.BoxGeometry(0.12, 0.3, 1.1), mWhite, 0, -1.02, 0.5);
+
+  // ---------- 움직임: 전부 시간의 함수 ----------
+  function resp(x, k) { return x <= 0 ? 0 : 1 - (1 + k * x) * Math.exp(-k * x); }           // 임계 감쇠 스프링의 계단 응답
+  function ramp(x, k) { return x <= 0 ? 0 : x - (2 - (2 + k * x) * Math.exp(-k * x)) / k; } // 그 적분(회전수 누적용)
+  function sm(x) { x = Math.max(0, Math.min(1, x)); return x * x * x * (x * (x * 6 - 15) + 10); }
+  var ORB = 60, OMEGA = 0.2, TH0 = -0.886, P = new T.Vector3(), F = new T.Vector3(), R = new T.Vector3(), UP = new T.Vector3(0, 1, 0), look = new T.Vector3(), tmp = new T.Vector3();
+  var SHOTS = [0, 3, 6, 8.5, 16.5, 20], eye = new T.Vector3(), camUp = new T.Vector3();
+  function local(f, r, u, out) { return out.copy(P).addScaledVector(F, f).addScaledVector(R, r).addScaledVector(UP, u); }
+  function renderAt(t) {
+    t = ((t % LOOP) + LOOP) % LOOP; U.uT.value = t;
+    var th = TH0 + OMEGA * t;
+    P.set(Math.cos(th) * ORB, 40 + Math.sin(t * 1.1) * 0.5 + Math.sin(t * 2.3) * 0.22, Math.sin(th) * ORB);
+    F.set(-Math.sin(th), 0, Math.cos(th)); R.set(-Math.cos(th), 0, -Math.sin(th));                 // R은 선회 안쪽(오른쪽)
+    plane.position.copy(P); plane.lookAt(tmp.copy(P).add(F));
+    // 2번 샷에서 선회가 깊어짐(오른쪽 날개가 내려감) + 잔잔한 흔들림
+    body.rotation.z = 0.14 + 0.30 * resp(t - 3.4, 2.6) - 0.36 * resp(t - 10.2, 1.8) + 0.34 * resp(t - 13.4, 1.8) + Math.sin(t * 0.9) * 0.02;  // 조종석 시점에서 한 번 수평으로 풀었다가 다시 선회
+    body.rotation.x = -0.05 - 0.03 * resp(t - 3.4, 2.6) + Math.sin(t * 1.3) * 0.008;
+    // 3번 샷에서 출력을 올림: 회전이 빨라지고 배기관이 잠깐 달아오름
+    var thr = resp(t - 6.6, 3.0) - resp(t - 15.5, 1.5);
+    prop.rotation.z = 21 * t + 16 * (ramp(t - 6.6, 3.0) - ramp(t - 15.5, 1.5));
+    disc.material.opacity = 0.75 + 0.25 * thr; mBlade.opacity = 0.5 - 0.22 * thr; mTip.opacity = 0.6 - 0.25 * thr;
+    mExh.emissiveIntensity = 2.6 * Math.max(0, resp(t - 6.6, 5.0) - resp(t - 7.5, 1.6));
+    // 앱 화면: 실제 비행 값으로 그림 (방위는 북쪽 = -z 기준)
+    var hdg = (Math.atan2(F.x, -F.z) * 57.2958 + 360) % 360;
+    drawHud(t, body.rotation.z, -body.rotation.x, hdg, 304 + 22 * thr + Math.sin(t * 0.7) * 1.5, 412 + (P.y - 40) * 9, 303.4 + t * 0.085);
+    // 샷: 하나의 움직임, 처음과 끝은 부드럽게, 컷으로 넘어감
+    var s = 0; while (s < 4 && t >= SHOTS[s + 1]) s++;
+    var e = sm((t - SHOTS[s]) / (SHOTS[s + 1] - SHOTS[s])), fov = 38, near = 1.2, pov = s === 3;
+    for (var pi = 0; pi < pilot.length; pi++) pilot[pi].visible = !pov;
+    cam.up.set(0, 1, 0);
+    if (s === 0) {        // 1 전경 — 크레인 다운
+      cam.position.copy(P).addScaledVector(SUNXZ, -34).addScaledVector(R, 6); cam.position.y = P.y + 15 - 13.5 * e; look.copy(P);
+    } else if (s === 1) { // 2 오비트: 기체 둘레를 반 바퀴, 그 사이 선회가 깊어짐
+      var an = 0.95 + 2.0 * e; local(Math.cos(an) * 20, Math.sin(an) * 20, 4.2, cam.position); look.copy(P);
+    } else if (s === 2) { // 3 푸시 인: 조종석 쪽으로 다가감. 유리 안에 앱 화면이 빛남. 출력이 올라감
+      local(10.5 - 5.5 * e, 7.5 - 4.2 * e, 5.2 - 2.4 * e, cam.position); local(0.6, 0, 1.2, look); fov = 30;
+    } else if (pov) {     // 4 대표 장면 — 조종석 시점 푸시 인: 앱 화면 너머로 바다와 하늘, 선회에 따라 수평선이 기움
+      plane.updateMatrixWorld(true);
+      eye.set(0, 1.44, -0.34 + 0.64 * e); cam.position.copy(body.localToWorld(eye));
+      look.set(0, 1.40, 8); body.localToWorld(look);
+      camUp.set(0, 1, 0).transformDirection(body.matrixWorld); cam.up.copy(camUp); fov = 56; near = 0.06;
+    } else {              // 5 마지막 전경 — 크레인 업: 해 쪽으로 날아가는 뒷모습
+      local(-24, 5, 1.5 + 9 * e, cam.position); local(8, 0, 1.5, look); fov = 40;
+    }
+    if (cam.near !== near) { cam.near = near; cam.updateProjectionMatrix(); }
+    if (cam.aspect < 1) fov += 20;
+    if (cam.fov !== fov) { cam.fov = fov; cam.updateProjectionMatrix(); }
+    cam.lookAt(look);
+    key.target.position.copy(P); key.position.copy(P).addScaledVector(SUN, 60);
+    sky.position.copy(cam.position); sea.position.set(cam.position.x, 0, cam.position.z);
+    for (var i = 0; i < clouds.length; i++) clouds[i].position.x = clouds[i].userData.x0 + t * 0.7;
+    copy.style.opacity = sm((t - 1.6) / 1.8) * (1 - sm((t - 19.2) / 0.7)) * (1 - sm((t - 8.1) / 0.4) + sm((t - 16.5) / 0.6));  // 조종석 시점에서는 글자를 치움
+    renderer.render(scene, cam);
+  }
+  function resize() { var w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+  window.addEventListener("resize", resize); resize();
+  window.renderAt = function (t) { resize(); renderAt(t); }; window.DURATION = LOOP;
+  window.seekHud = function () { return Promise.resolve(); };
+  if (RENDER) { renderAt(0); window.READY = true; }
+  else { var t0 = performance.now(), still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // 화면에 보일 때만 움직임 (다른 페이지 안에 넣었을 때 배터리를 아낌)
+    var seen = true, going = false, shown = 0, lastNow = t0;
+    function loop(now) { if (!seen) { going = false; return; } shown += Math.min(0.1, (now - lastNow) / 1000); lastNow = now; renderAt(still ? 12 : shown); if (!still) { going = true; requestAnimationFrame(loop); } }
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { seen = en[0].isIntersecting; if (seen && !going && !still) { lastNow = performance.now(); going = true; requestAnimationFrame(loop); } }, { threshold: 0.05 }).observe(canvas);
+    loop(t0); window.READY = true; }
+})();
+</script>
+</body>
+</html>
