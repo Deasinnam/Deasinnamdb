@@ -40,7 +40,14 @@ for i in $(seq 1 90); do
     adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 3
     adb exec-out screencap -p > desk-screen-after-resize.png
   fi
-  if [ "${shot3:-0}" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT3"; then adb exec-out screencap -p > desk-screen-split.png; shot3=1; fi
+  if [ "${shot3:-0}" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT3"; then
+    adb exec-out screencap -p > desk-screen-split.png; shot3=1
+    # 실제로 그 앱 창이 왼쪽 위 4분의 1(가로 0~800)에 떴는지 안드로이드 창 목록에서 확인
+    spkg=$(adb logcat -d -s DESK_SELFTEST:I | grep -o "SPLIT-PKG [a-z0-9._]*" | tail -1 | cut -d' ' -f2)
+    adb shell dumpsys activity activities > activities.txt
+    if [ -n "$spkg" ] && grep -A40 "$spkg" activities.txt | grep -qE "mBounds=Rect\(0, [0-9]+ - 800, "; then sq="PASS"; else sq="FAIL"; fi
+    echo "실제 창 자리 점검: $sq ($spkg)"; grep -A40 "$spkg" activities.txt | grep -m3 -E "mBounds=" || true
+  fi
   if [ "$shot" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT"; then adb exec-out screencap -p > desk-screen-windows.png; shot=1; fi
   if adb logcat -d -s DESK_SELFTEST:I | grep -q "DONE"; then break; fi
 done
@@ -77,11 +84,12 @@ adb shell wm size reset; adb shell wm density reset
 echo "===== 앱이 꺼진 까닭 (exit-info) ====="
 adb shell dumpsys activity exit-info "$PKG" | grep -E "ApplicationExitInfo|reason=|description=|timestamp=|pid=" | head -40 | tee exit-info.txt
 echo "===== crash ====="; cat crash-1.txt | head -40
+echo "x DESK_SELFTEST: ${sq:-FAIL} real window placed in top-left quarter (${spkg:-})" >> selftest-result.txt
 pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)
 clicks=$(grep -c "DESK_SELFTEST: WIDGET-CLICK" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn 위젯이 받은 누름=$clicks (1이어야 함: 드러난 위젯은 받고, 메뉴가 열려 있으면 받지 않음)"
-if grep -q "DESK_SELFTEST: DONE2" selftest-result.txt && [ "$pass" -ge 18 ] && [ "$failn" = 0 ] && [ "$clicks" = 1 ] && [ "$tap1" = 1 ] && [ "$tap2" = 1 ]; then echo "자동 점검 통과"; exit 0; fi
+if grep -q "DESK_SELFTEST: DONE2" selftest-result.txt && [ "$pass" -ge 19 ] && [ "$failn" = 0 ] && [ "$clicks" = 1 ] && [ "$tap1" = 1 ] && [ "$tap2" = 1 ]; then echo "자동 점검 통과"; exit 0; fi
 echo "자동 점검 실패"
 grep -v DESK_SELFTEST selftest-result.txt | tail -30
 adb logcat -d | grep -E "AndroidRuntime|FATAL" | tail -30

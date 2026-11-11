@@ -852,7 +852,11 @@
     if (!app) return null;
     if (key.startsWith("in:")) { const w = openBuiltin(key); if (w) snapTo(w, zk); return { ok: true }; }
     if (zk === "max") return openApp(key, "full");
-    return openApp(key, "zone:" + zk);
+    const was = recent.includes(key);
+    const r = await openApp(key, "zone:" + zk);
+    // 안드로이드는 이미 떠 있는 다른 앱 창을 홈 앱이 옮기지 못하게 합니다 → 그 경우 안내
+    if (was && r && r.ok) toast("이미 열려 있던 앱은 자리가 바로 바뀌지 않을 수 있습니다. 그럴 땐 그 앱을 닫고 다시 \"화면 나눠 열기\"로 열어 주세요.");
+    return r;
   }
   function splitOpen(key, anchor) {
     const app = byKey.get(key);
@@ -1586,10 +1590,14 @@
       log((r && r.ok ? "PASS" : "FAIL") + " launch " + (settings && settings.pkg) + " → " + JSON.stringify(r));
       // 화면 나누기: 넓은 화면은 4분할까지, 왼쪽 위 4분의 1 자리에 띄우면 그 자리 크기로 뜨는지 · 바탕화면 자체는 화면 나누기 아님
       await wait(1500);
-      const z = settings ? await launchZone(settings.key, "tl") : null;
+      // 아직 열지 않은 앱으로 (이미 떠 있는 앱은 안드로이드가 자리를 옮기지 않음)
+      const prefer = ["com.google.android.deskclock", "com.android.deskclock", "com.google.android.contacts", "com.android.contacts", "com.google.android.calculator", "com.android.calculator2"];
+      const fresh = prefer.map((p) => apps.find((a) => a.pkg === p)).find(Boolean) || apps.find((a) => !recent.includes(a.key) && a.pkg !== "com.android.settings");
+      const z = fresh ? await launchZone(fresh.key, "tl") : null;
+      log("SPLIT-PKG " + (fresh && fresh.pkg));
       const bb = String(z && z.bounds || "").split(" ").map(Number), half = Math.round(innerWidth * devicePixelRatio / 2);
       log((z && z.ok && bb[0] === 0 && Math.abs(bb[2] - half) <= 3 && bb[3] < innerHeight * devicePixelRatio * 0.6 && status.split === false && splitCap() === 4 && layoutsFor().includes("Q4") ? "PASS" : "FAIL") +
-        " split launch tl bounds=" + (z && z.bounds) + " half=" + half + " cap=" + splitCap() + " layouts=" + layoutsFor().join() + " deskSplit=" + status.split);
+        " split launch tl app=" + (fresh && fresh.pkg) + " bounds=" + (z && z.bounds) + " half=" + half + " cap=" + splitCap() + " layouts=" + layoutsFor().join() + " deskSplit=" + status.split);
       await wait(2500);
       log("SHOT3");
 
