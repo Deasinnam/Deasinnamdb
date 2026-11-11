@@ -2,7 +2,7 @@ name: Build 덜누름 데스크 APK
 
 on:
   push:
-    branches: [deolnureum-desk]
+    branches: [deolnureum-desk, 'desk-try-*']
   workflow_dispatch:
 
 permissions:
@@ -63,6 +63,7 @@ jobs:
             --title "덜누름 데스크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비
+        if: github.ref == 'refs/heads/deolnureum-desk'
         env:
           AMP_KEYSTORE_BASE64: ${{ secrets.AMP_KEYSTORE_BASE64 }}
         run: |
@@ -75,6 +76,7 @@ jobs:
           fi
 
       - name: 배포용 APK
+        if: github.ref == 'refs/heads/deolnureum-desk'
         env:
           AMP_KEYSTORE_PASSWORD: ${{ secrets.AMP_KEYSTORE_PASSWORD }}
           AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
@@ -85,6 +87,7 @@ jobs:
           cp app/build/outputs/apk/$VARIANT/*.apk DeolnureumDesk.apk
 
       - name: Releases에 APK 올리기
+        if: github.ref == 'refs/heads/deolnureum-desk'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

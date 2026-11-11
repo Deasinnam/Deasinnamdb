@@ -989,6 +989,18 @@
           log((back && restored ? "PASS" : "FAIL") + " widget place survives small screen low=" + low + " squeezed=" + squeezed + " back=" + wd.y + " restored=" + restored);
           save(); renderWidgetShells(); lastSync = ""; syncNative();
           await wait(800);
+          // 실제로 화면이 작아졌다가(접은 화면·팝업 창) 다시 커져도 위젯 뷰가 같은 자리에 있는지
+          // 점검 스크립트가 RESIZE-n 을 보면 화면 크기를 줄였다가 되돌립니다 (2번째는 다른 앱을 띄운 채로)
+          for (const n of [1, 2]) {
+            const pb = await call("widgetProbe");
+            const vb = Array.isArray(pb) ? pb[0] : null;
+            log("RESIZE-" + n);
+            await wait(22000);
+            const pa = await call("widgetProbe");
+            const va = Array.isArray(pa) ? pa[0] : null;
+            const same = !!(vb && va && Math.abs(va.sx - vb.sx) <= 2 && Math.abs(va.sy - vb.sy) <= 2 && va.w === vb.w && va.h === vb.h && va.shown);
+            log((same ? "PASS" : "FAIL") + " widget kept place after screen shrink " + n + " before=" + JSON.stringify(vb) + " after=" + JSON.stringify(va) + " js=" + JSON.stringify({ x: wd.x, y: wd.y, w: wd.w, h: wd.h, area: wArea(), iw: innerWidth, dpr: devicePixelRatio, pos: wd.pos }));
+          }
           const pv = await call("widgetProbe");
           localStorage.setItem("desk_test_probe", JSON.stringify(Array.isArray(pv) ? pv[0] : null));
         }

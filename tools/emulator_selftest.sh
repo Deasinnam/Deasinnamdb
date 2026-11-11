@@ -11,8 +11,12 @@ adb shell settings put global force_resizable_activities 1
 adb shell appwidget grantbind --package "$PKG" --user 0 || adb shell cmd appwidget grantbind --package "$PKG" --user 0
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez desk.selftest true
-shot=0; tap1=0; tap2=0
-for i in $(seq 1 60); do
+shot=0; tap1=0; tap2=0; rs1=0; rs2=0
+# 화면을 작게 바꿨다가 되돌림 (접은 화면·팝업 창·DeX 창을 흉내)
+size=$(adb shell wm size | grep -o "[0-9]*x[0-9]*" | head -1); sw=${size%x*}; sh=${size#*x}
+small="$((sw * 55 / 100))x$((sh * 60 / 100))"
+echo "화면 크기 $size → 줄일 크기 $small"
+for i in $(seq 1 90); do
   sleep 3
   # 위젯 누르기: 화면이 알려 준 자리(위젯 가운데)를 실제로 눌러 봄
   if [ "$tap1" = 0 ]; then
@@ -22,6 +26,17 @@ for i in $(seq 1 60); do
   if [ "$tap2" = 0 ]; then
     at=$(adb logcat -d -s DESK_SELFTEST:I | grep -o "WIDGET-BLOCKED-AT [0-9]* [0-9]*" | tail -1)
     if [ -n "$at" ]; then set -- $at; adb shell input tap "$2" "$3"; tap2=1; echo "메뉴가 열린 채 같은 자리 누름 ($2,$3)"; fi
+  fi
+  if [ "$rs1" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "RESIZE-1"; then
+    rs1=1; echo "화면 줄였다 되돌리기 1"
+    adb shell wm size "$small"; sleep 5; adb exec-out screencap -p > desk-screen-small.png; adb shell wm size reset; sleep 3
+  fi
+  if [ "$rs2" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "RESIZE-2"; then
+    rs2=1; echo "다른 앱을 띄운 채 화면 줄였다 되돌리기 2"
+    adb shell am start -a android.settings.SETTINGS >/dev/null; sleep 2
+    adb shell wm size "$small"; sleep 4; adb shell wm size reset; sleep 2
+    adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 3
+    adb exec-out screencap -p > desk-screen-after-resize.png
   fi
   if [ "$shot" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT"; then adb exec-out screencap -p > desk-screen-windows.png; shot=1; fi
   if adb logcat -d -s DESK_SELFTEST:I | grep -q "DONE"; then break; fi
