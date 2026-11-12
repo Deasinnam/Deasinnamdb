@@ -1868,6 +1868,7 @@ window.AmpTk={
     if(on&&cs.sysCam&&cs.sysInternet===false){const d=document.createElement('div');d.className='camwarn';
       d.innerHTML='<b>휴대폰 전체가 블랙박스 와이파이에 연결돼 있어요</b><span>그래서 다른 앱(티맵·음악 앱 등)의 인터넷이 막혀요. 이 앱은 모바일 데이터로 우회하고 있어요. 다른 앱까지 해결하려면: ① 와이파이 설정에서 블랙박스 와이파이를 <b>삭제(저장 안 함)</b> ② 여기서 <b>연결 끊기 → 연결</b>을 누르면 이 앱만 블랙박스에 붙고 휴대폰은 모바일 데이터를 그대로 써요.</span><button class="pill on">와이파이 설정 열기</button>';
       d.querySelector('button').onclick=()=>$('#camWifi').click();net.appendChild(d)}
+    {const ib=$('#camInfo');if(ib)ib.classList.toggle('warn',!!net.querySelector('.bad,.camwarn'))} // 접혀 있어도 문제가 있으면 [정보] 버튼이 주황
     const ul=$('#camProbeList');ul.innerHTML='';
     (cs.probe||[]).forEach(r=>{const li=document.createElement('li');li.className=r.ok?'ok':'';li.innerHTML='<i></i><span></span><em></em>';li.children[0].textContent=r.ok?'●':'○';li.children[1].textContent=r.what;li.children[2].textContent=r.note||'';ul.appendChild(li)});
     if(!HAS_CAM){img.hidden=true;say('앱에서만 쓸 수 있어요','휴대폰 앱에서 블랙박스 와이파이에 연결해 실시간 화면을 볼 수 있어요.');return}
@@ -1904,6 +1905,9 @@ window.AmpTk={
   window.AmpCam={pull,state:()=>cs};
   render();loop();
 })();
+
+/* 1.58 DASHCAM 보기(아래 바로가기 DASHCAM): 영상을 창 가득, 연결 정보·와이파이·호환 기종은 [정보 ▾]로 접음(기본 접힘) */
+{const ib=$('#camInfo');if(ib)ib.onclick=()=>{const w=$('#wCam'),o=!w.classList.contains('more');w.classList.toggle('more',o);ib.setAttribute('aria-expanded',String(o));ib.textContent=o?'정보 ▴':'정보 ▾'}}
 /* ===== 80-clock-windows.js ===== */
 // 로고 옆 시계, 창 순서, 창 높이 조절
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

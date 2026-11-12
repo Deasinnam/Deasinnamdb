@@ -2764,3 +2764,17 @@ img{height:auto;object-fit:contain}
 :root[data-cks] .atcmini span.mq>i{animation:atcMq var(--mqs,8s) linear infinite}
 @keyframes atcMq{0%,8%{transform:translateX(0)}100%{transform:translateX(var(--mqd,-50%))}}
 @media (prefers-reduced-motion:reduce){:root[data-cks] .atcmini span.mq>i{animation-duration:calc(var(--mqs,8s)*2)}}
+/* 1.58 DASHCAM 보기: 영상 최대, 나머지는 [정보 ▾]로 접기 */
+#camInfo{display:none}
+.app.FX>#wCam.fx #camInfo{display:inline-flex;align-items:center;justify-content:center}
+@media (max-width:600px){.app.FX>#wCam.fx .mapctl>.pill{padding:0 10px!important;font-size:14px!important}}
+#camInfo.warn{color:#ffb547!important;border-color:#ffb54799!important}
+.app.FX>#wCam.fx:not(.more) :is(#camNet,#camSetBox,.camcompat){display:none!important}
+.app.FX>#wCam.fx>.body{gap:8px!important;overflow:hidden!important}
+.app.FX>#wCam.fx.more>.body{overflow:auto!important}
+.app.FX>#wCam.fx .camview,:root[data-ckr] .app.FX>#wCam.fx #camView:has(#camImg[hidden]){flex:1 1 0!important;min-height:160px!important;max-height:none!important;height:auto!important;aspect-ratio:auto!important;width:100%}
+.app.FX>#wCam.fx.more .camview{flex:1 0 55%!important}
+.app.FX>#wCam.fx .mapctl{flex:none;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;gap:6px}
+.app.FX>#wCam.fx .mapctl::-webkit-scrollbar{display:none}
+.app.FX>#wCam.fx .mapctl>.pill{flex:0 0 auto;white-space:nowrap}
+.app.FX>#wCam.fx .mapctl .lbl{display:none}
