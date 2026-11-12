@@ -345,6 +345,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .takeoff { position: relative; height: min(88vh, 820px); min-height: 440px; overflow: hidden; background: linear-gradient(180deg, #1f5fc0 0%, #6fb0ee 42%, #cfe6f8 56%, #1c6aa8 57%, #0b3a6e 100%); }
 .takeoff video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .takeoff-fade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 60%, rgba(3,22,54,.5) 86%, #0b0b0c 100%); }
+#tkVid { transition: object-position .5s linear; }
 .takeoff-copy { position: absolute; left: 0; right: 0; bottom: 11%; text-align: center; color: #fff; padding: 0 20px; transition: opacity .5s ease; }
 .takeoff-copy.is-off { opacity: 0; }
 .takeoff-copy b { display: block; font: 600 clamp(14px, 1.7vw, 26px)/1 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .3em; color: #fff6d8; text-shadow: 0 1px 12px rgba(3,20,50,.8); }
@@ -370,6 +371,23 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-trio h3 { margin-top: 10px; font: 800 22px/1.25 var(--font-display); letter-spacing: -0.03em; color: #fff; }
 .ap-trio p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.65; color: #c4c4cb; word-break: keep-all; }
 @media (max-width: 900px) { .ap-trio { grid-template-columns: 1fr; gap: 40px; } .ap-trio .ap-dev { max-width: 420px; justify-self: center; } }
+.ap-sub .ap-camwrap { position: relative; top: 0; padding-bottom: 56px; }
+.ap-camwrap .ap-cap { justify-self: start; text-align: left; padding-left: 7%; max-width: 54%; }
+.cam-fig { position: absolute; right: -2%; bottom: 0; width: 44%; max-width: 236px; display: grid; justify-items: center; gap: 8px; opacity: 0; transform: translate(34px, 26px) scale(.86); transition: opacity .9s ease .5s, transform 1s cubic-bezier(.2,.8,.2,1) .5s; pointer-events: none; }
+.ap-camwrap.is-in .cam-fig { opacity: 1; transform: none; }
+.cam-photo { width: 100%; height: auto; display: block; border-radius: 22px; border: 1px solid #52525b; box-shadow: 0 0 0 5px #0b0b0c, 0 24px 44px -12px #000; }
+.cam-fig span { font: 600 10.5px/1.3 var(--font-mono); color: #d4d4d8; background: rgba(11,11,12,.9); border: 1px solid #3f3f46; border-radius: 999px; padding: 6px 10px; white-space: nowrap; }
+.cam-wave { position: absolute; left: -17%; top: -15%; width: 34%; height: auto; }
+.cam-wave path { opacity: 0; }
+.ap-camwrap.is-in .cam-wave path { animation: camWave 2.1s ease-in-out 1.5s infinite; }
+.ap-camwrap.is-in .cam-wave path:nth-child(2) { animation-delay: 1.75s; }
+.ap-camwrap.is-in .cam-wave path:nth-child(3) { animation-delay: 2s; }
+@keyframes camWave { 0%, 100% { opacity: 0; } 35%, 60% { opacity: .95; } }
+@media (prefers-reduced-motion: reduce) { .cam-fig { transition: none; } .ap-camwrap.is-in .cam-wave path { animation: none; opacity: .8; } }
+.ap-photo { grid-column: span 6; margin: 0; display: grid; gap: 12px; align-self: center; }
+.ap-photo img { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #3f3f46; box-shadow: 0 30px 60px -26px #000; }
+.ap-photo figcaption { font: 400 12px/1.4 var(--font-mono); color: #8a8a93; text-align: center; }
+@media (max-width: 900px) { .ap-photo { grid-column: 1 / -1; order: -1; } .cam-fig { right: 0; width: 40%; } }
 .ap-sub .ap-widewrap { grid-column: 1 / -1; }
 .ap-dev.wide { width: 100%; max-width: 960px; aspect-ratio: 960 / 356; border-radius: 22px; border-width: 6px; }
 .ap-sub .ap-widewrap ~ .amp-copy { align-self: start; }
@@ -586,7 +604,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 
   <div class="theme-dark">
   <section class="takeoff" id="takeoff" aria-label="대신남 스피드미터: 이제 차 안에서 이륙하세요">
-    <video id="tkVid" src="media/takeoff.mp4" poster="media/takeoff-poster.jpg" muted loop playsinline preload="none" aria-label="맑은 낮 푸른 바다 위를 나는 A-1H 스카이레이더와, 조종석에서 바라본 대신남 스피드미터 화면"></video>
+    <video id="tkVid" src="media/takeoff.mp4" poster="media/takeoff-poster.jpg" muted loop playsinline preload="none" aria-label="맑은 낮 푸른 바다 위를 나는 A-1H 스카이레이더, 조종석에서 바라본 대신남 스피드미터 화면, 그리고 그 화면이 그대로 차 안 폴드 화면이 되어 도로를 달리는 운전석 시야로 이어집니다"></video>
     <div class="takeoff-fade"></div>
     <div class="takeoff-copy" id="tkCopy"><b>대신남 스피드미터!</b><h2>이제 차 안에서 이륙하세요.</h2></div>
   </section>
@@ -908,6 +926,55 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       </div>
     </div>
     <div class="amp-wrap ap-sub">
+      <div class="ap-media ap-camwrap">
+        <div class="ap-dev"><video src="media/spd-dashcam.mp4" poster="media/spd-dashcam-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 대시캠 패널: 후방 카메라의 실시간 영상이 LIVE 표시와 함께 보이고, 전체 화면으로 커지는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <div class="cam-fig">
+          <svg class="cam-wave" viewBox="0 0 90 90" aria-hidden="true"><g fill="none" stroke="#93c5fd" stroke-width="3" stroke-linecap="round"><path d="M62 78A22 22 0 0 1 78 62"/><path d="M44 78A40 40 0 0 1 78 44"/><path d="M26 78A58 58 0 0 1 78 26"/></g></svg>
+          <img class="cam-photo" src="media/solar-cam.webp" width="560" height="560" loading="lazy" alt="차 위에 붙인 태양광 무선 후방 카메라: 위에 태양광 패널, 뒤에 안테나, 앞에 렌즈와 적외선 등이 있습니다">
+          <span>태양광 무선 후방 카메라</span>
+        </div>
+        <p class="ap-cap">폴드에서 찍은 실제 화면 · 실제 카메라</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">DASHCAM · 후방 카메라</div>
+        <h2>뒤쪽도<br>계기판 안에서.</h2>
+        <p class="ap-desc">태양광 패널로 충전하는 무선 후방 카메라와 연동합니다. 선을 깔 필요 없이 와이파이로 연결하면, 카메라 영상이 폴드 화면에 실시간으로 들어옵니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>태양광 패널 무선 후방 카메라와 와이파이로 직접 연결</span></li>
+          <li><b>02</b><span>DASHCAM 패널에서 실시간(LIVE) 영상 보기</span></li>
+          <li><b>03</b><span>전체 화면 버튼 한 번으로 화면 가득 크게</span></li>
+          <li><b>04</b><span>카메라에 연결한 동안에도 지도와 음악은 모바일 데이터로 그대로</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">CONTROL DECK · 물리 단축 버튼</div>
+        <h2>화면 터치 없이<br>모든 기능을.</h2>
+        <p class="ap-desc">스트림 덱 호환 기기를 연결하면 물리 단축 버튼이 자동으로 채워집니다. 운전 중에 화면을 찾아 누르지 말고, 손끝의 버튼으로 모든 기능을 작동해 보세요.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span><strong>음악</strong> 이전 · 재생 · 다음 · 전환 · 음소거</span></li>
+          <li><b>02</b><span><strong>화면</strong> 속도계 · 지도 · 라디오 · NOW · 전체</span></li>
+          <li><b>03</b><span><strong>주행</strong> 녹화 · 주야간 · T맵 · 네이버 지도 · 착륙</span></li>
+          <li><b>04</b><span>버튼마다 그림과 이름이 자동으로 표시됩니다</span></li>
+        </ul>
+      </div>
+      <figure class="ap-photo"><img src="media/deck-close.webp" width="1400" height="873" loading="lazy" alt="차 안 거치대에 놓인 15버튼 컨트롤 덱. 버튼마다 이전, 재생, 다음, 전환, 음소거, 속도계, 지도, 라디오, NOW, 전체, 녹화, 주야간, T맵, 네이버, 착륙 그림과 이름이 켜져 있습니다"><figcaption>차 안에 단 15버튼 덱 · 버튼 구성은 자동으로 채워짐</figcaption></figure>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <figure class="ap-photo"><img src="media/deck-dial.webp" width="1200" height="1083" loading="lazy" alt="변속 레버 옆 컵홀더 자리에 놓인 다이얼 컨트롤러. 큰 다이얼 하나와 위쪽 버튼 세 개가 있습니다"><figcaption>컵홀더 자리에 둔 다이얼 컨트롤러</figcaption></figure>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">DIAL · 다이얼 컨트롤러</div>
+        <h2>다이얼 하나로<br>볼륨부터 기능까지.</h2>
+        <p class="ap-desc">다이얼 컨트롤러를 연결하면 볼륨은 돌려서 맞추고, 기본 기능 7가지까지 손을 떼지 않고 모두 조작할 수 있습니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>다이얼을 돌려 볼륨 조절</span></li>
+          <li><b>02</b><span>기본 기능 7가지를 다이얼과 버튼으로 실행</span></li>
+          <li><b>03</b><span>버튼 덱과 함께 쓰면 화면을 볼 일이 더 줄어듭니다</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
       <div class="ap-media">
         <div class="ap-dev"><video src="media/spd-tmap.mp4" poster="media/spd-tmap-poster.jpg" muted playsinline preload="none" aria-label="화면을 반으로 나눠 왼쪽에 대신남 스피드미터의 오디오, 라디오, 계기판을, 오른쪽에 T맵 길 안내를 띄운 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
         <p class="ap-cap">실제 화면 · 내비게이션 칸은 위치가 드러나지 않게 흐리게 처리</p>
@@ -1216,7 +1283,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   var subIO = "IntersectionObserver" in window ? new IntersectionObserver(function (en) {
     en.forEach(function (e) {
       var d = e.target, v = d.querySelector("video"); if (!v) return;
-      if (e.isIntersecting) { if (!d._seen) { d._seen = true; play(v); } else if (v.paused && !v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } }
+      if (e.isIntersecting) { d.parentNode.classList.add("is-in"); if (!d._seen) { d._seen = true; play(v); } else if (v.paused && !v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } }
       else v.pause();
     });
   }, { threshold: 0.5 }) : null;
@@ -1803,13 +1870,15 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 })();
 </script>
 <script>
-// ---------- 이륙 장면 영상: 화면에 보일 때만 재생. 조종석 시점(8~16.5초)에서는 글자를 치움 ----------
+// ---------- 이륙 장면 영상(24초): 화면에 보일 때만 재생. 조종석 시점과 차 안으로 넘어가는 동안(8~19.6초)에는 글자를 치움 ----------
 (function () {
   "use strict";
   var v = document.getElementById("tkVid"), copy = document.getElementById("tkCopy");
   if (!v) return;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  v.addEventListener("timeupdate", function () { var t = v.currentTime; copy.classList.toggle("is-off", t > 8.0 && t < 16.4); });
+  v.addEventListener("timeupdate", function () { var t = v.currentTime; copy.classList.toggle("is-off", t > 8.0 && t < 19.6);
+    // 좁은 화면에서는 영상 좌우가 잘리므로, 차 안 장면에서 오른쪽의 폴드 화면이 보이도록 영상을 옮김
+    var k = Math.max(0, Math.min(1, (t - 17.4) / 2.4)); v.style.objectPosition = (50 + 30 * k * k * (3 - 2 * k)) + "% 50%"; });
   if (reduce) return;
   function play() { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
   if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { if (en[0].isIntersecting) play(); else v.pause(); }, { threshold: 0.2 }).observe(v);

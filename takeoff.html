@@ -31,9 +31,9 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 // 모든 값은 시간 t 하나로 계산(상태·시계 없음) → ?render 모드에서 프레임 단위로 그대로 재현된다.
 (function () {
   var T = window.THREE, canvas = document.getElementById("c"), copy = document.getElementById("copy");
-  var RENDER = /[?&]render/.test(location.search), LOOP = 20;
+  var RENDER = /[?&]render/.test(location.search), TAIL = /[?&]tail/.test(location.search), LOOP = 20;  // ?tail: 조종석 시점을 17.5초까지 이어 찍음(자동차 장면과 겹쳐 넘기는 구간용)
   var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true });
-  renderer.setPixelRatio(RENDER ? 1 : Math.min(window.innerWidth < 700 ? 1.5 : 1.75, window.devicePixelRatio || 1));
+  renderer.setPixelRatio(RENDER ? 1 : Math.min(1.75, window.devicePixelRatio || 1));
   renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   var scene = new T.Scene(), cam = new T.PerspectiveCamera(38, 16 / 9, 1.2, 5200);
@@ -299,7 +299,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
     var hdg = (Math.atan2(F.x, -F.z) * 57.2958 + 360) % 360;
     drawHud(t, body.rotation.z, -body.rotation.x, hdg, 304 + 22 * thr + Math.sin(t * 0.7) * 1.5, 412 + (P.y - 40) * 9, 303.4 + t * 0.085);
     // 샷: 하나의 움직임, 처음과 끝은 부드럽게, 컷으로 넘어감
-    var s = 0; while (s < 4 && t >= SHOTS[s + 1]) s++;
+    var s = 0; while (s < 4 && t >= (TAIL && s === 3 ? 17.5 : SHOTS[s + 1])) s++;
     var e = sm((t - SHOTS[s]) / (SHOTS[s + 1] - SHOTS[s])), fov = 38, near = 1.2, pov = s === 3;
     for (var pi = 0; pi < pilot.length; pi++) pilot[pi].visible = !pov;
     cam.up.set(0, 1, 0);
@@ -333,11 +333,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
   window.seekHud = function () { return Promise.resolve(); };
   if (RENDER) { renderAt(0); window.READY = true; }
   else { var t0 = performance.now(), still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // 화면에 보일 때만 움직임 (다른 페이지 안에 넣었을 때 배터리를 아낌)
-    var seen = true, going = false, shown = 0, lastNow = t0;
-    function loop(now) { if (!seen) { going = false; return; } shown += Math.min(0.1, (now - lastNow) / 1000); lastNow = now; renderAt(still ? 12 : shown); if (!still) { going = true; requestAnimationFrame(loop); } }
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { seen = en[0].isIntersecting; if (seen && !going && !still) { lastNow = performance.now(); going = true; requestAnimationFrame(loop); } }, { threshold: 0.05 }).observe(canvas);
-    loop(t0); window.READY = true; }
+    (function loop(now) { renderAt(still ? 15 : (now - t0) / 1000); if (!still) requestAnimationFrame(loop); })(t0); window.READY = true; }
 })();
 </script>
 </body>
