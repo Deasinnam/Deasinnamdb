@@ -1,104 +1,116 @@
-# 대신남 AMP — 작업 인수인계 (2026-10-29 기준)
+# 대신남 원 · 대신남 AMP — 작업 인수인계
 
-새 대화에서 이 문서를 먼저 읽고 이어서 작업합니다.
+> **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
+
+마지막 갱신: **2026-11-12 · v1.57 (versionCode 85)**
+
+---
 
 ## 1. 한눈에 보기
 
 | 항목 | 내용 |
 |---|---|
-| 앱 | **Daesinnam Amp** — 윈앰프 스타일 안드로이드 MP3 플레이어 (태블릿·폰·DeX·차량) |
-| 저장소 | `Deasinnam/Deasinnamdb` (공개), 브랜치 **`daesinnam-amp`** |
-| 최신 버전 | **v6.2** (versionCode 42) |
-| APK (권장) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp.apk |
-| APK (full) | https://github.com/Deasinnam/Deasinnamdb/releases/download/latest/DaesinnamAmp-full.apk (알림 접근 권한 포함, Play 프로텍트가 막을 수 있음) |
-| 웹 미리보기 | 아티팩트 "Daesinnam Amp" — https://claude.ai/artifact/3HBdDNuM5iMgqBM6hy6HhJ |
-| 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → Playwright UI 테스트 → 서명(GitHub Secrets의 키, 저장소에는 없음) → Releases `latest`에 업로드 |
+| 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
+| 최신 버전 | **1.57** (versionCode 85, versionName `1.57-one`) |
+| 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
+| 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
+| 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
+| 개인정보 처리방침 | https://github.com/Deasinnam/Deasinnamdb/blob/daesinnam-one-v1/docs/privacy.md |
 
-## 2. 구조
+### 앱 이름 정리 (사용자가 정한 호칭)
+- **대신남원** = 개발 모델(기존 통합 앱, `com.daesinnam.one.v1`). 폴드7은 `DaesinnamOne-V1-full.apk`.
+- **대신남2** = 시험판(배포용 테스트 `comm`, 안드로이드 등록 테스트 `play`).
+- **대신남 AMP** / **대신남 원** = 1.55에서 나눈 독립 앱(따로 설치).
 
-- **화면**: `app/src/main/assets/index.html` 하나에 UI 전체(HTML/CSS/JS). WebView + `WebViewAssetLoader`(origin `https://appassets.androidplatform.net`), JS 브리지 이름 `AndroidBridge`.
-  - 아티팩트 버전은 같은 파일에서 `<!doctype>/<head>/<body>` 래퍼와 로컬 jsmediatags 경로만 다름.
-  - `map.html`: 지도 제공자 페이지 (OSM 기본, 네이버 ncpKeyId, 카카오 appkey, TMAP jsv2).
-- **네이티브** (`app/src/main/java/com/daesinnam/amp/`)
-  - `MainActivity` — 브리지 메서드 (재생 상태, 외부 앱, 파일 선택, 차량 연결, GPS, 앱 열기/옆 창, 네이티브 플레이어 `np*`)
-  - `AmpPlayerService` — **Media3 ExoPlayer + MediaSessionService** (v4.0~). 핸들 버튼·잠금화면·재생 재개. `SpectrumTap`(TeeAudioProcessor FFT)으로 시각화, `ExternalEq.setLocalSession`으로 EQ.
-  - `PlaybackService` — 외부 앱 모드 포그라운드 서비스, 웹 데모 세션
-  - `ExternalEq` (DynamicsProcessing/Equalizer), `MediaLibrary` (SAF 영구 URI, 폴더 스캔, `/media` Range 스트리밍, `/art`), `CarConnect`, `GpsTracker`, `NowPlaying`, `SpotifyInfo`, `ArtLookup`, `MediaListener`(full 판만)
-- **판(flavor)**: `lite`(권장) / `full`(NotificationListener 추가)
-- **테스트**: `tests/speedometer-skins.cjs` (Playwright) — 스킨, GPS, 지도, 드라이브 스킨, 권한 패널 접기, 플레이리스트 저장, 설정, 간편 모드, 차량 연결, 네이티브 인계, EQ 터치 드래그
+### 내려받기 직접 링크 (채팅 파일 받기가 자주 실패하므로 항상 함께 안내)
+`https://github.com/Deasinnam/Deasinnamdb/releases/download/one-v1/<파일>`
 
-## 3. 지금까지 구현된 기능
+| 파일 | 앱 | applicationId | 스킨 |
+|---|---|---|---|
+| `DaesinnamOne-V1-full.apk` | 대신남원 (폴드7) | com.daesinnam.one.v1 | 자동차 모드·에어라인 (1.56~) |
+| `DaesinnamOne-V1.apk` | 대신남원 lite | com.daesinnam.one.v1 | 〃 |
+| `DaesinnamFold8*.apk` | 대신남원 폴드8 | com.daesinnam.one.v1.fold8 | 〃 |
+| `DaesinnamOne.apk` | 대신남 원 | com.daesinnam.oneapp | 자동차 모드·에어라인 |
+| `DaesinnamAMP.apk` | 대신남 AMP | com.daesinnam.ampapp | 오디오 스킨 7종(블루~우드 하이파이) |
+| `DaesinnamDist-Test.apk` | 대신남 배포용 테스트 | com.daesinnam.dist.test | 전부(PUB 제한) |
+| `DaesinnamOne-AndroidTest.apk/.aab` | 대신남 원 안드로이드 테스트용 | com.daesinnam.one.androidtest | 전부(PLAY 제한) |
 
-- 화면 크기별 자동 배치(1열/2열/가로 한 줄), 스킨: blue(기본)·amber·base·neon·ice·red·wood·**대신남 자동차 모드**(`carnival`, 건메탈/구리)·**대신남 자동차 모드 · 콕핏**(`carnival2`, 비행기 조종석 계기판, 속도계 기본 `cockpit` PFD)·**대신남 드라이브**(블루, 대신남 로고)
-- 대신남 로고·앱 아이콘·스플래시
-- 외부 앱(YouTube Music/Spotify) 곡 정보·앨범 아트·조작·시각화·EQ
-- 자동차 스킨: GPS 속도계(디자인 5종, 메인 창 위), HUD, 창 높이 조절
-- NAVIGATION 지도 창(선택 사용, OSM/네이버/카카오/TMAP, TMAP 열기·옆 창, 미사용 시 접혀서 맨 아래). TMAP 키 저장 후 자동 접기
-- 권한 패널: 모두 허용되면 자동 접기
-- 플레이리스트 저장(파일/폴더), 이어 듣기
-- 차 연결 시 자동 재생, 주행 중 간편 모드, 설정 패널
-- v4.0: Media3 네이티브 재생 (핸들 버튼 선곡 목적)
-- v4.1: EQ 슬라이더가 페이지 스크롤에 밀리지 않음 (pointer capture, `touch-action:none`)
-- v4.2: 콕핏 스킨(현 "대신남 자동차 모드 · 콕핏") + 속도계 디자인 6번째 "콕핏 PFD" (`drawPFD`)
-- v4.2.1: 콕핏 스킨에서 주행 정보를 속도계 위 한 줄로, 속도계를 창 너비 가득 크게
-- v4.3: 콕핏 창 크기 조절 시 PFD 비율 대응, COCKPIT CONTROL 창(`#wCtl`, 브리지 `cockpitState/setMuted/setWifi/setBluetooth`), TOWER 창(`#wAtc`, 출발 전 점검 + WebAudio 효과음 + 브리지 `speak` TTS). 레이아웃 클래스 `.app.K`. 실기기에서 와이파이 패널·블루투스 요청 창·TTS 확인 필요
-- v4.4: 조종 패널 가운데 SOS(보호 덮개 → 두 번째 누름에 `sosCall`, CALL_PHONE 권한, 설정 `#secSos`, 연락처 고르기 `pickContact` → `__sosPicked`, 저장 키 `sos`), TOWER 창 두 줄 높이로 줄이고 두 줄씩 교체, 끝나면 이륙 허가만 남김
-- v4.5: 콕핏 스킨 상단을 KIA 로고 대신 "대신남 원 에어포스" 휘장(`.brand .af`, 인라인 SVG)으로, 콕핏 스킨에서는 `#wGps`만 높이 조절(`applySizes`가 나머지 저장 높이를 무시)
-- v4.6: PFD에 나침반·기울기 센서(`GpsTracker.attStart/attStop/attitude` → 회전 행렬, JS `attPoll`, 기준 자세 `attRef`, "수평 맞춤"), 구름(진행 방향 앞에서 다가옴, 속도 비례, 선회 시 옆으로), 하늘 주간/야간/자동(`gSky`, 달·별·어두운 구름). 진행 방향은 센서 우선. 실기기에서 거치 방향별 기울기 부호·나침반 방향 확인 필요
-- v4.7: COCKPIT CONTROL을 사용자가 준 `Daesinnam_Cockpit_Claude_Package`(cockpit.html)로 교체. CSS는 `.dsn` 범위·컨테이너 쿼리로 이식, id는 `dk` 접두사, 패키지의 `CockpitNative` 계약은 기존 `AndroidBridge`(cockpitState에 volume·wifiSupported 추가, setSystemVolume, setWifi, setBluetooth, sosCall)로 어댑터 연결. 내장 한글 글꼴(3.6MB)은 넣지 않고 앱의 Noto Sans KR 사용. SOS는 패키지의 "전화 화면 열기" 대신 이전 요청대로 바로 전화. `window.Cockpit`·`cockpit:command` 이벤트 제공
-- v4.8: 조종 콘솔 압축(레버·덮개·노브 `zoom:.66`, 데스크톱 높이 약 395px), LIFT TO ARM 덮개 노란 경고 커버, 폰에서 EMERGENCY 가운데 줄. 콕핏 스킨 상단 로고를 사용자 제공 이미지(`.brand .af-img`, WebP 1200px 인라인)로 교체
-- v4.9: 조종 콘솔 제목 한글화(EMERGENCY만 영문), 안내·연락처 요약·하단 메시지 줄 제거(결과는 토스트), MUTE를 + 옆으로(데스크톱 높이 약 317px). 관제탑 속도 주의(`atcSpeedTick`, 50/100/120/150/180/200km/h, 빨간 `#atcWarn`)
-- v5.0: 콕핏 스킨 전체를 조종 콘솔의 무광 올리브·연두(#a7e29a/#a8f08f)·앰버(#f3bc65)로 재색칠, 스코프·속도계 정보 녹색. 시각화 10종(`visMode` 0~9, `drawVisFx`, 선택 `#visSel`)
-- v5.1: 속도계 창 크기 조절 버튼(`#gRz`, `#wGps.rz`일 때만 손잡이 표시·동작, 15초 미조작 시 자동 해제)
-- v5.2: 설정 → 창 순서(`#secOrder`, 저장 키 `winOrder_K/G/N`). 사용자 순서가 있으면 `.app.CO`로 grid-template-areas 대신 `order` 흐름 배치
-- v5.3: 콕핏 스킨 속도계를 사용자 제공 `Daesinnam_PFD_Claude_Package`(pfd.js/pfd.css, `.dsn-pfd`)로 교체. index.html에 인라인, `#pfdHost`에 마운트, 패키지 헤더는 숨기고 앱 창 제목줄(크기 조절·접기) 사용. `pfdFeed()`가 10Hz로 GPS(`gs`, `spdNow`, `hdgNow`)·기울기(`att`)·주행 기록(`trip`)을 `updateTelemetry`로 전달, nativeBridge = `gpsStart/gpsStop`, `trip:reset`·`settings:change`(속도 경고=`gLimit`, 테마·HUD 반전=`pfdSet`) 연결. 패키지 내장 글꼴(3.6MB)은 넣지 않고 Noto Sans KR. 다른 자동차 스킨은 기존 속도계 유지
-- v5.4: 지도 창 버튼 TMAP 켜기 / TMAP 하단에 켜기(브리지 `openAppBottom`: LAUNCH_ADJACENT + 자유 창이면 아래쪽 절반 `setLaunchBounds`, 가로 화면이면 "landscape" 반환) / TMAP 옆 창. 실기기 분할 위치 확인 필요
-- v5.5: PFD 패키지 v1.1(`Daesinnam_PFD_Claude_Package_3`)로 pfd.js 교체: 속도 연동 구름·도심 불빛, 야간 달·별. `pfdSet`에 sceneMotion·sceneQuality 저장, 테마 "자동"은 앱이 19~6시 night/day로 넘김(`pfdApplyTheme`, 패키지 화면에는 사용자가 고른 값 표시)
-- v5.6: 인라인 pfd.js에 선회 효과 추가(앱 쪽 수정): `PfdScene.turn(heading)`이 방위 변화만큼 구름·도심을 회전, 별·달·스카이라인은 `yawAcc`로 옆 이동. 패키지 새 버전을 받으면 이 수정을 다시 넣어야 함
-- v5.7: PFD 패키지 v1.2(`Package_6`): 에어포스 디자인(`skin:'airforce'`, `.pfd-airforce`). pfd.js/pfd.css 교체 + 선회 패치 재적용. `pfdSet.skin` 저장·복원, 에어포스일 때만 패키지 헤더 표시(접기 버튼은 숨김). 디자인 전환이 주야간 선택(`pfdTheme`)을 덮어쓰지 않게 설정 창 저장일 때만 theme 갱신
-- v5.8: 화면 파일 정리 — PFD 패키지를 `assets/pfd/`(원본 그대로)로 분리, 앱 연결·선회 효과는 `assets/pfd-amp.js`/`pfd-amp.css`로(선회는 패키지 수정 없이 장면 객체에 런타임으로 덧붙임). index.html은 `window.AmpHost`(읽기·쓰기 창구)만 내놓고 `window.AmpPfd.feed()`를 부름. 웹 미리보기 빌드 시 이 파일들을 인라인. 콕핏 로고를 D1 이미지로 교체. 서명 키를 새로 만들어 Secrets로 이동(설치된 앱은 한 번 지우고 재설치 필요)
-- v5.9: 배포 준비 — KIA 로고 이미지 삭제, 스킨 표시 이름 "대신남 자동차 모드"/"대신남 자동차 모드 · 콕핏"(내부 키 carnival/carnival2는 저장값 호환 위해 유지), 제목 Daesinnam Car Mode. 설정에 오픈소스 라이선스(`#secOss`, 전문 4종). OSM 출처를 "© OpenStreetMap contributors"(링크)로
+---
 
-- v6.0: **D1 DASHCAM** 창(`#wCam`, 자동차 스킨 공통, 콕핏은 관제탑 아래·그 외는 속도계 아래, 창 순서 이름 "블랙박스"). 네이티브 `CamLink.java`: 카메라 와이파이에 앱 전용 연결(`WifiNetworkSpecifier`, 인터넷 없음 요청, 이미 연결된 인터넷 없는 와이파이 우선 재사용), 카메라 소켓만 `Network.bindSocket()`/`getSocketFactory()` — `bindProcessToNetwork`는 쓰지 않아 인터넷은 모바일 데이터 유지. JHCMD 실시간(UDP 20000 명령, 10900 수신, 1초 하트비트, JPEG 재조립) → `/cam/frame.jpg`(shouldInterceptRequest). "카메라 찾기"는 JHCMD·RTSP 554/8554·HTTP 80/8080·TCP 포트 몇 개를 확인해 결과 표시. 브리지: camState/camConnect/camDisconnect/camProbe/camLive/openWifiSettings. 권한: ACCESS/CHANGE_NETWORK_STATE, NEARBY_WIFI_DEVICES(neverForLocation, 13+), 10~12는 정확한 위치. 기본 SSID 패턴 `Car-Cam*`, 설정에서 이름·비밀번호 저장
+## 2. 반드시 지킬 것
 
-- v6.1(폴드7·폴드8 울트라 전용 판, flavor `device`)은 사용자가 별로라고 해서 v6.2에서 통째로 되돌림. **새 기능은 v6.0 내용을 기준으로 얹을 것**(기종별 판 다시 만들지 말 것). v6.2에서 남긴 것: 크기 조절한 속도계에서 콕핏이 아닌 스킨에도 PFD가 보이던 버그 수정(pfd-amp.css), versionCode를 올려 6.1 위에 덮어 설치되게 함
+- **모든 대화는 한글.**
+- 사용자 개인정보(이메일 등)는 되풀이하거나 공개 저장소에 쓰지 않음.
+- Joyhonest `.so` 재배포·JOY TRIP 브랜딩 복제 금지. 스타워즈 IP 금지. YT Music·Spotify 로고 금지.
+- **`app/src/main/assets/pfd/pfd.js`는 수정 금지.** PFD 추가 기능은 `web/src/` 쪽(pfd-amp·pfd-flight 역할 코드, 51-pfd-minimap 등)에.
+- 파일 받기가 안 될 때가 많으니 APK는 SendUserFile + 위 직접 링크 둘 다.
 
-## 4. 확인 대기 중
+---
 
-- **v4.0 핸들 버튼 선곡**: 이전 두 번의 수정(MediaSession, 오디오 포커스)은 실패. Media3로 바꾼 v4.0이 실제 차량에서 되는지 사용자 확인 필요.
-- **v4.1 EQ 드래그**: 실기기 확인 필요.
-- TMAP 지도 타일이 회색으로 나오던 문제: 미해결. 대안으로 네이버/카카오 선택 기능 제공함 (키 발급 시 웹 주소 `https://appassets.androidplatform.net` 등록 필요).
+## 3. 릴리스 순서 (매번 똑같이)
 
-## 5. 진행 중: JOY TRIP 블랙박스 카메라 "대신남 버전"
+1. `app/build.gradle` — versionCode +1, versionName `X-one`.
+2. README 변경 기록: `sed -i '49i - X: 설명' README.md` (49번째 줄에 새 줄).
+3. `node tools/build-web.cjs` → `npm run check` → `TEST_JOBS=1 timeout 590 node tests/run.cjs` (전부 통과해야 함).
+4. **이 문서(docs/HANDOFF.md) 갱신.**
+5. 커밋(트레일러 포함) →
+   ```
+   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_012mxsbgcYRXZraKst5kx2SJ
+   ```
+   `git push origin HEAD:daesinnam-one-v1`
+6. CI 지켜보기: `gh run list -R Deasinnam/Deasinnamdb -b daesinnam-one-v1 -L 1` → 백그라운드 until 루프로 `gh run view <id> --json status,conclusion`.
+   - 실패가 우분투 패키지 서버(`Temporary failure resolving`)·Gradle 504 같은 일시 장애면 `gh run rerun <id>`. (Playwright 의존 패키지 재시도·Gradle 미러 대체는 이미 워크플로에 있음)
+7. 릴리스 파일 받기: `gh api repos/Deasinnam/Deasinnamdb/releases/tags/one-v1 -q '.assets[]|...'` → `gh api -H "Accept: application/octet-stream" .../releases/assets/<id> > 파일` → `unzip -p X.apk assets/app.js | grep` 으로 새 코드 들어갔는지 확인.
+8. SendUserFile(display attach) + 직접 링크 안내, 한글로 보고.
+9. (웹 화면이 바뀐 경우) 아티팩트 다시 올리기: 스크래치패드 `one-art/`에서 CSP meta 빼고, 제목 "대신남 원 Ver1", jsmediatags는 CDN.
 
-**요청**: JOY TRIP 앱은 카메라 와이파이에 붙으면 폰 인터넷이 막힘 → 카메라만 와이파이, 나머지는 모바일 데이터. JOY TRIP을 대신남 버전으로.
+---
 
-**분석 결과 (JoyTrip 2.93 XAPK)**
-- Joyhonest 공용 라이브러리 `libJoyWifiCamera.so` (JNI `com.joyhonest.wifination.wifination`) 사용.
-- 지원 프로토콜: JHCMD, FDWN, GPSOCKET, GPRTP_UDP_SOCKET, GP_tcp_VideoSocket, **GP4225**(GeneralPlus 블랙박스 TCP 계열: 파일 목록, 녹화 시간, OSD, SD 포맷 등), RTSP(ffmpeg).
-- 카메라 IP 후보: 192.168.25.1~192.168.35.1, 175.16.10.2, 192.168.123.1, 192.168.254.1. UDP 20001 (MyUdp20001Data).
-- 블랙박스는 **GP4225** 계열일 가능성이 큼 → 공개 문서 없음.
-- 참고용 공개 구현(MIT): HeikoGr/wifi-cam-proxy `firmware/src/cam_jhcmd.cpp` — JHCMD: 카메라 192.168.29.1, 명령 UDP 20000, 영상은 클라이언트 UDP 10900. INIT1 `"JHCMD"+10 00`, INIT2 `"JHCMD"+20 00`, START(3초 하트비트) `"JHCMD"+D0 01`, STOP `"JHCMD"+D0 02`. 8바이트 헤더(프레임 번호 LE 2B, 패킷 수, 패킷 인덱스), FF D8 FF ~ FF D9로 JPEG 재조립.
-- **하지 말 것**: Joyhonest `.so` 재배포(비공개 라이브러리, 저장소 공개), JOY TRIP 이름/디자인 복제.
+## 4. 구조
 
-**구현 계획**
-1. 네트워크 분리: `WifiNetworkSpecifier`(ConnectivityManager.requestNetwork)로 카메라 와이파이에 앱 전용 연결 → 카메라 소켓만 `Network.bindSocket()` / `network.openConnection()`. 기본 네트워크는 모바일 데이터 그대로.
-2. 자동차 스킨에 **CAMERA** 창: 라이브 보기, 녹화 파일 목록, 충격 영상 재생.
-3. 프로토콜 프로브: JHCMD(UDP 20000/10900), RTSP, GP4225/GPSOCKET.
+- **웹 화면**: `web/src/NN-*.js`를 `tools/build-web.cjs`가 이름순으로 이어 붙여 `app/src/main/assets/app.js`(한 IIFE) 생성. 직접 app.js 고치지 말 것.
+  - 스타일: `app/src/main/assets/app.css`(뒤에 덧붙이는 방식), 화면 틀: `app/src/main/assets/index.html`.
+  - 주요 파일: `00-core.js`(빌드 플래그·스킨·store), `02-build-notice.js`, `51-pfd-minimap.js`(원형 지도), `63-carlog.js`(차계부), `64-lyrics.js`(가사), `80-clock-windows.js`, `92-cockpit2-rail.js`(아래 바로가기·ckFocus), `97-brightness.js`(밝기·야간 20%), `98-cockpit-special.js`(관제탑 표시 atcMini), `99-power-boot.js`.
+- **빌드 플래그(JS)** `00-core.js`:
+  - `BUILD` = 네이티브 `NB.buildKind()`(= `BuildConfig.FLAVOR_device`) 또는 테스트용 `window.__build`.
+  - `PUB`(comm·play), `PLAY`(play), `NATIVE_KIND`, **`APP`** = `amp` / `one`(one·std·fold8 네이티브) / `all`(웹 미리보기·테스트·시험판).
+  - `document.documentElement.dataset.app` → CSS `:root[data-app="amp"]`로 AMP에서 차량 기능 숨김.
+  - 스킨 제한: `AUDIO_SKINS`(blue·amber·base·neon·ice·red·wood) / `ONE_SKINS`(carnival·carnival7) / `RETIRED`(carnival5·4·6·tablet·tablet2, 테스트는 `window.__allSkins=true`).
+- **flavor**: device(std·fold8·comm·play·amp·one) × edition(lite·full). 앱 이름은 `app/src/<flavor>/res/values/strings.xml`, AMP 아이콘은 `app/src/amp/res/`.
+- **네이티브**(`app/src/main/java/com/daesinnam/amp/`): MainActivity(브리지 `AndroidBridge`, 뒤로가기 `window.__back`), AmpPlayerService(Media3), ExternalEq(외부 앱 EQ — 꺼짐/평탄이면 효과 없음, 세션 0은 선택), GpsTracker 등.
+- **PFD**: `pfd.js`(DaesinnamPFD, 수정 금지) 위에 계기 스킨(에어라인/에어포스 `data-pfdlook`), 비행 단계·효과음, 관제탑(TWR) 문구, 원형 지도, 총 주행거리.
+- **원형 지도**(`PfdMap`): Leaflet + OSM 타일. 모양 `gta` / `normal`(PFD 주간·야간 따라감) / `day`(항상 주간). 야간은 SVG 필터 `#pmNightFx`(바탕 반전 + 물색 골라 파랑 강줄기 + 강가 주황 불빛). Leaflet은 `app/src/main/assets/leaflet/`(gitignore, CI가 받아 옴).
+- **테스트**: `tests/NN-*.test.cjs` 29개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
 
-**받은 정보**: 카메라 와이파이 "Car-Cam c9e710", 보안 없음, DHCP, 폰 IP 192.168.29.2 → 카메라 192.168.29.1(JHCMD 기본 주소와 일치). 이름은 **D1 DASHCAM**, 형태는 AMP 안의 창.
+---
 
-**v6.0에서 한 것**: 1번(네트워크 분리)·2번 중 라이브 보기·3번 프로브. 실기기에서 JHCMD 화면이 나오는지 확인 필요(안 나오면 "카메라 찾기" 결과를 받아 볼 것).
+## 5. 현재 동작 요약 (최근 주요 기능)
 
-**사용자에게 요청해 둔 것 (아직 안 받음)**
-- PCAPdroid로 JoyTrip 트래픽 캡처(라이브 10초 → 파일 목록 → 파일 하나 재생) 후 PCAP 파일 → 녹화 파일 목록·재생 구현에 필요
-- XAPK는 이전 대화에만 첨부되어 있으므로, 다시 분석이 필요하면 재첨부 필요
+- **앱 나누기(1.55~1.56)**: AMP = 오디오 스킨만, 상단 날짜·날씨·밝기 계기 없음, 도구 버튼 아이콘 없이 한 줄. 대신남원·대신남 원 = 자동차 모드·에어라인만.
+- **켤 때(대신남 원·대신남원)**: 스피드미터 화면(ckFocus `gps`)이 화면 한가득(`--fxH: calc(100dvh - 6px)`), 스피드미터 창이 맨 위로 스크롤(폴드7 기준 사용자가 고른 비율).
+- **관제탑 문구**: 칸 폭 고정·한 줄, 길면 전광판처럼 흐름(`.atcmini span.mq`).
+- **야간(1.57)**: PFD가 야간이 되면 화면 밝기 20%(주간 되면 이전 밝기 복원, `briDayPrev`). 원형 지도 야간에 강줄기·강가 불빛, "항상 주간" 선택 가능.
+- 과속 카메라: 전방·같은 길·가까워지는 것만, 500m·100m 두 번 표지판 카드 + 음성.
+- 차계부(접힘 기본), 가사(파일 → LRCLIB), 뒤로가기는 창만 닫기, 반응형(글자 크기 반영·48px 터치 영역).
+- 시험판(PUB): 라디오는 방송사 공식 웹으로만, 가사는 파일만, 첫 실행 안내.
 
-**당장 쓸 수 있는 우회(설정)**: Wi-Fi → ⋮ → 인텔리전트 Wi-Fi → "모바일 데이터로 전환" 켜기, 개발자 옵션 → "모바일 데이터 항상 사용" 켜기, 카메라 와이파이 다시 연결 후 "인터넷 없음"에서 연결 유지.
+---
 
-## 6. 주의 사항
+## 6. 남은 일 · 사용자 답을 기다리는 것
 
-- 저장소는 공개. KIA 로고·카니발 이름은 v5.9에서 앱에서 제거(예전 버전 git 기록에는 남아 있음). 서명 키는 v5.8부터 저장소에서 빼고 Secrets(`AMP_KEYSTORE_BASE64` 등 4개)로 옮김. 예전 키(`signing/amp.keystore`, 비밀번호 포함)는 git 기록에 남아 있으므로 다시 쓰지 말 것.
-- 사용자 개인정보(이름·이메일·전화번호)는 문서/커밋에 넣지 않음.
-- `ci-check` 브랜치는 삭제 권한(403)이 없어 남아 있음.
-- 버전 올릴 때: `app/build.gradle`의 versionCode/versionName, README 갱신, 테스트 추가 후 푸시하면 CI가 Releases `latest`를 갱신.
+- 대신남2 라디오: 해외 공개 스트림은 재생 + 국내 방송사는 공식 앱 연결로 할지 — **답 없음**.
+- 시험판 이름을 "대신남2"로 바꿀지 — **답 없음**.
+- 안드로이드 오토(미디어 앱) 지원 — **답 없음**.
+- 1.57 야간 원형 지도 강 색·불빛 세기는 실제 OSM 타일로 도로에서 확인 필요(가짜 그림으로만 확인함). 너무 진하거나 흐리면 `51-pfd-minimap.js`의 `pmNightFx` 행렬 값 조정.
+
+---
+
+## 7. 작업 기록 (최근이 위)
+
+- 2026-11-12 · 1.57 — 야간 원형 지도 강줄기·강가 불빛, "항상 주간" 지도, 야간 화면 밝기 20%. 테스트 29 추가.
+- 2026-11-12 · CI — Playwright 의존 패키지 설치 재시도(우분투 서버 장애 대비).
+- 2026-11-11 · 1.56 — 대신남원도 자동차 모드·에어라인만, 켜면 스피드미터 꽉 차게, 관제탑 전광판식 표시.
+- 2026-11-10 · 1.55.1 — AMP 상단 계기 삭제, 도구 버튼 한 줄.
+- 2026-11-10 · 1.55 — 대신남 AMP / 대신남 원 독립 앱 분리.
+- 1.41~1.54 — README 변경 기록 참고(HUD PFD, 차계부, 에어라인/에어포스, 과속 카메라 개선, 뒤로가기, 가사, 반응형, 외부 앱 소리, 원형 지도, 플레이 준비, 시험판 2종).
