@@ -6,15 +6,33 @@ const PfdMap=(()=>{
   let style=store.get('pfdMapStyle','gta'),odo=null;
   let on=store.get('pfdMap',true),host=null,map=null,inner=null,me=null,nEl=null,lastSet=0,rot=0,wrap=null;
   const ui=()=>{const s=$('#sPfdMap');if(s)s.checked=on;const ss=$('#sPfdMapStyle');if(ss)ss.value=style;if(host){host.classList.toggle('off',!on);host.querySelector('.pm-x').setAttribute('aria-label',on?'원형 지도 끄기':'원형 지도 켜기');host.querySelector('.pm-x').textContent=on?'×':'지도'}};
-  function setStyle(v){style=v==='normal'?'normal':'gta';store.set('pfdMapStyle',style);ui();paint()}
+  function setStyle(v){style=v==='normal'||v==='day'?v:'gta';store.set('pfdMapStyle',style);ui();paint()}
   const isDay=()=>{try{return !!window.AmpPfd.panel.day}catch(e){return true}};
-  function paint(){if(!host)return;const k=style==='gta'?'gta':isDay()?'day':'night';if(host.dataset.look!==k){host.dataset.look=k;host.querySelector('.pm-ring').setAttribute('aria-label','지도 모양: '+(k==='gta'?'GTA 모드':k==='day'?'일반 주간':'일반 야간')+' (누르면 바꿈)')}}
+  function paint(){if(!host)return;const k=style==='gta'?'gta':style==='day'||isDay()?'day':'night';nightFx(k==='night');if(host.dataset.look!==k){host.dataset.look=k;host.querySelector('.pm-ring').setAttribute('aria-label','지도 모양: '+(k==='gta'?'GTA 모드':k==='day'?'일반 주간':'일반 야간')+' (누르면 바꿈)')}}
+  /* 1.57 야간 지도: 바탕은 어둡게 뒤집되 강·호수는 주간처럼 파랗게 살리고, 강가를 따라 주황 가로등 불빛(SVG 필터).
+   *  OSM 물 색(#aad3df)은 파랑−빨강 차이가 커서 그것만 골라냄 */
+  function nightFx(on){if(!on||document.getElementById('pmNightFx'))return;const d=document.createElement('div');d.style.cssText='position:absolute;width:0;height:0;overflow:hidden';d.setAttribute('aria-hidden','true');
+    d.innerHTML='<svg width="0" height="0"><filter id="pmNightFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
+      +'<feColorMatrix in="SourceGraphic" type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0" result="inv"/>'
+      +'<feColorMatrix in="inv" type="hueRotate" values="180" result="hr"/>'
+      +'<feColorMatrix in="hr" type="matrix" values=".74 0 0 0 0  0 .76 0 0 0  0 0 .8 0 0  0 0 0 1 0" result="base"/>'
+      +'<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 .09  0 0 0 0 .30  0 0 0 0 .58  -9 0 9 0 -.75" result="water"/>'
+      +'<feMorphology in="water" operator="dilate" radius="2" result="wd"/>'
+      +'<feComposite in="wd" in2="water" operator="out" result="bank"/>'
+      +'<feColorMatrix in="bank" type="matrix" values="0 0 0 0 1  0 0 0 0 .78  0 0 0 0 .38  0 0 0 1 0" result="lamp"/>'
+      +'<feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="1" seed="7" result="nz"/>'
+      +'<feColorMatrix in="nz" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 9 -4.2" result="dots"/>'
+      +'<feComposite in="lamp" in2="dots" operator="in" result="lampDots"/>'
+      +'<feGaussianBlur in="lamp" stdDeviation="2.2" result="glow"/>'
+      +'<feComponentTransfer in="glow" result="glow2"><feFuncA type="linear" slope="1.4"/></feComponentTransfer>'
+      +'<feMerge><feMergeNode in="base"/><feMergeNode in="water"/><feMergeNode in="glow2"/><feMergeNode in="lamp"/><feMergeNode in="lampDots"/></feMerge>'
+      +'</filter></svg>';document.body.appendChild(d)}
   function set(v){on=!!v;store.set('pfdMap',on);if(!on&&map){map.remove();map=null;if(inner)inner.innerHTML=''}ui();if(on)attach(true)}
   function build(w){wrap=w;host=document.createElement('div');host.className='pfd-mini';host.innerHTML='<div class="pm-ring"><div class="pm-map"></div><i class="pm-me" aria-hidden="true"></i><b class="pm-n" aria-hidden="true">N</b><span class="pm-msg">GPS</span></div><button type="button" class="pm-x"></button>';
     host.setAttribute('role','img');host.setAttribute('aria-label','진행 방향 지도');w.appendChild(host);inner=host.querySelector('.pm-map');me=host.querySelector('.pm-me');nEl=host.querySelector('.pm-n');
     host.querySelector('.pm-x').onclick=e=>{e.stopPropagation();set(!on)};
     // 지도 원을 누르면 GTA 모드 ↔ 일반 지도
-    const ring=host.querySelector('.pm-ring');ring.setAttribute('role','button');ring.tabIndex=0;ring.onclick=e=>{e.stopPropagation();setStyle(style==='gta'?'normal':'gta');toast(style==='gta'?'원형 지도: GTA 모드':'원형 지도: 일반 지도(주간·야간 자동)')};
+    const ring=host.querySelector('.pm-ring');ring.setAttribute('role','button');ring.tabIndex=0;ring.onclick=e=>{e.stopPropagation();setStyle(style==='gta'?'normal':style==='normal'?'day':'gta');toast(style==='gta'?'원형 지도: GTA 모드':style==='day'?'원형 지도: 항상 주간 지도':'원형 지도: 일반 지도(주간·야간 자동)')};
     // 오른쪽 아래 총 주행거리(차계부 누적 거리, GPS로 자동 증가). 누르면 차계부 열기
     odo=document.createElement('button');odo.type='button';odo.className='pfd-odo';odo.innerHTML='<small>총 주행</small><b>—</b><i>km</i>';w.appendChild(odo);
     odo.onclick=e=>{e.stopPropagation();const l=$('#wLog');if(l){l.classList.remove('collapsed');l.scrollIntoView({block:'start',behavior:'smooth'})}};

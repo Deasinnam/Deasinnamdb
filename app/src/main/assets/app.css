@@ -2702,7 +2702,7 @@ img{height:auto;object-fit:contain}
 .pfd-mini[data-look="day"] .pm-map{filter:saturate(1.05) contrast(1.02)}
 .pfd-mini[data-look="day"] .pm-ring,.pfd-mini[data-look="day"] .pm-map .leaflet-container{background:#f2efe9}
 .pfd-mini[data-look="day"] .pm-me{background:#1a6dff;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 1px 2px #0008)}
-.pfd-mini[data-look="night"] .pm-map{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.7)}
+.pfd-mini[data-look="night"] .pm-map{filter:url(#pmNightFx)}
 .pfd-mini[data-look="night"] .pm-ring,.pfd-mini[data-look="night"] .pm-map .leaflet-container{background:#1b2230}
 .pfd-mini[data-look="night"] .pm-me{background:#7fd3ff}
 .pfd-mini .pm-ring{cursor:pointer}
