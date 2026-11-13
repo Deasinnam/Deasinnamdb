@@ -1,6 +1,17 @@
+User-agent: Yeti
+Allow: /
+Disallow: /src/
+Disallow: /tools/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /src/
+Disallow: /tools/
+
 User-agent: *
 Allow: /
 Disallow: /src/
 Disallow: /tools/
 
 Sitemap: https://deolnureum.com/sitemap.xml
+Sitemap: https://deolnureum.com/rss.xml

@@ -4,7 +4,7 @@
 원본은 한 파일에 모든 화면이 들어 있고 # 주소(#app-speed 등)로 화면을 바꾼다.
 검색엔진은 # 뒤를 보지 않으므로, 화면마다 진짜 주소의 페이지를 만들어 준다.
   /            홈            /apps/     앱센터       /about/    소개      /feedback/  의견 보내기
-  /amp/  /speedometer/  /work/  /desktop/  /browser/    앱별 소개
+  /amp/  /speedometer/  /work/  /desktop/  /browser/  /98/    앱별 소개
 페이지마다: 제목·설명·대표 주소(canonical)·공유 이미지·구조화 데이터를 넣고, 그 화면이 처음부터 보이게 한다.
 sitemap.xml 과 robots.txt 도 함께 만든다.
 
@@ -36,12 +36,15 @@ APPS = [
     ("#app-browser", "/browser/", "덜누름 브라우저 — 창으로 여는 PC형 브라우저",
      "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.",
      "덜누름 브라우저", "BrowserApplication", "/media/app-browser-poster.jpg"),
+    ("#app-98", "/98/", "덜누름 98 — 폴드를 그 시절 PC처럼",
+     "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.",
+     "덜누름 98", "UtilitiesApplication", "/media/app-98-poster.jpg"),
 ]
 APP_NAMES = ", ".join(a[4] for a in APPS)
 PAGES = [
     # (원본의 # 주소, 실제 주소, 화면 이름, 제목(전체), 설명)
     ("#top", "/", "home", "덜누름 Software — 덜 누르고, 더 편하게",
-     "덜누름은 누를 일을 줄이는 앱을 개발합니다. " + APP_NAMES + "를 갤럭시 Z 폴드에 맞춰 만들고 있습니다."),
+     "덜누름은 누를 일을 줄이는 앱을 개발합니다. " + APP_NAMES + " 앱을 갤럭시 Z 폴드에 맞춰 만들고 있습니다."),
     ("#app-center", "/apps/", "apps", "앱센터 — 덜누름이 개발 중인 앱" + SUFFIX,
      "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. " + APP_NAMES + "의 실제 화면을 볼 수 있습니다."),
     ("#about", "/about/", "about", "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다" + SUFFIX,
@@ -104,7 +107,8 @@ def build():
                 '<meta property="og:image" content="%s/brand/og.jpg">' % SITE,
                 '<meta property="og:image:width" content="1200">', '<meta property="og:image:height" content="630">',
                 '<meta name="twitter:card" content="summary_large_image">',
-                '<meta name="robots" content="index,follow,max-image-preview:large">']
+                '<meta name="robots" content="index,follow,max-image-preview:large">',
+                '<link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="%s/rss.xml">' % SITE]
         head += ['<meta name="%s" content="%s">' % (k, v) for k, v in VERIFY.items() if v]
         head += ['<script type="application/ld+json">%s</script>' % jsonld(h, path, title, desc),
                  "<script>window.__PAGES=%s;</script>" % json.dumps(meta, ensure_ascii=False)]
@@ -124,8 +128,17 @@ def build():
     today = datetime.date.today().isoformat()
     urls = "".join("  <url><loc>%s%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>\n" % (SITE, p, today, "1.0" if p == "/" else "0.8") for _, p, _, _, _ in PAGES)
     (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n%s</urlset>\n' % urls, encoding="utf-8")
-    (ROOT / "robots.txt").write_text("User-agent: *\nAllow: /\nDisallow: /src/\nDisallow: /tools/\n\nSitemap: %s/sitemap.xml\n" % SITE, encoding="utf-8")
-    print("만든 파일:", ", ".join(written), "+ sitemap.xml, robots.txt")
+    rules = "Allow: /\nDisallow: /src/\nDisallow: /tools/\n"
+    (ROOT / "robots.txt").write_text("User-agent: Yeti\n" + rules + "\nUser-agent: Googlebot\n" + rules + "\nUser-agent: *\n" + rules +
+                                     "\nSitemap: %s/sitemap.xml\nSitemap: %s/rss.xml\n" % (SITE, SITE), encoding="utf-8")
+    # 네이버 서치어드바이저에 따로 낼 수 있는 RSS (페이지마다 한 항목)
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).strftime("%a, %d %b %Y %H:%M:%S +0900")
+    items = "".join("  <item><title>%s</title><link>%s%s</link><guid>%s%s</guid><description>%s</description><pubDate>%s</pubDate></item>\n"
+                    % (esc(t), SITE, pth, SITE, pth, esc(d), now) for _, pth, _, t, d in PAGES)
+    (ROOT / "rss.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n  <title>덜누름 Software</title>\n  <link>%s/</link>\n'
+                                  '  <description>덜누름은 누를 일을 줄이는 앱을 개발합니다.</description>\n  <language>ko</language>\n  <lastBuildDate>%s</lastBuildDate>\n%s</channel>\n</rss>\n'
+                                  % (SITE, now, items), encoding="utf-8")
+    print("만든 파일:", ", ".join(written), "+ sitemap.xml, robots.txt, rss.xml")
 
 
 if __name__ == "__main__":
