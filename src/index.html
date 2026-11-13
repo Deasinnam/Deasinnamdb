@@ -2245,9 +2245,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 })();
 </script>
 <script>
-/* 내려받기 · 내려받은 수
+/* 내려받기 · 내려받은 수 (버튼 클릭 수, abacus 카운터)
    앱을 공개할 때 그 앱의 open 을 true 로 바꾸면 소개 페이지의 "개발 중" 자리에 내려받기 버튼과 "N회 내려받음"이 나옵니다.
-   수는 GitHub Releases가 파일마다 세는 값(download_count)을 그대로 읽습니다. 공개 전 테스트로 받은 수는 base 에 적어 빼 줍니다. */
+   수는 내려받기 버튼 클릭 수(abacus 카운터 deolnureum/dl-<앱>)입니다. base 는 예전 GitHub 집계용으로 지금은 쓰지 않습니다. */
 (function () {
   var REPO = "Deasinnam/Deasinnamdb";
   var DL = {
@@ -2271,34 +2271,28 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: slim })); } catch (e) {} cb(slim); })
       .catch(function () { cb(null); });
   }
+  /* 모든 앱 공통: 내려받기 버튼을 누를 때마다 abacus 카운터(deolnureum/dl-<앱>)를 1 올리고, 그 수를 "N회 내려받음"으로 보여 줍니다.
+     새 앱도 DL 표에 open: true 와 파일(tag·file 또는 url·size)만 적으면 같은 방식으로 셉니다. 키는 key 로 바꿀 수 있습니다. */
+  var CNT = "https://abacus.jasoncameron.dev/", NSK = "deolnureum/";
   Object.keys(DL).forEach(function (id) {
     var c = DL[id]; if (!c.open || !(c.url || (c.tag && c.file))) return;
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
     var url = c.url || ("https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file);
-    cta.innerHTML = '<a class="amp-btn" href="' + url + '">내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
-    var out = cta.querySelector(".dl-count");
-    if (c.url) {
-      /* 사이트 안 파일(98·덜씀)은 GitHub가 세지 않으므로 버튼을 누를 때마다 abacus 카운터(dl-키)를 1 올려 셉니다 */
-      var btn = cta.querySelector(".amp-btn"), CNT = "https://abacus.jasoncameron.dev", n0 = null;
-      btn.setAttribute("download", "");
-      var show = function (n) { out.innerHTML = "<b>" + n.toLocaleString("ko-KR") + "회</b> 내려받음 · " + (c.size || ""); };
-      out.textContent = c.size || "";
-      if (c.key) {
-        fetch(CNT + "/get/deolnureum/" + c.key).then(function (r) { return r.ok ? r.json() : { value: 0 }; })
-          .then(function (j) { n0 = j.value || 0; show(n0); }).catch(function () {});
-        btn.addEventListener("click", function () {
-          fetch(CNT + "/hit/deolnureum/" + c.key, { keepalive: true }).then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (j) { if (j && j.value != null) show(j.value); }).catch(function () {});
-          if (n0 != null) show(++n0);
-        });
-      }
-      return;
-    }
-    getRelease(c.tag, function (d) {
-      if (!d) return;
-      var a = d.assets.filter(function (x) { return x.name === c.file; })[0]; if (!a) return;
-      var n = Math.max(0, a.n - (c.base || 0));
-      out.innerHTML = "<b>" + n.toLocaleString("ko-KR") + "회</b> 내려받음 · " + (a.size / 1048576).toFixed(1) + "MB";
+    var key = c.key || ("dl-" + id.replace(/^app-/, ""));
+    cta.innerHTML = '<a class="amp-btn" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
+    var out = cta.querySelector(".dl-count"), btn = cta.querySelector(".amp-btn"), size = c.size || "", n = null;
+    function show() { out.innerHTML = (n == null ? "" : "<b>" + n.toLocaleString("ko-KR") + "회</b> 내려받음" + (size ? " · " : "")) + size; }
+    show();
+    if (!c.size && c.tag) getRelease(c.tag, function (d) {
+      var a = d && d.assets.filter(function (x) { return x.name === c.file; })[0];
+      if (a) { size = (a.size / 1048576).toFixed(1) + "MB"; show(); }
+    });
+    fetch(CNT + "get/" + NSK + key).then(function (r) { return r.ok ? r.json() : { value: 0 }; })
+      .then(function (j) { if (n == null) { n = j.value || 0; show(); } }).catch(function () {});
+    btn.addEventListener("click", function () {
+      if (n != null) { n++; show(); }
+      fetch(CNT + "hit/" + NSK + key, { keepalive: true }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { if (j && j.value != null && (n == null || j.value > n)) { n = j.value; show(); } }).catch(function () {});
     });
   });
 })();
