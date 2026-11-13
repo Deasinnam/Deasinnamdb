@@ -77,7 +77,7 @@
   function mood(night) {
     const k = clock(), el = k.el;
     const g = Math.round((1 - sstep(3, 16, el)) * 20) / 20, tw = Math.round((1 - sstep(-5, 1.5, el)) * 12) / 12, dusk = Math.round((1 - sstep(-16, -5, el)) * 12) / 12;
-    const key = night ? 'n' + dusk : 'd' + g + 't' + tw;
+    const key = (night ? 'n' + dusk : 'd' + g + 't' + tw) + (k.az < 180 ? 'm' : 'e');
     if (key === mKey && M) return M;
     const a = PAL.day, b = PAL.gold, t = PAL.twi, n = PAL.night, o = {};
     for (const q in a) {
@@ -85,7 +85,7 @@
       o[q] = Array.isArray(a[q][0]) ? a[q].map((c, i) => mixc(mixc(c, b[q][i], g), t[q][i], tw)) : mixc(mixc(a[q], b[q], g), t[q], tw);
     }
     if (night && dusk > 0) { o.low = mixc(o.low, hex('#5a3d5c'), dusk * .7); o.hz = mixc(o.hz, hex('#b0646a'), dusk * .75); o.fog = mixc(o.fog, hex('#4a3550'), dusk * .5); o.mid = mixc(o.mid, hex('#2c2c5a'), dusk * .5); }
-    o.night = night; o.gold = night ? 0 : g; o.tw = night ? 0 : tw; o.dusk = night ? dusk : 0; o.el = el; o.hr = k.hr;
+    o.morning = k.az < 180; o.night = night; o.gold = night ? 0 : g; o.tw = night ? 0 : tw; o.dusk = night ? dusk : 0; o.el = el; o.hr = k.hr;
     M = o; mKey = key; skyCv = null; tintKey = ''; return o;
   }
 
@@ -249,20 +249,23 @@
     }
     // 6) 지평선 적운 무리 + 떠 있는 뭉게구름(멀수록 하늘빛에 묻힘)
     const CL = tintClouds(m, sun.side), alt = F.alt || 0, lift = clamp(1 - alt / 1600, .45, 1);
+    // 새벽(해 뜨기 전후)에는 구름을 적고 작게 — 분홍·보라 새벽빛에서 큰 구름 덩어리는 무거워 보임
+    const thin = m.morning && !night ? clamp(Math.max(m.gold, m.tw * 1.2), 0, 1) : 0;
     for (const b of OFF.bank ? [] : BANK) {
-      if (!hq && b.s % 2) continue;
+      if ((!hq || thin > .3) && b.s % 2) continue;
       const bx = angleDelta(hd, b.az) / FOV * w; if (Math.abs(bx) > w * 1.4) continue;
       const bw = w * b.w; if (sun.vis && m.gold > .3 && Math.abs(bx - sun.x) < bw * .62) continue; // 해 앞은 비워 둠
-      const bh = bw * CH / CW, y = -h * (b.lift + .004) * lift;
-      c.globalAlpha = night ? .55 : .92; c.drawImage(CL[b.s].far, bx - bw / 2, y - bh * .86, bw, bh);
+      const bw2 = bw * lerp(1, .6, thin), bh = bw2 * CH / CW, y = -h * (b.lift + .004) * lift;
+      c.globalAlpha = night ? .55 : .92; c.drawImage(CL[b.s].far, bx - bw2 / 2, y - bh * .86, bw2, bh);
     }
     c.globalAlpha = 1;
     const focal = w * .79, dist = this.distanceMeters + idleT() * 3.2;
     const list = this.clouds.map(cl => ({ cl, depth: 160 + (((cl.z - 160 - dist * cl.layer) % 1520) + 1520) % 1520 })).sort((a, b) => b.depth - a.depth);
     for (const { cl, depth } of list) {
       if (cl.id % 4 === 1 || (!hq && cl.id % 3 === 0)) continue;
+      if (thin > .15 && cl.id % 3 !== 0) continue;                       // 새벽: 셋 중 하나만
       const fade = clamp((1680 - depth) / 170, 0, 1) * clamp((depth - 160) / 95, 0, 1); if (fade < .01) continue;
-      const s = focal / depth, cx = cl.x * s, cy = -cl.height * s, cw = cl.width * s * 1.2, ch = cw * CH / CW;
+      const s = focal / depth, cx = cl.x * s, cy = -cl.height * s, cw = cl.width * s * 1.2 * lerp(1, .62, thin), ch = cw * CH / CW;
       if (cx + cw * .55 < -w * .9 || cx - cw * .55 > w * .9) continue;
       const fog = clamp((depth - 300) / 1300, 0, 1), sp = CL[cl.shape % CL.length], a = fade * (night ? .7 : .97);
       if (sun.vis && m.gold > .3 && Math.abs(cx - sun.x) < cw * .45 && sun.y > cy - ch * .8 && sun.y < cy + ch * .2) continue; // 해를 가리는 구름은 건너뜀
@@ -281,6 +284,9 @@
     for (let i = 0; i <= 512; i++) { const t = i / 512 * Math.PI * 2; a.push(clamp(.5 + .5 * (.55 * Math.sin(t * n + p1) + .3 * Math.sin(t * n * 2.3 + p2) + .15 * Math.sin(t * n * 5.1 + p3)) + (fbm(i / 512 * 40, k * 7.3 + .5, 40, 3) - .5) * .12, 0, 1)); } return a; });
   X.horizon = function (c, w, h, night, quality, f) {
     if (night && preDone) return true;                                    // 밤에는 앞단(nightGround)에서 이미 그림
+    // 1.62.1: 들판 아래를 불투명한 땅색으로 먼저 깔아, 패키지의 원근 격자선(땅과 다른 빠르기로 미끄러짐)이 비치지 않게
+    if (!night) { const gm = mood(false), gg = c.createLinearGradient(0, 0, 0, h * .9); gg.addColorStop(0, css(mixc(hex('#6f8048'), gm.fog, .35))); gg.addColorStop(.3, css(hex('#5e773c'))); gg.addColorStop(1, css(hex('#4a6330')));
+      c.save(); c.globalAlpha = 1; c.fillStyle = gg; c.fillRect(-w * 2, 0, w * 4, h * 3); c.restore(); }
     const m = mood(night), hd = heading(), lift = clamp(1 - (F.alt || 0) / 1500, .3, 1), sun = sunScreen(w, h, m);
     const layers = [[.075, .5, m.ridge[0], 1], [.052, .75, m.ridge[1], 1], [.032, 1, m.ridge[2], 1]];
     c.save();
@@ -301,16 +307,7 @@
     c.restore(); return true;
   };
 
-  /* ---------- 들판 붓 터치 질감(원근에 맞춰 띠마다 크기를 바꿔 깖) ---------- */
-  const GTEX = (() => {
-    const W = 256, cv = document.createElement('canvas'); cv.width = cv.height = W; const x = cv.getContext('2d'), id = x.createImageData(W, W), d = id.data;
-    for (let yy = 0; yy < W; yy++) for (let xx = 0; xx < W; xx++) {
-      const a = fbm(xx / 32, yy / 9, 8, 4), b = fbm(xx / 7 + 50, yy / 3, 36, 2), v = 128 + (a - .5) * 120 + (b - .5) * 50, k = (yy * W + xx) * 4;
-      d[k] = d[k + 1] = d[k + 2] = clamp(v, 0, 255); d[k + 3] = 255;
-    }
-    x.putImageData(id, 0, 0); return cv;
-  })();
-  let gPat = null, rPat = null;
+  let rPat = null;
   // 잔물결: 가로로 짧은 밝고 어두운 붓질
   const RTEX = (() => {
     const W = 256, cv = document.createElement('canvas'); cv.width = cv.height = W; const x = cv.getContext('2d');
@@ -363,17 +360,61 @@
     }
     c.restore(); c.globalAlpha = 1;
   }
-  X.afterCountry = function (c, w, h, night, quality, g) {
-    const m = mood(night);
-    if (!night && quality !== 'balanced' && window.DOMMatrix) {
-      if (!gPat) try { gPat = c.createPattern(GTEX, 'repeat'); } catch (e) {}
-      if (gPat && gPat.setTransform) {
-        c.save(); c.globalCompositeOperation = 'soft-light';
-        slices(c, g.Hc, g.f, g.py, g.zn, 9000, 1.22, gPat, .9, F.wz || 0, (z1, z2) => g.quad(-4200, 4200, z1, z2, gPat, .75));
-        c.restore(); c.globalAlpha = 1;
+  /* ---------- 전신주: 세로 도로를 따라 일정 간격, 꼭대기 사이에 처진 전선 두 줄(땅과 함께 흐름) ---------- */
+  const POLE_ROADS = [[870, 14], [-1310, -14], [2590, 14]], POLE_GAP = 55, POLE_H = 22;   // 높이는 하늘에서도 보이게 실제보다 크게
+  function drawPoles(c, w, h, night, g) {
+    const { f, Hc, zn, py, px } = g, wz = F.wz || 0, maxZ = 2600;
+    if (Hc > 700) return;
+    c.save(); c.lineCap = 'round';
+    const pole = night ? '#151a20' : '#3a2c22', wire = night ? 'rgba(14,18,24,.7)' : 'rgba(34,28,26,.6)';
+    for (const [rx, side] of POLE_ROADS) {
+      const X = rx + side, n0 = Math.floor((zn * 1.2 + wz) / POLE_GAP), tops = [];
+      for (let n = n0 + Math.ceil(maxZ / POLE_GAP); n >= n0; n--) {
+        const z = n * POLE_GAP - wz; if (z < zn * 1.2 || z > maxZ) continue;
+        const x = px(X, z), y0 = py(z), y1 = (Hc - POLE_H) * f / z; if (x < -w * 1.2 || x > w * 1.2) { tops.push(null); continue; }
+        const lw = Math.max(1.1, .5 * f / z), arm = Math.max(2.2, 2.2 * f / z), fade = clamp(1.3 - z / maxZ, .35, 1);
+        c.globalAlpha = fade; c.strokeStyle = pole; c.lineWidth = lw;
+        c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y1); c.moveTo(x - arm, y1 + lw * 1.5); c.lineTo(x + arm, y1 + lw * 1.5); c.stroke();
+        tops.push([x, y1 + lw * 1.5, arm, fade]);
+      }
+      // 전선: 이웃한 전신주 꼭대기 사이를 살짝 처지게(아래 가로 도로 줄도 같은 방식)
+      c.strokeStyle = wire;
+      for (let i = 0; i + 1 < tops.length; i++) {
+        const a = tops[i], b = tops[i + 1]; if (!a || !b) continue;
+        c.globalAlpha = Math.min(a[3], b[3]); c.lineWidth = Math.max(.7, b[2] * .08);
+        for (const s of [-1, 1]) { const ax = a[0] + s * a[2] * .8, bx = b[0] + s * b[2] * .8, sag = Math.abs(b[1] - a[1]) * .18 + b[2] * .5;
+          c.beginPath(); c.moveTo(ax, a[1]); c.quadraticCurveTo((ax + bx) / 2, (a[1] + b[1]) / 2 + sag, bx, b[1]); c.stroke(); }
       }
     }
+    // 가로 도로를 따라 늘어선 전신주 줄(가까운 두 줄만)
+    const hj0 = Math.floor((zn + wz) / 2240);
+    for (let j = hj0; j < hj0 + 2; j++) { const z = j * 2240 - wz + 1100 + 12; if (z < zn * 1.5 || z > maxZ) continue;
+      const y0 = py(z), y1 = (Hc - POLE_H) * f / z, lw = Math.max(1.1, .5 * f / z), arm = Math.max(2.2, 2.2 * f / z), fade = clamp(1.3 - z / maxZ, .35, 1), xs = [];
+      for (let X = -3600; X <= 3600; X += POLE_GAP * 1.2) { const x = px(X, z); if (x < -w * 1.2 || x > w * 1.2) continue; xs.push(x); }
+      c.globalAlpha = fade; c.strokeStyle = pole; c.lineWidth = lw; c.beginPath();
+      for (const x of xs) { c.moveTo(x, y0); c.lineTo(x, y1); c.moveTo(x - arm * .3, y1 + lw * 1.5); c.lineTo(x + arm * .3, y1 + lw * 1.5); } c.stroke();
+      c.strokeStyle = wire; c.lineWidth = Math.max(.7, arm * .08); c.beginPath();
+      for (let i = 0; i + 1 < xs.length; i++) { const sag = Math.max(1, (xs[i + 1] - xs[i]) * .06); c.moveTo(xs[i], y1 + lw * 1.5); c.quadraticCurveTo((xs[i] + xs[i + 1]) / 2, y1 + lw * 1.5 + sag, xs[i + 1], y1 + lw * 1.5); } c.stroke(); }
+    c.restore(); c.globalAlpha = 1;
+  }
+  /* 들판 고랑: 땅에 붙은 줄무늬라 땅과 똑같이 흐름(화면에 고정된 질감처럼 출렁이지 않음) */
+  function drawFurrows(c, g) {
+    const { f, zn, quad } = g, wz = F.wz || 0, cell = 320, j0 = Math.floor((zn + wz) / cell);
+    for (let j = j0; j < j0 + 9; j++) { const z1 = j * cell - wz; if (z1 > 2800) break;
+      for (let i = -8; i < 8; i++) { const hs = Math.abs(Math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1; if (hs < .35) continue;
+        const along = hs > .7, n = 7;
+        for (let q = 1; q < n; q++) { const t = q / n;
+          if (along) quad(i * cell + 4 + t * (cell - 8) - 1.6, i * cell + 4 + t * (cell - 8) + 1.6, z1 + 6, z1 + cell - 6, '#2a2a10', .1);
+          else quad(i * cell + 6, (i + 1) * cell - 6, z1 + 4 + t * (cell - 8) - 2, z1 + 4 + t * (cell - 8) + 2, '#2a2a10', .1); } } }
+    c.globalAlpha = 1;
+  }
+
+  X.afterCountry = function (c, w, h, night, quality, g) {
+    const m = mood(night);
+    // 1.62.1: 육지에는 화면에 붙은 질감을 깔지 않음(달리면 땅이 물결치듯 보여 어지러움). 땅에 붙은 고랑·전신주만
+    if (!night && quality !== 'balanced') drawFurrows(c, g);
     if (!(night && preDone)) drawSea(c, w, h, night, quality, g, m);
+    if (!night) drawPoles(c, w, h, false, g);
   };
 
   /* ---------- 강: 하늘을 비추는 물 + 잔물결 + 윤슬 ---------- */
@@ -465,6 +506,7 @@
     const fz = c.createLinearGradient(0, 0, 0, h * .1); fz.addColorStop(0, css(m.fog, .7)); fz.addColorStop(1, css(m.fog, 0)); c.globalAlpha = 1; c.fillStyle = fz; c.fillRect(-w * 2, 0, w * 4, h * .1);
     // 바다(해안선은 낮과 같은 모양)
     drawSea(c, w, h, true, quality, { f, Hc, zn, py, px }, m);
+    drawPoles(c, w, h, true, { f, Hc, zn, py, px });
     c.restore();
 
     // ---- 불빛(더해지는 빛) ----
@@ -551,5 +593,47 @@
     c.restore();
   };
 
-  window.AmpSpecial = { get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
+  /* ---------- 마일리지: 실제로 달린 거리만큼 항공사 마일리지처럼 적립(1마일 = 1.609km) ----------
+   *  GPS로 달린 거리만 셈(시연·정차 제외). 저장되어 앱을 다시 켜도 이어짐. 1마일 쌓일 때마다 "+1 마일"이 떠오르고, 등급이 오르면 알려 줌
+   *  미리보기: window.__spMilesDemo=true면 시연 속도도 셈, __spMilesRate로 빠르게 */
+  const HOST = window.AmpHost, KM_MI = 1.609344;
+  const TIERS = [[0, '블루'], [1000, '실버'], [5000, '골드'], [20000, '플래티넘'], [50000, '다이아몬드']];
+  const tierOf = v => { let t = TIERS[0][1]; for (const [m, n] of TIERS) if (v >= m) t = n; return t; };
+  const MI = { total: 0, saved: 0 };
+  try { const v = HOST && HOST.load ? +HOST.load('spMiles', 0) : 0; MI.total = MI.saved = fin(v) && v > 0 ? v : 0; } catch (e) {}
+  (function milesUi() {
+    const wrapEl = P.els && P.els.canvasWrap; if (!wrapEl) return;
+    const st = document.createElement('style');
+    st.textContent = '.sp-miles{position:absolute;z-index:2;left:calc(clamp(67px,12%,175px) + 10px);top:92px;display:flex;align-items:center;gap:9px;padding:6px 13px 6px 9px;border-radius:12px;'
+      + 'background:linear-gradient(180deg,rgba(18,22,44,.82),rgba(10,12,26,.82));border:1px solid rgba(255,206,130,.45);box-shadow:0 4px 14px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);pointer-events:none;font-family:"Noto Sans KR",sans-serif}'
+      + '.sp-miles i{font-style:normal;font-size:20px;line-height:1;color:#ffcf7a;transform:rotate(-30deg)}'
+      + '.sp-miles small{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;color:#e9c99a;opacity:.9;white-space:nowrap}'
+      + '.sp-miles b{font:800 20px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;color:#fff1d6;letter-spacing:.03em;display:inline-block;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}'
+      + '.sp-miles b.bump{transform:scale(1.18)}.sp-miles u{text-decoration:none;font-size:12px;color:#e9c99a;margin-left:4px}'
+      + '.sp-miles em{position:absolute;left:100%;top:4px;margin-left:8px;font:800 15px/1 "Barlow Condensed","Noto Sans KR",sans-serif;font-style:normal;color:#ffd27e;white-space:nowrap;text-shadow:0 1px 4px #000a;opacity:0}'
+      + '.sp-miles em.go{animation:spMi 1.8s ease-out}@keyframes spMi{0%{opacity:0;transform:translateY(8px)}15%{opacity:1;transform:translateY(0)}70%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}'
+      + '@media (max-width:600px){.sp-miles{top:84px;padding:5px 10px 5px 8px}.sp-miles b{font-size:17px}}';
+    document.head.appendChild(st);
+    const el = document.createElement('div'); el.className = 'sp-miles'; el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<i aria-hidden="true">✈</i><div><small></small><b></b><u>마일</u></div><em></em>';
+    wrapEl.appendChild(el);
+    const sm = el.querySelector('small'), num = el.querySelector('b'), pop = el.querySelector('em');
+    const render = () => { sm.textContent = '대신남 마일리지 · ' + tierOf(MI.total); num.textContent = Math.floor(MI.total).toLocaleString('ko-KR'); };
+    const popUp = t => { pop.textContent = t; pop.classList.remove('go'); void pop.offsetWidth; pop.classList.add('go'); num.classList.add('bump'); setTimeout(() => num.classList.remove('bump'), 260); };
+    render();
+    let last = performance.now();
+    setInterval(() => {
+      const now = performance.now(), dt = clamp((now - last) / 1000, 0, 5); last = now;
+      const d = P.data || {}, ok = P.effective && P.effective().valid, v = d.speedKmh;
+      const real = d.source === 'gps' || d.source === 'external', demo = d.source === 'demo' && window.__spMilesDemo;
+      if (!ok || !(real || demo) || !fin(v) || v < 3 || document.hidden) return;
+      const before = MI.total, tier0 = tierOf(before);
+      MI.total += v / 3600 * dt / KM_MI * (demo && fin(window.__spMilesRate) ? window.__spMilesRate : 1);
+      const gained = Math.floor(MI.total) - Math.floor(before);
+      if (gained > 0) { render(); const t1 = tierOf(MI.total); popUp(t1 !== tier0 ? t1 + ' 등급 달성!' : '+' + gained + ' 마일'); }
+      if (MI.total - MI.saved >= .2) { MI.saved = MI.total; try { HOST && HOST.save && HOST.save('spMiles', +MI.total.toFixed(3)); } catch (e) {} }
+    }, 1000);
+  })();
+
+  window.AmpSpecial = { get miles() { return MI.total; }, get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
 })();

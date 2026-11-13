@@ -41,6 +41,18 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   await p.evaluate(() => { const o = pfd.display.headingDeg; for (const d of [-3, 3, -3, 3]) { pfd.display.headingDeg = o + d; pfd.draw(); } pfd.display.headingDeg = o; });
   const ms2 = await p.evaluate(() => { const o = pfd.display.headingDeg, t0 = performance.now(); for (let i = 0; i < 20; i++) { pfd.display.headingDeg = o + (i % 2 ? 3 : -3); pfd.draw(); } pfd.display.headingDeg = o; return (performance.now() - t0) / 20; });
   assert.ok(ms2 < 45, 'no re-tint when the sun crosses the centre: ' + ms2.toFixed(1) + 'ms');
+  // 1.62.1 마일리지: 실제 GPS로 달리면 쌓이고(저장), 화면에 '대신남 마일리지' 칩
+  const m0 = await p.evaluate(() => AmpSpecial.miles);
+  await p.evaluate(() => { const t0 = Date.now(); window.__milesTick = setInterval(() => AmpPfd.feed(), 200); });
+  await p.waitForTimeout(3300);
+  const mi = await p.evaluate(() => ({ m: AmpSpecial.miles, chip: document.querySelector('.sp-miles') && document.querySelector('.sp-miles').textContent, src: pfd.data.source, v: pfd.data.speedKmh }));
+  assert.ok(mi.m > m0, 'miles accrue while driving with GPS: ' + JSON.stringify([m0, mi]));
+  assert.ok(/대신남 마일리지/.test(mi.chip) && /마일/.test(mi.chip), 'mileage chip shown: ' + mi.chip);
+  await p.close();
+
+  // 1.62.1 새벽: 아침 쪽 해(방위 < 180°)면 구름을 적게
+  p = await open('special', '06:58', 110);
+  assert.equal(await p.evaluate(() => AmpSpecial.mood.morning), true, 'dawn is morning');
   await p.close();
 
   // 스페셜·한낮: 파란 하늘
