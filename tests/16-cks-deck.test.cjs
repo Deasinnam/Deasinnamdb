@@ -42,9 +42,11 @@ run('Cockpit special deck switches', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#dkMuteReadout').textContent(), 'SOUND ON');
   assert.notEqual(await p.locator('#dkVolumeValue').textContent(), '0');
   // 주간·야간
+  const bri0 = await p.evaluate(() => __bri.length);
   await p.locator('#dkDaySwitch').click();
   assert.equal(await p.locator('#dkDayReadout').textContent(), 'NIGHT');
-  assert.equal(await p.evaluate(() => __bri[__bri.length - 1]), 50, 'Night brightness 50%');
+  // 스위치를 누른 순간 50%로 맞춤(그 뒤 1초마다 도는 계기 야간 규칙이 20%로 낮출 수 있어 마지막 값이 아니라 누른 뒤 기록을 봄)
+  assert.ok(await p.evaluate(n => __bri.slice(n).includes(50), bri0), 'Night brightness 50%');
   assert.equal(await p.evaluate(() => window.AmpPfd && window.AmpPfd.theme), 'night', 'Night runway');
   await p.locator('#dkDaySwitch').click();
   assert.equal(await p.locator('#dkDayReadout').textContent(), 'DAY');
