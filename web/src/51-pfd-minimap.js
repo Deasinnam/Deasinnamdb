@@ -59,10 +59,18 @@ const PfdMap=(()=>{
     // 1.59 원형 지도 잘림: 작게(또는 숨긴 채) 만들어진 뒤 커지면 Leaflet이 예전 크기만큼만 타일을 깔아 원의 일부가 비었음 → 크기가 바뀌면 다시 잼
     if(map&&inner.clientWidth>0){const sz=map.getSize();if(Math.abs(sz.x-inner.clientWidth)>1||Math.abs(sz.y-inner.clientHeight)>1){map.invalidateSize({pan:false,animate:false});if(fix)map.setView([gs.lat,gs.lon],map.getZoom(),{animate:false})}}
     if(!on||!map||!fix)return;
-    const now=performance.now();if(now-lastSet>900){lastSet=now;const z=spdNow>90?14:spdNow>40?15:16;map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
+    const now=performance.now();if(now-lastSet>900){lastSet=now;let z=spdNow>90?14:spdNow>40?15:16;{const v=window.AmpCam&&AmpCam.view,c=v&&Date.now()-v.t<4000&&v.cams[0];if(c&&c[3]<800)z=Math.min(z,c[3]>300?14:15)} /* 1.61 앞 카메라가 원 안에 들어오게 넓혀 봄 */map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
     // 진행 방향이 위: 지도를 반대로 돌리고, N 표시는 테두리를 따라 돎(359→0도 매끄럽게)
     if(hdgNow>=0&&spdNow>=3){const want=-hdgDisp;let d=((want-rot)%360+540)%360-180;rot+=d}
+    overlay();host.style.setProperty('--pm-rot',rot+'deg');
     inner.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;nEl.style.transform=`rotate(${rot}deg) translateY(calc(var(--pm-d) / -2 + 9px)) rotate(${-rot}deg)`}
+  /* 1.61 원형 지도 위에 과속 카메라 안내가 예상한 앞길(점선)과 그 길 위 카메라(제한속도 표지, 가장 가까운 것은 깜빡임) */
+  let pathLine=null,camLayer=null,lastV=0;
+  function overlay(){const v=window.AmpCam&&AmpCam.view;if(!map||!v)return;
+    if(!pathLine){pathLine=L.polyline([],{color:'#ffd23f',weight:5,opacity:.9,dashArray:'2 10',lineCap:'round',interactive:false}).addTo(map);camLayer=L.layerGroup().addTo(map)}
+    const fresh=Date.now()-v.t<4000;if(v.t===lastV&&fresh)return;lastV=v.t;
+    pathLine.setLatLngs(fresh&&v.path?v.path:[]);camLayer.clearLayers();
+    if(fresh)v.cams.slice(0,6).forEach((c,i)=>camLayer.addLayer(L.marker([c[0],c[1]],{interactive:false,keyboard:false,icon:L.divIcon({className:'pm-cam'+(i?'':' next'),html:'<b>'+(c[2]||'!')+'</b>',iconSize:null})})))}
   setInterval(()=>{if(!document.hidden&&isCar())tick()},250);
   const s=$('#sPfdMap');if(s)s.onchange=e=>set(e.target.checked);const ss=$('#sPfdMapStyle');if(ss)ss.onchange=e=>setStyle(e.target.value);ui();
   return {set,setStyle,get style(){return style},get look(){return host&&host.dataset.look},get on(){return on},get host(){return host},get map(){return map}};

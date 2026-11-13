@@ -2681,8 +2681,9 @@ img{height:auto;object-fit:contain}
 .pfd-mini{--pm-d:clamp(96px,min(calc(var(--pfd-h,300px) * .34),calc(var(--pfd-w,600px) * .24)),200px);position:absolute;z-index:4;left:calc(var(--pfd-tape,70px) + 10px);bottom:calc(var(--pfd-cmp,50px) + 10px);width:var(--pm-d);height:var(--pm-d)}
 .pfd-mini .pm-ring{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#0d0c08;
   box-shadow:0 0 0 2px #0a0906,0 0 0 4px #b08d4a,0 0 0 5px #2a2312,0 4px 12px #000c,inset 0 0 18px #000;isolation:isolate}
-.pfd-mini .pm-map{position:absolute;left:50%;top:50%;width:150%;height:150%;transform:translate(-50%,-50%);transition:transform .35s linear;
-  filter:grayscale(1) invert(1) sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(.92) contrast(1.15)}
+.pfd-mini .pm-map{position:absolute;left:50%;top:50%;width:150%;height:150%;transform:translate(-50%,-50%);transition:transform .35s linear}
+/* 1.61 지도 색 필터는 지도 그림(타일)에만 — 위에 그리는 예상 진행길·카메라 표시는 제 색 그대로 */
+.pfd-mini .pm-map .leaflet-tile-pane{filter:grayscale(1) invert(1) sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(.92) contrast(1.15)}
 .pfd-mini .pm-map .leaflet-container,.pfd-mini .pm-map{background:#0d0c08}
 .pfd-mini .pm-me{position:absolute;left:50%;top:50%;width:18px;height:22px;margin:-12px 0 0 -9px;z-index:5;
   background:conic-gradient(from 150deg at 50% 70%,#fff 0 60deg,transparent 0);clip-path:polygon(50% 0,100% 100%,50% 78%,0 100%);filter:drop-shadow(0 0 3px #000) drop-shadow(0 0 2px #3fd8ff);background:#e9fbff}
@@ -2699,10 +2700,10 @@ img{height:auto;object-fit:contain}
 .pfd-mini .leaflet-control-container{display:none}
 :root[data-split] .pfd-mini{display:none}
 /* 1.51 원형 지도 모양: GTA(주황) / 일반 주간 / 일반 야간 */
-.pfd-mini[data-look="day"] .pm-map{filter:saturate(1.05) contrast(1.02)}
+.pfd-mini[data-look="day"] .pm-map .leaflet-tile-pane{filter:saturate(1.05) contrast(1.02)}
 .pfd-mini[data-look="day"] .pm-ring,.pfd-mini[data-look="day"] .pm-map .leaflet-container{background:#f2efe9}
 .pfd-mini[data-look="day"] .pm-me{background:#1a6dff;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 1px 2px #0008)}
-.pfd-mini[data-look="night"] .pm-map{filter:url(#pmNightFx)}
+.pfd-mini[data-look="night"] .pm-map .leaflet-tile-pane{filter:url(#pmNightFx)}
 .pfd-mini[data-look="night"] .pm-ring,.pfd-mini[data-look="night"] .pm-map .leaflet-container{background:#1b2230}
 .pfd-mini[data-look="night"] .pm-me{background:#7fd3ff}
 .pfd-mini .pm-ring{cursor:pointer}
@@ -2782,3 +2783,9 @@ img{height:auto;object-fit:contain}
 .pfd-mini .pm-sun{display:none;position:absolute;left:-6px;top:-6px;z-index:7;height:28px;padding:0 9px;border-radius:14px;border:1px solid #000;background:#2a2c1c;color:#ffe6a6;font:700 12px/1 Arial,"Noto Sans KR",sans-serif;white-space:nowrap;box-shadow:0 0 0 1px #b08d4a99,0 2px 4px #000a}
 .pfd-mini .pm-sun::after{content:"";position:absolute;inset:-10px}
 .pfd-mini.pnight:not(.off) .pm-sun{display:inline-flex;align-items:center}
+
+/* 1.61 원형 지도: 지금 길을 따라 예상한 앞길(점선) + 그 길 위 과속 카메라(제한속도 표지) */
+.pfd-mini .pm-cam{width:22px!important;height:22px!important;margin:-11px 0 0 -11px!important;border-radius:50%;background:#fff;border:3px solid #e0201a;box-sizing:border-box;display:grid;place-items:center;font:800 10px/1 Arial,sans-serif;color:#111;box-shadow:0 0 0 1px #0009,0 1px 3px #000a}
+.pfd-mini .pm-cam.next{width:26px!important;height:26px!important;margin:-13px 0 0 -13px!important;font-size:11px;animation:pmCam 1s ease-in-out infinite alternate}
+@keyframes pmCam{to{box-shadow:0 0 0 1px #0009,0 0 10px 3px #ff3b30cc}}
+.pfd-mini .pm-cam b{display:block;transform:rotate(calc(var(--pm-rot,0deg) * -1))}

@@ -54,3 +54,36 @@ run('Speed camera: road-name match from the official data', async ({context, ori
   assert.equal(await p.evaluate(() => { Object.assign(AmpCam.road, {name: '', ref: '46', ok: true, t: Date.now()}); return AmpCam.sameRoad([0, 0, 80, 0, '순환대로', '46']); }), true);
   await p.close();
 });
+
+// 1.61 앞길 예측: 지금 길 조각을 따라 앞길을 이어, 굽은 길 너머 카메라는 잡고 평행한 옆길 카메라는 뺌. 원형 지도에 앞길·카메라 표시
+run('Speed camera: follows the predicted road ahead', async ({context, origin, errors}) => {
+  const p = await context.newPage();
+  p.on('pageerror', e => errors.push('cam3: ' + e.message));
+  await p.addInitScript(() => { window.__said = []; window.AndroidBridge = {speak: t => window.__said.push(t)};
+    if (!sessionStorage.getItem('c')) { sessionStorage.setItem('c', '1'); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); } });
+  await p.setViewportSize({width: 1036, height: 900});
+  await p.goto(origin); await p.waitForTimeout(800);
+  const run1 = (cams, ways, y1, y2, spd) => p.evaluate(([cams, ways, y1, y2, spd]) => {
+    const KY = 110540, KX = 111320 * Math.cos(36 * Math.PI / 180), LL = (x, y) => [36 + y / KY, 125 + x / KX];
+    __said.length = 0; AmpCam.osm = cams.map(c => [...LL(c[0], c[1]), c[2], 0, '', '']);
+    const [la1, lo1] = LL(0, y1), [la2, lo2] = LL(0, y2);
+    Object.assign(AmpCam.road, {name: '중앙로', ref: '', ok: true, at: [la2, lo2], t: Date.now(), busy: false,
+      ways: ways.map((w, i) => ({id: i + 1, ow: '', g: w.map(q => LL(q[0], q[1]))})), waysAt: [la2, lo2], waysT: Date.now()});
+    AmpCam.check(la1, lo1, spd, 0); AmpCam.check(la2, lo2, spd, 0);
+    return {lim: document.getElementById('camSign').hidden ? null : document.getElementById('camLim').textContent, dist: document.getElementById('camDist').textContent, view: {path: (AmpCam.view.path || []).length, cams: AmpCam.view.cams.length}};
+  }, [cams, ways, y1, y2, spd]);
+  // 북쪽으로 400m 가다 동쪽으로 꺾이는 길(두 조각). 카메라는 꺾인 뒤 350m — 직선으로 보면 오른쪽 67°라 예전엔 놓침
+  const bend = [[[0, -300], [0, 0], [0, 200], [0, 400]], [[0, 400], [300, 400], [900, 400]]];
+  let r = await run1([[350, 400, 50]], bend, 228, 250, 60);
+  assert.equal(r.lim, '50', 'camera past the bend is found along the road: ' + JSON.stringify(r));
+  assert.match(r.dist, /전방 500m/, 'distance measured along the road');
+  assert.ok(r.view.path > 3 && r.view.cams === 1, 'minimap gets the path and camera');
+  // 곧은 길, 55m 옆 평행 도로의 카메라(시속 80) → 예전엔 안내(허용 62m), 앞길 기준이면 제외
+  const straight = [[[0, -300], [0, 0], [0, 1500]]];
+  r = await run1([[55, 700, 80]], straight, 228, 250, 80);
+  assert.equal(r.lim, null, 'parallel-road camera ignored: ' + JSON.stringify(r));
+  // 같은 길 위 건너편(25m 옆) 카메라는 그대로
+  r = await run1([[25, 700, 80]], straight, 228, 250, 80);
+  assert.equal(r.lim, '80', 'same-road far-side camera kept: ' + JSON.stringify(r));
+  await p.close();
+});

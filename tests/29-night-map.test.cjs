@@ -17,7 +17,7 @@ run('Night: brightness 20%, river night map, day map option', async ({context, o
   await theme('night');
   await p.evaluate(() => PfdMap.setStyle('normal')); await p.waitForTimeout(400);
   assert.equal(await p.evaluate(() => PfdMap.look), 'night');
-  assert.ok(await p.evaluate(() => !!document.getElementById('pmNightFx') && getComputedStyle(document.querySelector('.pfd-mini .pm-map')).filter.includes('pmNightFx')), 'night map uses the river filter');
+  assert.ok(await p.evaluate(() => !!document.getElementById('pmNightFx') && [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => r.selectorText && r.selectorText.includes('data-look="night"') && r.selectorText.includes('leaflet-tile-pane') && r.style.filter.includes('pmNightFx')); } catch (e) { return false; } })), 'night map uses the river filter (tiles only, 1.61)');
   // 1.59 야간 계기에서 원형 지도 왼쪽 위 [☀ 주간 지도] 버튼으로 바로 주간 지도
   assert.equal(await p.locator('.pfd-mini .pm-sun').isVisible(), true, 'day-map quick button at night');
   await p.locator('.pfd-mini .pm-sun').click(); await p.waitForTimeout(400);
