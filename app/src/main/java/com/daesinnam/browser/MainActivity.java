@@ -1,22 +1,36 @@
 package com.daesinnam.browser;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.format.Formatter;
+import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -26,6 +40,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
+import android.webkit.MimeTypeMap;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SafeBrowsingResponse;
 import android.webkit.SslErrorHandler;
@@ -46,6 +61,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -62,7 +78,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,11 +98,16 @@ import java.util.regex.Pattern;
  *  - PC용 사용자 에이전트와 넓은 화면 폭(1024~1920)을 항상 씁니다.
  *  - HTTPS만 엽니다. 인증서 오류·유해 사이트·로컬 파일·외부 앱 링크는 막습니다.
  *  - 위쪽은 주소 줄 한 줄만 둡니다(40dp). 진행 표시는 화면 위에 겹쳐 그려 자리를 차지하지 않습니다.
+ *  - 파일 받기: 확인을 받은 뒤 휴대폰의 "다운로드" 폴더에 저장합니다.
  */
 public class MainActivity extends Activity {
     private static final String TAG = "BROWSER_SELFTEST";
     private static final String HOME = "https://www.naver.com/";
     private static final int REQ_FILE = 42;
+    private static final int REQ_STORAGE = 43;
+    /** 페이지가 스크립트로 만든 파일(blob·data 주소)은 앱 메모리를 거쳐 저장하므로 크기를 제한합니다 */
+    private static final long MAX_INLINE_BYTES = 40L * 1024 * 1024;
+    private static final String DL_BRIDGE = "__dnDownload";
     private static final int MAX_BOOKMARKS = 200;
     private static final int[] WIDTHS = {1024, 1280, 1600, 1920};
     private static final Pattern SCHEME = Pattern.compile("^[a-zA-Z][a-zA-Z0-9+.-]*:");
@@ -107,6 +138,14 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> upload;
     private long pageGeneration;
     private long uploadGeneration;
+    private ScriptHandler downloadScript;
+    private boolean bridgeReady;
+    private String blobToken, blobName, blobMime;
+    private Runnable afterStoragePermission;
+    private final Set<Long> myDownloads = new HashSet<>();
+    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private BroadcastReceiver downloadDone;
+    private int selftestDownloadsLeft;
     private boolean selftest;
     private boolean selftestDone;
     private int selftestRetries;
@@ -132,6 +171,7 @@ public class MainActivity extends Activity {
         });
 
         setupWeb();
+        registerDownloadReceiver();
         if (selftest) root.postDelayed(this::layoutSelftest, 2500);
         if (state != null && web.restoreState(state) != null) {
             if (!UrlPolicy.isAllowed(web.getUrl())) web.loadUrl(HOME);
@@ -424,14 +464,29 @@ public class MainActivity extends Activity {
             }
         });
 
-        web.setDownloadListener((url, userAgent, disposition, mime, length) ->
-                Toast.makeText(this, "이 브라우저는 파일 다운로드를 지원하지 않습니다.", Toast.LENGTH_LONG).show());
-        // 링크를 길게 누르면: 주소 복사
+        web.setDownloadListener((url, userAgent, disposition, mime, length) -> onDownload(url, disposition, mime, length));
+        installDownloadBridge();
+        // 링크를 길게 누르면: 주소 복사 / 이미지를 길게 누르면: 이미지 저장
         web.setOnLongClickListener(v -> {
             WebView.HitTestResult hit = web.getHitTestResult();
             int type = hit.getType();
             String extra = hit.getExtra();
-            if (extra == null || type != WebView.HitTestResult.SRC_ANCHOR_TYPE) return false;
+            if (extra == null) return false;
+            if (type == WebView.HitTestResult.IMAGE_TYPE || type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                final String img = extra;
+                new AlertDialog.Builder(this).setTitle("이미지")
+                        .setItems(new String[]{"이미지 저장", "이미지 주소 복사"}, (d, w) -> {
+                            if (w == 0) {
+                                String mime = guessMime(DownloadNames.fromUrl(img), null);
+                                startDownload(img, DownloadNames.choose(null, img, null, extensionFor(mime)), mime);
+                            } else {
+                                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("이미지 주소", img));
+                            }
+                        }).setNegativeButton("닫기", null).show();
+                return true;
+            }
+            if (type != WebView.HitTestResult.SRC_ANCHOR_TYPE) return false;
             new AlertDialog.Builder(this).setTitle(UrlPolicy.origin(extra).isEmpty() ? "링크" : UrlPolicy.origin(extra))
                     .setMessage(extra.length() > 300 ? extra.substring(0, 300) + "…" : extra)
                     .setPositiveButton("열기", (d, w) -> navigate(extra))
@@ -625,7 +680,7 @@ public class MainActivity extends Activity {
     // ---------- 설정 ----------
 
     private void settings() {
-        String[] items = {"PC 화면 폭 설정 (현재 " + desktopWidth + ")", "웹 데이터 삭제", "보안 상태", "앱 정보"};
+        String[] items = {"PC 화면 폭 설정 (현재 " + desktopWidth + ")", "받은 파일 보기", "웹 데이터 삭제", "보안 상태", "앱 정보"};
         new AlertDialog.Builder(this).setTitle("덜누름 브라우저").setItems(items, (d, which) -> {
             if (which == 0) {
                 new AlertDialog.Builder(this).setTitle("PC 화면 폭")
@@ -636,17 +691,19 @@ public class MainActivity extends Activity {
                             web.reload();
                         }).show();
             } else if (which == 1) {
+                openDownloads();
+            } else if (which == 2) {
                 new AlertDialog.Builder(this).setMessage("로그인·쿠키·캐시·웹 저장소·탐색 기록을 삭제할까요? 즐겨찾기는 유지됩니다.")
                         .setNegativeButton("취소", null).setPositiveButton("삭제", (d2, w) -> clearWebData()).show();
-            } else if (which == 2) {
+            } else if (which == 3) {
                 new AlertDialog.Builder(this).setTitle("보안 상태")
-                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단\n• 제3자 쿠키 차단\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n\nSafe Browsing: "
+                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단\n• 제3자 쿠키 차단\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만\n\nSafe Browsing: "
                                 + (safeBrowsingReady ? "초기화 완료" : "활성화 요청됨 · 초기화 미확인")
                                 + "\n탐지 범위는 기기의 WebView와 서비스 상태에 따라 다릅니다.\n\nWebView를 최신 버전으로 유지하세요. HTTPS만으로 사이트의 신뢰성이 보장되지는 않습니다.")
                         .setPositiveButton("확인", null).show();
             } else {
                 new AlertDialog.Builder(this).setTitle("덜누름 브라우저 " + BuildConfig.VERSION_NAME)
-                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 동기화·확장 프로그램·다중 탭·파일 다운로드는 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장")
+                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 받은 파일은 휴대폰의 "다운로드" 폴더에 저장됩니다. 동기화·확장 프로그램·다중 탭은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
                         .setPositiveButton("확인", null).show();
             }
         }).show();
@@ -654,6 +711,7 @@ public class MainActivity extends Activity {
 
     private void clearWebData() {
         clearingData = true;
+        blobToken = null;
         cancelUpload();
         web.stopLoading();
         web.loadUrl("about:blank");
@@ -727,6 +785,324 @@ public class MainActivity extends Activity {
         cb.onReceiveValue(new Uri[]{uri});
     }
 
+    // ---------- 파일 받기 ----------
+
+    /**
+     * 페이지에 미리 넣어 두는 받기 도우미:
+     *  - 사이트가 파일을 넘기자마자 blob 주소를 지워 버리면(revokeObjectURL) 받을 수가 없어 1분 늦춰 지웁니다.
+     *  - &lt;a download="이름"&gt;으로 정한 파일 이름을 기억해 둡니다.
+     */
+    private static final String DOWNLOAD_HELPER_JS = "(function(){if(window.__dnNames)return;var n=window.__dnNames={};"
+            + "try{var rv=URL.revokeObjectURL.bind(URL);URL.revokeObjectURL=function(u){setTimeout(function(){rv(u);},60000);};}catch(e){}"
+            + "function rec(a){try{if(a&&a.hasAttribute&&a.hasAttribute('download')&&a.href)n[a.href]=a.getAttribute('download');}catch(e){}}"
+            + "try{var ck=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){rec(this);return ck.apply(this,arguments);};}catch(e){}"
+            + "document.addEventListener('click',function(e){rec(e.target&&e.target.closest?e.target.closest('a[download]'):null);},true);})()";
+
+    private void installDownloadBridge() {
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            try {
+                downloadScript = WebViewCompat.addDocumentStartJavaScript(web, DOWNLOAD_HELPER_JS, Collections.singleton("*"));
+            } catch (RuntimeException e) {
+                Log.w(TAG, "받기 도우미 설치 실패: " + e);
+            }
+        }
+        // blob 주소의 내용을 페이지에서 꺼내 앱으로 건네받는 통로 (앱이 요청한 받기에만 응답)
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            try {
+                WebViewCompat.addWebMessageListener(web, DL_BRIDGE, Collections.singleton("*"),
+                        (view, message, sourceOrigin, isMainFrame, reply) -> {
+                            if (isMainFrame) onBlobMessage(message.getData());
+                        });
+                bridgeReady = true;
+            } catch (RuntimeException e) {
+                Log.w(TAG, "받기 통로 설치 실패: " + e);
+            }
+        }
+    }
+
+    private void onDownload(String url, String disposition, String mime, long length) {
+        if (clearingData || url == null) return;
+        String lower = url.toLowerCase(Locale.ROOT);
+        boolean https = UrlPolicy.isAllowed(url);
+        boolean blob = lower.startsWith("blob:https://");
+        boolean data = lower.startsWith("data:");
+        if (!https && !blob && !data) {
+            Toast.makeText(this, "HTTPS로 제공되는 파일만 받을 수 있습니다.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (data && url.length() > MAX_INLINE_BYTES * 4 / 3 + 1024) {
+            Toast.makeText(this, "파일이 너무 커서 받을 수 없습니다.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String type = cleanMime(mime);
+        if (data && type == null) type = cleanMime(dataUrlMime(url));
+        String name = DownloadNames.choose(disposition, url, null, extensionFor(type));
+        final String finalType = guessMime(name, type);
+        String from = UrlPolicy.origin(https ? url : blob ? url.substring(5) : web.getUrl());
+        String size = length > 0 ? Formatter.formatShortFileSize(this, length) : "크기 알 수 없음";
+        Runnable go = () -> startDownload(url, name, finalType);
+        if (selftest) {
+            go.run();
+            return;
+        }
+        new AlertDialog.Builder(this).setTitle("파일 받기")
+                .setMessage(name + "\n" + size + "\n보낸 곳: " + (from.isEmpty() ? "알 수 없음" : from)
+                        + "\n\n휴대폰의 \"다운로드\" 폴더에 저장합니다. 모르는 사이트에서 받은 파일은 열기 전에 주의하세요.")
+                .setNegativeButton("취소", null)
+                .setPositiveButton("받기", (d, w) -> go.run())
+                .show();
+    }
+
+    /** 확인이 끝난 받기를 실제로 시작합니다 (주소 종류에 따라 방법이 다름) */
+    private void startDownload(String url, String name, String mime) {
+        if (clearingData) return;
+        withStoragePermission(() -> {
+            String lower = url.toLowerCase(Locale.ROOT);
+            if (lower.startsWith("data:")) saveDataUrl(url, name, mime);
+            else if (lower.startsWith("blob:")) fetchBlob(url, name, mime);
+            else if (UrlPolicy.isAllowed(url)) systemDownload(url, name, mime);
+            else Toast.makeText(this, "HTTPS로 제공되는 파일만 받을 수 있습니다.", Toast.LENGTH_LONG).show();
+        });
+    }
+
+    /** 일반 파일: 안드로이드 다운로드 관리자에 맡깁니다 (앱을 닫아도 계속 받고, 알림에 진행이 보임) */
+    private void systemDownload(String url, String name, String mime) {
+        DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        if (dm == null) {
+            downloadFailed(name, "다운로드 관리자를 쓸 수 없습니다.");
+            return;
+        }
+        try {
+            DownloadManager.Request r = new DownloadManager.Request(Uri.parse(url));
+            if (mime != null) r.setMimeType(mime);
+            // 로그인해야 받을 수 있는 파일을 위해 이 사이트의 쿠키와 같은 사용자 에이전트를 함께 보냅니다
+            String cookie = CookieManager.getInstance().getCookie(url);
+            if (cookie != null && !cookie.isEmpty()) r.addRequestHeader("Cookie", cookie);
+            r.addRequestHeader("User-Agent", web.getSettings().getUserAgentString());
+            String page = web.getUrl();
+            if (UrlPolicy.isAllowed(page)) {
+                // 같은 사이트면 전체 주소, 다른 사이트면 사이트 주소만 (일반 브라우저와 같은 방식)
+                r.addRequestHeader("Referer", UrlPolicy.origin(page).equals(UrlPolicy.origin(url)) ? page : UrlPolicy.origin(page) + "/");
+            }
+            r.setTitle(name);
+            r.setDescription("덜누름 브라우저");
+            r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            r.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);
+            myDownloads.add(dm.enqueue(r));
+            Toast.makeText(this, "받는 중: " + name + "\n알림에서 진행 상황을 볼 수 있습니다.", Toast.LENGTH_SHORT).show();
+        } catch (RuntimeException e) {
+            Log.w(TAG, "다운로드 시작 실패: " + e);
+            downloadFailed(name, "받기를 시작하지 못했습니다.");
+        }
+    }
+
+    private void registerDownloadReceiver() {
+        downloadDone = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent i) {
+                long id = i.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                if (!myDownloads.remove(id)) return;
+                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                if (dm == null) return;
+                int status = -1, reason = 0;
+                String title = "파일";
+                try (Cursor cur = dm.query(new DownloadManager.Query().setFilterById(id))) {
+                    if (cur != null && cur.moveToFirst()) {
+                        status = cur.getInt(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                        reason = cur.getInt(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                        String t = cur.getString(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_TITLE));
+                        if (t != null) title = t;
+                    }
+                } catch (RuntimeException e) {
+                    Log.w(TAG, "다운로드 상태 확인 실패: " + e);
+                }
+                if (status == DownloadManager.STATUS_SUCCESSFUL) downloadSaved(title, "https");
+                else if (status == -1) downloadFailed(title, "받기가 취소되었습니다.");
+                else downloadFailed(title, reason >= 400 && reason < 600
+                        ? "사이트가 파일을 주지 않았습니다 (" + reason + "). 로그인이 필요하거나 기간이 지난 링크일 수 있습니다."
+                        : "받지 못했습니다. 연결과 저장 공간을 확인하세요.");
+            }
+        };
+        ContextCompat.registerReceiver(this, downloadDone, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
+    }
+
+    /** blob 주소: 페이지 안에서 내용을 꺼내(data 주소로) 앱에 건네받은 뒤 저장합니다 */
+    private void fetchBlob(String url, String name, String mime) {
+        if (!bridgeReady) {
+            downloadFailed(name, "이 기기의 WebView가 오래되어 이 방식의 파일은 받을 수 없습니다. Android System WebView를 업데이트하세요.");
+            return;
+        }
+        blobToken = UUID.randomUUID().toString();
+        blobName = name;
+        blobMime = mime;
+        String js = "(function(){var u=" + JSONObject.quote(url) + ",t=" + JSONObject.quote(blobToken) + ";"
+                + "function p(o){o.t=t;try{" + DL_BRIDGE + ".postMessage(JSON.stringify(o));}catch(e){}}"
+                + "var n=(window.__dnNames||{})[u]||null;"
+                + "if(!n){try{var as=document.querySelectorAll('a[download]');for(var i=0;i<as.length;i++)if(as[i].href===u){n=as[i].getAttribute('download');break;}}catch(e){}}"
+                + "fetch(u).then(function(r){return r.blob();}).then(function(b){"
+                + "if(b.size>" + MAX_INLINE_BYTES + "){p({err:'big'});return;}"
+                + "var f=new FileReader();f.onload=function(){p({data:f.result,type:b.type,name:n});};"
+                + "f.onerror=function(){p({err:'read'});};f.readAsDataURL(b);"
+                + "}).catch(function(e){p({err:String(e)});});})()";
+        web.evaluateJavascript(js, null);
+        final String token = blobToken;
+        web.postDelayed(() -> {
+            if (token.equals(blobToken)) {
+                blobToken = null;
+                downloadFailed(name, "파일을 꺼내지 못했습니다. 페이지를 새로고침한 뒤 다시 받아 보세요.");
+            }
+        }, 60000);
+    }
+
+    private void onBlobMessage(String raw) {
+        if (raw == null || blobToken == null) return;
+        JSONObject o;
+        try {
+            o = new JSONObject(raw);
+        } catch (JSONException e) {
+            return;
+        }
+        if (!blobToken.equals(o.optString("t"))) return; // 앱이 요청하지 않은 메시지는 무시
+        blobToken = null;
+        String name = blobName, mime = blobMime;
+        String err = o.optString("err", "");
+        if (!err.isEmpty()) {
+            downloadFailed(name, "big".equals(err) ? "파일이 너무 커서(40MB 초과) 받을 수 없습니다."
+                    : "파일을 꺼내지 못했습니다. 페이지를 새로고침한 뒤 다시 받아 보세요.");
+            return;
+        }
+        String hint = o.optString("name", "");
+        if (!hint.isEmpty() && !"null".equals(hint)) {
+            String type = cleanMime(o.optString("type", null));
+            if (type == null) type = mime;
+            name = DownloadNames.choose(null, null, hint, extensionFor(type));
+            mime = guessMime(name, type);
+        } else if (mime == null) {
+            mime = cleanMime(o.optString("type", null));
+        }
+        saveDataUrl(o.optString("data", ""), name, mime);
+    }
+
+    private void saveDataUrl(String dataUrl, String name, String mime) {
+        final String n = name;
+        io.execute(() -> {
+            try {
+                int comma = dataUrl.indexOf(',');
+                if (!dataUrl.regionMatches(true, 0, "data:", 0, 5) || comma < 0) throw new IOException("data 주소 아님");
+                String head = dataUrl.substring(5, comma);
+                byte[] bytes = head.toLowerCase(Locale.ROOT).endsWith(";base64")
+                        ? Base64.decode(dataUrl.substring(comma + 1), Base64.DEFAULT)
+                        : Uri.decode(dataUrl.substring(comma + 1)).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                if (bytes.length > MAX_INLINE_BYTES) throw new IOException("너무 큼");
+                String type = mime != null ? mime : guessMime(n, cleanMime(head.split(";")[0]));
+                writeToDownloads(n, type, bytes);
+                runOnUiThread(() -> downloadSaved(n, "inline"));
+            } catch (IOException | RuntimeException e) {
+                Log.w(TAG, "파일 저장 실패: " + e);
+                runOnUiThread(() -> downloadFailed(n, "파일을 저장하지 못했습니다. 저장 공간을 확인하세요."));
+            }
+        });
+    }
+
+    /** "다운로드" 폴더에 저장 (같은 이름이 있으면 시스템이 번호를 붙입니다) */
+    private void writeToDownloads(String name, String mime, byte[] bytes) throws IOException {
+        if (Build.VERSION.SDK_INT >= 29) {
+            ContentResolver cr = getContentResolver();
+            ContentValues v = new ContentValues();
+            v.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+            v.put(MediaStore.MediaColumns.MIME_TYPE, mime != null ? mime : "application/octet-stream");
+            v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+            v.put(MediaStore.MediaColumns.IS_PENDING, 1);
+            Uri item = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+            if (item == null) throw new IOException("저장 위치를 만들지 못함");
+            try (OutputStream os = cr.openOutputStream(item)) {
+                if (os == null) throw new IOException("열지 못함");
+                os.write(bytes);
+            } catch (IOException | RuntimeException e) {
+                cr.delete(item, null, null);
+                throw e;
+            }
+            v.clear();
+            v.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            cr.update(item, v, null, null);
+        } else {
+            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("다운로드 폴더 없음");
+            File f = new File(dir, name);
+            int dot = name.lastIndexOf('.');
+            String base = dot > 0 ? name.substring(0, dot) : name, ext = dot > 0 ? name.substring(dot) : "";
+            for (int i = 1; f.exists() && i < 1000; i++) f = new File(dir, base + " (" + i + ")" + ext);
+            try (FileOutputStream os = new FileOutputStream(f)) {
+                os.write(bytes);
+            }
+            MediaScannerConnection.scanFile(this, new String[]{f.getAbsolutePath()}, new String[]{mime}, null);
+        }
+    }
+
+    private void downloadSaved(String name, String kind) {
+        if (selftest) selftestDownloadResult(true, kind + " " + name);
+        if (isFinishing() || isDestroyed()) return;
+        Toast.makeText(this, "받기 완료: " + name + "\n\"다운로드\" 폴더에 저장했습니다.", Toast.LENGTH_LONG).show();
+    }
+
+    private void downloadFailed(String name, String why) {
+        if (selftest) selftestDownloadResult(false, name + " " + why);
+        if (isFinishing() || isDestroyed()) return;
+        Toast.makeText(this, name + "\n" + why, Toast.LENGTH_LONG).show();
+    }
+
+    private void openDownloads() {
+        try {
+            startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "파일 앱에서 \"다운로드\" 폴더를 열어 보세요.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** 안드로이드 9 이하는 다운로드 폴더에 쓰려면 저장 권한이 필요합니다 */
+    private void withStoragePermission(Runnable r) {
+        if (Build.VERSION.SDK_INT >= 29 || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            r.run();
+            return;
+        }
+        afterStoragePermission = r;
+        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_STORAGE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode != REQ_STORAGE) return;
+        Runnable r = afterStoragePermission;
+        afterStoragePermission = null;
+        if (r != null && results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) r.run();
+        else Toast.makeText(this, "저장 권한이 없어 파일을 받을 수 없습니다.", Toast.LENGTH_LONG).show();
+    }
+
+    private static String cleanMime(String mime) {
+        if (mime == null) return null;
+        String m = mime.split(";")[0].trim().toLowerCase(Locale.ROOT);
+        if (m.isEmpty() || m.equals("application/octet-stream") || m.equals("binary/octet-stream") || !m.contains("/")) return null;
+        return m;
+    }
+
+    private static String dataUrlMime(String url) {
+        int comma = url.indexOf(',');
+        return comma > 5 ? url.substring(5, comma) : null;
+    }
+
+    private static String extensionFor(String mime) {
+        return mime == null ? null : MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+    }
+
+    /** 파일 종류: 사이트가 알려 준 값이 없으면 확장자로 짐작 */
+    private static String guessMime(String name, String mime) {
+        if (mime != null) return mime;
+        if (name == null) return null;
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? null : MimeTypeMap.getSingleton().getMimeTypeFromExtension(name.substring(dot + 1).toLowerCase(Locale.ROOT));
+    }
+
     // ---------- 전체 화면 ----------
 
     private void setFullscreen(boolean on) {
@@ -777,6 +1153,10 @@ public class MainActivity extends Activity {
             }
             if (alt && k == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 if (web.canGoForward()) web.goForward();
+                return true;
+            }
+            if (ctrl && k == KeyEvent.KEYCODE_J) {
+                openDownloads();
                 return true;
             }
             if (ctrl && k == KeyEvent.KEYCODE_D) {
@@ -831,6 +1211,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         cancelUpload();
+        if (downloadDone != null) unregisterReceiver(downloadDone);
+        io.shutdown();
         stage.removeView(web);
         web.destroy();
         super.onDestroy();
@@ -863,7 +1245,32 @@ public class MainActivity extends Activity {
             } catch (JSONException e) {
                 Log.i(TAG, "FAIL selftest parse " + v);
             }
-            Log.i(TAG, "DONE");
+            selftestDownloads();
         }), 1500);
+    }
+
+    /**
+     * 받기 점검: (1) 페이지가 스크립트로 만든 파일(blob + download 속성) (2) 일반 HTTPS 파일.
+     * 시험용 빌드에서는 확인 창 없이 바로 받습니다.
+     */
+    private void selftestDownloads() {
+        selftestDownloadsLeft = 2;
+        web.evaluateJavascript("(function(){var b=new Blob(['덜누름 브라우저 받기 점검'],{type:'text/plain'});"
+                + "var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='덜누름-점검.txt';"
+                + "document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);})()", null);
+        web.postDelayed(() -> startDownload("https://example.com/", "dn-selftest.html", "text/html"), 3000);
+        web.postDelayed(() -> {
+            if (selftestDownloadsLeft > 0) {
+                Log.i(TAG, "FAIL download timeout (" + selftestDownloadsLeft + "개 끝나지 않음)");
+                selftestDownloadsLeft = 0;
+                Log.i(TAG, "DONE");
+            }
+        }, 60000);
+    }
+
+    private void selftestDownloadResult(boolean ok, String what) {
+        if (selftestDownloadsLeft <= 0) return;
+        Log.i(TAG, (ok ? "PASS" : "FAIL") + " download " + what);
+        if (--selftestDownloadsLeft == 0) Log.i(TAG, "DONE");
     }
 }

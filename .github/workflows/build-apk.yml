@@ -25,6 +25,12 @@ jobs:
           javac -d "$RUNNER_TEMP/t" app/src/main/java/com/daesinnam/browser/UrlPolicy.java app/src/main/java/com/daesinnam/browser/WebLinkResolver.java tools/UrlRulesTest.java
           java -cp "$RUNNER_TEMP/t" UrlRulesTest
 
+      - name: 받을 파일 이름 규칙 점검 (한글 이름 · 금지 문자 · 확장자)
+        run: |
+          mkdir -p "$RUNNER_TEMP/d"
+          javac -encoding UTF-8 -d "$RUNNER_TEMP/d" app/src/main/java/com/daesinnam/browser/DownloadNames.java tools/DownloadNamesTest.java
+          java -Dfile.encoding=UTF-8 -cp "$RUNNER_TEMP/d" DownloadNamesTest
+
       - name: Android SDK 준비
         run: |
           SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)

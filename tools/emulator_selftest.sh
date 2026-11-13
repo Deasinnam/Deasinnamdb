@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 덜누름 브라우저 에뮬레이터 점검:
-#  1) 시험용 빌드: 위쪽 줄 높이, PC 사용자 에이전트, PC 화면 폭, 클라이언트 힌트(모바일 아님)
+#  1) 시험용 빌드: 위쪽 줄 높이, PC 사용자 에이전트, PC 화면 폭, 클라이언트 힌트(모바일 아님),
+#     파일 받기(스크립트로 만든 파일 + 일반 HTTPS 파일)
 #  2) 배포용 빌드(코드 줄이기 적용): 켜지고 꺼지지 않는지
 set -u
 DEBUG_APK="$1"
@@ -16,7 +17,7 @@ for i in $(seq 1 30); do
 done
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez browser.selftest true --es browser.url "https://example.com/"
-for i in $(seq 1 60); do
+for i in $(seq 1 80); do
   sleep 3
   if adb logcat -d -s BROWSER_SELFTEST:I | grep -q "DONE"; then break; fi
 done
@@ -28,6 +29,10 @@ pass=$(grep -c "BROWSER_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "BROWSER_SELFTEST: FAIL" selftest-result.txt || true)
 skip=$(grep -c "BROWSER_SELFTEST: SKIP page load" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn"
+echo "===== 다운로드 폴더 ====="
+adb shell ls -la /sdcard/Download/ | tee -a selftest-result.txt
+dl=$(grep -c "BROWSER_SELFTEST: PASS download" selftest-result.txt || true)
+if [ "$dl" -lt 2 ]; then echo "파일 받기 점검 실패 (통과 $dl/2)"; fail=1; fi
 if ! grep -q "BROWSER_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ]; then fail=1; fi
 if [ "$pass" -lt 3 ]; then fail=1; fi
 if [ "$skip" != 0 ]; then echo "에뮬레이터에서 시험 페이지를 불러오지 못해 PC 모드를 확인하지 못했습니다 (다시 돌려야 함)"; fail=1; fi

@@ -6,6 +6,7 @@
 - HTTPS 전용 · 인증서 오류/유해 사이트/로컬 파일/외부 앱 링크 차단 · 제3자 쿠키 차단
 - 위쪽은 주소 줄 한 줄(40dp), 진행 표시는 화면 위에 겹쳐 그림
 - 화면 회전·접기·창 크기 변경(DeX)에도 페이지를 다시 불러오지 않음
-- 키보드 단축키: Ctrl+L, F5/Ctrl+R, Alt+←/→, Ctrl+D
+- 파일 받기: 확인 후 휴대폰 "다운로드" 폴더에 저장 (일반 파일 · 사이트가 만들어 주는 파일 · 이미지 길게 눌러 저장), 한글 파일 이름 지원
+- 키보드 단축키: Ctrl+L, F5/Ctrl+R, Alt+←/→, Ctrl+D, Ctrl+J(받은 파일)
 
 빌드: `deolnureum-browser` 브랜치에 올리면 GitHub Actions가 APK를 만들어 Releases(`browser-latest`)에 올립니다.
