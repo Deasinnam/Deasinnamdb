@@ -826,7 +826,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <div class="fold-dev mac"><img src="/media/dulsseum-mac.webp" alt="맥 메뉴 막대에서 연 덜씀 창: 메모리 70% 사용 중, 메모리 덜씀 · 저장공간 덜씀 · 배터리 덜씀 · 구형 맥 가볍게 버튼" loading="lazy"></div>
           <span class="enter">자세히 보기 →</span>
         </a>
-        <a class="slide fold" href="/98/" data-name="덜누름 98" data-kind="레트로 데스크톱 · 개발 중" data-dur="23500">
+        <a class="slide fold" href="/98/" data-name="덜누름 98" data-kind="레트로 데스크톱" data-dur="23500">
           <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 98</b><span>펼친 폴드가 그 시절 PC가 됩니다. 시작 메뉴, 카드놀이, 지뢰찾기까지</span></div>
           <div class="fold-dev r98"><video src="/media/app-98.mp4" poster="/media/app-98-poster.jpg" muted playsinline preload="none" aria-label="덜누름 98 실제 화면 영상: 옛 PC 같은 바탕화면에서 시작 메뉴를 열고, 카드놀이와 지뢰찾기, 웹 탐색기, 음악 플레이어를 차례로 여는 모습"></video></div>
           <span class="enter">자세히 보기 →</span>
@@ -1205,7 +1205,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     <div class="amp-wrap">
       <a class="ap-back" href="/apps/">← 앱센터</a>
       <div class="amp-copy">
-        <div class="amp-eyebrow">레트로 데스크톱 · 개발 중</div>
+        <div class="amp-eyebrow">레트로 데스크톱</div>
         <h1 id="ap-98-t">덜누름 98</h1>
         <p class="amp-kind">FOLD 98 · 폴드를 위한 레트로 홈 화면</p>
         <p class="amp-lead">펼친 폴드가<br>그 시절 PC가 됩니다.</p>
@@ -1217,10 +1217,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>음악 플레이어 Retro Amp, 웹 탐색기 Web Explorer</span></li>
           <li><b>05</b><span>시작 메뉴에서 전화와 문자까지 바로</span></li>
         </ul>
-        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 98">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 98">공개되면 알림 받기</a></div>
+        <div class="amp-cta"><a class="amp-btn" href="/download/Deolnureum98.apk" download>내려받기 <small>APK</small></a><span class="dl-count">53KB</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 98">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>필요</dt><dd>Android 11 이상 · 무료</dd></div>
         </dl>
       </div>
       <div class="ap-media">
@@ -2267,7 +2268,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     "app-work":    { open: true, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3 },
     "app-desktop": { open: true, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2 },
     "app-browser": { open: true, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 2 },
-    "app-98":      { open: false, tag: "",               file: "",                     base: 0 },
+    "app-98":      { open: true,  url: "/download/Deolnureum98.apk", size: "53KB" },
     "app-sseum":   { open: false, tag: "",               file: "",                     base: 0, kind: "PKG",
                      note: "애플 서명 전이라 처음 열 때 \u201c확인되지 않은 개발자\u201d 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열면 설치됩니다." }
   };
@@ -2283,11 +2284,12 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       .catch(function () { cb(null); });
   }
   Object.keys(DL).forEach(function (id) {
-    var c = DL[id]; if (!c.open || !c.tag || !c.file) return;
+    var c = DL[id]; if (!c.open || !(c.url || (c.tag && c.file))) return;
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
-    var url = "https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file;
+    var url = c.url || ("https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file);
     cta.innerHTML = '<a class="amp-btn" href="' + url + '">내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
     var out = cta.querySelector(".dl-count");
+    if (c.url) { cta.querySelector(".amp-btn").setAttribute("download", ""); out.textContent = c.size || ""; return; }
     getRelease(c.tag, function (d) {
       if (!d) return;
       var a = d.assets.filter(function (x) { return x.name === c.file; })[0]; if (!a) return;
