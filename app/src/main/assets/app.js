@@ -3007,11 +3007,14 @@ const FxLock=(()=>{
   const active=()=>appEl.classList.contains('FX')&&isCk2();
   const target=()=>appEl;
   const SKIP='.leaflet-container,input,select,textarea,.rd-knob,.grip,.rzbtn,[data-nolock],.sp-sky,dialog';
+  // 1.62.5 실제로 스크롤되는 곳: html·body가 둘 다 height:100%·overflow-x:hidden이라 페이지가 body 안에서 스크롤되는 경우가 있음(그땐 window.scrollY가 늘 0)
+  function sc(){const b=document.body,cs=getComputedStyle(b);return /(auto|scroll)/.test(cs.overflowY)&&b.clientHeight<=window.innerHeight+1&&b.scrollHeight>b.clientHeight+1?b:(document.scrollingElement||document.documentElement)}
+  const getY=()=>sc().scrollTop,setY=y=>{const e=sc();e.scrollTop=y},viewH=()=>{const e=sc();return e===document.body?e.clientHeight:window.innerHeight};
   function fitY(){ // 고른 창의 아래 끝이 화면 아래에 닿는 스크롤 위치(창이 화면보다 작으면 0 쪽으로)
     const w=appEl.querySelector(':scope>.win.fx');if(!w)return 0;
-    const r=w.getBoundingClientRect(),y=window.scrollY+r.bottom-window.innerHeight+4,max=document.documentElement.scrollHeight-window.innerHeight;
+    const rl=document.getElementById('ckRail'),rb=rl&&rl.offsetParent?rl.getBoundingClientRect().bottom:0,r=w.getBoundingClientRect(),e=sc(),top=e===document.body?e.getBoundingClientRect().top:0,y=getY()+Math.max(r.bottom,rb)-top-viewH()+4,max=e.scrollHeight-viewH();
     return Math.max(0,Math.min(max,Math.round(y)))}
-  function settle(delay){clearTimeout(settleT);settleT=setTimeout(()=>{if(!active()){release();return}lockY=fitY();if(Math.abs(window.scrollY-lockY)>1)window.scrollTo({top:lockY,behavior:'instant'});document.documentElement.classList.add('fxlock')},delay==null?450:delay)}
+  function settle(delay){clearTimeout(settleT);settleT=setTimeout(()=>{if(!active()){release();return}lockY=fitY();if(Math.abs(getY()-lockY)>1)setY(lockY);document.documentElement.classList.add('fxlock')},delay==null?450:delay)}
   function release(){lockY=null;document.documentElement.classList.remove('fxlock');stopAnim();setOff(0)}
   function setOff(v){off=v;const t=target();t.style.transform=Math.abs(v)<.3?'':'translate3d(0,'+v.toFixed(1)+'px,0)'}
   function stopAnim(){if(anim)cancelAnimationFrame(anim);anim=0}
@@ -3033,7 +3036,7 @@ const FxLock=(()=>{
   document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
   window.addEventListener('wheel',e=>{if(lockY==null||Math.abs(e.deltaY)<Math.abs(e.deltaX))return;if(e.target.closest&&e.target.closest(SKIP))return;if(canScroll(e.target,-e.deltaY))return;e.preventDefault();bump(Math.sign(e.deltaY))},{passive:false});
   // 그래도 페이지가 움직이면(키보드·주소창 변화 등) 제자리로
-  window.addEventListener('scroll',()=>{if(lockY==null||touch)return;if(Math.abs(window.scrollY-lockY)>1){const dir=Math.sign(window.scrollY-lockY);window.scrollTo({top:lockY,behavior:'instant'});bump(dir)}},{passive:true});
+  document.addEventListener('scroll',e=>{if(lockY==null||touch)return;const t=e.target,el=sc();if(!(t===document||t===el||t===document.documentElement))return;const y=getY();if(Math.abs(y-lockY)>1){const dir=Math.sign(y-lockY);setY(lockY);bump(dir)}},{passive:true,capture:true});
   // 보기 바뀜·화면 크기 바뀜(접고 펴기)·창 크기 조절이 끝나면 다시 맞춤
   let wasFx=active();
   new MutationObserver(()=>{const now=active();if(now===wasFx&&lockY!=null)return;wasFx=now;lockY=null;if(now)settle();else release()}).observe(appEl,{attributes:true,attributeFilter:['class']});
@@ -3041,8 +3044,10 @@ const FxLock=(()=>{
   document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#ckRail button[data-f]')){lockY=null;settle()}},true);
   window.addEventListener('resize',()=>{if(active())settle(300)});
   document.addEventListener('pointerup',e=>{if(lockY!=null&&e.target.closest&&e.target.closest('.grip,.rzbtn'))settle(300)},true);
+  // 1.62.5 창이나 페이지 높이가 바뀌면(즐겨찾기·목록 펼치기, 늦게 그려진 화면, 풀화면 전환) 아래 버튼 줄이 가려지지 않게 다시 맞춤
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{if(lockY!=null&&!touch)settle(120)});ro.observe(appEl);ro.observe(document.documentElement)}
   if(active())settle(800);
-  return {get y(){return lockY},get off(){return off},settle,release}})();
+  return {get scroller(){return sc()},get y(){return lockY},get off(){return off},settle,release}})();
 window.AmpFxLock=FxLock;
 /* ===== 93-split.js ===== */
 // 화면 분할(TMAP·네이버 지도 위·아래): 이 앱은 남은 칸(약 40%)에 맞게 스크롤 없이 따로 배치

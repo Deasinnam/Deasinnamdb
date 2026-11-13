@@ -14,10 +14,10 @@ run('Dedicated views stay fitted; drag springs back', async ({newPage, origin}) 
   assert.ok(fit.bottom <= fit.h + 1 && fit.bottom > fit.h - 40, 'window fits the screen bottom: ' + JSON.stringify(fit));
   // 휠로 내려도 같은 자리
   await p.mouse.move(400, 300); await p.mouse.wheel(0, 600); await p.waitForTimeout(700);
-  assert.equal(await p.evaluate(() => Math.round(scrollY)), y0, 'wheel does not move the page');
+  assert.equal(await p.evaluate(() => Math.round(AmpFxLock.scroller.scrollTop)), y0, 'wheel does not move the page');
   // 스크립트로 밀어도 제자리로 돌아오고 살짝 튕김
-  await p.evaluate(() => scrollTo(0, scrollY + 300)); await p.waitForTimeout(60);
-  assert.equal(await p.evaluate(() => Math.round(scrollY)), y0, 'snaps back');
+  await p.evaluate(() => AmpFxLock.scroller.scrollTop += 300); await p.waitForTimeout(60);
+  assert.equal(await p.evaluate(() => Math.round(AmpFxLock.scroller.scrollTop)), y0, 'snaps back');
   await p.waitForTimeout(1200);
   assert.equal(await p.evaluate(() => document.getElementById('app').style.transform), '', 'spring settles at rest');
   // 손가락으로 끌기(CDP 터치): 끄는 동안 늘어나고, 놓으면 0으로
@@ -28,11 +28,23 @@ run('Dedicated views stay fitted; drag springs back', async ({newPage, origin}) 
   await tp('touchEnd', 520);
   assert.ok(mid > 20, 'rubber band while dragging: ' + mid);
   await p.waitForTimeout(1300);
-  assert.ok(Math.abs(await p.evaluate(() => AmpFxLock.off)) < 1 && await p.evaluate(() => Math.round(scrollY)) === y0, 'back to the same place');
+  assert.ok(Math.abs(await p.evaluate(() => AmpFxLock.off)) < 1 && await p.evaluate(() => Math.round(AmpFxLock.scroller.scrollTop)) === y0, 'back to the same place');
   // 전체 보기: 고정 풀림
   await p.locator('#ckRail button[data-f="all"]').click(); await p.waitForTimeout(700);
   assert.equal(await p.evaluate(() => AmpFxLock.y), null, 'all view scrolls normally');
   await p.close();
+
+  // 1.62.5 아래 버튼 줄은 어느 전용 보기에서도 화면 안(창이 화면보다 길어져도)
+  {const r = await newPage(() => { localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); localStorage.setItem('dna_rdFavs', JSON.stringify([{id: 'a', name: 'A FM', url: 'https://s.example/a', freq: 95.1}])); });
+    await r.setViewportSize({width: 820, height: 900}); await r.goto(origin); await r.waitForFunction(() => window.AmpFxLock);
+    for (const f of ['radio', 'gps', 'map', 'vis', 'cam']) {
+      await r.locator('#ckRail button[data-f="' + f + '"]').click(); await r.waitForTimeout(1200);
+      await r.evaluate(() => document.querySelector('#app>.win.fx').style.setProperty('--fxH', '1600px')); await r.waitForTimeout(900);
+      const b = await r.evaluate(() => { const x = document.getElementById('ckRail').getBoundingClientRect(); return [x.top, x.bottom, innerHeight]; });
+      assert.ok(b[0] >= 0 && b[1] <= b[2] + 1, f + ': bottom bar on screen ' + JSON.stringify(b));
+      await r.evaluate(() => document.querySelector('#app>.win.fx').style.removeProperty('--fxH'));
+    }
+    await r.close();}
 
   // 1.62.4 라디오 즐겨찾기 칸: 기본 6칸, 저장한 방송이 늘면 한 줄씩
   for (const [count, want] of [[0, 6], [6, 6], [7, 9]]) {
