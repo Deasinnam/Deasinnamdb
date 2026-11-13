@@ -8,6 +8,8 @@ const BUILD=window.__build||(()=>{try{return NB&&NB.buildKind?String(NB.buildKin
 /* 1.56: 앱 나누기 — amp(대신남 AMP: 오디오 스킨만) / one·std·fold8(대신남 원·대신남원: 자동차 모드·에어라인만). 웹 미리보기·시험판(comm·play)은 전부 */
 const NATIVE_KIND=(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):''}catch(e){return ''}})();
 /* 스페셜(special): 대신남 원과 같은 차량용 구성 + 지브리풍 고품질 PFD 풍경(pfd-special.js). 따로 설치되는 새 앱 */
+/* 1.62.1 스페셜판 표시 이름·관제탑 호출부호는 '에어포스원'(그 밖은 '대신남 원') */
+const CALLSIGN=BUILD==='special'?'에어포스원':'대신남 원';window.AmpCallsign=CALLSIGN;
 const APP=BUILD==='amp'?'amp':(BUILD==='one'||BUILD==='special'||((BUILD==='std'||BUILD==='fold8')&&(NATIVE_KIND==='std'||NATIVE_KIND==='fold8')))?'one':'all';
 document.documentElement.dataset.build=BUILD;document.documentElement.dataset.app=APP;
 /* 갤럭시 Z 폴드8 전용판(보라색은 앱 아이콘·실행 화면만, 앱 안 색은 일반판과 같음): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */

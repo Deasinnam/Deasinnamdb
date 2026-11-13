@@ -1,8 +1,8 @@
-/* 대신남 원 스페셜 — 켤 때 여는 화면(약 8초, 화면을 누르면 건너뜀)
+/* 에어포스원(스페셜판) — 켤 때 여는 화면(약 8초, 화면을 누르면 건너뜀)
  *
  *  0.0s  노을빛이 번지고 속도선이 지나감(휙)
  *  0.4s  늑대 엠블럼: 면 조각들이 하나씩 튀어나와 맞물림(스프링) → 맞물리는 순간 '쿵' + 충격파, 눈에 불이 켜짐
- *  2.6s  "대신남" "AirLine" 글자가 하나씩 떨어져 자리 잡고 날개 밑줄이 그어짐(딩—)
+ *  2.6s  "AIR FORCE ONE" 글자가 하나씩 떨어져 자리 잡고 "에어포스원"·날개 밑줄(딩—). 늑대 로고는 점으로 켜지고 5.3s부터 점으로 흩어짐
  *  3.8s  엠블럼에서 뻗어 나가는 항로 + 하는 일 세 가지(GPS 스피드미터 · PFD 비행 화면 · 마일리지 적립)가 차례로 뜸(톡)
  *  5.6s  활주로 등이 앞으로 달려오고 엔진이 돌기 시작(우우웅) → 7.2s 빛이 번지며 실제 PFD 활주로 화면으로 넘어감
  *
@@ -31,28 +31,25 @@
   const RAMP = [hex('#191d44'), VIOLET, MAUVE, PEACH, AMBER];
   const tone = t => { t = clamp(t, 0, 1) * (RAMP.length - 1); const i = Math.min(RAMP.length - 2, Math.floor(t)); return mix(RAMP[i], RAMP[i + 1], t - i); };
 
-  /* ---------- 늑대 엠블럼: 평면 도트(LED 전광판) — 옆모습 늑대 머리를 칸 격자로 찍음 ----------
-   *  윤곽 칸은 밝게, 안쪽은 어둡게 + 점묘(체크무늬) 명암, 눈은 꺼진 칸. 왼쪽에서 오른쪽으로 칸이 켜지며 나타남 */
-  const WOLF = [[10, 97], [13, 62], [19, 40], [28, 27], [33, 2], [44, 21], [51, 5], [57, 25], [67, 29], [74, 35], [95, 43], [99, 48], [97, 53], [81, 55], [89, 60], [78, 66], [63, 70], [55, 97]];
-  const GN = 46;
-  const DOTS = (() => {
-    const cvs = document.createElement('canvas'); cvs.width = cvs.height = GN; const x = cvs.getContext('2d');
-    x.fillStyle = '#fff'; x.beginPath(); WOLF.forEach(([px, py], i) => { const X = px / 100 * GN, Y = py / 100 * GN; i ? x.lineTo(X, Y) : x.moveTo(X, Y); }); x.closePath(); x.fill();
-    const d = x.getImageData(0, 0, GN, GN).data, on = (i, j) => i >= 0 && j >= 0 && i < GN && j < GN && d[(j * GN + i) * 4 + 3] > 110;
-    const eye = [Math.round(.66 * GN), Math.round(.39 * GN)], out = [];
-    for (let j = 0; j < GN; j++) for (let i = 0; i < GN; i++) {
+  /* ---------- 늑대 로고(사용자 로고 special-logo.png)를 도트로: 점이 켜지며 나타나고, 점이 흩어지며 사라짐 ----------
+   *  로고 그림을 격자로 줄여 칸마다 켜짐/꺼짐을 정함. 윤곽 칸은 더 밝게. 나타날 때는 가운데서 바깥으로, 사라질 때는 칸마다 제각각 위로 흩어짐 */
+  let DOTS = null, GW = 66, GH = 72;
+  const logo = new Image();
+  logo.onload = () => {
+    GH = Math.round(GW * logo.naturalHeight / logo.naturalWidth);
+    const cvs = document.createElement('canvas'); cvs.width = GW; cvs.height = GH; const x = cvs.getContext('2d');
+    x.drawImage(logo, 0, 0, GW, GH);
+    let d; try { d = x.getImageData(0, 0, GW, GH).data; } catch (e) { return; }
+    const on = (i, j) => i >= 0 && j >= 0 && i < GW && j < GH && d[(j * GW + i) * 4 + 3] > 110, out = [];
+    for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
       if (!on(i, j)) continue;
-      if (Math.abs(i - eye[0]) <= 0 && Math.abs(j - eye[1]) <= 0) continue;                                  // 눈(꺼진 칸)
       const edge = !on(i - 1, j) || !on(i + 1, j) || !on(i, j - 1) || !on(i, j + 1);
-      const near = !edge && (!on(i - 2, j) || !on(i + 2, j) || !on(i, j - 2) || !on(i, j + 2));
-      const mane = j > GN * .62 && i < GN * .55;                                                                 // 목덜미 갈기: 성긴 점묘
-      let b = edge ? 1 : near ? .75 : .45 + hash(i * 7.1 + j * 3.3) * .3;
-      if (!edge && ((i + j) % 2) && !near) b *= mane ? .35 : .7;
-      if (Math.abs(i - eye[0]) + Math.abs(j - eye[1]) === 1) b = Math.max(b, .95);                               // 눈가 밝게
-      out.push({ i, j, b, d: .4 + i / GN * 1.25 + hash(i * 3.7 + j * 9.1) * .22 });
+      const r = Math.hypot(i / GW - .55, j / GH - .45);
+      out.push({ i, j, b: edge ? 1 : .78 + hash(i * 7.1 + j * 3.3) * .12, d: .4 + r * 1.9 + hash(i * 3.7 + j * 9.1) * .25, o: 5.25 + hash(i * 5.3 + j * 1.9) * .9, dx: (hash(i + j * 7) - .5) * 2 });
     }
-    return out;
-  })();
+    DOTS = out;
+  };
+  logo.src = 'special-logo.png';
   /* ---------- 소리(Web Audio 합성) ---------- */
   let AC = null, master = null;
   const soundOn = () => { try { const v = localStorage.getItem('dna_atcSound'); return v === null ? true : JSON.parse(v) !== false; } catch (e) { return true; } };
@@ -107,7 +104,7 @@
   st.textContent = '#spIntro{position:fixed;inset:0;z-index:2147483000;background:#10142e;touch-action:none;cursor:pointer}#spIntro canvas{display:block;width:100%;height:100%}'
     + '#spIntro .skip{position:absolute;right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));padding:8px 14px;border-radius:99px;font:600 13px "Noto Sans KR",sans-serif;color:#fff3df;background:rgba(16,20,46,.55);border:1px solid rgba(255,217,154,.35);opacity:.8}';
   document.head.appendChild(st);
-  const root = document.createElement('div'); root.id = 'spIntro'; root.setAttribute('role', 'img'); root.setAttribute('aria-label', '대신남 AirLine 여는 화면 — 누르면 건너뜀');
+  const root = document.createElement('div'); root.id = 'spIntro'; root.setAttribute('role', 'img'); root.setAttribute('aria-label', '에어포스원 여는 화면 — 누르면 건너뜀');
   const cv = document.createElement('canvas'); root.appendChild(cv);
   const skip = document.createElement('span'); skip.className = 'skip'; skip.textContent = '눌러서 건너뛰기'; root.appendChild(skip);
   document.body.appendChild(root);
@@ -165,7 +162,7 @@
     }
 
     // 엠블럼(0.4s~): 면 조각이 차례로 튀어나와 맞물림, 활주로가 오면 위로 올라가며 작아짐
-    const lift = ease((t - 5.4) / 1.4), es = 1 - lift * .45, ey = cy - lift * H * .14, ea = 1 - ease((t - 6.4) / .8);
+    const lift = 0, es = 1, ey = cy, ea = 1 - ease((t - 6.3) / .4);
     if (t > .35 && ea > 0) {
       const s = R / 100 * es;
       c.save(); c.globalAlpha = ea;
@@ -173,44 +170,44 @@
       const sw = t - 2.3; if (sw > 0 && sw < 1.2) { c.strokeStyle = rgba(AMBER, (1 - sw / 1.2) * .7); c.lineWidth = 3 * (1 - sw / 1.2) + .5; c.beginPath(); c.arc(cx, ey, R * (1 + sw * 1.6), 0, Math.PI * 2); c.stroke(); }
       // 뒤 빛 원
       const halo = c.createRadialGradient(cx, ey, R * .2, cx, ey, R * 1.6); halo.addColorStop(0, rgba(PEACH, .28 * ease((t - 1.6) / 1))); halo.addColorStop(1, rgba(PEACH, 0)); c.fillStyle = halo; c.fillRect(cx - R * 2, ey - R * 2, R * 4, R * 4);
-      // 도트: 켜지는 순간 번쩍(1.6배) 했다가 제 밝기로 — 2.3s '쿵'에 한 번 더 번쩍, 이후 아주 약하게 깜빡임
-      const cs = R * 1.55 / GN, ds = cs * .8, x0 = cx - GN * cs / 2 - cs * 2, y0 = ey - GN * cs / 2;
-      // 꺼진 LED 칸(전광판 바탕): 늑대 둘레 판에 아주 옅게
-      const pa = ease((t - .3) / .5) * .5;
-      if (pa > 0) { c.fillStyle = rgba(hex('#0b0d1c'), pa * .9); c.fillRect(x0 - cs * 2, y0 - cs * 2, (GN + 4) * cs, (GN + 4) * cs);
-        c.fillStyle = rgba(hex('#3a3418'), pa * .55); for (let j = -1; j < GN + 1; j++) for (let i = -1; i < GN + 1; i++) c.fillRect(x0 + i * cs, y0 + j * cs, ds, ds); }
-      const hit = Math.max(0, 1 - Math.abs(t - 2.32) / .18);
-      for (const D of DOTS) {
-        const lt = t - D.d; if (lt <= 0) continue;
-        const flash = lt < .18 ? 1.6 - lt / .18 * .6 : 1, flick = .92 + .08 * Math.sin(t * 9 + D.i * 1.3 + D.j * .7);
-        const b = clamp(D.b * flash * flick + hit * .5, 0, 1.6);
-        const col = b > 1 ? mix(AMBER, CREAM, clamp(b - 1, 0, 1)) : mix(hex('#3a2a10'), hex('#ffcf3f'), b);
-        c.fillStyle = rgba(col, clamp(lt * 8, 0, 1)); c.fillRect(x0 + D.i * cs, y0 + D.j * cs, ds, ds);
+      // 도트: 켜지는 순간 번쩍(1.6배) 했다가 제 밝기로 — 2.3s '쿵'에 한 번 더 번쩍 — 5.3s부터 점마다 위로 흩어지며 꺼짐
+      if (DOTS) {
+        const cs = R * 1.9 / GH * es, ds = cs * .8, x0 = cx - GW * cs / 2, y0 = ey - GH * cs / 2 - R * .05;
+        const hit = Math.max(0, 1 - Math.abs(t - 2.32) / .18);
+        for (const D of DOTS) {
+          const lt = t - D.d; if (lt <= 0) continue;
+          const q = clamp((t - D.o) / .45, 0, 1); if (q >= 1) continue;
+          const flash = lt < .18 ? 1.6 - lt / .18 * .6 : 1, flick = .94 + .06 * Math.sin(t * 9 + D.i * 1.3 + D.j * .7);
+          const b = clamp(D.b * flash * flick + hit * .5 + q * .6, 0, 1.6);
+          const col = b > 1 ? mix(AMBER, CREAM, clamp(b - 1, 0, 1)) : mix(hex('#5a3c12'), hex('#ffcf3f'), b);
+          const sz = ds * (1 - q * .6), px = x0 + D.i * cs + D.dx * q * cs * 6, py = y0 + D.j * cs - q * q * cs * 14;
+          c.fillStyle = rgba(col, clamp(lt * 8, 0, 1) * (1 - q)); c.fillRect(px + (ds - sz) / 2, py + (ds - sz) / 2, sz, sz);
+        }
       }
       c.restore();
     }
 
-    // 글자(2.6s~): "대신남" "AirLine" 한 글자씩 떨어져 자리 잡음
-    const ta = 1 - ease((t - 6.2) / .9);
+    // 글자(2.6s~): "AIR FORCE ONE" 한 글자씩 떨어져 자리 잡고, 아래 "에어포스원"
+    const ta = 1 - ease((t - 5.45) / .6);
     if (t > 2.55 && ta > 0) {
-      const ty = ey + R * 1.18 * es + m * .02, big = Math.max(26, m * .1) * es, sub = Math.max(22, m * .085) * es;
+      const ty = ey + R * 1.12 * es + m * .03, big = Math.max(24, m * .085) * es, sub = Math.max(14, m * .04) * es;
       c.save(); c.globalAlpha = ta;
-      const kor = ['대', '신', '남'], eng = [...'AirLine'];
-      c.font = '800 ' + big + 'px "Noto Sans KR",sans-serif'; const kw = kor.map(ch => c.measureText(ch).width), ktot = kw.reduce((a, b) => a + b, 0) + big * .08 * 2;
-      c.font = 'italic 700 ' + sub + 'px "Barlow Condensed","Noto Sans KR",sans-serif'; const ew = eng.map(ch => c.measureText(ch).width), etot = ew.reduce((a, b) => a + b, 0) + sub * .06 * 6;
-      const gap = big * .3, total = ktot + gap + etot; let x = cx - total / 2;
-      kor.forEach((ch, i) => { const k = spring(t - 2.6 - i * .09, 14, .5), y = ty + (1 - k) * -big * 1.2; c.save(); c.translate(x + kw[i] / 2, y); c.rotate((1 - k) * .4); c.font = '800 ' + big + 'px "Noto Sans KR",sans-serif'; c.textAlign = 'center'; c.fillStyle = rgba(CREAM, clamp((t - 2.6 - i * .09) * 5, 0, 1)); c.fillText(ch, 0, 0); c.restore(); x += kw[i] + big * .08; });
-      x += gap;
-      eng.forEach((ch, i) => { const k = spring(t - 2.95 - i * .06, 15, .5), y = ty + (1 - k) * big * .9; c.save(); c.translate(x + ew[i] / 2, y); c.font = 'italic 700 ' + sub + 'px "Barlow Condensed","Noto Sans KR",sans-serif'; c.textAlign = 'center';
-        const g = c.createLinearGradient(0, -sub, 0, 0); g.addColorStop(0, rgba(AMBER, 1)); g.addColorStop(1, rgba(PEACH, 1)); c.fillStyle = g; c.globalAlpha = ta * clamp((t - 2.95 - i * .06) * 5, 0, 1); c.fillText(ch, 0, 0); c.restore(); x += ew[i] + sub * .06; });
+      const eng = [...'AIR FORCE ONE'], EF = big => '900 ' + big + 'px "Montserrat","Barlow Condensed","Noto Sans KR",sans-serif', sp = big * .06;
+      c.font = EF(big); const ew = eng.map(ch => c.measureText(ch).width), total = ew.reduce((a, b) => a + b, 0) + sp * (eng.length - 1);
+      let x = cx - total / 2;
+      eng.forEach((ch, i) => { const k = spring(t - 2.6 - i * .055, 14, .5), y = ty + (1 - k) * -big * 1.1; c.save(); c.translate(x + ew[i] / 2, y); c.rotate((1 - k) * .3); c.font = EF(big); c.textAlign = 'center';
+        const g = c.createLinearGradient(0, -big, 0, 0); g.addColorStop(0, rgba(CREAM, 1)); g.addColorStop(1, rgba(AMBER, 1)); c.fillStyle = g; c.globalAlpha = ta * clamp((t - 2.6 - i * .055) * 5, 0, 1); c.fillText(ch, 0, 0); c.restore(); x += ew[i] + sp; });
+      // 한글 이름(작게, 자간 넓게)
+      const ka = clamp((t - 3.4) / .5, 0, 1);
+      if (ka > 0) { c.globalAlpha = ta * ka; text('에어포스원', cx, ty + big * .78 + (1 - ka) * 8, '700 ' + sub + 'px "Noto Sans KR",sans-serif', rgba(PEACH, 1), sub * (.9 - ka * .4)); c.globalAlpha = ta; }
       // 날개 밑줄
       const u = outCubic((t - 3.35) / .7);
-      if (u > 0) { const ux = cx - total / 2, uy = ty + big * .32, uw = total * u; c.globalAlpha = ta; const g = c.createLinearGradient(ux, 0, ux + total, 0); g.addColorStop(0, rgba(PEACH, 0)); g.addColorStop(.4, rgba(AMBER, .95)); g.addColorStop(1, rgba(ROSE, .2));
+      if (u > 0) { const ux = cx - total / 2, uy = ty + big * .26, uw = total * u; c.globalAlpha = ta; const g = c.createLinearGradient(ux, 0, ux + total, 0); g.addColorStop(0, rgba(PEACH, 0)); g.addColorStop(.4, rgba(AMBER, .95)); g.addColorStop(1, rgba(ROSE, .2));
         c.fillStyle = g; c.beginPath(); c.moveTo(ux, uy); c.quadraticCurveTo(ux + uw * .55, uy - big * .1, ux + uw, uy - big * .2); c.lineTo(ux + uw, uy - big * .13); c.quadraticCurveTo(ux + uw * .5, uy + big * .02, ux, uy + big * .04); c.closePath(); c.fill(); }
       // 하는 일 세 가지(4.4s~)
       const pills = ['GPS 스피드미터', 'PFD 비행 화면', '마일리지 적립'], pf = Math.max(12, m * .034) * es;
       c.font = '700 ' + pf + 'px "Noto Sans KR",sans-serif';
-      const pw = pills.map(p => c.measureText(p).width + pf * 1.6), ptot = pw.reduce((a, b) => a + b, 0) + pf * .8 * 2; let px = cx - ptot / 2; const py = ty + big * .95;
+      const pw = pills.map(p => c.measureText(p).width + pf * 1.6), ptot = pw.reduce((a, b) => a + b, 0) + pf * .8 * 2; let px = cx - ptot / 2; const py = ty + big * 1.45;
       pills.forEach((p, i) => { const k = spring(t - 4.4 - i * .35, 14, .5); if (k <= 0) { px += pw[i] + pf * .8; return; }
         c.save(); c.translate(px + pw[i] / 2, py); c.scale(k, k); c.globalAlpha = ta * clamp(k, 0, 1);
         const hgt = pf * 2; c.fillStyle = rgba(NAVY, .55); c.strokeStyle = rgba(AMBER, .55); c.lineWidth = 1; c.beginPath(); if (c.roundRect) c.roundRect(-pw[i] / 2, -hgt / 2, pw[i], hgt, hgt / 2); else c.rect(-pw[i] / 2, -hgt / 2, pw[i], hgt); c.fill(); c.stroke();

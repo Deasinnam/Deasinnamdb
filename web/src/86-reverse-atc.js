@@ -163,8 +163,8 @@ window.Cockpit={version:1,refresh:dk.refresh,notify:t=>toast(t),getState:()=>({.
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let atcRun=0,atcDone=false;
 const ATC=[
-  {me:1,t:'관제탑, 대신남 원. 출발 전 점검을 요청합니다.'},
-  {t:'대신남 원, 관제탑. 출발 전 점검을 시작합니다.'},
+  {me:1,t:'관제탑, '+CALLSIGN+'. 출발 전 점검을 요청합니다.'},
+  {t:''+CALLSIGN+', 관제탑. 출발 전 점검을 시작합니다.'},
   {t:'좌석 위치와 안전벨트 착용 확인',c:'CHECK'},
   {t:'브레이크 페달 작동 확인',c:'CHECK'},
   {t:'사이드미러 · 룸미러 각도 확인',c:'CHECK'},
@@ -173,8 +173,8 @@ const ATC=[
   {t:'GPS 위성 수신 확인',c:()=>gpsOn&&gs.fix?['위성 '+(gs.satsUsed||'-'),'ok']:[gpsOn?'수신 대기':'GPS 꺼짐','warn']},
   {t:'오디오 시스템 확인',c:()=>{const v=dk.state.volumeKnown?dk.state.volume:-1;return v===0?['MUTE','warn']:[v<0?'VOL ON':'VOL '+v,'ok']}},
   {t:'휴대폰 거치 · 내비게이션 경로 확인',c:'CHECK'},
-  {me:1,t:'관제탑, 대신남 원. 출발 준비 완료.'},
-  {t:'대신남 원, 활주로 진입 허가. 바람 잔잔, 이륙을 허가합니다.',fin:1}];
+  {me:1,t:'관제탑, '+CALLSIGN+'. 출발 준비 완료.'},
+  {t:''+CALLSIGN+', 활주로 진입 허가. 바람 잔잔, 이륙을 허가합니다.',fin:1}];
 function atcClock(){const d=new Date();$('#atcClock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')}
 setInterval(atcClock,1000);atcClock();
 async function atcStart(){
@@ -190,7 +190,7 @@ async function atcStart(){
     if(it.c){em.textContent='· · ·';em.className='run';await sleep(650);if(!live())return;
       const [txt,cls]=typeof it.c==='function'?it.c():[it.c,'ok'];em.textContent=txt;em.className=cls;sndRoger();k++;$('#atcBar').style.width=(k/nChk*100)+'%'}
     else sndSquelch(0,.1);
-    if(it.fin){await sleep(900);if(!live())return;log.innerHTML='';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true;sndTakeoff();setTimeout(()=>{if(live())atcSpeak('대신남 원, 이륙을 허가합니다. 안전 운행하십시오.')},1300);return}
+    if(it.fin){await sleep(900);if(!live())return;log.innerHTML='';$('#atcClr').hidden=false;$('#atcSt').textContent='· 이륙 허가';atcDone=true;sndTakeoff();setTimeout(()=>{if(live())atcSpeak(''+CALLSIGN+', 이륙을 허가합니다. 안전 운행하십시오.')},1300);return}
     await sleep(it.c?350:550)}
 }
 function atcSkip(){atcRun++;$('#atcLog').innerHTML='';
@@ -205,7 +205,7 @@ function atcSpeedTick(v,sim){if(!isCk()||(!sim&&(!gpsOn||!gs.fix)))return;let hi
   for(const m of SPD_MARKS){if(v>=m&&spdArmed.has(m)){spdArmed.delete(m);hit=m}else if(v<m-5)spdArmed.add(m)}
   if(hit)atcWarn(hit)}
 function atcWarn(m){const w=$('#atcWarn');w.querySelector('b').textContent='⚠ 속도 주의 · '+m+' km/h';
-  w.querySelector('span').textContent='대신남 원, 시속 '+m+'km를 넘었습니다. '+(m>=120?'즉시 감속하십시오.':'속도에 주의하십시오.');
+  w.querySelector('span').textContent=''+CALLSIGN+', 시속 '+m+'km를 넘었습니다. '+(m>=120?'즉시 감속하십시오.':'속도에 주의하십시오.');
   w.hidden=false;w.style.animation='none';void w.offsetWidth;w.style.animation='';
   $('#atcSt').textContent='· 속도 주의';sndSquelch(0,.16);sndRoger(.2);sndRoger(.42);
   clearTimeout(atcWarnT);atcWarnT=setTimeout(()=>{w.hidden=true;$('#atcSt').textContent=atcDone?'· 이륙 허가':'· 점검 중'},6000);
@@ -216,7 +216,7 @@ function slowDown(m){const w=isTab()?(document.querySelector('#tabCk .tk-pfd')||
   o.querySelector('span').textContent='관제탑 · 시속 '+m+'km 초과 · 감속하십시오';
   w.classList.remove('slowing');void w.offsetWidth;w.classList.add('slowing');
   [0,.62,1.24].forEach(t=>{sndRoger(t);sndRoger(t+.16)});
-  atcSpeak('슬로우 다운. 슬로우 다운. 대신남 원, 시속 '+m+'킬로미터를 넘었습니다. 감속하십시오.');
+  atcSpeak('슬로우 다운. 슬로우 다운. '+CALLSIGN+', 시속 '+m+'킬로미터를 넘었습니다. 감속하십시오.');
   clearTimeout(slowDown.t);slowDown.t=setTimeout(()=>w.classList.remove('slowing'),2000)}
 $('#atcRun').onclick=()=>{fx();atcStart()};
 renderSpdMarks();

@@ -50,7 +50,7 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   await p.waitForTimeout(3300);
   const mi = await p.evaluate(() => ({ m: AmpSpecial.miles, chip: document.querySelector('.sp-miles') && document.querySelector('.sp-miles').textContent, src: pfd.data.source, v: pfd.data.speedKmh }));
   assert.ok(mi.m > m0, 'miles accrue while driving with GPS: ' + JSON.stringify([m0, mi]));
-  assert.ok(/대신남 마일리지/.test(mi.chip) && /마일/.test(mi.chip), 'mileage chip shown: ' + mi.chip);
+  assert.ok(/에어포스원 마일리지/.test(mi.chip) && /마일/.test(mi.chip), 'mileage chip shown: ' + mi.chip);
   // 누적 주행거리: 칩을 눌러 계기판 km를 넣으면 차계부(AmpLog)와 같은 값으로 저장·표시
   await p.locator('.sp-odo').click();
   await p.locator('.sp-odo input').fill('128745');
@@ -59,6 +59,9 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   const odo = await p.evaluate(() => ({ log: AmpLog.state.odo, txt: document.querySelector('.sp-odo').textContent }));
   assert.ok(odo.log >= 128745 && odo.log < 128800, 'odometer saved to the car log: ' + JSON.stringify(odo));
   assert.ok(/128,7\d\d/.test(odo.txt) && /km/.test(odo.txt), 'odometer chip shows it: ' + odo.txt);
+  // 1.62.1 이름 통일: 화면 글자에 '대신남'이 남지 않고, 관제탑 호출부호는 '에어포스원'
+  const nm = await p.evaluate(() => ({ any: /대신남/.test(document.body.innerText), call: window.AmpCallsign }));
+  assert.deepEqual(nm, { any: false, call: '에어포스원' }, 'special shows 에어포스원: ' + JSON.stringify(nm));
   await p.close();
 
   // 1.62.1 새벽: 아침 쪽 해(방위 < 180°)면 구름을 적게

@@ -1,4 +1,4 @@
-/* 대신남 원 스페셜 — PFD 풍경을 손으로 칠한 듯한 지브리풍으로
+/* 에어포스원(대신남 원 스페셜판) — PFD 풍경을 손으로 칠한 듯한 지브리풍으로
  *
  * 스페셜판(빌드 special, 미리보기는 주소에 ?special)에서만 켜집니다. pfd/pfd.js(패키지 원본)는 고치지 않고,
  * pfd-flight.js가 열어 둔 자리(AmpFlight.ext)와 장면 객체(scene.drawSky·drawGround)를 덧씌웁니다.
@@ -16,6 +16,19 @@
 (function () {
   'use strict';
   const on = document.documentElement.dataset.build === 'special' || /[?&#]special\b/.test(location.href);
+  // 1.62.1 표시 이름 통일: 스페셜판 화면 글자의 '대신남…'은 모두 '에어포스원'(나중에 생기는 글자·안내도 따라 바꿈)
+  if (on) (function rename() {
+    const RX = [[/대신남\s?원/g, '에어포스원'], [/대신남/g, '에어포스원'], [/DAESINNAM ONE/g, 'AIR FORCE ONE'], [/DAESINNAM/g, 'AIR FORCE ONE']], HIT = /대신남|DAESINNAM/;
+    const fix = v => { for (const [r, t] of RX) v = v.replace(r, t); return v; };
+    const node = n => { if (n.nodeValue && HIT.test(n.nodeValue)) n.nodeValue = fix(n.nodeValue); };
+    const walk = root => {
+      const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while ((n = tw.nextNode())) node(n);
+      if (root.querySelectorAll) root.querySelectorAll('[title],[aria-label],[placeholder]').forEach(e => { for (const a of ['title', 'aria-label', 'placeholder']) { const v = e.getAttribute(a); if (v && HIT.test(v)) e.setAttribute(a, fix(v)); } });
+    };
+    walk(document.body); document.title = fix(document.title);
+    new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') node(m.target); else for (const n of m.addedNodes) { if (n.nodeType === 3) node(n); else if (n.nodeType === 1) walk(n); } } })
+      .observe(document.body, { subtree: true, childList: true, characterData: true });
+  })();
   const A = window.AmpPfd, FL = window.AmpFlight;
   if (!on || !A || !A.panel || !FL || !FL.ext) return;
   document.documentElement.dataset.special = '1';
@@ -632,7 +645,10 @@
     if (night && FL.active()) nightGround(c, w, h, quality);
     // 밤: 패키지의 도심 불빛·가로등 기둥은 비행 높이에서 땅과 따로 떠다녀 보이므로 스페셜에서는 끔(땅 불빛은 nightGround가 그림)
     const city = this.city; if (night && FL.active()) this.city = [];
-    try { oGround.call(this, c, w, h, night, speed, quality); } finally { preDone = false; this.city = city; }
+    // 밤: 패키지가 지평선에 세우는 검은 건물 블록과 창문 점도 빼 둠(멀리 검정 덩어리로 보임) — 그 색으로 칠하는 사각형만 걸러 냄
+    const oRect = c.fillRect, SKY = new Set(['#030a12', '#edc18b', '#a9c4da']);
+    if (night && FL.active()) c.fillRect = function (...a) { if (SKY.has(String(this.fillStyle).toLowerCase())) return; return oRect.apply(this, a); };
+    try { oGround.call(this, c, w, h, night, speed, quality); } finally { preDone = false; this.city = city; c.fillRect = oRect; }
     if (!FL.active()) return;
     const m = mood(night);
     c.save(); c.beginPath(); c.rect(-w * 2, 0, w * 4, h * 3); c.clip();
@@ -673,7 +689,7 @@
     el.innerHTML = '<i aria-hidden="true">✈</i><div><small></small><b></b><u>마일</u></div><em></em>';
     wrapEl.appendChild(el);
     const sm = el.querySelector('small'), num = el.querySelector('b'), pop = el.querySelector('em');
-    const render = () => { sm.textContent = '대신남 마일리지 · ' + tierOf(MI.total); num.textContent = Math.floor(MI.total).toLocaleString('ko-KR'); };
+    const render = () => { sm.textContent = '에어포스원 마일리지 · ' + tierOf(MI.total); num.textContent = Math.floor(MI.total).toLocaleString('ko-KR'); };
     const popUp = t => { pop.textContent = t; pop.classList.remove('go'); void pop.offsetWidth; pop.classList.add('go'); num.classList.add('bump'); setTimeout(() => num.classList.remove('bump'), 260); };
     render();
     let last = performance.now();

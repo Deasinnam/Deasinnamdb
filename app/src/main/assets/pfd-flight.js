@@ -103,13 +103,13 @@
     F.auto = false; F.slowT = 0;
     F.phase = 'approach';
     H.beep('roger'); sfx('approach');
-    H.atcSay('대신남 원, 활주로 ' + pad2(F.rwNum) + ' 착륙을 허가합니다.');
+    H.atcSay((window.AmpCallsign || '대신남 원') + ', 활주로 ' + pad2(F.rwNum) + ' 착륙을 허가합니다.');
     kick(); renderBadge(true); return true;
   }
   function goAround() {
     if (F.phase !== 'approach') return false;
     F.phase = 'climb'; F.auto = false; F.liftAt = performance.now() + F.off; sfx('goAround');
-    H.atcSay('대신남 원, 복행합니다. 다시 상승하세요.');
+    H.atcSay((window.AmpCallsign || '대신남 원') + ', 복행합니다. 다시 상승하세요.');
     kick(); renderBadge(true); return true;
   }
 
@@ -167,7 +167,7 @@
           F.phase = 'rollout'; F.alt = 0; F.tdAt = now; sfx('touchdown', null, () => H.beep('tireDown'));
           if (F.auto) F.vAuto = 140;
           H.beep('roger');
-          H.atcSay('대신남 원, 착륙을 확인했습니다. 목적지에 도착했습니다.');
+          H.atcSay((window.AmpCallsign || '대신남 원') + ', 착륙을 확인했습니다. 목적지에 도착했습니다.');
         }
         break;
       }
