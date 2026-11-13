@@ -980,6 +980,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        if (deck != null) main.postDelayed(() -> { if (deck != null) deck.resumeIfAllowed(); }, 500); // 1.62.6 앞으로 나오면 몬스타덱을 이 앱으로(형제 앱에서 가져옴)
         if (extMode) {
             refreshSessions();
             startViz();

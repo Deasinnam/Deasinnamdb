@@ -77,6 +77,11 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   await p.waitForTimeout(300);
   const sk = await p.evaluate(() => ({ mode: AmpSpecialSky.mode, label: document.getElementById('pfdThemeQuick').textContent, gold: AmpSpecial.mood.gold, vis: AmpSpecial.sun().vis, day: pfd.day }));
   assert.ok(sk.mode === 'gold' && /하늘 노을/.test(sk.label) && sk.gold > .5 && sk.vis && sk.day, 'sky pick 노을: ' + JSON.stringify(sk));
+  // 1.62.6 하늘 창 아래 [계기 설정 · 테마 …]로 기존 계기 설정 창도 그대로 열림
+  await p.locator('#pfdThemeQuick').click();
+  await p.locator('.sp-sky button[data-more]').click(); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => !!document.querySelector('#pfdHost dialog[open]')), true, 'original PFD settings still open from the sky picker');
+  await p.evaluate(() => { const d = document.querySelector('#pfdHost dialog[open]'); if (d) d.close(); });
   await p.evaluate(() => AmpSpecialSky.set('night')); await p.waitForTimeout(200);
   assert.equal(await p.evaluate(() => pfd.day), false, 'sky pick 밤 → night');
   await p.evaluate(() => AmpSpecialSky.set('auto'));

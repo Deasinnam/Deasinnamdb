@@ -56,6 +56,8 @@ function run(name, fn, opts = {}) {
       browser = await chromium.launch({headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? {executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH} : {})});
       const context = await browser.newContext({viewport: {width: 1470, height: 1000}});
       await routeLocal(context, origin);
+      // TEST_BUILD=special 처럼 주면 모든 페이지를 그 빌드로 열어 봄(스페셜판도 기존 기능이 다 되는지)
+      if (process.env.TEST_BUILD) await context.addInitScript(b => { if (!window.__build) window.__build = b; }, process.env.TEST_BUILD);
       const errors = [];
       /** 오류를 모으는 새 페이지 (init: addInitScript 함수, arg: 그 인자) */
       const newPage = async (init, arg, ctx) => {

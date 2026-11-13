@@ -850,21 +850,24 @@
     const st = document.createElement('style');
     st.textContent = '.sp-sky{position:fixed;z-index:2147481000;display:grid;gap:6px;padding:10px;border-radius:14px;background:rgba(14,16,32,.95);border:1px solid rgba(255,207,122,.5);box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:"Noto Sans KR",sans-serif}'
       + '.sp-sky b{font-size:12px;color:#ffcf7a;padding:0 4px 2px}.sp-sky button{min-height:44px;min-width:128px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,214,150,.3);background:rgba(255,255,255,.06);color:#fff3df;font:700 15px "Noto Sans KR",sans-serif;text-align:left;cursor:pointer}'
-      + '.sp-sky button.on{background:linear-gradient(180deg,#ffb878,#b5739f);color:#1b1630;border-color:transparent}';
+      + '.sp-sky button.more{border-style:dashed;color:#ffcf7a;font-size:14px}.sp-sky button.on{background:linear-gradient(180deg,#ffb878,#b5739f);color:#1b1630;border-color:transparent}';
     document.head.appendChild(st);
-    let pop = null;
+    let pop = null, pass = false;
     const close = () => { if (pop) { pop.remove(); pop = null; } };
     function open(btn) {
       close(); pop = document.createElement('div'); pop.className = 'sp-sky'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', '하늘 고르기');
-      pop.innerHTML = '<b>하늘</b>' + SKY.map(([k, n]) => '<button type="button" data-k="' + k + '" class="' + (k === skyMode ? 'on' : '') + '">' + (k === 'auto' ? '자동 (실제 해)' : n) + '</button>').join('');
+      pop.innerHTML = '<b>하늘</b>' + SKY.map(([k, n]) => '<button type="button" data-k="' + k + '" class="' + (k === skyMode ? 'on' : '') + '">' + (k === 'auto' ? '자동 (실제 해)' : n) + '</button>').join('')
+        + '<button type="button" data-more="1" class="more">계기 설정 · 테마 …</button>';
       document.body.appendChild(pop);
       const r = btn.getBoundingClientRect(), ph = pop.offsetHeight;
       pop.style.left = Math.min(innerWidth - pop.offsetWidth - 8, r.right + 8) + 'px'; pop.style.top = clamp(r.top + r.height / 2 - ph / 2, 8, innerHeight - ph - 8) + 'px';
-      pop.addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; e.stopPropagation(); skyApply(b.dataset.k, true); close(); });
+      // 1.62.6 기존 계기 설정(테마·표시 항목 등)도 그대로 — 원래 버튼 동작으로 넘김
+      pop.addEventListener('click', e => { if (e.target.closest('button[data-more]')) { e.stopPropagation(); close(); pass = true; try { btn.click(); } finally { pass = false; } return; } const b = e.target.closest('button[data-k]'); if (!b) return; e.stopPropagation(); skyApply(b.dataset.k, true); close(); });
       setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
     }
     // 테마 버튼(왼쪽·아래 줄) 누르면 설정 창 대신 하늘 고르기
     document.addEventListener('click', e => {
+      if (pass) return;
       const b = e.target.closest && e.target.closest('#pfdThemeQuick, #pfdHost .pfd-tool[data-role="settings"]'); if (!b) return;
       e.stopImmediatePropagation(); e.preventDefault(); open(b);
     }, true);

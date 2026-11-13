@@ -26,6 +26,11 @@ final class UsbDeck {
     // 알려진 장치: 몬스타덱 TS115 v3(0x0400:0x1000), MiraBox/HotSpot 계열 몇 가지
     private static final int[][] KNOWN = { {0x0400, 0x1000}, {0x5500, 0x1001}, {0x5500, 0x1002}, {0x6603, 0x1005}, {0x6603, 0x1006}, {0x6602, 0x1001} };
     private static final String ACTION = "com.daesinnam.amp.USB_DECK_PERMISSION";
+    // 1.62.6 대신남 앱이 여러 개 깔려 있으면(대신남 원·에어포스원 등) 먼저 연 앱이 덱을 붙잡고 있어 다른 앱은 키를 못 받았음.
+    // 덱을 쓰려는 앱이 형제 앱에 "놓아 줘"를 보내고, 받은 앱은 연결을 닫음(앞에 있는 앱이 덱을 씀)
+    static final String RELEASE = "com.daesinnam.action.DECK_RELEASE";
+    private static final String[] SIBLINGS = { "com.daesinnam.one.v1", "com.daesinnam.one.v1.fold8", "com.daesinnam.oneapp", "com.daesinnam.ampapp", "com.daesinnam.specialapp", "com.daesinnam.dist.test", "com.daesinnam.one.androidtest" };
+    private final android.os.Handler ui = new android.os.Handler(android.os.Looper.getMainLooper());
 
     private final Context ctx;
     private final UsbManager um;
@@ -63,7 +68,7 @@ final class UsbDeck {
             String a = i.getAction();
             UsbDevice d = i.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             if (ACTION.equals(a)) {
-                if (i.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) && d != null) open(d);
+                if (i.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) && d != null) { askSiblings(); open(d, 0); }
                 else { lastErr = "USB 사용을 허용하지 않았어요"; state(); }
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(a)) {
                 if (d != null && dev != null && d.getDeviceId() == dev.getDeviceId()) { close(); lastErr = ""; state(); }
@@ -73,8 +78,34 @@ final class UsbDeck {
         }
     };
 
+    private final BroadcastReceiver releaseRx = new BroadcastReceiver() {
+        @Override public void onReceive(Context c, Intent i) {
+            if (ctx.getPackageName().equals(i.getStringExtra("from"))) return;
+            if (conn != null) { close(); lastErr = "다른 대신남 앱이 몬스타덱을 쓰는 중이에요(이 앱으로 돌아오면 다시 연결)"; state(); }
+        }
+    };
+
+    private void askSiblings() {
+        String me = ctx.getPackageName();
+        for (String p : SIBLINGS) {
+            if (p.equals(me)) continue;
+            try { ctx.sendBroadcast(new Intent(RELEASE).setPackage(p).putExtra("from", me)); } catch (Exception ignored) {}
+        }
+    }
+
+    boolean isOpen() { return conn != null; }
+
+    /** 앱이 앞으로 나올 때: 덱이 꽂혀 있고 이미 허용된 경우에만 다시 연결(허용 창을 또 띄우지 않음) */
+    void resumeIfAllowed() {
+        if (um == null || conn != null) return;
+        UsbDevice d = find();
+        if (d != null && um.hasPermission(d)) connect();
+    }
+
     void start() {
         if (registered || um == null) return;
+        if (Build.VERSION.SDK_INT >= 33) ctx.registerReceiver(releaseRx, new IntentFilter(RELEASE), Context.RECEIVER_EXPORTED);
+        else ctx.registerReceiver(releaseRx, new IntentFilter(RELEASE));
         IntentFilter f = new IntentFilter(ACTION);
         f.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         f.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
@@ -85,7 +116,7 @@ final class UsbDeck {
 
     void stop() {
         close();
-        if (registered) { try { ctx.unregisterReceiver(rx); } catch (Exception ignored) {} registered = false; }
+        if (registered) { try { ctx.unregisterReceiver(rx); } catch (Exception ignored) {} try { ctx.unregisterReceiver(releaseRx); } catch (Exception ignored) {} registered = false; }
     }
 
     /** 연결(필요하면 USB 사용 허용 창을 띄움). 장치가 없으면 false */
@@ -94,7 +125,8 @@ final class UsbDeck {
         UsbDevice d = find();
         if (d == null) { lastErr = "몬스타덱이 연결되어 있지 않아요"; state(); return false; }
         if (conn != null && dev != null && dev.getDeviceId() == d.getDeviceId()) { state(); return true; }
-        if (um.hasPermission(d)) { open(d); return true; }
+        askSiblings();
+        if (um.hasPermission(d)) { open(d, 0); return true; }
         int fl = Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0;
         Intent it = new Intent(ACTION).setPackage(ctx.getPackageName());
         um.requestPermission(d, PendingIntent.getBroadcast(ctx, 0, it, fl | PendingIntent.FLAG_UPDATE_CURRENT));
@@ -102,7 +134,7 @@ final class UsbDeck {
         return true;
     }
 
-    private synchronized void open(UsbDevice d) {
+    private synchronized void open(final UsbDevice d, final int tries) {
         close();
         try {
             UsbInterface pick = null;
@@ -119,7 +151,12 @@ final class UsbDeck {
             }
             UsbDeviceConnection c = um.openDevice(d);
             if (c == null || ei == null) { lastErr = "장치를 열지 못했어요"; if (c != null) c.close(); state(); return; }
-            if (!c.claimInterface(pick, true)) { lastErr = "다른 앱이 장치를 쓰고 있어요"; c.close(); state(); return; }
+            if (!c.claimInterface(pick, true)) {
+                c.close();
+                // 형제 앱이 놓아 주는 동안 잠깐 기다렸다 다시(최대 약 4초)
+                if (tries < 8) { lastErr = "몬스타덱 연결 중…"; state(); ui.postDelayed(() -> { if (conn == null) open(d, tries + 1); }, 500); return; }
+                lastErr = "다른 앱이 장치를 쓰고 있어요(다른 대신남 앱을 닫고 다시 연결)"; state(); return;
+            }
             dev = d; conn = c; iface = pick; in = ei; out = eo; lastErr = "";
             run = true;
             // TS115(펌웨어 V2.293S)는 꽂자마자 키를 누를 때마다 "ACK··OK··<키>"를 보냄. 아무 명령도 보내지 않고 읽기만 함.
