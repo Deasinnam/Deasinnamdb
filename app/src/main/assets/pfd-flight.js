@@ -72,6 +72,8 @@
   }
   try { shadeClouds(sc.sprites); } catch (e) {}
 
+  // 스페셜판(pfd-special.js)이 먼 산·강·땅 질감을 바꿔 그릴 수 있게 열어 둔 자리(없으면 기존 그대로)
+  const X = {};
   const F = {
     phase: 'hold', alt: 0, pitch: 0, bank: 0, rwS: -120, rwLen: 3200, rwNum: 33, rolled: 0,
     rem: 0, D0: 0, K: 10, auto: false, autoRate: 0, vAuto: 0, slowT: 0, stopT: 0, tdAt: 0, liftAt: 0,
@@ -227,7 +229,8 @@
       if (L.length < 2) return; c.globalAlpha = a; c.fillStyle = fill; c.beginPath(); c.moveTo(L[0][0], L[0][1]);
       for (const p of L) c.lineTo(p[0], p[1]); for (let i = R.length - 1; i >= 0; i--) c.lineTo(R[i][0], R[i][1]); c.closePath(); c.fill();
     };
-    if (!night) {
+    if (X.river && X.river(c, w, h, night, quality, { f, Hc, zn, py, px, wr, zEnd, k, riverX })) { /* 스페셜판이 그림 */ }
+    else if (!night) {
       strip(110, '#b7ad86', .55 * k);
       const g = c.createLinearGradient(0, 0, 0, h * .9); g.addColorStop(0, '#b9d0dc'); g.addColorStop(.12, '#7fa6bd'); g.addColorStop(1, '#3f6f8f'); strip(78, g, .95 * k);
       strip(3.5, '#e4f0f6', .22 * k);
@@ -301,7 +304,7 @@
     const rwE = F.rwS + F.rwLen;
     const showRw = rwE > zn && F.rwS < zf;
     if (gA < .01 && !showRw && night) return;
-    drawHorizon(c, w, h, night, quality, f);
+    if (!(X.horizon && X.horizon(c, w, h, night, quality, f))) drawHorizon(c, w, h, night, quality, f);
     c.save();
     c.beginPath(); c.rect(-w * 2, 0, w * 4, h * 3); c.clip();
 
@@ -325,6 +328,7 @@
       for (let j = Math.floor((zn + F.wz) / 2240); j < Math.floor((zn + F.wz) / 2240) + 6; j++) { const z = j * 2240 - F.wz + 1100; quad(-3800, 3800, z - 5, z + 5, '#8b8b84', fA * .8); }
     }
     drawCountry(c, w, h, night, quality, f, Hc, zn, py, px, quad);
+    if (X.afterCountry) X.afterCountry(c, w, h, night, quality, { f, Hc, zn, py, px, quad, k: clamp((F.alt - 40) / 110, 0, 1) });
     if (gA > .01) {
       let g = c.createLinearGradient(0, 0, 0, h * 2.6);
       if (night) {
@@ -762,6 +766,7 @@
   window.AmpFlight = {
     get state() { return { vs: F.vs, still: F.stillT, snow: F.snow, wx: wxKind(), phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
     step(sec, v) { const n = Math.max(1, Math.round(sec / .05)); let t = performance.now() + F.off; F.lastT = t; for (let i = 0; i < n; i++) { t += 50; update(t, v); } F.off += n * 50; renderBadge(true); return this.state; },
+    ext: X, geo: { F, riverX, RK, srand }, active,
     land, goAround, sim, redraw() { try { P.draw(); } catch (e) {} }
   };
   renderBadge(true);

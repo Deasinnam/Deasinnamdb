@@ -99,10 +99,11 @@ jobs:
           cp app/build/outputs/apk/commFull/release/app-comm-full-release.apk DaesinnamDist-Test.apk
           cp app/build/outputs/apk/ampFull/release/app-amp-full-release.apk DaesinnamAMP.apk
           cp app/build/outputs/apk/oneFull/release/app-one-full-release.apk DaesinnamOne.apk
+          cp app/build/outputs/apk/specialFull/release/app-special-full-release.apk DaesinnamSpecial.apk
           cp app/build/outputs/apk/playLite/release/app-play-lite-release.apk DaesinnamOne-AndroidTest.apk
           cp app/build/outputs/bundle/playLiteRelease/app-play-lite-release.aab DaesinnamOne-AndroidTest.aab
           gh release delete one-v1 --yes --cleanup-tag || true
-          gh release create one-v1 DaesinnamOne-V1.apk DaesinnamOne-V1-full.apk DaesinnamOne-V1_Fold8.apk DaesinnamOne-V1_Fold8-full.apk DaesinnamDist-Test.apk DaesinnamAMP.apk DaesinnamOne.apk DaesinnamOne-AndroidTest.apk DaesinnamOne-AndroidTest.aab \
+          gh release create one-v1 DaesinnamOne-V1.apk DaesinnamOne-V1-full.apk DaesinnamOne-V1_Fold8.apk DaesinnamOne-V1_Fold8-full.apk DaesinnamDist-Test.apk DaesinnamAMP.apk DaesinnamOne.apk DaesinnamSpecial.apk DaesinnamOne-AndroidTest.apk DaesinnamOne-AndroidTest.aab \
             --target "$GITHUB_SHA" \
             --prerelease \
             --title "대신남 원 Ver1 (독립 설치판)" \

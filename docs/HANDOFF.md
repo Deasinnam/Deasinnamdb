@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-13 · v1.61 (versionCode 89)**
+마지막 갱신: **2026-11-13 · v1.62 (versionCode 90)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.61** (versionCode 89, versionName `1.61-one`) |
+| 최신 버전 | **1.62** (versionCode 90, versionName `1.62-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -21,6 +21,7 @@
 - **대신남원** = 개발 모델(기존 통합 앱, `com.daesinnam.one.v1`). 폴드7은 `DaesinnamOne-V1-full.apk`.
 - **대신남2** = 시험판(배포용 테스트 `comm`, 안드로이드 등록 테스트 `play`).
 - **대신남 AMP** / **대신남 원** = 1.55에서 나눈 독립 앱(따로 설치).
+- **대신남 원 스페셜** = 1.62 새 앱(따로 설치, flavor `special`). 대신남 원과 같은 구성 + 지브리풍 PFD 풍경. 기존 앱 업데이트가 아니라 신규.
 
 ### 내려받기 직접 링크 (채팅 파일 받기가 자주 실패하므로 항상 함께 안내)
 `https://github.com/Deasinnam/Deasinnamdb/releases/download/one-v1/<파일>`
@@ -31,6 +32,7 @@
 | `DaesinnamOne-V1.apk` | 대신남원 lite | com.daesinnam.one.v1 | 〃 |
 | `DaesinnamFold8*.apk` | 대신남원 폴드8 | com.daesinnam.one.v1.fold8 | 〃 |
 | `DaesinnamOne.apk` | 대신남 원 | com.daesinnam.oneapp | 자동차 모드·에어라인 |
+| `DaesinnamSpecial.apk` | 대신남 원 스페셜 | com.daesinnam.specialapp | 자동차 모드·에어라인 + 지브리풍 PFD |
 | `DaesinnamAMP.apk` | 대신남 AMP | com.daesinnam.ampapp | 오디오 스킨 7종(블루~우드 하이파이) |
 | `DaesinnamDist-Test.apk` | 대신남 배포용 테스트 | com.daesinnam.dist.test | 전부(PUB 제한) |
 | `DaesinnamOne-AndroidTest.apk/.aab` | 대신남 원 안드로이드 테스트용 | com.daesinnam.one.androidtest | 전부(PLAY 제한) |
@@ -74,18 +76,21 @@
   - 주요 파일: `00-core.js`(빌드 플래그·스킨·store), `02-build-notice.js`, `51-pfd-minimap.js`(원형 지도), `63-carlog.js`(차계부), `64-lyrics.js`(가사), `80-clock-windows.js`, `92-cockpit2-rail.js`(아래 바로가기·ckFocus), `97-brightness.js`(밝기·야간 20%), `98-cockpit-special.js`(관제탑 표시 atcMini), `99-power-boot.js`.
 - **빌드 플래그(JS)** `00-core.js`:
   - `BUILD` = 네이티브 `NB.buildKind()`(= `BuildConfig.FLAVOR_device`) 또는 테스트용 `window.__build`.
-  - `PUB`(comm·play), `PLAY`(play), `NATIVE_KIND`, **`APP`** = `amp` / `one`(one·std·fold8 네이티브) / `all`(웹 미리보기·테스트·시험판).
+  - `PUB`(comm·play), `PLAY`(play), `NATIVE_KIND`, **`APP`** = `amp` / `one`(one·special·std·fold8 네이티브) / `all`(웹 미리보기·테스트·시험판).
   - `document.documentElement.dataset.app` → CSS `:root[data-app="amp"]`로 AMP에서 차량 기능 숨김.
   - 스킨 제한: `AUDIO_SKINS`(blue·amber·base·neon·ice·red·wood) / `ONE_SKINS`(carnival·carnival7) / `RETIRED`(carnival5·4·6·tablet·tablet2, 테스트는 `window.__allSkins=true`).
-- **flavor**: device(std·fold8·comm·play·amp·one) × edition(lite·full). 앱 이름은 `app/src/<flavor>/res/values/strings.xml`, AMP 아이콘은 `app/src/amp/res/`.
+- **flavor**: device(std·fold8·comm·play·amp·one·special) × edition(lite·full). 앱 이름은 `app/src/<flavor>/res/values/strings.xml`, AMP 아이콘은 `app/src/amp/res/`.
 - **네이티브**(`app/src/main/java/com/daesinnam/amp/`): MainActivity(브리지 `AndroidBridge`, 뒤로가기 `window.__back`), AmpPlayerService(Media3), ExternalEq(외부 앱 EQ — 꺼짐/평탄이면 효과 없음, 세션 0은 선택), GpsTracker 등.
+- **스페셜 풍경**(`app/src/main/assets/pfd-special.js`, 1.62): `data-build=special`(미리보기는 주소 `?special`)일 때만 켜짐. `pfd-flight.js`가 연 자리 `AmpFlight.ext`(`horizon`·`river`·`afterCountry`)와 `scene.drawSky/drawGround`를 덧씌움. 해 위치는 `solar()`(날짜·시각·`dna_wxLoc`, 없으면 서울) → `mood()`가 낮/노을/푸른 시간/밤 색을 섞음(키가 바뀔 때만 하늘·구름 색 다시 입힘, 구름은 해 좌우 두 벌 캐시). 자동 낮·밤은 `window.AmpAutoNight`(해 높이 < −5°)를 `pfd-amp.js` `applyTheme`이 씀. 밤 땅은 `nightGround()`가 장면 앞단에 먼저 깜. 시험·미리보기 시각: `window.__spTime`(ms)·`__spHour`. 디버그로 층 끄기: `window.__spOff={glow,cirrus,bank}`.
 - **PFD**: `pfd.js`(DaesinnamPFD, 수정 금지) 위에 계기 스킨(에어라인/에어포스 `data-pfdlook`), 비행 단계·효과음, 관제탑(TWR) 문구, 원형 지도, 총 주행거리.
 - **원형 지도**(`PfdMap`): Leaflet + OSM 타일. 모양 `gta` / `normal`(PFD 주간·야간 따라감) / `day`(항상 주간). 야간은 SVG 필터 `#pmNightFx`(바탕 반전 + 물색 골라 파랑 강줄기 + 강가 주황 불빛). Leaflet은 `app/src/main/assets/leaflet/`(gitignore, CI가 받아 옴).
-- **테스트**: `tests/NN-*.test.cjs` 31개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
+- **테스트**: `tests/NN-*.test.cjs` 32개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
 
 ---
 
 ## 5. 현재 동작 요약 (최근 주요 기능)
+
+- **대신남 원 스페셜(1.62)**: PFD 하늘(칠한 색 띠·붓결 새털구름·해와 햇무리), 뭉게구름(공을 부드럽게 이은 모양, 해 쪽 밝음·보랏빛 그늘·역광 테두리·대기 원근), 지평선 적운 무리, 겹겹 먼 산(해 쪽은 수평선이 트임), 들판 붓 터치 질감, 강(하늘 반사·잔물결), 먼 바다(굽은 해안선·모래톱·윤슬 길). 해는 실제 방위·높이(1° = 화면 높이/58)라 서쪽으로 달릴 때 노을 해가 보이고 수평선 아래로 짐. 밤: 남색이지만 너무 어둡지 않게, 달빛 들판, 불규칙한 마을(크기·밀도 제각각, 구불구불한 거리)·외딴집·켜진 도로 구간(꺼진 구간 있음)·오가는 차 불빛, 색은 나트륨 주황·따뜻한 흰빛·LED 흰빛 섞임, 먼 불빛은 살짝 일렁임. 밤 화면 밝기는 스페셜만 35%(다른 앱 20%). 아이콘 바탕은 노을색.
 
 - **앱 나누기(1.55~1.56)**: AMP = 오디오 스킨만, 상단 날짜·날씨·밝기 계기 없음, 도구 버튼 아이콘 없이 한 줄. 대신남원·대신남 원 = 자동차 모드·에어라인만.
 - **켤 때(대신남 원·대신남원)**: 스피드미터 화면(ckFocus `gps`)이 화면 한가득(`--fxH: calc(100dvh - 6px)`), 스피드미터 창이 맨 위로 스크롤(폴드7 기준 사용자가 고른 비율).
@@ -105,6 +110,8 @@
 
 ## 6. 남은 일 · 사용자 답을 기다리는 것
 
+- 스페셜(1.62): 실제 폰(폴드7)에서 프레임·발열 확인 필요(PC 크롬에서는 한 번 그리기 약 2ms, 구름 색 다시 입히기는 시각 단계가 바뀔 때 0.1초 안팎). 색·밝기 취향은 사용자 확인.
+
 - 과속 카메라 1.60~1.61: 길 이름 맞추기·앞길 예측은 실제 도로 주행으로 확인 필요(OSM 이름과 공공데이터 도로노선명이 다르게 적힌 곳, 복잡한 교차로·고가도로에서 앞길이 엉뚱하게 이어지는지).
 - 대신남2 라디오: 해외 공개 스트림은 재생 + 국내 방송사는 공식 앱 연결로 할지 — **답 없음**.
 - 시험판 이름을 "대신남2"로 바꿀지 — **답 없음**.
@@ -114,6 +121,8 @@
 ---
 
 ## 7. 작업 기록 (최근이 위)
+
+- 2026-11-13 · 1.62 — 새 앱 "대신남 원 스페셜"(flavor special, DaesinnamSpecial.apk): 지브리풍 PFD 풍경, 실제 해 위치로 하루 흐름, 밤 땅 불빛·밝기 35%. 테스트 32 추가. `pfd-flight.js`에 확장 자리(ext·geo), `pfd-amp.js` 자동 낮·밤 훅.
 
 - 2026-11-13 · 1.61 — 원형 지도 기반 앞길 예측으로 과속 카메라 판단·거리, 원형 지도에 앞길·카메라 표시. 테스트 31에 앞길 시험 추가, 29 갱신.
 - 2026-11-13 · 1.60 — 과속 카메라 자료 재생성(보호구역·도로 이름) + 지금 길 이름과 맞추기. 테스트 31에 길 이름 시험 추가, 18 갱신. 16번은 계기 테마 주간 고정(CI가 새벽 시각이면 야간 20%가 끼어듦 — 밝기 시험은 모두 이렇게).

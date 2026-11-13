@@ -9,8 +9,8 @@ android {
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
         targetSdk 36  // 1.52 구글 플레이: 2026-08-31부터 새 앱은 API 36 이상
-        versionCode 89
-        versionName "1.61-one"
+        versionCode 90
+        versionName "1.62-one"
     }
 
     buildFeatures { buildConfig true }
@@ -45,6 +45,8 @@ android {
         // amp: 대신남 AMP(음악 전용, 오디오 스킨 7개) / one: 대신남 원(차량용, 자동차 모드·에어라인)
         amp { dimension 'device'; applicationId 'com.daesinnam.ampapp'; versionNameSuffix '-amp' }
         one { dimension 'device'; applicationId 'com.daesinnam.oneapp'; versionNameSuffix '-one' }
+        // 스페셜: 대신남 원과 같은 차량용 구성 + 지브리풍 고품질 PFD 풍경(하늘·구름·땅·강·바다). 기존 앱과 따로 설치되는 새 앱
+        special { dimension 'device'; applicationId 'com.daesinnam.specialapp'; versionNameSuffix '-special' }
         lite { dimension 'edition' }
         full { dimension 'edition'; versionNameSuffix '-full' }
     }

@@ -10,7 +10,8 @@ const NB=window.__AmpNB||window.AndroidBridge||null;
 const BUILD=window.__build||(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):'std'}catch(e){return 'std'}})(),PUB=BUILD==='comm'||BUILD==='play',PLAY=BUILD==='play';
 /* 1.56: 앱 나누기 — amp(대신남 AMP: 오디오 스킨만) / one·std·fold8(대신남 원·대신남원: 자동차 모드·에어라인만). 웹 미리보기·시험판(comm·play)은 전부 */
 const NATIVE_KIND=(()=>{try{return NB&&NB.buildKind?String(NB.buildKind()):''}catch(e){return ''}})();
-const APP=BUILD==='amp'?'amp':(BUILD==='one'||((BUILD==='std'||BUILD==='fold8')&&(NATIVE_KIND==='std'||NATIVE_KIND==='fold8')))?'one':'all';
+/* 스페셜(special): 대신남 원과 같은 차량용 구성 + 지브리풍 고품질 PFD 풍경(pfd-special.js). 따로 설치되는 새 앱 */
+const APP=BUILD==='amp'?'amp':(BUILD==='one'||BUILD==='special'||((BUILD==='std'||BUILD==='fold8')&&(NATIVE_KIND==='std'||NATIVE_KIND==='fold8')))?'one':'all';
 document.documentElement.dataset.build=BUILD;document.documentElement.dataset.app=APP;
 /* 갤럭시 Z 폴드8 전용판(보라색은 앱 아이콘·실행 화면만, 앱 안 색은 일반판과 같음): 앱이 알려 주거나, 미리보기에서는 주소에 ?fold8 */
 const IS_FOLD=(()=>{try{if(NB&&NB.buildDevice&&NB.buildDevice()==='fold8')return true}catch(e){}return /[?&#]fold8\b/.test(location.href)})();
@@ -3272,10 +3273,10 @@ new MutationObserver(()=>setTimeout(()=>{if(!isTab())briNative(scrBri)},60)).obs
 briSet(scrBri,false);window.AmpBri={set:briSet,get:()=>scrBri};
 /* 1.57: 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 20%. 다시 주간이 되면 야간 전 밝기로 되돌림
  *  야간 중에 손으로 바꾼 밝기는 그대로 둠(바뀌는 순간에만 맞춤) */
-const BriNight=(()=>{let last=null;
+const BriNight=(()=>{let last=null;const NBRI=BUILD==='special'?35:20; /* 스페셜판은 밤 장면을 은은히 밝게 그리므로 35% */
   const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&isCar()?!p.day:null}catch(e){return null}};
   function check(){const n=night();if(n===null||n===last)return;const first=last===null;last=n;
-    if(n){if(scrBri!==20)store.set('briDayPrev',scrBri);briSet(20);if(!first)toast('야간 — 화면 밝기 20%')}
+    if(n){if(scrBri!==NBRI)store.set('briDayPrev',scrBri);briSet(NBRI);if(!first)toast('야간 — 화면 밝기 '+NBRI+'%')}
     else if(!first||store.get('briDayPrev',null)!==null){const prev=store.get('briDayPrev',null);if(prev!==null){store.set('briDayPrev',null);briSet(+prev);toast('주간 — 화면 밝기 '+(+prev<0?'자동':prev+'%'))}}}
   setInterval(()=>{if(!document.hidden)check()},1000);
   return {check,get night(){return night()}}})();

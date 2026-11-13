@@ -93,7 +93,9 @@
   function applyTheme() {
     if (!P) return;
     const hr = new Date().getHours();
-    const t = theme === 'auto' ? (hr >= 19 || hr < 6 ? 'night' : 'day') : theme;
+    // 스페셜판은 실제 해 높이로 낮·밤을 정함(window.AmpAutoNight), 그 밖은 오후 7시~오전 6시
+    const autoNight = typeof window.AmpAutoNight === 'function' ? !!window.AmpAutoNight() : (hr >= 19 || hr < 6);
+    const t = theme === 'auto' ? (autoNight ? 'night' : 'day') : theme;
     if (P.settings.theme !== t) P.setSettings({ theme: t }); else P.renderText();
   }
   try {
@@ -235,6 +237,7 @@
   }
   applyTheme();
   setInterval(applyTheme, 60000);
+  window.AmpApplyTheme = applyTheme;
   // 절전 모드: 비행 계기를 30fps로(사용자가 고른 품질은 그대로 저장)
   setInterval(() => {
     if (!P || !P.settings) return;
