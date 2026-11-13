@@ -89,9 +89,11 @@
     M = o; mKey = key; skyCv = null; tintKey = ''; return o;
   }
 
+  // 진행 방향(미리보기에서는 window.__spHdg로 고정 가능)
+  const heading = () => fin(window.__spHdg) ? window.__spHdg : fin(P.display && P.display.headingDeg) ? P.display.headingDeg : (fin(sc.heading) ? sc.heading : 0);
   // 해 화면 위치: 방위는 지금 진행 방향 기준, 높이는 PFD 눈금(1° = 화면 높이/58) 그대로 → 해가 실제로 지평선 아래로 내려감
   function sunScreen(w, h, m) {
-    const s = clock(), hd = fin(P.display && P.display.headingDeg) ? P.display.headingDeg : (fin(sc.heading) ? sc.heading : 0);
+    const s = clock(), hd = heading();
     const dx = angleDelta(hd, s.az) / FOV * w, y = -s.el * h / 58;
     return { x: dx, y, vis: !m.night && s.el > -1.2 && y > -h * 1.6 && Math.abs(dx) < w * .9, side: dx < 0 ? -1 : 1 };
   }
@@ -213,7 +215,7 @@
   sc.drawSky = function (c, w, h, night, quality) {
     if (!FL.active()) return oSky.call(this, c, w, h, night, quality);
     const m = mood(night), hq = quality !== 'balanced', sun = sunScreen(w, h, m);
-    const hd = fin(P.display && P.display.headingDeg) ? P.display.headingDeg : 0;
+    const hd = heading();
     c.save(); c.beginPath(); c.rect(-w * 2, -h * 3, w * 4, h * 3); c.clip();
     // 1) 바탕 색 띠: 지평선~1.9h는 칠한 그림, 그 위는 꼭대기 색
     c.fillStyle = css(m.top); c.fillRect(-w * 2, -h * 3, w * 4, h * 1.2);
@@ -279,7 +281,7 @@
     for (let i = 0; i <= 512; i++) { const t = i / 512 * Math.PI * 2; a.push(clamp(.5 + .5 * (.55 * Math.sin(t * n + p1) + .3 * Math.sin(t * n * 2.3 + p2) + .15 * Math.sin(t * n * 5.1 + p3)) + (fbm(i / 512 * 40, k * 7.3 + .5, 40, 3) - .5) * .12, 0, 1)); } return a; });
   X.horizon = function (c, w, h, night, quality, f) {
     if (night && preDone) return true;                                    // 밤에는 앞단(nightGround)에서 이미 그림
-    const m = mood(night), hd = fin(P.display && P.display.headingDeg) ? P.display.headingDeg : 0, lift = clamp(1 - (F.alt || 0) / 1500, .3, 1), sun = sunScreen(w, h, m);
+    const m = mood(night), hd = heading(), lift = clamp(1 - (F.alt || 0) / 1500, .3, 1), sun = sunScreen(w, h, m);
     const layers = [[.075, .5, m.ridge[0], 1], [.052, .75, m.ridge[1], 1], [.032, 1, m.ridge[2], 1]];
     c.save();
     layers.forEach(([hk, par, col, a], k) => {
@@ -330,7 +332,7 @@
   // 먼 바다: 지평선 앞에 굽은 해안선(방향을 틀면 해안 모양이 따라 바뀜). 노을이면 해 아래로 윤슬 길
   const coastZ = ang => 3400 + 900 * Math.sin(ang * 2.1 + 1) + 520 * Math.sin(ang * 5.3) + 240 * Math.sin(ang * 11 + 2);
   function drawSea(c, w, h, night, quality, g, m) {
-    const hd = (fin(P.display && P.display.headingDeg) ? P.display.headingDeg : 0) * Math.PI / 180, pts = [];
+    const hd = heading() * Math.PI / 180, pts = [];
     for (let i = 0; i <= 96; i++) { const x = -w * 2 + i / 96 * w * 4, y = g.py(coastZ(Math.atan(x / g.f) + hd)); pts.push([x, y]); }
     const sea = new Path2D(); sea.moveTo(-w * 2, -1); sea.lineTo(w * 2, -1); for (let i = pts.length - 1; i >= 0; i--) sea.lineTo(pts[i][0], pts[i][1]); sea.closePath();
     const ymax = Math.max(4, ...pts.map(p => p[1]));
@@ -549,5 +551,5 @@
     c.restore();
   };
 
-  window.AmpSpecial = { get mood() { return M; }, clock, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
+  window.AmpSpecial = { get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
 })();

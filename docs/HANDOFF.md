@@ -15,6 +15,7 @@
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
+| 스페셜 미리보기 | 아티팩트 "대신남 원 스페셜 — PFD 풍경 미리보기" — https://claude.ai/artifact/N94tEzYFMX5GN1wTWVaVeV (PFD만 화면 가득 + 시각 버튼. 파일: index.html(AmpHost 흉내) + pfd/·pfd-amp·pfd-flight·pfd-special, 다시 올릴 때 앱 assets에서 복사) |
 | 개인정보 처리방침 | https://github.com/Deasinnam/Deasinnamdb/blob/daesinnam-one-v1/docs/privacy.md |
 
 ### 앱 이름 정리 (사용자가 정한 호칭)
@@ -81,7 +82,7 @@
   - 스킨 제한: `AUDIO_SKINS`(blue·amber·base·neon·ice·red·wood) / `ONE_SKINS`(carnival·carnival7) / `RETIRED`(carnival5·4·6·tablet·tablet2, 테스트는 `window.__allSkins=true`).
 - **flavor**: device(std·fold8·comm·play·amp·one·special) × edition(lite·full). 앱 이름은 `app/src/<flavor>/res/values/strings.xml`, AMP 아이콘은 `app/src/amp/res/`.
 - **네이티브**(`app/src/main/java/com/daesinnam/amp/`): MainActivity(브리지 `AndroidBridge`, 뒤로가기 `window.__back`), AmpPlayerService(Media3), ExternalEq(외부 앱 EQ — 꺼짐/평탄이면 효과 없음, 세션 0은 선택), GpsTracker 등.
-- **스페셜 풍경**(`app/src/main/assets/pfd-special.js`, 1.62): `data-build=special`(미리보기는 주소 `?special`)일 때만 켜짐. `pfd-flight.js`가 연 자리 `AmpFlight.ext`(`horizon`·`river`·`afterCountry`)와 `scene.drawSky/drawGround`를 덧씌움. 해 위치는 `solar()`(날짜·시각·`dna_wxLoc`, 없으면 서울) → `mood()`가 낮/노을/푸른 시간/밤 색을 섞음(키가 바뀔 때만 하늘·구름 색 다시 입힘, 구름은 해 좌우 두 벌 캐시). 자동 낮·밤은 `window.AmpAutoNight`(해 높이 < −5°)를 `pfd-amp.js` `applyTheme`이 씀. 밤 땅은 `nightGround()`가 장면 앞단에 먼저 깜. 시험·미리보기 시각: `window.__spTime`(ms)·`__spHour`. 디버그로 층 끄기: `window.__spOff={glow,cirrus,bank}`.
+- **스페셜 풍경**(`app/src/main/assets/pfd-special.js`, 1.62): `data-build=special`(미리보기는 주소 `?special`)일 때만 켜짐. `pfd-flight.js`가 연 자리 `AmpFlight.ext`(`horizon`·`river`·`afterCountry`)와 `scene.drawSky/drawGround`를 덧씌움. 해 위치는 `solar()`(날짜·시각·`dna_wxLoc`, 없으면 서울) → `mood()`가 낮/노을/푸른 시간/밤 색을 섞음(키가 바뀔 때만 하늘·구름 색 다시 입힘, 구름은 해 좌우 두 벌 캐시). 자동 낮·밤은 `window.AmpAutoNight`(해 높이 < −5°)를 `pfd-amp.js` `applyTheme`이 씀. 밤 땅은 `nightGround()`가 장면 앞단에 먼저 깜. 시험·미리보기 시각: `window.__spTime`(ms)·`__spHour`, 방향 고정 `window.__spHdg`, 해 위치 계산 `AmpSpecial.solarAt(ms)`. 디버그로 층 끄기: `window.__spOff={glow,cirrus,bank}`.
 - **PFD**: `pfd.js`(DaesinnamPFD, 수정 금지) 위에 계기 스킨(에어라인/에어포스 `data-pfdlook`), 비행 단계·효과음, 관제탑(TWR) 문구, 원형 지도, 총 주행거리.
 - **원형 지도**(`PfdMap`): Leaflet + OSM 타일. 모양 `gta` / `normal`(PFD 주간·야간 따라감) / `day`(항상 주간). 야간은 SVG 필터 `#pmNightFx`(바탕 반전 + 물색 골라 파랑 강줄기 + 강가 주황 불빛). Leaflet은 `app/src/main/assets/leaflet/`(gitignore, CI가 받아 옴).
 - **테스트**: `tests/NN-*.test.cjs` 32개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
@@ -121,6 +122,8 @@
 ---
 
 ## 7. 작업 기록 (최근이 위)
+
+- 2026-11-13 · 스페셜 미리보기 아티팩트 공개(시각 버튼: 새벽·한낮·노을·해 질 녘·푸른 시간·밤·지금). `pfd-special.js`에 `__spHdg`·`solarAt` 추가.
 
 - 2026-11-13 · 1.62 — 새 앱 "대신남 원 스페셜"(flavor special, DaesinnamSpecial.apk): 지브리풍 PFD 풍경, 실제 해 위치로 하루 흐름, 밤 땅 불빛·밝기 35%. 테스트 32 추가. `pfd-flight.js`에 확장 자리(ext·geo), `pfd-amp.js` 자동 낮·밤 훅.
 
