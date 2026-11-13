@@ -64,9 +64,9 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   // 1.62.1 전화 옴: 오른쪽 아래에 거는 사람 이름, 받으면 작게 "통화 중", 끊으면 사라짐
   await p.evaluate(() => { window.__spCall = { on: true, name: '김철수', incoming: true, text: '휴대전화' }; });
   await p.waitForTimeout(900);
-  const call = await p.evaluate(() => { const e = document.querySelector('.sp-call'), r = e.getBoundingClientRect(); return { show: e.classList.contains('show'), ring: e.classList.contains('ring'), txt: e.textContent, right: innerWidth - r.right, bottom: innerHeight - r.bottom }; });
-  assert.ok(call.show && call.ring && /전화 수신/.test(call.txt) && /김철수/.test(call.txt), 'incoming caller card: ' + JSON.stringify(call));
-  assert.ok(call.right < 40 && call.bottom < 40, 'card sits at the bottom right: ' + JSON.stringify(call));
+  const call = await p.evaluate(() => { const e = document.querySelector('.sp-call'), r = e.getBoundingClientRect(), w = document.querySelector('#pfdHost .pfd-canvas-wrap').getBoundingClientRect(); return { show: e.classList.contains('show'), ring: e.classList.contains('ring'), txt: e.textContent, mid: Math.abs((r.left + r.right) / 2 - (w.left + w.right) / 2), low: r.bottom <= w.bottom && r.top > w.top + w.height * .6 }; });
+  assert.ok(call.show && call.ring && /INCOMING/.test(call.txt) && /전화 수신/.test(call.txt) && /김철수/.test(call.txt), 'incoming caller card: ' + JSON.stringify(call));
+  assert.ok(call.mid < 4 && call.low, 'call badge sits low in the middle of the PFD: ' + JSON.stringify(call));
   await p.evaluate(() => { window.__spCall = { on: true, name: '김철수', incoming: false }; }); await p.waitForTimeout(900);
   assert.ok(await p.evaluate(() => document.querySelector('.sp-call').classList.contains('mini') && /통화 중/.test(document.querySelector('.sp-call').textContent)), 'answered: small 통화 중');
   await p.evaluate(() => { window.__spCall = { on: false }; }); await p.waitForTimeout(900);

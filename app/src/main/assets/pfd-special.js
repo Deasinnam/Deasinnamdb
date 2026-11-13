@@ -775,19 +775,26 @@
   /* ---------- 전화 옴: 누가 거는지 화면 오른쪽 아래에(전화 앱 알림의 이름, 앱 알림 접근이 켜져 있어야 함) ----------
    *  울리는 동안 크게(테두리가 맥박처럼), 받으면 작게 "통화 중", 끊으면 사라짐. 시험·미리보기: window.__spCall = {on, name, incoming} */
   (function callUi() {
+    const wrapEl = P.els && P.els.canvasWrap; if (!wrapEl) return;
+    // 1.62.2 계기 아래 가운데(나침반 띠 바로 위)에 비행 배지와 같은 모양으로
     const st = document.createElement('style');
-    st.textContent = '.sp-call{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:2147482000;display:flex;align-items:center;gap:12px;max-width:min(78vw,420px);padding:12px 18px 12px 12px;border-radius:18px;'
-      + 'background:linear-gradient(180deg,rgba(22,26,52,.94),rgba(12,14,30,.94));border:1px solid rgba(255,207,122,.6);box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:"Noto Sans KR",sans-serif;color:#fff3df;pointer-events:none;transform:translateY(16px);opacity:0;transition:transform .35s cubic-bezier(.3,1.5,.5,1),opacity .25s}'
-      + '.sp-call.show{transform:none;opacity:1}.sp-call i{position:relative;flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#ffd99a,#f2a273);color:#1b1630}'
-      + '.sp-call i svg{width:24px;height:24px}.sp-call.ring i::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #ffd99a;animation:spRing 1.1s ease-out infinite}'
-      + '@keyframes spRing{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.5);opacity:0}}.sp-call small{display:block;font-size:12px;font-weight:700;color:#ffcf7a;letter-spacing:.04em}'
-      + '.sp-call b{display:block;font-size:22px;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(min(78vw,420px) - 100px)}.sp-call span{display:block;font-size:12px;color:#d9c9b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-      + '.sp-call.hint{pointer-events:auto;cursor:pointer}.sp-call.hint b{font-size:16px}.sp-call.mini{padding:8px 14px 8px 8px;gap:9px}.sp-call.mini i{width:32px;height:32px}.sp-call.mini i svg{width:17px;height:17px}.sp-call.mini b{font-size:15px}.sp-call.mini span{display:none}';
+    st.textContent = '.sp-call{position:absolute;z-index:4;left:50%;bottom:calc(var(--pfd-cmp,60px) + 10px);transform:translate(-50%,8px);display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;max-width:min(70%,460px);'
+      + 'padding:6px 14px 7px 10px;border:1px solid #2b3328;border-radius:4px;background:#020604dd;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff12;pointer-events:none;opacity:0;transition:opacity .25s,transform .3s cubic-bezier(.3,1.5,.5,1);font-family:"Barlow Condensed","Rajdhani","Noto Sans KR",sans-serif}'
+      + '.sp-call.show{opacity:1;transform:translate(-50%,0)}.sp-call i{grid-row:1/3;width:10px;height:10px;border-radius:50%;background:#7fd0ff;box-shadow:0 0 8px #7fd0ff}'
+      + '.sp-call.ring i{background:#a8f08f;box-shadow:0 0 8px #a8f08f;animation:spCallBlink .7s steps(2) infinite}@keyframes spCallBlink{50%{opacity:.25}}'
+      + '.sp-call b{font-weight:700;font-size:clamp(14px,1.6vw,19px);letter-spacing:.12em;color:#e7e9df;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+      + '.sp-call b em{font-style:normal;font-family:"Noto Sans KR",sans-serif;letter-spacing:.02em;color:#fff}'
+      + '.sp-call span{font-family:"Noto Sans KR",sans-serif;font-size:clamp(11px,1.15vw,13px);color:#a8f08f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+      + '.sp-call.mini{grid-template-columns:auto auto;border-radius:99px;padding:5px 12px 5px 10px}.sp-call.mini i{grid-row:auto}.sp-call.mini span{display:none}'
+      + '.sp-call.hint{pointer-events:auto;cursor:pointer}.sp-call.hint i{background:#f3bc65;box-shadow:0 0 8px #f3bc65}';
     document.head.appendChild(st);
     const el = document.createElement('div'); el.className = 'sp-call'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'assertive');
-    el.innerHTML = '<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></i><div><small></small><b></b><span></span></div>';
-    document.body.appendChild(el);
-    const sm = el.querySelector('small'), nm = el.querySelector('b'), tx = el.querySelector('span');
+    el.innerHTML = '<i aria-hidden="true"></i><b></b><span></span>';
+    wrapEl.appendChild(el);
+        const bEl = el.querySelector('b'), tx = el.querySelector('span');
+    let pre = '', who = '';
+    const sm = { set textContent(v) { pre = v; draw(); } }, nm = { set textContent(v) { who = v; draw(); } };
+    function draw() { bEl.textContent = ''; bEl.append(pre + (who ? ' · ' : '')); if (who) { const e = document.createElement('em'); e.textContent = who; bEl.append(e); } }
     let lastKey = '', hintUntil = 0, hinted = false;
     // 알림 접근이 없으면 전화 이름을 못 읽음 → 켤 때 12초 동안 오른쪽 아래에 '허용' 안내(누르면 설정 화면)
     el.addEventListener('click', () => { if (!el.classList.contains('hint')) return; try { window.AndroidBridge.openNotificationAccess(); } catch (e) {} el.classList.remove('show', 'hint'); hintUntil = 0; });
@@ -800,14 +807,14 @@
       if (document.hidden) return;
       const c = read(), on = !!(c && c.on);
       if (!on && c && c.notif === false && !hinted && !window.__spCall) { hinted = true; hintUntil = performance.now() + 12000; lastKey = 'hint';
-        sm.textContent = '전화 표시'; nm.textContent = '알림 접근을 허용해 주세요'; tx.textContent = '누르면 설정 화면이 열려요 · 에어포스원을 켜 주세요';
+        sm.textContent = 'CALL'; nm.textContent = '알림 접근 필요'; tx.textContent = '누르면 설정 → 에어포스원 켜기 · 전화 건 사람을 보여 줘요';
         el.classList.remove('ring', 'mini'); el.classList.add('show', 'hint'); return; }
       if (lastKey === 'hint') { if (performance.now() < hintUntil && !on) return; el.classList.remove('hint'); lastKey = ''; if (!on) { el.classList.remove('show'); return; } }
       const name = on ? (c.name || '알 수 없는 번호') : '', key = on + '|' + name + '|' + (on && c.incoming) + '|' + (on ? c.text || '' : '');
       if (key === lastKey) return; lastKey = key;
       if (!on) { el.classList.remove('show', 'ring'); return; }
-      sm.textContent = c.incoming ? '전화 수신' : '통화 중';
-      nm.textContent = name; tx.textContent = c.incoming && c.text ? c.text : '';
+      sm.textContent = c.incoming ? 'INCOMING' : 'ON CALL';
+      nm.textContent = name; tx.textContent = c.incoming ? '전화 수신' + (c.text ? ' · ' + c.text : '') : '통화 중';
       el.classList.toggle('ring', !!c.incoming); el.classList.toggle('mini', !c.incoming);
       el.setAttribute('aria-label', (c.incoming ? '전화 수신: ' : '통화 중: ') + name);
       el.classList.add('show');
@@ -819,9 +826,18 @@
   const SKY = [['auto', '자동'], ['dawn', '새벽'], ['noon', '한낮'], ['gold', '노을'], ['set', '해 질 녘'], ['night', '밤']];
   let skyMode = 'auto'; try { const v = HOST && HOST.load ? HOST.load('spSky', 'auto') : 'auto'; if (SKY.some(s => s[0] === v)) skyMode = v; } catch (e) {}
   function day0() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
-  function findEl(target, fromH, toH, rising) { const [la, lo] = loc(); let prev = null; const t0 = day0();
-    for (let m = fromH * 60; m <= toH * 60; m += 2) { const t = t0 + m * 60000, e = solar(new Date(t), la, lo).el; if (prev !== null && (rising ? prev < target && e >= target : prev > target && e <= target)) return t; prev = e; } return null; }
-  function skyTime(k) { return k === 'dawn' ? findEl(-3, 3, 11, true) : k === 'noon' ? day0() + 12.5 * 3600000 : k === 'gold' ? findEl(9, 11, 21, false) : k === 'set' ? findEl(.6, 11, 21, false) : k === 'night' ? day0() + 21.5 * 3600000 : null; }
+  // 오늘(기기 시각대 기준 0~24시) 해 높이로 시각 찾기 — 시각대와 무관하게 해 자체로 정함
+  function findEl(target, rising) { const [la, lo] = loc(); let prev = null; const t0 = day0();
+    for (let m = 0; m <= 24 * 60; m += 2) { const t = t0 + m * 60000, e = solar(new Date(t), la, lo).el; if (prev !== null && (rising ? prev < target && e >= target : prev > target && e <= target)) return t; prev = e; } return null; }
+  function noonT() { const [la, lo] = loc(); let best = 0, bt = day0(); for (let m = 0; m <= 24 * 60; m += 5) { const t = day0() + m * 60000, e = solar(new Date(t), la, lo).el; if (e > best) { best = e; bt = t; } } return bt; }
+  function skyTime(k) {
+    if (k === 'dawn') return findEl(-3, true);
+    if (k === 'noon') return noonT();
+    if (k === 'gold') return findEl(9, false);
+    if (k === 'set') return findEl(.6, false);
+    if (k === 'night') { const s0 = findEl(-1, false); return s0 ? s0 + 4 * 3600000 : day0() + 21.5 * 3600000; }
+    return null;
+  }
   function skyApply(k, save) {
     skyMode = k; if (save) try { HOST && HOST.save && HOST.save('spSky', k); } catch (e) {}
     if (!window.__spPreview) { if (k !== 'auto') { window.__spTime = skyTime(k); window.__spSunAhead = k !== 'night' && k !== 'noon'; } else if (save) { window.__spTime = undefined; window.__spSunAhead = false; } }
