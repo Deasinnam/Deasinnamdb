@@ -622,6 +622,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   .key, .bigkey { transition: none; }
 }
+.vis-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.18);margin-right:8px;animation:vp 1.6s infinite}
+@keyframes vp{50%{box-shadow:0 0 0 7px rgba(34,197,94,0)}}
+.vC{background:#0b0b0c;color:#f4f4f5}
+.vC .wrap{display:grid;grid-template-columns:1fr 1fr;padding:26px 0}
+.vC .c{display:grid;gap:6px;justify-items:center;border-left:1px solid #27272a}
+.vC .c:first-child{border-left:0}
+.vC .n{font:600 clamp(32px,5vw,52px)/1 var(--font-mono);letter-spacing:-.03em;display:flex;gap:3px;min-height:1.3em}
+.vC .n span{display:inline-block;background:#18181b;border:1px solid #27272a;border-radius:8px;padding:6px 7px}
+.vC .l{font-size:13px;color:#a1a1aa;display:flex;align-items:center}
+.vC[hidden]{display:none}
 </style>
 <link rel="canonical" href="https://deolnureum.com/98/">
 <meta property="og:url" content="https://deolnureum.com/98/">
@@ -666,6 +676,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       </div>
     </div>
   </section>
+  <section class="vC" id="visits" aria-label="방문자 수" hidden><div class="wrap"><div class="c"><div class="n" id="v-today"></div><div class="l"><span class="vis-dot"></span>오늘 방문</div></div><div class="c"><div class="n" id="v-total"></div><div class="l">지금까지 방문</div></div></div></section>
   <div class="wrap hero v1" id="hero">
     <div class="hero-copy">
       <div class="hero-eyebrow">DEOLNUREUM SOFTWARE</div>
@@ -2281,6 +2292,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       var n = Math.max(0, a.n - (c.base || 0));
       out.innerHTML = "<b>" + n.toLocaleString("ko-KR") + "회</b> 내려받음 · " + (a.size / 1048576).toFixed(1) + "MB";
     });
+  });
+})();
+
+/* 방문자 수: abacus 카운터 (브라우저당 하루 1회 집계) */
+(function(){
+  var API='https://abacus.jasoncameron.dev', NS='deolnureum';
+  var d=new Date(Date.now()+9*3600e3).toISOString().slice(0,10).replace(/-/g,'');
+  var seen=null; try{seen=localStorage.getItem('dn-visit')}catch(e){}
+  var first=seen!==d; if(first){try{localStorage.setItem('dn-visit',d)}catch(e){}}
+  function q(key){return fetch(API+'/'+(first?'hit':'get')+'/'+NS+'/'+key).then(function(r){return r.ok?r.json():{value:0}}).then(function(j){return j.value||0}).catch(function(){return null})}
+  function put(id,n){var el=document.getElementById(id);el.innerHTML=n.toLocaleString('en-US').replace(/\d/g,'<span>$&</span>')}
+  Promise.all([q('day-'+d),q('total')]).then(function(v){
+    if(v[0]===null||v[1]===null)return;
+    put('v-today',v[0]);put('v-total',Math.max(v[1],v[0]));document.getElementById('visits').hidden=false;
   });
 })();
 </script>
