@@ -20,7 +20,10 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   // 그린 화면에서 지평선 기준 색 뽑기(지평선 위 하늘, 해 쪽 바다)
   const sample = p => p.evaluate(() => {
     pfd.draw(); const cv = document.querySelector('#pfdHost canvas'), x = cv.getContext('2d'), px = (fx, fy) => [...x.getImageData(cv.width * fx | 0, cv.height * fy | 0, 1, 1).data].slice(0, 3);
-    return {skyHi: px(.5, .2), skyLow: px(.62, .45)};
+    // 하늘 위쪽: 구름을 피해 여러 곳 중 가장 어두운 점(구름은 밝음)
+    const hi = []; for (const fx of [.3, .4, .5, .6, .7]) for (const fy of [.12, .2, .28]) hi.push(px(fx, fy));
+    hi.sort((a, b) => (a[0] + a[1] + a[2]) - (b[0] + b[1] + b[2]));
+    return {skyHi: hi[0], skyLow: px(.62, .45)};
   });
 
   // 스페셜·노을·서쪽: 하늘이 따뜻한 색, 해·윤슬 계산이 화면 안
@@ -48,6 +51,14 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   const mi = await p.evaluate(() => ({ m: AmpSpecial.miles, chip: document.querySelector('.sp-miles') && document.querySelector('.sp-miles').textContent, src: pfd.data.source, v: pfd.data.speedKmh }));
   assert.ok(mi.m > m0, 'miles accrue while driving with GPS: ' + JSON.stringify([m0, mi]));
   assert.ok(/대신남 마일리지/.test(mi.chip) && /마일/.test(mi.chip), 'mileage chip shown: ' + mi.chip);
+  // 누적 주행거리: 칩을 눌러 계기판 km를 넣으면 차계부(AmpLog)와 같은 값으로 저장·표시
+  await p.locator('.sp-odo').click();
+  await p.locator('.sp-odo input').fill('128745');
+  await p.locator('.sp-odo button[type="submit"]').click();
+  await p.waitForTimeout(1200);
+  const odo = await p.evaluate(() => ({ log: AmpLog.state.odo, txt: document.querySelector('.sp-odo').textContent }));
+  assert.ok(odo.log >= 128745 && odo.log < 128800, 'odometer saved to the car log: ' + JSON.stringify(odo));
+  assert.ok(/128,7\d\d/.test(odo.txt) && /km/.test(odo.txt), 'odometer chip shows it: ' + odo.txt);
   await p.close();
 
   // 1.62.1 새벽: 아침 쪽 해(방위 < 180°)면 구름을 적게
@@ -59,6 +70,13 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   p = await open('special', '12:20', 180);
   const d = await sample(p);
   assert.ok(d.skyHi[2] > d.skyHi[0] + 40, 'blue midday sky: ' + d.skyHi);
+  // 1.62.1 바다·육지 번갈아: 날아온 거리에 따라 바다 위 / 다시 육지
+  const sea = await p.evaluate(() => { const F = AmpFlight.geo.F, o = F.wz, r = {};
+    for (const wz of [2000, 11000, 19000]) { F.wz = wz; pfd.draw(); const cv = document.querySelector('#pfdHost canvas'), x = cv.getContext('2d'), d = x.getImageData(cv.width * .3 | 0, cv.height * .8 | 0, cv.width * .4 | 0, 4).data;
+      let b = 0, g = 0; for (let i = 0; i < d.length; i += 4) { b += d[i + 2]; g += d[i + 1]; } r[wz] = { over: AmpSpecial.overSea, blue: b > g }; }
+    F.wz = o; return r; });
+  assert.deepEqual([sea[2000].over, sea[11000].over, sea[19000].over], [false, true, false], 'land → sea → land: ' + JSON.stringify(sea));
+  assert.ok(sea[11000].blue && !sea[2000].blue, 'the ground under us is water over the sea: ' + JSON.stringify(sea));
   assert.ok((await p.evaluate(() => AmpSpecial.mood.gold)) < .05);
   await p.close();
 
@@ -77,9 +95,24 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
     let sum = 0, lit = 0, n = 0; for (let i = 0; i < d.length; i += 16) { const v = (d[i] + d[i + 1] + d[i + 2]) / 3; sum += v; n++; if (d[i] > 200 && d[i + 1] > 150) lit++; } return {avg: sum / n, lit}; });
   assert.ok(g.avg > 18, 'moonlit ground is not pitch black: ' + g.avg.toFixed(1));
   assert.ok(g.lit > 8, 'road and town lights on the ground: ' + g.lit);
+  assert.equal(await p.evaluate(() => pfd.scene.lightDraw.length), 0, 'no floating package city lamps at night');
   await p.waitForTimeout(1300);
   assert.equal(await p.evaluate(() => AmpBri.get()), 35, 'special night brightness 35%');
   await p.close();
+
+  // 1.62.1 여는 화면: 켤 때 "대신남 AirLine"(시험에서는 기본으로 건너뛰므로 강제로 켬), 누르면 0.5초 안에 걷힘
+  {
+    const q = await newPage(() => { window.__build = 'special'; window.__forceIntro = true; localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); });
+    await q.setViewportSize({width: 1036, height: 1000});
+    await q.goto(origin);
+    await q.waitForSelector('#spIntro');
+    await q.waitForTimeout(1500);
+    assert.ok(await q.evaluate(() => AmpSpecialIntro.t > 1 && !AmpSpecialIntro.done), 'intro is playing');
+    await q.locator('#spIntro').click();
+    await q.waitForTimeout(1200);
+    assert.equal(await q.evaluate(() => [!!document.getElementById('spIntro'), AmpSpecialIntro.done]).then(r => r.join()), 'false,true', 'tap skips the intro');
+    await q.close();
+  }
 
   // 다른 앱(대신남 원): 스페셜 풍경이 켜지지 않음
   p = await open('one', '16:55', 245);

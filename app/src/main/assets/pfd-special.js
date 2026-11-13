@@ -151,6 +151,8 @@
       cy -= rr * (tall ? 1.05 : .95); width *= .62;
     }
     // 공 표면들을 부드럽게 이어 붙인 높이(smooth max) → 살짝 흐리게 → 기울기에서 표면 방향(법선)
+    // 1.62.1: 공이 그림 테두리 밖으로 나가면 구름이 칼로 자른 듯 끊김 → 모든 공을 테두리 안쪽(여유 8px)으로, 넘치면 줄임
+    for (const b of balls) { const lim = Math.min(b[0] - 8, CW - 8 - b[0], b[1] - 8); if (b[2] > lim) b[2] = Math.max(6, lim); }
     const N = CW * CH, Hf = new Float32Array(N), kk = r0 * .45;
     const smax = (a, b) => { const q = Math.max(kk - Math.abs(a - b), 0) / kk; return Math.max(a, b) + q * q * kk * .25; };
     for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) {
@@ -167,7 +169,7 @@
       nx[i] = -gx / l; ny[i] = -gy / l; nz[i] = 1 / l;
       const edge = fbm(x / 9 + seed, y / 9, 64, 3);            // 가장자리를 붓끝처럼 들쭉날쭉
       const bottom = 1 - sstep(base - 4, base + 6, y + (edge - .5) * 7); // 아랫면은 평평하게
-      al[i] = sstep(-1, r0 * .22 + (edge - .5) * r0 * .18, hv) * bottom;
+      al[i] = sstep(-1, r0 * .22 + (edge - .5) * r0 * .18, hv) * bottom * sstep(0, 10, x) * sstep(0, 10, CW - 1 - x) * sstep(0, 10, y);
       yy0[i] = clamp((y - (base - r0 * 3.2)) / (r0 * 3.4), 0, 1);
     }
     return { nx, ny, nz, al, yy0, seed };
@@ -213,6 +215,7 @@
   /* ---------- 하늘 ---------- */
   const oSky = sc.drawSky;
   sc.drawSky = function (c, w, h, night, quality) {
+    if (c.__spStroke) { c.stroke = c.__spStroke; c.__spStroke = null; }
     if (!FL.active()) return oSky.call(this, c, w, h, night, quality);
     const m = mood(night), hq = quality !== 'balanced', sun = sunScreen(w, h, m);
     const hd = heading();
@@ -277,6 +280,8 @@
     const hz = c.createLinearGradient(0, -h * .07, 0, 0); hz.addColorStop(0, css(m.fog, 0)); hz.addColorStop(1, css(m.fog, night ? .35 : .55));
     c.fillStyle = hz; c.fillRect(-w * 2, -h * .07, w * 4, h * .07);
     c.restore();
+    // 1.62.1: 패키지가 하늘 다음에 긋는 장식 선(원근 격자·가는 선 능선)은 스페셜 풍경과 맞지 않아 땅 그리기 전까지 긋지 않음
+    if (!c.__spStroke) { const oStroke = c.stroke; c.__spStroke = oStroke; c.stroke = function () {}; }
   };
 
   /* ---------- 먼 산: 겹겹이, 멀수록 옅게(대기 원근), 노을이면 능선 끝에 붉은 빛 ---------- */
@@ -326,40 +331,86 @@
       draw(z, z2); z = z2;
     }
   }
-  // 먼 바다: 지평선 앞에 굽은 해안선(방향을 틀면 해안 모양이 따라 바뀜). 노을이면 해 아래로 윤슬 길
-  const coastZ = ang => 3400 + 900 * Math.sin(ang * 2.1 + 1) + 520 * Math.sin(ang * 5.3) + 240 * Math.sin(ang * 11 + 2);
+  /* ---------- 바다와 육지가 번갈아: 세상 거리(F.wz)에 고정된 띠 — 육지 8km(장면 단위) → 굽은 해안선 → 바다 8km → 다시 육지 ----------
+   *  순항 시속 80km면 육지 약 1분 반, 바다 약 1분 반. 육지 위에서는 앞쪽에 다음 해안이 보이다가 다가오고, 바다 위에서는 다음 육지가 다가옴 */
+  const SEA_P = 16000, SEA_LAND = 8000;
+  const nearEdge = (k, X) => k * SEA_P + SEA_LAND + 700 * Math.sin(X / 1300 + k * 1.7) + 300 * Math.sin(X / 430 + k);
+  const farEdge = (k, X) => (k + 1) * SEA_P + 600 * Math.sin(X / 1100 + k * 2.3) + 250 * Math.sin(X / 370 + k * .7);
+  function seaAt(X, Zw) { const k = Math.floor(Zw / SEA_P); return (Zw >= nearEdge(k, X) && Zw < farEdge(k, X)) || (Zw < farEdge(k - 1, X) && Zw >= nearEdge(k - 1, X)); }
+  // 화면 열 x마다 그 해안선의 세상 X·카메라 z를 찾음(해안선이 X에 따라 굽으므로 두 번 고쳐 맞춤)
+  function edgePts(fn, k, w, g, wz) {
+    const pts = [];
+    for (let i = 0; i <= 64; i++) {
+      const x = -w * 1.4 + i / 64 * w * 2.8; let z = fn(k, 0) - wz, X = 0;
+      for (let it = 0; it < 3; it++) { X = x * Math.max(z, g.zn) / g.f; z = fn(k, X) - wz; }
+      pts.push({ x, X, z });
+    }
+    return pts;
+  }
+  function seaPath(w, h, g) {
+    const wz = F.wz || 0, path = new Path2D(), edges = []; let any = false;
+    const k0 = Math.floor((wz + g.zn) / SEA_P) - 1, k1 = Math.floor((wz + 30000) / SEA_P);
+    for (let k = k0; k <= k1; k++) {
+      const N = edgePts(nearEdge, k, w, g, wz), Fr = edgePts(farEdge, k, w, g, wz);
+      if (Fr.every(p => p.z <= g.zn * 1.05) || N.every(p => p.z > 60000)) continue;
+      const Y = z => z <= g.zn * 1.05 ? h * 3 : z > 60000 ? g.py(60000) : g.py(z);
+      path.moveTo(N[0].x, Y(N[0].z)); for (const p of N) path.lineTo(p.x, Y(p.z)); for (let i = Fr.length - 1; i >= 0; i--) path.lineTo(Fr[i].x, Y(Fr[i].z)); path.closePath(); any = true;
+      for (const E of [N, Fr]) edges.push(E.filter(p => p.z > g.zn * 1.05 && p.z < 30000).map(p => [p.x, g.py(p.z), p.z]));
+    }
+    return any ? { path, edges } : null;
+  }
   function drawSea(c, w, h, night, quality, g, m) {
-    const hd = heading() * Math.PI / 180, pts = [];
-    for (let i = 0; i <= 96; i++) { const x = -w * 2 + i / 96 * w * 4, y = g.py(coastZ(Math.atan(x / g.f) + hd)); pts.push([x, y]); }
-    const sea = new Path2D(); sea.moveTo(-w * 2, -1); sea.lineTo(w * 2, -1); for (let i = pts.length - 1; i >= 0; i--) sea.lineTo(pts[i][0], pts[i][1]); sea.closePath();
-    const ymax = Math.max(4, ...pts.map(p => p[1]));
+    const S = seaPath(w, h, g); if (!S) return;
+    const t = idleT(), wz = F.wz || 0;
     c.save();
-    // 모래톱(해안선을 따라 밝은 띠)
-    c.globalAlpha = night ? .5 : .85; c.strokeStyle = css(night ? m.sand : mixc(m.sand, m.hz, .35)); c.lineWidth = clamp(ymax * .06, 1, 5); c.lineJoin = 'round';
-    c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
-    const sg = c.createLinearGradient(0, 0, 0, Math.max(ymax, h * .08));
-    sg.addColorStop(0, css(night ? mixc(m.hz, m.water, .3) : m.hz)); sg.addColorStop(.35, css(night ? m.water : mixc(m.low, m.water, .25))); sg.addColorStop(1, css(night ? mixc(m.water, m.top, .5) : mixc(m.mid, m.water, .55)));
-    c.globalAlpha = 1; c.fillStyle = sg; c.fill(sea); c.clip(sea);
+    // 모래톱·파도 거품(해안선을 따라)
+    c.lineJoin = 'round';
+    for (const E of S.edges) { if (E.length < 2) continue;
+      for (const [col, lwK, a] of [[night ? m.sand : mixc(m.sand, m.hz, .3), .9, night ? .45 : .85], [hex('#ffffff'), .35, night ? .12 : .5]]) {
+        c.globalAlpha = a; c.strokeStyle = css(col); c.beginPath(); E.forEach((p, i) => { const lw = clamp(g.f / p[2] * 40 * lwK, .8, 18); c.lineWidth = lw; i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); }); c.stroke(); } }
+    const sg = c.createLinearGradient(0, 0, 0, h * .9);
+    sg.addColorStop(0, css(night ? mixc(m.hz, m.water, .3) : m.hz)); sg.addColorStop(.06, css(night ? m.water : mixc(m.low, m.water, .2)));
+    sg.addColorStop(.35, css(night ? mixc(m.water, m.top, .3) : mixc(m.mid, m.water, .5))); sg.addColorStop(1, css(night ? mixc(m.water, m.top, .6) : mixc(m.top, m.water, .55)));
+    c.globalAlpha = 1; c.fillStyle = sg; c.fill(S.path); c.clip(S.path);
+    // 잔물결(바다에만): 먼 곳은 촘촘히, 가까운 곳은 크게
     if (quality !== 'balanced' && window.DOMMatrix) {
       if (!rPat) try { rPat = c.createPattern(RTEX, 'repeat'); } catch (e) {}
-      if (rPat && rPat.setTransform) { const t = idleT(); rPat.setTransform(new DOMMatrix([.9, 0, 0, .16, (-hd * 300 - t * 4) % 256, 0])); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = night ? .4 : .85; c.fillStyle = rPat; c.fillRect(-w * 2, 0, w * 4, ymax + 2); c.globalCompositeOperation = 'source-over'; }
+      if (rPat && rPat.setTransform) {
+        c.globalCompositeOperation = 'soft-light';
+        slices(c, g.Hc, g.f, g.py, g.zn, 30000, 1.3, rPat, .5, wz + t * 5, (z1, z2) => { c.globalAlpha = night ? .5 : .9; c.fillStyle = rPat; c.fillRect(-w * 2, g.py(z2), w * 4, g.py(z1) - g.py(z2) + 1); });
+        c.globalCompositeOperation = 'source-over';
+      }
     }
+    // 배: 바다 위 세상 자리에 고정, 천천히 옆으로 — 낮에는 흰 배와 물살, 밤에는 불빛
+    const k0 = Math.floor(wz / SEA_P) - 1;
+    for (let k = k0; k <= k0 + 3; k++) for (let q = 0; q < 7; q++) {
+      const sd = k * 31 + q, dir = hash(sd + 5) < .5 ? -1 : 1, Xb = (hash(sd) - .5) * 9000 + dir * t * (3 + hash(sd + 9) * 4), Zw = k * SEA_P + SEA_LAND + 600 + hash(sd + 2) * (SEA_P - SEA_LAND - 1200);
+      if (!seaAt(Xb, Zw)) continue; const z = Zw - wz; if (z < g.zn * 1.5 || z > 14000) continue;
+      const x = g.px(Xb, z), y = g.py(z), s = g.f / z; if (x < -w * 1.3 || x > w * 1.3) continue;
+      if (night) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = .8; c.fillStyle = '#fff2d0'; c.fillRect(x - 1, y - 1.5, 2, 2); c.fillStyle = '#ff5a48'; c.fillRect(x + dir * Math.max(2, 12 * s), y - 1, 1.6, 1.6); c.globalCompositeOperation = 'source-over'; continue; }
+      const L = Math.max(3, 26 * s), Hh = Math.max(1.2, 5 * s);
+      c.globalAlpha = .55; c.strokeStyle = '#ffffff'; c.lineWidth = Math.max(.7, 1.6 * s); c.beginPath(); c.moveTo(x - dir * L * .2, y); c.lineTo(x - dir * L * 2.6, y - Hh * .2); c.moveTo(x - dir * L * .2, y + Hh * .3); c.lineTo(x - dir * L * 2.4, y + Hh * 1.1); c.stroke();
+      c.globalAlpha = 1; c.fillStyle = '#f4f1ea'; c.beginPath(); c.moveTo(x - L / 2, y - Hh); c.lineTo(x + L / 2, y - Hh); c.lineTo(x + dir * L * .62, y - Hh * .3); c.lineTo(x - dir * L * .5, y); c.closePath(); c.fill();
+      c.fillStyle = '#b8a48c'; c.fillRect(x - L * .15, y - Hh * 1.7, L * .3, Hh * .75);
+    }
+    // 윤슬: 해 아래 바다에 길게
     const sun = sunScreen(w, h, m);
     if (sun.vis) {
-      const t = idleT(), gk = lerp(.3, 1, m.gold), r = clamp(w * .022, 10, 26);
+      const gk = lerp(.3, 1, m.gold), r = clamp(w * .022, 10, 26), ymax = h * .62;
       c.globalCompositeOperation = 'lighter';
       const sh = c.createRadialGradient(sun.x, 0, 0, sun.x, 0, r * 7); sh.addColorStop(0, css(m.sun, .5 * gk)); sh.addColorStop(1, css(m.sun, 0));
-      c.save(); c.translate(sun.x, 0); c.scale(1, Math.max(.25, ymax / (r * 7))); c.translate(-sun.x, 0); c.fillStyle = sh; c.fillRect(sun.x - r * 7, 0, r * 14, r * 7); c.restore();
+      c.save(); c.translate(sun.x, 0); c.scale(1, ymax / (r * 7) * .5); c.translate(-sun.x, 0); c.fillStyle = sh; c.fillRect(sun.x - r * 7, 0, r * 14, r * 7); c.restore();
       c.fillStyle = css(mixc(m.sun, m.low, .55));
-      for (let i = 0; i < 90; i++) {
-        const yy = Math.pow(hash(i + 1200), 1.3) * ymax, spread = r * (.6 + yy / Math.max(ymax, 1) * 2.2), xx = sun.x + (hash(i + 1250) - .5) * 2 * spread;
+      for (let i = 0; i < 120; i++) {
+        const yy = Math.pow(hash(i + 1200), 1.5) * ymax, spread = r * (.6 + yy / ymax * 4), xx = sun.x + (hash(i + 1250) - .5) * 2 * spread;
         const a = gk * Math.max(0, Math.sin(t * (1.8 + hash(i + 1300) * 3) + i * 2.1)) * .6; if (a < .04) continue;
-        c.globalAlpha = a; const lw = 2 + hash(i + 1350) * (4 + yy * .2); c.fillRect(xx - lw / 2, yy, lw, Math.max(.7, yy * .03));
+        c.globalAlpha = a; const lw = 2 + hash(i + 1350) * (4 + yy * .08); c.fillRect(xx - lw / 2, yy, lw, Math.max(.7, yy * .012));
       }
       c.globalCompositeOperation = 'source-over';
     }
     c.restore(); c.globalAlpha = 1;
   }
+
   /* ---------- 전신주: 세로 도로를 따라 일정 간격, 꼭대기 사이에 처진 전선 두 줄(땅과 함께 흐름) ---------- */
   const POLE_ROADS = [[870, 14], [-1310, -14], [2590, 14]], POLE_GAP = 55, POLE_H = 22;   // 높이는 하늘에서도 보이게 실제보다 크게
   function drawPoles(c, w, h, night, g) {
@@ -371,6 +422,7 @@
       const X = rx + side, n0 = Math.floor((zn * 1.2 + wz) / POLE_GAP), tops = [];
       for (let n = n0 + Math.ceil(maxZ / POLE_GAP); n >= n0; n--) {
         const z = n * POLE_GAP - wz; if (z < zn * 1.2 || z > maxZ) continue;
+        if (seaAt(X, z + wz)) { tops.push(null); continue; }
         const x = px(X, z), y0 = py(z), y1 = (Hc - POLE_H) * f / z; if (x < -w * 1.2 || x > w * 1.2) { tops.push(null); continue; }
         const lw = Math.max(1.1, .5 * f / z), arm = Math.max(2.2, 2.2 * f / z), fade = clamp(1.3 - z / maxZ, .35, 1);
         c.globalAlpha = fade; c.strokeStyle = pole; c.lineWidth = lw;
@@ -390,7 +442,7 @@
     const hj0 = Math.floor((zn + wz) / 2240);
     for (let j = hj0; j < hj0 + 2; j++) { const z = j * 2240 - wz + 1100 + 12; if (z < zn * 1.5 || z > maxZ) continue;
       const y0 = py(z), y1 = (Hc - POLE_H) * f / z, lw = Math.max(1.1, .5 * f / z), arm = Math.max(2.2, 2.2 * f / z), fade = clamp(1.3 - z / maxZ, .35, 1), xs = [];
-      for (let X = -3600; X <= 3600; X += POLE_GAP * 1.2) { const x = px(X, z); if (x < -w * 1.2 || x > w * 1.2) continue; xs.push(x); }
+      for (let X = -3600; X <= 3600; X += POLE_GAP * 1.2) { const x = px(X, z); if (x < -w * 1.2 || x > w * 1.2 || seaAt(X, z + wz)) continue; xs.push(x); }
       c.globalAlpha = fade; c.strokeStyle = pole; c.lineWidth = lw; c.beginPath();
       for (const x of xs) { c.moveTo(x, y0); c.lineTo(x, y1); c.moveTo(x - arm * .3, y1 + lw * 1.5); c.lineTo(x + arm * .3, y1 + lw * 1.5); } c.stroke();
       c.strokeStyle = wire; c.lineWidth = Math.max(.7, arm * .08); c.beginPath();
@@ -512,7 +564,7 @@
     // ---- 불빛(더해지는 빛) ----
     c.save(); c.globalCompositeOperation = 'lighter';
     const dot = (X, Z, rgb, sizeM, a) => {
-      if (Z < zn * 1.1 || Z > 12000) return; const x = px(X, Z); if (x < -w * 1.3 || x > w * 1.3) return;
+      if (Z < zn * 1.1 || Z > 12000) return; const x = px(X, Z); if (x < -w * 1.3 || x > w * 1.3) return; if (seaAt(X, Z + wz)) return;
       const y = py(Z), s = clamp(sizeM * f / Z, 1.4, 30), tw = Z > 1500 ? .82 + .18 * Math.sin(t * (2 + (X * 7.3 + Z) % 3) + X * .37 + Z * .11) : 1, fade = a * tw * clamp(1.3 - Z / 12000, .25, 1);
       c.globalAlpha = fade;
       if (s < 2.6) { c.fillStyle = 'rgb(' + rgb + ')'; c.fillRect(x - .7, y - .7, 1.4, 1.4); } else c.drawImage(lamp(rgb), x - s / 2, y - s / 2, s, s);
@@ -575,9 +627,12 @@
   /* ---------- 땅 전체 빛 고르기: 지평선 안개 + 노을빛(먼 곳은 따뜻하게, 발밑은 보랏빛 그늘) ---------- */
   const oGround = sc.drawGround;
   sc.drawGround = function (c, w, h, night, speed, quality) {
+    if (c.__spStroke) { c.stroke = c.__spStroke; c.__spStroke = null; }   // 하늘 끝에서 막아 둔 선 긋기를 되돌림
     preDone = false;
     if (night && FL.active()) nightGround(c, w, h, quality);
-    try { oGround.call(this, c, w, h, night, speed, quality); } finally { preDone = false; }
+    // 밤: 패키지의 도심 불빛·가로등 기둥은 비행 높이에서 땅과 따로 떠다녀 보이므로 스페셜에서는 끔(땅 불빛은 nightGround가 그림)
+    const city = this.city; if (night && FL.active()) this.city = [];
+    try { oGround.call(this, c, w, h, night, speed, quality); } finally { preDone = false; this.city = city; }
     if (!FL.active()) return;
     const m = mood(night);
     c.save(); c.beginPath(); c.rect(-w * 2, 0, w * 4, h * 3); c.clip();
@@ -635,5 +690,59 @@
     }, 1000);
   })();
 
-  window.AmpSpecial = { get miles() { return MI.total; }, get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
+  /* ---------- 누적 주행거리(계기판 km): 차의 실제 누적 km를 한 번 넣으면, 그 뒤로 달린 거리를 더해 지금 값을 보여 줌 ----------
+   *  앱에서는 차계부(AmpLog)의 누적 주행거리와 같은 값(차계부가 GPS 거리를 자동으로 더함). 칩을 누르면 바로 고쳐 넣을 수 있음
+   *  차계부가 없는 미리보기에서는 이 칩이 직접 더함 */
+  (function odoUi() {
+    const wrapEl = P.els && P.els.canvasWrap; if (!wrapEl) return;
+    const LOG = () => window.AmpLog && window.AmpLog.state ? window.AmpLog : null;
+    let local = 0; try { const v = HOST && HOST.load ? +HOST.load('spOdo', 0) : 0; local = fin(v) && v > 0 ? v : 0; } catch (e) {}
+    const get = () => { const L = LOG(); return L ? +L.state.odo || 0 : local; };
+    const set = v => { v = Math.max(0, Math.round(v * 10) / 10); const L = LOG(); if (L) L.setOdo(v); else { local = v; try { HOST && HOST.save && HOST.save('spOdo', v); } catch (e) {} } };
+    const st = document.createElement('style');
+    st.textContent = '.sp-odo{position:absolute;z-index:3;left:calc(clamp(67px,12%,175px) + 10px);top:146px;display:flex;align-items:center;gap:9px;padding:6px 12px 6px 9px;border-radius:12px;cursor:pointer;'
+      + 'background:linear-gradient(180deg,rgba(18,22,44,.82),rgba(10,12,26,.82));border:1px solid rgba(170,210,255,.4);box-shadow:0 4px 14px rgba(0,0,0,.35);font-family:"Noto Sans KR",sans-serif;min-height:44px;box-sizing:border-box;color:#eaf2ff}'
+      + '.sp-odo i{font-style:normal;font-size:20px;line-height:1;color:#a9cdf2;transform:rotate(-30deg)}.sp-odo small{display:block;font-size:11px;font-weight:700;color:#b9d2f0;white-space:nowrap}'
+      + '.sp-odo b{font:800 20px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.05em;color:#f2f7ff}.sp-odo b span{font-size:.7em;opacity:.7}.sp-odo u{text-decoration:none;font-size:12px;color:#b9d2f0;margin-left:4px}'
+      + '.sp-odo.empty b{font:700 14px "Noto Sans KR",sans-serif;color:#ffd27e}'
+      + '.sp-odo form{display:flex;gap:6px;align-items:center}.sp-odo input{width:9.5em;min-height:36px;padding:0 8px;border-radius:8px;border:1px solid #9cc4f0;background:#08101e;color:#fff;font:700 17px "Barlow Condensed","Noto Sans KR",sans-serif}'
+      + '.sp-odo button{min-height:36px;min-width:44px;padding:0 10px;border-radius:8px;border:0;font:700 13px "Noto Sans KR",sans-serif;cursor:pointer;background:#ffcf7a;color:#1b1630}.sp-odo button.no{background:#2a3350;color:#dfe8ff}'
+      + '@media (max-width:600px){.sp-odo{top:132px;padding:5px 10px 5px 8px}.sp-odo b{font-size:17px}}';
+    document.head.appendChild(st);
+    const el = document.createElement('div'); el.className = 'sp-odo'; el.setAttribute('role', 'button'); el.tabIndex = 0;
+    el.setAttribute('aria-label', '차 누적 주행거리 — 눌러서 계기판 값 입력');
+    wrapEl.appendChild(el);
+    let editing = false;
+    const fmt = v => { const k = Math.floor(v), d = Math.floor((v - k) * 10 + 1e-6); return k.toLocaleString('ko-KR') + '<span>.' + d + '</span>'; };
+    function render() {
+      if (editing) return;
+      const v = get(); el.classList.toggle('empty', !(v > 0));
+      el.innerHTML = '<i aria-hidden="true">✈</i><div><small>누적 주행거리</small>' + (v > 0 ? '<b>' + fmt(v) + '</b><u>km</u>' : '<b>계기판 km 입력</b>') + '</div>';
+    }
+    function edit() {
+      if (editing) return; editing = true; const v = get();
+      el.innerHTML = '<form><input type="number" inputmode="decimal" min="0" max="2000000" step="0.1" aria-label="차 계기판 누적 주행거리(km)" placeholder="계기판 km"><button type="submit">확인</button><button type="button" class="no">취소</button></form>';
+      const f = el.querySelector('form'), inp = f.querySelector('input'); inp.value = v > 0 ? Math.round(v) : '';
+      setTimeout(() => { try { inp.focus(); inp.select(); } catch (e) {} }, 30);
+      f.addEventListener('submit', e => { e.preventDefault(); const n = +inp.value; editing = false; if (fin(n) && n >= 0 && n <= 2000000 && inp.value !== '') set(n); render(); });
+      f.querySelector('.no').addEventListener('click', e => { e.stopPropagation(); editing = false; render(); });
+    }
+    el.addEventListener('click', e => { e.stopPropagation(); if (!editing) edit(); });
+    el.addEventListener('keydown', e => { if (!editing && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); edit(); } });
+    render();
+    // 미리보기(차계부 없음): 달린 거리를 직접 더함. 앱에서는 차계부가 더하므로 표시만 새로 고침
+    let last = performance.now();
+    setInterval(() => {
+      const now = performance.now(), dt = clamp((now - last) / 1000, 0, 5); last = now;
+      if (!LOG() && local > 0) {
+        const d = P.data || {}, ok = P.effective && P.effective().valid, v = d.speedKmh;
+        const real = d.source === 'gps' || d.source === 'external', demo = d.source === 'demo' && window.__spMilesDemo;
+        if (ok && (real || demo) && fin(v) && v >= 3 && !document.hidden) { local += v / 3600 * dt * (demo && fin(window.__spMilesRate) ? window.__spMilesRate : 1); try { HOST && HOST.save && HOST.save('spOdo', +local.toFixed(2)); } catch (e) {} }
+      }
+      render();
+    }, 1000);
+    window.AmpSpecialOdo = { get: get, set: v => { set(v); render(); } };
+  })();
+
+  window.AmpSpecial = { seaAt, get overSea() { return seaAt(0, (F.wz || 0) + 40); }, get miles() { return MI.total; }, get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
 })();
