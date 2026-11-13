@@ -39,19 +39,22 @@ APPS = [
     ("#app-98", "/98/", "덜누름 98 — 폴드를 그 시절 PC처럼",
      "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.",
      "덜누름 98", "UtilitiesApplication", "/media/app-98-poster.jpg"),
+    ("#app-sseum", "/dulsseum/", "덜씀 — 다 써 보고 만든 맥 최적화 앱",
+     "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.",
+     "덜씀", "UtilitiesApplication", "/media/dulsseum-mac.webp", "macOS"),
 ]
 APP_NAMES = ", ".join(a[4] for a in APPS)
 PAGES = [
     # (원본의 # 주소, 실제 주소, 화면 이름, 제목(전체), 설명)
     ("#top", "/", "home", "덜누름 Software — 덜 누르고, 더 편하게",
-     "덜누름은 누를 일을 줄이는 앱을 개발합니다. " + APP_NAMES + " 앱을 갤럭시 Z 폴드에 맞춰 만들고 있습니다."),
+     "덜누름은 누를 일을 줄이는 앱을 개발합니다. " + APP_NAMES + " 앱을 만들고 있습니다."),
     ("#app-center", "/apps/", "apps", "앱센터 — 덜누름이 개발 중인 앱" + SUFFIX,
      "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. " + APP_NAMES + "의 실제 화면을 볼 수 있습니다."),
     ("#about", "/about/", "about", "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다" + SUFFIX,
      "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게."),
     ("#feedback", "/feedback/", "feedback", "의견 보내기 · 공개 알림 신청" + SUFFIX,
      "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다."),
-] + [(h, p, "app", t + SUFFIX, d) for h, p, t, d, _, _, _ in APPS]
+] + [(h, p, "app", t + SUFFIX, d) for h, p, t, d, *_ in APPS]
 
 ORG = {"@type": "Organization", "@id": SITE + "/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"],
        "url": SITE + "/", "logo": SITE + "/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}
@@ -72,7 +75,7 @@ def jsonld(h, path, title, desc):
     app = next((a for a in APPS if a[0] == h), None)
     if app:
         crumbs += [("앱센터", SITE + "/apps/"), (app[4], url)]
-        graph.append({"@type": "SoftwareApplication", "name": app[4], "url": url, "description": desc, "operatingSystem": "Android",
+        graph.append({"@type": "SoftwareApplication", "name": app[4], "url": url, "description": desc, "operatingSystem": (app[7] if len(app) > 7 else "Android"),
                       "applicationCategory": app[5], "image": SITE + app[6], "inLanguage": "ko", "publisher": {"@id": SITE + "/#org"}})
     elif h != "#top":
         crumbs.append((title.split(" — ")[0].split(" · ")[0], url))
