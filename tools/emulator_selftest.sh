@@ -40,7 +40,9 @@ for i in $(seq 1 90); do
     adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 3
     adb exec-out screencap -p > desk-screen-after-resize.png
   fi
-  if [ "${shot3:-0}" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT3"; then
+  # 같은 순간 읽은 기록으로 SHOT3·DONE을 함께 봄(둘이 같은 때 찍히면 SHOT3 점검을 건너뛰고 끝나던 문제)
+  L=$(adb logcat -d -s DESK_SELFTEST:I)
+  if [ "${shot3:-0}" = 0 ] && echo "$L" | grep -q "SHOT3"; then
     adb exec-out screencap -p > desk-screen-split.png; shot3=1
     # 실제로 그 앱 창이 왼쪽 위 4분의 1(가로 0~800)에 떴는지 안드로이드 창 목록에서 확인
     spkg=$(adb logcat -d -s DESK_SELFTEST:I | grep -o "SPLIT-PKG [a-z0-9._]*" | tail -1 | cut -d' ' -f2)
@@ -49,7 +51,7 @@ for i in $(seq 1 90); do
     echo "실제 창 자리 점검: $sq ($spkg)"; grep -A40 "$spkg" activities.txt | grep -m3 -E "mBounds=" || true
   fi
   if [ "$shot" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT"; then adb exec-out screencap -p > desk-screen-windows.png; shot=1; fi
-  if adb logcat -d -s DESK_SELFTEST:I | grep -q "DONE"; then break; fi
+  if echo "$L" | grep -q "DONE"; then break; fi
 done
 sleep 4
 adb exec-out screencap -p > desk-screen-launched.png
