@@ -703,7 +703,7 @@ public class MainActivity extends Activity {
                         .setPositiveButton("확인", null).show();
             } else {
                 new AlertDialog.Builder(this).setTitle("덜누름 브라우저 " + BuildConfig.VERSION_NAME)
-                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 받은 파일은 휴대폰의 "다운로드" 폴더에 저장됩니다. 동기화·확장 프로그램·다중 탭은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
+                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 받은 파일은 휴대폰의 \"다운로드\" 폴더에 저장됩니다. 동기화·확장 프로그램·다중 탭은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
                         .setPositiveButton("확인", null).show();
             }
         }).show();
