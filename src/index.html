@@ -412,6 +412,15 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .pd-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .pd-name { font: 700 16px/1.35 var(--font-body); }
 .pd-sub { color: #71717a; font-size: 13px; }
+.pd-make { font-style: normal; font: 700 11px/1 var(--font-body); color: #be185d; background: #fce7f3; border: 1px solid #fbcfe8; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
+.pd-wrap { position: relative; display: grid; }
+.pd-wrap .pd { height: 100%; }
+.pd-wrap.has-video .pd { padding-bottom: 62px; }
+.pd-video { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 10px; background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; font: 700 13px/1 var(--font-body); text-decoration: none; }
+.pd-video:hover { background: #fbcfe8; }
+.pd-video svg { width: 14px; height: 14px; }
+.pd-video.is-soon { opacity: .55; cursor: default; }
+.pd-video.is-soon:hover { background: #fce7f3; }
 .pd-sw { font-style: normal; font: 700 11px/1 var(--font-body); color: #0369a1; background: #e0f2fe; border: 1px solid #bae6fd; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
 .pd-used { font-style: normal; font: 700 11px/1 var(--font-body); color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; }
 .pd-price { margin-top: 8px; font: 800 18px/1.3 var(--font-body); color: #0b0b0c; }
@@ -1284,13 +1293,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="pd-price">69,800원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
+        <div class="pd-wrap has-video">
         <a class="pd" data-pid="anmite-monitor" href="https://s.click.aliexpress.com/e/_c4cNr3j9" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="media/portable-monitor.svg" alt="받침대로 세운 휴대용 모니터에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
-          <span class="pd-name">Anmite 18.5인치 휴대용 터치 모니터</span>
+          <span class="pd-name">Anmite 18.5인치 휴대용 터치 모니터 <em class="pd-make">18.5인치 내비 제작</em></span>
           <span class="pd-sub">터치 · 120Hz · 받침대 포함</span>
           <span class="pd-price"><s>288,261원</s> <em>54%</em> 132,600원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
+          <a class="pd-video" href="https://www.youtube.com/watch?v=7MfOYul2c8w&amp;t=2s" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 보기</a>
+        </div>
         <a class="pd" data-pid="solar-cam" href="https://s.click.aliexpress.com/e/_c4o2D7GP" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="media/solar-cam.webp" alt="태양광 패널이 달린 무선 후방 카메라" loading="lazy"></span>
           <span class="pd-name">태양광 무선 후방 카메라 <em class="pd-sw">전용 소프트웨어</em></span>
@@ -1298,8 +1310,38 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="pd-price">75,900원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
+        <div class="pd-wrap has-video">
+        <a class="pd" data-pid="jooyon-v27q" href="https://naver.me/F8lycCjI" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="media/qhd-monitor.webp" alt="책상 위 27인치 모니터에 덜누름 데스크탑앱 화면을 띄운 모습" loading="lazy"></span>
+          <span class="pd-name">주연테크 V27Q120MC <em class="pd-make">올인원PC 제작</em></span>
+          <span class="pd-sub">27인치 QHD · 120Hz · USB-C</span>
+          <span class="pd-price"><s>199,000원</s> <em>25%</em> 149,000원</span>
+          <span class="pd-foot"><span class="pd-shop">네이버 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+          <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
+        </div>
+        <div class="pd-wrap has-video">
+        <a class="pd" data-pid="flipbook13" href="https://link.coupang.com/a/iDCBB6X7Bs" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="media/lapdock.svg" alt="폴드를 연결해 노트북처럼 쓰는 화면·키보드 독에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
+          <span class="pd-name">플립북 무선 13 <em class="pd-make">갤럭시 노트북 만들기</em></span>
+          <span class="pd-sub">13인치 무선 화면 · 키보드</span>
+          <span class="pd-price"><s>399,000원</s> <em>25%</em> 299,000원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+          <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
+        </div>
+        <div class="pd-wrap has-video">
+        <a class="pd" data-pid="flipbook14" href="https://link.coupang.com/a/iDCLRXo7Bk" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="media/lapdock.svg" alt="폴드를 연결해 노트북처럼 쓰는 화면·키보드 독에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
+          <span class="pd-name">플립북 14 Wireless <em class="pd-make">14인치 갤럭시 노트북 만들기</em></span>
+          <span class="pd-sub">14인치 무선 화면 · 키보드</span>
+          <span class="pd-price"><s>428,110원</s> <em>1%</em> 423,820원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+          <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
+        </div>
       </div>
-      <p class="pd-small">표시 가격은 적힌 날짜에 확인한 판매가(울트라 · 거치대는 와우 할인가, 다이얼 패드는 쿠폰 할인가, 알리 상품은 행사가)이며, 실제 가격과 재고는 수시로 바뀝니다. 구매 전 판매처에서 확인하세요. 배송 · 교환은 각 판매처가 맡습니다.</p>
+      <p class="pd-small">표시 가격은 적힌 날짜에 확인한 판매가(울트라 · 거치대는 와우 할인가, 다이얼 패드는 쿠폰 할인가, 알리 상품은 행사가, 네이버는 쿠폰 · 카드 할인 전 가격)이며, 실제 가격과 재고는 수시로 바뀝니다. 구매 전 판매처에서 확인하세요. 배송 · 교환은 각 판매처가 맡습니다.</p>
     </div>
   </section>
   </div>
