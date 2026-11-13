@@ -10,7 +10,7 @@ run('Cockpit special deck switches', async ({context, origin, errors}) => {
       setScreenBrightness: v => __bri.push(v)};
     navigator.mediaDevices.getUserMedia = async () => { const c = document.createElement('canvas'); c.width = 320; c.height = 180; const g = c.getContext('2d');
       setInterval(() => { g.fillStyle = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'); g.fillRect(0, 0, 320, 180); }, 50); return c.captureStream(20); };
-    if (!sessionStorage.getItem('dk')) { sessionStorage.setItem('dk', '1'); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); }
+    if (!sessionStorage.getItem('dk')) { sessionStorage.setItem('dk', '1'); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); localStorage.setItem('dna_pfdSet', JSON.stringify({theme: 'day'})); /* 1.60: 시험 시각이 밤이어도 계기 야간 20%가 끼어들지 않게 */ }
   });
   await p.setViewportSize({width: 1036, height: 1300});
   await p.goto(origin);
