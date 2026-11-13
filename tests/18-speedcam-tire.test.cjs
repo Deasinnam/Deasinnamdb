@@ -49,7 +49,7 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   assert.match(await p.evaluate(() => __said[1] || ''), /^100미터 앞/, 'Second call near the camera even with the side offset');
   // 공공데이터 CSV 형식
   const rows = await p.evaluate(() => AmpCam.parseCsv('무인교통단속카메라관리번호,시도명,단속구분,제한속도,위도,경도\nA1,서울,과속단속,60,37.51,127.01\nA2,서울,신호단속,0,37.52,127.02\nA3,부산,과속단속,"80",35.1,129.0'));
-  assert.deepEqual(rows, [[37.51, 127.01, 60], [35.1, 129, 80]]);
+  assert.deepEqual(rows, [[37.51, 127.01, 60, 0, '', ''], [35.1, 129, 80, 0, '', '']]);
   assert.equal(await p.locator('#sCam').isChecked(), true);
   // 1.38 기본 내장 전국 자료(공공데이터): 3만 곳 이상, 설정에 표시
   await p.waitForFunction(() => AmpCam.builtin > 30000, null, {timeout: 5000});

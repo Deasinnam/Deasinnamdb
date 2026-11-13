@@ -2513,8 +2513,12 @@ const AmpSfx=(()=>{
   // 1.38 기본 내장 자료: 공공데이터포털 전국무인교통단속카메라표준데이터(2026-06-19 수정본)에서 제한속도가 있는 카메라만(assets/data/kr-speedcams.txt)
   // 직접 불러온 CSV가 있으면 그것을, 없으면 내장 자료를 씀
   let builtin=[],builtinInfo='';
-  fetch('data/kr-speedcams.txt').then(r=>r.ok?r.text():'').then(t=>{const out=[];for(const l of t.split('\n')){if(!l)continue;if(l[0]==='#'){const m=l.match(/기준일 ([\d-]+)~([\d-]+)/);builtinInfo=m?m[2].slice(0,7):'';continue}
-    const c=l.split(',');if(c.length>=3)out.push([+c[0],+c[1],+c[2]])}builtin=out;statUi()}).catch(()=>{});
+  // 1.60 자료에 보호구역·도로 이름도 담음: 위도,경도,제한속도,보호구역,도로순번 + '#roads:' 목록("도로노선명|노선번호")
+  fetch('data/kr-speedcams.txt').then(r=>r.ok?r.text():'').then(t=>{const out=[];let roads=[];for(const l of t.split('\n')){if(!l)continue;
+      if(l.startsWith('#roads:')){try{roads=JSON.parse(l.slice(7))}catch(e){}continue}
+      if(l[0]==='#'){const m=l.match(/기준일 ([\d-]+)~([\d-]+)/);builtinInfo=m?m[2].slice(0,7):'';continue}
+      const c=l.split(',');if(c.length<3)continue;const rd=c[4]!==undefined&&c[4]!==''?String(roads[+c[4]]||'').split('|'):['',''];
+      out.push([+c[0],+c[1],+c[2],+(c[3]||0),rd[0]||'',rd[1]||''])}builtin=out;statUi()}).catch(()=>{});
   const loadDb=()=>{const u=loadUser();return u.length?u:builtin};
   const R=6371000,rad=x=>x*Math.PI/180;
   const dist=(a,b,c,d)=>{const p=rad(c-a),q=rad(d-b),h=Math.sin(p/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(q/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
@@ -2530,10 +2534,10 @@ const AmpSfx=(()=>{
   /* 2) 공공데이터 CSV(전국무인교통단속카메라표준데이터): 위도·경도·제한속도 열을 찾아 압축 저장 */
   function parseCsv(text){const lines=text.split(/\r?\n/).filter(Boolean);if(lines.length<2)return [];
     const split=l=>{const o=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){o.push(cur);cur=''}else cur+=ch}o.push(cur);return o.map(x=>x.trim())};
-    const h=split(lines[0]),fi=re=>h.findIndex(x=>re.test(x));const iLat=fi(/위도|lat/i),iLon=fi(/경도|lon|lng/i),iLim=fi(/제한속도|maxspeed|limit/i),iKind=fi(/단속구분|구분/);
+    const h=split(lines[0]),fi=re=>h.findIndex(x=>re.test(x));const iLat=fi(/위도|lat/i),iLon=fi(/경도|lon|lng/i),iLim=fi(/제한속도|maxspeed|limit/i),iKind=fi(/단속구분/),iZone=fi(/보호구역/),iRn=fi(/도로노선명/),iRr=fi(/도로노선번호/);
     if(iLat<0||iLon<0)return null;const out=[];
     for(let i=1;i<lines.length;i++){const c=split(lines[i]),la=+c[iLat],lo=+c[iLon];if(!(la>32&&la<39.5&&lo>124&&lo<132))continue;
-      const kind=iKind>=0?c[iKind]:'';if(kind&&/신호|주정차|버스|안전띠/.test(kind)&&!/과속/.test(kind))continue;out.push([+la.toFixed(6),+lo.toFixed(6),iLim>=0?limOf(c[iLim]):0])}
+      const kind=iKind>=0?c[iKind]:'';if(kind&&/신호|주정차|버스|안전띠/.test(kind)&&!/과속/.test(kind))continue;if(iLim>=0&&!limOf(c[iLim]))continue; /* 1.60 제한속도 없는 신호 전용 카메라는 뺌(내장 자료와 같게) */const z=iZone>=0?parseInt(c[iZone],10):0;out.push([+la.toFixed(6),+lo.toFixed(6),iLim>=0?limOf(c[iLim]):0,z>0&&z<99?z:0,iRn>=0?c[iRn]:'',iRr>=0?String(c[iRr]||'').replace(/^0+/,''):''])}
     return out}
   async function importFile(f){const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);if(/\uFFFD/.test(t.slice(0,2000))){try{t=new TextDecoder('euc-kr').decode(buf)}catch(e){}}
     const rows=parseCsv(t);if(!rows){toast('위도·경도 열을 찾지 못했어요. 공공데이터 "전국무인교통단속카메라표준데이터" CSV인지 확인해 주세요.');return}
@@ -2552,6 +2556,26 @@ const AmpSfx=(()=>{
   function ding(){try{const a=fx();if(!a)return;const t=a.currentTime;[0,.16].forEach((dt,i)=>{const o=a.createOscillator();o.type='sine';o.frequency.value=i?1320:990;const g=fxEnv(a,t+dt,.16,.005,.18);o.connect(g).connect(a.destination);o.start(t+dt);o.stop(t+dt+.25)})}catch(e){}}
   function nearAll(lat,lon){const out=[];for(const src of [loadDb(),osm])for(const c of src){if(Math.abs(c[0]-lat)>.012||Math.abs(c[1]-lon)>.016)continue;const d=dist(lat,lon,c[0],c[1]);if(d<1300)out.push({c,d})}
     out.sort((a,b)=>a.d-b.d);return out} // 1.59 같은 자리 중복도 모두 넘김(가장 가까운 것 하나만 남기면 교차로의 30 카메라가 60 카메라를 가리는 일이 있었음)
+  /* 1.60 지금 달리는 길 이름(OpenStreetMap): 카메라 자료의 도로노선명·노선번호와 맞춰 옆길·교차 도로 카메라를 걸러냄.
+   *  앞쪽 1.2km 안에 카메라 후보가 있을 때만, 150m 움직였거나 15초 지났을 때 다시 물어봄. 인터넷이 없거나 길 이름을 모르면 예전 방식(위치·방향)으로만 판단 */
+  const road={name:'',ref:'',at:null,t:0,busy:false,ok:false};
+  const normRd=v=>String(v||'').replace(/\(.*?\)/g,'').replace(/\s+/g,'').replace(/(일반국도|국도|지방도|고속국도|고속도로)/g,'').trim();
+  async function roadFetch(lat,lon,hdg){const now=Date.now();if(road.busy||(road.at&&now-road.t<15000&&dist(lat,lon,road.at[0],road.at[1])<150))return;road.busy=true;
+    const q=`[out:json][timeout:10];way(around:30,${lat.toFixed(6)},${lon.toFixed(6)})[highway~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road)$"];out tags geom;`;
+    let got=null;
+    for(const ep of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+      try{const r=await fetch(ep,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(!r.ok)continue;got=await r.json();break}catch(e){}}
+    road.busy=false;road.t=now;road.at=[lat,lon];if(!got){road.ok=false;return}
+    const kx=111320*Math.cos(rad(lat)),ky=110540;let best=null;
+    for(const w of got.elements||[]){const g=w.geometry||[];for(let i=1;i<g.length;i++){
+      const ax=(g[i-1].lon-lon)*kx,ay=(g[i-1].lat-lat)*ky,bx=(g[i].lon-lon)*kx,by=(g[i].lat-lat)*ky,dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,-(ax*dx+ay*dy)/L2));
+      const d=Math.hypot(ax+dx*t,ay+dy*t),sb=(Math.atan2(dx,dy)*180/Math.PI+360)%360,da=Math.abs(((sb-hdg+540)%360)-180),dd=Math.min(da,180-da); // 길은 양방향
+      const sc=d+(hdg>=0?dd*.6:0);if(dd<=40&&(!best||sc<best.sc))best={sc,d,tags:w.tags||{}}}}
+    if(best&&best.d<=30){road.name=best.tags.name||best.tags['name:ko']||'';road.ref=String(best.tags.ref||'').split(';')[0].replace(/^0+/,'');road.ok=!!(road.name||road.ref)}else road.ok=false}
+  // 카메라의 도로와 지금 길이 같은지: true 같음 · false 다름 · null 모름(자료나 길 이름이 없음)
+  function sameRoad(c){if(!road.ok||!road.at||Date.now()-road.t>45000)return null;const cn=normRd(c[4]),cr=String(c[5]||''),rn=normRd(road.name),rr=road.ref;
+    if(!cn&&!cr)return null;if(cr&&rr&&cr===rr)return true;if(cn&&rn&&(cn===rn||(cn.length>=2&&rn.length>=2&&(cn.includes(rn)||rn.includes(cn)))))return true;
+    if(!rn&&!(rr&&cr))return null;return false}
   const seen=new Map(); // 카메라별 직전 거리(가까워지는지 확인)
   function check(lat,lon,spd,hdg){if(!camOn()){show(null);return}
     if(!osmAt||dist(lat,lon,osmAt[0],osmAt[1])>3000)osmFetch(lat,lon);
@@ -2562,16 +2586,18 @@ const AmpSfx=(()=>{
     //  · 30 이하 카메라(어린이·노인 보호구역)는 대부분 좁은 이면도로에 있어, 옆으로 벗어난 허용 거리를 좁게(18~28m)
     //  · 시속 55 이상으로 달리는데 30 이하 카메라가 진행선에서 12m 넘게 벗어나 있으면 옆길 카메라로 보고 제외
     //  · 같은 지점(앞뒤 60m)에 제한속도가 다른 카메라가 여럿이면, 진행선에 더 가깝고 지금 속도에 더 맞는 것을 고름
-    const cand=[];
+    const cand=[];if(spd>=12&&hdg>=0&&nearAll(lat,lon).length)roadFetch(lat,lon,hdg); // 1.60 근처에 카메라가 있을 때만 지금 길 이름 확인
     if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){if(o.d>1200)break;const k=o.c[0].toFixed(5)+','+o.c[1].toFixed(5);seenNow.set(k,o.d);
       const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180)*Math.PI/180,along=o.d*Math.cos(df),cross=Math.abs(o.d*Math.sin(df));
-      const lim=o.c[2],low=lim>0&&lim<=30;
+      const same=sameRoad(o.c),lim=o.c[2];
+      if(same===false&&(lim<=30||cross>15))continue; // 1.60 다른 길(옆길·교차 도로) 카메라. 진행선 바로 위(15m 안)의 40 이상 카메라는 이름 표기가 달라도 남김
+      const low=lim>0&&lim<=30&&same!==true; // 같은 길로 확인되면 보호구역 카메라도 넓은 허용 거리
       // 1.54 넓은 간선도로는 카메라가 길 건너편 기둥에 있고 좌표도 수십 m 어긋나는 일이 많아 속도에 맞춰 넓힘(시속 30 → 42m, 60 → 54m, 80 이상 → 62~70m)
       const tol=low?Math.max(18,Math.min(28,15+spd*.15)):Math.max(35,Math.min(70,30+spd*.4));
       if(df>50*Math.PI/180||along<=0||cross>Math.max(tol,along*(low?.05:.1)))continue;
       if(low&&spd>=55&&cross>12)continue;
       const pd=seen.get(k);if(!(pd&&pd.t>now-3000&&pd.d-o.d>=2))continue;
-      cand.push({o,along,cross,score:cross+(lim?Math.abs(lim-spd)*.5:15)})}
+      cand.push({o,along,cross,same,score:cross+(lim?Math.abs(lim-spd)*.5:15)-(same===true?25:0)})}
     if(cand.length){const a0=cand[0].along;const grp=cand.filter(c=>c.along-a0<60);grp.sort((x,y)=>x.score-y.score);best=grp[0].o}
     seen.clear();for(const [k,d] of seenNow)seen.set(k,{d,t:now});
     if(!best){show(null);return}let key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5);
@@ -2602,7 +2628,7 @@ const AmpSfx=(()=>{
     demoT.push(setTimeout(()=>{demoOn=false;show(null);el.classList.remove('demo')},9000))}
   $('#sCamDemo').onclick=e=>{e.preventDefault();e.stopPropagation();demo()};
   statUi();
-  window.AmpCam={get builtin(){return builtin.length},demo,check:(...a)=>{manualT=Date.now();check(...a)},parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
+  window.AmpCam={road,sameRoad,get builtin(){return builtin.length},demo,check:(...a)=>{manualT=Date.now();check(...a)},parseCsv,set osm(a){osm=a;osmAt=[0,0];osmT=Date.now()},get osm(){return osm},show,statUi};
 })();
 /* ===== 90-radio.js ===== */
 // 인터넷 라디오
