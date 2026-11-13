@@ -32,6 +32,8 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   let p = await open('special', '16:55', 245);
   assert.equal(await p.evaluate(() => document.documentElement.dataset.special), '1');
   assert.equal(await p.evaluate(() => document.documentElement.dataset.app), 'one', 'special keeps the car-app setup');
+  // 표시 방위는 부드럽게 따라가므로 자리를 잡을 때까지 잠깐 기다림(느린 CI에서 흔들림)
+  await p.waitForFunction(() => { AmpPfd.feed(); pfd.draw(); const s = AmpSpecial.sun(); return s && Math.abs(s.x) < 120; }, null, {timeout: 6000, polling: 200}).catch(() => {});
   const m = await p.evaluate(() => ({gold: AmpSpecial.mood.gold, sun: AmpSpecial.sun(), phase: AmpFlight.state.phase}));
   assert.equal(m.phase, 'cruise');
   assert.ok(m.gold > .9, 'golden hour at 16:55: ' + m.gold);

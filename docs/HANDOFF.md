@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-14 · v1.62.6 (versionCode 96)**
+마지막 갱신: **2026-11-14 · v1.63 (versionCode 97)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.62.6** (versionCode 96, versionName `1.62.6-one`) |
+| 최신 버전 | **1.63** (versionCode 97, versionName `1.63-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-14 · 1.63 — 아래 버튼 줄 액체 탭(`92-zz-rail-liquid.js`, `AmpRailLiquid`): `#ckRail` 안에 `.ck-liq` 틀 하나, `button[data-f].on`이 바뀌면(MutationObserver) 변경 목록에 {t, 버튼}을 쌓고 그릴 때마다 지금 배치에서 버튼 자리를 재서 두 끝에 스프링 합(오른쪽으로 갈 때 왼끝 2.0 Hz·오른끝 3.4 Hz, 반대는 반대, ζ .86) — 줄이 전용 보기마다 다른 창으로 옮겨 가도 어긋나지 않음. 켜진 버튼 자체 강조는 `.ckrail.liq button[data-f].on`에서 꺼진 버튼과 같은 바탕·그림자·테두리(변수 --liq-bg/bs/bc, 스킨이 바뀌면 다시 읽음), 틀 색 --liq-acc = 켜진 버튼 글자색. `window.__liqNow`로 시각 고정 가능(테스트·미리보기). 테스트 34 추가, 32의 해 위치 검사는 표시 방위가 자리 잡을 때까지 기다림(흔들림). 디자인 시안 캔버스: https://claude.ai/artifact/EgGDuyHE2KNcYKiGnsSGBS (시안 1 적용 자리, 2 한 도형 모핑 루프, 3 액체 탭 = 이번 반영, 4 늘어나는 볼륨).
 - 2026-11-14 · 1.62.6 — 몬스타덱 무반응(스페셜): 웹 쪽은 스페셜도 APP='one'이라 기존과 같음(테스트 19를 `TEST_BUILD=special`로도 통과). 원인은 네이티브 — 형제 앱(대신남 원 V1 등)이 USB 인터페이스를 붙잡고 있어 claimInterface 실패. `UsbDeck`: 연결 전에 형제 패키지들(SIBLINGS)에 `com.daesinnam.action.DECK_RELEASE`(extra from=내 패키지) 보냄 → 받은 앱은 close(); claim 실패 시 500ms×8 재시도; `resumeIfAllowed()`를 onResume에서(허용된 경우만, 허용 창 다시 안 띄움). 받는 쪽 리시버는 exported(권한 없음 — 서명이 다른 옛 빌드와 permission 충돌 피하려고). **두 앱 모두 1.62.6 이상이어야 서로 놓아 줌.** 스페셜 하늘 창에 `[data-more]` [계기 설정 · 테마 …] → 원래 계기 설정 창(pass 플래그로 가로채기 건너뜀). `tests/lib/harness.cjs`에 `TEST_BUILD` 환경 변수(모든 페이지를 그 빌드로) — 단 기존 테스트 다수가 APP='all' 기준이라 one/special 전체 실행은 실패가 많음(비교용으로만).
 - 2026-11-14 · 1.62.5 — 아래 버튼 줄 가려짐: `html,body{height:100%}`+`overflow-x:hidden` 때문에 페이지가 **body 안에서** 스크롤되는 경우가 있음(window.scrollY=0) → `FxLock`은 `sc()`로 실제 스크롤러(body 또는 scrollingElement)를 골라 고정·되돌림(scroll은 document capture로 받음, `AmpFxLock.scroller`), `fitY`는 창 아래와 `#ckRail` 아래 중 큰 쪽 기준, ResizeObserver(appEl·html)로 높이 바뀌면 다시 맞춤. app.css 끝 `.app.FX #ckRail{position:sticky;bottom:0}`(스피드미터는 PFD 안쪽이라 sticky가 안 먹고 fitY로 보장). 라디오 FX 꽉 채우기 규칙(`.rd-body:has(#rdListBox[hidden])`)은 즐겨찾기가 펼쳐져 있으면 빠짐(`:not(:has(#rdPresetBox:not([hidden])))`). 테스트 33에 다섯 보기 버튼 줄 화면 안 검사. 전체 테스트를 TEST_JOBS=2로 돌리면 01·14·32가 가끔 시간 초과 — 하나씩은 통과.
 - 2026-11-14 · 1.62.4 — 라디오 즐겨찾기 칸 수: `90-radio.js` `rdRenderFavs` n=max(6, ceil(개수/열수)*열수), 열 수는 `#rdPresets` gridTemplateColumns에서 읽음(보통 3 → 6·9·12…). 풀화면: `MainActivity.enterFullScreen()`(API30+ `WindowInsetsController.hide(statusBars|navigationBars)` + `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`, 그 아래는 IMMERSIVE_STICKY), onCreate·`onWindowFocusChanged(true)`에서 다시 적용 — 모든 빌드 공통. 테스트 33에 칸 수 검사 추가.
