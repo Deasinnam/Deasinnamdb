@@ -2792,3 +2792,10 @@ img{height:auto;object-fit:contain}
 
 /* 1.62.1 스페셜: GPS 수신 전에도 원형 지도는 마지막 위치를 보여 주고, "GPS" 표시는 아래에 작게 */
 :root[data-build="special"] .pfd-mini.nofix .pm-msg{inset:auto 0 14% 0;height:auto;background:none;font-size:10px;text-shadow:0 1px 3px #000}
+/* 1.62.2 폴드7: 라디오 숫자 드럼이 높이가 고정된 칸(.rd-seg 64px 등)보다 커서 아래 방송국 이름을 덮던 것 — 칸이 드럼 크기를 따라가게 */
+:root[data-cp] #wRadio .rd-disp .rd-seg{height:auto!important;max-height:none!important;overflow:visible}
+:root[data-cp] #wRadio .rd-disp .rd-fq{flex:none;margin-bottom:8px}
+:root[data-cp] #wRadio .rd-disp #rdName{flex:none;position:relative;z-index:1}
+:root[data-cp] #wRadio .drum,:root[data-cp] #wRadio .drum-dot{font-size:clamp(40px,min(8.4cqw,14cqh),96px)}
+/* 1.62.2 전용 보기 고정: 브라우저 자체의 당겨짐·빛 효과 끄기(앱이 스프링으로 대신 함) */
+html.fxlock,html.fxlock body{overscroll-behavior-y:none}

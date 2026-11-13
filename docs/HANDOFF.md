@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-13 · v1.62.2 (versionCode 92)**
+마지막 갱신: **2026-11-14 · v1.62.3 (versionCode 93)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.62.2** (versionCode 92, versionName `1.62.2-one`) |
+| 최신 버전 | **1.62.3** (versionCode 93, versionName `1.62.3-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -74,7 +74,7 @@
 
 - **웹 화면**: `web/src/NN-*.js`를 `tools/build-web.cjs`가 이름순으로 이어 붙여 `app/src/main/assets/app.js`(한 IIFE) 생성. 직접 app.js 고치지 말 것.
   - 스타일: `app/src/main/assets/app.css`(뒤에 덧붙이는 방식), 화면 틀: `app/src/main/assets/index.html`.
-  - 주요 파일: `00-core.js`(빌드 플래그·스킨·store), `02-build-notice.js`, `51-pfd-minimap.js`(원형 지도), `63-carlog.js`(차계부), `64-lyrics.js`(가사), `80-clock-windows.js`, `92-cockpit2-rail.js`(아래 바로가기·ckFocus), `97-brightness.js`(밝기·야간 20%), `98-cockpit-special.js`(관제탑 표시 atcMini), `99-power-boot.js`.
+  - 주요 파일: `92-z-fx-lock.js`(1.62.3 전용 보기 고정·스프링 — 빌드는 `^\d\d-[a-z0-9-]+\.js$` 파일만 묶음, `92b-`처럼 쓰면 빠짐), `00-core.js`(빌드 플래그·스킨·store), `02-build-notice.js`, `51-pfd-minimap.js`(원형 지도), `63-carlog.js`(차계부), `64-lyrics.js`(가사), `80-clock-windows.js`, `92-cockpit2-rail.js`(아래 바로가기·ckFocus), `97-brightness.js`(밝기·야간 20%), `98-cockpit-special.js`(관제탑 표시 atcMini), `99-power-boot.js`.
 - **빌드 플래그(JS)** `00-core.js`:
   - `BUILD` = 네이티브 `NB.buildKind()`(= `BuildConfig.FLAVOR_device`) 또는 테스트용 `window.__build`.
   - `PUB`(comm·play), `PLAY`(play), `NATIVE_KIND`, **`APP`** = `amp` / `one`(one·special·std·fold8 네이티브) / `all`(웹 미리보기·테스트·시험판).
@@ -85,7 +85,7 @@
 - **스페셜 풍경**(`app/src/main/assets/pfd-special.js`, 1.62): `data-build=special`(미리보기는 주소 `?special`)일 때만 켜짐. `pfd-flight.js`가 연 자리 `AmpFlight.ext`(`horizon`·`river`·`afterCountry`)와 `scene.drawSky/drawGround`를 덧씌움. 해 위치는 `solar()`(날짜·시각·`dna_wxLoc`, 없으면 서울) → `mood()`가 낮/노을/푸른 시간/밤 색을 섞음(키가 바뀔 때만 하늘·구름 색 다시 입힘, 구름은 해 좌우 두 벌 캐시). 자동 낮·밤은 `window.AmpAutoNight`(해 높이 < −5°)를 `pfd-amp.js` `applyTheme`이 씀. 밤 땅은 `nightGround()`가 장면 앞단에 먼저 깜. 시험·미리보기 시각: `window.__spTime`(ms)·`__spHour`, 방향 고정 `window.__spHdg`, 해 위치 계산 `AmpSpecial.solarAt(ms)`. 디버그로 층 끄기: `window.__spOff={glow,cirrus,bank}`.
 - **PFD**: `pfd.js`(DaesinnamPFD, 수정 금지) 위에 계기 스킨(에어라인/에어포스 `data-pfdlook`), 비행 단계·효과음, 관제탑(TWR) 문구, 원형 지도, 총 주행거리.
 - **원형 지도**(`PfdMap`): Leaflet + OSM 타일. 모양 `gta` / `normal`(PFD 주간·야간 따라감) / `day`(항상 주간). 야간은 SVG 필터 `#pmNightFx`(바탕 반전 + 물색 골라 파랑 강줄기 + 강가 주황 불빛). Leaflet은 `app/src/main/assets/leaflet/`(gitignore, CI가 받아 옴).
-- **테스트**: `tests/NN-*.test.cjs` 32개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
+- **테스트**: `tests/NN-*.test.cjs` 33개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
 
 ---
 
@@ -124,6 +124,8 @@
 ---
 
 ## 7. 작업 기록 (최근이 위)
+
+- 2026-11-14 · 1.62.3 — 전용 보기 고정+스프링(`AmpFxLock`: FX면 `fitY()`=고른 창 아래 끝이 화면 아래에 닿는 스크롤로 고정, 터치는 세로 끌기만 고무줄(`#app` transform)→놓으면 스프링 k240 c17, 휠·스크롤은 되돌리고 살짝 튕김, 스스로 스크롤되는 곳·`.leaflet-container`·input·`.rd-knob`·`.grip`·`.rzbtn`·`[data-nolock]`은 제외, `html.fxlock` overscroll 끔). 폴드7 라디오 드럼 겹침(app.css 끝 `.rd-disp .rd-seg{height:auto!important}`). 테스트 33 추가.
 
 - 2026-11-13 · 1.62.2 — 에어포스원: 폴드7 칩 겹침(배지 아래로 동적 쌓기), 원형 지도 주간·야간 버튼 없앰, 하늘 고르기(`spSky`: auto·dawn·noon·gold·set·night, 테마 버튼을 가로채 창을 띄움, 고정이면 `__spTime`+`__spSunAhead`, 시각은 기기 시각대 0~24시를 해 높이로 훑어 찾음 — CI(UTC)에서 11~21시만 보다 실패했었음), 전화 표시용 알림 접근 안내. 테스트 32 보강.
 
