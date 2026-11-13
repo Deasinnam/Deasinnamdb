@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-14 · v1.62.3 (versionCode 93)**
+마지막 갱신: **2026-11-14 · v1.62.4 (versionCode 94)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.62.3** (versionCode 93, versionName `1.62.3-one`) |
+| 최신 버전 | **1.62.4** (versionCode 94, versionName `1.62.4-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-14 · 1.62.4 — 라디오 즐겨찾기 칸 수: `90-radio.js` `rdRenderFavs` n=max(6, ceil(개수/열수)*열수), 열 수는 `#rdPresets` gridTemplateColumns에서 읽음(보통 3 → 6·9·12…). 풀화면: `MainActivity.enterFullScreen()`(API30+ `WindowInsetsController.hide(statusBars|navigationBars)` + `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`, 그 아래는 IMMERSIVE_STICKY), onCreate·`onWindowFocusChanged(true)`에서 다시 적용 — 모든 빌드 공통. 테스트 33에 칸 수 검사 추가.
 - 2026-11-14 · 1.62.3 — 전용 보기 고정+스프링(`AmpFxLock`: FX면 `fitY()`=고른 창 아래 끝이 화면 아래에 닿는 스크롤로 고정, 터치는 세로 끌기만 고무줄(`#app` transform)→놓으면 스프링 k240 c17, 휠·스크롤은 되돌리고 살짝 튕김, 스스로 스크롤되는 곳·`.leaflet-container`·input·`.rd-knob`·`.grip`·`.rzbtn`·`[data-nolock]`은 제외, `html.fxlock` overscroll 끔). 폴드7 라디오 드럼 겹침(app.css 끝 `.rd-disp .rd-seg{height:auto!important}`). 테스트 33 추가.
 
 - 2026-11-13 · 1.62.2 — 에어포스원: 폴드7 칩 겹침(배지 아래로 동적 쌓기), 원형 지도 주간·야간 버튼 없앰, 하늘 고르기(`spSky`: auto·dawn·noon·gold·set·night, 테마 버튼을 가로채 창을 띄움, 고정이면 `__spTime`+`__spSunAhead`, 시각은 기기 시각대 0~24시를 해 높이로 훑어 찾음 — CI(UTC)에서 11~21시만 보다 실패했었음), 전화 표시용 알림 접근 안내. 테스트 32 보강.

@@ -203,6 +203,7 @@ public class MainActivity extends Activity {
         web.setBackgroundColor(Color.parseColor("#05070D"));
         setContentView(web);
         applySystemBarPadding(web);
+        enterFullScreen();
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -324,6 +325,29 @@ public class MainActivity extends Activity {
             web.getSettings().setTextZoom(z);
             web.evaluateJavascript("document.documentElement.style.setProperty('--fs'," + (z / 100f) + ");window.dispatchEvent(new Event('resize'))", null);
         }
+    }
+
+    /** 1.62.4 풀화면: 위 상태바와 아래 작업창(내비게이션·태스크바)을 숨김. 화면 끝에서 밀면 잠깐 보였다가 다시 숨음 */
+    @SuppressWarnings("deprecation")
+    private void enterFullScreen() {
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.view.WindowInsetsController c = getWindow().getInsetsController();
+                if (c != null) {
+                    c.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                    c.setSystemBarsBehavior(android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                }
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) enterFullScreen();
     }
 
     /** Android 15 이상에서는 화면이 상태바 아래까지 그려지므로, 시스템 바 높이만큼 여백을 줍니다. 1.47 키보드가 뜨면 키보드 높이만큼 아래 여백(입력창이 가려지지 않게) */
