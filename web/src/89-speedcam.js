@@ -46,23 +46,32 @@
       const v=(speechSynthesis.getVoices()||[]).filter(x=>/^ko/i.test(x.lang));const nat=v.find(x=>/natural|neural|online|google/i.test(x.name))||v[0];if(nat)u.voice=nat;speechSynthesis.speak(u)}catch(e){}}
   function ding(){try{const a=fx();if(!a)return;const t=a.currentTime;[0,.16].forEach((dt,i)=>{const o=a.createOscillator();o.type='sine';o.frequency.value=i?1320:990;const g=fxEnv(a,t+dt,.16,.005,.18);o.connect(g).connect(a.destination);o.start(t+dt);o.stop(t+dt+.25)})}catch(e){}}
   function nearAll(lat,lon){const out=[];for(const src of [loadDb(),osm])for(const c of src){if(Math.abs(c[0]-lat)>.012||Math.abs(c[1]-lon)>.016)continue;const d=dist(lat,lon,c[0],c[1]);if(d<1300)out.push({c,d})}
-    out.sort((a,b)=>a.d-b.d);const uniq=[];for(const o of out)if(!uniq.some(u=>dist(u.c[0],u.c[1],o.c[0],o.c[1])<35))uniq.push(o);return uniq}
+    out.sort((a,b)=>a.d-b.d);return out} // 1.59 같은 자리 중복도 모두 넘김(가장 가까운 것 하나만 남기면 교차로의 30 카메라가 60 카메라를 가리는 일이 있었음)
   const seen=new Map(); // 카메라별 직전 거리(가까워지는지 확인)
   function check(lat,lon,spd,hdg){if(!camOn()){show(null);return}
     if(!osmAt||dist(lat,lon,osmAt[0],osmAt[1])>3000)osmFetch(lat,lon);
     // 1.49 진행 방향 앞, 같은 길 위의 카메라만: ① 방향 차이 50° 이내 ② 진행선에서 옆으로 벗어난 거리가 속도에 맞춘 허용치 이내(옆길·평행 도로 제외)
     //       ③ 1초 전보다 실제로 가까워지는 중(교차로·건너편 도로의 카메라 제외). 세 가지를 모두 만족해야 안내
     let best=null;const now=Date.now(),seenNow=new Map();
+    // 1.59 제한속도 오인 줄이기(예: 시속 60 도로에서 30으로 안내):
+    //  · 30 이하 카메라(어린이·노인 보호구역)는 대부분 좁은 이면도로에 있어, 옆으로 벗어난 허용 거리를 좁게(18~28m)
+    //  · 시속 55 이상으로 달리는데 30 이하 카메라가 진행선에서 12m 넘게 벗어나 있으면 옆길 카메라로 보고 제외
+    //  · 같은 지점(앞뒤 60m)에 제한속도가 다른 카메라가 여럿이면, 진행선에 더 가깝고 지금 속도에 더 맞는 것을 고름
+    const cand=[];
     if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){if(o.d>1200)break;const k=o.c[0].toFixed(5)+','+o.c[1].toFixed(5);seenNow.set(k,o.d);
       const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180)*Math.PI/180,along=o.d*Math.cos(df),cross=Math.abs(o.d*Math.sin(df));
-      // 1.54 넓은 간선도로(왕복 6~10차로)는 카메라가 길 건너편 기둥에 있고 공공데이터 좌표도 수십 m 어긋나는 일이 많아,
-      //      옆으로 벗어난 허용 거리를 속도에 맞춰 넓힘(시속 30 → 42m, 60 → 54m, 80 이상 → 62~70m). 방향은 50° 이내
-      const tol=Math.max(35,Math.min(70,30+spd*.4));
-      if(df>50*Math.PI/180||along<=0||cross>Math.max(tol,along*.1))continue;
+      const lim=o.c[2],low=lim>0&&lim<=30;
+      // 1.54 넓은 간선도로는 카메라가 길 건너편 기둥에 있고 좌표도 수십 m 어긋나는 일이 많아 속도에 맞춰 넓힘(시속 30 → 42m, 60 → 54m, 80 이상 → 62~70m)
+      const tol=low?Math.max(18,Math.min(28,15+spd*.15)):Math.max(35,Math.min(70,30+spd*.4));
+      if(df>50*Math.PI/180||along<=0||cross>Math.max(tol,along*(low?.05:.1)))continue;
+      if(low&&spd>=55&&cross>12)continue;
       const pd=seen.get(k);if(!(pd&&pd.t>now-3000&&pd.d-o.d>=2))continue;
-      best=o;break}
+      cand.push({o,along,cross,score:cross+(lim?Math.abs(lim-spd)*.5:15)})}
+    if(cand.length){const a0=cand[0].along;const grp=cand.filter(c=>c.along-a0<60);grp.sort((x,y)=>x.score-y.score);best=grp[0].o}
     seen.clear();for(const [k,d] of seenNow)seen.set(k,{d,t:now});
-    if(!best){show(null);return}const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{};
+    if(!best){show(null);return}let key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5);
+    if(!told.has(key))for(const k of told.keys()){const [a,b]=k.split(',').map(Number);if(dist(a,b,best.c[0],best.c[1])<80){key=k;break}} // 같은 지점 카메라끼리 바뀌어도 두 번 안내하지 않게
+    const st=told.get(key)||{};
     const lim=best.c[2],over=!!(lim&&spd>lim+2);
     if(!st.far&&!st.near&&best.d<=FAR_M&&best.d>NEAR_M+60){st.far=true;st.until=now+SHOW_MS;ding();say(sayFar(500,lim))}
     if(!st.near&&best.d<=NEAR_M){st.near=true;st.far=true;st.until=now+SHOW_MS;ding();say(sayNear(lim,over))}

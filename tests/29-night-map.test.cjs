@@ -18,8 +18,21 @@ run('Night: brightness 20%, river night map, day map option', async ({context, o
   await p.evaluate(() => PfdMap.setStyle('normal')); await p.waitForTimeout(400);
   assert.equal(await p.evaluate(() => PfdMap.look), 'night');
   assert.ok(await p.evaluate(() => !!document.getElementById('pmNightFx') && getComputedStyle(document.querySelector('.pfd-mini .pm-map')).filter.includes('pmNightFx')), 'night map uses the river filter');
+  // 1.59 야간 계기에서 원형 지도 왼쪽 위 [☀ 주간 지도] 버튼으로 바로 주간 지도
+  assert.equal(await p.locator('.pfd-mini .pm-sun').isVisible(), true, 'day-map quick button at night');
+  await p.locator('.pfd-mini .pm-sun').click(); await p.waitForTimeout(400);
+  assert.equal(await p.evaluate(() => PfdMap.style), 'day');
+  await p.locator('.pfd-mini .pm-sun').click(); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => PfdMap.style), 'normal');
   await p.evaluate(() => PfdMap.setStyle('day')); await p.waitForTimeout(400);
   assert.equal(await p.evaluate(() => PfdMap.look), 'day', 'always-day map stays day at night');
   assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#sPfdMapStyle option')].map(o => o.value)), ['gta', 'normal', 'day']);
+  // 1.59 원형 지도 잘림: 창 크기가 바뀌면 지도 크기를 다시 잼
+  await p.evaluate(() => PfdMap.set(true)); await p.waitForTimeout(1500);
+  if (await p.evaluate(() => !!PfdMap.map)) {
+    await p.setViewportSize({width: 600, height: 700}); await p.waitForTimeout(800); await p.setViewportSize({width: 900, height: 1000}); await p.waitForTimeout(1200);
+    const sz = await p.evaluate(() => { const m = PfdMap.map, el = document.querySelector('.pfd-mini .pm-map'); return [m.getSize().x, el.clientWidth]; });
+    assert.ok(Math.abs(sz[0] - sz[1]) <= 1, 'map size follows the ring: ' + sz);
+  }
   await p.close();
 });

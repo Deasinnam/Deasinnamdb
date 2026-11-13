@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-12 · v1.58 (versionCode 86)**
+마지막 갱신: **2026-11-13 · v1.59 (versionCode 87)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.58** (versionCode 86, versionName `1.58-one`) |
+| 최신 버전 | **1.59** (versionCode 87, versionName `1.59-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -51,7 +51,7 @@
 
 1. `app/build.gradle` — versionCode +1, versionName `X-one`.
 2. README 변경 기록: `sed -i '49i - X: 설명' README.md` (49번째 줄에 새 줄).
-3. `node tools/build-web.cjs` → `npm run check` → `TEST_JOBS=1 timeout 590 node tests/run.cjs` (전부 통과해야 함).
+3. `node tools/build-web.cjs` → `npm run check` → `TEST_JOBS=2 timeout 595 node tests/run.cjs` (31개라 1개씩은 10분을 넘김. 동시 2개에서 14·16번이 가끔 시간 탓에 실패 → 따로 `node tests/14-*.cjs`로 다시 확인).
 4. **이 문서(docs/HANDOFF.md) 갱신.**
 5. 커밋(트레일러 포함) →
    ```
@@ -81,7 +81,7 @@
 - **네이티브**(`app/src/main/java/com/daesinnam/amp/`): MainActivity(브리지 `AndroidBridge`, 뒤로가기 `window.__back`), AmpPlayerService(Media3), ExternalEq(외부 앱 EQ — 꺼짐/평탄이면 효과 없음, 세션 0은 선택), GpsTracker 등.
 - **PFD**: `pfd.js`(DaesinnamPFD, 수정 금지) 위에 계기 스킨(에어라인/에어포스 `data-pfdlook`), 비행 단계·효과음, 관제탑(TWR) 문구, 원형 지도, 총 주행거리.
 - **원형 지도**(`PfdMap`): Leaflet + OSM 타일. 모양 `gta` / `normal`(PFD 주간·야간 따라감) / `day`(항상 주간). 야간은 SVG 필터 `#pmNightFx`(바탕 반전 + 물색 골라 파랑 강줄기 + 강가 주황 불빛). Leaflet은 `app/src/main/assets/leaflet/`(gitignore, CI가 받아 옴).
-- **테스트**: `tests/NN-*.test.cjs` 30개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
+- **테스트**: `tests/NN-*.test.cjs` 31개(Playwright, `tests/lib/harness.cjs`). 반응형 점검 도구 `tools/rwd-audit.cjs`, `tools/rwd-shots.cjs`.
 
 ---
 
@@ -90,7 +90,10 @@
 - **앱 나누기(1.55~1.56)**: AMP = 오디오 스킨만, 상단 날짜·날씨·밝기 계기 없음, 도구 버튼 아이콘 없이 한 줄. 대신남원·대신남 원 = 자동차 모드·에어라인만.
 - **켤 때(대신남 원·대신남원)**: 스피드미터 화면(ckFocus `gps`)이 화면 한가득(`--fxH: calc(100dvh - 6px)`), 스피드미터 창이 맨 위로 스크롤(폴드7 기준 사용자가 고른 비율).
 - **관제탑 문구**: 칸 폭 고정·한 줄, 길면 전광판처럼 흐름(`.atcmini span.mq`).
-- **야간(1.57)**: PFD가 야간이 되면 화면 밝기 20%(주간 되면 이전 밝기 복원, `briDayPrev`). 원형 지도 야간에 강줄기·강가 불빛, "항상 주간" 선택 가능.
+- **야간 풍경(1.59)**: PFD 순항 풍경의 강(`pfd-flight.js` `drawCountry`)을 밤에도 달빛 파랑으로 또렷하게 + 강가 주황 가로등·물에 비친 불빛. (사용자가 말한 "야간 지도 강줄기"는 이것. 1.57에서는 원형 지도로 잘못 이해해 원형 지도에도 강 필터를 넣었음 — 그대로 둠)
+- **원형 지도(1.59)**: 크기가 바뀌면 `invalidateSize`(잘림 수정), 지도 판 150%, 야간 계기면 왼쪽 위 `[☀ 주간 지도]`(`.pm-sun`) 버튼.
+- **과속 카메라(1.59)**: 30 이하 카메라는 옆 허용 18~28m, 시속 55↑에서 12m 넘게 옆이면 제외, 같은 지점(앞뒤 60m) 여러 대면 `cross + |제한-속도|×0.5` 점수가 낮은 것. 같은 지점 80m 안은 한 번만 안내. **한계**: 내장 자료(`data/kr-speedcams.txt`)에 위도·경도·제한속도만 있어 방향·보호구역 구분이 없음 → 100%는 불가. 공공데이터 원본 CSV(도로노선방향·보호구역구분 열)를 사용자가 올려 주면 자료를 다시 만들어 더 정확하게 할 수 있음.
+- **야간(1.57)**: PFD가 야간이 되면(자동차 스킨이면 어느 화면에서든, 1.59) 화면 밝기 20%(주간 되면 이전 밝기 복원, `briDayPrev`). 원형 지도 야간에 강줄기·강가 불빛, "항상 주간" 선택 가능.
 - **DASHCAM 보기(1.58)**: 아래 바로가기 DASHCAM에서 영상(`#camView`)이 창 가득, 버튼 한 줄(가로 스크롤), 연결 정보(`#camNet`)·와이파이 설정(`#camSetBox`)·호환 기종은 `[정보 ▾]`(`#camInfo`, `#wCam.more`)로 접힘. 문제(`.bad`/`.camwarn`)가 있으면 버튼 주황. 코드: `75-dashcam.js` 끝, CSS `1.58 DASHCAM`.
 - 과속 카메라: 전방·같은 길·가까워지는 것만, 500m·100m 두 번 표지판 카드 + 음성.
 - 차계부(접힘 기본), 가사(파일 → LRCLIB), 뒤로가기는 창만 닫기, 반응형(글자 크기 반영·48px 터치 영역).
@@ -100,6 +103,7 @@
 
 ## 6. 남은 일 · 사용자 답을 기다리는 것
 
+- 과속 카메라 정확도: 공공데이터 원본 CSV를 받으면 방향·보호구역 정보로 자료 재생성 제안함 — **답 기다림**.
 - 대신남2 라디오: 해외 공개 스트림은 재생 + 국내 방송사는 공식 앱 연결로 할지 — **답 없음**.
 - 시험판 이름을 "대신남2"로 바꿀지 — **답 없음**.
 - 안드로이드 오토(미디어 앱) 지원 — **답 없음**.
@@ -109,6 +113,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-13 · 1.59 — 원형 지도 잘림, 야간 [☀ 주간 지도] 버튼, 야간 밝기 20% 범위 넓힘, 야간 풍경 강줄기·불빛, 과속 카메라 30 오인 줄이기. 테스트 31 추가, 03·29 보강.
 - 2026-11-12 · 1.58 — DASHCAM 보기 영상 최대화, 부가 정보 [정보 ▾]로 접기. 테스트 30 추가.
 - 2026-11-12 · 인수인계 문서 새로 작성(작업마다 갱신하기로 함).
 - 2026-11-12 · 1.57 — 야간 원형 지도 강줄기·강가 불빛, "항상 주간" 지도, 야간 화면 밝기 20%. 테스트 29 추가.

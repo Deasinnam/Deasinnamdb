@@ -44,7 +44,7 @@ briSet(scrBri,false);window.AmpBri={set:briSet,get:()=>scrBri};
 /* 1.57: 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 20%. 다시 주간이 되면 야간 전 밝기로 되돌림
  *  야간 중에 손으로 바꾼 밝기는 그대로 둠(바뀌는 순간에만 맞춤) */
 const BriNight=(()=>{let last=null;
-  const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&p.root.offsetParent!==null?!p.day:null}catch(e){return null}};
+  const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&isCar()?!p.day:null}catch(e){return null}};
   function check(){const n=night();if(n===null||n===last)return;const first=last===null;last=n;
     if(n){if(scrBri!==20)store.set('briDayPrev',scrBri);briSet(20);if(!first)toast('야간 — 화면 밝기 20%')}
     else if(!first||store.get('briDayPrev',null)!==null){const prev=store.get('briDayPrev',null);if(prev!==null){store.set('briDayPrev',null);briSet(+prev);toast('주간 — 화면 밝기 '+(+prev<0?'자동':prev+'%'))}}}

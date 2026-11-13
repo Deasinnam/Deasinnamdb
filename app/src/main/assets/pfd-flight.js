@@ -231,7 +231,27 @@
       strip(110, '#b7ad86', .55 * k);
       const g = c.createLinearGradient(0, 0, 0, h * .9); g.addColorStop(0, '#b9d0dc'); g.addColorStop(.12, '#7fa6bd'); g.addColorStop(1, '#3f6f8f'); strip(78, g, .95 * k);
       strip(3.5, '#e4f0f6', .22 * k);
-    } else { strip(78, '#132232', .9 * k); strip(8, '#5a7aa055', .6 * k); }
+    } else {
+      // 1.59 야간 강: 주간처럼 굽은 강줄기가 또렷이 보이게(달빛 받은 짙은 파랑) + 강가를 따라 주황 가로등과 물에 비친 불빛
+      strip(104, '#1b2431', .8 * k);
+      const g = c.createLinearGradient(0, 0, 0, h * .9); g.addColorStop(0, '#46698d'); g.addColorStop(.14, '#24476a'); g.addColorStop(1, '#0f2a45'); strip(78, g, .95 * k);
+      strip(3.5, '#a9cdf2', .3 * k);
+      const LS = 120, l0 = Math.floor((zn + wr) / LS), tw = performance.now() / 1000, lamp = glow(C.amber);
+      c.save(); c.globalCompositeOperation = 'lighter';
+      for (let j = l0; j < l0 + 80; j++) {
+        const Zw = j * LS, z = Zw - wr; if (z < zn * 1.15) continue; if (z > 7500) break;
+        for (const side of [-1, 1]) {
+          const hsh = srand(j * 2.3 + side * 7); if (hsh > .9) continue;                 // 군데군데 빈 곳
+          const X = riverX(Zw) + side * 90, x = px(X, z), y = py(z); if (x < -w * .9 || x > w * .9) continue;
+          const s = clamp(46 * f / z, 2.2, 26), fade = k * clamp(1.25 - z / 7500, .3, 1) * (.82 + .18 * Math.sin(tw * 1.7 + j + side));
+          c.globalAlpha = fade; c.drawImage(lamp, x - s / 2, y - s * .8, s, s);
+          // 물 위에 길게 비친 불빛(강 가운데 쪽으로)
+          const xr = px(X - side * 34, z), rw = Math.max(1.2, s * .28), rh = Math.max(2, s * 1.5);
+          c.globalAlpha = fade * .45; c.drawImage(lamp, xr - rw / 2, y - rh * .15, rw, rh);
+        }
+      }
+      c.restore(); c.globalAlpha = 1;
+    }
     // 1.39 나무: 강둑을 따라 늘어선 숲 + 들판 경계의 나무 무리(가까운 것은 크고 빠르게, 먼 것은 작고 천천히 — 지면 레이어와 함께 흐름)
     if (!night && quality !== 'balanced') {
       const trees = [];

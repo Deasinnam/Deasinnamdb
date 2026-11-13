@@ -1367,7 +1367,8 @@ const PfdMap=(()=>{
   const ui=()=>{const s=$('#sPfdMap');if(s)s.checked=on;const ss=$('#sPfdMapStyle');if(ss)ss.value=style;if(host){host.classList.toggle('off',!on);host.querySelector('.pm-x').setAttribute('aria-label',on?'원형 지도 끄기':'원형 지도 켜기');host.querySelector('.pm-x').textContent=on?'×':'지도'}};
   function setStyle(v){style=v==='normal'||v==='day'?v:'gta';store.set('pfdMapStyle',style);ui();paint()}
   const isDay=()=>{try{return !!window.AmpPfd.panel.day}catch(e){return true}};
-  function paint(){if(!host)return;const k=style==='gta'?'gta':style==='day'||isDay()?'day':'night';nightFx(k==='night');if(host.dataset.look!==k){host.dataset.look=k;host.querySelector('.pm-ring').setAttribute('aria-label','지도 모양: '+(k==='gta'?'GTA 모드':k==='day'?'일반 주간':'일반 야간')+' (누르면 바꿈)')}}
+  function paint(){if(!host)return;const pn=!isDay(),k=style==='gta'?'gta':style==='day'||!pn?'day':'night';nightFx(k==='night');
+    {const b=host.querySelector('.pm-sun');host.classList.toggle('pnight',pn);const t=style==='day'?'☾ 야간 지도':'☀ 주간 지도';if(b.textContent!==t){b.textContent=t;b.setAttribute('aria-label',style==='day'?'야간 지도로 보기':'야간에도 밝은 주간 지도로 보기')}}if(host.dataset.look!==k){host.dataset.look=k;host.querySelector('.pm-ring').setAttribute('aria-label','지도 모양: '+(k==='gta'?'GTA 모드':k==='day'?'일반 주간':'일반 야간')+' (누르면 바꿈)')}}
   /* 1.57 야간 지도: 바탕은 어둡게 뒤집되 강·호수는 주간처럼 파랗게 살리고, 강가를 따라 주황 가로등 불빛(SVG 필터).
    *  OSM 물 색(#aad3df)은 파랑−빨강 차이가 커서 그것만 골라냄 */
   function nightFx(on){if(!on||document.getElementById('pmNightFx'))return;const d=document.createElement('div');d.style.cssText='position:absolute;width:0;height:0;overflow:hidden';d.setAttribute('aria-hidden','true');
@@ -1387,9 +1388,11 @@ const PfdMap=(()=>{
       +'<feMerge><feMergeNode in="base"/><feMergeNode in="water"/><feMergeNode in="glow2"/><feMergeNode in="lamp"/><feMergeNode in="lampDots"/></feMerge>'
       +'</filter></svg>';document.body.appendChild(d)}
   function set(v){on=!!v;store.set('pfdMap',on);if(!on&&map){map.remove();map=null;if(inner)inner.innerHTML=''}ui();if(on)attach(true)}
-  function build(w){wrap=w;host=document.createElement('div');host.className='pfd-mini';host.innerHTML='<div class="pm-ring"><div class="pm-map"></div><i class="pm-me" aria-hidden="true"></i><b class="pm-n" aria-hidden="true">N</b><span class="pm-msg">GPS</span></div><button type="button" class="pm-x"></button>';
+  function build(w){wrap=w;host=document.createElement('div');host.className='pfd-mini';host.innerHTML='<div class="pm-ring"><div class="pm-map"></div><i class="pm-me" aria-hidden="true"></i><b class="pm-n" aria-hidden="true">N</b><span class="pm-msg">GPS</span></div><button type="button" class="pm-x"></button><button type="button" class="pm-sun"></button>';
     host.setAttribute('role','img');host.setAttribute('aria-label','진행 방향 지도');w.appendChild(host);inner=host.querySelector('.pm-map');me=host.querySelector('.pm-me');nEl=host.querySelector('.pm-n');
     host.querySelector('.pm-x').onclick=e=>{e.stopPropagation();set(!on)};
+    // 1.59 야간 계기에서 바로 [☀ 주간 지도] ↔ [☾ 야간 지도] (설정을 열지 않아도)
+    host.querySelector('.pm-sun').onclick=e=>{e.stopPropagation();setStyle(style==='day'?'normal':'day');toast(style==='day'?'원형 지도: 야간에도 밝은 주간 지도':'원형 지도: 야간 지도(강줄기·불빛)')};
     // 지도 원을 누르면 GTA 모드 ↔ 일반 지도
     const ring=host.querySelector('.pm-ring');ring.setAttribute('role','button');ring.tabIndex=0;ring.onclick=e=>{e.stopPropagation();setStyle(style==='gta'?'normal':style==='normal'?'day':'gta');toast(style==='gta'?'원형 지도: GTA 모드':style==='day'?'원형 지도: 항상 주간 지도':'원형 지도: 일반 지도(주간·야간 자동)')};
     // 오른쪽 아래 총 주행거리(차계부 누적 거리, GPS로 자동 증가). 누르면 차계부 열기
@@ -1402,7 +1405,7 @@ const PfdMap=(()=>{
     if(!on||map||(!force&&!gpsOn))return;
     try{await loadLeaflet()}catch(e){return}if(map||!on)return;
     map=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,touchZoom:false,doubleClickZoom:false,scrollWheelZoom:false,boxZoom:false,keyboard:false,tap:false,inertia:false,fadeAnimation:false,zoomAnimation:true}).setView([gs.lat||37.5665,gs.lon||126.978],16);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:3}).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:4,updateWhenIdle:false,updateWhenZooming:false}).addTo(map);
     host.title='지도 © OpenStreetMap contributors'}
   function tick(){
     const w=document.querySelector('#pfdHost .pfd-canvas-wrap');if(!w||w.offsetParent===null){return}
@@ -1412,6 +1415,8 @@ const PfdMap=(()=>{
     const fix=gpsOn&&gs&&gs.fix&&isFinite(gs.lat);host.classList.toggle('nofix',!fix);
     const small=w.clientHeight<230||w.clientWidth<300;host.classList.toggle('tiny',small);
     if(odo)odo.hidden=w.clientWidth<520; // 좁은 계기에서는 착륙·시연 버튼·원형 지도와 겹치지 않게 총 주행거리 숨김
+    // 1.59 원형 지도 잘림: 작게(또는 숨긴 채) 만들어진 뒤 커지면 Leaflet이 예전 크기만큼만 타일을 깔아 원의 일부가 비었음 → 크기가 바뀌면 다시 잼
+    if(map&&inner.clientWidth>0){const sz=map.getSize();if(Math.abs(sz.x-inner.clientWidth)>1||Math.abs(sz.y-inner.clientHeight)>1){map.invalidateSize({pan:false,animate:false});if(fix)map.setView([gs.lat,gs.lon],map.getZoom(),{animate:false})}}
     if(!on||!map||!fix)return;
     const now=performance.now();if(now-lastSet>900){lastSet=now;const z=spdNow>90?14:spdNow>40?15:16;map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
     // 진행 방향이 위: 지도를 반대로 돌리고, N 표시는 테두리를 따라 돎(359→0도 매끄럽게)
@@ -2546,23 +2551,32 @@ const AmpSfx=(()=>{
       const v=(speechSynthesis.getVoices()||[]).filter(x=>/^ko/i.test(x.lang));const nat=v.find(x=>/natural|neural|online|google/i.test(x.name))||v[0];if(nat)u.voice=nat;speechSynthesis.speak(u)}catch(e){}}
   function ding(){try{const a=fx();if(!a)return;const t=a.currentTime;[0,.16].forEach((dt,i)=>{const o=a.createOscillator();o.type='sine';o.frequency.value=i?1320:990;const g=fxEnv(a,t+dt,.16,.005,.18);o.connect(g).connect(a.destination);o.start(t+dt);o.stop(t+dt+.25)})}catch(e){}}
   function nearAll(lat,lon){const out=[];for(const src of [loadDb(),osm])for(const c of src){if(Math.abs(c[0]-lat)>.012||Math.abs(c[1]-lon)>.016)continue;const d=dist(lat,lon,c[0],c[1]);if(d<1300)out.push({c,d})}
-    out.sort((a,b)=>a.d-b.d);const uniq=[];for(const o of out)if(!uniq.some(u=>dist(u.c[0],u.c[1],o.c[0],o.c[1])<35))uniq.push(o);return uniq}
+    out.sort((a,b)=>a.d-b.d);return out} // 1.59 같은 자리 중복도 모두 넘김(가장 가까운 것 하나만 남기면 교차로의 30 카메라가 60 카메라를 가리는 일이 있었음)
   const seen=new Map(); // 카메라별 직전 거리(가까워지는지 확인)
   function check(lat,lon,spd,hdg){if(!camOn()){show(null);return}
     if(!osmAt||dist(lat,lon,osmAt[0],osmAt[1])>3000)osmFetch(lat,lon);
     // 1.49 진행 방향 앞, 같은 길 위의 카메라만: ① 방향 차이 50° 이내 ② 진행선에서 옆으로 벗어난 거리가 속도에 맞춘 허용치 이내(옆길·평행 도로 제외)
     //       ③ 1초 전보다 실제로 가까워지는 중(교차로·건너편 도로의 카메라 제외). 세 가지를 모두 만족해야 안내
     let best=null;const now=Date.now(),seenNow=new Map();
+    // 1.59 제한속도 오인 줄이기(예: 시속 60 도로에서 30으로 안내):
+    //  · 30 이하 카메라(어린이·노인 보호구역)는 대부분 좁은 이면도로에 있어, 옆으로 벗어난 허용 거리를 좁게(18~28m)
+    //  · 시속 55 이상으로 달리는데 30 이하 카메라가 진행선에서 12m 넘게 벗어나 있으면 옆길 카메라로 보고 제외
+    //  · 같은 지점(앞뒤 60m)에 제한속도가 다른 카메라가 여럿이면, 진행선에 더 가깝고 지금 속도에 더 맞는 것을 고름
+    const cand=[];
     if(spd>=12&&hdg>=0)for(const o of nearAll(lat,lon)){if(o.d>1200)break;const k=o.c[0].toFixed(5)+','+o.c[1].toFixed(5);seenNow.set(k,o.d);
       const b=brg(lat,lon,o.c[0],o.c[1]),df=Math.abs(((b-hdg+540)%360)-180)*Math.PI/180,along=o.d*Math.cos(df),cross=Math.abs(o.d*Math.sin(df));
-      // 1.54 넓은 간선도로(왕복 6~10차로)는 카메라가 길 건너편 기둥에 있고 공공데이터 좌표도 수십 m 어긋나는 일이 많아,
-      //      옆으로 벗어난 허용 거리를 속도에 맞춰 넓힘(시속 30 → 42m, 60 → 54m, 80 이상 → 62~70m). 방향은 50° 이내
-      const tol=Math.max(35,Math.min(70,30+spd*.4));
-      if(df>50*Math.PI/180||along<=0||cross>Math.max(tol,along*.1))continue;
+      const lim=o.c[2],low=lim>0&&lim<=30;
+      // 1.54 넓은 간선도로는 카메라가 길 건너편 기둥에 있고 좌표도 수십 m 어긋나는 일이 많아 속도에 맞춰 넓힘(시속 30 → 42m, 60 → 54m, 80 이상 → 62~70m)
+      const tol=low?Math.max(18,Math.min(28,15+spd*.15)):Math.max(35,Math.min(70,30+spd*.4));
+      if(df>50*Math.PI/180||along<=0||cross>Math.max(tol,along*(low?.05:.1)))continue;
+      if(low&&spd>=55&&cross>12)continue;
       const pd=seen.get(k);if(!(pd&&pd.t>now-3000&&pd.d-o.d>=2))continue;
-      best=o;break}
+      cand.push({o,along,cross,score:cross+(lim?Math.abs(lim-spd)*.5:15)})}
+    if(cand.length){const a0=cand[0].along;const grp=cand.filter(c=>c.along-a0<60);grp.sort((x,y)=>x.score-y.score);best=grp[0].o}
     seen.clear();for(const [k,d] of seenNow)seen.set(k,{d,t:now});
-    if(!best){show(null);return}const key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5),st=told.get(key)||{};
+    if(!best){show(null);return}let key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5);
+    if(!told.has(key))for(const k of told.keys()){const [a,b]=k.split(',').map(Number);if(dist(a,b,best.c[0],best.c[1])<80){key=k;break}} // 같은 지점 카메라끼리 바뀌어도 두 번 안내하지 않게
+    const st=told.get(key)||{};
     const lim=best.c[2],over=!!(lim&&spd>lim+2);
     if(!st.far&&!st.near&&best.d<=FAR_M&&best.d>NEAR_M+60){st.far=true;st.until=now+SHOW_MS;ding();say(sayFar(500,lim))}
     if(!st.near&&best.d<=NEAR_M){st.near=true;st.far=true;st.until=now+SHOW_MS;ding();say(sayNear(lim,over))}
@@ -3177,7 +3191,7 @@ briSet(scrBri,false);window.AmpBri={set:briSet,get:()=>scrBri};
 /* 1.57: 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 20%. 다시 주간이 되면 야간 전 밝기로 되돌림
  *  야간 중에 손으로 바꾼 밝기는 그대로 둠(바뀌는 순간에만 맞춤) */
 const BriNight=(()=>{let last=null;
-  const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&p.root.offsetParent!==null?!p.day:null}catch(e){return null}};
+  const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&isCar()?!p.day:null}catch(e){return null}};
   function check(){const n=night();if(n===null||n===last)return;const first=last===null;last=n;
     if(n){if(scrBri!==20)store.set('briDayPrev',scrBri);briSet(20);if(!first)toast('야간 — 화면 밝기 20%')}
     else if(!first||store.get('briDayPrev',null)!==null){const prev=store.get('briDayPrev',null);if(prev!==null){store.set('briDayPrev',null);briSet(+prev);toast('주간 — 화면 밝기 '+(+prev<0?'자동':prev+'%'))}}}

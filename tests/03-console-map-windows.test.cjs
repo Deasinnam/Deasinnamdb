@@ -128,7 +128,7 @@ run('Console with app state, TMAP split/side, window order, resize buttons, cloc
       await p9.addInitScript(() => {
         window.__briCalls = []; window.__scrCalls = [];
         window.AndroidBridge = {setScreenBrightness: v => window.__briCalls.push(v), setScreenAlways: v => window.__scrCalls.push(['always', v]), setScreenOnPlay: v => window.__scrCalls.push(['play', v])};
-        if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival'));});
+        if(sessionStorage.getItem('once'))return;sessionStorage.setItem('once','1');localStorage.clear();localStorage.setItem('dna_skin2', JSON.stringify('carnival'));localStorage.setItem('dna_pfdSet', JSON.stringify({theme: 'day'})); /* 1.59: 22시라 야간 20%가 걸리지 않게 계기 테마는 주간 */});
       await p9.clock.install({time: new Date('2026-10-30T13:05:00Z')});
       await p9.goto(origin);
       await p9.locator('#clkTime').waitFor({state:'attached'});
