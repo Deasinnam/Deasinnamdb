@@ -71,6 +71,19 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   assert.ok(await p.evaluate(() => document.querySelector('.sp-call').classList.contains('mini') && /통화 중/.test(document.querySelector('.sp-call').textContent)), 'answered: small 통화 중');
   await p.evaluate(() => { window.__spCall = { on: false }; }); await p.waitForTimeout(900);
   assert.equal(await p.evaluate(() => document.querySelector('.sp-call').classList.contains('show')), false, 'hidden after the call');
+  // 1.62.2 하늘 고르기: [하늘 …] 버튼 → 노을을 고르면 그 하늘에 멈추고 해가 앞에, 자동으로 되돌리면 실제 해
+  await p.locator('#pfdThemeQuick').click();
+  await p.locator('.sp-sky button[data-k="gold"]').click();
+  await p.waitForTimeout(300);
+  const sk = await p.evaluate(() => ({ mode: AmpSpecialSky.mode, label: document.getElementById('pfdThemeQuick').textContent, gold: AmpSpecial.mood.gold, vis: AmpSpecial.sun().vis, day: pfd.day }));
+  assert.ok(sk.mode === 'gold' && /하늘 노을/.test(sk.label) && sk.gold > .5 && sk.vis && sk.day, 'sky pick 노을: ' + JSON.stringify(sk));
+  await p.evaluate(() => AmpSpecialSky.set('night')); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => pfd.day), false, 'sky pick 밤 → night');
+  await p.evaluate(() => AmpSpecialSky.set('auto'));
+  assert.equal(await p.evaluate(() => document.querySelector('.pfd-mini .pm-sun') ? getComputedStyle(document.querySelector('.pfd-mini .pm-sun')).display : 'none'), 'none', 'no day/night button on the round map');
+  // 1.62.2 칩이 비행 배지 아래로 겹치지 않게 쌓임
+  const ov = await p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); const a = r('.flt-badge'), b = r('.sp-miles'), c = r('.sp-odo'); return { ab: b.top >= a.bottom - 1, bc: c.top >= b.bottom - 1 }; });
+  assert.deepEqual(ov, { ab: true, bc: true }, 'badge, mileage, odometer stacked');
   // 1.62.1 이름 통일: 화면 글자에 '대신남'이 남지 않고, 관제탑 호출부호는 '에어포스원'
   const nm = await p.evaluate(() => ({ any: /대신남/.test(document.body.innerText), call: window.AmpCallsign }));
   assert.deepEqual(nm, { any: false, call: '에어포스원' }, 'special shows 에어포스원: ' + JSON.stringify(nm));

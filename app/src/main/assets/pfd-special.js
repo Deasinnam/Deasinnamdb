@@ -107,7 +107,8 @@
   // 해 화면 위치: 방위는 지금 진행 방향 기준, 높이는 PFD 눈금(1° = 화면 높이/58) 그대로 → 해가 실제로 지평선 아래로 내려감
   function sunScreen(w, h, m) {
     const s = clock(), hd = heading();
-    const dx = angleDelta(hd, s.az) / FOV * w, y = -s.el * h / 58;
+    const az = window.__spSunAhead ? hd - 8 : s.az;                              // 하늘을 골랐으면 해를 앞쪽에
+    const dx = angleDelta(hd, az) / FOV * w, y = -s.el * h / 58;
     return { x: dx, y, vis: !m.night && s.el > -1.2 && y > -h * 1.6 && Math.abs(dx) < w * .9, side: dx < 0 ? -1 : 1 };
   }
 
@@ -675,11 +676,11 @@
   (function milesUi() {
     const wrapEl = P.els && P.els.canvasWrap; if (!wrapEl) return;
     const st = document.createElement('style');
-    st.textContent = '.sp-miles{position:absolute;z-index:2;left:calc(clamp(67px,12%,175px) + 10px);top:92px;display:flex;align-items:center;gap:9px;padding:6px 13px 6px 9px;border-radius:12px;'
+    st.textContent = '.sp-miles{position:absolute;z-index:2;left:calc(clamp(67px,12%,175px) + 10px);top:92px;display:flex;align-items:center;gap:8px;padding:4px 11px 4px 8px;border-radius:12px;'
       + 'background:linear-gradient(180deg,rgba(18,22,44,.82),rgba(10,12,26,.82));border:1px solid rgba(255,206,130,.45);box-shadow:0 4px 14px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);pointer-events:none;font-family:"Noto Sans KR",sans-serif}'
       + '.sp-miles i{font-style:normal;font-size:20px;line-height:1;color:#ffcf7a;transform:rotate(-30deg)}'
       + '.sp-miles small{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;color:#e9c99a;opacity:.9;white-space:nowrap}'
-      + '.sp-miles b{font:800 20px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;color:#fff1d6;letter-spacing:.03em;display:inline-block;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}'
+      + '.sp-miles b{font:800 18px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;color:#fff1d6;letter-spacing:.03em;display:inline-block;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}'
       + '.sp-miles b.bump{transform:scale(1.18)}.sp-miles u{text-decoration:none;font-size:12px;color:#e9c99a;margin-left:4px}'
       + '.sp-miles em{position:absolute;left:100%;top:4px;margin-left:8px;font:800 15px/1 "Barlow Condensed","Noto Sans KR",sans-serif;font-style:normal;color:#ffd27e;white-space:nowrap;text-shadow:0 1px 4px #000a;opacity:0}'
       + '.sp-miles em.go{animation:spMi 1.8s ease-out}@keyframes spMi{0%{opacity:0;transform:translateY(8px)}15%{opacity:1;transform:translateY(0)}70%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}'
@@ -716,10 +717,10 @@
     const get = () => { const L = LOG(); return L ? +L.state.odo || 0 : local; };
     const set = v => { v = Math.max(0, Math.round(v * 10) / 10); const L = LOG(); if (L) L.setOdo(v); else { local = v; try { HOST && HOST.save && HOST.save('spOdo', v); } catch (e) {} } };
     const st = document.createElement('style');
-    st.textContent = '.sp-odo{position:absolute;z-index:3;left:calc(clamp(67px,12%,175px) + 10px);top:146px;display:flex;align-items:center;gap:9px;padding:6px 12px 6px 9px;border-radius:12px;cursor:pointer;'
-      + 'background:linear-gradient(180deg,rgba(18,22,44,.82),rgba(10,12,26,.82));border:1px solid rgba(170,210,255,.4);box-shadow:0 4px 14px rgba(0,0,0,.35);font-family:"Noto Sans KR",sans-serif;min-height:44px;box-sizing:border-box;color:#eaf2ff}'
+    st.textContent = '.sp-odo{position:absolute;z-index:3;left:calc(clamp(67px,12%,175px) + 10px);top:146px;display:flex;align-items:center;gap:8px;padding:4px 11px 4px 8px;border-radius:12px;cursor:pointer;'
+      + 'background:linear-gradient(180deg,rgba(18,22,44,.82),rgba(10,12,26,.82));border:1px solid rgba(170,210,255,.4);box-shadow:0 4px 14px rgba(0,0,0,.35);font-family:"Noto Sans KR",sans-serif;min-height:40px;box-sizing:border-box;color:#eaf2ff}'
       + '.sp-odo i{font-style:normal;font-size:20px;line-height:1;color:#a9cdf2;transform:rotate(-30deg)}.sp-odo small{display:block;font-size:11px;font-weight:700;color:#b9d2f0;white-space:nowrap}'
-      + '.sp-odo b{font:800 20px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.05em;color:#f2f7ff}.sp-odo b span{font-size:.7em;opacity:.7}.sp-odo u{text-decoration:none;font-size:12px;color:#b9d2f0;margin-left:4px}'
+      + '.sp-odo b{font:800 18px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.05em;color:#f2f7ff}.sp-odo b span{font-size:.7em;opacity:.7}.sp-odo u{text-decoration:none;font-size:12px;color:#b9d2f0;margin-left:4px}'
       + '.sp-odo.empty b{font:700 14px "Noto Sans KR",sans-serif;color:#ffd27e}'
       + '.sp-odo form{display:flex;gap:6px;align-items:center}.sp-odo input{width:9.5em;min-height:36px;padding:0 8px;border-radius:8px;border:1px solid #9cc4f0;background:#08101e;color:#fff;font:700 17px "Barlow Condensed","Noto Sans KR",sans-serif}'
       + '.sp-odo button{min-height:36px;min-width:44px;padding:0 10px;border-radius:8px;border:0;font:700 13px "Noto Sans KR",sans-serif;cursor:pointer;background:#ffcf7a;color:#1b1630}.sp-odo button.no{background:#2a3350;color:#dfe8ff}'
@@ -758,7 +759,18 @@
       render();
     }, 1000);
     window.AmpSpecialOdo = { get: get, set: v => { set(v); render(); } };
+    // 1.62.2 폴드7: 비행 배지 높이(글자 크기 설정에 따라 달라짐)를 재서 그 바로 아래에 마일리지 → 누적 주행거리 순서로 쌓음(겹치지 않게)
+    setInterval(() => {
+      const bd = wrapEl.querySelector('.flt-badge'), mi = wrapEl.querySelector('.sp-miles'); if (!bd || !mi || !wrapEl.clientWidth) return;
+      const wr = wrapEl.getBoundingClientRect(), br = bd.getBoundingClientRect(), left = Math.round(br.left - wr.left) + 'px';
+      let top = Math.round(br.bottom - wr.top + 6);
+      if (mi.style.left !== left) mi.style.left = left; if (mi.style.top !== top + 'px') mi.style.top = top + 'px';
+      top += mi.offsetHeight + 6;
+      if (el.style.left !== left) el.style.left = left; if (el.style.top !== top + 'px') el.style.top = top + 'px';
+    }, 300);
   })();
+
+  { const st = document.createElement('style'); st.textContent = '.pfd-mini .pm-sun{display:none!important}'; document.head.appendChild(st); }  // 1.62.2 원형 지도 위 주간·야간 버튼 없앰(하늘 고르기로 대신)
 
   /* ---------- 전화 옴: 누가 거는지 화면 오른쪽 아래에(전화 앱 알림의 이름, 앱 알림 접근이 켜져 있어야 함) ----------
    *  울리는 동안 크게(테두리가 맥박처럼), 받으면 작게 "통화 중", 끊으면 사라짐. 시험·미리보기: window.__spCall = {on, name, incoming} */
@@ -770,13 +782,15 @@
       + '.sp-call i svg{width:24px;height:24px}.sp-call.ring i::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #ffd99a;animation:spRing 1.1s ease-out infinite}'
       + '@keyframes spRing{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.5);opacity:0}}.sp-call small{display:block;font-size:12px;font-weight:700;color:#ffcf7a;letter-spacing:.04em}'
       + '.sp-call b{display:block;font-size:22px;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(min(78vw,420px) - 100px)}.sp-call span{display:block;font-size:12px;color:#d9c9b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-      + '.sp-call.mini{padding:8px 14px 8px 8px;gap:9px}.sp-call.mini i{width:32px;height:32px}.sp-call.mini i svg{width:17px;height:17px}.sp-call.mini b{font-size:15px}.sp-call.mini span{display:none}';
+      + '.sp-call.hint{pointer-events:auto;cursor:pointer}.sp-call.hint b{font-size:16px}.sp-call.mini{padding:8px 14px 8px 8px;gap:9px}.sp-call.mini i{width:32px;height:32px}.sp-call.mini i svg{width:17px;height:17px}.sp-call.mini b{font-size:15px}.sp-call.mini span{display:none}';
     document.head.appendChild(st);
     const el = document.createElement('div'); el.className = 'sp-call'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'assertive');
     el.innerHTML = '<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></i><div><small></small><b></b><span></span></div>';
     document.body.appendChild(el);
     const sm = el.querySelector('small'), nm = el.querySelector('b'), tx = el.querySelector('span');
-    let lastKey = '';
+    let lastKey = '', hintUntil = 0, hinted = false;
+    // 알림 접근이 없으면 전화 이름을 못 읽음 → 켤 때 12초 동안 오른쪽 아래에 '허용' 안내(누르면 설정 화면)
+    el.addEventListener('click', () => { if (!el.classList.contains('hint')) return; try { window.AndroidBridge.openNotificationAccess(); } catch (e) {} el.classList.remove('show', 'hint'); hintUntil = 0; });
     function read() {
       if (window.__spCall) return window.__spCall;
       const B = window.AndroidBridge; if (!B || typeof B.callInfo !== 'function') return null;
@@ -785,6 +799,10 @@
     setInterval(() => {
       if (document.hidden) return;
       const c = read(), on = !!(c && c.on);
+      if (!on && c && c.notif === false && !hinted && !window.__spCall) { hinted = true; hintUntil = performance.now() + 12000; lastKey = 'hint';
+        sm.textContent = '전화 표시'; nm.textContent = '알림 접근을 허용해 주세요'; tx.textContent = '누르면 설정 화면이 열려요 · 에어포스원을 켜 주세요';
+        el.classList.remove('ring', 'mini'); el.classList.add('show', 'hint'); return; }
+      if (lastKey === 'hint') { if (performance.now() < hintUntil && !on) return; el.classList.remove('hint'); lastKey = ''; if (!on) { el.classList.remove('show'); return; } }
       const name = on ? (c.name || '알 수 없는 번호') : '', key = on + '|' + name + '|' + (on && c.incoming) + '|' + (on ? c.text || '' : '');
       if (key === lastKey) return; lastKey = key;
       if (!on) { el.classList.remove('show', 'ring'); return; }
@@ -794,6 +812,50 @@
       el.setAttribute('aria-label', (c.incoming ? '전화 수신: ' : '통화 중: ') + name);
       el.classList.add('show');
     }, 700);
+  })();
+
+  /* ---------- 1.62.2 하늘 고르기: 자동(실제 해) · 새벽 · 한낮 · 노을 · 해 질 녘 · 밤 ----------
+   *  왼쪽 [테마] 버튼이 스페셜에서는 [하늘 …]: 누르면 고르는 창. 고정 시각을 고르면 그 시각 하늘에 멈추고 해는 앞쪽에 보이게 둠 */
+  const SKY = [['auto', '자동'], ['dawn', '새벽'], ['noon', '한낮'], ['gold', '노을'], ['set', '해 질 녘'], ['night', '밤']];
+  let skyMode = 'auto'; try { const v = HOST && HOST.load ? HOST.load('spSky', 'auto') : 'auto'; if (SKY.some(s => s[0] === v)) skyMode = v; } catch (e) {}
+  function day0() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  function findEl(target, fromH, toH, rising) { const [la, lo] = loc(); let prev = null; const t0 = day0();
+    for (let m = fromH * 60; m <= toH * 60; m += 2) { const t = t0 + m * 60000, e = solar(new Date(t), la, lo).el; if (prev !== null && (rising ? prev < target && e >= target : prev > target && e <= target)) return t; prev = e; } return null; }
+  function skyTime(k) { return k === 'dawn' ? findEl(-3, 3, 11, true) : k === 'noon' ? day0() + 12.5 * 3600000 : k === 'gold' ? findEl(9, 11, 21, false) : k === 'set' ? findEl(.6, 11, 21, false) : k === 'night' ? day0() + 21.5 * 3600000 : null; }
+  function skyApply(k, save) {
+    skyMode = k; if (save) try { HOST && HOST.save && HOST.save('spSky', k); } catch (e) {}
+    if (!window.__spPreview) { if (k !== 'auto') { window.__spTime = skyTime(k); window.__spSunAhead = k !== 'night' && k !== 'noon'; } else if (save) { window.__spTime = undefined; window.__spSunAhead = false; } }
+    sunC = null; mKey = ''; try { window.AmpApplyTheme && window.AmpApplyTheme(); } catch (e) {} try { P.renderText(); P.draw(); } catch (e) {}
+  }
+  (function skyUi() {
+    const label = () => '하늘 ' + (SKY.find(s => s[0] === skyMode) || SKY[0])[1];
+    const oText = P.renderText.bind(P);
+    P.renderText = function () { oText(); if (this.els && this.els.themeText && this.els.themeText.textContent !== label()) this.els.themeText.textContent = label(); };
+    const st = document.createElement('style');
+    st.textContent = '.sp-sky{position:fixed;z-index:2147481000;display:grid;gap:6px;padding:10px;border-radius:14px;background:rgba(14,16,32,.95);border:1px solid rgba(255,207,122,.5);box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:"Noto Sans KR",sans-serif}'
+      + '.sp-sky b{font-size:12px;color:#ffcf7a;padding:0 4px 2px}.sp-sky button{min-height:44px;min-width:128px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,214,150,.3);background:rgba(255,255,255,.06);color:#fff3df;font:700 15px "Noto Sans KR",sans-serif;text-align:left;cursor:pointer}'
+      + '.sp-sky button.on{background:linear-gradient(180deg,#ffb878,#b5739f);color:#1b1630;border-color:transparent}';
+    document.head.appendChild(st);
+    let pop = null;
+    const close = () => { if (pop) { pop.remove(); pop = null; } };
+    function open(btn) {
+      close(); pop = document.createElement('div'); pop.className = 'sp-sky'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', '하늘 고르기');
+      pop.innerHTML = '<b>하늘</b>' + SKY.map(([k, n]) => '<button type="button" data-k="' + k + '" class="' + (k === skyMode ? 'on' : '') + '">' + (k === 'auto' ? '자동 (실제 해)' : n) + '</button>').join('');
+      document.body.appendChild(pop);
+      const r = btn.getBoundingClientRect(), ph = pop.offsetHeight;
+      pop.style.left = Math.min(innerWidth - pop.offsetWidth - 8, r.right + 8) + 'px'; pop.style.top = clamp(r.top + r.height / 2 - ph / 2, 8, innerHeight - ph - 8) + 'px';
+      pop.addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; e.stopPropagation(); skyApply(b.dataset.k, true); close(); });
+      setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
+    }
+    // 테마 버튼(왼쪽·아래 줄) 누르면 설정 창 대신 하늘 고르기
+    document.addEventListener('click', e => {
+      const b = e.target.closest && e.target.closest('#pfdThemeQuick, #pfdHost .pfd-tool[data-role="settings"]'); if (!b) return;
+      e.stopImmediatePropagation(); e.preventDefault(); open(b);
+    }, true);
+    skyApply(skyMode, false);
+    // 고정 시각은 날이 바뀌면 오늘 날짜로 다시 계산
+    setInterval(() => { if (skyMode !== 'auto' && !window.__spPreview) { const t = skyTime(skyMode); if (t && Math.abs(t - (window.__spTime || 0)) > 3600000) skyApply(skyMode, false); } }, 600000);
+    window.AmpSpecialSky = { get mode() { return skyMode; }, set: k => skyApply(k, true) };
   })();
 
   window.AmpSpecial = { seaAt, get overSea() { return seaAt(0, (F.wz || 0) + 40); }, get miles() { return MI.total; }, get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
