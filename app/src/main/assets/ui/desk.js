@@ -120,10 +120,12 @@
   }
 
   // ---------- 저장되는 설정 ----------
-  const DEFAULTS = { pins: null, desktop: null, openMode: "window", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [], lately: [], tbAlign: "center", tbStyle: "dock", accent: "blue", userName: "사용자" };
+  const DEFAULTS = { pins: null, desktop: null, openMode: "full", wallpaper: 0, theme: "dark", notes: "", wins: {}, widgets: [], lately: [], tbAlign: "center", tbStyle: "dock", accent: "blue", userName: "사용자" };
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem("desk_state") || "{}")); } catch (_) {}
   if (!Array.isArray(S.widgets)) S.widgets = [];
+  // 1.5.1: 앱 띄우기 기본 방식을 전체 화면으로. 예전에 저장된 "창으로 열기"도 한 번만 전체 화면으로 바꿈(그 뒤 설정에서 고른 값은 그대로)
+  if (S.modeV !== 2) { S.openMode = "full"; S.modeV = 2; try { localStorage.setItem("desk_state", JSON.stringify(S)); } catch (_) {} }
   if (A) document.documentElement.classList.add("native"); // 앱 안: 배경은 아래 층이 그림
   const save = () => { try { localStorage.setItem("desk_state", JSON.stringify(S)); } catch (_) {} };
 
@@ -1468,6 +1470,7 @@
       log("DONE2");
       return;
     }
+    log((S.openMode === "full" && S.modeV === 2 ? "PASS" : "FAIL") + " default open mode full (기본 앱 띄우기=전체 화면)");
     if (localStorage.getItem("desk_test_running")) log("FAIL app restarted during selftest (앱이 점검 도중 다시 시작됨)");
     localStorage.setItem("desk_test_running", "1");
     try {
