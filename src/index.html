@@ -586,6 +586,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .amp-side img { border-radius: 22px; }
 .amp-stage + .amp-stage { border-top: 1px solid #2a2a2e; }
 .dl-count { display: inline-flex; align-items: center; color: #a1a1aa; font: 500 13px/1.4 var(--font-body); margin-left: 4px; } .dl-count b { color: #f4f4f5; font-weight: 700; margin-right: 3px; }
+.dl-note { flex-basis: 100%; margin: 0; color: #a1a1aa; font: 400 13px/1.6 var(--font-body); } .dl-note b { color: #e4e4e7; font-weight: 600; }
 .amp-soon { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #52525b; color: #d4d4d8; border-radius: 999px; padding: 12px 18px; font: 600 14px/1 var(--font-body); }
 .amp-soon::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #a1a1aa; }
 .amp-row { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 2.2fr; gap: 20px; align-items: start; margin-top: 12px; }
@@ -1371,7 +1372,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
           <span class="pd-tip">C타입 DP 지원으로 DeX를 지원하는 가성비 모니터</span>
         </a>
-          <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
+          <a class="pd-video" href="https://www.youtube.com/watch?v=PZKeEkgNpdE" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 보기</a>
         </div>
         <a class="pd" data-pid="gclicker-set" href="https://link.coupang.com/a/iDDYYfuo3g" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="media/keyboard-set.svg" alt="작은 화면이 달린 무선 키보드와 마우스 그림" loading="lazy"></span>
@@ -1392,7 +1393,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
           <span class="pd-tip">갤럭시 스마트폰을 DeX로 활용해 노트북처럼 사용</span>
         </a>
-          <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
+          <a class="pd-video" href="https://www.youtube.com/watch?v=PZKeEkgNpdE" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 보기</a>
         </div>
         <div class="pd-wrap has-video">
         <a class="pd" data-pid="flipbook14" href="https://link.coupang.com/a/iDCLRXo7Bk" target="_blank" rel="sponsored noopener nofollow">
@@ -1404,7 +1405,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
           <span class="pd-tip">14인치로 더 커진 화면, 실제 노트북과 같은 체감!</span>
         </a>
-          <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
+          <a class="pd-video" href="https://www.youtube.com/watch?v=PZKeEkgNpdE" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 보기</a>
         </div>
         <a class="pd" data-pid="tb4-cable" href="https://link.coupang.com/a/iDDFT74AmG" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="media/usbc-cable.svg" alt="한쪽이 꺾인 C타입 케이블 그림" loading="lazy"></span>
@@ -2255,7 +2256,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     "app-desktop": { open: true, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2 },
     "app-browser": { open: true, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 2 },
     "app-98":      { open: false, tag: "",               file: "",                     base: 0 },
-    "app-sseum":   { open: false, tag: "",               file: "",                     base: 0 }
+    "app-sseum":   { open: false, tag: "",               file: "",                     base: 0, kind: "PKG",
+                     note: "애플 서명 전이라 처음 열 때 \u201c확인되지 않은 개발자\u201d 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열면 설치됩니다." }
   };
   if (window.__DL_TEST) for (var k in window.__DL_TEST) DL[k] = window.__DL_TEST[k];
   function getRelease(tag, cb) {
@@ -2272,7 +2274,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     var c = DL[id]; if (!c.open || !c.tag || !c.file) return;
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
     var url = "https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file;
-    cta.innerHTML = '<a class="amp-btn" href="' + url + '">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span>';
+    cta.innerHTML = '<a class="amp-btn" href="' + url + '">내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
     var out = cta.querySelector(".dl-count");
     getRelease(c.tag, function (d) {
       if (!d) return;
