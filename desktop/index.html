@@ -216,6 +216,9 @@ body.no-fb nav a.fb-off { display: inline; }
 @media (max-width: 480px) { body.no-fb nav a.fb-off.hide-sm { display: none; } }
 .ap-fb { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
 .ap-fb .amp-btn { padding: 13px 20px; font-size: 14px; }
+.ap-fb .amp-btn.ap-hw { background: #7dd3fc; color: #082f49; box-shadow: 0 4px 0 #0369a1, 0 0 0 1px #38bdf8; align-items: center; gap: 8px; }
+.ap-fb .amp-btn.ap-hw:hover { background: #bae6fd; }
+.ap-fb .amp-btn.ap-hw svg { width: 16px; height: 16px; flex: none; }
 @media (max-width: 860px) { .fb-grid { grid-template-columns: 1fr; gap: 36px; } .fb-notify { position: static; } }
 @media (max-width: 420px) { .brand .sw { display: none; } }
 /* ---------- 소개 페이지 ---------- */
@@ -409,6 +412,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .pd-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .pd-name { font: 700 16px/1.35 var(--font-body); }
 .pd-sub { color: #71717a; font-size: 13px; }
+.pd-sw { font-style: normal; font: 700 11px/1 var(--font-body); color: #0369a1; background: #e0f2fe; border: 1px solid #bae6fd; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
 .pd-used { font-style: normal; font: 700 11px/1 var(--font-body); color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; }
 .pd-price { margin-top: 8px; font: 800 18px/1.3 var(--font-body); color: #0b0b0c; }
 .pd-price s { display: block; font-weight: 400; font-size: 12px; color: #a1a1aa; }
@@ -605,7 +609,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
 <meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "SoftwareApplication", "name": "덜누름 데스크탑앱", "url": "https://deolnureum.com/desktop/", "description": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "operatingSystem": "Android", "applicationCategory": "UtilitiesApplication", "image": "https://deolnureum.com/media/app-desk-poster.jpg", "inLanguage": "ko", "publisher": {"@id": "https://deolnureum.com/#org"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "앱센터", "item": "https://deolnureum.com/apps/"}, {"@type": "ListItem", "position": 3, "name": "덜누름 데스크탑앱", "item": "https://deolnureum.com/desktop/"}]}]}</script>
-<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
 </head>
 <body data-view="app">
 
@@ -771,9 +775,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <div class="fold-dev"><video src="/media/app-work.mp4" poster="/media/app-work-poster.jpg" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 워드, 엑셀, 한글 문서 편집기와 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video></div>
           <span class="enter">자세히 보기 →</span>
         </a>
-        <a class="slide fold" href="/desktop/" data-name="덜누름 데스크탑앱" data-kind="PC 같은 바탕화면 · 개발 중" data-dur="16700">
+        <a class="slide fold" href="/desktop/" data-name="덜누름 데스크탑앱" data-kind="PC 같은 바탕화면 · 개발 중" data-dur="11800">
           <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 데스크탑앱</b><span>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창으로 뜨는 브라우저</span></div>
-          <div class="fold-dev"><video src="/media/app-desk.mp4" poster="/media/app-desk-poster.jpg" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video></div>
+          <div class="fold-dev"><video src="/media/app-desk.mp4?v=1113" poster="/media/app-desk-poster.jpg?v=1113" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video></div>
           <span class="enter">자세히 보기 →</span>
         </a>
         <a class="slide fold" href="/browser/" data-name="덜누름 브라우저" data-kind="창으로 여는 브라우저 · 개발 중" data-dur="7000">
@@ -824,7 +828,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>YouTube Music · Spotify 재생에도 곡 정보와 시각화</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="Daesinnam Amp">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="Daesinnam Amp">공개되면 알림 받기</a></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="Daesinnam Amp">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="Daesinnam Amp">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>화면</dt><dd>펼친 화면 · 접은 바깥 화면 · 태블릿 · 휴대폰</dd></div>
@@ -901,7 +905,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>06</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>권장 화면</dt><dd>8인치 이상 태블릿</dd></div>
@@ -1091,7 +1095,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>편집은 모두 기기 안에서, 파일을 바깥으로 보내지 않음</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 워크">공개되면 알림 받기</a></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 워크">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>필요</dt><dd>Android 8.0 이상 · 64비트 · 무료</dd></div>
@@ -1120,13 +1124,13 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>03</b><span>브라우저를 창으로 열고, 한 번에 전체 화면으로</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 데스크탑앱">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 데스크탑앱">공개되면 알림 받기</a></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 데스크탑앱">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 데스크탑앱">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
       </div>
       <div class="ap-media">
-        <div class="ap-dev"><video src="/media/app-desk.mp4" poster="/media/app-desk-poster.jpg" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <div class="ap-dev"><video src="/media/app-desk.mp4?v=1113" poster="/media/app-desk-poster.jpg?v=1113" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
       </div>
       <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/browser/">다음 앱 · 덜누름 브라우저 →</a></div>
@@ -1148,7 +1152,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>04</b><span>주소줄 옆 자주 가는 사이트 바로가기</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 브라우저">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 브라우저">공개되면 알림 받기</a></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 브라우저">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 브라우저">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
@@ -1178,7 +1182,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <li><b>05</b><span>시작 메뉴에서 전화와 문자까지 바로</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
-        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 98">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 98">공개되면 알림 받기</a></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 98">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 98">공개되면 알림 받기</a></div>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
@@ -1266,15 +1270,15 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         </a>
         <a class="pd" data-pid="monsterdeck" href="https://link.coupang.com/a/iDuKcnRj0m" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-close.webp" alt="차 안에 놓인 몬스타덱 단축 버튼 15개" loading="lazy"></span>
-          <span class="pd-name">몬스타기어 몬스타덱</span>
-          <span class="pd-sub">스피드미터 물리 버튼 15개</span>
+          <span class="pd-name">몬스타기어 몬스타덱 <em class="pd-sw">전용 소프트웨어</em></span>
+          <span class="pd-sub">스피드미터 물리 버튼 15개 지원</span>
           <span class="pd-price"><s>109,900원</s> <em>19%</em> 88,010원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <a class="pd" data-pid="ulanzi-dial" href="https://link.coupang.com/a/iDuXRuaUzA" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-dial.webp" alt="차 안 컵홀더 옆에 둔 울란지 다이얼 패드" loading="lazy"></span>
-          <span class="pd-name">울란지 다이얼 패드</span>
-          <span class="pd-sub">스피드미터 다이얼 컨트롤</span>
+          <span class="pd-name">울란지 다이얼 패드 <em class="pd-sw">전용 소프트웨어</em></span>
+          <span class="pd-sub">스피드미터에 최적화된 컨트롤</span>
           <span class="pd-price"><s>50,000원</s> <em>2%</em> 49,000원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
@@ -1297,6 +1301,13 @@ footer b { color: var(--ink); font-family: var(--font-display); }
           <span class="pd-name">Anmite 18.5인치 휴대용 터치 모니터</span>
           <span class="pd-sub">터치 · 120Hz · 받침대 포함</span>
           <span class="pd-price"><s>288,261원</s> <em>54%</em> 132,600원</span>
+          <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="solar-cam" href="https://s.click.aliexpress.com/e/_c4o2D7GP" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/solar-cam.webp" alt="태양광 패널이 달린 무선 후방 카메라" loading="lazy"></span>
+          <span class="pd-name">태양광 무선 후방 카메라 <em class="pd-sw">전용 소프트웨어</em></span>
+          <span class="pd-sub">와이파이 · 스피드미터 대시캠 연동</span>
+          <span class="pd-price">75,900원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
       </div>
