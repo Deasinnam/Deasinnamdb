@@ -17,7 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = "https://deolnureum.com"
 SUFFIX = " | 덜누름"
 # 검색엔진 소유 확인 값(구글 서치 콘솔, 네이버 서치어드바이저). 비어 있으면 넣지 않는다.
-VERIFY = {"google-site-verification": "", "naver-site-verification": ""}
+VERIFY = {"google-site-verification": "", "naver-site-verification": "9f2c851a8d4460e1556866ff6c53cbc59e349186"}
 
 APPS = [
     # (원본의 # 주소, 실제 주소, 섹션 id, 제목, 설명, 앱 이름, 앱 분류, 대표 그림)
