@@ -2789,3 +2789,6 @@ img{height:auto;object-fit:contain}
 .pfd-mini .pm-cam.next{width:26px!important;height:26px!important;margin:-13px 0 0 -13px!important;font-size:11px;animation:pmCam 1s ease-in-out infinite alternate}
 @keyframes pmCam{to{box-shadow:0 0 0 1px #0009,0 0 10px 3px #ff3b30cc}}
 .pfd-mini .pm-cam b{display:block;transform:rotate(calc(var(--pm-rot,0deg) * -1))}
+
+/* 1.62.1 스페셜: GPS 수신 전에도 원형 지도는 마지막 위치를 보여 주고, "GPS" 표시는 아래에 작게 */
+:root[data-build="special"] .pfd-mini.nofix .pm-msg{inset:auto 0 14% 0;height:auto;background:none;font-size:10px;text-shadow:0 1px 3px #000}

@@ -1495,6 +1495,24 @@ public class MainActivity extends Activity {
             main.post(() -> setExternal(on));
         }
 
+        /** 1.62.1 에어포스원: 지금 걸려 오는 전화(전화 앱 알림에서 읽은 이름). 없으면 {"on":false} */
+        @JavascriptInterface
+        public String callInfo() {
+            JSONObject o = new JSONObject();
+            try {
+                boolean on = MediaListener.callKey != null;
+                o.put("on", on);
+                if (on) {
+                    o.put("name", MediaListener.callName == null ? "" : MediaListener.callName);
+                    o.put("text", MediaListener.callText == null ? "" : MediaListener.callText);
+                    o.put("incoming", MediaListener.callIncoming);
+                }
+                o.put("notif", hasNotifAccess());
+                o.put("ts", MediaListener.callTs);
+            } catch (Exception ignored) {}
+            return o.toString();
+        }
+
         @JavascriptInterface
         public String extStatus() {
             JSONObject o = new JSONObject();

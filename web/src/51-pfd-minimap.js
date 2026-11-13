@@ -43,14 +43,14 @@ const PfdMap=(()=>{
   async function attach(force){
     const w=document.querySelector('#pfdHost .pfd-canvas-wrap');if(!w)return;
     if(!host||!w.contains(host)){if(map){map.remove();map=null}build(w)}
-    if(!on||map||(!force&&!gpsOn))return;
+    if(!on||map||(!force&&!gpsOn&&BUILD!=='special'))return; // 1.62.1 스페셜: GPS를 켜기 전에도 지도를 띄움(마지막 위치)
     try{await loadLeaflet()}catch(e){return}if(map||!on)return;
     map=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,touchZoom:false,doubleClickZoom:false,scrollWheelZoom:false,boxZoom:false,keyboard:false,tap:false,inertia:false,fadeAnimation:false,zoomAnimation:true}).setView([gs.lat||37.5665,gs.lon||126.978],16);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:4,updateWhenIdle:false,updateWhenZooming:false}).addTo(map);
     host.title='지도 © OpenStreetMap contributors'}
   function tick(){
     const w=document.querySelector('#pfdHost .pfd-canvas-wrap');if(!w||w.offsetParent===null){return}
-    if(!host||!w.contains(host)||(on&&!map&&gpsOn))attach();if(!host)return;
+    if(!host||!w.contains(host)||(on&&!map&&(gpsOn||BUILD==='special')))attach();if(!host)return;
     paint();
     if(odo){let km=null;try{km=window.AmpLog&&AmpLog.state?AmpLog.state.odo:null}catch(e){}const t=km==null?'—':(Math.floor(km)).toLocaleString('ko-KR');const b=odo.querySelector('b');if(b.textContent!==t)b.textContent=t;odo.setAttribute('aria-label','총 주행거리 '+t+' 킬로미터. 누르면 차계부')}
     const fix=gpsOn&&gs&&gs.fix&&isFinite(gs.lat);host.classList.toggle('nofix',!fix);
@@ -58,6 +58,8 @@ const PfdMap=(()=>{
     if(odo)odo.hidden=w.clientWidth<520; // 좁은 계기에서는 착륙·시연 버튼·원형 지도와 겹치지 않게 총 주행거리 숨김
     // 1.59 원형 지도 잘림: 작게(또는 숨긴 채) 만들어진 뒤 커지면 Leaflet이 예전 크기만큼만 타일을 깔아 원의 일부가 비었음 → 크기가 바뀌면 다시 잼
     if(map&&inner.clientWidth>0){const sz=map.getSize();if(Math.abs(sz.x-inner.clientWidth)>1||Math.abs(sz.y-inner.clientHeight)>1){map.invalidateSize({pan:false,animate:false});if(fix)map.setView([gs.lat,gs.lon],map.getZoom(),{animate:false})}}
+    // 1.62.1 스페셜: 수신 전(시연·GPS 대기)에도 까만 원 대신 마지막 위치(마지막 수신 → 날씨에 쓴 위치 → 서울) 지도를 보여 줌
+    if(BUILD==='special'&&on&&map&&!fix){const now=performance.now();if(now-lastSet>5000){lastSet=now;const l=lastFix&&isFinite(lastFix.lat)?[lastFix.lat,lastFix.lon]:(store.get('wxLoc',null)||[37.5665,126.978]);map.setView(l,15,{animate:false})}}
     if(!on||!map||!fix)return;
     const now=performance.now();if(now-lastSet>900){lastSet=now;let z=spdNow>90?14:spdNow>40?15:16;{const v=window.AmpCam&&AmpCam.view,c=v&&Date.now()-v.t<4000&&v.cams[0];if(c&&c[3]<800)z=Math.min(z,c[3]>300?14:15)} /* 1.61 앞 카메라가 원 안에 들어오게 넓혀 봄 */map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
     // 진행 방향이 위: 지도를 반대로 돌리고, N 표시는 테두리를 따라 돎(359→0도 매끄럽게)

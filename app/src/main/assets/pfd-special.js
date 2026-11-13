@@ -760,5 +760,41 @@
     window.AmpSpecialOdo = { get: get, set: v => { set(v); render(); } };
   })();
 
+  /* ---------- 전화 옴: 누가 거는지 화면 오른쪽 아래에(전화 앱 알림의 이름, 앱 알림 접근이 켜져 있어야 함) ----------
+   *  울리는 동안 크게(테두리가 맥박처럼), 받으면 작게 "통화 중", 끊으면 사라짐. 시험·미리보기: window.__spCall = {on, name, incoming} */
+  (function callUi() {
+    const st = document.createElement('style');
+    st.textContent = '.sp-call{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:2147482000;display:flex;align-items:center;gap:12px;max-width:min(78vw,420px);padding:12px 18px 12px 12px;border-radius:18px;'
+      + 'background:linear-gradient(180deg,rgba(22,26,52,.94),rgba(12,14,30,.94));border:1px solid rgba(255,207,122,.6);box-shadow:0 10px 30px rgba(0,0,0,.5);font-family:"Noto Sans KR",sans-serif;color:#fff3df;pointer-events:none;transform:translateY(16px);opacity:0;transition:transform .35s cubic-bezier(.3,1.5,.5,1),opacity .25s}'
+      + '.sp-call.show{transform:none;opacity:1}.sp-call i{position:relative;flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#ffd99a,#f2a273);color:#1b1630}'
+      + '.sp-call i svg{width:24px;height:24px}.sp-call.ring i::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #ffd99a;animation:spRing 1.1s ease-out infinite}'
+      + '@keyframes spRing{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.5);opacity:0}}.sp-call small{display:block;font-size:12px;font-weight:700;color:#ffcf7a;letter-spacing:.04em}'
+      + '.sp-call b{display:block;font-size:22px;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(min(78vw,420px) - 100px)}.sp-call span{display:block;font-size:12px;color:#d9c9b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+      + '.sp-call.mini{padding:8px 14px 8px 8px;gap:9px}.sp-call.mini i{width:32px;height:32px}.sp-call.mini i svg{width:17px;height:17px}.sp-call.mini b{font-size:15px}.sp-call.mini span{display:none}';
+    document.head.appendChild(st);
+    const el = document.createElement('div'); el.className = 'sp-call'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'assertive');
+    el.innerHTML = '<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></i><div><small></small><b></b><span></span></div>';
+    document.body.appendChild(el);
+    const sm = el.querySelector('small'), nm = el.querySelector('b'), tx = el.querySelector('span');
+    let lastKey = '';
+    function read() {
+      if (window.__spCall) return window.__spCall;
+      const B = window.AndroidBridge; if (!B || typeof B.callInfo !== 'function') return null;
+      try { return JSON.parse(B.callInfo()); } catch (e) { return null; }
+    }
+    setInterval(() => {
+      if (document.hidden) return;
+      const c = read(), on = !!(c && c.on);
+      const name = on ? (c.name || '알 수 없는 번호') : '', key = on + '|' + name + '|' + (on && c.incoming) + '|' + (on ? c.text || '' : '');
+      if (key === lastKey) return; lastKey = key;
+      if (!on) { el.classList.remove('show', 'ring'); return; }
+      sm.textContent = c.incoming ? '전화 수신' : '통화 중';
+      nm.textContent = name; tx.textContent = c.incoming && c.text ? c.text : '';
+      el.classList.toggle('ring', !!c.incoming); el.classList.toggle('mini', !c.incoming);
+      el.setAttribute('aria-label', (c.incoming ? '전화 수신: ' : '통화 중: ') + name);
+      el.classList.add('show');
+    }, 700);
+  })();
+
   window.AmpSpecial = { seaAt, get overSea() { return seaAt(0, (F.wz || 0) + 40); }, get miles() { return MI.total; }, get mood() { return M; }, clock, solarAt(t) { const l = loc(); return solar(new Date(t), l[0], l[1]); }, sun() { const c = document.querySelector('#pfdHost canvas'); return M && sunScreen(c.width, c.height, M); }, redraw() { mKey = ''; try { P.draw(); } catch (e) {} } };
 })();

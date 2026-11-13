@@ -23,7 +23,9 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
     // 하늘 위쪽: 구름을 피해 여러 곳 중 가장 어두운 점(구름은 밝음)
     const hi = []; for (const fx of [.3, .4, .5, .6, .7]) for (const fy of [.12, .2, .28]) hi.push(px(fx, fy));
     hi.sort((a, b) => (a[0] + a[1] + a[2]) - (b[0] + b[1] + b[2]));
-    return {skyHi: hi[0], skyLow: px(.62, .45)};
+    const lo = []; for (const fx of [.3, .4, .5, .6, .7]) for (const fy of [.4, .44, .47]) lo.push(px(fx, fy));
+    lo.sort((a, b) => (b[0] - b[2]) - (a[0] - a[2]));
+    return {skyHi: hi[0], skyLow: lo[0]};
   });
 
   // 스페셜·노을·서쪽: 하늘이 따뜻한 색, 해·윤슬 계산이 화면 안
@@ -59,6 +61,16 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   const odo = await p.evaluate(() => ({ log: AmpLog.state.odo, txt: document.querySelector('.sp-odo').textContent }));
   assert.ok(odo.log >= 128745 && odo.log < 128800, 'odometer saved to the car log: ' + JSON.stringify(odo));
   assert.ok(/128,7\d\d/.test(odo.txt) && /km/.test(odo.txt), 'odometer chip shows it: ' + odo.txt);
+  // 1.62.1 전화 옴: 오른쪽 아래에 거는 사람 이름, 받으면 작게 "통화 중", 끊으면 사라짐
+  await p.evaluate(() => { window.__spCall = { on: true, name: '김철수', incoming: true, text: '휴대전화' }; });
+  await p.waitForTimeout(900);
+  const call = await p.evaluate(() => { const e = document.querySelector('.sp-call'), r = e.getBoundingClientRect(); return { show: e.classList.contains('show'), ring: e.classList.contains('ring'), txt: e.textContent, right: innerWidth - r.right, bottom: innerHeight - r.bottom }; });
+  assert.ok(call.show && call.ring && /전화 수신/.test(call.txt) && /김철수/.test(call.txt), 'incoming caller card: ' + JSON.stringify(call));
+  assert.ok(call.right < 40 && call.bottom < 40, 'card sits at the bottom right: ' + JSON.stringify(call));
+  await p.evaluate(() => { window.__spCall = { on: true, name: '김철수', incoming: false }; }); await p.waitForTimeout(900);
+  assert.ok(await p.evaluate(() => document.querySelector('.sp-call').classList.contains('mini') && /통화 중/.test(document.querySelector('.sp-call').textContent)), 'answered: small 통화 중');
+  await p.evaluate(() => { window.__spCall = { on: false }; }); await p.waitForTimeout(900);
+  assert.equal(await p.evaluate(() => document.querySelector('.sp-call').classList.contains('show')), false, 'hidden after the call');
   // 1.62.1 이름 통일: 화면 글자에 '대신남'이 남지 않고, 관제탑 호출부호는 '에어포스원'
   const nm = await p.evaluate(() => ({ any: /대신남/.test(document.body.innerText), call: window.AmpCallsign }));
   assert.deepEqual(nm, { any: false, call: '에어포스원' }, 'special shows 에어포스원: ' + JSON.stringify(nm));
