@@ -416,11 +416,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .pd-wrap { position: relative; display: grid; }
 .pd-wrap .pd { height: 100%; }
 .pd-wrap.has-video .pd { padding-bottom: 62px; }
+.pd-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-row { display: flex; gap: 4px; min-height: 22px; margin: 2px 0 2px; flex-wrap: wrap; }
+.pd-row em { font-style: normal; flex: none; font: 700 10.5px/1 var(--font-body); padding: 5px 6px; border-radius: 6px; border: 1px solid transparent; margin: 0; vertical-align: 0; }
+.pd-row .pd-sw { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.pd-row .pd-make { background: #fce7f3; color: #be185d; border-color: #fbcfe8; }
+.pd-row .pd-dex { background: #f4f4f5; color: #3f3f46; border-color: #e4e4e7; }
+.pd-row .pd-used { background: #fff; color: #52525b; border-color: #d4d4d8; }
 .pd-video { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 10px; background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; font: 700 13px/1 var(--font-body); text-decoration: none; }
 .pd-video:hover { background: #fbcfe8; }
 .pd-video svg { width: 14px; height: 14px; }
 .pd-video.is-soon { opacity: .55; cursor: default; }
 .pd-video.is-soon:hover { background: #fce7f3; }
+.pd-dex { font-style: normal; font: 700 11px/1 var(--font-body); color: #3f3f46; background: #f4f4f5; border: 1px solid #d4d4d8; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
 .pd-sw { font-style: normal; font: 700 11px/1 var(--font-body); color: #0369a1; background: #e0f2fe; border: 1px solid #bae6fd; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; white-space: nowrap; }
 .pd-used { font-style: normal; font: 700 11px/1 var(--font-body); color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; }
 .pd-price { margin-top: 8px; font: 800 18px/1.3 var(--font-body); color: #0b0b0c; }
@@ -618,7 +627,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
 <meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "SoftwareApplication", "name": "Daesinnam Amp", "url": "https://deolnureum.com/amp/", "description": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "operatingSystem": "Android", "applicationCategory": "MultimediaApplication", "image": "https://deolnureum.com/media/amp-open-poster.jpg", "inLanguage": "ko", "publisher": {"@id": "https://deolnureum.com/#org"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "앱센터", "item": "https://deolnureum.com/apps/"}, {"@type": "ListItem", "position": 3, "name": "Daesinnam Amp", "item": "https://deolnureum.com/amp/"}]}]}</script>
-<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
 </head>
 <body data-view="app">
 
@@ -1265,42 +1274,48 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <div class="pd-grid">
         <a class="pd" data-pid="fold7" href="https://link.coupang.com/a/iDt559dhoO" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">폴더블</span><span class="hw-fold" aria-hidden="true"><span><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></span><span><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></span></span></span>
-          <span class="pd-name">갤럭시 Z 폴드7 <em class="pd-used">중고</em></span>
+          <span class="pd-name" title="갤럭시 Z 폴드7">갤럭시 Z 폴드7</span>
+          <span class="pd-row"><em class="pd-used">중고</em></span>
           <span class="pd-sub">512GB · 실버 쉐도우</span>
           <span class="pd-price">1,185,590원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <a class="pd" data-pid="fold8u" href="https://link.coupang.com/a/iDt8jKNUhU" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">폴더블</span><span class="hw-fold ultra" aria-hidden="true"><span><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></span><span><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></span></span></span>
-          <span class="pd-name">갤럭시 Z 폴드8 울트라</span>
+          <span class="pd-name" title="갤럭시 Z 폴드8 울트라">갤럭시 Z 폴드8 울트라</span>
+          <span class="pd-row"></span>
           <span class="pd-sub">256GB · 그라파이트 · 자급제</span>
           <span class="pd-price"><s>2,577,300원</s> <em>13%</em> 2,220,740원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <a class="pd" data-pid="monsterdeck" href="https://link.coupang.com/a/iDuKcnRj0m" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-close.webp" alt="차 안에 놓인 몬스타덱 단축 버튼 15개" loading="lazy"></span>
-          <span class="pd-name">몬스타기어 몬스타덱 <em class="pd-sw">전용 소프트웨어</em></span>
+          <span class="pd-name" title="몬스타기어 몬스타덱">몬스타기어 몬스타덱</span>
+          <span class="pd-row"><em class="pd-sw">전용 SW</em><em class="pd-dex">스피드미터 호환</em></span>
           <span class="pd-sub">스피드미터 물리 버튼 15개 지원</span>
           <span class="pd-price"><s>109,900원</s> <em>19%</em> 88,010원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <a class="pd" data-pid="ulanzi-dial" href="https://link.coupang.com/a/iDuXRuaUzA" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-dial.webp" alt="차 안 컵홀더 옆에 둔 울란지 다이얼 패드" loading="lazy"></span>
-          <span class="pd-name">울란지 다이얼 패드 <em class="pd-sw">전용 소프트웨어</em></span>
+          <span class="pd-name" title="울란지 다이얼 패드">울란지 다이얼 패드</span>
+          <span class="pd-row"><em class="pd-sw">전용 SW</em><em class="pd-dex">스피드미터 호환</em></span>
           <span class="pd-sub">스피드미터에 최적화된 컨트롤</span>
           <span class="pd-price"><s>50,000원</s> <em>2%</em> 49,000원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <a class="pd" data-pid="cupholder" href="https://link.coupang.com/a/iDu2eCYaOG" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/cupholder.svg" alt="컵홀더에 꽂는 거치대에 폴드를 펼쳐 끼운 모습 그림" loading="lazy"></span>
-          <span class="pd-name">아일라잇 차량용 컵홀더 거치대</span>
+          <span class="pd-name" title="아일라잇 차량용 컵홀더 거치대">아일라잇 차량용 컵홀더 거치대</span>
+          <span class="pd-row"><em class="pd-dex">스피드미터 호환</em></span>
           <span class="pd-sub">폴드 · 태블릿 차량 거치</span>
           <span class="pd-price"><s>35,000원</s> <em>15%</em> 29,630원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <a class="pd" data-pid="fanaue-mount" href="https://s.click.aliexpress.com/e/_c39q4buf" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/suction-mount.svg" alt="앞유리 흡착 마운트에 폴드를 펼쳐 끼운 모습 그림" loading="lazy"></span>
-          <span class="pd-name">FANAUE 흡착식 태블릿 마운트</span>
+          <span class="pd-name" title="FANAUE 흡착식 태블릿 마운트">FANAUE 흡착식 태블릿 마운트</span>
+          <span class="pd-row"><em class="pd-dex">스피드미터 호환</em></span>
           <span class="pd-sub">앞유리 흡착 · 1인치 볼 관절</span>
           <span class="pd-price">69,800원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
@@ -1308,7 +1323,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <div class="pd-wrap has-video">
         <a class="pd" data-pid="anmite-monitor" href="https://s.click.aliexpress.com/e/_c4cNr3j9" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/portable-monitor.svg" alt="받침대로 세운 휴대용 모니터에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
-          <span class="pd-name">Anmite 18.5인치 휴대용 터치 모니터 <em class="pd-make">18.5인치 내비 제작</em></span>
+          <span class="pd-name" title="Anmite 18.5인치 휴대용 터치 모니터">Anmite 18.5인치 휴대용 터치 모니터</span>
+          <span class="pd-row"><em class="pd-make">18.5인치 내비 제작</em><em class="pd-dex">스피드미터 호환</em></span>
           <span class="pd-sub">터치 · 120Hz · 받침대 포함</span>
           <span class="pd-price"><s>288,261원</s> <em>54%</em> 132,600원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
@@ -1317,25 +1333,36 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         </div>
         <a class="pd" data-pid="solar-cam" href="https://s.click.aliexpress.com/e/_c4o2D7GP" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/solar-cam.webp" alt="태양광 패널이 달린 무선 후방 카메라" loading="lazy"></span>
-          <span class="pd-name">태양광 무선 후방 카메라 <em class="pd-sw">전용 소프트웨어</em></span>
-          <span class="pd-sub">와이파이 · 스피드미터 대시캠 연동</span>
+          <span class="pd-name" title="태양광 무선 후방 카메라">태양광 무선 후방 카메라</span>
+          <span class="pd-row"><em class="pd-sw">전용 SW</em><em class="pd-dex">스피드미터 호환</em></span>
+          <span class="pd-sub">와이파이 · 대시캠 연동</span>
           <span class="pd-price">75,900원</span>
           <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
         <div class="pd-wrap has-video">
-        <a class="pd" data-pid="jooyon-v27q" href="https://naver.me/F8lycCjI" target="_blank" rel="sponsored noopener nofollow">
+        <a class="pd" data-pid="jooyon-v27q" href="https://link.coupang.com/a/iDDMGMVeiy" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/qhd-monitor.webp" alt="책상 위 27인치 모니터에 덜누름 데스크탑앱 화면을 띄운 모습" loading="lazy"></span>
-          <span class="pd-name">주연테크 V27Q120MC <em class="pd-make">올인원PC 제작</em></span>
+          <span class="pd-name" title="주연테크 V27Q120MC">주연테크 V27Q120MC</span>
+          <span class="pd-row"><em class="pd-make">올인원PC 제작</em><em class="pd-dex">DeX 호환</em></span>
           <span class="pd-sub">27인치 QHD · 120Hz · USB-C</span>
           <span class="pd-price"><s>199,000원</s> <em>25%</em> 149,000원</span>
-          <span class="pd-foot"><span class="pd-shop">네이버 · 11.13 기준</span><b>구매하기 ↗</b></span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
           <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
         </div>
+        <a class="pd" data-pid="gclicker-set" href="https://link.coupang.com/a/iDDYYfuo3g" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/keyboard-set.svg" alt="작은 화면이 달린 무선 키보드와 마우스 그림" loading="lazy"></span>
+          <span class="pd-name" title="지클릭커 오피스프로 사일런스 M 무선 키보드 마우스 세트">지클릭커 무선 키보드 세트</span>
+          <span class="pd-row"><em class="pd-make">올인원PC 제작</em><em class="pd-dex">DeX 호환</em></span>
+          <span class="pd-sub">무소음 · LCD · 블루투스 · 마우스</span>
+          <span class="pd-price"><s>44,900원</s> <em>15%</em> 37,900원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
         <div class="pd-wrap has-video">
         <a class="pd" data-pid="flipbook13" href="https://link.coupang.com/a/iDCBB6X7Bs" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/lapdock.svg" alt="폴드를 연결해 노트북처럼 쓰는 화면·키보드 독에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
-          <span class="pd-name">플립북 무선 13 <em class="pd-make">갤럭시 노트북 만들기</em></span>
+          <span class="pd-name" title="플립북 무선 13">플립북 무선 13</span>
+          <span class="pd-row"><em class="pd-make">갤럭시 노트북 만들기</em><em class="pd-dex">DeX 호환</em></span>
           <span class="pd-sub">13인치 무선 화면 · 키보드</span>
           <span class="pd-price"><s>399,000원</s> <em>25%</em> 299,000원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
@@ -1345,15 +1372,24 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <div class="pd-wrap has-video">
         <a class="pd" data-pid="flipbook14" href="https://link.coupang.com/a/iDCLRXo7Bk" target="_blank" rel="sponsored noopener nofollow">
           <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/lapdock.svg" alt="폴드를 연결해 노트북처럼 쓰는 화면·키보드 독에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
-          <span class="pd-name">플립북 14 Wireless <em class="pd-make">14인치 갤럭시 노트북 만들기</em></span>
+          <span class="pd-name" title="플립북 14 Wireless">플립북 14 Wireless</span>
+          <span class="pd-row"><em class="pd-make">14인치 갤럭시 노트북 만들기</em><em class="pd-dex">DeX 호환</em></span>
           <span class="pd-sub">14인치 무선 화면 · 키보드</span>
           <span class="pd-price"><s>428,110원</s> <em>1%</em> 423,820원</span>
           <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
         </a>
           <span class="pd-video is-soon" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>관련 영상 · 곧 공개</span>
         </div>
+        <a class="pd" data-pid="tb4-cable" href="https://link.coupang.com/a/iDDFT74AmG" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/usbc-cable.svg" alt="한쪽이 꺾인 C타입 케이블 그림" loading="lazy"></span>
+          <span class="pd-name" title="퀄리티어슈런스 썬더볼트4 C타입 케이블">썬더볼트4 C타입 케이블</span>
+          <span class="pd-row"><em class="pd-dex">DeX 호환</em></span>
+          <span class="pd-sub">퀄리티어슈런스 · 40Gbps · 240W · 3m</span>
+          <span class="pd-price">13,990원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
       </div>
-      <p class="pd-small">표시 가격은 적힌 날짜에 확인한 판매가(울트라 · 거치대는 와우 할인가, 다이얼 패드는 쿠폰 할인가, 알리 상품은 행사가, 네이버는 쿠폰 · 카드 할인 전 가격)이며, 실제 가격과 재고는 수시로 바뀝니다. 구매 전 판매처에서 확인하세요. 배송 · 교환은 각 판매처가 맡습니다.</p>
+      <p class="pd-small">표시 가격은 적힌 날짜에 확인한 판매가(울트라 · 거치대는 와우 할인가, 다이얼 패드는 쿠폰 할인가, 알리 상품은 행사가)이며, 실제 가격과 재고는 수시로 바뀝니다. 구매 전 판매처에서 확인하세요. 배송 · 교환은 각 판매처가 맡습니다.</p>
     </div>
   </section>
   </div>

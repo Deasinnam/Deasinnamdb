@@ -8,7 +8,7 @@ prices.json 예:
            "cupholder": {"soldout": true}}}
 - price: 지금 판매가(원). orig·pct: 할인 전 가격과 할인율(없으면 생략).
 - soldout: true 면 "매진"으로 표시(가격 줄에 매진, 사진 위에 매진 덮개).
-- 목록에 없는 상품은 그대로 둔다. 상품 id: fold7, fold8u, monsterdeck, ulanzi-dial, cupholder, fanaue-mount, anmite-monitor, solar-cam, jooyon-v27q, flipbook13, flipbook14
+- 목록에 없는 상품은 그대로 둔다. 상품 id: fold7, fold8u, monsterdeck, ulanzi-dial, cupholder, fanaue-mount, anmite-monitor, solar-cam, jooyon-v27q, flipbook13, flipbook14, tb4-cable, gclicker-set
 고친 뒤 python3 tools/build_pages.py 로 페이지를 다시 만든다.
 """
 import json, re, sys
