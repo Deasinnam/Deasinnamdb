@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="ko" data-paths>
+<head>
+<meta charset="UTF-8">
+<script>if (location.protocol === "http:" && location.hostname === "deolnureum.com") location.replace("https://deolnureum.com" + location.pathname + location.search + location.hash);</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름</title>
+<meta name="description" content="덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터를 한눈에. 판매처로 바로 연결됩니다.">
+<meta property="og:title" content="덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름">
+<meta property="og:description" content="덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터를 한눈에. 판매처로 바로 연결됩니다.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 덜누름: 흰 바탕, 검정 한 색. 모든 버튼은 "키" — 누르면 그림자만큼 내려간다.
+   레이아웃: 왼쪽 정렬 단일 칼럼(최대 1120px), 앱은 2열 그리드 → 폰에서 1열. */
+:root {
+  --paper: #ffffff;
+  --ink: #111111;
+  --ink-2: #4a4a4a;
+  --ink-3: #8a8a8a;
+  --line: #e4e4e4;
+  --wash: #f5f5f4;
+  --font-display: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --travel: 5px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- 키 ---------- */
+.key {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 15px/1 var(--font-body); color: var(--ink); text-decoration: none;
+  background: var(--paper); border: 1.5px solid var(--ink); border-radius: 12px;
+  padding: 14px 20px; box-shadow: 0 var(--travel) 0 var(--ink);
+  transform: translateY(0); transition: transform .08s ease, box-shadow .08s ease;
+  cursor: pointer; user-select: none;
+}
+.key.dark { background: var(--ink); color: var(--paper); box-shadow: 0 var(--travel) 0 #000, 0 var(--travel) 0 1.5px var(--ink); }
+.key:hover { transform: translateY(1px); box-shadow: 0 calc(var(--travel) - 1px) 0 var(--ink); }
+.key:active, .key.is-down { transform: translateY(calc(var(--travel) - 1px)); box-shadow: 0 1px 0 var(--ink); }
+.key:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.key small { font: 500 12px/1 var(--font-mono); opacity: .7; }
+
+/* ---------- 머리 ---------- */
+header.top { border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand { color: var(--ink); align-items: flex-end; }
+.brand svg { height: 26px; width: 96px; display: block; }
+.brand .sw { font: 500 10px/1 var(--font-body); color: var(--ink-2); letter-spacing: .4em; padding-bottom: 1px; }
+.foot-brand svg { height: 13px; width: 48px; vertical-align: -1px; margin-right: 5px; color: var(--ink); }
+body[data-view="home"] .foot-brand svg, body[data-view="apps"] .foot-brand svg, body[data-view="app"] .foot-brand svg { color: #f4f4f5; }
+.about-logo { margin-top: 18px; line-height: 0; }
+.about-logo img { width: clamp(260px, 42vw, 520px); height: auto; display: block; }
+.logos { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.logo-card { margin: 0; display: grid; gap: 16px; }
+.logo-pane { border-radius: 20px; border: 1.5px solid var(--ink); aspect-ratio: 16 / 9; display: grid; place-items: center; background: #f6f6f2; }
+.logo-pane.dark { background: #1f2023; }
+.logo-pane img { width: 54%; height: auto; display: block; }
+.logo-card figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo-card figcaption b { font-size: 15px; }
+.logo-dl { display: flex; gap: 10px; }
+.logo-dl .key { padding: 10px 16px; font-size: 13px; }
+.logo-note { margin: 22px 0 0; font-size: 13px; color: var(--ink-3); }
+@media (max-width: 860px) { .logos { grid-template-columns: 1fr; } }
+nav { display: flex; gap: 24px; font-size: 14px; }
+nav a { text-decoration: none; color: var(--ink-2); }
+nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+
+/* ---------- 첫 부분 ---------- */
+.hero { padding-top: 72px; padding-bottom: 56px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: end; }
+.hero h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 1.06; letter-spacing: -0.045em; font-weight: 700; }
+.hero h1 .soft { color: var(--ink-3); font-weight: 500; }
+.hero p { margin: 22px 0 0; max-width: 34em; color: var(--ink-2); font-size: 17px; }
+.hero .actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 14px; }
+.press-demo { justify-self: end; display: grid; gap: 30px; justify-items: end; }
+/* "덜" 키: 누를수록 낮아지고(--h), 기울고(--tilt), 금이 가다가(--crack) 결국 빠진다 */
+.keywell { position: relative; width: 220px; height: 236px; }
+/* 키캡이 빠진 자리: 납작한 소켓 판 위에 가운데 정렬된 작은 ＋ 홈 (위로 튀어나오는 부분 없음) */
+.stem {
+  position: absolute; left: 50%; bottom: 0; width: 150px; height: 26px; transform: translateX(-50%);
+  border: 2px solid var(--ink); border-radius: 8px; background: var(--wash);
+  opacity: 0; transition: opacity .3s ease .25s;
+}
+.stem::before, .stem::after { content: ""; position: absolute; left: 50%; top: 50%; background: var(--ink-3); border-radius: 1px; transform: translate(-50%, -50%); }
+.stem::before { width: 14px; height: 4px; } .stem::after { width: 4px; height: 14px; }
+.bigkey {
+  --h: 16px; --tilt: 0deg; --dx: 0px; --lx: 0px; --ly: 0px; --lr: 0deg; --crack: 0;
+  position: absolute; left: 0; bottom: 0;
+  width: 220px; height: 220px; border-radius: 40px; border: 2px solid var(--ink); background: var(--paper);
+  box-shadow: 0 var(--h) 0 var(--ink);
+  transform: translate(var(--dx), calc(16px - var(--h) - 16px)) rotate(var(--tilt));
+  transform-origin: 30% 100%;
+  transition: transform .09s ease, box-shadow .09s ease;
+  display: grid; place-items: center; cursor: pointer; font: inherit; color: inherit; padding: 0; overflow: visible;
+}
+.bigkey span { font: 700 64px/1 var(--font-display); letter-spacing: -0.05em; transform: translate(var(--lx), var(--ly)) rotate(var(--lr)); transition: transform .2s ease; }
+.bigkey .cracks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: var(--crack); transition: opacity .2s ease; }
+.bigkey:hover { transform: translate(var(--dx), calc(16px - var(--h) - 16px + 2px)) rotate(var(--tilt)); box-shadow: 0 calc(var(--h) - 2px) 0 var(--ink); }
+.bigkey:active, .bigkey.is-down { transform: translate(var(--dx), calc(-3px)) rotate(var(--tilt)); box-shadow: 0 3px 0 var(--ink); }
+.bigkey:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
+.bigkey.wobble { animation: wobble .28s ease; }
+@keyframes wobble { 25% { rotate: -2.5deg; } 60% { rotate: 2deg; } }
+.bigkey.broken, .bigkey.broken:hover, .bigkey.broken:active {
+  transform: translate(-78px, 44px) rotate(-16deg) scale(.82); box-shadow: 0 2px 0 var(--ink);
+  transition: transform .55s cubic-bezier(.3, 1.6, .5, 1), box-shadow .3s ease; cursor: default;
+}
+.keywell.is-broken .stem { opacity: 1; }
+.keywell { transition: margin .4s ease; }
+.keywell.is-broken { margin-bottom: 46px; }
+.fix { display: none; }
+.fix.show { display: inline-flex; }
+.counter { font: 500 13px/1.4 var(--font-mono); color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- 하단 첫 화면 시안 (쇼릴과 겹치지 않게: 슬로건·큰 키를 빼고 한 줄 소개로) ---------- */
+.hero-eyebrow, .statement, .hero-stats { display: none; }
+.hero[class*="v"] { padding-top: 56px; align-items: start; }
+.hero[class*="v"] h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.hero[class*="v"] .hero-eyebrow { display: block; font: 500 12px/1 var(--font-mono); letter-spacing: .16em; color: var(--ink-3); }
+.hero[class*="v"] .statement { display: block; margin: 18px 0 0; max-width: none; color: var(--ink); font: 700 clamp(30px, 4.2vw, 54px)/1.18 var(--font-display); letter-spacing: -0.045em; }
+.hero[class*="v"] .hero-copy > p:not(.statement) { font-size: 16px; margin-top: 18px; }
+.hero-stats { margin: 0; }
+.hero-stats dt { font: 500 clamp(30px, 3.4vw, 44px)/1 var(--font-mono); letter-spacing: -0.04em; }
+.hero-stats dd { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+/* 시안 1: 왼쪽 한 줄 소개, 오른쪽 숫자 세 줄 */
+.hero.v1 { grid-template-columns: 1.5fr 1fr; gap: 72px; }
+.hero.v1 .hero-stats { display: grid; align-self: end; }
+.hero.v1 .hero-stats div { display: grid; grid-template-columns: 4.6em 1fr; align-items: baseline; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); }
+.hero.v1 .hero-stats div:first-child { border-top: 1.5px solid var(--ink); }
+.hero.v1 .hero-stats dd { margin: 0; font-size: 14px; }
+/* 시안 2: 큰 한 줄 + 버튼, 아래에 숫자 띠 */
+.hero.v2 { grid-template-columns: 1fr; gap: 44px; }
+.hero.v2 .hero-copy > p:not(.statement) { display: none; }
+.hero.v2 .hero-copy { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px 32px; }
+.hero.v2 .hero-eyebrow { grid-column: 1 / -1; }
+.hero.v2 .statement { margin-top: 6px; font-size: clamp(32px, 5vw, 64px); }
+.hero.v2 .actions { margin: 0 0 8px; }
+.hero.v2 .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1.5px solid var(--ink); }
+.hero.v2 .hero-stats div { padding: 20px 24px 0 0; }
+.hero.v2 .hero-stats div + div { padding-left: 24px; border-left: 1px solid var(--line); }
+/* 시안 3: 가운데 정렬, 작은 덜 키를 장난감처럼 남김 */
+.hero.v3 { grid-template-columns: 1fr; gap: 30px; justify-items: center; text-align: center; }
+.hero.v3 .hero-copy > p:not(.statement) { margin-left: auto; margin-right: auto; }
+.hero.v3 .actions { justify-content: center; }
+.hero.v3 .hero-stats { display: grid; grid-template-columns: repeat(3, auto); gap: 0 56px; text-align: center; }
+@media (max-width: 860px) {
+  .hero.v1 { grid-template-columns: 1fr; gap: 36px; }
+  .hero.v2 .hero-copy { grid-template-columns: 1fr; }
+  .hero.v2 .hero-stats { grid-template-columns: 1fr; }
+  .hero.v2 .hero-stats div, .hero.v2 .hero-stats div + div { padding: 14px 0; border-left: 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 4.6em 1fr; align-items: baseline; }
+  .hero.v2 .hero-stats div:first-child { border-top: 0; }
+}
+/* ---------- 홈: 쇼릴만 흰색, 그 아래는 검정 ---------- */
+.theme-dark { --paper: #0b0b0c; --ink: #f4f4f5; --ink-2: #b4b4bb; --ink-3: #7c7c85; --line: #2a2a2e; --wash: #18181b; background: var(--paper); color: var(--ink); }
+.theme-dark .key.dark { box-shadow: 0 var(--travel) 0 #6b6b72; }
+.theme-dark .key.dark:hover { box-shadow: 0 calc(var(--travel) - 1px) 0 #6b6b72; }
+.theme-dark .key.dark:active { box-shadow: 0 1px 0 #6b6b72; }
+.dark section.block { border-top-color: var(--line); }
+.theme-dark .speed-home { border-top: 1px solid var(--line); }
+.speed-home .amp-wrap { max-width: 1120px; padding: 0 24px; }
+@media (max-width: 480px) { .speed-home .amp-wrap { padding: 0 16px; } }
+.reel { padding-bottom: 12px; }
+body[data-view="home"] footer, body[data-view="apps"] footer, body[data-view="app"] footer { background: #0b0b0c; border-top-color: #2a2a2e; color: #7c7c85; }
+body[data-view="home"] footer b, body[data-view="apps"] footer b, body[data-view="app"] footer b { color: #f4f4f5; }
+/* ---------- 의견 보내기 ---------- */
+.fb-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.fb-form { display: grid; gap: 30px; }
+.fb-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.fb-form legend, .fb-field label { display: block; padding: 0; margin-bottom: 12px; font: 700 17px/1.4 var(--font-display); letter-spacing: -0.02em; }
+.fb-form legend b, .fb-field label b { font: 500 12px/1 var(--font-mono); color: var(--ink-3); margin-right: 8px; letter-spacing: .04em; }
+.fb-field label small { font: 500 11px/1 var(--font-mono); color: var(--ink-3); border: 1px solid var(--ink-3); border-radius: 999px; padding: 4px 7px; margin-left: 6px; vertical-align: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span { display: block; border: 1.5px solid var(--ink); border-radius: 999px; padding: 10px 15px; font: 600 14px/1 var(--font-body); background: var(--paper); transition: background .12s ease, color .12s ease; }
+.chip input:checked + span { background: var(--ink); color: var(--paper); }
+.chip input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 3px; }
+.fb-field input, .fb-field textarea { display: block; width: 100%; font: 400 16px/1.6 var(--font-body); color: var(--ink); background: var(--paper); border: 1.5px solid var(--ink); border-radius: 14px; padding: 13px 15px; }
+.fb-field textarea { resize: vertical; min-height: 150px; }
+.fb-field input::placeholder, .fb-field textarea::placeholder { color: var(--ink-3); }
+.fb-field input:focus-visible, .fb-field textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.fb-hint { margin: 8px 0 0; font-size: 13px; color: var(--ink-3); }
+.fb-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.fb-send { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.fb-send .key { cursor: pointer; }
+.fb-send .key[disabled] { opacity: .5; cursor: default; }
+.fb-status { margin: 0; font-size: 14px; color: var(--ink-2); }
+.fb-status.ok { color: var(--ink); font-weight: 600; }
+.fb-status.bad { color: #b42318; font-weight: 600; }
+.fb-notify { display: grid; gap: 18px; border: 1.5px solid var(--ink); border-radius: 20px; padding: 26px; background: var(--wash); position: sticky; top: 24px; }
+.fb-notify h2 { font-size: 24px; letter-spacing: -0.03em; }
+.fb-notify p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.fb-notify .eyebrow-ink { font: 600 12px/1 var(--font-mono); letter-spacing: .14em; color: var(--ink-3); }
+.fb-notify .fb-field label { font-size: 14px; margin-bottom: 8px; }
+.fb-notify .chip span { padding: 9px 13px; font-size: 13px; }
+.fb-agree { display: grid; grid-template-columns: auto 1fr; gap: 10px; font-size: 13.5px; line-height: 1.5; cursor: pointer; }
+.fb-agree input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: #111; }
+.fb-agree small { display: block; margin-top: 4px; color: var(--ink-3); font-size: 12px; }
+/* 받는 곳이 연결되기 전에는 실제 사이트에서 의견 창구를 숨김(body.no-fb) */
+.fb-off { display: none; }
+body.no-fb .fb-on, body.no-fb .ap-fb { display: none !important; }
+body.no-fb nav a.fb-off { display: inline; }
+@media (max-width: 480px) { body.no-fb nav a.fb-off.hide-sm { display: none; } }
+.ap-fb { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.ap-fb .amp-btn { padding: 13px 20px; font-size: 14px; }
+@media (max-width: 860px) { .fb-grid { grid-template-columns: 1fr; gap: 36px; } .fb-notify { position: static; } }
+@media (max-width: 420px) { .brand .sw { display: none; } }
+/* ---------- 소개 페이지 ---------- */
+.about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: end; }
+.about-head p { max-width: 34em; }
+.about-head .about-slogan { margin-top: 22px; font: 700 clamp(26px, 3.6vw, 44px)/1.15 var(--font-display); letter-spacing: -0.04em; color: var(--ink); }
+.about-slogan span { color: var(--ink-3); font-weight: 500; }
+.about-facts { margin: 0; border-top: 1.5px solid var(--ink); }
+.about-facts div { display: grid; grid-template-columns: 9em 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.about-facts dt { font: 500 12px/1.9 var(--font-mono); color: var(--ink-3); letter-spacing: .06em; }
+.about-facts dd { margin: 0; }
+@media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; } .about-facts div { grid-template-columns: 6em 1fr; } .hero.v3 .hero-stats { grid-template-columns: 1fr; gap: 18px; } }
+/* 시안 고르기 (미리보기에서만) */
+.pick { border: 1px solid #3f3f46; position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; display: flex; gap: 4px; padding: 6px; background: #111; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+.pick button { font: 600 13px/1 var(--font-body); color: #d4d4d8; background: none; border: 0; border-radius: 999px; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
+.pick button[aria-pressed="true"] { background: #fff; color: #111; }
+
+/* ---------- 구역 ---------- */
+section.block { padding: 64px 0; border-top: 1px solid var(--line); }
+.block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+.block-head h2 { font-size: 30px; letter-spacing: -0.03em; }
+.block-head p { margin: 0; color: var(--ink-2); max-width: 36em; }
+
+/* ---------- 앱 ---------- */
+.apps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.app { border: 1.5px solid var(--ink); border-radius: 20px; padding: 26px; display: grid; gap: 18px; align-content: start; background: var(--paper); }
+.app-top { display: flex; gap: 18px; align-items: center; }
+.glyph {
+  flex: none; width: 64px; height: 64px; border-radius: 16px; border: 1.5px solid var(--ink);
+  box-shadow: 0 5px 0 var(--ink); display: grid; place-items: center; font: 700 26px/1 var(--font-display); letter-spacing: -0.04em;
+}
+.app.featured .glyph { background: var(--ink); color: var(--paper); }
+.app h3 { font-size: 22px; letter-spacing: -0.025em; }
+.app .kind { font: 500 12px/1.4 var(--font-mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.app .lead { margin: 0; font-size: 16px; }
+.app ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--ink-2); font-size: 15px; }
+.app li { padding-left: 18px; position: relative; }
+.app li::before { content: ""; position: absolute; left: 0; top: .72em; width: 8px; height: 1.5px; background: var(--ink); }
+.presses { display: flex; align-items: center; gap: 10px; background: var(--wash); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+.presses .n { font: 600 13px/1 var(--font-mono); border: 1.5px solid var(--ink); border-radius: 7px; padding: 5px 7px; background: var(--paper); box-shadow: 0 2px 0 var(--ink); }
+.meta { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 4px 22px; font: 400 13px/1.5 var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.meta dt { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.meta dd { margin: 0; }
+.meta div { display: grid; }
+.app .note { margin: 0; font-size: 13px; color: var(--ink-3); }
+.app .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 4px; }
+.app .row a.text { font-size: 14px; color: var(--ink-2); text-underline-offset: 4px; }
+.tag { font: 500 11px/1 var(--font-mono); border: 1px solid var(--ink-3); color: var(--ink-2); border-radius: 999px; padding: 5px 8px; margin-left: 8px; vertical-align: 3px; }
+
+/* ---------- 원칙 ---------- */
+.rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; counter-reset: rule; }
+.rule h3 { font-size: 19px; margin: 14px 0 8px; letter-spacing: -0.02em; }
+.rule p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.rule .k { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1.5px solid var(--ink); border-radius: 10px; box-shadow: 0 4px 0 var(--ink); font: 600 14px/1 var(--font-mono); }
+
+/* ---------- 설치 ---------- */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1.5px solid var(--ink); border-radius: 20px; overflow: hidden; }
+.step { padding: 24px; border-right: 1px solid var(--line); }
+.step:last-child { border-right: 0; }
+.step .num { font: 500 12px/1 var(--font-mono); color: var(--ink-3); }
+.step h3 { font-size: 17px; margin: 10px 0 6px; }
+.step p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.fineprint { margin: 20px 0 0; font-size: 13px; color: var(--ink-3); max-width: 60em; }
+
+footer { border-top: 1px solid var(--line); padding: 32px 0 48px; font-size: 13px; color: var(--ink-3); }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+footer b { color: var(--ink); font-family: var(--font-display); }
+
+/* ---------- 메인 쇼릴: 첫 화면 15초 모션 영상 ---------- */
+.reel { padding: 28px 0 0; }
+.reel-frame { position: relative; aspect-ratio: 16 / 9; border: 1.5px solid var(--ink); border-radius: 24px; overflow: hidden; background: #fff; box-shadow: 0 8px 0 var(--ink); }
+.reel-frame video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.reel { padding-bottom: 12px; }
+.reel-sound { position: absolute; right: 18px; top: 18px; padding: 10px 14px; font-size: 13px; }
+.reel-sound svg { width: 16px; height: 16px; }
+@media (max-width: 480px) { .reel { padding-top: 16px; } .reel-frame { border-radius: 16px; } .reel-sound { right: 10px; top: 10px; padding: 7px 10px; font-size: 12px; } }
+
+/* ---------- 홈/앱센터 화면 나누기 ---------- */
+[hidden] { display: none !important; }
+.center-head { padding: 28px 0 40px; border-bottom: 1px solid var(--line); }
+.fly-frame { aspect-ratio: 16 / 9; margin: 0 auto 44px; background: #0b0b0c; }
+.fly-again { right: auto !important; left: 18px; }
+@media (max-width: 480px) { .fly-again { left: 10px; } }
+.center-head .eyebrow-ink { font: 600 12px/1 var(--font-mono); letter-spacing: .14em; color: var(--ink-3); }
+.center-head h1 { margin-top: 14px; font-size: clamp(44px, 7vw, 84px); line-height: 1; letter-spacing: -0.05em; }
+.center-head p { margin: 18px 0 0; color: var(--ink-2); max-width: 36em; font-size: 17px; }
+.speed-home .amp-copy { grid-column: span 6; }
+.speed-req { margin: 26px 0 0; display: grid; gap: 0; border-top: 1px solid #2a2a2e; }
+.speed-req div { display: grid; grid-template-columns: 7.5em 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #2a2a2e; font-size: 13.5px; }
+.speed-req dt { font: 500 12px/1.7 var(--font-mono); color: #a1a1aa; }
+.speed-req dd { margin: 0; color: #e4e4e7; }
+.speed-video { grid-column: span 6; align-self: center; }
+.speed-video video { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #2a2a2e; background: #000; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+@media (max-width: 900px) { .speed-home .amp-copy, .speed-video { grid-column: 1 / -1; } }
+
+/* ---------- 스피드미터 잠금 해제 장면: 폴더블이 펼쳐지고 금빛 입자. 커서를 향해 기우는 단단한 3D 물체 ---------- */
+.ul { grid-column: span 6; align-self: center; position: relative; display: grid; justify-items: center; gap: 26px; padding: 30px 0 6px; perspective: 1400px; touch-action: pan-y; }
+.ul-spot { position: absolute; inset: -12% -8%; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; background: radial-gradient(55% 50% at 50% 45%, rgba(233,196,106,.22), rgba(233,196,106,.05) 50%, transparent 72%); }
+.ul.on .ul-spot { opacity: 1; }
+.ul-fx { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; pointer-events: none; }
+.ul-rig { position: relative; width: min(100%, 440px); aspect-ratio: 1080 / 1120; transform-style: preserve-3d; will-change: transform; opacity: 0; }
+.ul-shadow { position: absolute; left: 6%; right: 6%; bottom: -9%; height: 12%; border-radius: 50%; background: rgba(0,0,0,.8); filter: blur(22px); opacity: 0; }
+.ul-half { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; will-change: transform; }
+.ul-half.l { left: 0; transform-origin: 100% 50%; } .ul-half.r { right: 0; transform-origin: 0 50%; }
+.ul-half > i { position: absolute; inset: 0; display: block; background: linear-gradient(180deg, #5b5b60, #2b2b2f 50%, #18181b); }
+.ul-half.l > i { border-radius: 30px 3px 3px 30px; } .ul-half.r > i { border-radius: 3px 30px 30px 3px; }
+.ul-half > .face { background: #050506; box-shadow: inset 0 0 0 2px #3a3a40, inset 0 0 0 9px #0b0b0d; }
+.ul-half > .back { background: linear-gradient(135deg, #2a2a2e, #101012 60%, #1c1c20); }
+.ul-screen { position: absolute; inset: 9px; border-radius: 22px; overflow: hidden; transform: translateZ(1px); background: #000; opacity: 0; }
+.ul-screen video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ul-gloss { position: absolute; inset: 0; border-radius: 30px; transform: translateZ(2px); pointer-events: none; mix-blend-mode: screen; opacity: 0; background: radial-gradient(60% 50% at var(--gx, 30%) var(--gy, 10%), rgba(255,255,255,.26), rgba(255,255,255,.05) 45%, transparent 70%); }
+.ul-sweep { position: absolute; inset: 9px; border-radius: 22px; overflow: hidden; transform: translateZ(2.5px); pointer-events: none; }
+.ul-sweep::before { content: ""; position: absolute; top: -20%; bottom: -20%; left: 0; width: 34%; transform: translateX(-160%) skewX(-18deg); background: linear-gradient(90deg, transparent, rgba(246,227,161,.55), rgba(255,255,255,.85), rgba(246,227,161,.55), transparent); }
+.ul.lit .ul-sweep::before { animation: ulSweep .9s cubic-bezier(.3,.6,.2,1) .05s both; }
+@keyframes ulSweep { to { transform: translateX(420%) skewX(-18deg); } }
+.ul-ring { position: absolute; left: 50%; top: 50%; width: 118%; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid #e9c46a; transform: translate(-50%, -50%) translateZ(-40px) scale(.6); opacity: 0; pointer-events: none; }
+.ul.lit .ul-ring { animation: ulRing 1.1s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ulRing { 0% { opacity: .9; transform: translate(-50%, -50%) translateZ(-40px) scale(.6); } 100% { opacity: 0; transform: translate(-50%, -50%) translateZ(-40px) scale(1.5); } }
+.ul-again { position: relative; font: 600 13px/1 var(--font-body); color: #0a0a0b; background: linear-gradient(180deg, #f6e3a1, #e9c46a); border: 0; border-radius: 999px; padding: 11px 16px; cursor: pointer; box-shadow: 0 4px 0 #8a6d1f; opacity: 0; transition: opacity .5s ease .3s; }
+.ul.lit .ul-again { opacity: 1; }
+.ul-again:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a6d1f; }
+.ul-again:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.speed-home { overflow: hidden; }
+@media (max-width: 900px) { .ul { grid-column: 1 / -1; } .ul-rig { width: min(86%, 400px); } }
+
+/* ---------- 이륙 장면: 노을 바다 위 3D 비행 (three.js, 화면에 들어올 때만 불러옴) ---------- */
+.takeoff { position: relative; height: min(88vh, 820px); min-height: 440px; overflow: hidden; background: linear-gradient(180deg, #1f5fc0 0%, #6fb0ee 42%, #cfe6f8 56%, #1c6aa8 57%, #0b3a6e 100%); }
+.takeoff video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.takeoff-fade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 60%, rgba(3,22,54,.5) 86%, #0b0b0c 100%); }
+#tkVid { transition: object-position .5s linear; }
+.takeoff-copy { position: absolute; left: 0; right: 0; bottom: 11%; text-align: center; color: #fff; padding: 0 20px; transition: opacity .5s ease; }
+.takeoff-copy.is-off { opacity: 0; }
+.takeoff-copy b { display: block; font: 600 clamp(14px, 1.7vw, 26px)/1 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .3em; color: #fff6d8; text-shadow: 0 1px 12px rgba(3,20,50,.8); }
+.takeoff-copy h2 { margin-top: 16px; font: 600 clamp(22px, 3.5vw, 54px)/1.35 "Noto Serif KR", "Nanum Myeongjo", serif; letter-spacing: .1em; text-shadow: 0 1px 3px rgba(3,20,50,.6), 0 2px 30px rgba(3,20,50,.9); }
+.ap { padding-top: 36px; min-height: 78vh; }
+.ap .amp-wrap { max-width: 1120px; padding: 0 24px; }
+.ap-back { grid-column: 1 / -1; justify-self: start; font: 600 13px/1 var(--font-mono); color: #a1a1aa; text-decoration: none; border: 1px solid #3f3f46; border-radius: 999px; padding: 10px 14px; margin-bottom: 14px; }
+.ap-back:hover { color: #fff; border-color: #71717a; }
+.ap-back:focus-visible, .ap-nav a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.ap .amp-copy { grid-column: span 6; align-self: start; }
+.ap .amp-copy h1 { margin: 18px 0 0; font: 900 clamp(38px, 5vw, 64px)/1.04 var(--font-display); letter-spacing: -0.045em; color: #fff; word-break: keep-all; }
+.ap .amp-points li b { color: #a1a1aa; }
+.ap-desc { margin: 16px 0 0; font-size: 15.5px; line-height: 1.7; color: #c4c4cb; max-width: 30em; word-break: keep-all; }
+.ap .amp-copy h2 { margin: 18px 0 0; font: 900 clamp(30px, 3.8vw, 48px)/1.12 var(--font-display); letter-spacing: -0.04em; color: #fff; word-break: keep-all; }
+.ap-sub { margin-top: 72px; padding-top: 64px !important; border-top: 1px solid #2a2a2e; align-items: center; }
+.ap-sub .ap-media { position: static; align-self: center; }
+.ap-sub .amp-copy { align-self: center; }
+.ap .amp-copy.ap-wide { grid-column: 1 / -1; }
+.ap-trio { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; margin-top: 12px; }
+.ap-trio figure { margin: 0; display: grid; gap: 18px; align-content: start; }
+.ap-trio .ap-dev { width: 100%; border-radius: 20px; border-width: 6px; }
+.ap-trio small { font: 600 11px/1 var(--font-mono); letter-spacing: .1em; color: #93c5fd; }
+.ap-trio h3 { margin-top: 10px; font: 800 22px/1.25 var(--font-display); letter-spacing: -0.03em; color: #fff; }
+.ap-trio p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.65; color: #c4c4cb; word-break: keep-all; }
+@media (max-width: 900px) { .ap-trio { grid-template-columns: 1fr; gap: 40px; } .ap-trio .ap-dev { max-width: 420px; justify-self: center; } }
+.ap-sub .ap-camwrap { position: relative; top: 0; padding-bottom: 56px; }
+.ap-camwrap .ap-cap { justify-self: start; text-align: left; padding-left: 7%; max-width: 54%; }
+.cam-fig { position: absolute; right: -2%; bottom: 0; width: 44%; max-width: 236px; display: grid; justify-items: center; gap: 8px; opacity: 0; transform: translate(34px, 26px) scale(.86); transition: opacity .9s ease .5s, transform 1s cubic-bezier(.2,.8,.2,1) .5s; pointer-events: none; }
+.ap-camwrap.is-in .cam-fig { opacity: 1; transform: none; }
+.cam-photo { width: 100%; height: auto; display: block; border-radius: 22px; border: 1px solid #52525b; box-shadow: 0 0 0 5px #0b0b0c, 0 24px 44px -12px #000; }
+.cam-fig span { font: 600 10.5px/1.3 var(--font-mono); color: #d4d4d8; background: rgba(11,11,12,.9); border: 1px solid #3f3f46; border-radius: 999px; padding: 6px 10px; white-space: nowrap; }
+.cam-wave { position: absolute; left: -17%; top: -15%; width: 34%; height: auto; }
+.cam-wave path { opacity: 0; }
+.ap-camwrap.is-in .cam-wave path { animation: camWave 2.1s ease-in-out 1.5s infinite; }
+.ap-camwrap.is-in .cam-wave path:nth-child(2) { animation-delay: 1.75s; }
+.ap-camwrap.is-in .cam-wave path:nth-child(3) { animation-delay: 2s; }
+@keyframes camWave { 0%, 100% { opacity: 0; } 35%, 60% { opacity: .95; } }
+@media (prefers-reduced-motion: reduce) { .cam-fig { transition: none; } .ap-camwrap.is-in .cam-wave path { animation: none; opacity: .8; } }
+.ap-photo { grid-column: span 6; margin: 0; display: grid; gap: 12px; align-self: center; }
+.ap-photo img { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #3f3f46; box-shadow: 0 30px 60px -26px #000; }
+.ap-photo figcaption { font: 400 12px/1.4 var(--font-mono); color: #8a8a93; text-align: center; }
+@media (max-width: 900px) { .ap-photo { grid-column: 1 / -1; order: -1; } .cam-fig { right: 0; width: 40%; } }
+.ap-sub .ap-widewrap { grid-column: 1 / -1; }
+.ap-dev.wide { width: 100%; max-width: 960px; aspect-ratio: 960 / 356; border-radius: 22px; border-width: 6px; }
+.ap-sub .ap-widewrap ~ .amp-copy { align-self: start; }
+.amp-points.ap-points-top { margin-top: 0; }
+.amp-points strong { color: #fff; font-weight: 700; margin-right: 6px; }
+.pdp { background: #fff; padding: 28px 0 100px; min-height: 70vh; }
+.pd-notice { background: #f4f4f5; color: #52525b; font-size: 13px; line-height: 1.6; padding: 12px 16px; border-radius: 12px; }
+.pd-head { margin: 40px 0 28px; }
+.pd-head h1 { font: 800 clamp(26px, 3.4vw, 34px)/1.2 var(--font-display); letter-spacing: -0.03em; color: #0b0b0c; }
+.pd-head p { margin-top: 6px; color: #71717a; font-size: 15px; }
+.pd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.pd { display: grid; gap: 4px; align-content: start; padding: 12px 12px 16px; border: 1px solid #e4e4e7; border-radius: 16px; background: #fff; color: #0b0b0c; text-decoration: none; transition: box-shadow .2s, transform .2s; }
+.pd:hover { box-shadow: 0 12px 30px -16px rgba(0,0,0,.25); transform: translateY(-2px); }
+.pd-img { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; border-radius: 10px; background: #f4f4f5; margin-bottom: 10px; overflow: hidden; }
+.pd-tag { position: absolute; left: 8px; top: 8px; z-index: 1; background: #fff; color: #b45309; font: 700 11px/1 var(--font-body); padding: 6px 9px; border-radius: 999px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.pd-art { width: 86%; height: 86%; object-fit: contain; }
+.pd.is-soldout .pd-img::after { content: "매진"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.7); color: #0b0b0c; font: 800 18px/1 var(--font-body); letter-spacing: .1em; }
+.pd.is-soldout .pd-price { color: #a1a1aa; }
+.pd-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pd-name { font: 700 16px/1.35 var(--font-body); }
+.pd-sub { color: #71717a; font-size: 13px; }
+.pd-used { font-style: normal; font: 700 11px/1 var(--font-body); color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; }
+.pd-price { margin-top: 8px; font: 800 18px/1.3 var(--font-body); color: #0b0b0c; }
+.pd-price s { display: block; font-weight: 400; font-size: 12px; color: #a1a1aa; }
+.pd-price em { font-style: normal; color: #dc2626; margin-right: 2px; }
+.pd-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; font-size: 13px; }
+.pd-shop { color: #a1a1aa; }
+.pd-foot b { font-size: 14px; white-space: nowrap; }
+.pd-shop { white-space: nowrap; font-size: 12px; }
+.pd-small { margin-top: 22px; color: #a1a1aa; font-size: 12px; }
+.hw-fold { display: grid; grid-template-columns: 1fr 1fr; height: 78%; aspect-ratio: 720 / 728; border: 4px solid #111; border-radius: 12px; box-shadow: 0 0 0 1px #a1a1aa, 0 14px 24px -12px rgba(0,0,0,.45); overflow: hidden; background: #000; }
+.hw-fold.ultra { height: 82%; aspect-ratio: 760 / 728; }
+.hw-fold span { overflow: hidden; position: relative; }
+.hw-fold span + span { box-shadow: inset 4px 0 6px -4px rgba(0,0,0,.6); }
+.hw-fold img { position: absolute; top: 0; height: 100%; width: 200%; object-fit: cover; }
+.hw-fold span:first-child img { left: 0; } .hw-fold span + span img { right: 0; }
+@media (max-width: 520px) { .pdp { padding-top: 20px; } .pd-grid { grid-template-columns: 1fr 1fr; gap: 10px; } .pd { padding: 8px 8px 12px; } .pd-name { font-size: 14px; } .pd-price { font-size: 16px; } .pd-foot { flex-direction: column; align-items: flex-start; gap: 6px; } }
+.ap-mac { width: 100%; max-width: 620px; border-radius: 14px; overflow: hidden; border: 6px solid #0a0a0b; box-shadow: 0 0 0 1px #52525b, 0 40px 80px -30px #000; background: #111; }
+.ap-mac img, .ap-shot img { display: block; width: 100%; height: auto; }
+.ap-shot { border-radius: 16px; overflow: hidden; background: linear-gradient(135deg,#dfe7ff,#fde7ef); padding: 18px; box-shadow: 0 0 0 1px #3f3f46; }
+.ap-shot img { border-radius: 12px; box-shadow: 0 16px 40px -18px rgba(30,30,60,.5); max-width: 360px; margin: 0 auto; }
+.slide .fold-dev.mac { top: 50%; bottom: auto; width: 50%; transform: translateY(-50%); aspect-ratio: 1200 / 750; border-radius: 10px; border-width: 4px; }
+.slide .fold-dev.mac img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ap-dev.r98, .slide .fold-dev.r98 { aspect-ratio: 720 / 800; }
+.ap-dev.tall { width: min(72%, 300px); aspect-ratio: 420 / 898; border-radius: 30px; }
+.af { grid-column: span 6; align-self: start; padding-top: 8px; position: sticky; top: 84px; }
+.af .ul-rig { width: min(100%, 430px); }
+.af-cover { position: absolute; top: 0; bottom: 0; left: 50%; aspect-ratio: 420 / 898; border-radius: 30px; background: #050506; box-shadow: inset 0 0 0 2px #3a3a40, 0 30px 60px -24px #000; overflow: hidden; backface-visibility: hidden; transform: translateX(-50%); }
+.af-cover video { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); border-radius: 23px; object-fit: cover; display: block; background: #000; }
+.af-ctrl { position: relative; display: inline-flex; padding: 4px; border: 1px solid #3f3f46; border-radius: 999px; background: #121214; }
+.af-btn { font: 600 13px/1 var(--font-body); color: #a1a1aa; background: transparent; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+.af-btn[aria-pressed="true"] { color: #0a0a0b; background: linear-gradient(180deg, #f6e3a1, #e9c46a); box-shadow: 0 3px 0 #8a6d1f; }
+.af-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (max-width: 900px) { .af { grid-column: 1 / -1; position: relative; top: 0; order: -1; } .ap-sub { margin-top: 48px; padding-top: 44px !important; } .ap-sub .ap-media { order: 0; } .ap-skin-copy { order: -1; } }
+.ap-note { margin: 18px 0 0; font-size: 12.5px; line-height: 1.6; color: #8a8a93; }
+.ap-media { grid-column: span 6; align-self: start; display: grid; justify-items: center; gap: 14px; position: sticky; top: 84px; padding-top: 8px; }
+.ap-dev { position: relative; width: min(100%, 470px); aspect-ratio: 720 / 728; border-radius: 26px; border: 8px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 40px 80px -30px #000, 0 0 90px -30px rgba(96,165,250,.35); overflow: hidden; background: #000; }
+.ap-dev video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ap-again { position: absolute; right: 12px; bottom: 12px; font: 600 13px/1 var(--font-body); color: #0b0b0c; background: #fff; border: 0; border-radius: 999px; padding: 10px 14px; cursor: pointer; box-shadow: 0 4px 0 #52525b; }
+.ap-again:active { transform: translateY(3px); box-shadow: 0 1px 0 #52525b; }
+.ap-cap { margin: 0; font: 400 12px/1.4 var(--font-mono); color: #8a8a93; }
+.ap-duo { position: relative; width: 100%; padding: 0 8% 13% 0; }
+.ap-duo img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid #3f3f46; box-shadow: 0 30px 60px -20px rgba(0,0,0,.85); }
+.ap-duo .ap-duo-phone { position: absolute; right: 0; bottom: 0; width: 27%; border-radius: 16px; border: 4px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 24px 50px -16px #000; }
+.ap-nav { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 34px; padding-top: 22px; border-top: 1px solid #2a2a2e; }
+.ap-nav a { font: 600 14px/1.3 var(--font-body); color: #d4d4d8; text-decoration: none; }
+.ap-nav a:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 900px) {
+  .ap .amp-copy, .ap-media { grid-column: 1 / -1; }
+  .ap-media { position: static; order: -1; }
+  .ap-back { order: -2; }
+}
+@media (max-width: 480px) { .ap .amp-wrap { padding: 0 16px; } .ap-dev { border-width: 6px; border-radius: 20px; } }
+.amp-soon.as-link { text-decoration: none; } .amp-soon.as-link::before { display: none; }
+@media (max-width: 480px) { .takeoff-copy { bottom: 36px; } }
+
+/* ---------- 앱 화면 쇼케이스: 가운데 크게, 양옆은 기울여 뒤로. 저절로 돌고, 누르면 그 앱 소개로 ---------- */
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+.show { background: #0b0b0c; color: #f4f4f5; padding: 64px 0 56px; overflow: hidden; overflow: clip; }
+.show-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.show-head .eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: #a1a1aa; }
+.show-head h2 { margin-top: 12px; font-size: clamp(26px, 3.4vw, 40px); letter-spacing: -0.04em; color: #fff; }
+.show-head p { margin: 0; color: #a1a1aa; font-size: 14px; }
+.deck { position: relative; aspect-ratio: 16 / 7.6; perspective: 1600px; touch-action: pan-y; }
+.deck:focus-visible { outline: 2px solid #fff; outline-offset: 6px; border-radius: 12px; }
+.slide {
+  position: absolute; left: 50%; top: 50%; width: min(72%, 760px); aspect-ratio: 16 / 10; margin: 0;
+  transform: translate(-50%, -50%); display: block; color: inherit; text-decoration: none;
+  border-radius: 18px; overflow: hidden; border: 1px solid #3f3f46; background: #18181b;
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,.9);
+  transition: transform .6s cubic-bezier(.2, .7, .2, 1), opacity .6s ease, filter .6s ease;
+}
+.slide img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; user-select: none; -webkit-user-drag: none; }
+.slide img.fit { object-fit: contain; background: #000; }
+.slide video { display: block; width: 100%; height: 100%; object-fit: contain; background: #0b0b0c; pointer-events: none; }
+.slide:not(.is-center) { cursor: pointer; filter: brightness(.5); }
+.slide:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.slide .label { position: absolute; right: 14px; bottom: 14px; background: rgba(11,11,12,.82); border: 1px solid #3f3f46; color: #e4e4e7; font: 600 12px/1 var(--font-mono); padding: 8px 12px; border-radius: 999px; }
+.slide .enter { position: absolute; left: 14px; bottom: 14px; background: #fff; color: #0b0b0c; padding: 10px 15px; border-radius: 999px; font: 700 13px/1 var(--font-body); box-shadow: 0 4px 0 #52525b; opacity: 0; transition: opacity .3s ease; }
+.slide.is-center .enter { opacity: 1; }
+.slide.is-center:hover .enter { transform: translateY(1px); box-shadow: 0 3px 0 #52525b; }
+.slide.fold { background: radial-gradient(120% 100% at 82% 45%, #1e2532 0%, #121214 52%, #0b0b0c 100%); }
+.fold-dev { position: absolute; right: 5%; top: 8%; bottom: 8%; aspect-ratio: 720 / 728; border-radius: 14px; border: 5px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 26px 50px -20px #000; overflow: hidden; background: #000; }
+.slide .fold-dev video { object-fit: cover; }
+.fold-copy { position: absolute; left: 6%; top: 46%; transform: translateY(-50%); width: 34%; display: grid; gap: 10px; text-align: left; word-break: keep-all; }
+.fold-copy small { font: 600 clamp(10px, 1vw, 11px)/1.5 var(--font-mono); letter-spacing: .02em; color: #93c5fd; }
+.fold-copy b { font: 700 clamp(15px, 2.5vw, 27px)/1.18 var(--font-display); letter-spacing: -0.035em; color: #fff; }
+.fold-copy span { font-size: clamp(11px, 1.25vw, 14px); line-height: 1.55; color: #a1a1aa; }
+.slide.duo .fold-dev { top: 12%; bottom: 12%; right: 13%; }
+.fold-cover { position: absolute; right: 4%; bottom: 7%; height: 64%; aspect-ratio: 420 / 898; border-radius: 12px; border: 4px solid #050506; box-shadow: 0 0 0 1px #52525b, 0 22px 44px -14px #000; overflow: hidden; background: #000; z-index: 2; }
+.slide .fold-cover video { object-fit: cover; }
+.ph { width: 100%; height: 100%; background: #f5f5f4; color: #111; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; padding: 20px; }
+.ph .g { width: clamp(64px, 9vw, 104px); aspect-ratio: 1; border: 2px solid #111; border-radius: 24px; box-shadow: 0 7px 0 #111; display: grid; place-items: center; font: 700 clamp(30px, 4.4vw, 48px)/1 var(--font-display); background: #fff; letter-spacing: -0.04em; }
+.ph b { font: 700 clamp(18px, 2.6vw, 30px)/1.2 var(--font-display); letter-spacing: -0.03em; margin-top: 6px; }
+.ph span { font-size: clamp(12px, 1.4vw, 15px); color: #4a4a4a; max-width: 24em; }
+.ph small { font: 500 11px/1 var(--font-mono); color: #8a8a8a; letter-spacing: .04em; }
+.show-bar { margin-top: 26px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.show-count { font: 600 13px/1 var(--font-mono); color: #71717a; font-variant-numeric: tabular-nums; }
+.show-count b { color: #fff; font-weight: 600; }
+.show-name { flex: 1; min-width: 10em; font: 600 15px/1.3 var(--font-body); color: #fff; }
+.show-name span { color: #a1a1aa; font-weight: 400; margin-left: 8px; font-size: 13px; }
+.show-ctrl { display: flex; gap: 8px; }
+.show-ctrl button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #3f3f46; background: #18181b; color: #fff; cursor: pointer; display: grid; place-items: center; box-shadow: 0 4px 0 #000; transition: transform .08s ease, box-shadow .08s ease; }
+.show-ctrl button:hover { transform: translateY(1px); box-shadow: 0 3px 0 #000; }
+.show-ctrl button:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+.show-ctrl button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.show-ctrl .pp { background: #fff; color: #0b0b0c; border-color: #fff; box-shadow: 0 4px 0 #52525b; }
+.show-ctrl svg { width: 16px; height: 16px; }
+.show-prog { margin-top: 14px; height: 2px; background: #27272a; position: relative; overflow: hidden; }
+.show-prog i { position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(0); }
+.show + .amp-stage { border-top: 1px solid #2a2a2e; }
+@media (max-width: 700px) {
+  .deck { aspect-ratio: 16 / 10.4; }
+  .slide { width: 84%; }
+  .fold-dev { border-width: 3px; border-radius: 9px; right: 4%; }
+  .fold-copy { left: 5%; top: 40%; gap: 7px; }
+  .fold-copy span { display: none; }
+  .fold-cover { border-width: 3px; border-radius: 8px; right: 3%; }
+}
+@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+
+/* ---------- 대표 앱: Daesinnam Amp (어두운 무대 위에 실제 앱 화면) ---------- */
+.amp-stage { background: #0b0b0c; color: #f4f4f5; padding: 72px 0 80px; }
+.amp-wrap { max-width: 1200px; margin: 0 auto; padding: 0 28px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 28px 20px; }
+.amp-copy { grid-column: span 5; align-self: center; }
+.amp-eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: #a1a1aa; display: flex; align-items: center; gap: 10px; }
+.amp-eyebrow::before { content: ""; width: 26px; height: 1.5px; background: #f4f4f5; }
+.amp-copy h2 { margin: 18px 0 0; font: 900 clamp(40px, 5.4vw, 68px)/1 var(--font-display); letter-spacing: -0.045em; color: #fff; }
+.amp-kind { margin: 12px 0 0; font-size: 15px; color: #a1a1aa; }
+.amp-lead { margin: 22px 0 0; font: 700 clamp(20px, 2.2vw, 26px)/1.4 var(--font-display); letter-spacing: -0.03em; color: #fff; }
+.amp-points { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 0; border-top: 1px solid #2a2a2e; }
+.amp-points li { display: grid; grid-template-columns: 34px 1fr; gap: 8px; padding: 11px 0; border-bottom: 1px solid #2a2a2e; font-size: 14.5px; color: #d4d4d8; }
+.amp-points li b { font: 500 12px/1.9 var(--font-mono); color: #71717a; }
+.amp-cta { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.amp-btn { display: inline-flex; align-items: baseline; gap: 10px; text-decoration: none; background: #fff; color: #0b0b0c; padding: 15px 24px; border-radius: 999px; font: 700 15px/1 var(--font-body); box-shadow: 0 5px 0 #52525b; transition: transform .08s ease, box-shadow .08s ease; }
+.amp-btn small { font: 500 11px/1 var(--font-mono); opacity: .6; }
+.amp-btn:hover { transform: translateY(1px); box-shadow: 0 4px 0 #52525b; }
+.amp-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #52525b; }
+.amp-btn:focus-visible, .amp-link:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.amp-meta { font: 400 12px/1.6 var(--font-mono); color: #a1a1aa; }
+.amp-link { font-size: 13px; color: #d4d4d8; text-underline-offset: 4px; }
+.amp-shot { margin: 0; }
+.amp-shot img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid #2a2a2e; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+.amp-shot figcaption { margin-top: 10px; font: 400 12px/1.4 var(--font-mono); color: #8a8a93; }
+.amp-hero-shot { grid-column: span 5; align-self: center; }
+.amp-side { grid-column: span 2; align-self: center; }
+.amp-side img { border-radius: 22px; }
+.amp-stage + .amp-stage { border-top: 1px solid #2a2a2e; }
+.dl-count { display: inline-flex; align-items: center; color: #a1a1aa; font: 500 13px/1.4 var(--font-body); margin-left: 4px; } .dl-count b { color: #f4f4f5; font-weight: 700; margin-right: 3px; }
+.amp-soon { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #52525b; color: #d4d4d8; border-radius: 999px; padding: 12px 18px; font: 600 14px/1 var(--font-body); }
+.amp-soon::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #a1a1aa; }
+.amp-row { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 2.2fr; gap: 20px; align-items: start; margin-top: 12px; }
+.amp-phone img { aspect-ratio: 560 / 900; object-fit: cover; object-position: top; border-radius: 22px; }
+.amp-note { grid-column: 1 / -1; margin: 0; font-size: 12px; color: #71717a; }
+@media (max-width: 900px) {
+  .amp-copy, .amp-hero-shot { grid-column: 1 / -1; }
+  .amp-side { grid-column: span 6; }
+  .amp-row { grid-template-columns: 1fr 1fr; }
+  .amp-row .amp-wide { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) { .amp-wrap { padding: 0 16px; } .amp-stage { padding: 52px 0 60px; } }
+@media (prefers-reduced-motion: reduce) { .amp-btn { transition: none; } }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 36px; }
+  .press-demo { justify-self: start; justify-items: start; }
+  .counter { text-align: left; }
+  .apps, .rules { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .step { border-right: 0; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: 0; }
+}
+@media (max-width: 480px) {
+  .wrap { padding: 0 16px; }
+  nav { gap: 14px; }
+  nav .hide-sm { display: none; }
+  .keywell { width: 160px; height: 176px; }
+  .bigkey { width: 160px; height: 160px; border-radius: 32px; }
+  .bigkey span { font-size: 46px; }
+  .app { padding: 20px; }
+  .meta { grid-template-columns: repeat(2, auto); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .key, .bigkey { transition: none; }
+}
+</style>
+<link rel="canonical" href="https://deolnureum.com/hardware/">
+<meta property="og:url" content="https://deolnureum.com/hardware/">
+<meta property="og:site_name" content="덜누름 Software">
+<meta property="og:image" content="https://deolnureum.com/brand/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
+<meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "덜누름 최적화 디바이스", "item": "https://deolnureum.com/hardware/"}]}]}</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+</head>
+<body data-view="hardware">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="lg-word" viewBox="0 0 1394 378"><path fill="currentColor" fill-rule="evenodd" d="M47.8 377.8C47.8 377.5 46.8 377.2 45.1 377.0C44.2 376.9 42.9 376.6 42.2 376.4C41.6 376.2 40.8 376.0 40.5 376.0C40.2 376.0 39.4 375.8 38.8 375.5C38.1 375.3 37.0 374.9 36.5 374.7C33.9 373.8 33.4 373.6 33.0 373.3C32.7 373.1 32.3 373.0 32.1 373.0C31.9 373.0 31.3 372.8 30.8 372.5C30.3 372.3 29.7 371.9 29.4 371.8C29.1 371.7 28.4 371.3 27.9 371.0C27.4 370.7 26.6 370.3 26.2 370.1C25.8 369.9 25.3 369.6 25.1 369.4C24.8 369.1 24.7 369.1 23.4 368.3C20.3 366.4 12.0 358.5 9.9 355.2C9.6 354.8 9.1 354.1 8.8 353.7C7.9 352.4 6.1 349.4 5.1 347.5C3.6 344.5 1.5 338.2 0.9 335.2C0.7 334.3 0.4 333.4 0.3 333.2C-0.1 332.7 -0.1 241.8 0.3 241.1C0.4 240.9 0.7 240.1 0.8 239.3C1.2 236.6 2.2 233.6 3.7 229.6C4.5 227.7 7.6 221.6 8.5 220.3C8.8 220.0 9.2 219.3 9.5 218.8C12.6 213.9 18.7 207.6 23.5 204.1C26.5 202.0 31.9 199.0 35.3 197.5C37.0 196.9 42.4 195.0 43.3 194.9C43.8 194.8 44.8 194.6 45.6 194.4C49.0 193.6 55.5 192.8 59.2 192.8C65.0 192.8 72.4 193.9 77.3 195.6C81.3 197.0 86.2 199.2 89.1 201.1C89.9 201.6 90.9 202.3 91.3 202.6C95.5 205.3 100.9 210.6 103.9 214.9C109.4 222.6 111.8 229.3 113.0 240.1C113.3 242.4 113.2 285.7 112.8 314.6C112.6 330.5 112.4 333.3 110.7 338.7C109.8 341.4 107.3 347.1 106.5 348.0C106.4 348.2 106.2 348.5 106.0 348.8C105.9 349.1 105.5 349.8 105.2 350.3C104.9 350.9 104.4 351.7 104.2 352.1C102.9 354.5 99.6 358.5 95.9 362.1C93.9 364.1 89.3 368.0 89.0 368.0C88.9 368.0 87.7 368.8 87.0 369.4C86.7 369.7 86.0 370.1 82.7 371.8C81.4 372.4 80.2 373.0 80.1 373.0C80.0 373.0 79.5 373.2 78.9 373.5C78.4 373.7 77.6 374.1 77.2 374.2C76.8 374.3 75.8 374.7 74.9 375.0C74.0 375.4 72.6 375.8 71.8 376.0C71.0 376.2 69.7 376.5 69.0 376.7C68.3 376.8 67.0 377.1 66.2 377.2C65.4 377.3 64.7 377.6 64.5 377.7C64.3 378.0 62.8 378.0 56.0 378.0C51.4 378.0 47.8 377.9 47.8 377.8ZM177.8 377.7C177.6 377.5 176.7 377.3 175.3 377.1C174.1 376.9 172.7 376.7 172.2 376.5C171.8 376.4 170.9 376.1 170.2 376.0C169.5 375.9 168.6 375.6 168.2 375.4C167.7 375.2 167.1 375.0 166.9 375.0C166.7 375.0 166.1 374.8 165.5 374.5C164.9 374.2 164.4 374.0 164.2 374.0C164.1 374.0 163.5 373.8 163.0 373.5C162.5 373.3 161.6 372.8 161.0 372.5C160.4 372.3 159.7 371.9 159.4 371.8C159.1 371.7 158.4 371.3 157.9 371.0C157.3 370.7 156.7 370.3 156.4 370.2C156.1 370.0 155.6 369.7 155.3 369.5C154.6 369.0 154.3 368.8 153.4 368.3C152.6 367.8 150.5 366.2 149.8 365.6C149.6 365.4 148.8 364.7 147.9 363.9C146.3 362.5 141.7 357.5 140.8 356.3C140.6 356.0 140.2 355.5 139.9 355.0C135.4 348.6 132.0 340.2 130.7 332.1C130.3 330.0 130.3 326.2 130.3 242.6C130.3 146.3 130.2 154.6 131.5 149.0C133.2 141.6 136.6 133.9 140.5 129.0C142.9 125.9 144.0 124.5 145.0 123.5C145.6 123.0 146.3 122.2 146.6 121.8C147.3 121.1 151.7 117.4 152.6 116.7C155.6 114.7 157.4 113.6 159.6 112.5C160.4 112.1 161.3 111.6 161.6 111.4C161.9 111.2 162.3 111.0 162.4 111.0C162.6 111.0 163.1 110.8 163.6 110.5C164.1 110.3 164.8 110.0 165.2 109.9C165.5 109.8 166.1 109.6 166.5 109.4C166.8 109.2 167.5 109.0 168.0 108.9C168.5 108.8 169.2 108.6 169.7 108.4C170.1 108.2 171.0 108.0 171.7 107.9C172.4 107.8 173.2 107.6 173.5 107.5C173.9 107.4 175.2 107.1 176.4 107.0C177.7 106.9 179.6 106.6 180.6 106.5C182.8 106.2 188.2 106.1 190.0 106.4C190.6 106.5 192.3 106.7 193.7 106.9C195.2 107.1 196.7 107.3 197.1 107.5C197.5 107.6 198.3 107.8 198.9 107.9C199.4 108.0 200.5 108.2 201.3 108.5C202.1 108.8 202.9 109.0 203.1 109.0C203.3 109.0 203.9 109.2 204.5 109.5C205.1 109.8 205.7 110.0 205.9 110.0C206.1 110.0 206.6 110.2 207.0 110.4C207.4 110.6 208.0 110.9 208.4 111.1C208.8 111.3 209.2 111.5 209.4 111.6C209.6 111.7 210.5 112.2 211.5 112.6C214.2 114.0 214.7 114.3 215.1 114.7C215.4 114.8 215.6 115.0 215.7 115.0C215.8 115.0 216.0 115.2 216.2 115.3C216.5 115.5 216.9 115.9 217.3 116.1C218.3 116.7 220.9 118.7 222.2 120.0C223.7 121.3 228.0 126.1 229.5 128.0C231.2 130.3 232.2 131.7 232.2 131.9C232.2 132.0 232.3 132.2 232.5 132.4C232.8 132.7 236.2 139.5 236.2 139.9C236.2 140.0 236.3 140.3 236.5 140.6C236.8 141.3 238.1 145.3 238.6 147.1C239.9 152.3 239.8 150.2 239.8 243.8C239.7 323.2 239.7 329.1 239.3 331.7C238.6 337.7 236.9 342.9 233.8 348.6C232.6 350.7 231.0 353.4 230.5 354.0C230.3 354.3 229.8 355.0 229.5 355.4C228.4 357.0 226.0 359.9 224.4 361.5C222.2 363.8 215.3 369.5 214.0 370.1C213.6 370.3 212.8 370.7 212.3 371.0C211.8 371.3 211.1 371.7 210.9 371.7C210.7 371.8 210.0 372.1 209.4 372.4C208.8 372.7 208.2 373.0 208.0 373.0C207.8 373.0 207.4 373.2 207.1 373.4C206.9 373.6 206.3 373.9 206.0 373.9C205.6 374.0 205.0 374.2 204.6 374.4C204.2 374.6 203.4 374.9 202.9 375.1C202.3 375.2 201.5 375.5 201.0 375.7C198.9 376.4 197.0 376.8 194.8 377.1C193.4 377.3 192.5 377.5 192.2 377.7C191.7 378.2 178.3 378.2 177.8 377.7ZM301.6 377.6C301.3 377.4 300.5 377.1 299.4 377.0C298.5 376.9 297.5 376.6 297.2 376.5C296.8 376.3 296.1 376.1 295.4 376.0C294.8 375.9 294.1 375.6 293.9 375.5C293.6 375.3 293.0 375.1 292.5 375.0C291.9 374.8 291.2 374.6 290.8 374.4C290.4 374.2 290.0 374.0 289.8 374.0C289.6 374.0 289.1 373.8 288.6 373.5C288.1 373.3 287.4 373.0 287.1 372.9C286.7 372.8 286.4 372.7 286.3 372.6C286.2 372.5 285.7 372.2 285.1 371.9C284.6 371.6 283.7 371.2 283.3 370.9C282.9 370.6 282.2 370.3 281.9 370.1C281.6 369.9 280.9 369.5 280.4 369.1C279.9 368.7 279.2 368.3 278.9 368.1C278.6 367.9 278.2 367.6 278.0 367.5C277.9 367.3 276.8 366.4 275.6 365.4C272.7 363.0 271.6 361.9 269.4 359.3C268.4 358.1 267.4 357.0 267.3 356.9C267.0 356.5 265.1 353.8 264.4 352.8C264.1 352.3 263.7 351.6 263.5 351.3C260.6 346.7 258.0 338.9 257.1 332.0C256.7 328.7 256.7 63.7 257.1 60.4C258.2 52.3 260.5 45.4 264.2 39.4C264.3 39.2 264.6 38.8 264.8 38.4C265.0 37.9 265.5 37.2 265.8 36.8C266.1 36.3 266.6 35.7 266.8 35.4C269.2 31.8 276.1 25.0 279.4 22.9C279.6 22.8 280.1 22.4 280.6 22.1C282.3 20.9 283.1 20.4 283.9 20.0C284.4 19.8 284.8 19.5 284.9 19.4C284.9 19.3 285.3 19.1 285.8 19.0C286.2 18.9 286.6 18.6 286.8 18.5C287.0 18.3 287.4 18.2 287.7 18.1C288.0 18.0 288.7 17.7 289.2 17.5C289.7 17.2 290.2 17.0 290.4 17.0C290.5 17.0 291.0 16.8 291.4 16.6C292.3 16.2 294.3 15.5 295.9 15.1C296.5 15.0 297.4 14.7 297.8 14.5C298.2 14.4 299.0 14.2 299.5 14.1C300.1 14.0 301.3 13.8 302.2 13.5C304.6 12.9 317.3 12.9 319.5 13.5C320.3 13.7 321.6 13.9 322.4 14.0C323.2 14.1 324.4 14.4 325.1 14.6C325.8 14.8 326.7 15.0 327.1 15.1C327.5 15.2 328.3 15.4 328.7 15.6C329.1 15.8 329.8 16.0 330.2 16.1C330.6 16.2 331.2 16.4 331.6 16.6C332.0 16.8 332.4 17.0 332.6 17.0C332.9 17.0 335.2 18.0 335.8 18.4C336.0 18.5 336.5 18.8 336.9 19.0C340.5 20.8 345.1 24.3 349.3 28.4C353.2 32.2 355.0 34.6 358.0 40.0C360.5 44.2 362.2 49.4 363.4 56.3C364.0 59.7 364.0 59.7 364.0 66.8C364.0 70.7 363.9 76.6 363.8 80.0C363.5 88.7 363.5 278.0 363.8 291.4C364.0 296.8 364.1 308.5 364.1 317.3L364.1 333.3L363.5 335.9C363.2 337.3 362.8 339.0 362.6 339.7C362.1 341.3 360.7 345.5 360.3 346.6C359.8 347.9 358.0 351.6 357.5 352.2C357.3 352.5 356.8 353.2 356.4 353.8C355.6 355.2 353.1 358.5 351.9 359.8C350.3 361.7 345.7 366.1 344.0 367.4C342.7 368.5 336.9 372.0 336.4 372.0C336.3 372.0 336.0 372.2 335.8 372.4C335.5 372.6 335.0 372.8 334.7 372.9C334.4 373.0 333.7 373.3 333.3 373.5C332.8 373.8 332.3 374.0 332.2 374.0C332.0 374.0 331.4 374.2 330.9 374.5C330.4 374.8 329.7 375.0 329.5 375.0C329.3 375.0 328.8 375.2 328.4 375.4C328.0 375.6 327.1 375.9 326.4 376.0C325.8 376.1 324.9 376.3 324.4 376.5C324.0 376.6 322.8 376.9 321.8 377.0C320.7 377.1 319.5 377.4 319.1 377.6C318.3 378.0 317.8 378.0 310.2 378.0C302.6 378.0 302.1 378.0 301.6 377.6ZM494.9 288.1C490.3 287.4 485.6 283.8 483.8 279.5C482.4 276.4 482.5 279.3 482.5 242.3C482.4 213.6 482.4 208.8 482.7 208.5C483.0 208.1 498.9 208.0 624.6 208.0C667.6 208.0 672.2 208.0 672.5 207.7C672.8 207.4 672.8 206.3 672.8 198.6L672.8 189.9L672.1 189.0L671.4 188.2L577.3 188.2C512.8 188.2 483.1 188.1 482.8 188.0C482.4 187.8 482.4 187.4 482.4 173.7C482.4 161.2 482.4 159.6 482.7 159.3C483.0 159.0 493.4 159.0 595.9 159.0L708.7 159.1L709.7 159.7C711.4 160.6 712.7 161.9 713.3 163.4L713.8 164.7L713.8 199.1L713.8 233.5L713.4 234.2C712.8 235.2 712.2 235.7 711.3 236.4L710.5 237.0L616.9 237.0C558.2 237.0 523.2 237.1 523.0 237.2C522.7 237.4 522.7 238.7 522.7 246.8C522.7 257.5 522.6 257.1 524.3 258.2L525.2 258.8L621.8 258.8C682.5 258.8 718.6 258.9 718.8 259.0C719.1 259.2 719.1 261.0 719.1 273.5C719.0 283.4 718.9 287.9 718.8 288.1C718.5 288.4 497.0 288.4 494.9 288.1ZM863.4 288.2C863.2 288.1 863.0 287.9 863.0 287.8C863.0 287.6 863.0 266.0 863.0 239.7C863.0 195.4 863.0 191.9 862.7 191.6C862.3 191.2 860.4 191.2 803.7 191.2L745.0 191.2L744.6 190.8L744.2 190.4L744.2 175.0C744.3 160.0 744.3 159.6 744.7 159.3C745.0 159.0 764.2 159.0 882.5 159.0C958.1 158.9 1020.3 158.9 1020.7 159.0C1022.1 159.1 1022.0 157.9 1022.0 174.9C1022.0 189.9 1022.0 190.4 1021.6 190.8C1021.2 191.2 1020.1 191.2 963.2 191.2L905.2 191.2L904.8 191.6L904.4 192.1L904.4 239.8C904.4 281.4 904.4 287.6 904.1 287.9C903.9 288.1 903.0 288.2 900.7 288.3C895.9 288.4 864.0 288.4 863.4 288.2ZM1072.5 288.2C1071.4 288.0 1069.2 287.3 1068.2 286.7C1067.9 286.5 1067.3 286.2 1066.9 286.0C1066.1 285.5 1063.0 282.5 1063.0 282.2C1063.0 282.0 1062.8 281.7 1062.5 281.3C1062.3 281.0 1062.0 280.4 1061.9 280.1C1061.8 279.8 1061.6 279.4 1061.5 279.2C1061.3 279.0 1061.0 277.8 1060.8 276.5C1060.4 274.2 1060.4 272.7 1060.4 236.9C1060.4 200.9 1060.4 199.8 1060.8 199.4C1061.1 199.1 1061.7 199.0 1069.2 198.9C1073.7 198.8 1125.0 198.8 1183.3 198.9L1289.3 198.9L1290.7 199.5C1292.3 200.2 1293.9 201.7 1294.5 203.0L1295.0 203.9L1295.0 242.5C1295.1 282.3 1295.1 282.4 1294.3 283.0C1294.1 283.1 1294.0 283.4 1294.0 283.5C1294.0 283.7 1293.4 284.4 1292.6 285.2C1291.0 286.8 1289.0 287.9 1287.1 288.2C1285.6 288.4 1074.3 288.4 1072.5 288.2ZM1338.5 281.7C1338.2 281.5 1338.2 279.7 1338.2 253.3L1338.2 225.1L1338.6 224.8C1339.0 224.4 1340.6 224.4 1365.8 224.4C1390.9 224.4 1392.6 224.4 1393.3 224.8L1394.0 225.1L1394.0 253.1L1394.0 281.2L1393.3 281.6L1392.7 282.0L1365.8 282.0C1344.5 282.0 1338.8 281.9 1338.5 281.7ZM1253.2 258.2C1253.5 257.6 1253.5 256.9 1253.5 243.1C1253.5 229.3 1253.4 228.5 1253.1 228.3C1252.5 227.8 1101.9 227.9 1101.3 228.3C1100.9 228.6 1100.9 228.7 1100.7 242.3C1100.6 257.6 1100.5 257.2 1101.9 258.2L1102.7 258.8L1177.7 258.8L1252.8 258.8L1253.2 258.2ZM1036.3 179.9C1035.8 179.4 1036.0 151.7 1036.5 151.2C1036.8 150.9 1049.4 150.9 1178.3 150.9C1293.9 150.9 1319.8 150.9 1320.2 151.2L1320.6 151.4L1320.6 165.5C1320.5 179.2 1320.5 179.6 1320.1 179.9C1319.5 180.4 1036.8 180.3 1036.3 179.9ZM672.8 143.7C672.7 143.6 672.6 134.2 672.6 113.8L672.5 84.2L672.0 83.8C671.6 83.5 668.7 83.5 642.4 83.5C626.4 83.4 613.2 83.4 613.1 83.4C613.0 83.4 612.7 83.3 612.5 83.1C612.2 82.9 612.2 81.9 612.2 68.0C612.2 59.9 612.3 53.1 612.3 52.9C612.4 52.8 612.6 52.6 612.8 52.5C612.9 52.4 626.0 52.3 641.8 52.2L670.5 52.1L671.1 51.6C672.5 50.5 672.4 52.1 672.5 25.4C672.5 12.1 672.6 1.0 672.6 0.6L672.6 -0.0L692.6 0.0L712.7 0.1L712.8 0.7C713.1 1.9 713.0 143.5 712.8 143.8C712.4 144.1 673.1 144.1 672.8 143.7ZM463.2 139.6C462.9 139.5 462.1 139.3 461.4 139.1C460.7 139.0 460.0 138.7 459.8 138.5C459.7 138.4 459.3 138.2 459.0 138.1C458.7 138.0 458.3 137.8 458.1 137.6C457.9 137.4 457.4 137.1 457.1 136.9C456.3 136.5 453.6 133.9 453.2 133.1C453.0 132.8 452.8 132.3 452.6 132.1C452.3 131.8 451.6 129.9 451.2 128.4C450.9 127.4 450.9 10.6 451.2 10.2C451.5 9.7 612.4 9.6 612.9 10.1C613.2 10.4 613.2 12.0 613.2 24.5L613.2 38.6L612.8 38.9C612.4 39.2 606.2 39.2 551.5 39.2C496.4 39.2 490.6 39.2 490.3 39.5C490.0 39.8 490.0 43.1 490.0 72.8L490.0 105.8L490.5 106.3C490.7 106.7 491.4 107.1 491.9 107.4L492.7 107.8L512.6 107.7C524.3 107.7 533.8 107.6 535.7 107.4C537.5 107.3 544.1 107.1 550.5 107.0C556.9 106.9 563.3 106.7 564.7 106.6C568.0 106.4 577.6 106.0 588.7 105.8C593.4 105.7 598.1 105.5 599.0 105.4C601.6 105.1 620.8 104.7 627.1 104.8L632.7 104.9L634.1 105.6C635.6 106.3 636.1 106.7 637.1 108.0L637.8 108.9L637.8 122.6C637.8 134.5 637.8 136.4 637.5 136.7C637.2 136.9 633.9 137.0 612.5 137.1C592.8 137.1 586.8 137.2 583.3 137.5C580.9 137.6 574.5 137.9 569.1 138.0C563.7 138.1 558.7 138.2 558.0 138.3C555.6 138.5 548.1 138.8 539.6 139.0C534.9 139.1 529.0 139.3 526.4 139.4C519.7 139.7 463.8 139.9 463.2 139.6ZM1074.8 132.2C1072.3 132.1 1071.4 131.9 1070.7 131.6C1070.2 131.4 1069.6 131.2 1069.2 131.1C1068.4 130.9 1066.6 130.0 1065.8 129.3C1065.5 129.1 1064.9 128.7 1064.6 128.4C1063.7 127.7 1062.2 126.2 1061.9 125.5C1061.7 125.2 1061.5 125.0 1061.4 125.0C1061.3 125.0 1061.1 124.7 1060.9 124.2C1060.7 123.8 1060.5 123.3 1060.3 123.0C1060.0 122.5 1059.5 121.1 1059.2 119.8C1058.9 118.8 1058.9 55.4 1059.2 55.0C1059.4 54.7 1070.2 54.7 1154.1 54.6L1248.9 54.6L1249.3 54.2L1249.8 53.7L1249.8 44.7C1249.7 37.6 1249.6 35.6 1249.4 35.4C1249.2 35.1 1231.8 35.1 1154.4 35.0C1084.8 35.0 1059.5 34.9 1059.3 34.8C1058.9 34.5 1058.9 6.5 1059.2 5.9C1059.5 5.6 1066.3 5.6 1174.5 5.6C1260.8 5.6 1289.6 5.6 1290.1 5.8C1290.4 5.9 1290.8 6.1 1290.8 6.3C1291.1 6.6 1291.0 81.9 1290.8 82.5C1290.4 83.6 1296.8 83.5 1194.8 83.5C1124.4 83.6 1100.3 83.7 1100.1 83.8C1099.8 84.0 1099.8 85.5 1099.8 92.6C1099.9 102.1 1099.8 101.6 1101.2 102.7C1101.7 103.0 1104.0 103.0 1198.3 103.1L1294.8 103.1L1295.2 103.6C1295.6 104.0 1295.6 104.5 1295.6 117.9C1295.6 129.1 1295.5 131.8 1295.3 132.0C1295.0 132.2 1080.3 132.4 1074.8 132.2ZM889.0 130.2C793.0 130.1 789.9 130.1 789.1 129.7C788.7 129.5 787.9 129.2 787.4 129.1C786.6 128.9 786.1 128.6 784.2 127.4C781.2 125.3 779.4 122.3 778.6 118.1L778.2 115.9L778.2 61.1C778.3 8.0 778.3 6.4 778.7 6.0C779.0 5.6 779.1 5.6 798.7 5.6C816.4 5.6 818.4 5.6 818.7 5.9C819.0 6.2 819.0 9.2 819.0 37.1C819.0 54.0 819.1 73.8 819.1 80.9L819.1 93.9L819.5 94.7C819.8 95.1 820.0 95.6 820.0 95.7C820.0 96.0 820.8 96.7 821.8 97.4L822.5 97.9L905.9 98.0C983.1 98.0 989.4 98.0 989.6 98.3C990.0 98.8 990.1 129.6 989.8 129.9C989.6 130.1 989.2 130.2 988.8 130.2C988.4 130.3 943.5 130.3 889.0 130.2Z"/></symbol></svg>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="덜누름 처음으로">
+      <svg viewBox="0 0 1394 378" aria-hidden="true"><use href="#lg-word"/></svg>
+      <span class="sw">SOFTWARE</span>
+    </a>
+    <nav aria-label="주요 메뉴">
+      <a href="/" data-view="home">홈</a>
+      <a href="/apps/" data-view="apps">앱센터</a>
+      <a href="/hardware/" data-view="hardware">하드웨어</a>
+      <a href="/about/" data-view="about">소개</a>
+      <a href="#install" class="hide-sm fb-off" data-view="home">설치 안내</a>
+      <a href="/feedback/" class="fb-on" data-view="feedback">의견<span class="hide-sm"> 보내기</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="view" id="view-home" hidden>
+  <section class="reel" aria-label="덜누름 소개 영상">
+    <div class="wrap">
+      <div class="reel-frame">
+        <video id="reel" src="/media/hero-reel.mp4" poster="/media/hero-reel-poster.jpg" autoplay muted playsinline preload="auto" aria-label="덜누름 15초 소개 영상: 키를 한 번 누르고, 앱 세 개를 보여 준 뒤 덜 누르고 더 편하게라는 문구와 로고로 끝납니다"></video>
+        <button class="key reel-sound" id="reelSound" type="button" aria-pressed="false">소리 켜기</button>
+      </div>
+    </div>
+  </section>
+  <div class="wrap hero v1" id="hero">
+    <div class="hero-copy">
+      <div class="hero-eyebrow">DEOLNUREUM SOFTWARE</div>
+      <p class="statement">누를 일을 줄이는 앱을<br>개발합니다.</p>
+      <h1>덜 누르고,<br><span class="soft">더 편하게.</span></h1>
+      <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 파일은 한 번 눌러 맞는 편집기로 열리고, 차에 타면 음악이 알아서 이어집니다. 개발 중인 앱은 앱센터에서 미리 볼 수 있습니다.</p>
+      <div class="actions">
+        <a class="key dark" href="/apps/">앱센터</a>
+        <a class="key" href="#install">설치 방법</a>
+      </div>
+    </div>
+    <dl class="hero-stats">
+      <div><dt>7</dt><dd>개발 중인 앱</dd></div>
+      <div><dt>₩0</dt><dd>모든 앱 무료</dd></div>
+      <div><dt>0×</dt><dd>스피드미터는 출발하면 알아서</dd></div>
+    </dl>
+  </div>
+
+  <div class="theme-dark">
+  <section class="takeoff" id="takeoff" aria-label="대신남 스피드미터: 이제 차 안에서 이륙하세요">
+    <video id="tkVid" src="/media/takeoff.mp4" poster="/media/takeoff-poster.jpg" muted loop playsinline preload="none" aria-label="맑은 낮 푸른 바다 위를 나는 A-1H 스카이레이더, 조종석에서 바라본 대신남 스피드미터 화면, 그리고 그 화면이 그대로 차 안 폴드 화면이 되어 도로를 달리는 운전석 시야로 이어집니다"></video>
+    <div class="takeoff-fade"></div>
+    <div class="takeoff-copy" id="tkCopy"><b>대신남 스피드미터!</b><h2>이제 차 안에서 이륙하세요.</h2></div>
+  </section>
+  <section class="amp-stage speed-home" id="speed" aria-labelledby="speed-title">
+    <div class="amp-wrap">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">새 앱 · 개발 중</div>
+        <h2 id="speed-title">대신남 스피드미터</h2>
+        <p class="amp-kind">GPS 조종석 계기 · 주행 기록</p>
+        <p class="amp-lead">차가 달리면<br>조종석 계기판이 움직입니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>실제 속도·고도·진행 방향으로 움직이는 콕핏 PFD · HUD</span></li>
+          <li><b>02</b><span>출발하면 알아서 대기 → 이륙 → 상승 → 순항, 효과음까지</span></li>
+          <li><b>03</b><span>최고·평균 속도, 거리, 시간을 남기는 주행 기록과 차계부</span></li>
+          <li><b>04</b><span>진행 방향이 위로 오는 원형 지도와 나침반</span></li>
+          <li><b>05</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
+        </ul>
+        <div class="amp-cta">
+          <a class="amp-btn" href="/speedometer/">바로가기 →</a>
+          <a class="amp-soon as-link" href="/apps/">앱센터에서 모든 앱 보기</a>
+        </div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>권장 화면</dt><dd>8인치 이상 태블릿</dd></div>
+          <div><dt>필수</dt><dd>LTE(모바일 데이터) · GPS · 방향 센서</dd></div>
+        </dl>
+      </div>
+      <div class="ul" id="ul" role="img" aria-label="펼쳐진 폴더블 휴대폰 화면에서 대신남 스피드미터 주행 영상이 재생됩니다">
+        <div class="ul-spot"></div>
+        <canvas class="ul-fx" id="ulFx" aria-hidden="true"></canvas>
+        <div class="ul-rig" id="ulRig">
+          <div class="ul-ring"></div>
+          <div class="ul-shadow" id="ulShadow"></div>
+          <div class="ul-half l" id="ulL"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-half r" id="ulR"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-screen" id="ulScreen"><video id="ulVid" src="/media/fold-speedometer.mp4" poster="/media/fold-poster.jpg" muted loop playsinline preload="metadata"></video></div>
+          <div class="ul-sweep"></div>
+          <div class="ul-gloss" id="ulGloss"></div>
+        </div>
+        <button class="ul-again" id="ulAgain" type="button">↻ 다시 보기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="install">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>설치 안내</h2>
+        <p>앱이 공개되면 이렇게 설치합니다. 플레이 스토어 밖에서 받는 앱이라 처음 한 번은 설치 허용이 필요합니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">STEP 1</div>
+          <h3>APK 내려받기</h3>
+          <p>휴대폰에서 원하는 앱의 내려받기를 누릅니다. 브라우저가 파일을 받습니다.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 2</div>
+          <h3>설치 허용</h3>
+          <p>받은 파일을 열면 "출처를 알 수 없는 앱" 안내가 나옵니다. 설정에서 그 브라우저의 설치를 허용합니다.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 3</div>
+          <h3>설치와 업데이트</h3>
+          <p>설치를 누르면 끝입니다. 새 버전은 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다.</p>
+        </div>
+      </div>
+      <p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p>
+    </div>
+  </section>
+  </div>
+  </div>
+
+  <div class="view" id="view-apps" hidden>
+  <section class="center-head" id="app-center">
+    <div class="wrap">
+      <div class="reel-frame fly-frame">
+        <video id="flyReel" src="/media/appcenter-reel.mp4" poster="/media/appcenter-reel-poster.jpg" muted playsinline preload="metadata" aria-label="덜누름 앱센터 30초 소개 영상: Daesinnam Amp, 대신남 스피드미터, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저의 실제 화면과 앱 다섯 개, 덜 누르고 더 편하게 문구로 끝납니다"></video>
+        <button class="key reel-sound" id="flySound" type="button" aria-pressed="false">소리 켜기</button>
+        <button class="key reel-sound fly-again" id="flyAgain" type="button" hidden>↻ 다시 보기</button>
+      </div>
+      <div class="eyebrow-ink">APP CENTER</div>
+      <h1>앱센터</h1>
+      <p>덜누름이 개발 중인 앱을 한곳에 모았습니다. 화면을 넘겨 보고, 자세히 보기를 누르면 그 앱의 소개 페이지가 열립니다.</p>
+    </div>
+  </section>
+
+  <section class="show" id="show" aria-labelledby="show-title" aria-roledescription="carousel">
+    <div class="wrap">
+      <div class="show-head">
+        <div>
+          <div class="eyebrow">Screens · 앱 화면</div>
+          <h2 id="show-title">개발 중인 앱을 둘러보세요</h2>
+        </div>
+        <p>갤럭시 Z 폴드7 · Z 폴드8 울트라에 맞춘 앱과 맥 전용 앱 덜씀의 실제 화면입니다. 가운데 화면의 자세히 보기를 누르면 그 앱의 소개 페이지로 들어갑니다.</p>
+      </div>
+      <div class="deck" id="deck" tabindex="0" aria-label="앱 화면 모음. 왼쪽·오른쪽 화살표 키로 넘깁니다">
+        <a class="slide fold duo" href="/amp/" data-name="Daesinnam Amp" data-kind="음악 플레이어 · 개발 중" data-dur="12500">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>Daesinnam Amp</b><span>펼쳐도, 접어도 듣기 좋게. 닫은 폰의 바깥 화면에서도 그대로</span></div>
+          <div class="fold-dev"><video src="/media/amp-open.mp4" poster="/media/amp-open-poster.jpg" muted playsinline preload="metadata" aria-label="펼친 폴드에서 본 Daesinnam Amp 실제 화면 영상: 플레이어, 시각화, 라디오 패널"></video></div>
+          <div class="fold-cover"><video src="/media/amp-cover.mp4" poster="/media/amp-cover-poster.jpg" muted playsinline preload="metadata" aria-label="접은 폴드의 바깥 화면에서 본 Daesinnam Amp 실제 화면 영상"></video></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+        <a class="slide fold" href="/speedometer/" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 개발 중" data-dur="20000">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>대신남 스피드미터</b><span>차가 달리면 조종석 계기판이 움직입니다</span></div>
+          <div class="fold-dev"><video src="/media/speedometer.mp4" poster="/media/speedometer-poster.jpg" muted playsinline preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+        <a class="slide fold" href="/work/" data-name="덜누름 워크" data-kind="안드로이드를 윈도우 PC처럼 · 개발 중" data-dur="22000">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 워크</b><span>이음오피스와 아트크래프트를 하나로. 문서 · 그래픽 작업을 스마트폰에서 한 번에</span></div>
+          <div class="fold-dev"><video src="/media/app-work.mp4" poster="/media/app-work-poster.jpg" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 워드, 엑셀, 한글 문서 편집기와 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+        <a class="slide fold" href="/desktop/" data-name="덜누름 데스크탑앱" data-kind="PC 같은 바탕화면 · 개발 중" data-dur="16700">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 데스크탑앱</b><span>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창으로 뜨는 브라우저</span></div>
+          <div class="fold-dev"><video src="/media/app-desk.mp4" poster="/media/app-desk-poster.jpg" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+        <a class="slide fold" href="/browser/" data-name="덜누름 브라우저" data-kind="창으로 여는 브라우저 · 개발 중" data-dur="7000">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 브라우저</b><span>PC처럼, 창으로 여는 브라우저</span></div>
+          <div class="fold-dev"><video src="/media/app-browser.mp4" poster="/media/app-browser-poster.jpg" muted playsinline preload="none" aria-label="덜누름 브라우저 실제 화면 영상: 바탕화면에서 브라우저가 창으로 열리고 전체 화면으로 커지는 모습"></video></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+        <a class="slide fold mac" href="/dulsseum/" data-name="덜씀" data-kind="맥 최적화 · 개발 중" data-dur="5000">
+          <div class="fold-copy"><small>macOS 전용</small><b>덜씀</b><span>다 써 보고 만든, 덜 쓰는 최적화. 메모리 · 저장공간 · 배터리를 버튼 하나로</span></div>
+          <div class="fold-dev mac"><img src="/media/dulsseum-mac.webp" alt="맥 메뉴 막대에서 연 덜씀 창: 메모리 70% 사용 중, 메모리 덜씀 · 저장공간 덜씀 · 배터리 덜씀 · 구형 맥 가볍게 버튼" loading="lazy"></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+        <a class="slide fold" href="/98/" data-name="덜누름 98" data-kind="레트로 데스크톱 · 개발 중" data-dur="23500">
+          <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>덜누름 98</b><span>펼친 폴드가 그 시절 PC가 됩니다. 시작 메뉴, 카드놀이, 지뢰찾기까지</span></div>
+          <div class="fold-dev r98"><video src="/media/app-98.mp4" poster="/media/app-98-poster.jpg" muted playsinline preload="none" aria-label="덜누름 98 실제 화면 영상: 옛 PC 같은 바탕화면에서 시작 메뉴를 열고, 카드놀이와 지뢰찾기, 웹 탐색기, 음악 플레이어를 차례로 여는 모습"></video></div>
+          <span class="enter">자세히 보기 →</span>
+        </a>
+      </div>
+      <div class="show-bar">
+        <div class="show-count"><b id="showCur">01</b> / <span id="showTotal">05</span></div>
+        <div class="show-name" id="showName" aria-live="polite">Daesinnam Amp</div>
+        <div class="show-ctrl">
+          <button type="button" id="showPrev" aria-label="이전 앱"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button>
+          <button type="button" id="showNext" aria-label="다음 앱"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></button>
+          <button type="button" class="pp" id="showPlay" aria-label="자동 넘김 멈추기"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="1"/><rect x="9.5" y="3" width="3" height="10" rx="1"/></svg></button>
+        </div>
+      </div>
+      <div class="show-prog" aria-hidden="true"><i id="showProg"></i></div>
+    </div>
+  </section>
+
+  </div>
+
+  <div class="view theme-dark" id="view-app" hidden>
+  <section class="amp-stage ap" id="app-amp" aria-labelledby="ap-amp-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">음악 플레이어 · 개발 중</div>
+        <h1 id="ap-amp-t">Daesinnam Amp</h1>
+        <p class="amp-kind">레트로 스킨 MP3 플레이어</p>
+        <p class="amp-lead">펼쳐도, 접어도<br>듣기 좋게.</p>
+        <p class="ap-desc">폴드를 펼치면 플레이어와 시각화, 라디오가 한 화면에 들어옵니다. 접으면 바깥 화면에 맞춘 세로 배치로 바뀝니다. 어느 쪽이든 고르고, 넘기고, 보는 일은 그대로입니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>LED 스펙트럼, 10밴드 EQ, 레트로 스킨</span></li>
+          <li><b>02</b><span>차 연결 시 이어서 재생, 핸들 버튼 조작</span></li>
+          <li><b>03</b><span>주행 중 큰 버튼만 남는 간편 모드</span></li>
+          <li><b>04</b><span>YouTube Music · Spotify 재생에도 곡 정보와 시각화</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="Daesinnam Amp">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="Daesinnam Amp">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>화면</dt><dd>펼친 화면 · 접은 바깥 화면 · 태블릿 · 휴대폰</dd></div>
+          <div><dt>필요</dt><dd>Android 8.0 이상 · 무료</dd></div>
+        </dl>
+      </div>
+      <div class="ul af" id="af" role="img" aria-label="접힌 폴더블의 바깥 화면에서 Daesinnam Amp가 재생되다가, 펼쳐지면서 안쪽 큰 화면으로 이어집니다">
+        <div class="ul-spot"></div>
+        <canvas class="ul-fx" aria-hidden="true"></canvas>
+        <div class="ul-rig">
+          <div class="ul-ring"></div>
+          <div class="ul-shadow"></div>
+          <div class="ul-half l"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-half r"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-screen"><video class="af-open" src="/media/amp-open.mp4" poster="/media/amp-open-poster.jpg" muted loop playsinline preload="none"></video></div>
+          <div class="ul-sweep"></div>
+          <div class="ul-gloss"></div>
+          <div class="af-cover"><video class="af-shut" src="/media/amp-cover.mp4" poster="/media/amp-cover-poster.jpg" muted loop playsinline preload="none"></video></div>
+        </div>
+        <div class="af-ctrl" role="group" aria-label="화면 상태">
+          <button type="button" class="af-btn" data-open="0" aria-pressed="true">접었을 때</button>
+          <button type="button" class="af-btn" data-open="1" aria-pressed="false">펼쳤을 때</button>
+        </div>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media ap-tallwrap">
+        <div class="ap-dev tall"><video src="/media/amp-cover.mp4" poster="/media/amp-cover-poster.jpg" muted playsinline preload="none" aria-label="접은 폴드의 바깥 화면에서 본 Daesinnam Amp: 재생 버튼, 곡 정보, 화면 가득한 시각화가 세로로 놓여 있습니다"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">접은 폴드 바깥 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">COVER DISPLAY · 접었을 때</div>
+        <h2>폰을 닫아도<br>음악은 그대로.</h2>
+        <p class="ap-desc">음악 들으려고 폰을 펼칠 필요가 없습니다. 접은 채 바깥 화면만으로 고르고, 넘기고, 봅니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>세로로 긴 바깥 화면에 맞춰 위에서 아래로 한 줄 배치</span></li>
+          <li><b>02</b><span>곡 정보 바로 아래, 엄지에 닿는 큰 이전 · 일시정지 · 다음 버튼</span></li>
+          <li><b>03</b><span>아래 절반을 가득 채우는 시각화, 좌우로 넘겨 바꾸기</span></li>
+          <li><b>04</b><span>펼치면 보던 곡 그대로 큰 화면으로 이어짐</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy ap-skin-copy">
+        <div class="amp-eyebrow">SKINS · 스킨</div>
+        <h2>스킨을 바꾸면<br>다른 플레이어.</h2>
+        <p class="ap-desc">같은 플레이어가 네온 시티가 되고, 블루가 됩니다. 태블릿과 휴대폰에서도 같은 배치로 씁니다.</p>
+      </div>
+      <div class="ap-media ap-static">
+        <div class="ap-duo">
+          <img src="/amp/amp-tablet-neon.webp" alt="Daesinnam Amp 태블릿 화면: 네온 시티 스킨의 플레이어와 이퀄라이저" loading="lazy">
+          <img class="ap-duo-phone" src="/amp/amp-phone-blue.webp" alt="Daesinnam Amp 휴대폰 화면: 대신남 블루 스킨" loading="lazy">
+        </div>
+        <p class="ap-cap">태블릿 · 네온 시티 스킨 / 휴대폰 · 블루 스킨</p>
+      </div>
+      <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/speedometer/">다음 앱 · 대신남 스피드미터 →</a></div>
+    </div>
+  </section>
+
+  <section class="amp-stage ap" id="app-speed" aria-labelledby="ap-speed-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">GPS 조종석 계기 · 개발 중</div>
+        <h1 id="ap-speed-t">대신남 스피드미터</h1>
+        <p class="amp-kind">이제 차 안에서 이륙하세요.</p>
+        <p class="amp-lead">차가 달리면<br>조종석 계기판이 움직입니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>실제 속도·고도·진행 방향으로 움직이는 콕핏 PFD · HUD</span></li>
+          <li><b>02</b><span>출발하면 알아서 대기 → 이륙 → 상승 → 순항, 효과음까지</span></li>
+          <li><b>03</b><span>최고·평균 속도, 거리, 시간, 고도를 남기는 주행 기록과 차계부</span></li>
+          <li><b>04</b><span>진행 방향이 위로 오는 원형 지도와 나침반</span></li>
+          <li><b>05</b><span>에어라인 · 에어포스 스킨, 주간·야간 하늘 자동</span></li>
+          <li><b>06</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>권장 화면</dt><dd>8인치 이상 태블릿</dd></div>
+          <div><dt>필수</dt><dd>LTE(모바일 데이터) · GPS · 방향 센서</dd></div>
+        </dl>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/speedometer.mp4" poster="/media/speedometer-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/spd-day.mp4" poster="/media/spd-day-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 주간 고속 주행 화면: 구름이 빠르게 지나가고, 과속 카메라 안내 뒤 화면 전체가 붉게 바뀌며 SLOW DOWN 경고가 뜹니다"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">CRUISE · 주간 순항</div>
+        <h2>빨리 달리면<br>구름도 빨리 지나갑니다.</h2>
+        <p class="ap-desc">속도가 오르면 하늘의 구름과 발아래 들판이 그만큼 빠르게 스쳐 갑니다. 시속 120km를 넘기면 화면 전체가 붉게 바뀌고 관제탑이 감속을 알립니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>실제 속도에 맞춰 흐르는 구름과 지형</span></li>
+          <li><b>02</b><span>과속 카메라 앞에서 제한 속도와 남은 거리 안내</span></li>
+          <li><b>03</b><span>시속 120km 초과 시 화면 가득 SLOW DOWN 경고</span></li>
+          <li><b>04</b><span>머리글에 관제탑(TWR) 한 줄 알림</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">NIGHT · 야간 비행</div>
+        <h2>해가 지면<br>밤하늘을 납니다.</h2>
+        <p class="ap-desc">밤에는 하늘이 달과 별, 멀리 도시 불빛으로 바뀌고 원형 지도도 어두운 색으로 넘어갑니다. 계기판을 벗어나지 않고 라디오와 음악을 듣습니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>주간 · 야간 하늘 자동 전환, 야간용 원형 지도</span></li>
+          <li><b>02</b><span>FM 라디오: 주파수 다이얼, 이전 · 다음 방송, 즐겨찾기 6칸</span></li>
+          <li><b>03</b><span>오디오: 다른 앱에서 재생 중인 곡을 시각화와 함께</span></li>
+          <li><b>04</b><span>아래 메뉴 한 번으로 스피드미터 · 라디오 · 오디오 전환</span></li>
+        </ul>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/spd-night.mp4" poster="/media/spd-night-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 야간 비행 화면: 달과 별이 뜬 밤하늘, 이어서 FM 라디오 화면과 오디오 시각화 화면"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">SOUND · 이퀄라이저 · 스트리밍 · 라디오</div>
+        <h2>소리까지<br>조종석에서.</h2>
+        <p class="ap-desc">달리는 동안 듣는 소리도 계기판 안에서 고릅니다. 이퀄라이저로 취향을 맞추고, 스트리밍 음원에 시각화를 입히고, 끊기지 않는 디지털 라디오를 듣습니다.</p>
+      </div>
+      <div class="ap-trio">
+        <figure>
+          <div class="ap-dev"><video src="/media/spd-eq.mp4" poster="/media/spd-eq-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 이퀄라이저 화면: 10밴드 슬라이더를 움직이고 Rock, Dance, Bass Boost, Vocal, Classical 같은 프리셋을 차례로 고르는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+          <figcaption><small>01 · EQUALIZER</small><h3>내 취향의 소리로.</h3><p>10밴드 이퀄라이저와 Rock · Pop · Dance · Bass Boost · Vocal · Classical 같은 프리셋으로, 라디오와 음악을 나만의 감성에 맞춥니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev"><video src="/media/spd-stream.mp4" poster="/media/spd-stream-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터가 유튜브 뮤직, 스포티파이와 연결되어 재생 중인 곡 이름과 가수를 띄우고 파형과 막대 시각화를 보여 주는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+          <figcaption><small>02 · STREAMING</small><h3>MP3가 없어도 풍성하게.</h3><p>유튜브 뮤직 · 스포티파이와 연동해 재생 중인 곡 정보를 띄우고 실시간 시각화 효과를 입힙니다. MP3 파일이 없어도 스트리밍 음원으로 충분합니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev"><video src="/media/spd-radio.mp4" poster="/media/spd-radio-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 디지털 라디오 화면: 다이얼을 돌려 FM 주파수를 옮기면 방송국 이름이 바뀌며 이어지는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+          <figcaption><small>03 · DIGITAL RADIO</small><h3>주파수 끊김 걱정 끝.</h3><p>다이얼은 FM 그대로, 소리는 디지털로 받습니다. 달리는 중에도 주파수가 끊길 걱정 없이 방송을 듣습니다.</p></figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media ap-widewrap">
+        <div class="ap-dev wide"><video src="/media/spd-control.mp4" poster="/media/spd-control-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 조종석 패널: 미디어 볼륨 다이얼을 돌리고, 주행 녹화 스위치를 올려 녹화한 뒤 영상을 저장하고, 음소거와 주간·야간 스위치를 넘기고, EMERGENCY 덮개를 열어 SOS 버튼을 꺼내는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">COCKPIT CONTROL 패널을 크게 본 실제 화면</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">COCKPIT CONTROL · 조종석 스위치</div>
+        <h2>자주 쓰는 조작은<br>스위치 하나로.</h2>
+        <p class="ap-desc">볼륨, 녹화, 비상 전화, 음소거, 주야간 전환을 조종석 패널 한 줄에 모았습니다. 메뉴를 찾아 들어가지 않고 스위치 한 번으로 끝냅니다.</p>
+      </div>
+      <div class="amp-copy">
+        <ul class="amp-points ap-points-top">
+          <li><b>01</b><span><strong>미디어 볼륨</strong> 다이얼을 돌려 음량을 맞춥니다</span></li>
+          <li><b>02</b><span><strong>주행 녹화</strong> 스위치를 올리면 블랙박스처럼 녹화가 시작되고, 내리면 영상이 저장됩니다</span></li>
+          <li><b>03</b><span><strong>EMERGENCY</strong> 덮개를 열고 SOS를 누르면 미리 지정한 사람에게 바로 전화를 겁니다</span></li>
+          <li><b>04</b><span><strong>미디어 음소거</strong> 스위치 한 번으로 소리를 끕니다</span></li>
+          <li><b>05</b><span><strong>주간 · 야간</strong> 활주로의 낮과 밤이 바뀌고 기기 밝기도 함께 조정됩니다</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media ap-camwrap">
+        <div class="ap-dev"><video src="/media/spd-dashcam.mp4" poster="/media/spd-dashcam-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터의 대시캠 패널: 후방 카메라의 실시간 영상이 LIVE 표시와 함께 보이고, 전체 화면으로 커지는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <div class="cam-fig">
+          <svg class="cam-wave" viewBox="0 0 90 90" aria-hidden="true"><g fill="none" stroke="#93c5fd" stroke-width="3" stroke-linecap="round"><path d="M62 78A22 22 0 0 1 78 62"/><path d="M44 78A40 40 0 0 1 78 44"/><path d="M26 78A58 58 0 0 1 78 26"/></g></svg>
+          <img class="cam-photo" src="/media/solar-cam.webp" width="560" height="560" loading="lazy" alt="차 위에 붙인 태양광 무선 후방 카메라: 위에 태양광 패널, 뒤에 안테나, 앞에 렌즈와 적외선 등이 있습니다">
+          <span>태양광 무선 후방 카메라</span>
+        </div>
+        <p class="ap-cap">폴드에서 찍은 실제 화면 · 실제 카메라</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">DASHCAM · 후방 카메라</div>
+        <h2>뒤쪽도<br>계기판 안에서.</h2>
+        <p class="ap-desc">태양광 패널로 충전하는 무선 후방 카메라와 연동합니다. 선을 깔 필요 없이 와이파이로 연결하면, 카메라 영상이 폴드 화면에 실시간으로 들어옵니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>태양광 패널 무선 후방 카메라와 와이파이로 직접 연결</span></li>
+          <li><b>02</b><span>DASHCAM 패널에서 실시간(LIVE) 영상 보기</span></li>
+          <li><b>03</b><span>전체 화면 버튼 한 번으로 화면 가득 크게</span></li>
+          <li><b>04</b><span>카메라에 연결한 동안에도 지도와 음악은 모바일 데이터로 그대로</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">CONTROL DECK · 물리 단축 버튼</div>
+        <h2>화면 터치 없이<br>모든 기능을.</h2>
+        <p class="ap-desc">스트림 덱 호환 기기를 연결하면 물리 단축 버튼이 자동으로 채워집니다. 운전 중에 화면을 찾아 누르지 말고, 손끝의 버튼으로 모든 기능을 작동해 보세요.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span><strong>음악</strong> 이전 · 재생 · 다음 · 전환 · 음소거</span></li>
+          <li><b>02</b><span><strong>화면</strong> 속도계 · 지도 · 라디오 · NOW · 전체</span></li>
+          <li><b>03</b><span><strong>주행</strong> 녹화 · 주야간 · T맵 · 네이버 지도 · 착륙</span></li>
+          <li><b>04</b><span>버튼마다 그림과 이름이 자동으로 표시됩니다</span></li>
+        </ul>
+      </div>
+      <figure class="ap-photo"><img src="/media/deck-close.webp" width="1400" height="873" loading="lazy" alt="차 안 거치대에 놓인 15버튼 컨트롤 덱. 버튼마다 이전, 재생, 다음, 전환, 음소거, 속도계, 지도, 라디오, NOW, 전체, 녹화, 주야간, T맵, 네이버, 착륙 그림과 이름이 켜져 있습니다"><figcaption>차 안에 단 15버튼 덱 · 버튼 구성은 자동으로 채워짐</figcaption></figure>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <figure class="ap-photo"><img src="/media/deck-dial.webp" width="1200" height="1083" loading="lazy" alt="변속 레버 옆 컵홀더 자리에 놓인 다이얼 컨트롤러. 큰 다이얼 하나와 위쪽 버튼 세 개가 있습니다"><figcaption>컵홀더 자리에 둔 다이얼 컨트롤러</figcaption></figure>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">DIAL · 다이얼 컨트롤러</div>
+        <h2>다이얼 하나로<br>볼륨부터 기능까지.</h2>
+        <p class="ap-desc">다이얼 컨트롤러를 연결하면 볼륨은 돌려서 맞추고, 기본 기능 7가지까지 손을 떼지 않고 모두 조작할 수 있습니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>다이얼을 돌려 볼륨 조절</span></li>
+          <li><b>02</b><span>기본 기능 7가지를 다이얼과 버튼으로 실행</span></li>
+          <li><b>03</b><span>버튼 덱과 함께 쓰면 화면을 볼 일이 더 줄어듭니다</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/spd-tmap.mp4" poster="/media/spd-tmap-poster.jpg" muted playsinline preload="none" aria-label="화면을 반으로 나눠 왼쪽에 대신남 스피드미터의 오디오, 라디오, 계기판을, 오른쪽에 T맵 길 안내를 띄운 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">실제 화면 · 내비게이션 칸은 위치가 드러나지 않게 흐리게 처리</p>
+      </div>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">SPLIT · T맵과 함께</div>
+        <h2>T맵을 켜도<br>계기판은 그대로.</h2>
+        <p class="ap-desc">T맵 버튼을 누르면 화면을 나눠 내비게이션을 띄우고, 앱은 남은 칸에 맞춰 스스로 정리됩니다. 길 안내를 보면서 라디오와 음악, 계기판을 오갑니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>T맵 버튼 한 번으로 화면 나누기</span></li>
+          <li><b>02</b><span>가운데 막대를 끌어 두 칸의 비율 조절</span></li>
+          <li><b>03</b><span>좁은 칸에 맞춘 세로 배치로 자동 정리</span></li>
+          <li><b>04</b><span>길 안내 옆에서 오디오 · 라디오 · 스피드미터 전환</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy">
+        <div class="amp-eyebrow">APPROACH · 착륙</div>
+        <h2>도착하면<br>활주로에 내립니다.</h2>
+        <p class="ap-desc">목적지가 가까워지면 접근 단계로 바뀌어 남은 거리와 고도를 알려 줍니다. 활주로가 다가오고, 터치다운 뒤 도착을 알립니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>APPROACH: 자동 착륙까지 남은 거리와 고도 안내</span></li>
+          <li><b>02</b><span>들판 위로 활주로가 다가오는 착륙 화면</span></li>
+          <li><b>03</b><span>TOUCHDOWN 감속 뒤 ARRIVED “목적지에 도착했어요”</span></li>
+          <li><b>04</b><span>착륙 버튼으로 시작, 복행 버튼으로 취소</span></li>
+        </ul>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/spd-landing.mp4" poster="/media/spd-landing-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 착륙 화면: 접근 단계에서 남은 거리와 고도가 줄어들고, 활주로에 내려 도착을 알립니다"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/work/">다음 앱 · 덜누름 워크 →</a></div>
+    </div>
+  </section>
+
+  <section class="amp-stage ap" id="app-work" aria-labelledby="ap-work-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">문서 · 사진 · 동영상 · 개발 중</div>
+        <h1 id="ap-work-t">덜누름 워크</h1>
+        <p class="amp-kind">이음오피스 + 아트크래프트, 안드로이드 통합판</p>
+        <p class="amp-lead">안드로이드를 윈도우 PC처럼<br>사용해보세요.</p>
+        <p class="ap-desc">덜누름 워크는 이음오피스와 아트크래프트를 안드로이드용으로 하나로 합치고 최적화한 앱입니다. 문서 작업과 그래픽 작업을 스마트폰 한 대에서, 앱을 오가지 않고 한 번에 끝냅니다.</p>
+        <ul class="amp-points">
+          <li><b>1×</b><span>파일 열기 한 번이면 형식에 맞는 편집기가 알아서 열립니다</span></li>
+          <li><b>01</b><span>워드 · 엑셀 · 파워포인트 · 한글 · PDF 보기 · 마인드맵 · 다이어그램</span></li>
+          <li><b>02</b><span>레이어 · 마스크 · 보정 · PSD 사진 편집</span></li>
+          <li><b>03</b><span>컷 편집 · 색 보정 · 자막 · MP4 내보내기</span></li>
+          <li><b>04</b><span>편집은 모두 기기 안에서, 파일을 바깥으로 보내지 않음</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 워크">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+          <div><dt>필요</dt><dd>Android 8.0 이상 · 64비트 · 무료</dd></div>
+        </dl>
+        <p class="ap-note">오픈소스 IeumOffice · PhotoCraft · FilmCraft를 고쳐 만들었습니다. 원작 라이선스는 앱의 정보 화면에 있습니다.</p>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/app-work.mp4" poster="/media/app-work-poster.jpg" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 워드, 엑셀, 한글 문서 편집기와 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/desktop/">다음 앱 · 덜누름 데스크탑앱 →</a></div>
+    </div>
+  </section>
+
+  <section class="amp-stage ap" id="app-desktop" aria-labelledby="ap-desk-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">PC 같은 바탕화면 · 개발 중</div>
+        <h1 id="ap-desk-t">덜누름 데스크탑앱</h1>
+        <p class="amp-kind">시작 메뉴 · 작업 표시줄 · 위젯 · 창</p>
+        <p class="amp-lead">펼친 폴드를<br>PC 바탕화면처럼 씁니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>시작 메뉴와 작업 표시줄에서 앱을 찾고 바로 실행</span></li>
+          <li><b>02</b><span>바탕화면 아이콘, 위젯을 올리고 끌어서 크기 조절</span></li>
+          <li><b>03</b><span>브라우저를 창으로 열고, 한 번에 전체 화면으로</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 데스크탑앱">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 데스크탑앱">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+        </dl>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/app-desk.mp4" poster="/media/app-desk-poster.jpg" muted playsinline preload="none" aria-label="덜누름 데스크탑앱 실제 화면 영상: 바탕화면에서 시작 메뉴를 열고, 위젯을 추가해 크기를 바꾸고, 브라우저를 창으로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/browser/">다음 앱 · 덜누름 브라우저 →</a></div>
+    </div>
+  </section>
+
+  <section class="amp-stage ap" id="app-browser" aria-labelledby="ap-brow-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">웹 브라우저 · 개발 중</div>
+        <h1 id="ap-brow-t">덜누름 브라우저</h1>
+        <p class="amp-kind">창으로 여는 PC형 브라우저</p>
+        <p class="amp-lead">폴드에서도<br>PC처럼 웹을 봅니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>바탕화면 위에 창으로 열고, 한 번에 전체 화면으로</span></li>
+          <li><b>02</b><span>넓은 화면에 맞춘 PC 화면 그대로</span></li>
+          <li><b>03</b><span>아래 한 줄에 뒤로 · 앞으로 · 홈 · 새로고침 · 즐겨찾기 · 설정</span></li>
+          <li><b>04</b><span>주소줄 옆 자주 가는 사이트 바로가기</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 브라우저">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 브라우저">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+        </dl>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev"><video src="/media/app-browser.mp4" poster="/media/app-browser-poster.jpg" muted playsinline preload="none" aria-label="덜누름 브라우저 실제 화면 영상: 바탕화면에서 브라우저가 창으로 열리고 전체 화면으로 커지는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면 · 광고 속 사진은 흐리게 처리</p>
+      </div>
+      <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/98/">다음 앱 · 덜누름 98 →</a></div>
+    </div>
+  </section>
+
+  <section class="amp-stage ap" id="app-98" aria-labelledby="ap-98-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">레트로 데스크톱 · 개발 중</div>
+        <h1 id="ap-98-t">덜누름 98</h1>
+        <p class="amp-kind">FOLD 98 · 폴드를 위한 레트로 홈 화면</p>
+        <p class="amp-lead">펼친 폴드가<br>그 시절 PC가 됩니다.</p>
+        <p class="ap-desc">시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 덜누름 98은 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴 안에 종류별로 정리되고, 그 시절 게임과 프로그램도 들어 있습니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>시작 메뉴 Programs에 설치한 앱을 게임 · 멀티미디어 · 인터넷 등 종류별로 자동 정리</span></li>
+          <li><b>02</b><span>바탕화면 아이콘과 작업 표시줄, 창으로 뜨는 프로그램</span></li>
+          <li><b>03</b><span>카드놀이(Solitaire)와 지뢰찾기(Minesweeper) 내장</span></li>
+          <li><b>04</b><span>음악 플레이어 Retro Amp, 웹 탐색기 Web Explorer</span></li>
+          <li><b>05</b><span>시작 메뉴에서 전화와 문자까지 바로</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 98">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 98">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
+        </dl>
+      </div>
+      <div class="ap-media">
+        <div class="ap-dev r98"><video src="/media/app-98.mp4" poster="/media/app-98-poster.jpg" muted playsinline preload="none" aria-label="덜누름 98 실제 화면 영상: 옛 PC 같은 바탕화면에서 시작 메뉴를 열고, 카드놀이와 지뢰찾기, 웹 탐색기, 음악 플레이어를 차례로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+        <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
+      </div>
+      <div class="ap-nav"><a href="/apps/">← 앱센터로</a><a href="/dulsseum/">다음 앱 · 덜씀 →</a></div>
+    </div>
+  </section>
+
+  <section class="amp-stage ap" id="app-sseum" aria-labelledby="ap-sseum-t" hidden>
+    <div class="amp-wrap">
+      <a class="ap-back" href="/apps/">← 앱센터</a>
+      <div class="amp-copy">
+        <div class="amp-eyebrow">맥 최적화 · 개발 중</div>
+        <h1 id="ap-sseum-t">덜씀</h1>
+        <p class="amp-kind">macOS 전용 · 메뉴 막대에서 여는 최적화 도구</p>
+        <p class="amp-lead">다 써 보고 만든,<br>덜 쓰는 최적화.</p>
+        <p class="ap-desc">메모리, 저장공간, 배터리를 덜 쓰게 만드는 맥 전용 앱입니다. 메뉴 막대의 덜씀을 열면 지금 메모리 상태가 보이고, 버튼 하나로 정리합니다. 무엇을 지울지는 체크 상자로 직접 고릅니다.</p>
+        <ul class="amp-points">
+          <li><b>01</b><span>메모리 덜씀: 30분 넘게 안 쓴 앱을 골라 종료하고 비활성(캐시) 메모리를 비웁니다</span></li>
+          <li><b>02</b><span>저장공간 덜씀: 타임머신 로컬 스냅샷 · 앱 캐시 파일 · 휴지통을 골라 정리합니다</span></li>
+          <li><b>03</b><span>배터리 덜씀: 배터리일 때 저전력 모드와 화면 밝기를 자동으로</span></li>
+          <li><b>04</b><span>구형 맥 가볍게: M1 같은 오래된 맥에서 화면 효과를 줄이고 메모리를 더 빨리 정리합니다</span></li>
+          <li><b>05</b><span>메모리 사용률 · 압력 · 최근 2분 그래프를 한눈에</span></li>
+        </ul>
+        <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
+        <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜씀">이 앱에 의견 보내기</a><a class="amp-link" href="#notify" data-fb-app="덜씀">공개되면 알림 받기</a></div>
+        <dl class="speed-req">
+          <div><dt>지원 기기</dt><dd>macOS 전용 (맥 컴퓨터)</dd></div>
+        </dl>
+      </div>
+      <div class="ap-media">
+        <div class="ap-mac"><img src="/media/dulsseum-mac.webp" alt="맥 메뉴 막대에서 연 덜씀 창: 메모리 70% 사용 중(25.3GB / 36GB, 압력 정상), 최근 2분 그래프, 덜씀 버튼 네 개, 안 쓰는 앱 종료 체크 상자" width="1200" height="750"></div>
+        <p class="ap-cap">실제 앱 화면을 맥 바탕화면 위에 얹어 구성</p>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">BUTTONS · 저장공간 · 배터리 · 구형 맥</div>
+        <h2>버튼 하나로<br>덜 쓰게.</h2>
+        <p class="ap-desc">무엇을 정리할지 체크 상자로 보여 주고, 누르기 전에 고칠 수 있게 합니다. 꼭 필요한 순간에만 관리자 암호를 묻습니다.</p>
+      </div>
+      <div class="ap-trio">
+        <figure>
+          <div class="ap-shot"><img src="/media/dulsseum-storage.webp" alt="저장공간 덜씀 화면: 현재 여유 공간 203.42GB, 타임머신 로컬 스냅샷 정리 · 앱 캐시 파일 삭제 · 휴지통 비우기 체크 상자와 실행 버튼" loading="lazy" width="340" height="350"></div>
+          <figcaption><small>01 · STORAGE</small><h3>지워도 되는 것만.</h3><p>여유 공간을 먼저 보여 주고, 타임머신 로컬 스냅샷 · 앱 캐시 · 휴지통 가운데 지울 것만 골라 정리합니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-shot"><img src="/media/dulsseum-battery.webp" alt="배터리 덜씀 화면: 전원 어댑터 연결됨 100%, 배터리일 때 저전력 모드 · 화면 어둡게 체크 상자, 밝기 40% 슬라이더, 배터리 덜씀 켜기 버튼" loading="lazy" width="343" height="348"></div>
+          <figcaption><small>02 · BATTERY</small><h3>배터리 최적화.</h3><p>전원을 뽑으면 저전력 모드로 바꾸고 화면을 원하는 밝기로 낮춥니다. 다시 꽂으면 원래대로 돌아옵니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-shot"><img src="/media/dulsseum-oldmac.webp" alt="구형 맥 가볍게 화면: 10분 이상 안 쓴 앱 종료, 비활성 메모리 비우기, 창·Dock 애니메이션 줄이기, 부하가 걸리면 자동 정리 체크 상자" loading="lazy" width="348" height="455"></div>
+          <figcaption><small>03 · OLDER MAC</small><h3>오래된 맥도 가볍게.</h3><p>창 · Dock 애니메이션을 줄이고, 메모리가 '주의'로 오르면 1시간 넘게 안 쓴 앱을 알아서 정리합니다.</p></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+  </div>
+  <div class="view" id="view-hardware">
+  <section class="pdp" aria-labelledby="hw-t">
+    <div class="wrap">
+      <p class="pd-notice">이 페이지의 구매 링크는 쿠팡 · 네이버 · 알리익스프레스 파트너스 링크입니다. 링크로 구매하시면 덜누름이 소정의 수수료를 받으며, 앱 개발에 사용됩니다.</p>
+      <div class="pd-head">
+        <h1 id="hw-t">덜누름 최적화 디바이스</h1>
+        <p>덜누름 앱을 맞춰 만든 기기와, 함께 쓰는 주변기기입니다.</p>
+      </div>
+      <div class="pd-grid">
+        <a class="pd" data-pid="fold7" href="https://link.coupang.com/a/iDt559dhoO" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">폴더블</span><span class="hw-fold" aria-hidden="true"><span><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></span><span><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></span></span></span>
+          <span class="pd-name">갤럭시 Z 폴드7 <em class="pd-used">중고</em></span>
+          <span class="pd-sub">512GB · 실버 쉐도우</span>
+          <span class="pd-price">1,185,590원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="fold8u" href="https://link.coupang.com/a/iDt8jKNUhU" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">폴더블</span><span class="hw-fold ultra" aria-hidden="true"><span><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></span><span><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></span></span></span>
+          <span class="pd-name">갤럭시 Z 폴드8 울트라</span>
+          <span class="pd-sub">256GB · 그라파이트 · 자급제</span>
+          <span class="pd-price"><s>2,577,300원</s> <em>13%</em> 2,220,740원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="monsterdeck" href="https://link.coupang.com/a/iDuKcnRj0m" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-close.webp" alt="차 안에 놓인 몬스타덱 단축 버튼 15개" loading="lazy"></span>
+          <span class="pd-name">몬스타기어 몬스타덱</span>
+          <span class="pd-sub">스피드미터 물리 버튼 15개</span>
+          <span class="pd-price"><s>109,900원</s> <em>19%</em> 88,010원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="ulanzi-dial" href="https://link.coupang.com/a/iDuXRuaUzA" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-dial.webp" alt="차 안 컵홀더 옆에 둔 울란지 다이얼 패드" loading="lazy"></span>
+          <span class="pd-name">울란지 다이얼 패드</span>
+          <span class="pd-sub">스피드미터 다이얼 컨트롤</span>
+          <span class="pd-price"><s>50,000원</s> <em>2%</em> 49,000원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="cupholder" href="https://link.coupang.com/a/iDu2eCYaOG" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/cupholder.svg" alt="컵홀더에 꽂는 거치대에 폴드를 펼쳐 끼운 모습 그림" loading="lazy"></span>
+          <span class="pd-name">아일라잇 차량용 컵홀더 거치대</span>
+          <span class="pd-sub">폴드 · 태블릿 차량 거치</span>
+          <span class="pd-price"><s>35,000원</s> <em>15%</em> 29,630원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="fanaue-mount" href="https://s.click.aliexpress.com/e/_c39q4buf" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/suction-mount.svg" alt="앞유리 흡착 마운트에 폴드를 펼쳐 끼운 모습 그림" loading="lazy"></span>
+          <span class="pd-name">FANAUE 흡착식 태블릿 마운트</span>
+          <span class="pd-sub">앞유리 흡착 · 1인치 볼 관절</span>
+          <span class="pd-price">69,800원</span>
+          <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="anmite-monitor" href="https://s.click.aliexpress.com/e/_c4cNr3j9" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/portable-monitor.svg" alt="받침대로 세운 휴대용 모니터에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
+          <span class="pd-name">Anmite 18.5인치 휴대용 터치 모니터</span>
+          <span class="pd-sub">터치 · 120Hz · 받침대 포함</span>
+          <span class="pd-price"><s>288,261원</s> <em>54%</em> 132,600원</span>
+          <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+      </div>
+      <p class="pd-small">표시 가격은 적힌 날짜에 확인한 판매가(울트라 · 거치대는 와우 할인가, 다이얼 패드는 쿠폰 할인가, 알리 상품은 행사가)이며, 실제 가격과 재고는 수시로 바뀝니다. 구매 전 판매처에서 확인하세요. 배송 · 교환은 각 판매처가 맡습니다.</p>
+    </div>
+  </section>
+  </div>
+
+  <div class="view" id="view-feedback" hidden>
+  <section class="center-head fb-head" id="feedback">
+    <div class="wrap">
+      <div class="eyebrow-ink">FEEDBACK</div>
+      <h1>의견 보내기</h1>
+      <p>덜누름의 앱은 모두 개발 중입니다. 바라는 기능, 불편할 것 같은 점, 무엇이든 알려 주세요. 읽고 개발에 반영합니다.</p>
+    </div>
+  </section>
+  <section class="block" style="border-top:0">
+    <div class="wrap fb-grid">
+      <form class="fb-form" id="fbForm" novalidate>
+        <fieldset>
+          <legend><b>01</b> 어떤 앱에 대한 의견인가요?</legend>
+          <div class="chips"><label class="chip"><input type="radio" name="fbApp" value="Daesinnam Amp"><span>Daesinnam Amp</span></label><label class="chip"><input type="radio" name="fbApp" value="대신남 스피드미터"><span>대신남 스피드미터</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 워크"><span>덜누름 워크</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 데스크탑앱"><span>덜누름 데스크탑앱</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 브라우저"><span>덜누름 브라우저</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 98"><span>덜누름 98</span></label><label class="chip"><input type="radio" name="fbApp" value="덜씀"><span>덜씀</span></label><label class="chip"><input type="radio" name="fbApp" value="덜누름 전체" checked><span>덜누름 전체 · 사이트</span></label></div>
+        </fieldset>
+        <fieldset>
+          <legend><b>02</b> 어떤 의견인가요?</legend>
+          <div class="chips"><label class="chip"><input type="radio" name="fbKind" value="바라는 기능" checked><span>바라는 기능</span></label><label class="chip"><input type="radio" name="fbKind" value="불편한 점"><span>불편한 점</span></label><label class="chip"><input type="radio" name="fbKind" value="기타"><span>기타</span></label></div>
+        </fieldset>
+        <div class="fb-field">
+          <label for="fbText"><b>03</b> 내용</label>
+          <textarea id="fbText" name="fbText" rows="6" maxlength="1000" required placeholder="예: 스피드미터에 주유 기록이 있으면 좋겠어요."></textarea>
+        </div>
+        <div class="fb-field">
+          <label for="fbContact"><b>04</b> 연락처 <small>선택</small></label>
+          <input id="fbContact" name="fbContact" type="email" autocomplete="email" inputmode="email" placeholder="답을 받고 싶을 때만 이메일을 적어 주세요">
+          <p class="fb-hint">연락처는 답장을 드릴 때만 씁니다.</p>
+        </div>
+        <input class="fb-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="fb-send"><button class="key dark" type="submit">의견 보내기</button><p class="fb-status" id="fbStatus" role="status" aria-live="polite"></p></div>
+      </form>
+
+      <form class="fb-notify" id="notify" novalidate>
+        <div class="eyebrow-ink">NOTIFY</div>
+        <h2>공개되면 알림 받기</h2>
+        <p>기다리는 앱을 고르고 이메일을 남기면, 공개되는 날 한 번 알려 드립니다.</p>
+        <div class="chips"><label class="chip"><input type="checkbox" name="ntApp" value="Daesinnam Amp"><span>Daesinnam Amp</span></label><label class="chip"><input type="checkbox" name="ntApp" value="대신남 스피드미터"><span>대신남 스피드미터</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 워크"><span>덜누름 워크</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 데스크탑앱"><span>덜누름 데스크탑앱</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 브라우저"><span>덜누름 브라우저</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜누름 98"><span>덜누름 98</span></label><label class="chip"><input type="checkbox" name="ntApp" value="덜씀"><span>덜씀</span></label></div>
+        <div class="fb-field">
+          <label for="ntMail">이메일</label>
+          <input id="ntMail" name="ntMail" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com">
+        </div>
+        <label class="fb-agree"><input type="checkbox" id="ntAgree" required><span>알림을 보내는 데 이메일을 쓰는 것에 동의합니다. <small>수집 항목: 이메일 · 목적: 앱 공개 알림 · 보관: 알림을 보낸 뒤 삭제</small></span></label>
+        <input class="fb-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="fb-send"><button class="key" type="submit">알림 신청</button><p class="fb-status" id="ntStatus" role="status" aria-live="polite"></p></div>
+      </form>
+    </div>
+  </section>
+  </div>
+  <div class="view" id="view-about" hidden>
+  <section class="center-head about-head" id="about">
+    <div class="wrap about-grid">
+      <div>
+        <div class="eyebrow-ink">ABOUT</div>
+        <h1 class="about-logo"><img src="/brand/deolnureum-logo.svg" alt="덜누름 Software" width="1394" height="380"></h1>
+        <p class="about-slogan">덜 누르고, <span>더 편하게.</span></p>
+        <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 버튼을 하나 더 넣기 전에, 빼도 되는지부터 묻습니다. 같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
+        <div class="actions" style="margin-top:28px;display:flex;gap:14px;flex-wrap:wrap"><a class="key dark" href="/apps/">앱센터</a><a class="key" href="#install">설치 방법</a></div>
+      </div>
+    <div class="press-demo">
+      <div class="keywell" id="keywell">
+        <div class="stem" aria-hidden="true"></div>
+        <button class="bigkey" id="bigkey" type="button" aria-label="눌러 보기"><span>덜</span>
+          <svg class="cracks" viewBox="0 0 220 220" aria-hidden="true" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 62 L52 78 L46 104 L78 122 L72 150"/>
+            <path d="M52 78 L74 70"/>
+            <path d="M202 140 L170 132 L160 156 L134 162"/>
+            <path d="M160 156 L166 184 L150 204"/>
+            <path d="M120 4 L114 30 L128 46"/>
+          </svg>
+        </button>
+      </div>
+      <div class="counter" id="counter" aria-live="polite">눌러 보세요(소리 켜기). 한 번이면 충분합니다.</div>
+      <button class="key fix" id="fix" type="button">키 새로 끼우기</button>
+    </div>
+    </div>
+  </section>
+  <section class="block" id="rules" style="border-top:0">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>덜누름의 원칙</h2>
+        <p>앱을 만들 때마다 세 가지를 확인합니다.</p>
+      </div>
+      <div class="rules">
+        <div class="rule">
+          <span class="k">01</span>
+          <h3>누를 일을 줄입니다</h3>
+          <p>같은 일을 끝내는 데 필요한 누름 수를 세고, 하나라도 줄일 수 있으면 줄입니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">02</span>
+          <h3>필요한 것만 묻습니다</h3>
+          <p>권한과 설정은 그 기능을 처음 쓸 때 묻습니다. 처음 켰을 때 긴 설정 화면을 띄우지 않습니다.</p>
+        </div>
+        <div class="rule">
+          <span class="k">03</span>
+          <h3>무엇을 하는지 말합니다</h3>
+          <p>데이터를 바깥으로 보내는 기능은 어디로 보내는지 앱 안에 적어 둡니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="logo">
+    <div class="wrap">
+      <div class="block-head">
+        <h2>로고</h2>
+        <p>덜누름을 소개할 때 쓰는 공식 로고입니다. 밝은 배경에는 검정, 어두운 배경에는 흰색을 씁니다.</p>
+      </div>
+      <div class="logos">
+        <figure class="logo-card">
+          <div class="logo-pane"><img src="/brand/deolnureum-logo.svg" alt="덜누름 Software 로고, 검정" width="1394" height="380" loading="lazy"></div>
+          <figcaption><b>검정 · 밝은 배경용</b><span class="logo-dl"><a class="key" href="/brand/deolnureum-logo-black.png" download="deolnureum-logo-black.png">PNG 내려받기</a><a class="key" href="/brand/deolnureum-logo.svg" download="deolnureum-logo.svg">SVG</a></span></figcaption>
+        </figure>
+        <figure class="logo-card">
+          <div class="logo-pane dark"><img src="/brand/deolnureum-logo-white.svg" alt="덜누름 Software 로고, 흰색" width="1394" height="380" loading="lazy"></div>
+          <figcaption><b>흰색 · 어두운 배경용</b><span class="logo-dl"><a class="key" href="/brand/deolnureum-logo-white.png" download="deolnureum-logo-white.png">PNG 내려받기</a><a class="key" href="/brand/deolnureum-logo-white.svg" download="deolnureum-logo-white.svg">SVG</a></span></figcaption>
+        </figure>
+      </div>
+      <p class="logo-note">PNG는 배경이 투명합니다. 비율을 바꾸거나 글자를 고치지 말고, 둘레에 여백을 두고 써 주세요.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head"><h2>한눈에</h2></div>
+      <dl class="about-facts">
+        <div><dt>이름</dt><dd>덜누름 Software (deolnureum)</dd></div>
+        <div><dt>슬로건</dt><dd>덜 누르고, 더 편하게</dd></div>
+        <div><dt>만드는 앱</dt><dd>Daesinnam Amp · 대신남 스피드미터 · 덜누름 워크 · 덜누름 데스크탑앱 · 덜누름 브라우저 · 덜누름 98 · 덜씀(맥) — <a href="/apps/">앱센터에서 보기</a></dd></div>
+        <div><dt>사이트</dt><dd>deolnureum.com</dd></div>
+      </dl>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="foot-brand"><svg viewBox="0 0 1394 378" role="img" aria-label="덜누름"><use href="#lg-word"/></svg>Software · 덜 누르고, 더 편하게</span>
+    <span>© 2026 덜누름<span class="fb-on"> · <a href="/feedback/">의견 보내기</a></span></span>
+  </div>
+</footer>
+
+<script>
+// ---------- 앱센터 3D 영상: 앱센터에 들어올 때 한 번만 재생 ----------
+(function () {
+  "use strict";
+  var v = document.getElementById("flyReel"), snd = document.getElementById("flySound"), again = document.getElementById("flyAgain");
+  if (!v) return;
+  var played = false, reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function play() { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+  document.addEventListener("viewchange", function (e) {
+    if (e.detail === "apps") { if (!played && !reduce) { played = true; v.currentTime = 0; play(); } }
+    else v.pause();
+  });
+  v.addEventListener("ended", function () { again.hidden = false; });
+  again.addEventListener("click", function () { again.hidden = true; v.currentTime = 0; play(); });
+  snd.addEventListener("click", function () {
+    v.muted = !v.muted;
+    if (!v.muted) { again.hidden = true; v.currentTime = 0; play(); }
+    snd.textContent = v.muted ? "소리 켜기" : "소리 끄기";
+    snd.setAttribute("aria-pressed", v.muted ? "false" : "true");
+  });
+})();
+
+// ---------- 화면 전환: 홈 / 앱센터(#app-center) / 앱 소개 페이지(#app-…) / 소개 ----------
+(function () {
+  "use strict";
+  var home = document.getElementById("view-home"), center = document.getElementById("view-apps");
+  var appView = document.getElementById("view-app"), about = document.getElementById("view-about");
+  var pages = Array.prototype.slice.call(appView.querySelectorAll(".ap"));
+  var links = document.querySelectorAll("nav a[data-view]");
+  var current = null;
+  function play(v) { try { v.currentTime = 0; } catch (e) {} var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+  var devs = Array.prototype.slice.call(appView.querySelectorAll(".ap-dev"));
+  devs.forEach(function (d) {
+    var v = d.querySelector("video"), again = d.querySelector(".ap-again");
+    if (!v || !again) return;
+    v.addEventListener("ended", function () { again.hidden = false; });
+    again.addEventListener("click", function () { again.hidden = true; play(v); });
+  });
+  // 아래 구역(.ap-sub)의 영상은 화면에 들어올 때 처음부터 한 번 재생
+  var subIO = "IntersectionObserver" in window ? new IntersectionObserver(function (en) {
+    en.forEach(function (e) {
+      var d = e.target, v = d.querySelector("video"); if (!v) return;
+      if (e.isIntersecting) { d.parentNode.classList.add("is-in"); if (!d._seen) { d._seen = true; play(v); } else if (v.paused && !v.ended) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } }
+      else v.pause();
+    });
+  }, { threshold: 0.5 }) : null;
+  devs.forEach(function (d) { if (subIO && d.closest(".ap-sub")) { d._sub = true; subIO.observe(d); } });
+  // 주소 방식 두 가지. 빌드된 실제 사이트(<html data-paths>)는 화면마다 진짜 주소(/speedometer/ 등)를 쓰고,
+  // 원본·시안은 # 주소를 씀. 실제 사이트에서도 링크를 누르면 새로 고치지 않고 화면만 바꿈.
+  var PATHS = document.documentElement.hasAttribute("data-paths"), META = window.__PAGES || {};
+  var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-98": "/98/", "#app-sseum": "/dulsseum/" }, P2H = {};
+  for (var hk in H2P) P2H[H2P[hk]] = hk;
+  function viewPath(h) { if (H2P[h]) return H2P[h]; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; return "/" + (h || ""); }
+  function logical() {
+    if (!PATHS) return location.hash || "";
+    var p = location.pathname.replace(/index\.html$/, ""); if (p.slice(-1) !== "/") p += "/";
+    var base = P2H[p] || "#top", h = location.hash || "";
+    if (H2P[h] && h !== base) { try { history.replaceState(null, "", H2P[h]); } catch (e) {} return h === "#top" ? "" : h; }   // 예전 주소(/#app-speed)로 들어오면 새 주소로 바꿈
+    if (h && !H2P[h]) return h;
+    return base === "#top" ? "" : base;
+  }
+  function go(h) { try { history.pushState(null, "", viewPath(h)); } catch (e) { location.href = viewPath(h); return; } route(); }
+  function route() {
+    var hsh = logical();
+    var page = null;
+    for (var j = 0; j < pages.length; j++) if ("#" + pages[j].id === hsh) page = pages[j];
+    var isAbout = hsh === "#about" || hsh === "#rules";
+    var isFb = hsh === "#feedback" || hsh === "#notify";
+    var isHw = hsh === "#hardware";
+    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : isHw ? "hardware" : "home";
+    document.getElementById("view-feedback").hidden = view !== "feedback";
+    document.getElementById("view-hardware").hidden = view !== "hardware";
+    home.hidden = view !== "home"; center.hidden = view !== "apps"; appView.hidden = view !== "app"; about.hidden = view !== "about";
+    pages.forEach(function (pg) { pg.hidden = pg !== page; });
+    devs.forEach(function (d) {
+      var v = d.querySelector("video"), again = d.querySelector(".ap-again");
+      if (!v) return;
+      if (d._sub) { d._seen = false; v.pause(); if (again) again.hidden = true; return; }
+      if (page && page.contains(d)) { if (again) again.hidden = true; play(v); } else v.pause();
+    });
+    var showEl = document.getElementById("show"); if (showEl) showEl.scrollLeft = 0;
+    document.body.setAttribute("data-view", view);
+    for (var i = 0; i < links.length; i++) {
+      var dv = links[i].getAttribute("data-view");
+      var on = (dv === view || (view === "app" && dv === "apps")) && (view !== "home" || /^(#top|\/)$/.test(links[i].getAttribute("href")));
+      links[i].classList.toggle("is-on", on);
+    }
+    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" ? document.getElementById(hsh.slice(1)) : null;
+    if (target) target.scrollIntoView();
+    else { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } }
+    if (PATHS) {   // 화면에 맞는 제목·설명·대표 주소
+      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : "#top"];
+      if (m) { document.title = m.t; var md = document.querySelector('meta[name="description"]'), lc = document.querySelector('link[rel="canonical"]'); if (md) md.setAttribute("content", m.d); if (lc) lc.setAttribute("href", m.u); }
+    }
+    var ev;
+    if (view !== current) {
+      current = view;
+      try { ev = new CustomEvent("viewchange", { detail: view }); } catch (e) { ev = document.createEvent("CustomEvent"); ev.initCustomEvent("viewchange", false, false, view); }
+      document.dispatchEvent(ev);
+    }
+    try { ev = new CustomEvent("routechange", { detail: hsh }); } catch (e) { ev = document.createEvent("CustomEvent"); ev.initCustomEvent("routechange", false, false, hsh); }
+    document.dispatchEvent(ev);
+  }
+  if (PATHS) {
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest && e.target.closest("a[href]"); if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      var href = a.getAttribute("href"), h = href.charAt(0) === "#" ? href : P2H[href] || null;
+      if (h === null) return;
+      e.preventDefault(); go(h);
+    });
+    window.addEventListener("popstate", route);
+  } else window.addEventListener("hashchange", route);
+  route();
+})();
+
+// ---------- 의견 보내기 · 공개 알림 ----------
+(function () {
+  "use strict";
+  // 받는 곳(구글 설문) 연결 정보. action이 비어 있으면 전송하지 않고 안내만 보여 줌.
+  var FB = { action: "https://docs.google.com/forms/d/e/1FAIpQLSfP-AtdrqHl2NfFRgfcLdLdFKKp_P8BJN1zgxxU6rCULaQfbQ/formResponse", f: { app: "entry.46129893", kind: "entry.418131705", text: "entry.1383050537", contact: "entry.1468507028" } };
+  var form = document.getElementById("fbForm"), nform = document.getElementById("notify");
+  if (!form || !nform) return;
+  // 연결 전: 실제 사이트(deolnureum.com)에서는 메뉴·버튼을 숨기고, 시안에서만 보임
+  if (!FB.action && /(^|\.)deolnureum\.com$/.test(location.hostname)) document.body.classList.add("no-fb");
+  function say(el, cls, msg) { el.className = "fb-status" + (cls ? " " + cls : ""); el.textContent = msg; }
+  function send(d, done) {
+    if (!FB.action) { done("none"); return; }
+    var body = new URLSearchParams();
+    body.append(FB.f.app, d.app); body.append(FB.f.kind, d.kind); body.append(FB.f.text, d.text); body.append(FB.f.contact, d.contact);
+    fetch(FB.action, { method: "POST", mode: "no-cors", body: body }).then(function () { done("ok"); }, function () { done("fail"); });
+  }
+  function wire(f, status, collect, okMsg) {
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (f.querySelector(".fb-trap").value) return;
+      var d = collect(); if (!d) return;
+      var btn = f.querySelector("button[type=submit]"); btn.disabled = true; say(status, "", "보내는 중…");
+      send(d, function (r) {
+        btn.disabled = false;
+        if (r === "ok") { say(status, "ok", okMsg); f.reset(); }
+        else if (r === "none") say(status, "bad", "아직 받는 곳이 연결되지 않아 전송되지 않았습니다.");
+        else say(status, "bad", "보내지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
+      });
+    });
+  }
+  var okMail = function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); };
+  var fbStatus = document.getElementById("fbStatus"), ntStatus = document.getElementById("ntStatus");
+  wire(form, fbStatus, function () {
+    var text = form.fbText.value.trim(), contact = form.fbContact.value.trim();
+    if (text.length < 5) { say(fbStatus, "bad", "내용을 조금만 더 적어 주세요."); form.fbText.focus(); return null; }
+    if (contact && !okMail(contact)) { say(fbStatus, "bad", "이메일 주소를 확인해 주세요."); form.fbContact.focus(); return null; }
+    return { app: form.fbApp.value, kind: form.fbKind.value, text: text, contact: contact };
+  }, "보냈습니다. 고맙습니다.");
+  wire(nform, ntStatus, function () {
+    var picked = Array.prototype.filter.call(nform.querySelectorAll("input[name=ntApp]"), function (c) { return c.checked; }).map(function (c) { return c.value; });
+    var mail = nform.ntMail.value.trim();
+    if (!picked.length) { say(ntStatus, "bad", "기다리는 앱을 하나 이상 골라 주세요."); return null; }
+    if (!okMail(mail)) { say(ntStatus, "bad", "이메일 주소를 확인해 주세요."); nform.ntMail.focus(); return null; }
+    if (!document.getElementById("ntAgree").checked) { say(ntStatus, "bad", "이메일 사용에 동의해 주세요."); return null; }
+    return { app: picked.join(", "), kind: "공개 알림 신청", text: "", contact: mail };
+  }, "신청했습니다. 공개되는 날 알려 드릴게요.");
+  // 앱 소개 페이지의 버튼으로 들어오면 그 앱을 미리 골라 둠
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-fb-app]"); if (!a) return;
+    var name = a.getAttribute("data-fb-app");
+    Array.prototype.forEach.call(form.querySelectorAll("input[name=fbApp]"), function (r) { r.checked = r.value === name; });
+    Array.prototype.forEach.call(nform.querySelectorAll("input[name=ntApp]"), function (c) { c.checked = c.value === name; });
+  });
+})();
+
+// ---------- 메인 쇼릴 소리 켜기/끄기 ----------
+(function () {
+  "use strict";
+  var v = document.getElementById("reel"), b = document.getElementById("reelSound");
+  if (!v || !b) return;
+  b.addEventListener("click", function () {
+    v.muted = !v.muted;
+    if (!v.muted) { v.currentTime = 0; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    b.textContent = v.muted ? "소리 켜기" : "소리 끄기";
+    b.setAttribute("aria-pressed", v.muted ? "false" : "true");
+  });
+  // 한 번만 재생하고 마지막 장면(로고)에서 멈춤. 다시 보기 버튼 제공
+  var again = document.createElement("button");
+  again.type = "button"; again.className = "key reel-sound"; again.textContent = "↻ 다시 보기";
+  again.style.right = "auto"; again.style.left = "18px"; again.hidden = true;
+  v.parentNode.appendChild(again);
+  v.addEventListener("ended", function () { again.hidden = false; });
+  again.addEventListener("click", function () { again.hidden = true; v.currentTime = 0; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); });
+  document.addEventListener("viewchange", function (e) { if (e.detail !== "home") v.pause(); });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { v.removeAttribute("autoplay"); v.pause(); }
+})();
+
+// ---------- 앱 화면 쇼케이스 ----------
+(function () {
+  "use strict";
+  var deck = document.getElementById("deck");
+  if (!deck) return;
+  var centerView = document.getElementById("view-apps");
+  var slides = Array.prototype.slice.call(deck.querySelectorAll(".slide"));
+  var N = slides.length;
+  var curEl = document.getElementById("showCur");
+  var nameEl = document.getElementById("showName");
+  var prog = document.getElementById("showProg");
+  var playBtn = document.getElementById("showPlay");
+  var DUR = 4500;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cur = 0, elapsed = 0, playing = !reduce, hold = false, last = 0;
+  document.getElementById("showTotal").textContent = (N < 10 ? "0" : "") + N;
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function place() {
+    slides.forEach(function (s, i) {
+      var d = i - cur;
+      if (d > N / 2) d -= N;
+      if (d < -N / 2) d += N;
+      var a = Math.abs(d);
+      s.style.transform = "translate(-50%, -50%) translateX(" + (d * 62) + "%) translateZ(" + (-a * 220) + "px) rotateY(" + (-d * 24) + "deg) scale(" + (1 - a * 0.06) + ")";
+      s.style.opacity = a > 2 ? "0" : a === 2 ? "0.35" : "1";
+      s.style.zIndex = String(10 - a);
+      s.style.pointerEvents = a > 1 ? "none" : "auto";
+      s.classList.toggle("is-center", a === 0);
+      s.setAttribute("tabindex", a === 0 ? "0" : "-1");
+      s.setAttribute("aria-hidden", a === 0 ? "false" : "true");
+      var on = a === 0 && !centerView.hidden, first = on && !s._on;
+      s._on = on;
+      Array.prototype.forEach.call(s.querySelectorAll("video"), function (v) {
+        if (on) {
+          if (first) { try { v.currentTime = 0; } catch (e) {} }
+          var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+        } else v.pause();
+      });
+    });
+    var c = slides[cur];
+    curEl.textContent = pad(cur + 1);
+    nameEl.innerHTML = "";
+    nameEl.appendChild(document.createTextNode(c.getAttribute("data-name")));
+    var k = document.createElement("span");
+    k.textContent = c.getAttribute("data-kind");
+    nameEl.appendChild(k);
+  }
+  // 영상이 있는 화면은 더 오래 머묾(data-dur)
+  function dur() { return +slides[cur].getAttribute("data-dur") || DUR; }
+  function go(i) { cur = (i + N) % N; elapsed = 0; place(); }
+  function setPlaying(p) {
+    playing = p;
+    playBtn.setAttribute("aria-label", p ? "자동 넘김 멈추기" : "자동 넘김 켜기");
+    playBtn.innerHTML = p
+      ? '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="1"/><rect x="9.5" y="3" width="3" height="10" rx="1"/></svg>'
+      : '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.8v10.4L13 8z"/></svg>';
+  }
+  function tick(t) {
+    var dt = last ? Math.min(100, t - last) : 0;
+    last = t;
+    if (playing && !hold && !centerView.hidden) {
+      elapsed += dt;
+      if (elapsed >= dur()) go(cur + 1);
+    }
+    prog.style.transform = "scaleX(" + Math.min(1, elapsed / dur()).toFixed(4) + ")";
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById("showPrev").addEventListener("click", function () { go(cur - 1); });
+  document.getElementById("showNext").addEventListener("click", function () { go(cur + 1); });
+  playBtn.addEventListener("click", function () { setPlaying(!playing); });
+
+  // 옆 화면을 누르면 가운데로, 가운데 화면을 누르면 그 앱 소개로
+  var dragged = false;
+  slides.forEach(function (s, i) {
+    s.addEventListener("click", function (e) {
+      if (dragged) { e.preventDefault(); dragged = false; return; }
+      if (i !== cur) { e.preventDefault(); go(i); }
+    });
+  });
+
+  // 끌어서 넘기기
+  var sx = null;
+  deck.addEventListener("pointerdown", function (e) { sx = e.clientX; dragged = false; });
+  deck.addEventListener("pointerup", function (e) {
+    if (sx === null) return;
+    var dx = e.clientX - sx;
+    sx = null;
+    if (Math.abs(dx) > 40) { dragged = true; go(cur + (dx < 0 ? 1 : -1)); }
+  });
+  deck.addEventListener("pointercancel", function () { sx = null; });
+
+  // 마우스를 올리거나 키보드로 보는 동안에는 잠시 멈춤
+  deck.addEventListener("mouseenter", function () { hold = true; });
+  deck.addEventListener("mouseleave", function () { hold = false; });
+  deck.addEventListener("focusin", function () { hold = true; });
+  deck.addEventListener("focusout", function () { hold = false; });
+  deck.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") { e.preventDefault(); go(cur - 1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); go(cur + 1); }
+  });
+
+  document.addEventListener("viewchange", function () { elapsed = 0; place(); });
+  setPlaying(playing);
+  place();
+  requestAnimationFrame(tick);
+})();
+
+(function () {
+  "use strict";
+  var key = document.getElementById("bigkey");
+  var well = document.getElementById("keywell");
+  var out = document.getElementById("counter");
+  var fix = document.getElementById("fix");
+  var n = 0;
+  var BREAK_AT = 12;
+  var held = false;
+
+  // 누른 횟수 → 키 상태 (높이·기울기·글자 어긋남·금)
+  var LINES = [
+    "눌러 보세요(소리 켜기). 한 번이면 충분합니다.",
+    "한 번. 이걸로 충분합니다.",
+    "두 번. 벌써 한 번 더 눌렀습니다.",
+    "세 번. 이제 그만 눌러도 됩니다.",
+    "키가 조금 낮아졌습니다.",
+    "더 낮아졌습니다. 덜 누르세요.",
+    "글자가 비뚤어지기 시작합니다.",
+    "키가 흔들립니다.",
+    "금이 갔습니다.",
+    "금이 번집니다. 정말 덜 누르셔야 합니다.",
+    "바닥이 거의 보입니다.",
+    "한 번만 더 누르면…",
+  ];
+  function wear() { return Math.min(1, n / (BREAK_AT - 1)); }
+  function render() {
+    var w = wear();
+    var h = Math.max(3, 16 - 13 * w);                       // 16px → 3px
+    var tilt = n >= 6 ? -(n - 5) * 0.9 : 0;                  // 서서히 기욺
+    key.style.setProperty("--h", h.toFixed(1) + "px");
+    key.style.setProperty("--tilt", tilt.toFixed(1) + "deg");
+    key.style.setProperty("--dx", (n >= 6 ? (n - 5) * 0.8 : 0).toFixed(1) + "px");
+    key.style.setProperty("--lx", (n >= 5 ? (n - 4) * 1.2 : 0).toFixed(1) + "px");
+    key.style.setProperty("--ly", (n >= 5 ? (n - 4) * 0.9 : 0).toFixed(1) + "px");
+    key.style.setProperty("--lr", (n >= 5 ? (n - 4) * 2.2 : 0).toFixed(1) + "deg");
+    key.style.setProperty("--crack", n >= 8 ? Math.min(1, (n - 7) / 3).toFixed(2) : "0");
+    if (n < LINES.length) out.textContent = LINES[n];
+  }
+
+  function breakKey() {
+    key.classList.add("broken");
+    key.classList.remove("is-down");
+    well.classList.add("is-broken");
+    key.setAttribute("aria-disabled", "true");
+    key.setAttribute("aria-label", "망가진 키");
+    out.textContent = "고장 났습니다. 그러게, 덜 누르셨어야죠.";
+    fix.classList.add("show");
+    crunch();
+  }
+
+  function press() {
+    if (key.classList.contains("broken")) return;
+    n += 1;
+    if (n >= BREAK_AT) { breakKey(); return; }
+    render();
+    if (n >= 7) { key.classList.remove("wobble"); void key.offsetWidth; key.classList.add("wobble"); }
+  }
+  key.addEventListener("click", press);
+
+  fix.addEventListener("click", function () {
+    n = 0;
+    key.classList.remove("broken", "wobble");
+    well.classList.remove("is-broken");
+    key.removeAttribute("aria-disabled");
+    key.setAttribute("aria-label", "눌러 보기");
+    fix.classList.remove("show");
+    render();
+    out.textContent = "새 키로 바꿨습니다. 이번엔 덜 눌러 주세요.";
+    clack(true, 0);
+  });
+
+  // ---------- 타건음: Web Audio로 직접 합성 (파일 없음). 닳을수록 낮고 덜그럭거림 ----------
+  var ctx = null;
+  function audio() {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    } catch (e) { return null; }
+  }
+  function noise(ac, seconds, power) {
+    var len = Math.floor(ac.sampleRate * seconds);
+    var buf = ac.createBuffer(1, len, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, power || 3);
+    return buf;
+  }
+  function burst(ac, t, dur, freq, q, gain) {
+    var src = ac.createBufferSource();
+    src.buffer = noise(ac, dur);
+    var f = ac.createBiquadFilter();
+    f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
+    var g = ac.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    src.connect(f); f.connect(g); g.connect(ac.destination);
+    src.start(t);
+  }
+  function thump(ac, t, from, to, dur, gain) {
+    var o = ac.createOscillator();
+    o.type = "sine";
+    o.frequency.setValueAtTime(from, t);
+    o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    var g = ac.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  // down: 바닥에 닿는 "탁", up: 올라오는 "틱". w(닳은 정도 0~1)가 클수록 낮고 둔하고 덜그럭
+  function clack(down, w) {
+    var ac = audio();
+    if (!ac) return;
+    w = w == null ? wear() : w;
+    var t = ac.currentTime + 0.001;
+    var v = 0.92 + Math.random() * 0.16;
+    var bright = 1 - 0.55 * w;
+    if (down) {
+      burst(ac, t, 0.045, 3200 * v * bright, 0.9, 0.55);
+      thump(ac, t, 190 * v * (1 - 0.3 * w), 60, 0.09, 0.5);
+      if (w > 0.45) burst(ac, t + 0.018 + Math.random() * 0.02, 0.03, 1400 * v, 2.5, 0.35 * w);   // 덜그럭
+      if (w > 0.7) burst(ac, t + 0.045 + Math.random() * 0.02, 0.025, 900 * v, 3, 0.3 * w);      // 한 번 더 튐
+    } else {
+      burst(ac, t, 0.03, 4200 * v * bright, 0.9, 0.28 * (1 - 0.5 * w));
+    }
+  }
+  // 망가질 때: 플라스틱이 쪼개지고, 키캡이 바닥에 떨어져 두 번 튐
+  function crunch() {
+    var ac = audio();
+    if (!ac) return;
+    var t = ac.currentTime + 0.001;
+    burst(ac, t, 0.12, 2600, 0.7, 0.7);
+    burst(ac, t + 0.02, 0.08, 5200, 1.2, 0.4);
+    thump(ac, t, 140, 45, 0.18, 0.6);
+    burst(ac, t + 0.32, 0.05, 1800, 1.5, 0.35);
+    thump(ac, t + 0.32, 120, 60, 0.07, 0.3);
+    burst(ac, t + 0.46, 0.04, 2000, 1.5, 0.18);
+  }
+
+  key.addEventListener("pointerdown", function () {
+    if (key.classList.contains("broken")) return;
+    held = true; clack(true);
+  });
+  window.addEventListener("pointerup", function () { if (held) { held = false; clack(false); } });
+  key.addEventListener("pointercancel", function () { held = false; });
+  // 키보드 스페이스·엔터를 누르는 동안 눌린 모양 유지
+  key.addEventListener("keydown", function (e) {
+    if ((e.key === " " || e.key === "Enter") && !e.repeat && !key.classList.contains("broken")) { key.classList.add("is-down"); clack(true); }
+  });
+  key.addEventListener("keyup", function (e) {
+    if ((e.key === " " || e.key === "Enter") && key.classList.contains("is-down")) { key.classList.remove("is-down"); clack(false); }
+  });
+  key.addEventListener("blur", function () { key.classList.remove("is-down"); });
+  render();
+})();
+</script>
+<script>
+// ---------- Daesinnam Amp: 접은 바깥 화면 → 펼친 화면 (홈의 폴더블 장면과 같은 효과) ----------
+(function () {
+  "use strict";
+  var box = document.getElementById("af"); if (!box) return;
+  var q = function (c) { return box.querySelector(c); };
+  var rig = q(".ul-rig"), hl = q(".ul-half.l"), hr = q(".ul-half.r"), screen = q(".ul-screen"), gloss = q(".ul-gloss"), shadow = q(".ul-shadow");
+  var cover = q(".af-cover"), vOpen = q(".af-open"), vShut = q(".af-shut"), cv = q(".ul-fx"), cx = cv.getContext("2d");
+  var btns = Array.prototype.slice.call(box.querySelectorAll(".af-btn"));
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches, T = 12;
+  [hl, hr].forEach(function (h) {
+    var face = h.querySelector(".face"); h.querySelector(".back").style.transform = "translateZ(" + (-T) + "px)";
+    for (var i = 1; i < 6; i++) { var e = document.createElement("i"); e.style.transform = "translateZ(" + (-T * i / 6) + "px)"; h.insertBefore(e, face); }
+  });
+  var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+  var easeOut = function (x) { return 1 - Math.pow(1 - x, 4); };
+  var smooth = function (x) { return x * x * (3 - 2 * x); };
+  var tx = 0, ty = 0, rx = 0, ry = 0, vx = 0, vy = 0, K = 140, MAX = 13, lastMove = 0;
+  function aim(e) {
+    var r = rig.getBoundingClientRect();
+    ty = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.9), -1, 1) * MAX;
+    tx = -clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 0.9), -1, 1) * MAX; lastMove = performance.now();
+  }
+  var zone = box.closest(".amp-wrap") || box;
+  zone.addEventListener("pointermove", aim);
+  zone.addEventListener("pointerleave", function () { tx = 0; ty = 0; });
+  zone.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { tx = 0; ty = 0; } });
+  var P = [], dpr = Math.min(2, window.devicePixelRatio || 1), W = 0, H = 0;
+  function size() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  window.addEventListener("resize", size);
+  function burst() {
+    if (reduce) return; size();
+    var r = rig.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    var ox = r.left + r.width / 2 - c.left, oy = r.top + r.height / 2 - c.top, n = window.innerWidth < 600 ? 100 : 160;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, sp = 220 + Math.random() * 520, flake = Math.random() < 0.55;
+      P.push({ x: ox + Math.cos(a) * r.width * 0.36, y: oy + Math.sin(a) * r.height * 0.36, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 160,
+        s: flake ? 3 + Math.random() * 5 : 1.2 + Math.random() * 2.2, flake: flake, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 14,
+        life: 0, max: 1.4 + Math.random() * 1.5, hue: 40 + Math.random() * 10, lum: 58 + Math.random() * 22 });
+    }
+  }
+  function particles(dt) {
+    if (!P.length && !W) return;
+    cx.clearRect(0, 0, W, H);
+    for (var i = P.length - 1; i >= 0; i--) {
+      var p = P[i]; p.life += dt;
+      if (p.life > p.max) { P.splice(i, 1); continue; }
+      var drag = Math.exp(-2.6 * dt); p.vx *= drag; p.vy = p.vy * drag + 520 * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      cx.save(); cx.translate(p.x, p.y); cx.globalAlpha = Math.min(1, (p.max - p.life) / 0.5);
+      if (p.flake) { cx.rotate(p.rot); var w = p.s * (0.25 + 0.75 * Math.abs(Math.cos(p.rot * 1.7)));
+        cx.fillStyle = "hsl(" + p.hue + ",78%," + (p.lum + 14 * Math.cos(p.rot * 1.7)) + "%)"; cx.fillRect(-w / 2, -p.s / 2, w, p.s); }
+      else { cx.fillStyle = "hsl(" + p.hue + ",90%,82%)"; cx.beginPath(); cx.arc(0, 0, p.s, 0, 6.283); cx.fill(); }
+      cx.restore();
+    }
+  }
+  function playV(v, on) { if (on) { if (v.paused) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } } else if (!v.paused) v.pause(); }
+  // u: 0 = 접힘(바깥 화면), 1 = 펼침(안쪽 화면)
+  var u = 0, target = 0, lit = false, last = 0, visible = false, running = false, started = false, autoAt = 0, rise0 = 0;
+  function setTarget(t, byUser) {
+    target = t; if (byUser) autoAt = 0;
+    btns.forEach(function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-open") === t)); });
+  }
+  btns.forEach(function (b) { b.addEventListener("click", function () { setTarget(+b.getAttribute("data-open"), true); }); });
+  function begin() {
+    started = true; u = reduce ? 1 : 0; lit = false; box.classList.remove("lit"); box.classList.add("on"); P.length = 0;
+    rise0 = performance.now(); setTarget(reduce ? 1 : 0); autoAt = reduce ? 0 : rise0 + 3200;
+    try { vShut.currentTime = 0; vOpen.currentTime = 0; } catch (e) {}
+    if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
+  }
+  function frame(now) {
+    if (!visible) { running = false; vOpen.pause(); vShut.pause(); return; }
+    var dt = Math.min(0.033, (now - last) / 1000 || 0.016); last = now;
+    if (autoAt && now > autoAt) { autoAt = 0; setTarget(1); }
+    var sp = dt / 1.5; u = target > u ? Math.min(target, u + sp) : Math.max(target, u - sp);
+    var rise = easeOut(clamp((now - rise0) / 900, 0, 1));
+    var flip = smooth(clamp(u / 0.3, 0, 1)), open = easeOut(clamp((u - 0.28) / 0.72, 0, 1)), fold = (1 - open) * 86;
+    cover.style.transform = "translateX(-50%) rotateY(" + (flip * 88) + "deg) scale(" + (1 - flip * 0.04) + ")";
+    cover.style.opacity = 1 - smooth(clamp((flip - 0.7) / 0.3, 0, 1));
+    cover.style.visibility = flip >= 1 ? "hidden" : "visible";
+    var hv = smooth(clamp((flip - 0.6) / 0.4, 0, 1));
+    hl.style.opacity = hr.style.opacity = hv;
+    hl.style.transform = "rotateY(" + fold + "deg)"; hr.style.transform = "rotateY(" + (-fold) + "deg)";
+    if (!lit && u >= 0.999) { lit = true; box.classList.add("lit"); burst(); }
+    if (lit && u < 0.9) { lit = false; box.classList.remove("lit"); }
+    screen.style.opacity = smooth(clamp((open - 0.86) / 0.14, 0, 1)); gloss.style.opacity = open;
+    playV(vShut, u < 0.25); playV(vOpen, u > 0.9);
+    var gxT = tx, gyT = ty;
+    if (now - lastMove > 1800 && !reduce) { gyT = Math.sin(now / 1700) * 5; gxT = Math.cos(now / 2300) * 3; }
+    var c = 2 * Math.sqrt(K);
+    vx += (K * (gxT - rx) - c * vx) * dt; rx += vx * dt; vy += (K * (gyT - ry) - c * vy) * dt; ry += vy * dt;
+    rig.style.transform = "translateY(" + ((1 - rise) * 60) + "px) scale(" + (0.86 + 0.14 * rise) + ") rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg)";
+    rig.style.opacity = rise;
+    gloss.style.setProperty("--gx", (30 - ry * 3.2) + "%"); gloss.style.setProperty("--gy", (12 + rx * 3.2) + "%");
+    shadow.style.opacity = 0.9 * rise * (0.45 + 0.55 * open);
+    shadow.style.transform = "translate(" + (-ry * 1.6) + "px," + (rx * 1.2) + "px) translateZ(-60px) scaleX(" + (0.5 + 0.5 * open) + ")";
+    particles(dt);
+    requestAnimationFrame(frame);
+  }
+  // 소개 페이지가 열릴 때마다 접힌 상태에서 다시 시작
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (en) {
+      var was = visible; visible = en[0].isIntersecting;
+      if (visible && !was) { if (!started) begin(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+    }, { threshold: 0.2 }).observe(box);
+  } else { visible = true; begin(); }
+  document.addEventListener("routechange", function (e) { if (e.detail !== "#app-amp") started = false; });
+})();
+
+// ---------- 스피드미터 잠금 해제 장면 ----------
+(function () {
+  "use strict";
+  var box = document.getElementById("ul"); if (!box) return;
+  var rig = document.getElementById("ulRig"), hl = document.getElementById("ulL"), hr = document.getElementById("ulR");
+  var screen = document.getElementById("ulScreen"), gloss = document.getElementById("ulGloss"), shadow = document.getElementById("ulShadow");
+  var vid = document.getElementById("ulVid"), cv = document.getElementById("ulFx"), cx = cv.getContext("2d");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches, T = 12;
+  [hl, hr].forEach(function (h) {
+    var face = h.querySelector(".face"); h.querySelector(".back").style.transform = "translateZ(" + (-T) + "px)";
+    for (var i = 1; i < 6; i++) { var e = document.createElement("i"); e.style.transform = "translateZ(" + (-T * i / 6) + "px)"; h.insertBefore(e, face); }
+  });
+  var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+  var easeOut = function (x) { return 1 - Math.pow(1 - x, 4); };
+  var smooth = function (x) { return x * x * (3 - 2 * x); };
+  // 기울기: 임계 감쇠 스프링 (넘치지 않고 빠르게 멈춤)
+  var tx = 0, ty = 0, rx = 0, ry = 0, vx = 0, vy = 0, K = 140, MAX = 13, lastMove = 0;
+  function aim(e) {
+    var r = rig.getBoundingClientRect();
+    ty = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.9), -1, 1) * MAX;
+    tx = -clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 0.9), -1, 1) * MAX; lastMove = performance.now();
+  }
+  var zone = box.closest("section") || box;
+  zone.addEventListener("pointermove", aim);
+  zone.addEventListener("pointerleave", function () { tx = 0; ty = 0; });
+  zone.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { tx = 0; ty = 0; } });
+  // 금빛 입자
+  var P = [], dpr = Math.min(2, window.devicePixelRatio || 1), W = 0, H = 0;
+  function size() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  window.addEventListener("resize", size);
+  function burst() {
+    if (reduce) return; size();
+    var r = rig.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    var ox = r.left + r.width / 2 - c.left, oy = r.top + r.height / 2 - c.top, n = window.innerWidth < 600 ? 100 : 160;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, sp = 220 + Math.random() * 520, flake = Math.random() < 0.55;
+      P.push({ x: ox + Math.cos(a) * r.width * 0.36, y: oy + Math.sin(a) * r.height * 0.36, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 160,
+        s: flake ? 3 + Math.random() * 5 : 1.2 + Math.random() * 2.2, flake: flake, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 14,
+        life: 0, max: 1.4 + Math.random() * 1.5, hue: 40 + Math.random() * 10, lum: 58 + Math.random() * 22 });
+    }
+  }
+  function particles(dt) {
+    if (!P.length && !W) return;
+    cx.clearRect(0, 0, W, H);
+    for (var i = P.length - 1; i >= 0; i--) {
+      var q = P[i]; q.life += dt;
+      if (q.life > q.max) { P.splice(i, 1); continue; }
+      var drag = Math.exp(-2.6 * dt); q.vx *= drag; q.vy = q.vy * drag + 520 * dt;
+      q.x += q.vx * dt; q.y += q.vy * dt; q.rot += q.vr * dt;
+      cx.save(); cx.translate(q.x, q.y); cx.globalAlpha = Math.min(1, (q.max - q.life) / 0.5);
+      if (q.flake) { cx.rotate(q.rot); var w = q.s * (0.25 + 0.75 * Math.abs(Math.cos(q.rot * 1.7)));
+        cx.fillStyle = "hsl(" + q.hue + ",78%," + (q.lum + 14 * Math.cos(q.rot * 1.7)) + "%)"; cx.fillRect(-w / 2, -q.s / 2, w, q.s); }
+      else { cx.fillStyle = "hsl(" + q.hue + ",90%,82%)"; cx.beginPath(); cx.arc(0, 0, q.s, 0, 6.283); cx.fill(); }
+      cx.restore();
+    }
+  }
+  var t0 = -1, lit = false, last = 0, visible = false, running = false;
+  function start() {
+    t0 = performance.now(); lit = false; box.classList.remove("lit"); box.classList.add("on"); P.length = 0; screen.style.opacity = 0;
+    try { vid.pause(); vid.currentTime = 0; } catch (e) {}
+    if (!running) { running = true; requestAnimationFrame(frame); }
+  }
+  function frame(now) {
+    if (!visible) { running = false; vid.pause(); return; } // 화면 밖이면 멈춰서 배터리를 아낌
+    var dt = Math.min(0.033, (now - last) / 1000 || 0.016); last = now;
+    var t = reduce ? 10 : (now - t0) / 1000;
+    var rise = easeOut(clamp((t - 0.25) / 0.9, 0, 1)), open = easeOut(clamp((t - 0.75) / 0.95, 0, 1)), fold = (1 - open) * 86;
+    hl.style.transform = "rotateY(" + fold + "deg)"; hr.style.transform = "rotateY(" + (-fold) + "deg)";
+    if (!lit && open > 0.985) { lit = true; box.classList.add("lit"); burst(); }
+    if (lit && vid.paused) { var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    screen.style.opacity = smooth(clamp((t - 1.58) / 0.35, 0, 1)); gloss.style.opacity = rise;
+    var gxT = tx, gyT = ty;
+    if (now - lastMove > 1800 && !reduce) { gyT = Math.sin(now / 1700) * 5; gxT = Math.cos(now / 2300) * 3; }
+    var c = 2 * Math.sqrt(K);
+    vx += (K * (gxT - rx) - c * vx) * dt; rx += vx * dt; vy += (K * (gyT - ry) - c * vy) * dt; ry += vy * dt;
+    rig.style.transform = "translateY(" + ((1 - rise) * 60) + "px) scale(" + (0.86 + 0.14 * rise) + ") rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg)";
+    rig.style.opacity = clamp((t - 0.25) / 0.3, 0, 1);
+    gloss.style.setProperty("--gx", (30 - ry * 3.2) + "%"); gloss.style.setProperty("--gy", (12 + rx * 3.2) + "%");
+    shadow.style.opacity = 0.9 * rise * open;
+    shadow.style.transform = "translate(" + (-ry * 1.6) + "px," + (rx * 1.2) + "px) translateZ(-60px) scaleX(" + (0.5 + 0.5 * open) + ")";
+    particles(dt);
+    requestAnimationFrame(frame);
+  }
+  document.getElementById("ulAgain").addEventListener("click", start);
+  // 화면에 들어올 때 처음 한 번 펼쳐짐. 이후에는 보일 때만 움직임
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (en) {
+      visible = en[0].isIntersecting;
+      if (visible) { if (t0 < 0) start(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+    }, { threshold: 0.35 }).observe(box);
+  } else { visible = true; start(); }
+})();
+</script>
+<script>
+// ---------- 이륙 장면 영상(24초): 화면에 보일 때만 재생. 조종석 시점과 차 안으로 넘어가는 동안(8~19.6초)에는 글자를 치움 ----------
+(function () {
+  "use strict";
+  var v = document.getElementById("tkVid"), copy = document.getElementById("tkCopy");
+  if (!v) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  v.addEventListener("timeupdate", function () { var t = v.currentTime; copy.classList.toggle("is-off", t > 8.0 && t < 19.6);
+    // 좁은 화면에서는 영상 좌우가 잘리므로, 차 안 장면에서 오른쪽의 폴드 화면이 보이도록 영상을 옮김
+    var k = Math.max(0, Math.min(1, (t - 17.4) / 2.4)); v.style.objectPosition = (50 + 30 * k * k * (3 - 2 * k)) + "% 50%"; });
+  if (reduce) return;
+  function play() { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { if (en[0].isIntersecting) play(); else v.pause(); }, { threshold: 0.2 }).observe(v);
+  else play();
+})();
+</script>
+<script>
+/* 내려받기 · 내려받은 수
+   앱을 공개할 때 그 앱의 open 을 true 로 바꾸면 소개 페이지의 "개발 중" 자리에 내려받기 버튼과 "N회 내려받음"이 나옵니다.
+   수는 GitHub Releases가 파일마다 세는 값(download_count)을 그대로 읽습니다. 공개 전 테스트로 받은 수는 base 에 적어 빼 줍니다. */
+(function () {
+  var REPO = "Deasinnam/Deasinnamdb";
+  var DL = {
+    "app-amp":     { open: false, tag: "latest",         file: "DaesinnamAmp.apk",     base: 0 },
+    "app-speed":   { open: false, tag: "",               file: "",                     base: 0 },
+    "app-work":    { open: false, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 0 },
+    "app-desktop": { open: false, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 0 },
+    "app-browser": { open: false, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 0 },
+    "app-98":      { open: false, tag: "",               file: "",                     base: 0 },
+    "app-sseum":   { open: false, tag: "",               file: "",                     base: 0 }
+  };
+  if (window.__DL_TEST) for (var k in window.__DL_TEST) DL[k] = window.__DL_TEST[k];
+  function getRelease(tag, cb) {
+    var key = "dl:" + tag, hit = null;
+    try { hit = JSON.parse(sessionStorage.getItem(key) || "null"); } catch (e) {}
+    if (hit && Date.now() - hit.t < 600000) return cb(hit.d);
+    fetch("https://api.github.com/repos/" + REPO + "/releases/tags/" + encodeURIComponent(tag), { headers: { Accept: "application/vnd.github+json" } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (!d) return cb(null); var slim = { assets: (d.assets || []).map(function (a) { return { name: a.name, n: a.download_count, size: a.size }; }) };
+        try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: slim })); } catch (e) {} cb(slim); })
+      .catch(function () { cb(null); });
+  }
+  Object.keys(DL).forEach(function (id) {
+    var c = DL[id]; if (!c.open || !c.tag || !c.file) return;
+    var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
+    var url = "https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file;
+    cta.innerHTML = '<a class="amp-btn" href="' + url + '">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span>';
+    var out = cta.querySelector(".dl-count");
+    getRelease(c.tag, function (d) {
+      if (!d) return;
+      var a = d.assets.filter(function (x) { return x.name === c.file; })[0]; if (!a) return;
+      var n = Math.max(0, a.n - (c.base || 0));
+      out.innerHTML = "<b>" + n.toLocaleString("ko-KR") + "회</b> 내려받음 · " + (a.size / 1048576).toFixed(1) + "MB";
+    });
+  });
+})();
+</script>
+</body>
+</html>

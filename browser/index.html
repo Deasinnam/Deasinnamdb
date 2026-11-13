@@ -393,6 +393,38 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-sub .ap-widewrap ~ .amp-copy { align-self: start; }
 .amp-points.ap-points-top { margin-top: 0; }
 .amp-points strong { color: #fff; font-weight: 700; margin-right: 6px; }
+.pdp { background: #fff; padding: 28px 0 100px; min-height: 70vh; }
+.pd-notice { background: #f4f4f5; color: #52525b; font-size: 13px; line-height: 1.6; padding: 12px 16px; border-radius: 12px; }
+.pd-head { margin: 40px 0 28px; }
+.pd-head h1 { font: 800 clamp(26px, 3.4vw, 34px)/1.2 var(--font-display); letter-spacing: -0.03em; color: #0b0b0c; }
+.pd-head p { margin-top: 6px; color: #71717a; font-size: 15px; }
+.pd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.pd { display: grid; gap: 4px; align-content: start; padding: 12px 12px 16px; border: 1px solid #e4e4e7; border-radius: 16px; background: #fff; color: #0b0b0c; text-decoration: none; transition: box-shadow .2s, transform .2s; }
+.pd:hover { box-shadow: 0 12px 30px -16px rgba(0,0,0,.25); transform: translateY(-2px); }
+.pd-img { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; border-radius: 10px; background: #f4f4f5; margin-bottom: 10px; overflow: hidden; }
+.pd-tag { position: absolute; left: 8px; top: 8px; z-index: 1; background: #fff; color: #b45309; font: 700 11px/1 var(--font-body); padding: 6px 9px; border-radius: 999px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.pd-art { width: 86%; height: 86%; object-fit: contain; }
+.pd.is-soldout .pd-img::after { content: "매진"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.7); color: #0b0b0c; font: 800 18px/1 var(--font-body); letter-spacing: .1em; }
+.pd.is-soldout .pd-price { color: #a1a1aa; }
+.pd-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pd-name { font: 700 16px/1.35 var(--font-body); }
+.pd-sub { color: #71717a; font-size: 13px; }
+.pd-used { font-style: normal; font: 700 11px/1 var(--font-body); color: #52525b; background: #f4f4f5; border: 1px solid #e4e4e7; padding: 3px 6px; border-radius: 6px; vertical-align: 2px; margin-left: 2px; }
+.pd-price { margin-top: 8px; font: 800 18px/1.3 var(--font-body); color: #0b0b0c; }
+.pd-price s { display: block; font-weight: 400; font-size: 12px; color: #a1a1aa; }
+.pd-price em { font-style: normal; color: #dc2626; margin-right: 2px; }
+.pd-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; font-size: 13px; }
+.pd-shop { color: #a1a1aa; }
+.pd-foot b { font-size: 14px; white-space: nowrap; }
+.pd-shop { white-space: nowrap; font-size: 12px; }
+.pd-small { margin-top: 22px; color: #a1a1aa; font-size: 12px; }
+.hw-fold { display: grid; grid-template-columns: 1fr 1fr; height: 78%; aspect-ratio: 720 / 728; border: 4px solid #111; border-radius: 12px; box-shadow: 0 0 0 1px #a1a1aa, 0 14px 24px -12px rgba(0,0,0,.45); overflow: hidden; background: #000; }
+.hw-fold.ultra { height: 82%; aspect-ratio: 760 / 728; }
+.hw-fold span { overflow: hidden; position: relative; }
+.hw-fold span + span { box-shadow: inset 4px 0 6px -4px rgba(0,0,0,.6); }
+.hw-fold img { position: absolute; top: 0; height: 100%; width: 200%; object-fit: cover; }
+.hw-fold span:first-child img { left: 0; } .hw-fold span + span img { right: 0; }
+@media (max-width: 520px) { .pdp { padding-top: 20px; } .pd-grid { grid-template-columns: 1fr 1fr; gap: 10px; } .pd { padding: 8px 8px 12px; } .pd-name { font-size: 14px; } .pd-price { font-size: 16px; } .pd-foot { flex-direction: column; align-items: flex-start; gap: 6px; } }
 .ap-mac { width: 100%; max-width: 620px; border-radius: 14px; overflow: hidden; border: 6px solid #0a0a0b; box-shadow: 0 0 0 1px #52525b, 0 40px 80px -30px #000; background: #111; }
 .ap-mac img, .ap-shot img { display: block; width: 100%; height: auto; }
 .ap-shot { border-radius: 16px; overflow: hidden; background: linear-gradient(135deg,#dfe7ff,#fde7ef); padding: 18px; box-shadow: 0 0 0 1px #3f3f46; }
@@ -573,7 +605,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
 <meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "SoftwareApplication", "name": "덜누름 브라우저", "url": "https://deolnureum.com/browser/", "description": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "operatingSystem": "Android", "applicationCategory": "BrowserApplication", "image": "https://deolnureum.com/media/app-browser-poster.jpg", "inLanguage": "ko", "publisher": {"@id": "https://deolnureum.com/#org"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "앱센터", "item": "https://deolnureum.com/apps/"}, {"@type": "ListItem", "position": 3, "name": "덜누름 브라우저", "item": "https://deolnureum.com/browser/"}]}]}</script>
-<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 98, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 윈도우 PC처럼 | 덜누름", "d": "이음오피스와 아트크래프트를 안드로이드용으로 하나로 합친 앱. 워드·엑셀·파워포인트·한글 문서와 사진·동영상 편집을 스마트폰 한 대에서 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-98": {"t": "덜누름 98 — 폴드를 그 시절 PC처럼 | 덜누름", "d": "시작 버튼, 작업 표시줄, 바탕화면 아이콘까지. 갤럭시 Z 폴드를 90년대 PC처럼 쓰는 홈 화면입니다. 설치한 앱은 시작 메뉴에 종류별로 정리되고 카드놀이와 지뢰찾기도 들어 있습니다.", "u": "https://deolnureum.com/98/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
 </head>
 <body data-view="app">
 
@@ -587,6 +619,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     <nav aria-label="주요 메뉴">
       <a href="/" data-view="home">홈</a>
       <a href="/apps/" data-view="apps">앱센터</a>
+      <a href="/hardware/" data-view="hardware">하드웨어</a>
       <a href="/about/" data-view="about">소개</a>
       <a href="#install" class="hide-sm fb-off" data-view="home">설치 안내</a>
       <a href="/feedback/" class="fb-on" data-view="feedback">의견<span class="hide-sm"> 보내기</span></a>
@@ -1208,6 +1241,70 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     </div>
   </section>
   </div>
+  <div class="view" id="view-hardware" hidden>
+  <section class="pdp" aria-labelledby="hw-t">
+    <div class="wrap">
+      <p class="pd-notice">이 페이지의 구매 링크는 쿠팡 · 네이버 · 알리익스프레스 파트너스 링크입니다. 링크로 구매하시면 덜누름이 소정의 수수료를 받으며, 앱 개발에 사용됩니다.</p>
+      <div class="pd-head">
+        <h1 id="hw-t">덜누름 최적화 디바이스</h1>
+        <p>덜누름 앱을 맞춰 만든 기기와, 함께 쓰는 주변기기입니다.</p>
+      </div>
+      <div class="pd-grid">
+        <a class="pd" data-pid="fold7" href="https://link.coupang.com/a/iDt559dhoO" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">폴더블</span><span class="hw-fold" aria-hidden="true"><span><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></span><span><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></span></span></span>
+          <span class="pd-name">갤럭시 Z 폴드7 <em class="pd-used">중고</em></span>
+          <span class="pd-sub">512GB · 실버 쉐도우</span>
+          <span class="pd-price">1,185,590원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="fold8u" href="https://link.coupang.com/a/iDt8jKNUhU" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">폴더블</span><span class="hw-fold ultra" aria-hidden="true"><span><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></span><span><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></span></span></span>
+          <span class="pd-name">갤럭시 Z 폴드8 울트라</span>
+          <span class="pd-sub">256GB · 그라파이트 · 자급제</span>
+          <span class="pd-price"><s>2,577,300원</s> <em>13%</em> 2,220,740원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="monsterdeck" href="https://link.coupang.com/a/iDuKcnRj0m" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-close.webp" alt="차 안에 놓인 몬스타덱 단축 버튼 15개" loading="lazy"></span>
+          <span class="pd-name">몬스타기어 몬스타덱</span>
+          <span class="pd-sub">스피드미터 물리 버튼 15개</span>
+          <span class="pd-price"><s>109,900원</s> <em>19%</em> 88,010원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="ulanzi-dial" href="https://link.coupang.com/a/iDuXRuaUzA" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-photo" src="/media/deck-dial.webp" alt="차 안 컵홀더 옆에 둔 울란지 다이얼 패드" loading="lazy"></span>
+          <span class="pd-name">울란지 다이얼 패드</span>
+          <span class="pd-sub">스피드미터 다이얼 컨트롤</span>
+          <span class="pd-price"><s>50,000원</s> <em>2%</em> 49,000원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="cupholder" href="https://link.coupang.com/a/iDu2eCYaOG" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/cupholder.svg" alt="컵홀더에 꽂는 거치대에 폴드를 펼쳐 끼운 모습 그림" loading="lazy"></span>
+          <span class="pd-name">아일라잇 차량용 컵홀더 거치대</span>
+          <span class="pd-sub">폴드 · 태블릿 차량 거치</span>
+          <span class="pd-price"><s>35,000원</s> <em>15%</em> 29,630원</span>
+          <span class="pd-foot"><span class="pd-shop">쿠팡 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="fanaue-mount" href="https://s.click.aliexpress.com/e/_c39q4buf" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/suction-mount.svg" alt="앞유리 흡착 마운트에 폴드를 펼쳐 끼운 모습 그림" loading="lazy"></span>
+          <span class="pd-name">FANAUE 흡착식 태블릿 마운트</span>
+          <span class="pd-sub">앞유리 흡착 · 1인치 볼 관절</span>
+          <span class="pd-price">69,800원</span>
+          <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+        <a class="pd" data-pid="anmite-monitor" href="https://s.click.aliexpress.com/e/_c4cNr3j9" target="_blank" rel="sponsored noopener nofollow">
+          <span class="pd-img"><span class="pd-tag">주변기기</span><img class="pd-art" src="/media/portable-monitor.svg" alt="받침대로 세운 휴대용 모니터에 덜누름 데스크탑앱 화면을 띄운 그림" loading="lazy"></span>
+          <span class="pd-name">Anmite 18.5인치 휴대용 터치 모니터</span>
+          <span class="pd-sub">터치 · 120Hz · 받침대 포함</span>
+          <span class="pd-price"><s>288,261원</s> <em>54%</em> 132,600원</span>
+          <span class="pd-foot"><span class="pd-shop">알리 · 11.13 기준</span><b>구매하기 ↗</b></span>
+        </a>
+      </div>
+      <p class="pd-small">표시 가격은 적힌 날짜에 확인한 판매가(울트라 · 거치대는 와우 할인가, 다이얼 패드는 쿠폰 할인가, 알리 상품은 행사가)이며, 실제 가격과 재고는 수시로 바뀝니다. 구매 전 판매처에서 확인하세요. 배송 · 교환은 각 판매처가 맡습니다.</p>
+    </div>
+  </section>
+  </div>
+
   <div class="view" id="view-feedback" hidden>
   <section class="center-head fb-head" id="feedback">
     <div class="wrap">
@@ -1401,7 +1498,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   // 주소 방식 두 가지. 빌드된 실제 사이트(<html data-paths>)는 화면마다 진짜 주소(/speedometer/ 등)를 쓰고,
   // 원본·시안은 # 주소를 씀. 실제 사이트에서도 링크를 누르면 새로 고치지 않고 화면만 바꿈.
   var PATHS = document.documentElement.hasAttribute("data-paths"), META = window.__PAGES || {};
-  var H2P = { "#top": "/", "#app-center": "/apps/", "#about": "/about/", "#feedback": "/feedback/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-98": "/98/", "#app-sseum": "/dulsseum/" }, P2H = {};
+  var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-98": "/98/", "#app-sseum": "/dulsseum/" }, P2H = {};
   for (var hk in H2P) P2H[H2P[hk]] = hk;
   function viewPath(h) { if (H2P[h]) return H2P[h]; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; return "/" + (h || ""); }
   function logical() {
@@ -1419,8 +1516,10 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     for (var j = 0; j < pages.length; j++) if ("#" + pages[j].id === hsh) page = pages[j];
     var isAbout = hsh === "#about" || hsh === "#rules";
     var isFb = hsh === "#feedback" || hsh === "#notify";
-    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : "home";
+    var isHw = hsh === "#hardware";
+    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : isHw ? "hardware" : "home";
     document.getElementById("view-feedback").hidden = view !== "feedback";
+    document.getElementById("view-hardware").hidden = view !== "hardware";
     home.hidden = view !== "home"; center.hidden = view !== "apps"; appView.hidden = view !== "app"; about.hidden = view !== "about";
     pages.forEach(function (pg) { pg.hidden = pg !== page; });
     devs.forEach(function (d) {
@@ -1436,11 +1535,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       var on = (dv === view || (view === "app" && dv === "apps")) && (view !== "home" || /^(#top|\/)$/.test(links[i].getAttribute("href")));
       links[i].classList.toggle("is-on", on);
     }
-    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" ? document.getElementById(hsh.slice(1)) : null;
+    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" ? document.getElementById(hsh.slice(1)) : null;
     if (target) target.scrollIntoView();
     else { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } }
     if (PATHS) {   // 화면에 맞는 제목·설명·대표 주소
-      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : "#top"];
+      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : "#top"];
       if (m) { document.title = m.t; var md = document.querySelector('meta[name="description"]'), lc = document.querySelector('link[rel="canonical"]'); if (md) md.setAttribute("content", m.d); if (lc) lc.setAttribute("href", m.u); }
     }
     var ev;

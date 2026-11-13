@@ -50,6 +50,8 @@ PAGES = [
      "덜누름은 누를 일을 줄이는 앱을 개발합니다. " + APP_NAMES + " 앱을 만들고 있습니다."),
     ("#app-center", "/apps/", "apps", "앱센터 — 덜누름이 개발 중인 앱" + SUFFIX,
      "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. " + APP_NAMES + "의 실제 화면을 볼 수 있습니다."),
+    ("#hardware", "/hardware/", "hardware", "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라" + SUFFIX,
+     "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 휴대용 모니터를 한눈에. 판매처로 바로 연결됩니다."),
     ("#about", "/about/", "about", "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다" + SUFFIX,
      "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게."),
     ("#feedback", "/feedback/", "feedback", "의견 보내기 · 공개 알림 신청" + SUFFIX,
@@ -120,7 +122,7 @@ def build():
         out = sub1(r"<body>", '<body data-view="%s">' % view, out)
         if view != "home":
             out = sub1(r'<div class="view" id="view-home">', '<div class="view" id="view-home" hidden>', out)
-            vid = {"apps": "view-apps", "app": "view-app", "about": "view-about", "feedback": "view-feedback"}[view]
+            vid = {"apps": "view-apps", "app": "view-app", "about": "view-about", "feedback": "view-feedback", "hardware": "view-hardware"}[view]
             out = sub1(r'(<div class="view[^"]*" id="%s") hidden>' % vid, r"\1>", out)
             if view == "app":
                 out = sub1(r'(<section class="amp-stage ap" id="%s"[^>]*?) hidden>' % h[1:], r"\1>", out)
