@@ -1306,18 +1306,35 @@ public class MainActivity extends Activity {
             return;
         }
         googleTestStarted = true;
-        web.postDelayed(() -> web.evaluateJavascript("(function(){var i=document.querySelector('input[type=email]');if(!i)return 'noinput';"
+        googleTypeAttempt(0);
+    }
+
+    /** 입력칸이 뜰 때까지(최대 약 40초) 기다렸다가 없는 주소를 넣고 "다음" */
+    private void googleTypeAttempt(int n) {
+        web.postDelayed(() -> web.evaluateJavascript("(function(){var i=document.querySelector('input[type=email]');if(!i||!i.offsetParent)return 'noinput';"
                 + "i.focus();i.value='dn.selftest.nobody.73914@gmail.com';i.dispatchEvent(new Event('input',{bubbles:true}));"
                 + "var b=document.querySelector('#identifierNext button')||document.querySelector('#identifierNext');if(!b)return 'nobutton';b.click();return 'ok';})()",
-                v -> Log.i(TAG, "INFO google typed " + v)), 4000);
-        web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({u:location.href,t:(document.body?document.body.innerText:'').slice(0,600)})", v -> {
+                v -> {
+                    Log.i(TAG, "INFO google typed " + v + " (" + n + ")");
+                    if ("\"noinput\"".equals(v) && n < 20) googleTypeAttempt(n + 1);
+                    else googleCheckAttempt(0);
+                }), 2000);
+    }
+
+    /** 결과 화면이 나올 때까지(최대 약 30초) 확인 */
+    private void googleCheckAttempt(int n) {
+        web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({u:location.href,t:(document.body?document.body.innerText:'').slice(0,800)})", v -> {
             String text = v == null ? "" : v.replace("\\n", " ");
             String low = text.toLowerCase(Locale.ROOT);
             boolean blocked = low.contains("may not be secure") || low.contains("안전하지 않") || low.contains("disallowed_useragent") || low.contains("browser or app");
-            boolean through = low.contains("couldn") || low.contains("찾을 수 없") || low.contains("password") || low.contains("비밀번호") || low.contains("valid email") || low.contains("올바른");
-            Log.i(TAG, (blocked ? "FAIL" : through ? "PASS" : "INFO") + " google sign-in " + text.substring(0, Math.min(400, text.length())));
+            boolean through = low.contains("couldn") || low.contains("찾을 수 없") || low.contains("enter your password") || low.contains("비밀번호") || low.contains("valid email") || low.contains("올바른");
+            if (!blocked && !through && n < 10) {
+                googleCheckAttempt(n + 1);
+                return;
+            }
+            Log.i(TAG, (blocked ? "FAIL" : through ? "PASS" : "INFO") + " google sign-in " + text.substring(0, Math.min(500, text.length())));
             Log.i(TAG, "DONE");
-        }), 14000);
+        }), 3000);
     }
 
     /**

@@ -42,7 +42,7 @@ echo "===== 구글 로그인 (유튜브 스튜디오) ====="
 adb shell am force-stop "$PKG"
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez browser.selftest true --ez browser.google true --es browser.url "https://studio.youtube.com/" >/dev/null
-for i in $(seq 1 30); do
+for i in $(seq 1 50); do
   sleep 3
   if adb logcat -d -s BROWSER_SELFTEST:I | grep -q "DONE"; then break; fi
 done
