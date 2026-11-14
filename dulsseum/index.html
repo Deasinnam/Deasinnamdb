@@ -543,6 +543,39 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ph b { font: 700 clamp(18px, 2.6vw, 30px)/1.2 var(--font-display); letter-spacing: -0.03em; margin-top: 6px; }
 .ph span { font-size: clamp(12px, 1.4vw, 15px); color: #4a4a4a; max-width: 24em; }
 .ph small { font: 500 11px/1 var(--font-mono); color: #8a8a8a; letter-spacing: .04em; }
+.applist { background: #0b0b0c; color: #f4f4f5; padding: 8px 0 88px; border-top: 1px solid #1f1f23; }
+.applist .show-head { padding-top: 56px; margin-bottom: 24px; }
+.al { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.al-row { display: grid; grid-template-columns: 132px 1fr auto; gap: 22px; align-items: center; padding: 14px 18px 14px 14px; border: 1px solid #27272a; border-radius: 16px; background: #131316; }
+.al-thumb { display: block; aspect-ratio: 16/10; border-radius: 10px; overflow: hidden; background: #1c1c20; }
+.al-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.al-info { display: grid; gap: 4px; min-width: 0; }
+.al-info small { font: 600 11px/1.2 var(--font-mono); letter-spacing: .08em; color: #a1a1aa; }
+.al-info b { font-size: 19px; letter-spacing: -0.03em; }
+.al-info b a { color: #fff; text-decoration: none; }
+.al-info b a:hover { text-decoration: underline; }
+.al-info span { color: #b4b4bb; font-size: 14px; }
+.al-info em { font-style: normal; color: #71717a; font-size: 12px; }
+.al-act { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.al-dl { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.al-get { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; background: #ff7a00; color: #fff; font: 700 15px/1 var(--font-body); text-decoration: none; border: 1px solid #c75a00; box-shadow: 0 4px 0 #c75a00; transition: transform .08s ease, box-shadow .08s ease; }
+.al-get:hover { transform: translateY(1px); box-shadow: 0 3px 0 #c75a00; }
+.al-get:active { transform: translateY(3px); box-shadow: 0 1px 0 #c75a00; }
+.al-get small { font: 600 11px/1 var(--font-mono); opacity: .85; }
+.al-count { font-size: 12px; color: #a1a1aa; }
+.al-count b { color: #fff; font-weight: 600; }
+.al-soon { display: inline-block; padding: 11px 16px; border-radius: 12px; border: 1px dashed #3f3f46; color: #a1a1aa; font-size: 14px; }
+.al-more { padding: 12px 16px; border-radius: 12px; border: 1px solid #3f3f46; background: #18181b; color: #fff; font-size: 14px; text-decoration: none; white-space: nowrap; }
+.al-more:hover { border-color: #71717a; }
+@media (max-width: 720px) {
+  .al-row { grid-template-columns: 96px 1fr; gap: 14px; padding: 12px; }
+  .al-act { grid-column: 1 / -1; justify-content: stretch; }
+  .al-act > * { flex: 1 1 0; text-align: center; }
+  .al-dl { align-items: stretch; }
+  .al-get, .al-soon { justify-content: center; text-align: center; }
+  .al-count { text-align: center; }
+  .al-info b { font-size: 17px; }
+}
 .show-bar { margin-top: 26px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .show-count { font: 600 13px/1 var(--font-mono); color: #71717a; font-variant-numeric: tabular-nums; }
 .show-count b { color: #fff; font-weight: 600; }
@@ -850,6 +883,56 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <div class="show-prog" aria-hidden="true"><i id="showProg"></i></div>
     </div>
   </section>
+
+  <section class="applist" id="applist" aria-labelledby="applist-title">
+    <div class="wrap">
+      <div class="show-head">
+        <div>
+          <div class="eyebrow">All apps · 앱 목록</div>
+          <h2 id="applist-title">앱 내려받기</h2>
+        </div>
+        <p>내려받기 버튼이 있는 앱은 바로 설치할 수 있습니다. 개발 중인 앱은 공개되면 버튼이 생깁니다.</p>
+      </div>
+      <ul class="al">
+        <li class="al-row" data-app="app-amp">
+          <a class="al-thumb" href="/amp/" tabindex="-1" aria-hidden="true"><img src="/media/amp-open-poster.jpg" alt="" loading="lazy"></a>
+          <div class="al-info"><small>음악 플레이어</small><b><a href="/amp/">Daesinnam Amp</a></b><span>펼쳐도, 접어도 듣기 좋은 레트로 스킨 MP3 플레이어</span><em>안드로이드 · 폴드 최적화</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/amp/">자세히 보기</a></div>
+        </li>
+        <li class="al-row" data-app="app-speed">
+          <a class="al-thumb" href="/speedometer/" tabindex="-1" aria-hidden="true"><img src="/media/speedometer-poster.jpg" alt="" loading="lazy"></a>
+          <div class="al-info"><small>GPS 조종석 계기</small><b><a href="/speedometer/">대신남 스피드미터</a></b><span>차가 달리면 조종석 계기판이 움직입니다</span><em>안드로이드 · 폴드 최적화</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/speedometer/">자세히 보기</a></div>
+        </li>
+        <li class="al-row" data-app="app-work">
+          <a class="al-thumb" href="/work/" tabindex="-1" aria-hidden="true"><img src="/media/app-work-poster.jpg" alt="" loading="lazy"></a>
+          <div class="al-info"><small>문서 · 그래픽 작업</small><b><a href="/work/">덜누름 워크</a></b><span>안드로이드를 윈도우 PC처럼. 문서 · 사진 · 동영상 편집을 한 앱에서</span><em>안드로이드 · 폴드 최적화</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/work/">자세히 보기</a></div>
+        </li>
+        <li class="al-row" data-app="app-desktop">
+          <a class="al-thumb" href="/desktop/" tabindex="-1" aria-hidden="true"><img src="/media/app-desk-poster.jpg?v=1113" alt="" loading="lazy"></a>
+          <div class="al-info"><small>PC 같은 바탕화면</small><b><a href="/desktop/">덜누름 데스크탑앱</a></b><span>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창</span><em>안드로이드 · 폴드 최적화</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/desktop/">자세히 보기</a></div>
+        </li>
+        <li class="al-row" data-app="app-browser">
+          <a class="al-thumb" href="/browser/" tabindex="-1" aria-hidden="true"><img src="/media/app-browser-poster.jpg" alt="" loading="lazy"></a>
+          <div class="al-info"><small>창으로 여는 브라우저</small><b><a href="/browser/">덜누름 브라우저</a></b><span>PC처럼, 창으로 여는 브라우저</span><em>안드로이드 · 폴드 최적화</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/browser/">자세히 보기</a></div>
+        </li>
+        <li class="al-row" data-app="app-sseum">
+          <a class="al-thumb" href="/dulsseum/" tabindex="-1" aria-hidden="true"><img src="/media/dulsseum-mac.webp" alt="" loading="lazy"></a>
+          <div class="al-info"><small>맥 최적화</small><b><a href="/dulsseum/">덜씀</a></b><span>메모리 · 저장공간 · 배터리를 버튼 하나로</span><em>macOS 전용</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/dulsseum/">자세히 보기</a></div>
+        </li>
+        <li class="al-row" data-app="app-98">
+          <a class="al-thumb" href="/98/" tabindex="-1" aria-hidden="true"><img src="/media/app-98-poster.jpg" alt="" loading="lazy"></a>
+          <div class="al-info"><small>레트로 데스크톱</small><b><a href="/98/">덜누름 98</a></b><span>펼친 폴드가 그 시절 PC가 됩니다</span><em>안드로이드 · 폴드 최적화</em></div>
+          <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="/98/">자세히 보기</a></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
 
   </div>
 
@@ -2294,9 +2377,20 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   var CNT = "https://abacus.jasoncameron.dev/", NSK = "deolnureum/";
   Object.keys(DL).forEach(function (id) {
     var c = DL[id]; if (!c.open || !(c.url || (c.tag && c.file))) return;
-    var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
     var url = c.url || ("https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file);
     var key = c.key || ("dl-" + id.replace(/^app-/, ""));
+    /* 앱센터 앱 목록의 내려받기 버튼 (같은 카운터로 셉니다) */
+    var row = document.querySelector('.al-row[data-app="' + id + '"] .al-dl');
+    if (row) {
+      row.innerHTML = '<a class="al-get" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="al-count"></span>';
+      var rc = row.querySelector(".al-count"), rs = c.size || "";
+      fetch(CNT + "get/" + NSK + key).then(function (r) { return r.ok ? r.json() : { value: 0 }; })
+        .then(function (j) { rc.innerHTML = "<b>" + (j.value || 0).toLocaleString("ko-KR") + "회</b> 내려받음" + (rs ? " · " + rs : ""); }).catch(function () { rc.textContent = rs; });
+      row.querySelector(".al-get").addEventListener("click", function () {
+        fetch(CNT + "hit/" + NSK + key, { keepalive: true }).catch(function () {});
+      });
+    }
+    var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
     cta.innerHTML = '<a class="amp-btn" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
     var out = cta.querySelector(".dl-count"), btn = cta.querySelector(".amp-btn"), size = c.size || "", n = null;
     function show() { out.innerHTML = (n == null ? "" : "<b>" + n.toLocaleString("ko-KR") + "회</b> 내려받음" + (size ? " · " : "")) + size; }
