@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-14 · v1.65 (versionCode 99)**
+마지막 갱신: **2026-11-14 · v1.66 (versionCode 100)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.65** (versionCode 99, versionName `1.65-one`) |
+| 최신 버전 | **1.66** (versionCode 100, versionName `1.66-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-14 · 1.66 — 실제 목소리 반영: 네이티브 `aiViz(on)`(외부 앱 모드가 아니어도 Visualizer(0) 켬, 반환=마이크 권한), `aiLevel()`(파형 RMS×3, 0.6초 넘으면 -1). `startViz` 조건 `extMode||aiViz`, 외부 모드 끌 때·onResume도 aiViz 고려. 웹: `AmpAiTalk.level()`(부드럽게, 시험 `__aiLevel`)·`phase()`(소리 >0.05 말하는 중, 아니면 듣는 중 — 통화 모드처럼 rec·voice 둘 다여도), 대화 시작 시 `NB.aiViz(true)`·권한 없으면 한 번 안내+`requestMic`. NOW PLAYING은 `NB.extWave()`(시험 `__aiWave`) 실제 파형을 주 띠로. 자막에서 상태 문구 정규식으로 제외. **주의: AI 앱이 통화용 소리 경로(VOICE_COMMUNICATION)로 내보내면 Visualizer(0)에 안 잡히는 기기가 있음 — 그땐 -1이라 이전처럼 상태 효과로 돌아감.**
 - 2026-11-14 · 1.65 — NOW PLAYING 시각화(`30-eq-visual.js` drawVis 맨 앞): `aiVisOn()`(= `AmpAiTalk.live.on`, 0.5초마다 판정한 값)이면 `drawAiVoice`가 그림 — 목소리 띠 3줄(상태별 진폭·색), 듣는 중 고리, 이름·상태(위 [가사]·모드 줄 아래), 답 말풍선 타자 효과(초당 22자, 마지막 3줄). 대화 중엔 frame 루프를 busy로 봄(60fps). 가사 켜져 있으면 가사가 우선. 테스트 35에 `__aiVisN` 검사.
 - 2026-11-14 · 1.64 — [AI] 버튼(`93-ai.js`, `AmpAiTalk`, 레일 `button[data-ai]`, 고르기 창 `#aiPick`, 저장 `aiApp`·`aiAt`): 방식 1(앱 불러오기)만 — `NB.openAppSplit(pkg, top)`로 ChatGPT(`com.openai.chatgpt`)·Claude(`com.anthropic.claude`) 엶, manifest queries 추가. 네이티브 `aiInfo()`: MediaListener가 **그 두 앱 알림만** 읽어 aiKey/pkg/title/text(BIG_TEXT 우선, 400자)/ongoing 보관(모든 빌드), 그리고 AudioManager 통화 모드(comm)·녹음 중(rec, getActiveRecordingConfigurations)·음성 재생(voice, 사용 용도 VOICE_COMMUNICATION/ASSISTANT) — 어느 앱인지는 모름. 판정: (AI 알림 && (ongoing||신호||최근 [AI]로 엶)) || (최근 엶 && 신호). voice만=말하는 중, rec만=듣는 중, 둘 다/없음=대화 중. 아일랜드 `.ai-isl`은 PFD canvasWrap 안, 원형 지도 오른쪽~오른쪽 띠 안쪽 사이 가운데(JS place, 띠 폭 12.2%), 막대 7개 span(캔버스 아님 — 다른 테스트가 `#pfdHost canvas` 하나를 기대). **실기기에서 ChatGPT·Claude가 실제로 어떤 알림·오디오 모드를 쓰는지 미확인** — 안 뜨면 aiInfo 값을 보고 판정 조정. 레일 9칸: 541–899px에서 AI 버튼 32px·라벨 10px, ≤540px는 5칸×2줄(테스트 14·18 갱신). 테스트 35. privacy.md에 AI 항목.
 - 2026-11-14 · 1.63 — 아래 버튼 줄 액체 탭(`92-zz-rail-liquid.js`, `AmpRailLiquid`): `#ckRail` 안에 `.ck-liq` 틀 하나, `button[data-f].on`이 바뀌면(MutationObserver) 변경 목록에 {t, 버튼}을 쌓고 그릴 때마다 지금 배치에서 버튼 자리를 재서 두 끝에 스프링 합(오른쪽으로 갈 때 왼끝 2.0 Hz·오른끝 3.4 Hz, 반대는 반대, ζ .86) — 줄이 전용 보기마다 다른 창으로 옮겨 가도 어긋나지 않음. 켜진 버튼 자체 강조는 `.ckrail.liq button[data-f].on`에서 꺼진 버튼과 같은 바탕·그림자·테두리(변수 --liq-bg/bs/bc, 스킨이 바뀌면 다시 읽음), 틀 색 --liq-acc = 켜진 버튼 글자색. `window.__liqNow`로 시각 고정 가능(테스트·미리보기). 테스트 34 추가, 32의 해 위치 검사는 표시 방위가 자리 잡을 때까지 기다림(흔들림). 디자인 시안 캔버스: https://claude.ai/artifact/EgGDuyHE2KNcYKiGnsSGBS (시안 1 적용 자리, 2 한 도형 모핑 루프, 3 액체 탭 = 이번 반영, 4 늘어나는 볼륨).

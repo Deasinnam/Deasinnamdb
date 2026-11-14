@@ -26,6 +26,14 @@ run('AI voice talk button and speedometer island', async ({newPage, origin}) => 
   assert.equal(await isl.locator('.ai-s').textContent(), '말하는 중');
   assert.match(await isl.locator('.ai-t').textContent(), /안성휴게소/);
   assert.equal(await isl.evaluate(e => e.classList.contains('txt')), true);
+  // 1.66 실제 소리 크기가 들어오면 그걸로: 소리가 나면 말하는 중, 조용하면 듣는 중(통화 모드처럼 둘 다 켜져 있어도)
+  await p.evaluate(() => { window.__ai = {on: true, pkg: 'com.openai.chatgpt', ongoing: true, rec: true, voice: true, notif: true, text: '응답이 진행 중입니다.'}; window.__aiLevel = 0.3; AmpAiTalk.render(); });
+  await p.waitForTimeout(500);
+  assert.equal(await isl.locator('.ai-s').textContent(), '말하는 중');
+  assert.match(await isl.locator('.ai-t').textContent(), /안성휴게소/, 'status text like 응답이 진행 중 is not shown as the answer');
+  await p.evaluate(() => { window.__aiLevel = 0; AmpAiTalk.render(); }); await p.waitForTimeout(900);
+  await p.evaluate(() => AmpAiTalk.render()); await p.waitForTimeout(100);
+  assert.equal(await isl.locator('.ai-s').textContent(), '듣는 중');
   // 1.65 NOW PLAYING 시각화 화면도 대화 효과로 바뀜
   await p.locator('#ckRail button[data-f="vis"]').click(); await p.waitForTimeout(800);
   const n0 = await p.evaluate(() => window.__aiVisN || 0); await p.waitForTimeout(600);

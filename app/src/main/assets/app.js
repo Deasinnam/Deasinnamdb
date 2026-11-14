@@ -830,14 +830,18 @@ window.AmpVis={level:()=>visLevel(0,1),names:VIS_NAMES,set:setVis,fav:()=>visFav
 function aiVisOn(){try{return !!(window.AmpAiTalk&&AmpAiTalk.live&&AmpAiTalk.live.on)}catch(e){return false}}
 const AIV={lv:0,phase:'',ph0:0,text:'',t0:0};
 function drawAiVoice(g,w,h,d){
-  const L=AmpAiTalk.live,t=performance.now()/1000,ph=L.phase||'live';
+  const L=AmpAiTalk.live,t=performance.now()/1000,lr=AmpAiTalk.level(),ph=AmpAiTalk.phase()||L.phase||'live';
   if(ph!==AIV.phase){AIV.phase=ph;AIV.ph0=t}
   if(L.text!==AIV.text){AIV.text=L.text||'';AIV.t0=t}
-  const tgt=ph==='speak'?1:ph==='listen'?.42:.18;AIV.lv+=(tgt-AIV.lv)*.12;const lv=AIV.lv;
+  const tgt=lr>=0?Math.min(1,.12+lr*2.2):ph==='speak'?1:ph==='listen'?.42:.18;AIV.lv+=(tgt-AIV.lv)*(lr>=0?.35:.12);const lv=AIV.lv;
   const col=ph==='speak'?'#ffd27a':ph==='listen'?'#9fd8ff':(C.text||'#e8eadf'),cy=h*.46;
-  // 옅은 격자 배경 그대로 두고 가운데 띠
   g.save();g.lineCap='round';
-  for(let k=0;k<3;k++){const a=(k===0?1:k===1?.55:.3),amp=h*.22*lv*(k===0?1:k===1?.7:.45),f=(k+1)*.9,sp=ph==='speak'?3.2:1.4;
+  // 1.66 실제 소리가 들어오면 그 파형을 그대로(AI 목소리), 아니면 상태에 맞춘 띠
+  let ws='';if(lr>=0){try{ws=window.__aiWave||NB.extWave()}catch(e){}}
+  if(ws&&ws.length>16){const n=ws.length;g.beginPath();for(let i=0;i<n;i++){const v=(ws.charCodeAt(i)-32-128)/128,x=i/(n-1)*w,env=Math.sin(Math.PI*i/(n-1)),y=cy+v*h*.42*env;i?g.lineTo(x,y):g.moveTo(x,y)}
+    g.strokeStyle=col;g.lineWidth=2.6*d;g.globalAlpha=1;g.stroke()}
+
+  for(let k=ws&&ws.length>16?1:0;k<3;k++){const a=(k===0?1:k===1?.55:.3),amp=h*.22*lv*(k===0?1:k===1?.7:.45),f=(k+1)*.9,sp=ph==='speak'?3.2:1.4;
     g.beginPath();for(let x=0;x<=w;x+=4*d){const u=x/w,env=Math.sin(Math.PI*u),y=cy+env*amp*Math.sin(u*Math.PI*2*(1.6+f)+t*sp*(1+k*.35))*(.65+.35*Math.sin(t*1.7+k+u*5));x?g.lineTo(x,y):g.moveTo(x,y)}
     g.strokeStyle=col;g.globalAlpha=a;g.lineWidth=(k===0?3:1.6)*d;g.stroke()}
   g.globalAlpha=1;
@@ -3177,6 +3181,11 @@ const AiTalk=(()=>{
   const isl=document.createElement('div');isl.className='ai-isl';isl.setAttribute('role','status');isl.setAttribute('aria-live','polite');
   isl.innerHTML='<span class="ai-w" aria-hidden="true">'+'<i></i>'.repeat(7)+'</span><b><span class="ai-n"></span><em class="ai-s"></em></b><small class="ai-t"></small>';
   const bars=[...isl.querySelectorAll('.ai-w i')],nEl=isl.querySelector('.ai-n'),sEl=isl.querySelector('.ai-s'),tEl=isl.querySelector('.ai-t');
+  let vizOn=false,askedMic=false,lvS=0,lvT=0;
+  // 지금 소리 크기(0~1, 없으면 -1)와 그에 맞춘 상태: 소리가 나면 말하는 중, 조용하면 듣는 중
+  function level(){if(window.__aiLevel!=null)return window.__aiLevel;try{return NB&&NB.aiLevel?NB.aiLevel():-1}catch(e){return -1}}
+  function sense(){const t=performance.now();if(t-lvT<30)return lvS;lvT=t;const v=level();lvS=v<0?-1:(lvS<0?v:lvS+(v-lvS)*(v>lvS?.5:.15));return lvS}
+  function phaseNow(){const l=sense();if(l<0)return live.phase;return l>.05?'speak':'listen'}
   let live={on:false,phase:'live',name:'',text:'',hint:false},st={on:false,phase:'live',name:'',text:''},offAt=0,lastText='',textAt=0,raf=0,lv=[0,0,0,0,0,0,0];
   function host(){return document.querySelector('#pfdHost [data-role="canvasWrap"]')}
   function info(){if(window.__ai)return window.__ai;try{return NB&&NB.aiInfo?JSON.parse(NB.aiInfo()):null}catch(e){return null}}
@@ -3185,13 +3194,17 @@ const AiTalk=(()=>{
     const on=(!!i.on&&(i.ongoing||sig||launched))||(launched&&sig);
     const phase=i.voice&&!i.rec?'speak':i.rec&&!i.voice?'listen':'live';
     const a=i.pkg?Object.values(AI_APPS).find(x=>x.pkg===i.pkg):app();
-    if(i.text&&i.text!==lastText){lastText=i.text;textAt=now}
+    // ChatGPT 등이 대화 중에 띄우는 상태 문구("응답이 진행 중입니다" 등)는 답이 아니라 자막에서 뺌
+    const real=i.text&&!/^(응답이\s*진행\s*중|음성\s*대화|대화\s*중|듣는\s*중|말하는\s*중|Responding|Listening|Voice (mode|chat|conversation))/i.test(i.text.trim());
+    if(real&&i.text!==lastText){lastText=i.text;textAt=now}
     return {on,phase,name:a?a.name:'AI',text:now-textAt<60e3?lastText:'',hint:launched&&i.notif===false}}
   function render(){const h=host();if(h&&isl.parentNode!==h)h.appendChild(isl);
-    const j=judge(),now=Date.now();live=j;if(j.on)offAt=0;else if(!offAt)offAt=now;
+    const j=judge(),now=Date.now();live=j;
+    // 1.66 실제 소리: 대화가 시작되면 기기 출력 소리를 받기 시작(마이크 권한 = 안드로이드의 소리 분석 권한), 끝나면 멈춤
+    if(j.on!==vizOn){vizOn=j.on;try{if(NB&&NB.aiViz){const ok=NB.aiViz(j.on);if(j.on&&!ok&&!askedMic){askedMic=true;toast('AI 목소리에 맞춰 움직이려면 소리 분석(마이크) 권한을 허용해 주세요. 녹음은 하지 않아요.');try{NB.requestMic&&NB.requestMic()}catch(e){}}}}catch(e){}}if(j.on)offAt=0;else if(!offAt)offAt=now;
     const vis=j.on||(st.on&&now-offAt<3000);
-    isl.classList.toggle('show',vis);isl.dataset.phase=j.on?j.phase:st.phase;
-    if(j.on){nEl.textContent=j.name.toUpperCase();sEl.textContent=j.phase==='speak'?'말하는 중':j.phase==='listen'?'듣는 중':'대화 중';
+    isl.classList.toggle('show',vis);const pn=j.on?phaseNow():st.phase;isl.dataset.phase=pn;
+    if(j.on){nEl.textContent=j.name.toUpperCase();sEl.textContent=pn==='speak'?'말하는 중':pn==='listen'?'듣는 중':'대화 중';
       const t=j.text||(j.hint?'알림 접근을 켜면 AI 답이 여기 보여요':'');tEl.textContent=t;isl.classList.toggle('txt',!!t);st=j}
     else st.on=vis;
     if(vis)place(h);
@@ -3202,15 +3215,17 @@ const AiTalk=(()=>{
     let L=w.left+tape+8,R=w.right-tape-8;const mr=m&&m.offsetParent?m.getBoundingClientRect():null;if(mr&&mr.width&&mr.right<w.left+w.width*.6)L=Math.max(L,mr.right+10);
     const mw=Math.max(200,Math.min(460,R-L));isl.style.maxWidth=mw+'px';isl.style.left=((L+R)/2-o.left)+'px'}
   // 막대 7개: 말할 때는 크게 출렁, 들을 때는 가운데가 숨쉬듯, 대화 중엔 잔잔하게(스프링처럼 따라감, 튀지 않게)
-  function draw(ts){raf=0;if(!isl.classList.contains('show'))return;const t=ts/1000,ph=isl.dataset.phase;
+  function draw(ts){raf=0;if(!isl.classList.contains('show'))return;const t=ts/1000,lr=sense(),ph=live.on?phaseNow():isl.dataset.phase;
+    if(live.on&&ph!==isl.dataset.phase){isl.dataset.phase=ph;sEl.textContent=ph==='speak'?'말하는 중':ph==='listen'?'듣는 중':'대화 중'}
     for(let k=0;k<7;k++){const c=Math.abs(k-3)/3;let g;
-      if(ph==='speak')g=.22+.78*Math.abs(Math.sin(t*7.3+k*1.7)*Math.sin(t*3.1+k*.9))*(1-c*.35);
+      if(lr>=0)g=.15+Math.min(1,lr*2.4)*(1-c*.45)*(.7+.3*Math.abs(Math.sin(t*9+k*1.9))); // 실제 소리 크기
+      else if(ph==='speak')g=.22+.78*Math.abs(Math.sin(t*7.3+k*1.7)*Math.sin(t*3.1+k*.9))*(1-c*.35);
       else if(ph==='listen')g=.16+.34*(1-c)*(.5+.5*Math.sin(t*3.2-c*1.6));
       else g=.12+.1*(.5+.5*Math.sin(t*1.6+k*.8));
       lv[k]+=(g-lv[k])*.28;bars[k].style.transform='scaleY('+Math.max(.15,lv[k]).toFixed(3)+')';bars[k].style.opacity=(.55+.45*(1-c)).toFixed(2)}
     raf=requestAnimationFrame(draw)}
   setInterval(render,500);setTimeout(render,400);
-  return {open,show,close,render,get state(){return judge()},get live(){return live}}})();
+  return {open,show,close,render,level:sense,phase:phaseNow,get state(){return judge()},get live(){return live}}})();
 window.AmpAiTalk=AiTalk;
 /* ===== 93-split.js ===== */
 // 화면 분할(TMAP·네이버 지도 위·아래): 이 앱은 남은 칸(약 40%)에 맞게 스크롤 없이 따로 배치

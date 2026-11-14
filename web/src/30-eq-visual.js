@@ -384,14 +384,18 @@ window.AmpVis={level:()=>visLevel(0,1),names:VIS_NAMES,set:setVis,fav:()=>visFav
 function aiVisOn(){try{return !!(window.AmpAiTalk&&AmpAiTalk.live&&AmpAiTalk.live.on)}catch(e){return false}}
 const AIV={lv:0,phase:'',ph0:0,text:'',t0:0};
 function drawAiVoice(g,w,h,d){
-  const L=AmpAiTalk.live,t=performance.now()/1000,ph=L.phase||'live';
+  const L=AmpAiTalk.live,t=performance.now()/1000,lr=AmpAiTalk.level(),ph=AmpAiTalk.phase()||L.phase||'live';
   if(ph!==AIV.phase){AIV.phase=ph;AIV.ph0=t}
   if(L.text!==AIV.text){AIV.text=L.text||'';AIV.t0=t}
-  const tgt=ph==='speak'?1:ph==='listen'?.42:.18;AIV.lv+=(tgt-AIV.lv)*.12;const lv=AIV.lv;
+  const tgt=lr>=0?Math.min(1,.12+lr*2.2):ph==='speak'?1:ph==='listen'?.42:.18;AIV.lv+=(tgt-AIV.lv)*(lr>=0?.35:.12);const lv=AIV.lv;
   const col=ph==='speak'?'#ffd27a':ph==='listen'?'#9fd8ff':(C.text||'#e8eadf'),cy=h*.46;
-  // 옅은 격자 배경 그대로 두고 가운데 띠
   g.save();g.lineCap='round';
-  for(let k=0;k<3;k++){const a=(k===0?1:k===1?.55:.3),amp=h*.22*lv*(k===0?1:k===1?.7:.45),f=(k+1)*.9,sp=ph==='speak'?3.2:1.4;
+  // 1.66 실제 소리가 들어오면 그 파형을 그대로(AI 목소리), 아니면 상태에 맞춘 띠
+  let ws='';if(lr>=0){try{ws=window.__aiWave||NB.extWave()}catch(e){}}
+  if(ws&&ws.length>16){const n=ws.length;g.beginPath();for(let i=0;i<n;i++){const v=(ws.charCodeAt(i)-32-128)/128,x=i/(n-1)*w,env=Math.sin(Math.PI*i/(n-1)),y=cy+v*h*.42*env;i?g.lineTo(x,y):g.moveTo(x,y)}
+    g.strokeStyle=col;g.lineWidth=2.6*d;g.globalAlpha=1;g.stroke()}
+
+  for(let k=ws&&ws.length>16?1:0;k<3;k++){const a=(k===0?1:k===1?.55:.3),amp=h*.22*lv*(k===0?1:k===1?.7:.45),f=(k+1)*.9,sp=ph==='speak'?3.2:1.4;
     g.beginPath();for(let x=0;x<=w;x+=4*d){const u=x/w,env=Math.sin(Math.PI*u),y=cy+env*amp*Math.sin(u*Math.PI*2*(1.6+f)+t*sp*(1+k*.35))*(.65+.35*Math.sin(t*1.7+k+u*5));x?g.lineTo(x,y):g.moveTo(x,y)}
     g.strokeStyle=col;g.globalAlpha=a;g.lineWidth=(k===0?3:1.6)*d;g.stroke()}
   g.globalAlpha=1;

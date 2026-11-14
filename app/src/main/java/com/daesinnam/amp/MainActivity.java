@@ -163,6 +163,8 @@ public class MainActivity extends Activity {
     private ComponentName listenerCn;
     private AudioManager am;
     private Visualizer viz;
+    /** 1.66 AI 음성 대화 중: 기기에서 나오는 소리(AI 목소리)를 시각화로 받음 — 외부 앱 모드가 아니어도 */
+    private volatile boolean aiViz = false;
     private final Object vizLock = new Object();
     private byte[] fft, wave;
     private volatile int vizRate = 44100;
@@ -984,7 +986,7 @@ public class MainActivity extends Activity {
         if (extMode) {
             refreshSessions();
             startViz();
-        }
+        } else if (aiViz) startViz();
     }
 
     @Override
@@ -1240,7 +1242,7 @@ public class MainActivity extends Activity {
     }
 
     private void startViz() {
-        if (viz != null || !extMode || !resumed || !hasMic()) return;
+        if (viz != null || !(extMode || aiViz) || !resumed || !hasMic()) return;
         try {
             Visualizer v = new Visualizer(0);
             int[] range = Visualizer.getCaptureSizeRange();
@@ -1291,7 +1293,7 @@ public class MainActivity extends Activity {
         if (on) {
             main.post(sessionTick);
         } else {
-            stopViz();
+            if (!aiViz) stopViz();
             ctrl = null;
         }
     }
@@ -1638,6 +1640,29 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String extArt() {
             return artData;
+        }
+
+        /** 1.66 AI 대화 효과에 실제 소리를 쓸지(켜면 마이크 권한이 있을 때 기기 출력 소리를 받음). 반환: 권한 있음 여부 */
+        @JavascriptInterface
+        public boolean aiViz(final boolean on) {
+            main.post(() -> {
+                aiViz = on;
+                if (on) startViz();
+                else if (!extMode) stopViz();
+            });
+            return hasMic();
+        }
+
+        /** 1.66 지금 기기 출력 소리 크기(0~1, RMS). 받은 지 0.6초가 넘었으면 -1 */
+        @JavascriptInterface
+        public double aiLevel() {
+            if (SystemClock.elapsedRealtime() - vizTs > 600) return -1;
+            byte[] w;
+            synchronized (vizLock) { w = wave; }
+            if (w == null || w.length == 0) return -1;
+            double sum = 0;
+            for (byte b : w) { double d = ((b & 0xff) - 128) / 128.0; sum += d * d; }
+            return Math.min(1, Math.sqrt(sum / w.length) * 3.0);
         }
 
         @JavascriptInterface
