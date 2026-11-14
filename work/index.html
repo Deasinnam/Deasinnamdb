@@ -2383,12 +2383,22 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     var row = document.querySelector('.al-row[data-app="' + id + '"] .al-dl');
     if (row) {
       row.innerHTML = '<a class="al-get" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="al-count"></span>';
-      var rc = row.querySelector(".al-count"), rs = c.size || "";
-      fetch(CNT + "get/" + NSK + key).then(function (r) { return r.ok ? r.json() : { value: 0 }; })
-        .then(function (j) { rc.innerHTML = "<b>" + (j.value || 0).toLocaleString("ko-KR") + "회</b> 내려받음" + (rs ? " · " + rs : ""); }).catch(function () { rc.textContent = rs; });
-      row.querySelector(".al-get").addEventListener("click", function () {
-        fetch(CNT + "hit/" + NSK + key, { keepalive: true }).catch(function () {});
-      });
+      (function (row, key, c) {
+        var rc = row.querySelector(".al-count"), rs = c.size || "", rn = null;
+        function rshow() { rc.innerHTML = (rn == null ? "" : "<b>" + rn.toLocaleString("ko-KR") + "회</b> 내려받음" + (rs ? " · " : "")) + rs; }
+        if (!c.size && c.tag) getRelease(c.tag, function (d) {
+          var a = d && d.assets.filter(function (x) { return x.name === c.file; })[0];
+          if (a) { rs = (a.size / 1048576).toFixed(1) + "MB"; rshow(); }
+        });
+        fetch(CNT + "get/" + NSK + key).then(function (r) { return r.ok ? r.json() : { value: 0 }; })
+          .then(function (j) { if (rn == null) { rn = j.value || 0; rshow(); } }).catch(function () {});
+        /* 목록에서 누른 내려받기도 소개 페이지와 같은 카운터(deolnureum/dl-<앱>)를 1 올립니다 */
+        row.querySelector(".al-get").addEventListener("click", function () {
+          if (rn != null) { rn++; rshow(); }
+          fetch(CNT + "hit/" + NSK + key, { keepalive: true }).then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (j) { if (j && j.value != null && (rn == null || j.value > rn)) { rn = j.value; rshow(); } }).catch(function () {});
+        });
+      })(row, key, c);
     }
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
     cta.innerHTML = '<a class="amp-btn" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a><span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
