@@ -90,7 +90,7 @@ let idle=0,frT=0,pwrSaver=false;
 // 배터리: 화면 주사율(폴드7 120Hz)마다 다 그리지 않고, 소리가 없으면 초당 4번, 재생 중엔 최대 60번(절전 모드 20번)만 그림
 function frame(now){
   requestAnimationFrame(frame);now=now||performance.now();
-  const busy=!audio.paused||(natL()&&nat.playing)||(mode==='ext'&&ext.playing)||rdPlaying||driveOn||gpsOn||aiVisOn();
+  const busy=!audio.paused||(natL()&&nat.playing)||(mode==='ext'&&ext.playing)||rdPlaying||driveOn||gpsOn;
   const gap=pwrSaver?(busy?50:500):(busy?15.5:250);if(now-frT<gap)return;const dt=Math.min(.25,(now-frT)/1000);frT=now;
   const live=pullData();
   computeBars(bars,N,40,16000,live);computeBars(miniB,19,50,16000,live);
@@ -115,7 +115,6 @@ function frame(now){
 for(const ev of ['pointerdown','pointerup','keydown','change','input','click'])addEventListener(ev,()=>{frT=0},true);
 function drawVis(live){
   const c=cv.vis,g=cx.vis,w=c.width,h=c.height,d=Math.min(devicePixelRatio||1,2);g.clearRect(0,0,w,h);
-  if(aiVisOn()){drawAiVoice(g,w,h,d);window.__aiVisN=(window.__aiVisN||0)+1;return} // 1.65 AI 음성 대화 중이면 이 화면이 대화 효과로
   if(mode==='ext'&&ext.notif!==undefined&&!ext.mic){
     g.fillStyle=C.dim;g.font=`${14*d}px "Noto Sans KR",sans-serif`;g.textAlign='center';
     g.fillText('사운드 시각화를 보려면 외부 앱 창에서 [허용]을 누르세요',w/2,h/2);return;
@@ -376,44 +375,3 @@ window.AmpVis={level:()=>visLevel(0,1),names:VIS_NAMES,set:setVis,fav:()=>visFav
 /* 1.42 좁은 화면 EQ: 5개 대역씩 보이고 가로로 넘김 */
 {const w=$('#wEq');new ResizeObserver(()=>{const n=w.getBoundingClientRect().width<480;if(n!==w.classList.contains('eqn')){w.classList.toggle('eqn',n);setTimeout(()=>window.dispatchEvent(new Event('resize')),30)}}).observe(w)}
 
-/* ---------- 1.65 NOW PLAYING 시각화 화면: AI 음성 대화 효과 ----------
- *  [AI]로 연 ChatGPT·Claude와 대화하는 동안(AmpAiTalk.live) 고른 시각화 대신 그림
- *  - 가운데 목소리 띠: 말하는 중은 금빛 띠가 크게 출렁, 듣는 중은 파란 띠가 잔잔히 + 가운데에서 퍼지는 고리, 대화 중은 얇게
- *  - 위: 앱 이름 · 상태, 아래: AI 답(알림에 뜬 것)을 한 글자씩 써 내려가는 말풍선
- *  - 다른 앱의 실제 소리는 가져올 수 없어 띠는 상태에 맞춘 움직임 */
-function aiVisOn(){try{return !!(window.AmpAiTalk&&AmpAiTalk.live&&AmpAiTalk.live.on)}catch(e){return false}}
-const AIV={lv:0,phase:'',ph0:0,text:'',t0:0};
-function drawAiVoice(g,w,h,d){
-  const L=AmpAiTalk.live,t=performance.now()/1000,lr=AmpAiTalk.level(),ph=AmpAiTalk.phase()||L.phase||'live';
-  if(ph!==AIV.phase){AIV.phase=ph;AIV.ph0=t}
-  if(L.text!==AIV.text){AIV.text=L.text||'';AIV.t0=t}
-  const tgt=lr>=0?Math.min(1,.12+lr*2.2):ph==='speak'?1:ph==='listen'?.42:.18;AIV.lv+=(tgt-AIV.lv)*(lr>=0?.35:.12);const lv=AIV.lv;
-  const col=ph==='speak'?'#ffd27a':ph==='listen'?'#9fd8ff':(C.text||'#e8eadf'),cy=h*.46;
-  g.save();g.lineCap='round';
-  // 1.66 실제 소리가 들어오면 그 파형을 그대로(AI 목소리), 아니면 상태에 맞춘 띠
-  let ws='';if(lr>=0){try{ws=window.__aiWave||NB.extWave()}catch(e){}}
-  if(ws&&ws.length>16){const n=ws.length;g.beginPath();for(let i=0;i<n;i++){const v=(ws.charCodeAt(i)-32-128)/128,x=i/(n-1)*w,env=Math.sin(Math.PI*i/(n-1)),y=cy+v*h*.42*env;i?g.lineTo(x,y):g.moveTo(x,y)}
-    g.strokeStyle=col;g.lineWidth=2.6*d;g.globalAlpha=1;g.stroke()}
-
-  for(let k=ws&&ws.length>16?1:0;k<3;k++){const a=(k===0?1:k===1?.55:.3),amp=h*.22*lv*(k===0?1:k===1?.7:.45),f=(k+1)*.9,sp=ph==='speak'?3.2:1.4;
-    g.beginPath();for(let x=0;x<=w;x+=4*d){const u=x/w,env=Math.sin(Math.PI*u),y=cy+env*amp*Math.sin(u*Math.PI*2*(1.6+f)+t*sp*(1+k*.35))*(.65+.35*Math.sin(t*1.7+k+u*5));x?g.lineTo(x,y):g.moveTo(x,y)}
-    g.strokeStyle=col;g.globalAlpha=a;g.lineWidth=(k===0?3:1.6)*d;g.stroke()}
-  g.globalAlpha=1;
-  // 듣는 중: 가운데에서 퍼지는 고리
-  if(ph==='listen'){for(let k=0;k<3;k++){const q=((t-AIV.ph0)*.6+k/3)%1;g.beginPath();g.arc(w/2,cy,10*d+q*h*.32,0,Math.PI*2);g.strokeStyle=col;g.globalAlpha=(1-q)*.45;g.lineWidth=1.5*d;g.stroke()}g.globalAlpha=1}
-  // 위: 앱 이름 · 상태
-  const fs=Math.max(12,Math.min(20,w/d/26))*d;g.textAlign='left';g.textBaseline='top';
-  g.font=`700 ${fs}px "Barlow Condensed","Noto Sans KR",sans-serif`;g.fillStyle=C.text||'#e8eadf';const nm=(L.name||'AI').toUpperCase();
-  const ty=Math.min(56*d,h*.16); // 위쪽 [가사]·모드 고르기 줄 아래
-  g.fillText(nm,14*d,ty);const nw=g.measureText(nm).width;
-  g.font=`500 ${fs*.86}px "Noto Sans KR",sans-serif`;g.fillStyle=col;g.fillText(ph==='speak'?'● 말하는 중':ph==='listen'?'● 듣는 중':'● 대화 중',14*d+nw+10*d,ty+fs*.08);
-  // 아래: 답 말풍선(한 글자씩)
-  const txt=AIV.text||(L.hint?'알림 접근을 켜면 AI 답이 여기 보여요':'');
-  if(txt){const n=Math.min(txt.length,Math.floor((t-AIV.t0)*22)+1),shown=txt.slice(0,n);
-    const bf=Math.max(12,Math.min(18,w/d/30))*d;g.font=`500 ${bf}px "Noto Sans KR",sans-serif`;
-    const maxW=w-48*d,lines=[];let line='';for(const ch of shown){const tl=line+ch;if(g.measureText(tl).width>maxW&&line){lines.push(line);line=ch}else line=tl}lines.push(line);
-    const vis=lines.slice(-3),lh=bf*1.45,bh=vis.length*lh+18*d,by=h-bh-12*d,bw=Math.min(w-24*d,Math.max(...vis.map(x=>g.measureText(x).width))+28*d);
-    g.fillStyle='rgba(0,0,0,.55)';g.strokeStyle=col;g.globalAlpha=.9;g.lineWidth=1*d;g.beginPath();g.roundRect?g.roundRect(12*d,by,bw,bh,10*d):g.rect(12*d,by,bw,bh);g.fill();g.globalAlpha=.5;g.stroke();g.globalAlpha=1;
-    g.fillStyle=C.text||'#e8eadf';vis.forEach((x,i)=>g.fillText(x,26*d,by+9*d+i*lh));
-    if(n<txt.length&&Math.sin(t*12)>0){const lw=g.measureText(vis[vis.length-1]).width;g.fillStyle=col;g.fillRect(26*d+lw+2*d,by+9*d+(vis.length-1)*lh,2*d,bf)}}
-  g.restore()}

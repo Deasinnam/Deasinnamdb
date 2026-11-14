@@ -41,3 +41,5 @@ const RailLiquid=(()=>{
   setTimeout(sync,300);
   return {sync,paint,get edges(){return edges(now())}}})();
 window.AmpRailLiquid=RailLiquid;
+// 1.67 아래 버튼 줄은 아이콘만 보이므로 이름은 읽어 주기·길게 누르면 뜨는 설명으로
+document.querySelectorAll('#ckRail>button').forEach(b=>{const sp=b.querySelector('span');if(!sp)return;const n=(sp.dataset.s?sp.textContent.replace(/[▼▲].*$/,''):sp.textContent).replace(/\s+/g,' ').trim();if(!b.getAttribute('aria-label'))b.setAttribute('aria-label',n);if(!b.title)b.title=n});

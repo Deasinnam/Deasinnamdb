@@ -47,14 +47,14 @@ run('Dedicated views stay fitted; drag springs back', async ({newPage, origin}) 
     await r.close();}
 
   // 1.62.4 라디오 즐겨찾기 칸: 기본 6칸, 저장한 방송이 늘면 한 줄씩
-  for (const [count, want] of [[0, 6], [6, 6], [7, 9]]) {
+  for (const [count, want] of [[0, 8], [8, 8], [9, 12]]) {
     const q = await newPage(c => { localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); localStorage.setItem('dna_rdFavs', JSON.stringify(Array.from({length: c}, (_, i) => ({id: 'f' + i, name: 'FM ' + i, url: 'https://s.example/' + i, freq: 88 + i})))); }, count);
     await q.setViewportSize({width: 820, height: 1000});
     await q.goto(origin); await q.waitForTimeout(800);
     await q.locator('#ckRail button[data-f="radio"]').click(); await q.waitForTimeout(600);
     const n = await q.evaluate(() => document.querySelectorAll('#rdPresets button').length);
     const cols = await q.evaluate(() => getComputedStyle(document.getElementById('rdPresets')).gridTemplateColumns.split(' ').length);
-    assert.equal(n, cols === 3 ? want : Math.max(6, Math.ceil(count / cols) * cols), count + ' favourites → ' + n + ' slots (' + cols + ' columns)');
+    assert.equal(cols, 4, 'favourites: 4 per row'); assert.equal(n, want, count + ' favourites → ' + n + ' slots');
     await q.close();
   }
 });

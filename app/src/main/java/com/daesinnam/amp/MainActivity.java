@@ -163,8 +163,6 @@ public class MainActivity extends Activity {
     private ComponentName listenerCn;
     private AudioManager am;
     private Visualizer viz;
-    /** 1.66 AI 음성 대화 중: 기기에서 나오는 소리(AI 목소리)를 시각화로 받음 — 외부 앱 모드가 아니어도 */
-    private volatile boolean aiViz = false;
     private final Object vizLock = new Object();
     private byte[] fft, wave;
     private volatile int vizRate = 44100;
@@ -986,7 +984,7 @@ public class MainActivity extends Activity {
         if (extMode) {
             refreshSessions();
             startViz();
-        } else if (aiViz) startViz();
+        }
     }
 
     @Override
@@ -1242,7 +1240,7 @@ public class MainActivity extends Activity {
     }
 
     private void startViz() {
-        if (viz != null || !(extMode || aiViz) || !resumed || !hasMic()) return;
+        if (viz != null || !extMode || !resumed || !hasMic()) return;
         try {
             Visualizer v = new Visualizer(0);
             int[] range = Visualizer.getCaptureSizeRange();
@@ -1293,7 +1291,7 @@ public class MainActivity extends Activity {
         if (on) {
             main.post(sessionTick);
         } else {
-            if (!aiViz) stopViz();
+            stopViz();
             ctrl = null;
         }
     }
@@ -1540,42 +1538,6 @@ public class MainActivity extends Activity {
             return o.toString();
         }
 
-        /** 1.64 AI 음성 대화 상태: ChatGPT·Claude 알림(그 두 앱 것만) + 기기 소리 상태(누가 마이크를 쓰는지, 음성 재생이 있는지 — 어느 앱인지는 모름) */
-        @JavascriptInterface
-        public String aiInfo() {
-            JSONObject o = new JSONObject();
-            try {
-                o.put("notif", hasNotifAccess());
-                boolean on = MediaListener.aiKey != null;
-                o.put("on", on);
-                if (on) {
-                    o.put("pkg", MediaListener.aiPkg);
-                    o.put("title", MediaListener.aiTitle == null ? "" : MediaListener.aiTitle);
-                    o.put("text", MediaListener.aiText == null ? "" : MediaListener.aiText);
-                    o.put("ongoing", MediaListener.aiOngoing);
-                }
-                o.put("ts", MediaListener.aiTs);
-                android.media.AudioManager am = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
-                if (am != null) {
-                    o.put("comm", am.getMode() == android.media.AudioManager.MODE_IN_COMMUNICATION);
-                    boolean rec = false;
-                    if (Build.VERSION.SDK_INT >= 24) { try { rec = !am.getActiveRecordingConfigurations().isEmpty(); } catch (Throwable ignored) {} }
-                    o.put("rec", rec);
-                    boolean voice = false;
-                    if (Build.VERSION.SDK_INT >= 26) {
-                        try {
-                            for (android.media.AudioPlaybackConfiguration c : am.getActivePlaybackConfigurations()) {
-                                int u = c.getAudioAttributes().getUsage();
-                                if (u == android.media.AudioAttributes.USAGE_VOICE_COMMUNICATION || u == android.media.AudioAttributes.USAGE_ASSISTANT || u == android.media.AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY) { voice = true; break; }
-                            }
-                        } catch (Throwable ignored) {}
-                    }
-                    o.put("voice", voice);
-                }
-            } catch (Exception ignored) {}
-            return o.toString();
-        }
-
         @JavascriptInterface
         public String extStatus() {
             JSONObject o = new JSONObject();
@@ -1640,29 +1602,6 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String extArt() {
             return artData;
-        }
-
-        /** 1.66 AI 대화 효과에 실제 소리를 쓸지(켜면 마이크 권한이 있을 때 기기 출력 소리를 받음). 반환: 권한 있음 여부 */
-        @JavascriptInterface
-        public boolean aiViz(final boolean on) {
-            main.post(() -> {
-                aiViz = on;
-                if (on) startViz();
-                else if (!extMode) stopViz();
-            });
-            return hasMic();
-        }
-
-        /** 1.66 지금 기기 출력 소리 크기(0~1, RMS). 받은 지 0.6초가 넘었으면 -1 */
-        @JavascriptInterface
-        public double aiLevel() {
-            if (SystemClock.elapsedRealtime() - vizTs > 600) return -1;
-            byte[] w;
-            synchronized (vizLock) { w = wave; }
-            if (w == null || w.length == 0) return -1;
-            double sum = 0;
-            for (byte b : w) { double d = ((b & 0xff) - 128) / 128.0; sum += d * d; }
-            return Math.min(1, Math.sqrt(sum / w.length) * 3.0);
         }
 
         @JavascriptInterface

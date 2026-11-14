@@ -80,6 +80,6 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   await p.locator('#bSwap').click(); await p.waitForTimeout(1000);
   assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('dna_lastSrc'))), 'ext', 'Back to the music app');
   assert.equal(await p.locator('#bSwapT').textContent(), '라디오');
-  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#ckRail > button')].slice(-3).map(b => b.dataset.open || b.dataset.f || (b.dataset.ai && 'ai'))), ['nmap', 'ai', 'cam']);
+  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#ckRail > button')].slice(-2).map(b => b.dataset.open || b.dataset.f)), ['nmap', 'cam']);
   await p.close();
 });

@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-14 · v1.66 (versionCode 100)**
+마지막 갱신: **2026-11-14 · v1.67 (versionCode 101)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.66** (versionCode 100, versionName `1.66-one`) |
+| 최신 버전 | **1.67** (versionCode 101, versionName `1.67-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-14 · 1.67 — **AI 기능 제거**(사용자 요청): `93-ai.js`·테스트 35(AI)·레일 버튼·`#aiPick`·CSS·시각화 AI 장면·네이티브 aiInfo/aiViz/aiLevel·MediaListener AI 알림·manifest queries·privacy 항목 모두 뺌(1.64–1.66 항목은 기록으로만 남김). 아래 버튼 줄: app.css 끝 `:root .win.hasrail #ckRail.ckrail` 규칙으로 아이콘만(span 숨김, svg 24px)·flex 한 줄, 위·아래 분할(`data-split=ck`)은 30px 높이, 이름은 `92-zz-rail-liquid.js`에서 aria-label·title로. 좁은 화면 `94-narrow.js`(`AmpNarrow`, innerWidth ≤ 520 → `:root[data-narrow]`): `.pfd-metrics` 접힘(`data-metrics-open`, 저장 `narrowMetrics`, `.pfd-flight-meta` 누르면 토글 — LIM 버튼 제외), `.pfd-status-line`·`#gMsg` 숨김, 창 `.bar` nowrap·groove 숨김·wbtn 44×36, 라디오 `.rd-band/.rd-mhz/.rd-lbl/.rd-com` 숨김, `#wMain#wMain`(특이성 올림) transport 6칸 한 줄 48px·lcd 높이 자동·timebox 26px·`.vmode`를 그림 위 한 줄로, `.mapctl` 줄바꿈, 에어포스원 칩 small 숨김·14px. 즐겨찾기 `#rdPresets` 4열·46px, `rdRenderFavs` n=max(열×2, …). 테스트 35(좁은 화면) 새로, 14·18·33 갱신. 폴드7 좌우 분할은 네이티브 splitState가 높이 비율만 봐서 `data-split`이 안 켜짐 — 그래서 폭 기준 data-narrow로 처리.
 - 2026-11-14 · 1.66 — 실제 목소리 반영: 네이티브 `aiViz(on)`(외부 앱 모드가 아니어도 Visualizer(0) 켬, 반환=마이크 권한), `aiLevel()`(파형 RMS×3, 0.6초 넘으면 -1). `startViz` 조건 `extMode||aiViz`, 외부 모드 끌 때·onResume도 aiViz 고려. 웹: `AmpAiTalk.level()`(부드럽게, 시험 `__aiLevel`)·`phase()`(소리 >0.05 말하는 중, 아니면 듣는 중 — 통화 모드처럼 rec·voice 둘 다여도), 대화 시작 시 `NB.aiViz(true)`·권한 없으면 한 번 안내+`requestMic`. NOW PLAYING은 `NB.extWave()`(시험 `__aiWave`) 실제 파형을 주 띠로. 자막에서 상태 문구 정규식으로 제외. **주의: AI 앱이 통화용 소리 경로(VOICE_COMMUNICATION)로 내보내면 Visualizer(0)에 안 잡히는 기기가 있음 — 그땐 -1이라 이전처럼 상태 효과로 돌아감.**
 - 2026-11-14 · 1.65 — NOW PLAYING 시각화(`30-eq-visual.js` drawVis 맨 앞): `aiVisOn()`(= `AmpAiTalk.live.on`, 0.5초마다 판정한 값)이면 `drawAiVoice`가 그림 — 목소리 띠 3줄(상태별 진폭·색), 듣는 중 고리, 이름·상태(위 [가사]·모드 줄 아래), 답 말풍선 타자 효과(초당 22자, 마지막 3줄). 대화 중엔 frame 루프를 busy로 봄(60fps). 가사 켜져 있으면 가사가 우선. 테스트 35에 `__aiVisN` 검사.
 - 2026-11-14 · 1.64 — [AI] 버튼(`93-ai.js`, `AmpAiTalk`, 레일 `button[data-ai]`, 고르기 창 `#aiPick`, 저장 `aiApp`·`aiAt`): 방식 1(앱 불러오기)만 — `NB.openAppSplit(pkg, top)`로 ChatGPT(`com.openai.chatgpt`)·Claude(`com.anthropic.claude`) 엶, manifest queries 추가. 네이티브 `aiInfo()`: MediaListener가 **그 두 앱 알림만** 읽어 aiKey/pkg/title/text(BIG_TEXT 우선, 400자)/ongoing 보관(모든 빌드), 그리고 AudioManager 통화 모드(comm)·녹음 중(rec, getActiveRecordingConfigurations)·음성 재생(voice, 사용 용도 VOICE_COMMUNICATION/ASSISTANT) — 어느 앱인지는 모름. 판정: (AI 알림 && (ongoing||신호||최근 [AI]로 엶)) || (최근 엶 && 신호). voice만=말하는 중, rec만=듣는 중, 둘 다/없음=대화 중. 아일랜드 `.ai-isl`은 PFD canvasWrap 안, 원형 지도 오른쪽~오른쪽 띠 안쪽 사이 가운데(JS place, 띠 폭 12.2%), 막대 7개 span(캔버스 아님 — 다른 테스트가 `#pfdHost canvas` 하나를 기대). **실기기에서 ChatGPT·Claude가 실제로 어떤 알림·오디오 모드를 쓰는지 미확인** — 안 뜨면 aiInfo 값을 보고 판정 조정. 레일 9칸: 541–899px에서 AI 버튼 32px·라벨 10px, ≤540px는 5칸×2줄(테스트 14·18 갱신). 테스트 35. privacy.md에 AI 항목.
