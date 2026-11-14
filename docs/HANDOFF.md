@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-14 · v1.70 (versionCode 104)**
+마지막 갱신: **2026-11-14 · v1.71 (versionCode 105)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.70** (versionCode 104, versionName `1.70-one`) |
+| 최신 버전 | **1.71** (versionCode 105, versionName `1.71-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-14 · 1.71 — `#bInput`(.tb.xin, 꺼내기 ⏏ 아이콘, bSwap 바로 뒤) + `#xinPick`(YouTube Music·Spotify, 글자 버튼 — 로고 없음) — `96-ext-input.js`(`AmpExtInput`)가 열고 고르면 `AmpExt.start(pkg)`. `#bEject`(내 음악 파일 열기)는 폴더+ 아이콘으로 바꿈. 좁은 화면 transport는 칸 수 상관없이 한 줄(grid-auto-flow column). 테스트 37.
 - 2026-11-14 · 1.70 — 가볍게: `pfd-flight.js` drawWeather 비 빗줄기 끔(`k==='rain' && false`), animGap 비 60ms 없앰(눈만 80ms), 평소 100→200ms(절전 250→400). `pfd-special.js` 바다·강 잔물결 패턴의 `t*5`/`t*6` 시간항과 윤슬 sin(t…) 깜빡임 제거(거리 wz로만 움직임). `51-pfd-minimap.js` `.pfd-odo`(총 주행) 항상 숨김 — 테스트 25 갱신.
 - 2026-11-14 · 1.69 — `95-iconbar.js`(`AmpIconBar`): 콕핏(:root[data-ck2]) 도구 줄 글자를 span.tl로 감싸 숨기고 aria-label·title, 없는 아이콘(내 음악·외부 앱·화면·간편 모드·음악 추가) 넣음; `.brand`를 `.brandwrap`으로 감싸 아래에 `#dStrip .dsi`(날짜·요일, 30초마다) — 띠가 줄을 깨지 않게 한 덩어리. app.css 끝: 계기 `#clkDate`·`#clkNow em`·`::after`(날씨·나침반·밝기) 숨김, 도구 버튼 48px, ≤620px는 5열 그리드(`.seg` display:contents, 화면 고르기 2칸). 라디오: 즐겨찾기 0개면 4칸·`rdPresetOpen` 기본 접힘(방송 목록이 보이게), `rdPresetCols`는 접혀 있을 때 `repeat(N` 지정값도 읽음. 몬스타덱: `resumeIfAllowed`가 허용 없으면 실행 중 한 번 `connect()`(허용 창), claim 재시도 16회(2초마다 형제 앱에 다시 RELEASE), `sendImages`는 finally로 STP(그림 실패 시 키 신호 끊김 방지), 웹 `__deckState`에서 연결됨/이유 토스트. **덱 무반응의 정확한 원인은 실기기 상태 문구로 확인 필요**(설정 › 몬스타덱의 상태·USB 장치 목록). 테스트 36(위쪽) 새로, 15·33·35 갱신.
 - 2026-11-14 · 1.68 — `#wGps.hasrail` 안 `.pfd-status-line`·`#gMsg` 숨김(app.css 끝). `ckRailPlace`: 콕핏 스페셜(isCks)이면 wGps도 계기 유리 뒤가 아니라 다른 창처럼 grip 앞(창 맨 아래) — 보기마다 버튼 줄 위치 같음(테스트 35에 검사).

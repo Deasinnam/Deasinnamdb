@@ -2882,3 +2882,9 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
   :root[data-ck2] header.top .tools .seg[hidden]{display:none!important}
   :root[data-ck2] header.top .tools label.selw[for="layout"]{grid-column:span 2;min-width:0!important}
   :root[data-ck2] header.top .tools>.pill,:root[data-ck2] header.top .tools .seg>button{min-width:0!important;width:100%!important}}
+/* 1.71 외부 입력 고르기(YouTube Music·Spotify) */
+.xinpick{display:flex;flex-direction:column;gap:8px;width:min(80vw,240px)}
+.xinpick[hidden]{display:none!important}
+.xinpick .pill{min-height:52px;font-size:17px;font-weight:700}
+/* 플레이어 버튼 줄: 칸 수와 상관없이 한 줄(라디오 전환 옆 외부 입력이 늘어서) */
+:root[data-narrow] #wMain#wMain .transport{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important}
