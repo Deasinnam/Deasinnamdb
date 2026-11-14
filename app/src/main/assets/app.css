@@ -2855,3 +2855,6 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 :root[data-narrow] #pfdHost :is(.sp-miles,.sp-odo) i{font-size:14px!important}
 :root[data-narrow] #pfdHost :is(.sp-miles,.sp-odo) b{font-size:14px!important}
 :root[data-narrow] #pfdHost :is(.sp-miles,.sp-odo) u{font-size:10px!important}
+/* 1.68 속도계 창: 아래 버튼 줄 밑의 안내 줄(GPS 또는 앱 데이터 연결을…, DSN-PFD)은 숨김 — 다른 보기처럼 버튼 줄이 창 맨 아래에.
+   연결 상태는 계기 위 GPS 표시와 관제탑 줄에서 봄 */
+#wGps.hasrail #pfdHost .pfd-status-line,#wGps.hasrail #gMsg{display:none!important}

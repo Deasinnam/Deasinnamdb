@@ -17,6 +17,12 @@ run('Narrow screens: Fold split half and cover display', async ({newPage, origin
     assert.ok(bar <= 50, f + ': window title bar on one line (' + bar + ')');
     assert.ok(await p.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth + 1), f + ': no sideways overflow');
   }
+  // 1.68 아래 버튼 줄은 어느 보기에서나 같은 자리·같은 높이(속도계 아래 안내 줄 없음)
+  { const pos = [];
+    for (const f of ['gps', 'map', 'radio', 'vis', 'cam']) { await p.locator('#ckRail button[data-f="' + f + '"]').click(); await p.waitForTimeout(700);
+      pos.push(await p.evaluate(() => { const b = document.querySelector('#ckRail>button').getBoundingClientRect(); return Math.round(b.top) + ',' + Math.round(b.bottom) + ',' + Math.round(b.left); })); }
+    assert.equal(new Set(pos).size, 1, 'rail at the same place in every view ' + pos.join(' | '));
+    assert.equal(await p.evaluate(() => [...document.querySelectorAll('#wGps .pfd-status-line,#wGps #gMsg')].some(e => e.offsetParent)), false, 'no status line under the speedometer rail'); }
   // 속도계 위 정보: 접힘 → 상태 줄 누르면 펼침 → 다시 접힘
   await p.locator('#ckRail button[data-f="gps"]').click(); await p.waitForTimeout(700);
   const metrics = () => p.evaluate(() => getComputedStyle(document.querySelector('#pfdHost .pfd-metrics')).display !== 'none');

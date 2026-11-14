@@ -2953,8 +2953,9 @@ function ckRailPlace(hostId,span){const r=ckRailEl;ckRailPlace.last=[hostId,span
   if(!isCk2()||!hostId){ckRailHome.after(r);return}
   if(span){appEl.prepend(r);r.classList.add('inapp');appEl.classList.add('RL');return} // 위아래로 나눈 화면: 두 창 옆에 세로로 길게
   const h=$('#'+hostId);if(!h)return;h.classList.add('hasrail');
-  if(hostId==='wGps'){const glass=h.dataset.gs==='cockpit'&&h.querySelector('#pfdHost .pfd-glass'),gauge=h.querySelector('.body>.gps'),walk=h.dataset.gs==='walk'&&h.querySelector('#walkHost');
+  if(hostId==='wGps'&&!isCks()){const glass=h.dataset.gs==='cockpit'&&h.querySelector('#pfdHost .pfd-glass'),gauge=h.querySelector('.body>.gps'),walk=h.dataset.gs==='walk'&&h.querySelector('#walkHost');
     const at=glass||walk||gauge;if(at){if(at.nextElementSibling!==r)at.after(r);return}}
+  // 1.68 콕핏 스페셜: 속도계 창도 다른 보기처럼 창 맨 아래(계기 틀 밖) — 버튼 줄 높이·폭이 보기마다 같게
   if(isCks()){const g=h.querySelector(':scope>.grip');if(g)h.insertBefore(r,g);else if(h.lastElementChild!==r)h.append(r);return} // 콕핏 스페셜: 어느 창이든 맨 아래 고정
   const bar=h.querySelector(':scope>.bar');h.insertBefore(r,bar?bar.nextSibling:h.firstChild)}
 // 스피드미터 화면(PFD)이 늦게 만들어지거나 디자인이 바뀌면 자리를 다시 잡음
