@@ -103,6 +103,7 @@ import java.util.regex.Pattern;
 public class MainActivity extends Activity {
     private static final String TAG = "BROWSER_SELFTEST";
     private static final String HOME = "https://www.naver.com/";
+    private static final String STUDIO = "https://studio.youtube.com/";
     private static final int REQ_FILE = 42;
     private static final int REQ_STORAGE = 43;
     /** 페이지가 스크립트로 만든 파일(blob·data 주소)은 앱 메모리를 거쳐 저장하므로 크기를 제한합니다 */
@@ -147,6 +148,8 @@ public class MainActivity extends Activity {
     private BroadcastReceiver downloadDone;
     private int selftestDownloadsLeft;
     private boolean selftest;
+    private boolean googleTest;
+    private boolean googleTestStarted;
     private boolean selftestDone;
     private int selftestRetries;
 
@@ -155,6 +158,7 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle state) {
         super.onCreate(state);
         selftest = BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("browser.selftest");
+        googleTest = selftest && getIntent().getBooleanExtra("browser.google", false);
         desktopWidth = getPreferences(MODE_PRIVATE).getInt("width", 1280);
         loadBookmarks();
         WebView.setWebContentsDebuggingEnabled(false);
@@ -217,6 +221,7 @@ public class MainActivity extends Activity {
         topBar.addView(address, new LinearLayout.LayoutParams(0, dp(34), 1f));
         topBar.addView(barButton("네이버", () -> navigate(HOME), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
         topBar.addView(barButton("유튜브", () -> navigate(WebLinkResolver.YOUTUBE_HOME), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
+        topBar.addView(barButton("스튜디오", () -> navigate(STUDIO), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
         root.addView(topBar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(40)));
 
         // 차단 알림: 인증서 오류·유해 사이트일 때만 보입니다
@@ -297,12 +302,26 @@ public class MainActivity extends Activity {
         // 모바일 화면을 주는 사이트가 있습니다 → 그 표시도 PC로 맞춥니다.
         if (WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
             try {
+                // 브랜드 목록에 "Android WebView"가 있으면 구글 로그인이 "안전하지 않은 브라우저"로 막습니다 → Chromium만 남김
+                String major = chrome.split("\\.")[0];
+                java.util.List<UserAgentMetadata.BrandVersion> brands = new java.util.ArrayList<>();
+                brands.add(new UserAgentMetadata.BrandVersion.Builder().setBrand("Chromium").setMajorVersion(major).setFullVersion(chrome).build());
+                brands.add(new UserAgentMetadata.BrandVersion.Builder().setBrand("Not:A-Brand").setMajorVersion("24").setFullVersion("24.0.0.0").build());
                 UserAgentMetadata meta = new UserAgentMetadata.Builder(WebSettingsCompat.getUserAgentMetadata(s))
+                        .setBrandVersionList(brands).setFullVersion(chrome)
                         .setMobile(false).setPlatform("Linux").setPlatformVersion("").setArchitecture("x86")
                         .setModel("").setBitness(64).build();
                 WebSettingsCompat.setUserAgentMetadata(s, meta);
             } catch (RuntimeException e) {
                 Log.w(TAG, "클라이언트 힌트 설정 실패: " + e);
+            }
+        }
+        // 요청마다 붙는 "이 앱 이름(X-Requested-With)" 표시를 끕니다. 구글은 이 표시가 있으면 앱 속 브라우저로 보고 로그인을 막습니다.
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.REQUESTED_WITH_HEADER_ALLOW_LIST)) {
+            try {
+                WebSettingsCompat.setRequestedWithHeaderOriginAllowList(s, Collections.emptySet());
+            } catch (RuntimeException e) {
+                Log.w(TAG, "앱 이름 표시 끄기 실패: " + e);
             }
         }
         s.setJavaScriptEnabled(true);
@@ -354,6 +373,7 @@ public class MainActivity extends Activity {
                     view.stopLoading();
                     return;
                 }
+                updateThirdPartyCookies(url);
                 showNotice(null);
                 if (!address.hasFocus()) address.setText(url);
             }
@@ -377,7 +397,8 @@ public class MainActivity extends Activity {
                     web.clearHistory();
                     clearHistoryAfterLoad = false;
                 }
-                if (selftest) runSelftest(url);
+                if (googleTest) runGoogleTest(url);
+                else if (selftest) runSelftest(url);
             }
 
             @Override
@@ -499,6 +520,27 @@ public class MainActivity extends Activity {
         });
     }
 
+    // ---------- 구글·유튜브 로그인 ----------
+
+    /** 구글·유튜브 사이트인지 (주소의 호스트로 판단) */
+    static boolean isGoogleSite(String url) {
+        UrlPolicy.Parts p = UrlPolicy.parse(url);
+        if (p == null) return false;
+        String h = p.host.toLowerCase(Locale.ROOT);
+        for (String d : new String[]{"google.com", "google.co.kr", "youtube.com"}) {
+            if (h.equals(d) || h.endsWith("." + d)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 구글 로그인은 accounts.google.com ↔ youtube.com 사이를 오가며 로그인 상태를 맞추므로
+     * 구글·유튜브 페이지를 볼 때만 제3자 쿠키를 허용합니다 (다른 사이트에서는 계속 차단).
+     */
+    private void updateThirdPartyCookies(String url) {
+        CookieManager.getInstance().setAcceptThirdPartyCookies(web, isGoogleSite(url));
+    }
+
     // ---------- PC 화면 폭 ----------
 
     /**
@@ -567,6 +609,7 @@ public class MainActivity extends Activity {
         if (text.isEmpty()) return;
         if (!SCHEME.matcher(text).find()) {
             if (text.equalsIgnoreCase("youtube") || text.equals("유튜브")) text = WebLinkResolver.YOUTUBE_HOME;
+            else if (text.equalsIgnoreCase("studio") || text.equals("스튜디오") || text.equals("유튜브 스튜디오")) text = STUDIO;
             else if (text.startsWith("//")) text = "https:" + text;
             else if (text.contains(" ") || !text.contains(".") || text.contains(":")) text = "https://search.naver.com/search.naver?query=" + Uri.encode(text);
             else text = "https://" + text;
@@ -697,7 +740,7 @@ public class MainActivity extends Activity {
                         .setNegativeButton("취소", null).setPositiveButton("삭제", (d2, w) -> clearWebData()).show();
             } else if (which == 3) {
                 new AlertDialog.Builder(this).setTitle("보안 상태")
-                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단\n• 제3자 쿠키 차단\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만\n\nSafe Browsing: "
+                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단\n• 제3자 쿠키 차단 (구글·유튜브 페이지에서만 로그인 유지를 위해 허용)\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만\n\nSafe Browsing: "
                                 + (safeBrowsingReady ? "초기화 완료" : "활성화 요청됨 · 초기화 미확인")
                                 + "\n탐지 범위는 기기의 WebView와 서비스 상태에 따라 다릅니다.\n\nWebView를 최신 버전으로 유지하세요. HTTPS만으로 사이트의 신뢰성이 보장되지는 않습니다.")
                         .setPositiveButton("확인", null).show();
@@ -1233,6 +1276,7 @@ public class MainActivity extends Activity {
         web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({w:window.innerWidth,ua:navigator.userAgent,"
                 + "mobile:navigator.userAgentData?navigator.userAgentData.mobile:null,"
                 + "platform:navigator.userAgentData?navigator.userAgentData.platform:null,"
+                + "brands:navigator.userAgentData?navigator.userAgentData.brands.map(function(b){return b.brand;}).join(','):null,"
                 + "vp:(document.querySelector('meta[name=viewport]')||{}).content||null})", v -> {
             try {
                 JSONObject o = new JSONObject(new JSONArray("[" + v + "]").getString(0));
@@ -1241,12 +1285,39 @@ public class MainActivity extends Activity {
                 Log.i(TAG, (uaOk ? "PASS" : "FAIL") + " user agent " + ua);
                 Log.i(TAG, (o.optInt("w") == desktopWidth ? "PASS" : "FAIL") + " page width " + o.optInt("w") + " (want " + desktopWidth + ") viewport=" + o.optString("vp") + " url=" + url);
                 if (o.isNull("mobile")) Log.i(TAG, "SKIP client hints (이 WebView는 지원 안 함)");
-                else Log.i(TAG, (!o.optBoolean("mobile") && "Linux".equals(o.optString("platform")) ? "PASS" : "FAIL") + " client hints mobile=" + o.opt("mobile") + " platform=" + o.optString("platform"));
+                else {
+                    Log.i(TAG, (!o.optBoolean("mobile") && "Linux".equals(o.optString("platform")) ? "PASS" : "FAIL") + " client hints mobile=" + o.opt("mobile") + " platform=" + o.optString("platform"));
+                    Log.i(TAG, (o.optString("brands").contains("WebView") ? "FAIL" : "PASS") + " brands " + o.optString("brands"));
+                }
             } catch (JSONException e) {
                 Log.i(TAG, "FAIL selftest parse " + v);
             }
             selftestDownloads();
         }), 1500);
+    }
+
+    /**
+     * 구글 로그인 점검: 로그인 화면에 없는 주소를 넣고 "다음"을 눌러,
+     * "안전하지 않은 브라우저" 차단 화면이 아니라 "계정을 찾을 수 없음"(= 로그인 진행 가능)이 나오는지 봅니다.
+     */
+    private void runGoogleTest(String url) {
+        if (!url.contains("accounts.google.com") || googleTestStarted) {
+            if (!googleTestStarted) Log.i(TAG, "INFO google page " + url);
+            return;
+        }
+        googleTestStarted = true;
+        web.postDelayed(() -> web.evaluateJavascript("(function(){var i=document.querySelector('input[type=email]');if(!i)return 'noinput';"
+                + "i.focus();i.value='dn.selftest.nobody.73914@gmail.com';i.dispatchEvent(new Event('input',{bubbles:true}));"
+                + "var b=document.querySelector('#identifierNext button')||document.querySelector('#identifierNext');if(!b)return 'nobutton';b.click();return 'ok';})()",
+                v -> Log.i(TAG, "INFO google typed " + v)), 4000);
+        web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({u:location.href,t:(document.body?document.body.innerText:'').slice(0,600)})", v -> {
+            String text = v == null ? "" : v.replace("\\n", " ");
+            String low = text.toLowerCase(Locale.ROOT);
+            boolean blocked = low.contains("may not be secure") || low.contains("안전하지 않") || low.contains("disallowed_useragent") || low.contains("browser or app");
+            boolean through = low.contains("couldn") || low.contains("찾을 수 없") || low.contains("password") || low.contains("비밀번호") || low.contains("valid email") || low.contains("올바른");
+            Log.i(TAG, (blocked ? "FAIL" : through ? "PASS" : "INFO") + " google sign-in " + text.substring(0, Math.min(400, text.length())));
+            Log.i(TAG, "DONE");
+        }), 14000);
     }
 
     /**
