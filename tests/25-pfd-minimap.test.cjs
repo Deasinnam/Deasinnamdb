@@ -50,8 +50,7 @@ run('Round map on the speedometer PFD', async ({context, origin, errors}) => {
   // 오른쪽 아래 총 주행거리 = 차계부 누적 거리
   await p.evaluate(() => AmpLog.setOdo(62345.6)); await p.waitForTimeout(400);
   assert.match((await p.locator('.pfd-odo b').textContent()).trim(), /^62,34\d$/);
-  const o = await p.evaluate(() => { const w = document.querySelector('#pfdHost .pfd-canvas-wrap').getBoundingClientRect(), r = document.querySelector('.pfd-odo').getBoundingClientRect(); return [r.right > w.x + w.width * .6, r.bottom > w.y + w.height * .6, r.height >= 47.5]; });
-  assert.deepEqual(o, [true, true, true], 'Odometer at the lower right');
+  assert.equal(await p.locator('.pfd-odo').isVisible(), false, '1.70 lower-right total distance removed from the speedometer');
   // GPS 끊김: 흐리게 GPS 표시
   await p.evaluate(() => Object.assign(__fix, {fix: false}));
   await p.waitForFunction(() => document.querySelector('.pfd-mini.nofix'), null, {timeout: 4000});

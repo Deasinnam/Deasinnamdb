@@ -651,7 +651,7 @@
       if (k === 'fog') { const f = c.createLinearGradient(0, -h * .2, 0, h * .2); f.addColorStop(0, 'rgba(210,214,218,0)'); f.addColorStop(.5, 'rgba(210,214,218,.55)'); f.addColorStop(1, 'rgba(210,214,218,0)'); c.fillStyle = f; c.fillRect(-w * 2, -h * .2, w * 4, h * .4); }
       c.restore();
     }
-    if (k === 'rain') {
+    if (k === 'rain' && false) { // 1.70 빗줄기(흐르는 물) 효과는 뺌 — 무거움. 비 오는 날은 흐린 하늘 색만
       const sl = .12 + v / 260, fall = 1.5 + v / 90;
       c.strokeStyle = night ? 'rgba(180,200,230,.26)' : 'rgba(235,242,250,.34)'; c.lineWidth = Math.max(.8, U * .7); c.beginPath();
       for (const d of drops) {
@@ -720,8 +720,8 @@
     if (F.auto || F.sim) return sv ? 95 : 45;
     if (Math.abs(F.pitch) > .05 && F.phase !== 'cruise') return sv ? 95 : 45;
     if (F.phase === 'approach' || F.phase === 'rollout') return sv ? 95 : 45;
-    { const k = wxKind(); if (k === 'rain' || k === 'snow' || (F.snow > .01 && k !== 'snow')) return sv ? 160 : 60; }
-    return sv ? 250 : 100; // 정차 중에도 구름이 흐르고 밤 불빛이 일렁이도록 천천히 다시 그림(초당 10번, 절전 4번)
+    { const k = wxKind(); if (k === 'snow' || (F.snow > .01 && k !== 'snow')) return sv ? 160 : 80; }
+    return sv ? 400 : 200; // 1.70 폴드7 기준 가볍게: 정차 중 구름·불빛은 초당 5번(절전 2.5번)만 다시 그림
   }
   function needAnim() { return animGap() > 0; }
   function kick() { if (!loopT) loopT = requestAnimationFrame(loop); }

@@ -55,7 +55,7 @@ const PfdMap=(()=>{
     if(odo){let km=null;try{km=window.AmpLog&&AmpLog.state?AmpLog.state.odo:null}catch(e){}const t=km==null?'—':(Math.floor(km)).toLocaleString('ko-KR');const b=odo.querySelector('b');if(b.textContent!==t)b.textContent=t;odo.setAttribute('aria-label','총 주행거리 '+t+' 킬로미터. 누르면 차계부')}
     const fix=gpsOn&&gs&&gs.fix&&isFinite(gs.lat);host.classList.toggle('nofix',!fix);
     const small=w.clientHeight<230||w.clientWidth<300;host.classList.toggle('tiny',small);
-    if(odo)odo.hidden=w.clientWidth<520; // 좁은 계기에서는 착륙·시연 버튼·원형 지도와 겹치지 않게 총 주행거리 숨김
+    if(odo)odo.hidden=true; // 1.70 오른쪽 아래 총 주행거리는 뺌(사용자 요청 — 계기 위를 덜 가리게, 에어포스원은 위쪽 누적 주행거리 칩으로)
     // 1.59 원형 지도 잘림: 작게(또는 숨긴 채) 만들어진 뒤 커지면 Leaflet이 예전 크기만큼만 타일을 깔아 원의 일부가 비었음 → 크기가 바뀌면 다시 잼
     if(map&&inner.clientWidth>0){const sz=map.getSize();if(Math.abs(sz.x-inner.clientWidth)>1||Math.abs(sz.y-inner.clientHeight)>1){map.invalidateSize({pan:false,animate:false});if(fix)map.setView([gs.lat,gs.lon],map.getZoom(),{animate:false})}}
     // 1.62.1 스페셜: 수신 전(시연·GPS 대기)에도 까만 원 대신 마지막 위치(마지막 수신 → 날씨에 쓴 위치 → 서울) 지도를 보여 줌

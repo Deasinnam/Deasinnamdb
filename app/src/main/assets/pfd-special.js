@@ -391,7 +391,7 @@
       if (!rPat) try { rPat = c.createPattern(RTEX, 'repeat'); } catch (e) {}
       if (rPat && rPat.setTransform) {
         c.globalCompositeOperation = 'soft-light';
-        slices(c, g.Hc, g.f, g.py, g.zn, 30000, 1.3, rPat, .5, wz + t * 5, (z1, z2) => { c.globalAlpha = night ? .5 : .9; c.fillStyle = rPat; c.fillRect(-w * 2, g.py(z2), w * 4, g.py(z1) - g.py(z2) + 1); });
+        slices(c, g.Hc, g.f, g.py, g.zn, 30000, 1.3, rPat, .5, wz, /* 1.70 물결이 시간 따라 흐르는 효과 뺌(달린 만큼만 지나감) */ (z1, z2) => { c.globalAlpha = night ? .5 : .9; c.fillStyle = rPat; c.fillRect(-w * 2, g.py(z2), w * 4, g.py(z1) - g.py(z2) + 1); });
         c.globalCompositeOperation = 'source-over';
       }
     }
@@ -504,7 +504,7 @@
       if (rPat && rPat.setTransform) {
         c.globalCompositeOperation = 'soft-light';
         const t = idleT();
-        slices(c, g.Hc, g.f, py, zn, 6000, 1.25, rPat, .5, (F.wz || 0) * .55 + t * 6, (z1, z2) => { c.globalAlpha = .9 * k; c.fillStyle = rPat; c.fillRect(-w * 2, py(z2), w * 4, py(z1) - py(z2) + 1); });
+        slices(c, g.Hc, g.f, py, zn, 6000, 1.25, rPat, .5, (F.wz || 0) * .55, /* 1.70 흐르는 효과 뺌 */ (z1, z2) => { c.globalAlpha = .9 * k; c.fillStyle = rPat; c.fillRect(-w * 2, py(z2), w * 4, py(z1) - py(z2) + 1); });
         c.globalCompositeOperation = 'source-over';
       }
     }
@@ -515,7 +515,7 @@
       c.globalCompositeOperation = 'lighter'; c.fillStyle = css(m.sun);
       for (let i = 0; i < 140; i++) {
         const u = hash(i + 900), yy = Math.pow(u, 1.8) * h * .62 + 1, spread = (8 + yy * .55) * lerp(.7, 1.2, m.gold), xx = sun.x + (hash(i + 950) - .5) * 2 * spread * (.4 + hash(i + 990) * .6);
-        const tw = Math.max(0, Math.sin(t * (2.2 + hash(i + 1010) * 3.5) + i * 1.7 + flow * .01)), a = gk * tw * clamp(1 - yy / (h * .62), .15, 1) * .75;
+        const tw = Math.max(0, Math.sin(i * 1.7 + hash(i + 1010) * 6.28 + flow * .01)), /* 1.70 윤슬 깜빡임(시간) 뺌 */ a = gk * tw * clamp(1 - yy / (h * .62), .15, 1) * .75;
         if (a < .03) continue;
         c.globalAlpha = a; const lw = 2 + yy * .07 + hash(i + 1050) * 6; c.fillRect(xx - lw / 2, yy, lw, Math.max(.8, yy * .012));
       }
