@@ -86,6 +86,16 @@ nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; t
 .hero h1 .soft { color: var(--ink-3); font-weight: 500; }
 .hero p { margin: 22px 0 0; max-width: 34em; color: var(--ink-2); font-size: 17px; }
 .hero .actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 14px; }
+.hero .actions { align-items: center; }
+.hero .key-appcenter { font-size: 20px; padding: 20px 34px; border-radius: 14px; gap: 10px; }
+.hero .key-appcenter.dark { background: #ff7a00; color: #fff; border-color: #c75a00; box-shadow: 0 var(--travel) 0 #c75a00; }
+.hero .key-appcenter.dark:hover { box-shadow: 0 calc(var(--travel) - 1px) 0 #c75a00; }
+.hero .key-appcenter.dark:active { box-shadow: 0 1px 0 #c75a00; }
+.hero .key-appcenter.dark:focus-visible { outline-color: #ff7a00; }
+.hero p.appcenter-hint { margin: 16px 0 0; font-size: 15px; color: var(--ink-2); }
+.hero p.appcenter-hint b { color: #e06a00; }
+#hero.hero { grid-template-columns: 1fr; }
+@media (max-width: 560px) { .hero .key-appcenter { flex: 1 1 100%; font-size: 19px; } }
 .press-demo { justify-self: end; display: grid; gap: 30px; justify-items: end; }
 /* "덜" 키: 누를수록 낮아지고(--h), 기울고(--tilt), 금이 가다가(--crack) 결국 빠진다 */
 .keywell { position: relative; width: 220px; height: 236px; }
@@ -672,15 +682,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <h1>덜 누르고,<br><span class="soft">더 편하게.</span></h1>
       <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 파일은 한 번 눌러 맞는 편집기로 열리고, 차에 타면 음악이 알아서 이어집니다. 개발 중인 앱은 앱센터에서 미리 볼 수 있습니다.</p>
       <div class="actions">
-        <a class="key dark" href="#app-center">앱센터</a>
+        <a class="key dark key-appcenter" href="#app-center">앱센터 <span aria-hidden="true">→</span></a>
         <a class="key" href="#install">설치 방법</a>
       </div>
+      <p class="appcenter-hint">앱을 내려받으려면 <b>앱센터</b>를 누르세요.</p>
     </div>
-    <dl class="hero-stats">
-      <div><dt>7</dt><dd>개발 중인 앱</dd></div>
-      <div><dt>₩0</dt><dd>모든 앱 무료</dd></div>
-      <div><dt>0×</dt><dd>스피드미터는 출발하면 알아서</dd></div>
-    </dl>
   </div>
 
   <div class="theme-dark">
