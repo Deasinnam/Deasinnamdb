@@ -1538,6 +1538,42 @@ public class MainActivity extends Activity {
             return o.toString();
         }
 
+        /** 1.64 AI 음성 대화 상태: ChatGPT·Claude 알림(그 두 앱 것만) + 기기 소리 상태(누가 마이크를 쓰는지, 음성 재생이 있는지 — 어느 앱인지는 모름) */
+        @JavascriptInterface
+        public String aiInfo() {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("notif", hasNotifAccess());
+                boolean on = MediaListener.aiKey != null;
+                o.put("on", on);
+                if (on) {
+                    o.put("pkg", MediaListener.aiPkg);
+                    o.put("title", MediaListener.aiTitle == null ? "" : MediaListener.aiTitle);
+                    o.put("text", MediaListener.aiText == null ? "" : MediaListener.aiText);
+                    o.put("ongoing", MediaListener.aiOngoing);
+                }
+                o.put("ts", MediaListener.aiTs);
+                android.media.AudioManager am = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
+                if (am != null) {
+                    o.put("comm", am.getMode() == android.media.AudioManager.MODE_IN_COMMUNICATION);
+                    boolean rec = false;
+                    if (Build.VERSION.SDK_INT >= 24) { try { rec = !am.getActiveRecordingConfigurations().isEmpty(); } catch (Throwable ignored) {} }
+                    o.put("rec", rec);
+                    boolean voice = false;
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        try {
+                            for (android.media.AudioPlaybackConfiguration c : am.getActivePlaybackConfigurations()) {
+                                int u = c.getAudioAttributes().getUsage();
+                                if (u == android.media.AudioAttributes.USAGE_VOICE_COMMUNICATION || u == android.media.AudioAttributes.USAGE_ASSISTANT || u == android.media.AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY) { voice = true; break; }
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                    o.put("voice", voice);
+                }
+            } catch (Exception ignored) {}
+            return o.toString();
+        }
+
         @JavascriptInterface
         public String extStatus() {
             JSONObject o = new JSONObject();

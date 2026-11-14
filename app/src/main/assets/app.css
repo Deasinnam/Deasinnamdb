@@ -967,10 +967,12 @@ header.top{padding-top:28px!important}
 :root[data-ck2] .win.hasrail .ckrail button svg{width:16px;height:16px;flex:none}
 :root[data-ck2] .win.hasrail .ckrail button span{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:clip;font-size:inherit}
 :root[data-ck2] .win.hasrail .ckrail button[data-f="vis"] span{white-space:normal;font-size:8.5px;line-height:.95}
-:root[data-ck2] .win.hasrail .ckrail button[data-open] em{font-size:8.5px;margin-top:0}
+:root[data-ck2] .win.hasrail .ckrail button[data-open] em,
+:root[data-ck2] .win.hasrail .ckrail button[data-ai] em{font-size:8.5px;margin-top:0}
 :root[data-ck2] .win.hasrail .ckrail .ckdiv{flex:none;width:2px;height:auto;margin:4px 1px;background:linear-gradient(180deg,transparent,#a8f08f55,transparent)}
 @media (max-width:460px){:root[data-ck2] .win.hasrail .ckrail{gap:3px;padding:3px}:root[data-ck2] .win.hasrail .ckrail button{font-size:9px;padding:3px 0}:root[data-ck2] .win.hasrail .ckrail button svg{width:15px;height:15px}
-  :root[data-ck2] .win.hasrail .ckrail button[data-open] em{display:none}}
+  :root[data-ck2] .win.hasrail .ckrail button[data-open] em,
+  :root[data-ck2] .win.hasrail .ckrail button[data-ai] em{display:none}}
 
 :root[data-ck2] .app.FX.RL{grid-template-columns:92px minmax(0,1fr)!important}
 :root[data-ck2] .app.FX.RL>.win.fx{grid-column:2!important}
@@ -988,7 +990,8 @@ header.top{padding-top:28px!important}
 .ckrail .ckdiv{flex:none;display:block;height:2px;margin:2px 6px;background:linear-gradient(90deg,transparent,#a8f08f55,transparent)}
 .ckrail button[data-open]{line-height:1.05;text-align:center;font-size:10.5px;color:#f3bc65}
 .ckrail button[data-open] svg{fill:#f3bc65}
-.ckrail button[data-open] em{display:block;font-style:normal;font-size:9.5px;opacity:.85;margin-top:1px;-webkit-touch-callout:none}
+.ckrail button[data-open] em,
+.ckrail button[data-ai] em{display:block;font-style:normal;font-size:9.5px;opacity:.85;margin-top:1px;-webkit-touch-callout:none}
 .ckrail button[data-open]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* 측면 [T맵]·[네이버지도] 위/아래 고르기 */
 .navpick{position:fixed;z-index:60;display:flex;flex-direction:column;gap:8px;width:210px;padding:12px;border:1px solid #000;border-radius:8px;
@@ -1676,7 +1679,8 @@ html.driving body{overflow:hidden}
 :root[data-split="ck"][data-ck2] .win.hasrail .ckrail{padding:1px 2px;gap:3px;margin:2px 2px 0;border-radius:5px}
 :root[data-split="ck"][data-ck2] .win.hasrail .ckrail button{flex-direction:row;gap:4px;min-height:24px;max-height:26px;padding:0 2px;font-size:10px}
 :root[data-split="ck"][data-ck2] .win.hasrail .ckrail button svg{width:14px;height:14px}
-:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-open] em,:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-f="vis"] span br{display:none}
+:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-open] em,:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-f="vis"] span br,
+:root[data-split="ck"][data-ck2] .win.hasrail .ckrail button[data-ai] em{display:none}
 
 /* 1.19.1 콕핏: 기록 칸을 낮게 → 활주로(PFD) 화면을 더 크게 */
 :root[data-ck2] #wGps #pfdHost .pfd-metrics{margin:0 2px 5px;gap:4px}
@@ -2353,7 +2357,8 @@ html.driving body{overflow:hidden}
   :root[data-fold][data-ck2] .win.hasrail .ckrail button{flex-direction:column!important;font-size:10px!important;padding:3px 0!important}
   :root[data-fold][data-ck2] .win.hasrail .ckrail button span[data-s]{font-size:0!important}
   :root[data-fold][data-ck2] .win.hasrail .ckrail button span[data-s]::after{content:attr(data-s);font-size:10px}
-  :root[data-fold][data-ck2] .win.hasrail .ckrail button[data-open] em{display:none}
+  :root[data-fold][data-ck2] .win.hasrail .ckrail button[data-open] em,
+  :root[data-fold][data-ck2] .win.hasrail .ckrail button[data-ai] em{display:none}
   :root[data-fold][data-cks] .app.G:not(.FX){grid-template-columns:minmax(0,1.12fr) minmax(0,1fr)!important;
     grid-template-areas:"gps main" "gps radio" "ctl radio" "map map" "eq pl" "log log" "cam cam"!important;align-items:start}
   :root[data-fold][data-cks] .app.G:not(.FX)>#wGps{align-self:stretch}
@@ -2575,12 +2580,13 @@ img{height:auto;object-fit:contain}
 
 /* 4) 콕핏 바로가기 줄: 좁으면 4칸씩 두 줄(글자가 잘리지 않게) */
 @media (max-width:540px){
-  :root[data-ck2] .win.hasrail .ckrail{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible!important}
+  :root[data-ck2] .win.hasrail .ckrail{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;overflow:visible!important}
   :root[data-ck2] .win.hasrail .ckrail .ckdiv{display:none}
   :root[data-ck2] .win.hasrail .ckrail button{min-height:var(--hit)!important;max-height:none!important;font-size:11px!important;padding:4px 2px}
   :root[data-ck2] .win.hasrail .ckrail button span,:root[data-ck2] .win.hasrail .ckrail button span[data-s]{white-space:normal!important;overflow:visible!important;font-size:11px!important;line-height:1.1;text-align:center;word-break:keep-all}
   :root[data-ck2] .win.hasrail .ckrail button span[data-s]::after{content:none!important}
-  :root[data-ck2] .win.hasrail .ckrail button[data-open] em{display:block!important}
+  :root[data-ck2] .win.hasrail .ckrail button[data-open] em,
+  :root[data-ck2] .win.hasrail .ckrail button[data-ai] em{display:block!important}
 }
 
 /* 5) 재생 버튼 줄(콕핏 스페셜 2): 좁으면 4칸씩 */
@@ -2807,3 +2813,25 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .ckrail .ck-liq{position:absolute;z-index:3;pointer-events:none;box-sizing:border-box;border-radius:var(--liq-r,6px);opacity:0;
   box-shadow:inset 0 0 0 1.5px var(--liq-acc,#ffc35c),inset 0 -3px 0 var(--liq-acc,#ffc35c);background:color-mix(in srgb,var(--liq-acc,#ffc35c) 12%,transparent)}
 .ckrail.liq button[data-f].on{background:var(--liq-bg)!important;box-shadow:var(--liq-bs)!important;border-color:var(--liq-bc)!important}
+/* 1.64 AI 음성 대화: 앱 고르기 창과 스피드미터 위 AI 아일랜드 */
+.aipick{width:min(92vw,360px);display:flex;flex-direction:column;gap:10px}
+.aipick .ai-apps,.aipick .ai-at{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.aipick .ai-apps .pill{min-height:52px;font-size:17px;font-weight:700}
+.aipick small{line-height:1.5}
+.ai-isl{position:absolute;z-index:5;left:50%;bottom:calc(var(--pfd-cmp,60px) + 66px);transform:translate(-50%,10px) scale(.96);opacity:0;pointer-events:none;
+  display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;width:max-content;max-width:min(60%,460px);padding:7px 16px 7px 10px;border-radius:999px;
+  background:rgba(6,10,14,.8);border:1px solid rgba(255,255,255,.2);color:#e8eadf;font-family:"Barlow Condensed","Noto Sans KR",sans-serif;
+  transition:opacity .22s ease,transform .32s cubic-bezier(.2,.9,.3,1.02),border-radius .32s cubic-bezier(.2,.9,.3,1.02)}
+.ai-isl.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.ai-isl.txt{border-radius:22px}
+.ai-isl .ai-w{grid-row:1/3;width:44px;height:28px;display:flex;align-items:center;justify-content:space-between}
+.ai-isl .ai-w i{display:block;width:4px;height:28px;border-radius:2px;background:#e8eadf;transform:scaleY(.15)}
+.ai-isl[data-phase=speak] .ai-w i{background:#ffd27a}.ai-isl[data-phase=listen] .ai-w i{background:#9fd8ff}
+.ai-isl b{font-weight:700;font-size:clamp(14px,1.6vw,19px);letter-spacing:.12em;white-space:nowrap;display:flex;gap:10px;align-items:baseline}
+.ai-isl .ai-s{font-style:normal;font-family:"Noto Sans KR",sans-serif;letter-spacing:.02em;font-size:.85em;color:#fff}
+.ai-isl[data-phase=speak] .ai-s{color:#ffd27a}.ai-isl[data-phase=listen] .ai-s{color:#9fd8ff}
+.ai-isl .ai-t{display:none;font-family:"Noto Sans KR",sans-serif;font-size:clamp(12px,1.35vw,15px);color:#cfd3c8;line-height:1.35;max-height:2.7em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ai-isl:not(.txt) .ai-t{display:none}
+/* 1.64 [AI] 버튼은 좁게(아이콘 + AI) — 다른 버튼 글자가 줄바꿈되지 않게 */
+@media (min-width:461px) and (max-width:640px){:root[data-ck2] .win.hasrail .ckrail button span{font-size:10px!important;letter-spacing:-.03em}}
+@media (min-width:541px) and (max-width:899px){:root[data-ck2] .win.hasrail .ckrail button[data-ai]{flex:0 0 32px}:root[data-ck2] .win.hasrail .ckrail button[data-ai] em{display:none!important}}

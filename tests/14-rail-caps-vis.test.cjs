@@ -23,7 +23,7 @@ run('Cockpit rail row, device support, 40 effects with favorites', async ({conte
     // 1.47 좁은 화면(540px 이하)은 글자가 잘리지 않게 4칸씩 두 줄, 넓으면 한 줄
     assert.equal(r.rows, w <= 540 ? 2 : 1, `Shortcut rows at ${w}px`);
     assert.ok(r.below, 'Shortcuts sit right under the speedometer view');
-    assert.ok(r.maxH <= (w <= 540 ? 64 : 48), 'Compact buttons');
+    assert.ok(r.maxH <= (w <= 540 ? 64 : 48), 'Compact buttons ' + w + ' ' + JSON.stringify(r));
     assert.ok(r.fits && !r.clipped, `Labels fit at ${w}px`);
     assert.ok(r.glassW > r.winW - 70, 'Speedometer view uses the full width (no side rail)');
     assert.ok(await p.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth + 1), 'No sideways overflow');
