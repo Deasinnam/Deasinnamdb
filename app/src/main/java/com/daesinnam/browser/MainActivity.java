@@ -1311,8 +1311,8 @@ public class MainActivity extends Activity {
 
     /** 입력칸이 뜰 때까지(최대 약 40초) 기다렸다가 없는 주소를 넣고 "다음" */
     private void googleTypeAttempt(int n) {
-        web.postDelayed(() -> web.evaluateJavascript("(function(){var i=document.querySelector('input[type=email]');if(!i||!i.offsetParent)return 'noinput';"
-                + "i.focus();i.value='dn.selftest.nobody.73914@gmail.com';i.dispatchEvent(new Event('input',{bubbles:true}));"
+        web.postDelayed(() -> web.evaluateJavascript("(function(){var i=document.querySelector('#identifierId,input[name=identifier],input[type=email],input[autocomplete=username]');if(!i)return 'noinput';"
+                + "i.focus();i.value='dn.selftest.nobody.73914@gmail.com';i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true}));"
                 + "var b=document.querySelector('#identifierNext button')||document.querySelector('#identifierNext');if(!b)return 'nobutton';b.click();return 'ok';})()",
                 v -> {
                     Log.i(TAG, "INFO google typed " + v + " (" + n + ")");
