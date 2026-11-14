@@ -2833,5 +2833,7 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .ai-isl .ai-t{display:none;font-family:"Noto Sans KR",sans-serif;font-size:clamp(12px,1.35vw,15px);color:#cfd3c8;line-height:1.35;max-height:2.7em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .ai-isl:not(.txt) .ai-t{display:none}
 /* 1.64 [AI] 버튼은 좁게(아이콘 + AI) — 다른 버튼 글자가 줄바꿈되지 않게 */
-@media (min-width:461px) and (max-width:640px){:root[data-ck2] .win.hasrail .ckrail button span{font-size:10px!important;letter-spacing:-.03em}}
+@media (min-width:461px) and (max-width:640px){:root[data-ck2] .win.hasrail .ckrail button span{font-size:10px!important;letter-spacing:-.03em;white-space:nowrap}
+  :root[data-ck2] .win.hasrail .ckrail button span[data-s]{font-size:0!important}
+  :root[data-ck2] .win.hasrail .ckrail button span[data-s]::after{content:attr(data-s);font-size:10px}}
 @media (min-width:541px) and (max-width:899px){:root[data-ck2] .win.hasrail .ckrail button[data-ai]{flex:0 0 32px}:root[data-ck2] .win.hasrail .ckrail button[data-ai] em{display:none!important}}
