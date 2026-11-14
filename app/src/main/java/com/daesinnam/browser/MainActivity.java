@@ -104,6 +104,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "BROWSER_SELFTEST";
     private static final String HOME = "https://www.naver.com/";
     private static final String STUDIO = "https://studio.youtube.com/";
+    private static final String CHROME_PKG = "com.android.chrome";
     private static final int REQ_FILE = 42;
     private static final int REQ_STORAGE = 43;
     /** 페이지가 스크립트로 만든 파일(blob·data 주소)은 앱 메모리를 거쳐 저장하므로 크기를 제한합니다 */
@@ -148,8 +149,6 @@ public class MainActivity extends Activity {
     private BroadcastReceiver downloadDone;
     private int selftestDownloadsLeft;
     private boolean selftest;
-    private boolean googleTest;
-    private boolean googleTestStarted;
     private boolean selftestDone;
     private int selftestRetries;
 
@@ -158,7 +157,6 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle state) {
         super.onCreate(state);
         selftest = BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("browser.selftest");
-        googleTest = selftest && getIntent().getBooleanExtra("browser.google", false);
         desktopWidth = getPreferences(MODE_PRIVATE).getInt("width", 1280);
         loadBookmarks();
         WebView.setWebContentsDebuggingEnabled(false);
@@ -221,7 +219,7 @@ public class MainActivity extends Activity {
         topBar.addView(address, new LinearLayout.LayoutParams(0, dp(34), 1f));
         topBar.addView(barButton("네이버", () -> navigate(HOME), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
         topBar.addView(barButton("유튜브", () -> navigate(WebLinkResolver.YOUTUBE_HOME), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
-        topBar.addView(barButton("스튜디오", () -> navigate(STUDIO), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
+        topBar.addView(barButton("스튜디오", () -> openInChrome(STUDIO), ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
         root.addView(topBar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(40)));
 
         // 차단 알림: 인증서 오류·유해 사이트일 때만 보입니다
@@ -302,26 +300,12 @@ public class MainActivity extends Activity {
         // 모바일 화면을 주는 사이트가 있습니다 → 그 표시도 PC로 맞춥니다.
         if (WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
             try {
-                // 브랜드 목록에 "Android WebView"가 있으면 구글 로그인이 "안전하지 않은 브라우저"로 막습니다 → Chromium만 남김
-                String major = chrome.split("\\.")[0];
-                java.util.List<UserAgentMetadata.BrandVersion> brands = new java.util.ArrayList<>();
-                brands.add(new UserAgentMetadata.BrandVersion.Builder().setBrand("Chromium").setMajorVersion(major).setFullVersion(chrome).build());
-                brands.add(new UserAgentMetadata.BrandVersion.Builder().setBrand("Not:A-Brand").setMajorVersion("24").setFullVersion("24.0.0.0").build());
                 UserAgentMetadata meta = new UserAgentMetadata.Builder(WebSettingsCompat.getUserAgentMetadata(s))
-                        .setBrandVersionList(brands).setFullVersion(chrome)
                         .setMobile(false).setPlatform("Linux").setPlatformVersion("").setArchitecture("x86")
                         .setModel("").setBitness(64).build();
                 WebSettingsCompat.setUserAgentMetadata(s, meta);
             } catch (RuntimeException e) {
                 Log.w(TAG, "클라이언트 힌트 설정 실패: " + e);
-            }
-        }
-        // 요청마다 붙는 "이 앱 이름(X-Requested-With)" 표시를 끕니다. 구글은 이 표시가 있으면 앱 속 브라우저로 보고 로그인을 막습니다.
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.REQUESTED_WITH_HEADER_ALLOW_LIST)) {
-            try {
-                WebSettingsCompat.setRequestedWithHeaderOriginAllowList(s, Collections.emptySet());
-            } catch (RuntimeException e) {
-                Log.w(TAG, "앱 이름 표시 끄기 실패: " + e);
             }
         }
         s.setJavaScriptEnabled(true);
@@ -373,7 +357,6 @@ public class MainActivity extends Activity {
                     view.stopLoading();
                     return;
                 }
-                updateThirdPartyCookies(url);
                 showNotice(null);
                 if (!address.hasFocus()) address.setText(url);
             }
@@ -397,8 +380,7 @@ public class MainActivity extends Activity {
                     web.clearHistory();
                     clearHistoryAfterLoad = false;
                 }
-                if (googleTest) runGoogleTest(url);
-                else if (selftest) runSelftest(url);
+                if (selftest) runSelftest(url);
             }
 
             @Override
@@ -520,27 +502,6 @@ public class MainActivity extends Activity {
         });
     }
 
-    // ---------- 구글·유튜브 로그인 ----------
-
-    /** 구글·유튜브 사이트인지 (주소의 호스트로 판단) */
-    static boolean isGoogleSite(String url) {
-        UrlPolicy.Parts p = UrlPolicy.parse(url);
-        if (p == null) return false;
-        String h = p.host.toLowerCase(Locale.ROOT);
-        for (String d : new String[]{"google.com", "google.co.kr", "youtube.com"}) {
-            if (h.equals(d) || h.endsWith("." + d)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * 구글 로그인은 accounts.google.com ↔ youtube.com 사이를 오가며 로그인 상태를 맞추므로
-     * 구글·유튜브 페이지를 볼 때만 제3자 쿠키를 허용합니다 (다른 사이트에서는 계속 차단).
-     */
-    private void updateThirdPartyCookies(String url) {
-        CookieManager.getInstance().setAcceptThirdPartyCookies(web, isGoogleSite(url));
-    }
-
     // ---------- PC 화면 폭 ----------
 
     /**
@@ -597,11 +558,72 @@ public class MainActivity extends Activity {
             web.loadUrl(resolved);
             return true;
         }
+        String host = Uri.parse(resolved).getHost();
+        if ("studio.youtube.com".equalsIgnoreCase(host)) { // 유튜브 스튜디오는 구글 로그인이 필요해 크롬으로
+            openInChrome(resolved);
+            return true;
+        }
+        if (isGoogleSignIn(Uri.parse(resolved))) {
+            askGoogleSignIn(resolved);
+            return true;
+        }
         if ("m.naver.com".equalsIgnoreCase(uri.getHost())) { // 네이버 모바일 첫 화면 → PC 첫 화면
             web.loadUrl(uri.buildUpon().authority("www.naver.com").build().toString());
             return true;
         }
         return false;
+    }
+
+    // ---------- 구글 로그인 · 유튜브 스튜디오 → 크롬 ----------
+    //
+    // 구글은 안드로이드 WebView로 만든 앱 안에서의 로그인을 막습니다("이 브라우저나 앱은 안전하지 않을 수 있음").
+    // 그래서 로그인이 필요한 유튜브 스튜디오와 구글 로그인 화면은 크롬에서 엽니다.
+
+    private static boolean isGoogleSignIn(Uri u) {
+        if (u == null || !"accounts.google.com".equalsIgnoreCase(u.getHost())) return false;
+        String path = u.getPath() == null ? "" : u.getPath().toLowerCase(Locale.ROOT);
+        return path.startsWith("/v3/signin") || path.startsWith("/signin") || path.startsWith("/servicelogin")
+                || path.startsWith("/accountchooser") || path.startsWith("/o/oauth2") || path.startsWith("/addsession");
+    }
+
+    private void askGoogleSignIn(String url) {
+        new AlertDialog.Builder(this).setTitle("구글 로그인")
+                .setMessage("구글은 이 브라우저 같은 앱 안의 화면에서 로그인을 막습니다.\n\n크롬에서 로그인할까요? 유튜브 스튜디오도 위쪽 \"스튜디오\" 단추를 누르면 크롬에서 열립니다.")
+                .setNegativeButton("취소", null)
+                .setPositiveButton("크롬에서 열기", (d, w) -> openInChrome(url))
+                .show();
+    }
+
+    /** 크롬에서 엽니다 (크롬이 없으면 다른 브라우저를 고르게 함). 처음 한 번은 PC 버전 사이트 켜는 법을 안내 */
+    private void openInChrome(String url) {
+        if (!UrlPolicy.isAllowed(url)) return;
+        if (!getPreferences(MODE_PRIVATE).getBoolean("chromeTip", false)) {
+            new AlertDialog.Builder(this).setTitle("크롬에서 열기")
+                    .setMessage("유튜브 스튜디오와 구글 로그인은 크롬에서 엽니다.\n\nPC 화면으로 보려면 크롬에서 처음 한 번만 오른쪽 위 메뉴(⋮) → \"PC 버전 사이트\"를 켜 두세요. 크롬이 사이트별로 기억합니다. (DeX에서는 처음부터 PC 화면으로 열립니다.)")
+                    .setNegativeButton("취소", null)
+                    .setPositiveButton("열기", (d, w) -> {
+                        getPreferences(MODE_PRIVATE).edit().putBoolean("chromeTip", true).apply();
+                        launchChrome(url);
+                    }).show();
+            return;
+        }
+        launchChrome(url);
+    }
+
+    private void launchChrome(String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).setPackage(CHROME_PKG);
+        try {
+            startActivity(i);
+            return;
+        } catch (ActivityNotFoundException ignored) {
+        }
+        i.setPackage(null);
+        try {
+            startActivity(Intent.createChooser(i, "열 브라우저 선택 (크롬 권장)"));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "크롬을 설치하면 유튜브 스튜디오와 구글 로그인을 쓸 수 있습니다.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void navigate(String input) {
@@ -740,13 +762,13 @@ public class MainActivity extends Activity {
                         .setNegativeButton("취소", null).setPositiveButton("삭제", (d2, w) -> clearWebData()).show();
             } else if (which == 3) {
                 new AlertDialog.Builder(this).setTitle("보안 상태")
-                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단\n• 제3자 쿠키 차단 (구글·유튜브 페이지에서만 로그인 유지를 위해 허용)\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만\n\nSafe Browsing: "
+                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단 (유튜브 스튜디오·구글 로그인은 크롬으로)\n• 제3자 쿠키 차단\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만\n\nSafe Browsing: "
                                 + (safeBrowsingReady ? "초기화 완료" : "활성화 요청됨 · 초기화 미확인")
                                 + "\n탐지 범위는 기기의 WebView와 서비스 상태에 따라 다릅니다.\n\nWebView를 최신 버전으로 유지하세요. HTTPS만으로 사이트의 신뢰성이 보장되지는 않습니다.")
                         .setPositiveButton("확인", null).show();
             } else {
                 new AlertDialog.Builder(this).setTitle("덜누름 브라우저 " + BuildConfig.VERSION_NAME)
-                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 받은 파일은 휴대폰의 \"다운로드\" 폴더에 저장됩니다. 동기화·확장 프로그램·다중 탭은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
+                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 받은 파일은 휴대폰의 \"다운로드\" 폴더에 저장됩니다. 구글이 앱 속 브라우저의 로그인을 막아, 유튜브 스튜디오와 구글 로그인은 크롬에서 엽니다. 동기화·확장 프로그램·다중 탭은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
                         .setPositiveButton("확인", null).show();
             }
         }).show();
@@ -1276,7 +1298,6 @@ public class MainActivity extends Activity {
         web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({w:window.innerWidth,ua:navigator.userAgent,"
                 + "mobile:navigator.userAgentData?navigator.userAgentData.mobile:null,"
                 + "platform:navigator.userAgentData?navigator.userAgentData.platform:null,"
-                + "brands:navigator.userAgentData?navigator.userAgentData.brands.map(function(b){return b.brand;}).join(','):null,"
                 + "vp:(document.querySelector('meta[name=viewport]')||{}).content||null})", v -> {
             try {
                 JSONObject o = new JSONObject(new JSONArray("[" + v + "]").getString(0));
@@ -1285,56 +1306,12 @@ public class MainActivity extends Activity {
                 Log.i(TAG, (uaOk ? "PASS" : "FAIL") + " user agent " + ua);
                 Log.i(TAG, (o.optInt("w") == desktopWidth ? "PASS" : "FAIL") + " page width " + o.optInt("w") + " (want " + desktopWidth + ") viewport=" + o.optString("vp") + " url=" + url);
                 if (o.isNull("mobile")) Log.i(TAG, "SKIP client hints (이 WebView는 지원 안 함)");
-                else {
-                    Log.i(TAG, (!o.optBoolean("mobile") && "Linux".equals(o.optString("platform")) ? "PASS" : "FAIL") + " client hints mobile=" + o.opt("mobile") + " platform=" + o.optString("platform"));
-                    Log.i(TAG, (o.optString("brands").contains("WebView") ? "FAIL" : "PASS") + " brands " + o.optString("brands"));
-                }
+                else Log.i(TAG, (!o.optBoolean("mobile") && "Linux".equals(o.optString("platform")) ? "PASS" : "FAIL") + " client hints mobile=" + o.opt("mobile") + " platform=" + o.optString("platform"));
             } catch (JSONException e) {
                 Log.i(TAG, "FAIL selftest parse " + v);
             }
             selftestDownloads();
         }), 1500);
-    }
-
-    /**
-     * 구글 로그인 점검: 로그인 화면에 없는 주소를 넣고 "다음"을 눌러,
-     * "안전하지 않은 브라우저" 차단 화면이 아니라 "계정을 찾을 수 없음"(= 로그인 진행 가능)이 나오는지 봅니다.
-     */
-    private void runGoogleTest(String url) {
-        if (!url.contains("accounts.google.com") || googleTestStarted) {
-            if (!googleTestStarted) Log.i(TAG, "INFO google page " + url);
-            return;
-        }
-        googleTestStarted = true;
-        googleTypeAttempt(0);
-    }
-
-    /** 입력칸이 뜰 때까지(최대 약 40초) 기다렸다가 없는 주소를 넣고 "다음" */
-    private void googleTypeAttempt(int n) {
-        web.postDelayed(() -> web.evaluateJavascript("(function(){var i=document.querySelector('#identifierId,input[name=identifier],input[type=email],input[autocomplete=username]');if(!i)return 'noinput';"
-                + "i.focus();i.value='dn.selftest.nobody.73914@gmail.com';i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true}));"
-                + "var b=document.querySelector('#identifierNext button')||document.querySelector('#identifierNext');if(!b)return 'nobutton';b.click();return 'ok';})()",
-                v -> {
-                    Log.i(TAG, "INFO google typed " + v + " (" + n + ")");
-                    if ("\"noinput\"".equals(v) && n < 20) googleTypeAttempt(n + 1);
-                    else googleCheckAttempt(0);
-                }), 2000);
-    }
-
-    /** 결과 화면이 나올 때까지(최대 약 30초) 확인 */
-    private void googleCheckAttempt(int n) {
-        web.postDelayed(() -> web.evaluateJavascript("JSON.stringify({u:location.href,t:(document.body?document.body.innerText:'').slice(0,800)})", v -> {
-            String text = v == null ? "" : v.replace("\\n", " ");
-            String low = text.toLowerCase(Locale.ROOT);
-            boolean blocked = low.contains("may not be secure") || low.contains("안전하지 않") || low.contains("disallowed_useragent") || low.contains("browser or app");
-            boolean through = low.contains("couldn") || low.contains("찾을 수 없") || low.contains("enter your password") || low.contains("비밀번호") || low.contains("valid email") || low.contains("올바른");
-            if (!blocked && !through && n < 10) {
-                googleCheckAttempt(n + 1);
-                return;
-            }
-            Log.i(TAG, (blocked ? "FAIL" : through ? "PASS" : "INFO") + " google sign-in " + text.substring(0, Math.min(500, text.length())));
-            Log.i(TAG, "DONE");
-        }), 3000);
     }
 
     /**

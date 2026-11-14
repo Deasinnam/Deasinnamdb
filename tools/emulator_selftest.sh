@@ -37,22 +37,6 @@ if ! grep -q "BROWSER_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ]; 
 if [ "$pass" -lt 3 ]; then fail=1; fi
 if [ "$skip" != 0 ]; then echo "에뮬레이터에서 시험 페이지를 불러오지 못해 PC 모드를 확인하지 못했습니다 (다시 돌려야 함)"; fail=1; fi
 
-# 구글 로그인 점검: 유튜브 스튜디오 → 구글 로그인 화면 → "안전하지 않은 브라우저" 차단이 나오지 않는지
-echo "===== 구글 로그인 (유튜브 스튜디오) ====="
-adb shell am force-stop "$PKG"
-adb logcat -c
-adb shell am start -n "$PKG/.MainActivity" --ez browser.selftest true --ez browser.google true --es browser.url "https://studio.youtube.com/" >/dev/null
-for i in $(seq 1 50); do
-  sleep 3
-  if adb logcat -d -s BROWSER_SELFTEST:I | grep -q "DONE"; then break; fi
-done
-adb exec-out screencap -p > browser-screen-google.png
-adb logcat -d -s BROWSER_SELFTEST:I > google-result.txt
-sed 's/^.*BROWSER_SELFTEST: //' google-result.txt | cut -c1-500
-cat google-result.txt >> selftest-result.txt
-if grep -q "BROWSER_SELFTEST: FAIL" google-result.txt; then echo "구글 로그인이 차단됨"; fail=1; fi
-if ! grep -q "BROWSER_SELFTEST: PASS google" google-result.txt; then echo "구글 로그인 진행을 확인하지 못함 (기록 확인 필요)"; fi
-
 # 실제 첫 화면(네이버)이 PC 화면으로 뜨는 모습 (기록용)
 adb shell am force-stop "$PKG"
 adb shell am start -n "$PKG/.MainActivity" >/dev/null
