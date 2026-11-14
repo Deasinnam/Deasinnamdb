@@ -42,7 +42,7 @@ const AiTalk=(()=>{
   const isl=document.createElement('div');isl.className='ai-isl';isl.setAttribute('role','status');isl.setAttribute('aria-live','polite');
   isl.innerHTML='<span class="ai-w" aria-hidden="true">'+'<i></i>'.repeat(7)+'</span><b><span class="ai-n"></span><em class="ai-s"></em></b><small class="ai-t"></small>';
   const bars=[...isl.querySelectorAll('.ai-w i')],nEl=isl.querySelector('.ai-n'),sEl=isl.querySelector('.ai-s'),tEl=isl.querySelector('.ai-t');
-  let st={on:false,phase:'live',name:'',text:''},offAt=0,lastText='',textAt=0,raf=0,lv=[0,0,0,0,0,0,0];
+  let live={on:false,phase:'live',name:'',text:'',hint:false},st={on:false,phase:'live',name:'',text:''},offAt=0,lastText='',textAt=0,raf=0,lv=[0,0,0,0,0,0,0];
   function host(){return document.querySelector('#pfdHost [data-role="canvasWrap"]')}
   function info(){if(window.__ai)return window.__ai;try{return NB&&NB.aiInfo?JSON.parse(NB.aiInfo()):null}catch(e){return null}}
   function judge(){const i=info()||{},now=Date.now(),launched=now-launchAt<30*60e3||!!window.__ai;
@@ -53,7 +53,7 @@ const AiTalk=(()=>{
     if(i.text&&i.text!==lastText){lastText=i.text;textAt=now}
     return {on,phase,name:a?a.name:'AI',text:now-textAt<60e3?lastText:'',hint:launched&&i.notif===false}}
   function render(){const h=host();if(h&&isl.parentNode!==h)h.appendChild(isl);
-    const j=judge(),now=Date.now();if(j.on)offAt=0;else if(!offAt)offAt=now;
+    const j=judge(),now=Date.now();live=j;if(j.on)offAt=0;else if(!offAt)offAt=now;
     const vis=j.on||(st.on&&now-offAt<3000);
     isl.classList.toggle('show',vis);isl.dataset.phase=j.on?j.phase:st.phase;
     if(j.on){nEl.textContent=j.name.toUpperCase();sEl.textContent=j.phase==='speak'?'말하는 중':j.phase==='listen'?'듣는 중':'대화 중';
@@ -75,5 +75,5 @@ const AiTalk=(()=>{
       lv[k]+=(g-lv[k])*.28;bars[k].style.transform='scaleY('+Math.max(.15,lv[k]).toFixed(3)+')';bars[k].style.opacity=(.55+.45*(1-c)).toFixed(2)}
     raf=requestAnimationFrame(draw)}
   setInterval(render,500);setTimeout(render,400);
-  return {open,show,close,render,get state(){return judge()}}})();
+  return {open,show,close,render,get state(){return judge()},get live(){return live}}})();
 window.AmpAiTalk=AiTalk;

@@ -26,6 +26,11 @@ run('AI voice talk button and speedometer island', async ({newPage, origin}) => 
   assert.equal(await isl.locator('.ai-s').textContent(), '말하는 중');
   assert.match(await isl.locator('.ai-t').textContent(), /안성휴게소/);
   assert.equal(await isl.evaluate(e => e.classList.contains('txt')), true);
+  // 1.65 NOW PLAYING 시각화 화면도 대화 효과로 바뀜
+  await p.locator('#ckRail button[data-f="vis"]').click(); await p.waitForTimeout(800);
+  const n0 = await p.evaluate(() => window.__aiVisN || 0); await p.waitForTimeout(600);
+  assert.ok(await p.evaluate(() => window.__aiVisN || 0) > n0, 'visualizer draws the AI talk scene');
+  await p.locator('#ckRail button[data-f="gps"]').click(); await p.waitForTimeout(600);
   // 대화가 끝나면 잠시 뒤 사라짐
   await p.evaluate(() => { window.__ai = {on: false}; window.__aiOffTest = 1; });
   await p.evaluate(() => { delete window.__ai; AmpAiTalk.render(); });
