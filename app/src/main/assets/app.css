@@ -2888,3 +2888,12 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .xinpick .pill{min-height:52px;font-size:17px;font-weight:700}
 /* 플레이어 버튼 줄: 칸 수와 상관없이 한 줄(라디오 전환 옆 외부 입력이 늘어서) */
 :root[data-narrow] #wMain#wMain .transport{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important}
+/* 1.72 좁은 화면(반 가르기·바깥 화면): 좌우 속도·고도 띠를 감추고(계기 그림을 띠 폭만큼 넓혀 띠는 유리 밖으로) 속도는 가운데 크게 — 펼친 화면은 그대로 */
+:root[data-narrow] #pfdHost .pfd-glass{overflow:hidden!important}
+:root[data-narrow] #pfdHost .pfd-canvas-wrap{width:calc(100% + 2 * var(--nar-tape,67px))!important;max-width:none!important;min-width:0!important;margin-left:calc(-1 * var(--nar-tape,67px))!important;margin-right:calc(-1 * var(--nar-tape,67px))!important;align-self:flex-start!important;flex-shrink:0!important}
+:root[data-narrow] #pfdHost .flt-btns{right:calc(var(--nar-tape,67px) + 8px)!important}
+.nar-spd{display:none}
+:root[data-narrow] #pfdHost .nar-spd{display:flex;position:absolute;z-index:3;left:50%;top:60%;transform:translateX(-50%);white-space:nowrap;align-items:baseline;gap:6px;pointer-events:none;
+  padding:2px 14px 4px;border-radius:14px;background:rgba(4,8,12,.42);color:#fff;text-shadow:0 2px 6px #000c}
+:root[data-narrow] #pfdHost .nar-spd b{font:800 clamp(46px,15vw,72px)/1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+:root[data-narrow] #pfdHost .nar-spd small{font:700 15px/1 "Noto Sans KR",sans-serif;color:#e9dcc0}
