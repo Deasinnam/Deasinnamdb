@@ -36,6 +36,7 @@ run('Narrow screens: Fold split half and cover display', async ({newPage, origin
   assert.equal(await p.evaluate(() => new Set([...document.querySelectorAll('#wMain .transport>.tb')].filter(b => b.offsetParent).map(b => Math.round(b.getBoundingClientRect().top))).size), 1, 'player buttons in one row');
   // 라디오 즐겨찾기 한 줄에 4칸
   await p.locator('#ckRail button[data-f="radio"]').click(); await p.waitForTimeout(700);
+  if (await p.evaluate(() => document.getElementById('rdPresetBox').hidden)) { await p.locator('#rdPresetTg').click(); await p.waitForTimeout(300); }
   assert.equal(await p.evaluate(() => getComputedStyle(document.getElementById('rdPresets')).gridTemplateColumns.split(' ').length), 4);
   await p.close();
 });

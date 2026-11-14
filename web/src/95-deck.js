@@ -39,7 +39,9 @@
   // 키 화면 그림: 연결될 때와 배치를 바꿀 때 화면 위치 1~15의 기능 아이콘 + 오른쪽 로고를 장치에 넣음
   let imgT=0,wasOpen=false;
   function pushImages(){clearTimeout(imgT);imgT=setTimeout(()=>{try{if(NB&&NB.deckImages&&st.open)NB.deckImages(JSON.stringify(Array.from({length:15},(_,i)=>map['k'+(i+1)]||'none')))}catch(e){}},300)}
-  window.__deckState=s=>{st=s||{};if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open;ui()};
+  // 1.69 연결되면·안 될 때 이유를 화면에 잠깐 알림(설정을 열지 않아도 무엇이 문제인지 보이게)
+  let lastMsg='';function tell(){const m=st.open?'몬스타덱 연결됨':st.present&&st.err&&!/연결 중|기다리는 중/.test(st.err)?'몬스타덱: '+st.err:'';if(m&&m!==lastMsg){lastMsg=m;try{toast(m)}catch(e){}}if(!st.present)lastMsg=''}
+  window.__deckState=s=>{st=s||{};if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open;tell();ui()};
   function stateNow(){try{if(NB&&NB.deckState){st=JSON.parse(NB.deckState()||'{}');if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open}}catch(e){}}
   function ui(){const sec=$('#secDeck');if(!sec)return;
     const s=$('#deckStat');s.textContent=!NB||!NB.deckState?'안드로이드 앱에서 동작해요(폴드에 USB-C로 꽂아 쓰세요).':st.open?'연결됨 · 키를 누르면 바로 동작해요':st.present?(st.err||'꽂혀 있어요 · [연결]을 눌러 주세요'):(st.err||'몬스타덱이 연결되어 있지 않아요');

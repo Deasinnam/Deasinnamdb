@@ -53,8 +53,8 @@ function sndKey(){if(!document.documentElement.hasAttribute('data-cp'))return;co
   const n=fxNoise(a,.03),hp=a.createBiquadFilter();hp.type='bandpass';hp.frequency.value=3200;hp.Q.value=1.2;const g=fxEnv(a,t,.22,.001,.025);n.connect(hp).connect(g).connect(a.destination);n.start(t);
   const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(190,t+.012);o.frequency.exponentialRampToValueAtTime(90,t+.07);const g2=fxEnv(a,t+.012,.18,.002,.06);o.connect(g2).connect(a.destination);o.start(t+.012);o.stop(t+.1)}
 /* 1.62.4 즐겨찾기 칸: 기본 6칸(2줄), 저장한 방송이 늘면 한 줄씩(한 줄 칸 수는 화면의 열 수를 따름) — 빈 칸만 잔뜩 보이지 않게 */
-function rdPresetCols(box){try{const c=getComputedStyle(box).gridTemplateColumns;const n=c&&c!=='none'?c.split(' ').filter(Boolean).length:0;return n>0&&n<=12?n:3}catch(e){return 3}}
-function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const cols=rdPresetCols(box),n=Math.max(cols*2,Math.ceil(rdFavs.length/cols)*cols); /* 1.67 한 줄에 4개 → 기본 두 줄(8칸) */
+function rdPresetCols(box){try{const c=getComputedStyle(box).gridTemplateColumns,m=/repeat\((\d+)/.exec(c||'');if(m)return +m[1]; /* 접혀 있으면 지정값 그대로 옴 */const n=c&&c!=='none'?c.split(' ').filter(Boolean).length:0;return n>0&&n<=12?n:4}catch(e){return 4}}
+function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const cols=rdPresetCols(box),n=rdFavs.length?Math.max(cols*2,Math.ceil(rdFavs.length/cols)*cols):cols; /* 1.67 한 줄에 4개 → 저장한 게 있으면 두 줄(8칸)부터, 하나도 없으면 한 줄(방송 목록이 보이게) */
   for(let i=0;i<n;i++){const st=rdFavs[i],b=document.createElement('button');b.type='button';b.dataset.p=i;b.dataset.n=i+1;if(st)b.title=st.name;b.addEventListener('pointerdown',()=>{try{sndKey()}catch(e){}});
     if(!st){b.className='blank';b.innerHTML='<em>P'+(i+1)+'</em><b>+</b>저장';b.setAttribute('aria-label','P'+(i+1)+' 비어 있음 · 지금 방송 저장');
       b.onclick=()=>{if(!rdCur)return toast('먼저 방송을 고른 뒤 저장하세요.');if(rdFavs.some(x=>x.id===rdCur.id))return toast('이미 저장된 방송이에요.');rdFavs.push(rdCur);store.set('rdFavs',rdFavs);rdShow();rdRenderList()};box.appendChild(b);continue}
@@ -211,7 +211,7 @@ $('#rdGo').onclick=()=>rdSearch($('#rdQ').value.trim());$('#rdQ').addEventListen
 $('#rdCountry').onchange=()=>rdSearch($('#rdQ').value.trim());
 function rdFold(tg,box,key,def){const b=$('#'+tg),x=$('#'+box),set=o=>{x.hidden=!o;b.setAttribute('aria-expanded',String(o))};set(store.get(key,def));
   b.onclick=()=>{const o=x.hidden;set(o);store.set(key,o);if(o&&box==='rdListBox')rdEnsure()}}
-rdFold('rdPresetTg','rdPresetBox','rdPresetOpen',true);rdFold('rdListTg','rdListBox','rdListOpen',!rdFavs.length);
+rdFold('rdPresetTg','rdPresetBox','rdPresetOpen',rdFavs.length>0); /* 1.69 즐겨찾기가 없으면 처음엔 접고 방송 목록을 보여 줌 */rdFold('rdListTg','rdListBox','rdListOpen',!rdFavs.length);
 let rdLoaded=false;function rdEnsure(){rdShow();if(!rdLoaded){rdLoaded=true;rdSearch('')}requestAnimationFrame(rdDraw)}
 function openRadio(){const w=$('#wRadio');w.classList.remove('collapsed');if(isCk2()){ckFocus('radio')}else w.scrollIntoView({block:'start',behavior:'smooth'});rdEnsure()}
 new IntersectionObserver(es=>{const v=es.some(e=>e.isIntersecting);if(v)rdEnsure();rdSigRun(v)}).observe($('#wRadio'));

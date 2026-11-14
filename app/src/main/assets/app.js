@@ -2747,8 +2747,8 @@ function sndKey(){if(!document.documentElement.hasAttribute('data-cp'))return;co
   const n=fxNoise(a,.03),hp=a.createBiquadFilter();hp.type='bandpass';hp.frequency.value=3200;hp.Q.value=1.2;const g=fxEnv(a,t,.22,.001,.025);n.connect(hp).connect(g).connect(a.destination);n.start(t);
   const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(190,t+.012);o.frequency.exponentialRampToValueAtTime(90,t+.07);const g2=fxEnv(a,t+.012,.18,.002,.06);o.connect(g2).connect(a.destination);o.start(t+.012);o.stop(t+.1)}
 /* 1.62.4 즐겨찾기 칸: 기본 6칸(2줄), 저장한 방송이 늘면 한 줄씩(한 줄 칸 수는 화면의 열 수를 따름) — 빈 칸만 잔뜩 보이지 않게 */
-function rdPresetCols(box){try{const c=getComputedStyle(box).gridTemplateColumns;const n=c&&c!=='none'?c.split(' ').filter(Boolean).length:0;return n>0&&n<=12?n:3}catch(e){return 3}}
-function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const cols=rdPresetCols(box),n=Math.max(cols*2,Math.ceil(rdFavs.length/cols)*cols); /* 1.67 한 줄에 4개 → 기본 두 줄(8칸) */
+function rdPresetCols(box){try{const c=getComputedStyle(box).gridTemplateColumns,m=/repeat\((\d+)/.exec(c||'');if(m)return +m[1]; /* 접혀 있으면 지정값 그대로 옴 */const n=c&&c!=='none'?c.split(' ').filter(Boolean).length:0;return n>0&&n<=12?n:4}catch(e){return 4}}
+function rdRenderFavs(){const box=$('#rdPresets');box.innerHTML='';const cols=rdPresetCols(box),n=rdFavs.length?Math.max(cols*2,Math.ceil(rdFavs.length/cols)*cols):cols; /* 1.67 한 줄에 4개 → 저장한 게 있으면 두 줄(8칸)부터, 하나도 없으면 한 줄(방송 목록이 보이게) */
   for(let i=0;i<n;i++){const st=rdFavs[i],b=document.createElement('button');b.type='button';b.dataset.p=i;b.dataset.n=i+1;if(st)b.title=st.name;b.addEventListener('pointerdown',()=>{try{sndKey()}catch(e){}});
     if(!st){b.className='blank';b.innerHTML='<em>P'+(i+1)+'</em><b>+</b>저장';b.setAttribute('aria-label','P'+(i+1)+' 비어 있음 · 지금 방송 저장');
       b.onclick=()=>{if(!rdCur)return toast('먼저 방송을 고른 뒤 저장하세요.');if(rdFavs.some(x=>x.id===rdCur.id))return toast('이미 저장된 방송이에요.');rdFavs.push(rdCur);store.set('rdFavs',rdFavs);rdShow();rdRenderList()};box.appendChild(b);continue}
@@ -2905,7 +2905,7 @@ $('#rdGo').onclick=()=>rdSearch($('#rdQ').value.trim());$('#rdQ').addEventListen
 $('#rdCountry').onchange=()=>rdSearch($('#rdQ').value.trim());
 function rdFold(tg,box,key,def){const b=$('#'+tg),x=$('#'+box),set=o=>{x.hidden=!o;b.setAttribute('aria-expanded',String(o))};set(store.get(key,def));
   b.onclick=()=>{const o=x.hidden;set(o);store.set(key,o);if(o&&box==='rdListBox')rdEnsure()}}
-rdFold('rdPresetTg','rdPresetBox','rdPresetOpen',true);rdFold('rdListTg','rdListBox','rdListOpen',!rdFavs.length);
+rdFold('rdPresetTg','rdPresetBox','rdPresetOpen',rdFavs.length>0); /* 1.69 즐겨찾기가 없으면 처음엔 접고 방송 목록을 보여 줌 */rdFold('rdListTg','rdListBox','rdListOpen',!rdFavs.length);
 let rdLoaded=false;function rdEnsure(){rdShow();if(!rdLoaded){rdLoaded=true;rdSearch('')}requestAnimationFrame(rdDraw)}
 function openRadio(){const w=$('#wRadio');w.classList.remove('collapsed');if(isCk2()){ckFocus('radio')}else w.scrollIntoView({block:'start',behavior:'smooth'});rdEnsure()}
 new IntersectionObserver(es=>{const v=es.some(e=>e.isIntersecting);if(v)rdEnsure();rdSigRun(v)}).observe($('#wRadio'));
@@ -3224,7 +3224,9 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
   // 키 화면 그림: 연결될 때와 배치를 바꿀 때 화면 위치 1~15의 기능 아이콘 + 오른쪽 로고를 장치에 넣음
   let imgT=0,wasOpen=false;
   function pushImages(){clearTimeout(imgT);imgT=setTimeout(()=>{try{if(NB&&NB.deckImages&&st.open)NB.deckImages(JSON.stringify(Array.from({length:15},(_,i)=>map['k'+(i+1)]||'none')))}catch(e){}},300)}
-  window.__deckState=s=>{st=s||{};if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open;ui()};
+  // 1.69 연결되면·안 될 때 이유를 화면에 잠깐 알림(설정을 열지 않아도 무엇이 문제인지 보이게)
+  let lastMsg='';function tell(){const m=st.open?'몬스타덱 연결됨':st.present&&st.err&&!/연결 중|기다리는 중/.test(st.err)?'몬스타덱: '+st.err:'';if(m&&m!==lastMsg){lastMsg=m;try{toast(m)}catch(e){}}if(!st.present)lastMsg=''}
+  window.__deckState=s=>{st=s||{};if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open;tell();ui()};
   function stateNow(){try{if(NB&&NB.deckState){st=JSON.parse(NB.deckState()||'{}');if(st.open&&!wasOpen)pushImages();wasOpen=!!st.open}}catch(e){}}
   function ui(){const sec=$('#secDeck');if(!sec)return;
     const s=$('#deckStat');s.textContent=!NB||!NB.deckState?'안드로이드 앱에서 동작해요(폴드에 USB-C로 꽂아 쓰세요).':st.open?'연결됨 · 키를 누르면 바로 동작해요':st.present?(st.err||'꽂혀 있어요 · [연결]을 눌러 주세요'):(st.err||'몬스타덱이 연결되어 있지 않아요');
@@ -3268,6 +3270,47 @@ wxRender();setTimeout(wxFetch,1500);setInterval(wxFetch,20*60e3);
   window.AmpHw={get map(){return hw},learn(a){hwLearn=a;hwSync();hwUi()},key:(id,dev)=>window.__hwKey(id,dev||'')};
   window.AmpDeck={images:()=>pushImages(),report:onReport,get map(){return map},learn(a){learn=a;ui()},parse,ACTS:ACTS.map(a=>a[0])};
 })();
+/* ===== 95-iconbar.js ===== */
+// 위쪽 도구 줄 아이콘만 + 로고 아래 날짜 띠
+// 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
+/* ---------- 1.69 콕핏 스킨(:root[data-ck2]) 위쪽 ----------
+ *  - 도구 줄 버튼(내 음악·외부 앱·화면·스킨·간편 모드·설정·라디오·후진·음악 추가)은 글자 없이 아이콘만, 작게.
+ *    글자는 span.tl로 감싸 CSS로 숨기고 이름은 aria-label·title로(읽어 주기·길게 누르기)
+ *  - 계기 4개(시계·날씨·나침반·밝기) 아래 글자는 숨겨 높이를 맞추고, 날짜·요일은 로고 아래 얇은 띠(#dStrip)에 */
+const IconBar=(()=>{
+  const ICO={
+    local:'<path d="M17 3v11.2A3.5 3.5 0 1 1 15 11V6.5L9 8v8.2A3.5 3.5 0 1 1 7 13V5.5z"/>',
+    ext:'<path d="M4 4h7v2H6v12h12v-5h2v7H4zM14 4h6v6h-2V7.4l-6.3 6.3-1.4-1.4L16.6 6H14z"/>',
+    layout:'<path d="M3 4h18v14H3zm2 2v10h6V6zm8 0v4h6V6zm0 6v4h6v-4zM8 20h8v2H8z"/>',
+    drive:'<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 0 1 7.7 6H15a3 3 0 0 0-6 0H4.3A8 8 0 0 1 12 4zM4.1 12h4.4l2.3 7.9A8 8 0 0 1 4.1 12zm9.1 7.9 2.3-7.9h4.4a8 8 0 0 1-6.7 7.9zM12 9a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>',
+    add:'<path d="M15 3v9.2A3.5 3.5 0 1 1 13 9V3zM19 13h2v3h3v2h-3v3h-2v-3h-3v-2h3z"/>'};
+  const svg=k=>'<svg class="ico tb-ico" viewBox="0 0 24 24" aria-hidden="true">'+ICO[k]+'</svg>';
+  const tidy=s=>s.replace(/\s+/g,' ').trim();
+  // 버튼 안의 글자(텍스트 노드)를 span.tl로 감싸고 이름표를 붙임
+  function wrap(b,name){if(!b||b.dataset.ib)return;b.dataset.ib='1';
+    const txt=tidy([...b.childNodes].filter(n=>n.nodeType===3||(n.nodeType===1&&!n.matches('svg,b,.emo,.tl'))).map(n=>n.textContent).join(' '));
+    [...b.childNodes].forEach(n=>{if(n.nodeType===3&&n.textContent.trim()){const s=document.createElement('span');s.className='tl';s.textContent=n.textContent;b.replaceChild(s,n)}});
+    const nm=name||txt;if(nm){if(!b.getAttribute('aria-label'))b.setAttribute('aria-label',nm);if(!b.title)b.title=nm}}
+  function addIco(b,k){if(b&&!b.querySelector('.tb-ico'))b.insertAdjacentHTML('afterbegin',svg(k))}
+  const sl=$('#srcSeg button[data-src="local"]'),se=$('#srcSeg button[data-src="ext"]');
+  addIco(sl,'local');wrap(sl,'내 음악');addIco(se,'ext');wrap(se,'외부 앱');
+  addIco($('#driveBtn'),'drive');wrap($('#driveBtn'),'간편 모드');
+  addIco($('#addTop'),'add');wrap($('#addTop'),'음악 추가');
+  wrap($('#skinBtn'),'스킨 바꾸기');wrap($('#setBtn'),'설정');wrap($('#radioBtn'),'라디오');wrap($('#revBtn'),'후진 카메라');
+  // 화면(배치) 고르기: '화면' 글자 대신 화면 아이콘
+  const lw=$('label.selw[for="layout"]');if(lw&&!lw.dataset.ib){lw.dataset.ib='1';[...lw.childNodes].forEach(n=>{if(n.nodeType===3&&n.textContent.trim()){const s=document.createElement('span');s.className='tl';s.textContent=n.textContent;lw.replaceChild(s,n)}});lw.insertAdjacentHTML('afterbegin',svg('layout'));const sel=$('#layout');if(sel&&!sel.getAttribute('aria-label'))sel.setAttribute('aria-label','화면 배치')}
+  // 로고 아래 날짜 띠
+  const brand=$('header.top .brand');let strip=null;
+  let inner=null;
+  // 띠는 로고 칸(.brand)과 한 덩어리로 묶어 바로 아래에 — 넓은 화면에서 시계·도구 줄이 한 줄로 이어지는 배치를 깨지 않게
+  if(brand){const wrapEl=document.createElement('div');wrapEl.className='brandwrap';brand.before(wrapEl);wrapEl.appendChild(brand);
+    strip=document.createElement('div');strip.id='dStrip';strip.className='dstrip';inner=document.createElement('span');inner.className='dsi';strip.appendChild(inner);wrapEl.appendChild(strip)}
+  function fit(){}
+  const W=['일','월','화','수','목','금','토'];
+  function tick(){if(!inner)return;const d=new Date(),t=d.getFullYear()+'. '+(d.getMonth()+1)+'. '+d.getDate()+'. ('+W[d.getDay()]+')';if(inner.textContent!==t)inner.textContent=t;fit()}
+  tick();setInterval(tick,30000);
+  return {tick,fit}})();
+window.AmpIconBar=IconBar;
 /* ===== 96-skin-compass-notif.js ===== */
 // 상단 스킨 버튼(콕핏 수정판), 나침반 계기(해외 시간 대신), 알림 접근 "제한된 설정" 단계별 안내
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

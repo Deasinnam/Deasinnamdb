@@ -99,8 +99,11 @@ final class UsbDeck {
     void resumeIfAllowed() {
         if (um == null || conn != null) return;
         UsbDevice d = find();
-        if (d != null && um.hasPermission(d)) connect();
+        if (d == null) return;
+        // 1.69 아직 이 앱에 USB 사용을 허용하지 않았으면(다른 대신남 앱만 허용한 경우 등) 앱을 켠 뒤 한 번은 허용 창을 띄움
+        if (um.hasPermission(d) || !askedOnce) { askedOnce = true; connect(); }
     }
+    private boolean askedOnce = false;
 
     void start() {
         if (registered || um == null) return;
@@ -154,7 +157,8 @@ final class UsbDeck {
             if (!c.claimInterface(pick, true)) {
                 c.close();
                 // 형제 앱이 놓아 주는 동안 잠깐 기다렸다 다시(최대 약 4초)
-                if (tries < 8) { lastErr = "몬스타덱 연결 중…"; state(); ui.postDelayed(() -> { if (conn == null) open(d, tries + 1); }, 500); return; }
+                // 1.69 최대 약 8초, 2초마다 형제 앱에 다시 놓아 달라고 함
+                if (tries < 16) { if (tries % 4 == 3) askSiblings(); lastErr = "몬스타덱 연결 중…"; state(); ui.postDelayed(() -> { if (conn == null) open(d, tries + 1); }, 500); return; }
                 lastErr = "다른 앱이 장치를 쓰고 있어요(다른 대신남 앱을 닫고 다시 연결)"; state(); return;
             }
             dev = d; conn = c; iface = pick; in = ei; out = eo; lastErr = "";
@@ -231,8 +235,10 @@ final class UsbDeck {
                         bat((4 - c) * 3 + r + 1, img);
                     }
                     for (int i = 0; i < 3; i++) { byte[] img = asset("deck/side" + (i + 1) + ".jpg"); if (img != null) bat(16 + i, img); }
-                    send(crt("STP"));
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                } finally {
+                    send(crt("STP")); // 1.69 그림을 넣다 실패해도 꼭 확정 — DIS 뒤 STP가 없으면 키 신호가 끊겨 '반응 없음'이 됨
+                }
             }
         }, "deck-img").start();
     }
