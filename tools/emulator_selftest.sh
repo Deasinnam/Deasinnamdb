@@ -13,7 +13,7 @@ adb shell am start -n "$PKG/.MainActivity" --ez game.selftest true
 for i in $(seq 1 60); do
   sleep 2
   L=$(adb logcat -d -s GAME_SELFTEST:I)
-  for s in GAMES PICKER APPS TOOLS REC; do
+  for s in HOME GAMES PICKER APPS TOOLS REC; do
     if echo "$L" | grep -q "SHOT-$s" && [ ! -f "game-screen-$(echo $s | tr A-Z a-z).png" ]; then
       adb exec-out screencap -p > "game-screen-$(echo $s | tr A-Z a-z).png"
     fi
