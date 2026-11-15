@@ -24,6 +24,7 @@ import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -105,6 +106,44 @@ public class MainActivity extends Activity {
             if (nm.isNotificationPolicyAccessGranted()) nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
         }
         if (web != null) web.evaluateJavascript("window.onResumeApp && onResumeApp()", null);
+    }
+
+    /** 게임패드 버튼·방향키를 화면(JS onPad)으로 넘깁니다. 화면이 처리하지 않은 B는 뒤로 가기로. */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        String k = null;
+        switch (e.getKeyCode()) {
+            case KeyEvent.KEYCODE_BUTTON_A: k = "a"; break;
+            case KeyEvent.KEYCODE_BUTTON_B: k = "b"; break;
+            case KeyEvent.KEYCODE_BUTTON_X: k = "x"; break;
+            case KeyEvent.KEYCODE_BUTTON_Y: k = "y"; break;
+            case KeyEvent.KEYCODE_BUTTON_L1: k = "l1"; break;
+            case KeyEvent.KEYCODE_BUTTON_R1: k = "r1"; break;
+            case KeyEvent.KEYCODE_DPAD_UP: k = "up"; break;
+            case KeyEvent.KEYCODE_DPAD_DOWN: k = "down"; break;
+            case KeyEvent.KEYCODE_DPAD_LEFT: k = "left"; break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT: k = "right"; break;
+            case KeyEvent.KEYCODE_DPAD_CENTER: k = "a"; break;
+            default: break;
+        }
+        // 키보드 화살표(DeX)는 WebView의 keydown으로도 오므로, 패드(게임 컨트롤러)에서 온 방향키만 여기서 처리
+        boolean isDpad = e.getKeyCode() >= KeyEvent.KEYCODE_DPAD_UP && e.getKeyCode() <= KeyEvent.KEYCODE_DPAD_CENTER;
+        boolean fromPad = (e.getSource() & android.view.InputDevice.SOURCE_GAMEPAD) == android.view.InputDevice.SOURCE_GAMEPAD
+            || (e.getSource() & android.view.InputDevice.SOURCE_JOYSTICK) == android.view.InputDevice.SOURCE_JOYSTICK
+            || (e.getSource() & android.view.InputDevice.SOURCE_DPAD) == android.view.InputDevice.SOURCE_DPAD && !isKeyboard(e);
+        if (k == null || web == null || (isDpad && !fromPad && !"a".equals(k))) return super.dispatchKeyEvent(e);
+        if (e.getAction() == KeyEvent.ACTION_DOWN) {
+            final String key = k;
+            web.evaluateJavascript("window.onPad ? onPad('" + key + "') : false", v -> {
+                if ("b".equals(key) && !"true".equals(v)) finish();
+            });
+        }
+        return true;
+    }
+
+    private static boolean isKeyboard(KeyEvent e) {
+        android.view.InputDevice d = e.getDevice();
+        return d != null && d.getKeyboardType() == android.view.InputDevice.KEYBOARD_TYPE_ALPHABETIC;
     }
 
     @Override

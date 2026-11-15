@@ -29,6 +29,7 @@ cat selftest-result.txt | cut -c1-300
 fail=0
 grep -q "DONE" selftest-result.txt || { echo "FAIL: 점검이 끝까지 가지 못함"; fail=1; }
 grep -q "APPS 5" selftest-result.txt || { echo "FAIL: 게임 앱 목록"; fail=1; }
+grep -q "HOME shelves" selftest-result.txt || { echo "FAIL: 홈 화면"; fail=1; }
 grep -q "TOOLS hz" selftest-result.txt || { echo "FAIL: 도구 화면"; fail=1; }
 grep -q "OPTIMIZE .* level [0-2]" selftest-result.txt || { echo "FAIL: 기기 맞춤 최적화"; fail=1; }
 grep -q "LAUNCH ok com.android.settings" selftest-result.txt || { echo "FAIL: 다른 앱 실행"; fail=1; }
