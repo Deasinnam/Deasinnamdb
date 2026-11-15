@@ -102,3 +102,19 @@ jobs:
           gh release delete browser-latest --yes --cleanup-tag || true
           gh release create browser-latest DeolnureumBrowser.apk --target "$GITHUB_SHA" \
             --title "덜누름 브라우저 (최신 빌드)" --notes "언제나 PC 화면으로 여는 가벼운 브라우저. 빌드 ${{ github.run_number }} ($VARIANT)"
+
+      # 버전별 보관: 사이트의 "내려받기 → 버전 고르기"가 browser-v<버전> 릴리스를 씁니다.
+      # 이미 있는 버전이면 건드리지 않습니다(사용자에게 나간 파일을 바꾸지 않음). 새 버전은 build.gradle의 versionName을 올리세요.
+      - name: 버전별 릴리스 남기기
+        if: env.VARIANT == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(sed -n 's/.*versionName "\(.*\)".*/\1/p' app/build.gradle | head -1)
+          if gh release view "browser-v$VER" >/dev/null 2>&1; then
+            echo "browser-v$VER 이미 있음 → 그대로 둠"
+          else
+            cp DeolnureumBrowser.apk "DeolnureumBrowser-$VER.apk"
+            gh release create "browser-v$VER" "DeolnureumBrowser-$VER.apk" --target "$GITHUB_SHA" --latest=false \
+              --title "덜누름 브라우저 $VER" --notes "$(date -u +%Y-%m-%d -d '+9 hours') · 빌드 ${{ github.run_number }}"
+          fi
