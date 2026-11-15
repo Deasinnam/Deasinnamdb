@@ -4,7 +4,7 @@
 원본은 한 파일에 모든 화면이 들어 있고 # 주소(#app-speed 등)로 화면을 바꾼다.
 검색엔진은 # 뒤를 보지 않으므로, 화면마다 진짜 주소의 페이지를 만들어 준다.
   /            홈            /apps/     앱센터       /about/    소개      /feedback/  의견 보내기
-  /amp/  /speedometer/  /work/  /desktop/  /browser/    앱별 소개
+  /amp/  /speedometer/  /work/  /desktop/  /browser/  /game/    앱별 소개
 페이지마다: 제목·설명·대표 주소(canonical)·공유 이미지·구조화 데이터를 넣고, 그 화면이 처음부터 보이게 한다.
 sitemap.xml 과 robots.txt 도 함께 만든다.
 
@@ -36,6 +36,9 @@ APPS = [
     ("#app-browser", "/browser/", "덜누름 브라우저 — 창으로 여는 PC형 브라우저",
      "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.",
      "덜누름 브라우저", "BrowserApplication", "/media/app-browser-poster.jpg"),
+    ("#app-game", "/game/", "덜누름 게임 — 게임 앱 · 녹화 · 최적화를 한곳에 (개발 중)",
+     "폰에 있는 게임과 게임 앱(스팀 · 배틀넷 PC 게임, PC 스트리밍 등)을 한곳에 모으고, 게임 녹화와 기기 맞춤 최적화(칩 · 메모리 · 발열로 설정 추천)를 붙인 앱. 개발 중인 시험판입니다.",
+     "덜누름 게임", "GameApplication", "/media/app-game-poster.jpg"),
     ("#app-sseum", "/dulsseum/", "덜씀 — 다 써 보고 만든 맥 최적화 앱",
      "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.",
      "덜씀", "UtilitiesApplication", "/media/dulsseum-mac.webp", "macOS"),
