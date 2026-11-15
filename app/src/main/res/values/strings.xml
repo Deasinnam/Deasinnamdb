@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">덜누름 게임</string>
+    <string name="keymap_label">덜누름 게임 키 매핑</string>
+    <string name="keymap_desc">게임패드나 키보드 버튼을 누르면 게임 화면의 정해 둔 자리를 대신 눌러 줍니다. 키 매핑을 켠 게임에서만 동작하고, 화면 내용은 읽지 않습니다.</string>
 </resources>

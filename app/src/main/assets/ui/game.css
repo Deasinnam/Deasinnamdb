@@ -146,3 +146,8 @@ main { padding: 8px 20px 20px; }
   #tools .wide, #tools .about { grid-column: 1 / -1; }
   .hero { min-height: 280px; }
 }
+.steps { margin: 4px 0 8px; padding-left: 20px; line-height: 1.8; }
+.pill { font-size: 12px; border-radius: 6px; padding: 1px 8px; margin-left: 4px; background: var(--panel2); color: var(--muted); }
+.pill.ok { background: #1f4d2a; color: #9ff0a8; }
+.km-row { background: var(--panel); padding: 10px 12px; margin-bottom: 4px; }
+.km-row .sub { margin: 0 0 0 auto; }

@@ -502,6 +502,49 @@ public class MainActivity extends Activity {
             }
         }
 
+        // ---------- 키 매핑 ----------
+
+        @JavascriptInterface
+        public String keymap(String pkg) {
+            try {
+                SharedPreferences km = KeymapService.store(MainActivity.this);
+                JSONObject o = new JSONObject();
+                String en = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+                o.put("service", en != null && en.contains(getPackageName() + "/"));
+                o.put("connected", KeymapService.instance != null);
+                if (pkg != null && !pkg.isEmpty()) {
+                    o.put("on", km.getBoolean("on." + pkg, false));
+                    o.put("count", KeymapService.mapOf(km, pkg).length());
+                }
+                return o.toString();
+            } catch (Exception e) {
+                return "{}";
+            }
+        }
+
+        @JavascriptInterface
+        public void keymapSetOn(String pkg, boolean on) {
+            KeymapService.store(MainActivity.this).edit().putBoolean("on." + pkg, on).apply();
+        }
+
+        @JavascriptInterface
+        public void keymapClear(String pkg) {
+            KeymapService.store(MainActivity.this).edit().remove("map." + pkg).apply();
+        }
+
+        /** 자동 점검용: 매핑 직접 넣기 */
+        @JavascriptInterface
+        public void keymapSet(String pkg, String json) {
+            KeymapService.store(MainActivity.this).edit().putString("map." + pkg, json).putBoolean("on." + pkg, true).apply();
+        }
+
+        @JavascriptInterface
+        public void keymapSettings() {
+            try {
+                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (Exception e) { notifyJs("toast", "설정을 열지 못했어요"); }
+        }
+
         @JavascriptInterface
         public void log(String msg) { MainActivity.this.log(msg); }
     }

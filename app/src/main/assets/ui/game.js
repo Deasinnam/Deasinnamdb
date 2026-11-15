@@ -27,7 +27,10 @@ const A = window.Android || {
     chosen: demoLevels[pkg || ''] ?? -1, perGame: pkg ? (pkg in demoLevels) : false,
     levels: [{ name: '가볍게', fps: 60, scale: 0.7, mode: 'battery', recSide: 1280, recFps: 30 }, { name: '균형', fps: 60, scale: 0.85, mode: 'standard', recSide: 1920, recFps: 30 }, { name: '고성능', fps: 120, scale: 1, mode: 'performance', recSide: 1920, recFps: 60 }] }),
   chooseLevel: (pkg, lv) => { if (lv === -2) delete demoLevels[pkg]; else demoLevels[pkg || ''] = lv; },
+  keymap: (pkg) => JSON.stringify({ service: false, connected: false, on: !!demoKm[pkg], count: demoKm[pkg] ? 3 : 0 }),
+  keymapSetOn: (pkg, on) => { demoKm[pkg] = on; }, keymapClear: () => {}, keymapSet: () => {}, keymapSettings: () => toast('(견본) 접근성 설정이 열려요'),
 };
+var demoKm = {};
 
 const parse = (s, d) => { try { return JSON.parse(s); } catch (e) { return d; } };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -255,9 +258,18 @@ function openGameSheet(pkg, label) {
   sheetPkg = pkg;
   $('#gsTitle').textContent = `${label} 설정`;
   renderLevels($('#gsLevels'), $('#gsBox'), pkg);
+  renderSheetKeymap();
   $('#gameSheet').hidden = false;
   focusFirst($('#gameSheet'));
 }
+function renderSheetKeymap() {
+  const k = parse(A.keymap(sheetPkg), {});
+  $('#gsKm').checked = !!k.on;
+  $('#gsKmInfo').textContent = !k.service ? '먼저 도구 › 키 매핑 권한을 켜 주세요' : (k.count ? `키 ${k.count}개 배치됨` : '게임 화면의 🎮로 배치');
+  $('#gsKmRow').hidden = !k.count;
+}
+$('#gsKm').addEventListener('change', (e) => { A.keymapSetOn(sheetPkg, e.target.checked); renderSheetKeymap(); });
+$('#gsKmClear').addEventListener('click', () => { A.keymapClear(sheetPkg); renderSheetKeymap(); toast('키 배치를 지웠어요'); });
 function closeGameSheet() { $('#gameSheet').hidden = true; focusFirst(); }
 $('#gsClose').addEventListener('click', closeGameSheet);
 $('#gsPlay').addEventListener('click', () => { closeGameSheet(); play(sheetPkg); });
@@ -278,6 +290,10 @@ function renderTools() {
   $('#hzModes').textContent = s.modes && s.modes.length ? `이 화면이 지원하는 주사율: ${s.modes.join(' · ')}Hz` : '';
   $('#shizukuState').textContent = s.shizukuInstalled ? '필요한 도우미 앱(Shizuku)이 이미 설치되어 있어요. 다음 업데이트에서 연결합니다.' : '도우미 앱(Shizuku)을 한 번 설치하면 쓸 수 있어요. 다음 업데이트에서 차례대로 안내해 드려요.';
   $('#ver').textContent = s.version || '';
+  const k = parse(A.keymap(''), {});
+  $('#kmState').textContent = k.service ? '켜짐' : '꺼짐';
+  $('#kmState').classList.toggle('ok', !!k.service);
+  $('#kmSettings').textContent = k.service ? '키 매핑 권한 설정 열기' : '키 매핑 권한 켜기';
   $('#recDot').hidden = !rec;
   return s;
 }
@@ -288,6 +304,7 @@ $('#recBtn').addEventListener('click', () => {
 $('#recOpen').addEventListener('click', () => A.openRecordings());
 $('#optDnd').addEventListener('change', (e) => { A.setDnd(e.target.checked); setTimeout(renderTools, 300); });
 $('#samsungBtn').addEventListener('click', () => A.openSamsungGame());
+$('#kmSettings').addEventListener('click', () => A.keymapSettings());
 
 // ---------- 위 줄: 시계·배터리 ----------
 function renderStatus() {
@@ -430,6 +447,10 @@ if (SELFTEST) {
       await wait(2500);
       log(`REC saved ${A.lastSaved() || 'none'}`);
     }
+    const km = parse(A.keymap(''), {});
+    log(`KEYMAP service ${km.service} connected ${km.connected}`);
+    // 설정 앱에 A 버튼 → 화면 가운데 톡 을 넣어 두고, 점검 스크립트가 A 버튼을 눌러 봄
+    A.keymapSet('com.android.settings', JSON.stringify({ 96: { x: 0.5, y: 0.5, mode: 'tap' } }));
     showTab('home');
     await wait(500);
     A.launch('com.android.settings', false);
