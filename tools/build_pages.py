@@ -54,7 +54,7 @@ PAGES = [
     ("#feedback", "/feedback/", "feedback", "의견 보내기 · 공개 알림 신청" + SUFFIX,
      "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다."),
     ("#updates", "/updates/", "updates", "의견 반영 — 업데이트와 해결 방법" + SUFFIX,
-     "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다."),
+     "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 덜누름 브라우저 2.3에서 ◀를 여러 번 누르면 홈으로 가던 문제를 고쳤고, 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다."),
 ] + [(h, p, "app", t + SUFFIX, d) for h, p, t, d, *_ in APPS]
 
 ORG = {"@type": "Organization", "@id": SITE + "/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"],

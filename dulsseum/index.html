@@ -625,6 +625,26 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .amp-btn:hover { transform: translateY(1px); box-shadow: 0 4px 0 #52525b; }
 .amp-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #52525b; }
 .amp-btn:focus-visible, .amp-link:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+/* 내려받기 → 버전 고르기 */
+.dl-pick { position: relative; display: inline-flex; flex-direction: column; align-items: inherit; }
+button.amp-btn, button.al-get { border: 0; cursor: pointer; font-family: var(--font-body); }
+button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
+.dl-menu { position: absolute; z-index: 30; top: calc(100% + 12px); left: 0; min-width: 300px; max-width: min(360px, calc(100vw - 32px)); margin: 0; padding: 6px; list-style: none; background: #18181b; border: 1px solid #3f3f46; border-radius: 14px; box-shadow: 0 18px 40px rgba(0,0,0,.45); text-align: left; }
+.al-dl .dl-menu { left: auto; right: 0; }
+.dl-menu[hidden] { display: none; }
+.dl-menu a { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; padding: 11px 12px; border-radius: 10px; color: #f4f4f5; text-decoration: none; }
+.dl-menu a:hover, .dl-menu a:focus-visible { background: #27272a; outline: none; }
+.dl-menu b { grid-row: span 2; align-self: center; font: 700 16px/1 var(--font-mono); color: #fff; }
+.dl-menu span { font-size: 13px; color: #d4d4d8; }
+.dl-menu span i { font-style: normal; margin-left: 6px; padding: 2px 7px; border-radius: 999px; background: #ff7a00; color: #fff; font-size: 11px; font-weight: 700; }
+.dl-menu em { font-style: normal; font-size: 12px; color: #a1a1aa; line-height: 1.45; }
+.al-get .dl-vs { display: none; }
+@media (max-width: 720px) {
+  .al-act { position: relative; }
+  .al-dl .dl-pick { position: static; }
+  .al-dl .dl-menu { left: 0; right: 0; top: calc(100% + 8px); min-width: 0; max-width: none; }
+}
+@media (max-width: 640px) { .amp-cta .dl-menu { position: static; min-width: 0; margin-top: 10px; } }
 .amp-meta { font: 400 12px/1.6 var(--font-mono); color: #a1a1aa; }
 .amp-link { font-size: 13px; color: #d4d4d8; text-underline-offset: 4px; }
 .amp-shot { margin: 0; }
@@ -748,7 +768,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
 <meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "SoftwareApplication", "name": "덜씀", "url": "https://deolnureum.com/dulsseum/", "description": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "operatingSystem": "macOS", "applicationCategory": "UtilitiesApplication", "image": "https://deolnureum.com/media/dulsseum-mac.webp", "inLanguage": "ko", "publisher": {"@id": "https://deolnureum.com/#org"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "앱센터", "item": "https://deolnureum.com/apps/"}, {"@type": "ListItem", "position": 3, "name": "덜씀", "item": "https://deolnureum.com/dulsseum/"}]}]}</script>
-<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 허브 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#updates": {"t": "의견 반영 — 업데이트와 해결 방법 | 덜누름", "d": "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다.", "u": "https://deolnureum.com/updates/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 일반 PC처럼 | 덜누름", "d": "오피스 작업과 그래픽 작업(사진·동영상 편집)을 한 앱에서. 갤럭시 Z 폴드의 넓은 화면에서 스마트폰 한 대로 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 허브 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#updates": {"t": "의견 반영 — 업데이트와 해결 방법 | 덜누름", "d": "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 덜누름 브라우저 2.3에서 ◀를 여러 번 누르면 홈으로 가던 문제를 고쳤고, 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다.", "u": "https://deolnureum.com/updates/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 일반 PC처럼 | 덜누름", "d": "오피스 작업과 그래픽 작업(사진·동영상 편집)을 한 앱에서. 갤럭시 Z 폴드의 넓은 화면에서 스마트폰 한 대로 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
 </head>
 <body data-view="app">
 
@@ -1337,6 +1357,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 브라우저">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
+          <div><dt>최신 버전</dt><dd>2.3 · 2026.11.15 업데이트 — <a href="#post-browser-back">바뀐 점 보기</a> · 이전 버전 2.2(2026.11.14)도 내려받기에서 고를 수 있습니다</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
       </div>
@@ -1612,6 +1633,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     <div class="wrap">
       <div id="ntList">
       <ul class="nt-list">
+        <li><a class="nt-row" href="#post-browser-back">
+          <span class="nt-no">002</span>
+          <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 브라우저</span><span class="nt-tag">버그 수정</span><span class="nt-tag done">업데이트 2.3</span></span><h2>브라우저 아래 ◀를 여러 번 누르면 홈으로 가 버리던 문제를 고쳤습니다</h2></span>
+          <span class="nt-date">2026.11.15</span>
+        </a></li>
         <li><a class="nt-row" href="#post-install">
           <span class="nt-no">001</span>
           <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 워크</span><span class="nt-tag">설치</span><span class="nt-tag done">해결 방법 안내</span></span><h2>갤럭시에서 앱이 설치되지 않거나 "유해한 앱"으로 막힐 때</h2></span>
@@ -1619,6 +1645,32 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         </a></li>
       </ul>
       </div>
+      <article class="nt-article" id="post-browser-back" data-post hidden>
+        <a class="nt-back" href="/updates/">← 목록으로</a>
+        <header class="nt-head">
+          <div class="nt-tags"><span class="nt-tag">덜누름 브라우저</span><span class="nt-tag">버그 수정</span><span class="nt-tag done">업데이트 2.3</span></div>
+          <h2>브라우저 아래 ◀를 여러 번 누르면 홈으로 가 버리던 문제를 고쳤습니다</h2>
+          <span class="nt-date">002 · 2026.11.15</span>
+        </header>
+        <div class="nt-body">
+          <h3>받은 의견</h3>
+          <p class="nt-quote">브라우저 하단에 있는 화살표를 계속 누르면 홈으로 가요.<small>덜누름 브라우저 · 2026.11.15</small></p>
+
+          <h3>무엇이 바뀌었나요</h3>
+          <p>불편을 드려 죄송합니다. 페이지가 다 뜨기 전에 아래 줄의 <b>◀(뒤로)</b>를 여러 번 누르면, 여러 페이지를 한꺼번에 건너뛰어 첫 화면(네이버)까지 돌아가 버리는 문제가 있었습니다. 이 문제를 고쳤습니다.</p>
+          <p>이제 <b>◀ ▶</b>는 몇 번을 눌러도 한 번에 한 페이지씩만 이동합니다. 첫 페이지에서 ◀를 누르면 "첫 페이지입니다", 마지막 페이지에서 ▶를 누르면 "마지막 페이지입니다" 알림이 뜹니다.</p>
+          <p>휴대폰의 뒤로 가기 버튼과 키보드의 <b>Alt+←</b> / <b>Alt+→</b>도 똑같이 한 페이지씩 이동합니다.</p>
+
+          <h3>업데이트 방법</h3>
+          <ol>
+            <li>앱센터의 <a href="/browser/">덜누름 브라우저</a> 페이지에서 <b>내려받기</b>를 누르면 버전 목록이 나옵니다. 맨 위 <b>2.3 (최신)</b>을 눌러 받아 주세요. 이전 버전이 필요하면 목록에서 골라 받을 수 있습니다.</li>
+            <li>받은 파일을 열어 설치해 주세요. 지금 쓰시는 앱 위에 그대로 덮어 설치되고, 즐겨찾기는 그대로 남아 있습니다.</li>
+            <li>설정 → 앱 정보에서 버전이 <b>2.3</b>인지 확인해 주세요.</li>
+          </ol>
+          <p>업데이트한 뒤에도 이상하게 움직이면 의견 보내기로 알려 주세요.</p>
+        </div>
+        <a class="nt-back" href="/updates/">← 목록으로</a>
+      </article>
       <article class="nt-article" id="post-install" data-post hidden>
         <a class="nt-back" href="/updates/">← 목록으로</a>
         <header class="nt-head">
@@ -2456,7 +2508,12 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     "app-speed":   { open: false, tag: "",               file: "",                     base: 0 },
     "app-work":    { open: true, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3 },
     "app-desktop": { open: true, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2 },
-    "app-browser": { open: true, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 3 },
+    "app-browser": { open: true, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 3,
+                     /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 browser-v<버전>은 빌드가 자동으로 만듦) */
+                     versions: [
+                       { v: "2.3", date: "2026.11.15", tag: "browser-v2.3", file: "DeolnureumBrowser-2.3.apk", note: "◀ ▶를 여러 번 눌러도 한 페이지씩만 이동 (홈으로 넘어가던 문제 해결)" },
+                       { v: "2.2", date: "2026.11.14", tag: "browser-v2.2", file: "DeolnureumBrowser-2.2.apk", note: "유튜브 스튜디오 · 구글 로그인은 크롬으로 열기" }
+                     ] },
     "app-sseum":   { open: true,  url: "/download/Deolnureum-Dulsseum.pkg", size: "390KB", kind: "PKG", key: "dl-sseum",
                      note: "애플 서명 전이라 처음 열 때 \u201c확인되지 않은 개발자\u201d 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열고, 그래도 막히면 <b>시스템 설정 → 개인정보 보호 및 보안</b>에서 <b>그래도 열기</b>를 누르세요." }
   };
@@ -2471,7 +2528,8 @@ footer b { color: var(--ink); font-family: var(--font-display); }
         try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: slim })); } catch (e) {} cb(slim); })
       .catch(function () { cb(null); });
   }
-  /* 모든 앱 공통: 내려받기 버튼을 누를 때마다 abacus 카운터(deolnureum/dl-<앱>)를 1 올리고, 그 수를 "N회 내려받음"으로 보여 줍니다.
+  /* versions 가 있는 앱은 내려받기 버튼이 버전 목록을 엽니다. 어느 버전을 받아도 같은 카운터(dl-<앱>)가 1 오릅니다.
+     모든 앱 공통: 내려받기 버튼을 누를 때마다 abacus 카운터(deolnureum/dl-<앱>)를 1 올리고, 그 수를 "N회 내려받음"으로 보여 줍니다.
      새 앱도 DL 표에 open: true 와 파일(tag·file 또는 url·size)만 적으면 같은 방식으로 셉니다. 키는 key 로 바꿀 수 있습니다. */
   var CNT = "https://abacus.jasoncameron.dev/", NSK = "deolnureum/";
   /* 앱 하나에 숫자 하나: 목록(.al-count)과 소개 페이지(.dl-count)가 같은 상태 st 를 함께 씁니다.
@@ -2496,19 +2554,37 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     var url = c.url || ("https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file);
     var st = { key: c.key || ("dl-" + id.replace(/^app-/, "")), n: null, size: c.size || "", outs: [] };
     var link = '<a class="%C" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a>';
+    if (c.versions && c.versions.length) {
+      var items = c.versions.map(function (x, i) {
+        var href = "https://github.com/" + REPO + "/releases/download/" + x.tag + "/" + x.file;
+        return '<li><a href="' + href + '"><b>' + x.v + '</b><span>' + x.date + ' 업데이트' + (i === 0 ? '<i>최신</i>' : '') + '</span><em>' + x.note + '</em></a></li>';
+      }).join("");
+      link = '<span class="dl-pick"><button type="button" class="%C" aria-haspopup="true" aria-expanded="false">내려받기 <small>' + (c.kind || "APK") + '<span class="dl-vs"> · 버전 선택</span> ▾</small></button>'
+        + '<ul class="dl-menu" hidden>' + items + '</ul></span>';
+    }
+    /* 버튼(또는 버전 목록) 연결: 버전 목록이면 버튼은 목록을 열고, 버전을 고를 때 셉니다 */
+    function wire(box, btnSel) {
+      var btn = box.querySelector(btnSel), menu = box.querySelector(".dl-menu");
+      if (!menu) { btn.addEventListener("click", function () { hit(st); }); return; }
+      function show(on) { menu.hidden = !on; btn.setAttribute("aria-expanded", on ? "true" : "false"); }
+      btn.addEventListener("click", function (e) { e.stopPropagation(); show(menu.hidden); });
+      Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) { a.addEventListener("click", function () { hit(st); show(false); }); });
+      document.addEventListener("click", function (e) { if (!menu.hidden && !box.contains(e.target)) show(false); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { show(false); btn.focus(); } });
+    }
     /* 앱센터 앱 목록 */
     var row = document.querySelector('.al-row[data-app="' + id + '"] .al-dl');
     if (row) {
       row.innerHTML = link.replace("%C", "al-get") + '<span class="al-count" aria-live="polite"></span>';
       st.outs.push(row.querySelector(".al-count"));
-      row.querySelector(".al-get").addEventListener("click", function () { hit(st); });
+      wire(row, ".al-get");
     }
     /* 앱 소개 페이지 */
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta");
     if (cta) {
       cta.innerHTML = link.replace("%C", "amp-btn") + '<span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
       st.outs.push(cta.querySelector(".dl-count"));
-      cta.querySelector(".amp-btn").addEventListener("click", function () { hit(st); });
+      wire(cta, ".amp-btn");
     }
     if (!st.outs.length) return;
     render(st);
