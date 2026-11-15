@@ -24,6 +24,18 @@ for i in $(seq 1 60); do
       adb exec-out screencap -p > "game-screen-$(echo $s | tr A-Z a-z).png"
     fi
   done
+  # FPS 표시 창이 떠 있는 동안: Shizuku가 셸 권한으로 돌릴 명령들을 그대로 돌려 보고 남김 (참고)
+  if echo "$L" | grep -q "SHOT-FPS" && [ ! -f fps-shell.txt ]; then
+    {
+      echo "--- 셸 권한 FPS 명령 시험 ---"
+      adb shell "dumpsys activity activities | grep -m3 -E 'topResumedActivity|mResumedActivity'"
+      adb shell dumpsys SurfaceFlinger --list | grep -F "$PKG" | head -6
+      LAYER=$(adb shell dumpsys SurfaceFlinger --list | grep -F "$PKG/" | grep -v -E 'Background|Bounds|ActivityRecord' | head -1 | tr -d '\r')
+      echo "LAYER [$LAYER]"
+      adb shell "dumpsys SurfaceFlinger --latency '$LAYER'" | head -4
+      echo "frames $(adb shell "dumpsys SurfaceFlinger --latency '$LAYER'" | awk 'NR>1 && $2>0' | wc -l)"
+    } > fps-shell.txt 2>&1
+  fi
   if echo "$L" | grep -q "DONE"; then break; fi
 done
 sleep 3
@@ -32,8 +44,7 @@ adb shell input keyevent KEYCODE_BUTTON_A
 sleep 2
 adb exec-out screencap -p > game-screen-launched.png
 adb logcat -d -s GAME_SELFTEST:I Game:* GameRec:* GameConsole:* GameKeymap:* GameFps:* GameShizuku:* > selftest-result.txt
-# FPS 읽는 명령(Shizuku가 셸 권한으로 실행할 것과 같은 것)이 이 안드로이드에서 숫자를 주는지 참고로 남김
-{ echo "--- SurfaceFlinger 1013 (셸 권한) ---"; adb shell service call SurfaceFlinger 1013; sleep 1; adb shell service call SurfaceFlinger 1013; } >> selftest-result.txt 2>&1
+cat fps-shell.txt >> selftest-result.txt 2>/dev/null
 adb logcat -d -b crash > crash-1.txt 2>/dev/null
 echo "===== 점검 결과 ====="
 cat selftest-result.txt | cut -c1-300
@@ -45,7 +56,7 @@ grep -q "TOOLS hz" selftest-result.txt || { echo "FAIL: 도구 화면"; fail=1; 
 grep -q "OPTIMIZE .* level [0-2]" selftest-result.txt || { echo "FAIL: 기기 맞춤 최적화"; fail=1; }
 grep -q "LAUNCH ok com.android.settings" selftest-result.txt || { echo "FAIL: 다른 앱 실행"; fail=1; }
 grep -q "$PKG" crash-1.txt && { echo "FAIL: 앱이 멈춤"; fail=1; }
-grep -q "FPS parse 123456 err -1" selftest-result.txt || { echo "FAIL: FPS 숫자 읽기"; fail=1; }
+grep -q "FPS meter 60 0 com.example.game" selftest-result.txt || { echo "FAIL: FPS 계산"; fail=1; }
 grep -q "FPSMODE-UI deolnureum deol true sam false" selftest-result.txt || { echo "FAIL: FPS 보기 방식 고르기"; fail=1; }
 grep -q "FPS-PREVIEW shown" selftest-result.txt || { echo "FAIL: FPS 표시 창"; fail=1; }
 grep -q "KEYMAP service true" selftest-result.txt || { echo "FAIL: 키 매핑 권한 인식"; fail=1; }

@@ -27,14 +27,12 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 /**
  * 덜누름 FPS 표시: 게임 위에 작은 창으로 FPS · 기기 온도 · 배터리를 띄웁니다.
  *
- * FPS는 Shizuku 권한으로 "service call SurfaceFlinger 1013"(화면에 실제로 그려진 프레임 수)을
- * 1초마다 읽어 그 차이로 셉니다. 게임이 화면을 꽉 채우고 있으면 게임의 FPS와 같습니다.
+ * FPS는 Shizuku(셸 권한)로 앞에 뜬 앱의 화면 층이 최근 1초 동안 화면에 내보낸 프레임 수를
+ * 1초마다 셉니다 (dumpsys SurfaceFlinger --latency, 계산은 FpsMeter).
  * 창은 끌어서 옮기고(자리 기억), 길게 누르면 닫힙니다. 덜누름 게임으로 돌아오면 저절로 닫힙니다.
  */
 public class FpsService extends Service {
@@ -53,7 +51,6 @@ public class FpsService extends Service {
     private SharedPreferences prefs;
     private final Handler main = new Handler(Looper.getMainLooper());
     private Thread reader;
-    private volatile Process proc;
     private volatile boolean stopping;
     private int logged;
 
@@ -99,7 +96,7 @@ public class FpsService extends Service {
         running = false;
         lastFps = -1;
         main.removeCallbacksAndMessages(null);
-        if (proc != null) try { proc.destroy(); } catch (Exception ignored) { }
+        if (reader != null) reader.interrupt();
         if (view != null) try { wm.removeView(view); } catch (Exception ignored) { }
         view = null;
         Log.i(TAG, "FPS-OVERLAY closed");
@@ -212,25 +209,37 @@ public class FpsService extends Service {
     private void startReading() {
         if (!Shizu.granted()) { Log.i(TAG, "FPS source none (Shizuku 연결 안 됨)"); return; }
         reader = new Thread(() -> {
-            try {
-                proc = Shizu.start("while true; do service call SurfaceFlinger 1013; sleep 1; done");
-                BufferedReader r = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                long prevCount = -1, prevAt = 0;
-                String line;
-                while (!stopping && (line = r.readLine()) != null) {
-                    long count = Shizu.parseFrameCount(line);
-                    long now = SystemClock.elapsedRealtime();
-                    if (count < 0) { if (logged++ < 3) Log.w(TAG, "FPS unreadable: " + line); continue; }
-                    if (prevCount >= 0 && now > prevAt && count >= prevCount) {
-                        int fps = (int) Math.round((count - prevCount) * 1000.0 / (now - prevAt));
-                        if (fps <= 1000) lastFps = fps;
-                        if (logged++ < 5) Log.i(TAG, "FPS " + lastFps);
+            FpsMeter meter = new FpsMeter();
+            String fgPkg = null;
+            java.util.List<String> layers = new java.util.ArrayList<>();
+            long resolvedAt = 0;
+            while (!stopping) {
+                long now = SystemClock.elapsedRealtime();
+                try {
+                    // 5초마다 앞에 뜬 앱과 그 화면 층을 다시 찾음 (게임을 바꿔도 따라감)
+                    if (now - resolvedAt > 5000 || layers.isEmpty()) {
+                        resolvedAt = now;
+                        String pkg = FpsMeter.foregroundPackage(Shizu.run(
+                            "dumpsys activity activities | grep -m3 -E 'topResumedActivity|mResumedActivity'", 3000));
+                        if (pkg != null) {
+                            if (!pkg.equals(fgPkg)) meter = new FpsMeter();
+                            fgPkg = pkg;
+                            layers = FpsMeter.layersOf(Shizu.run("dumpsys SurfaceFlinger --list", 3000), pkg);
+                            if (logged < 8) { logged++; Log.i(TAG, "FPS layers " + pkg + " " + layers); }
+                        }
                     }
-                    prevCount = count;
-                    prevAt = now;
+                    if (!layers.isEmpty()) {
+                        String out = Shizu.run(FpsMeter.latencyCommand(layers), 3000);
+                        int fps = meter.fps(out);
+                        lastFps = fps;
+                        if (fps < 0) layers.clear();   // 층이 바뀌었으면 다시 찾기
+                        if (logged < 12) { logged++; Log.i(TAG, "FPS " + fps); }
+                    }
+                } catch (Throwable t) {
+                    Log.w(TAG, "FPS reader " + t);
                 }
-            } catch (Throwable t) {
-                Log.w(TAG, "FPS reader " + t);
+                long spent = SystemClock.elapsedRealtime() - now;
+                try { Thread.sleep(Math.max(200, 1000 - spent)); } catch (InterruptedException e) { break; }
             }
         }, "fps-reader");
         reader.setDaemon(true);

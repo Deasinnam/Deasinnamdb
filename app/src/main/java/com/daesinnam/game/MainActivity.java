@@ -605,8 +605,15 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void fpsStop() { FpsService.stop(MainActivity.this); }
 
+        /** 자동 점검: 60fps로 그린 견본 프레임 시각을 FpsMeter에 넣어 계산이 맞는지 (첫 번 60, 새 프레임 없으면 0) */
         @JavascriptInterface
-        public String fpsParseTest(String line) { return String.valueOf(Shizu.parseFrameCount(line)); }
+        public String fpsSelfTest() {
+            StringBuilder out = new StringBuilder(FpsMeter.MARK + "test\n16666666\n");
+            for (int i = 0; i < 127; i++) { long t = 5_000_000_000L + i * 16_666_666L; out.append(t).append('\t').append(t).append('\t').append(t).append('\n'); }
+            FpsMeter m = new FpsMeter();
+            return m.fps(out.toString()) + " " + m.fps(out.toString()) + " " + FpsMeter.foregroundPackage(
+                "  topResumedActivity=ActivityRecord{1 u0 com.example.game/.Main t5}");
+        }
 
         @JavascriptInterface
         public void openSamsungGame() {

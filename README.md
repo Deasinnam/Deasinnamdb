@@ -18,7 +18,7 @@
 
 - **FPS 보기** (도구 › FPS 보기에서 고름)
   - **끄기**
-  - **덜누름 표시 (Shizuku)**: 게임 위 작은 창에 FPS · 기기 온도 · 배터리. 끌어서 옮기고(자리 기억) 길게 누르면 닫힘, 덜누름 게임으로 돌아오면 저절로 닫힘. 기기가 뜨거우면 테두리가 주황·빨강. FPS는 Shizuku 셸 권한으로 `service call SurfaceFlinger 1013`(화면에 그려진 프레임 수)을 1초마다 읽어 계산(`FpsService`). 창 권한은 Shizuku로 `appops`를 켜고, 안 되면 설정 화면으로
+  - **덜누름 표시 (Shizuku)**: 게임 위 작은 창에 FPS · 기기 온도 · 배터리. 끌어서 옮기고(자리 기억) 길게 누르면 닫힘, 덜누름 게임으로 돌아오면 저절로 닫힘. 기기가 뜨거우면 테두리가 주황·빨강. FPS는 Shizuku 셸 권한으로 앞에 뜬 앱의 화면 층이 최근 1초 동안 화면에 내보낸 프레임 수를 셈(`dumpsys SurfaceFlinger --latency`, 계산은 `FpsMeter`, 창은 `FpsService`). 안드로이드 14부터 셸의 `service call SurfaceFlinger 1013`은 막혀 쓰지 않음. 창 권한은 Shizuku로 `appops`를 켜고, 안 되면 설정 화면으로
   - **삼성 게임 부스터**: 설치 없이 게임 부스터의 성능 모니터를 쓰는 방법 안내 + 삼성 게임 런처 열기
 - **고급 기능(Shizuku) 연결** (`Shizu`): 설치 → 시작 → 허용 3단계를 한 단추로 안내. 연결되면 "게임 시작할 때 맞춤 설정도 실제 적용"(기본 켬)으로 `cmd game mode` · `cmd game set`(FPS 상한·해상도) · 화면 주사율을 적용하고, 돌아오면 주사율을 원래대로
 
@@ -37,7 +37,8 @@ Optimizer      기기 분석 → 추천 단계·설정값, 게임별 저장, Shi
 KeymapService  키 매핑(접근성): 버튼 받기 → 화면 누르기, 게임 위 🎮 단추·편집 화면
 RecordService  화면 녹화 서비스(포그라운드), MediaStore에 MP4 저장
 FpsService     FPS 표시 창(포그라운드 · 다른 앱 위에 표시), Shizuku로 프레임 수 읽기
-Shizu          Shizuku 연결 · 권한 · 셸 명령 실행, 프레임 수 해석
+Shizu          Shizuku 연결 · 권한 · 셸 명령 실행
+FpsMeter       앞에 뜬 앱 · 화면 층 찾기, 프레임 시각으로 FPS 계산 (순수 자바)
 ```
 
 ## 빌드 (GitHub Actions, 브랜치 `deolnureum-game`)

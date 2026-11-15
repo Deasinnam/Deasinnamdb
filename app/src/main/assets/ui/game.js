@@ -21,7 +21,7 @@ const A = window.Android || {
   isRecording: () => false, lastSaved: () => '', openRecordings: () => {},
   status: () => JSON.stringify({ dndAccess: false, dnd: false, hz: 120, modes: [60, 120], recording: false, shizukuInstalled: true, shizukuRunning: true, shizukuGranted: false, fpsMode: demoFps.mode, applyAdv: demoFps.adv, overlay: false, fpsRunning: false, fps: -1, samsungGame: true, version: '0.2' }),
   setFpsMode: (m) => { demoFps.mode = m; }, setApplyAdv: (on) => { demoFps.adv = on; }, shizukuConnect: () => toast('(견본) Shizuku 연결'),
-  fpsPreview: () => toast('(견본) FPS 표시'), fpsStop: () => {}, fpsParseTest: () => '-1',
+  fpsPreview: () => toast('(견본) FPS 표시'), fpsStop: () => {}, fpsSelfTest: () => '60 0 demo',
   setDnd: () => {}, openSamsungGame: () => {}, log: (m) => console.log(m),
   optimize: (pkg) => JSON.stringify({
     device: { model: '갤럭시 Z 폴드7', code: 'SM-F966N', soc: 'QTI SM8750', ramGb: 12, cores: 8, maxHz: 120, thermal: 0, batteryTemp: 31.5, battery: 80, charging: false, powerSave: false },
@@ -476,7 +476,7 @@ if (SELFTEST) {
     log('SHOT-TOOLS');
     await wait(2500);
     // FPS 보기: 세 방식 바꿔 보기 → 덜누름 표시 창 띄우기 (에뮬레이터엔 Shizuku가 없어 FPS는 "--")
-    log(`FPS parse ${A.fpsParseTest("Result: Parcel(0001e240   '@...')")} err ${A.fpsParseTest("Result: Parcel(fffffffc ffffffff '........')")}`);
+    log(`FPS meter ${A.fpsSelfTest()}`);
     for (const m of ['samsung', 'deolnureum']) {
       $(`#fpsModes [data-mode="${m}"]`).click();
       const st = parse(A.status(), {});
