@@ -31,6 +31,10 @@ public class DownloadNamesTest {
         String cut = DownloadNames.sanitize(longName + ".pdf");
         eq("긴 이름 자르고 확장자 유지", cut.length() + ":" + cut.endsWith(".pdf"), "120:true");
         eq("빈 이름", DownloadNames.sanitize("  ..  "), "download");
+        eq("설치 파일: .apk", "" + DownloadNames.isInstallFile("game.APK", null), "true");
+        eq("설치 파일: 종류로 판단", "" + DownloadNames.isInstallFile("download", "application/vnd.android.package-archive"), "true");
+        eq("설치 파일: .xapk", "" + DownloadNames.isInstallFile("app.xapk", null), "true");
+        eq("설치 파일 아님: .pdf", "" + DownloadNames.isInstallFile("apk-guide.pdf", "application/pdf"), "false");
         if (fail > 0) {
             System.out.println("실패 " + fail + "개");
             System.exit(1);

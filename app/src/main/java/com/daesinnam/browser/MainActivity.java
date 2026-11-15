@@ -28,8 +28,10 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.text.format.Formatter;
 import android.util.Base64;
 import android.util.Log;
@@ -38,6 +40,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
@@ -83,8 +86,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -99,7 +104,8 @@ import java.util.regex.Pattern;
  *  - PC용 사용자 에이전트와 넓은 화면 폭(1024~1920)을 항상 씁니다.
  *  - HTTPS만 엽니다. 인증서 오류·유해 사이트·로컬 파일·외부 앱 링크는 막습니다.
  *  - 위쪽은 주소 줄 한 줄만 둡니다(40dp). 진행 표시는 화면 위에 겹쳐 그려 자리를 차지하지 않습니다.
- *  - 파일 받기: 확인을 받은 뒤 휴대폰의 "다운로드" 폴더에 저장합니다.
+ *  - 파일 받기: 확인을 받은 뒤 휴대폰의 "다운로드" 폴더에 저장합니다. 앱 설치 파일은 따로 경고합니다.
+ *  - 탭(최대 10개) · 마지막에 보던 탭 복구 · 페이지 안에서 찾기 · 방문 기록 · 크롬에서 열기.
  */
 public class MainActivity extends Activity {
     private static final String TAG = "BROWSER_SELFTEST";
@@ -112,6 +118,8 @@ public class MainActivity extends Activity {
     private static final long MAX_INLINE_BYTES = 40L * 1024 * 1024;
     private static final String DL_BRIDGE = "__dnDownload";
     private static final int MAX_BOOKMARKS = 200;
+    private static final int MAX_TABS = 10;
+    private static final int MAX_HISTORY = 100;
     private static final int[] WIDTHS = {1024, 1280, 1600, 1920};
     private static final Pattern SCHEME = Pattern.compile("^[a-zA-Z][a-zA-Z0-9+.-]*:");
     private static final Pattern CHROME = Pattern.compile("Chrome/([0-9.]+)");
@@ -122,8 +130,29 @@ public class MainActivity extends Activity {
     private static final int INK = Color.WHITE;
     private static final int INK_DIM = 0xFFB8C2CF;
 
+    /** 탭 하나. 복구한 탭은 처음 볼 때 불러옵니다(pending). */
+    private static final class Tab {
+        WebView view;
+        String pending;
+        String title;
+        ScriptHandler viewport;
+        ScriptHandler download;
+    }
+
+    private final List<Tab> tabs = new ArrayList<>();
+    private Tab current;
+    /** 지금 보이는 탭의 웹 화면 */
     private WebView web;
     private EditText address;
+    private LinearLayout findBar;
+    private EditText findField;
+    private TextView findCount;
+    private TextView tabButton;
+    private JSONArray history;
+    /** 최근 앱 목록 미리보기·화면 캡처 막기 */
+    private boolean secureScreen;
+    /** 앱을 닫으면(다음에 열 때) 로그인·쿠키·기록을 지움 */
+    private boolean autoClear;
     private TextView notice;
     private ProgressBar progress;
     private LinearLayout root, topBar, bottomBar;
@@ -133,7 +162,6 @@ public class MainActivity extends Activity {
 
     private JSONArray bookmarks;
     private int desktopWidth = 1280;
-    private ScriptHandler viewportScript;
     private boolean clearingData;
     private boolean clearHistoryAfterLoad;
     /** 뒤로·앞으로 이동이 끝나기 전에 또 누르면 무시합니다 (이 시각까지) */
@@ -144,7 +172,6 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> upload;
     private long pageGeneration;
     private long uploadGeneration;
-    private ScriptHandler downloadScript;
     private boolean bridgeReady;
     private String blobToken, blobName, blobMime;
     private Runnable afterStoragePermission;
@@ -162,7 +189,11 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         selftest = BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("browser.selftest");
         desktopWidth = getPreferences(MODE_PRIVATE).getInt("width", 1280);
+        secureScreen = getPreferences(MODE_PRIVATE).getBoolean("secureScreen", false);
+        autoClear = getPreferences(MODE_PRIVATE).getBoolean("autoClear", false);
+        applySecureScreen();
         loadBookmarks();
+        loadHistory();
         WebView.setWebContentsDebuggingEnabled(false);
 
         buildLayout();
@@ -176,15 +207,292 @@ public class MainActivity extends Activity {
             return WindowInsetsCompat.CONSUMED;
         });
 
-        setupWeb();
+        if (Build.VERSION.SDK_INT >= 27) WebView.startSafeBrowsing(this, ok -> safeBrowsingReady = ok);
+        CookieManager.getInstance().setAcceptCookie(true);
         registerDownloadReceiver();
-        if (selftest) root.postDelayed(this::layoutSelftest, 2500);
-        if (state != null && web.restoreState(state) != null) {
-            if (!UrlPolicy.isAllowed(web.getUrl())) web.loadUrl(HOME);
+        if (selftest) {
+            root.postDelayed(this::layoutSelftest, 2500);
+            String start = getIntent().getStringExtra("browser.url");
+            openNewTab(start != null && UrlPolicy.isAllowed(start) ? start : HOME);
+        } else if (autoClear) {
+            // 지난번 로그인·쿠키·기록을 지운 뒤 새로 시작
+            Tab t = addTab(null);
+            switchTo(t);
+            clearingData = true;
+            wipeWebData(() -> {
+                clearingData = false;
+                web.loadUrl(HOME);
+            });
         } else {
-            String start = selftest ? getIntent().getStringExtra("browser.url") : null;
-            web.loadUrl(start != null && UrlPolicy.isAllowed(start) ? start : HOME);
+            restoreTabs();
         }
+    }
+
+    // ---------- 탭 ----------
+
+    /** 탭을 만들어 목록에 넣습니다 (아직 보이지 않음). pending이 있으면 처음 볼 때 그 주소를 엽니다. */
+    private Tab addTab(String pending) {
+        Tab t = new Tab();
+        t.view = new WebView(this);
+        t.pending = pending;
+        t.view.setVisibility(View.GONE);
+        stage.addView(t.view, 0, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setupWeb(t);
+        tabs.add(t);
+        updateTabButton();
+        return t;
+    }
+
+    private void switchTo(Tab t) {
+        if (t == null) return;
+        if (current != null && current != t) {
+            if (customView != null) exitFullscreen();
+            current.view.onPause();
+            current.view.setVisibility(View.GONE);
+        }
+        closeFind();
+        cancelUpload();
+        pageGeneration++;
+        historyLockUntil = 0;
+        current = t;
+        web = t.view;
+        web.setVisibility(View.VISIBLE);
+        web.onResume();
+        web.requestFocus();
+        showNotice(null);
+        progress.setVisibility(View.GONE);
+        if (t.pending != null) {
+            String url = t.pending;
+            t.pending = null;
+            web.loadUrl(url);
+            address.setText(url);
+        } else {
+            address.setText(web.getUrl());
+        }
+        updateTabButton();
+    }
+
+    /** 새 탭을 열어 바로 보여 줍니다 */
+    private void openNewTab(String url) {
+        if (tabs.size() >= MAX_TABS) {
+            Toast.makeText(this, "탭은 최대 " + MAX_TABS + "개까지 열 수 있습니다. 쓰지 않는 탭을 닫아 주세요.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        switchTo(addTab(url == null || !UrlPolicy.isAllowed(url) ? HOME : url));
+    }
+
+    /** 링크를 새 탭으로: 크롬으로 보내야 하는 주소나 열 수 없는 주소는 지금 탭의 처리 규칙을 따릅니다 */
+    private void openLinkInNewTab(String link) {
+        String r = WebLinkResolver.resolve(link);
+        if (r == null || !UrlPolicy.isAllowed(r) || needsChrome(Uri.parse(r))) {
+            navigate(link);
+            return;
+        }
+        openNewTab(r);
+    }
+
+    private void closeTab(Tab t) {
+        int i = tabs.indexOf(t);
+        if (i < 0) return;
+        if (tabs.size() == 1) { // 마지막 탭은 닫지 않고 첫 화면으로
+            t.view.loadUrl(HOME);
+            return;
+        }
+        if (t == current) {
+            Tab next = tabs.get(i + 1 < tabs.size() ? i + 1 : i - 1);
+            switchTo(next);
+        }
+        tabs.remove(t);
+        stage.removeView(t.view);
+        t.view.destroy();
+        updateTabButton();
+    }
+
+    private void closeOtherTabs() {
+        for (Tab t : new ArrayList<>(tabs)) {
+            if (t == current) continue;
+            tabs.remove(t);
+            stage.removeView(t.view);
+            t.view.destroy();
+        }
+        updateTabButton();
+    }
+
+    private void nextTab() {
+        if (tabs.size() < 2) return;
+        switchTo(tabs.get((tabs.indexOf(current) + 1) % tabs.size()));
+    }
+
+    private String tabTitle(Tab t) {
+        String title = t.pending == null ? t.view.getTitle() : t.title;
+        String url = t.pending == null ? t.view.getUrl() : t.pending;
+        if (title == null || title.trim().isEmpty()) title = UrlPolicy.origin(url);
+        return title == null || title.isEmpty() ? "새 탭" : title;
+    }
+
+    private String tabUrl(Tab t) {
+        return t.pending != null ? t.pending : t.view.getUrl();
+    }
+
+    private void updateTabButton() {
+        if (tabButton != null) tabButton.setText("탭 " + tabs.size());
+    }
+
+    private void showTabs() {
+        String[] items = new String[tabs.size() + 1];
+        items[0] = "＋ 새 탭";
+        for (int i = 0; i < tabs.size(); i++) {
+            Tab t = tabs.get(i);
+            items[i + 1] = (t == current ? "● " : "") + tabTitle(t) + "\n" + UrlPolicy.origin(tabUrl(t));
+        }
+        new AlertDialog.Builder(this).setTitle("탭 (" + tabs.size() + "/" + MAX_TABS + ")")
+                .setItems(items, (d, which) -> {
+                    if (which == 0) openNewTab(HOME);
+                    else switchTo(tabs.get(which - 1));
+                })
+                .setNeutralButton("지금 탭 닫기", (d, w) -> closeTab(current))
+                .setNegativeButton("닫기", null)
+                .show();
+    }
+
+    /** 열린 탭 주소를 저장해 두었다가 다음에 앱을 열 때 이어서 보여 줍니다 (복구한 탭은 볼 때 불러옴) */
+    private void persistTabs() {
+        if (selftest || current == null) return;
+        if (autoClear) {
+            getPreferences(MODE_PRIVATE).edit().remove("tabs").remove("tabIndex").apply();
+            return;
+        }
+        JSONArray a = new JSONArray();
+        int index = 0;
+        for (Tab t : tabs) {
+            String url = tabUrl(t);
+            if (!UrlPolicy.isAllowed(url)) continue;
+            if (t == current) index = a.length();
+            try {
+                a.put(new JSONObject().put("url", url).put("title", tabTitle(t)));
+            } catch (JSONException ignored) {
+            }
+        }
+        getPreferences(MODE_PRIVATE).edit().putString("tabs", a.toString()).putInt("tabIndex", index).apply();
+    }
+
+    private void restoreTabs() {
+        JSONArray a;
+        try {
+            a = new JSONArray(getPreferences(MODE_PRIVATE).getString("tabs", "[]"));
+        } catch (JSONException e) {
+            a = new JSONArray();
+        }
+        for (int i = 0; i < a.length() && tabs.size() < MAX_TABS; i++) {
+            JSONObject o = a.optJSONObject(i);
+            if (o == null || !UrlPolicy.isAllowed(o.optString("url"))) continue;
+            Tab t = addTab(o.optString("url"));
+            t.title = o.optString("title", null);
+        }
+        if (tabs.isEmpty()) addTab(HOME);
+        int index = getPreferences(MODE_PRIVATE).getInt("tabIndex", 0);
+        switchTo(tabs.get(index >= 0 && index < tabs.size() ? index : 0));
+    }
+
+    // ---------- 페이지 안에서 찾기 ----------
+
+    private void openFind() {
+        if (customView != null) return;
+        findBar.setVisibility(View.VISIBLE);
+        findField.requestFocus();
+        findField.selectAll();
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) imm.showSoftInput(findField, 0);
+        if (findField.length() > 0) web.findAllAsync(findField.getText().toString());
+    }
+
+    private void closeFind() {
+        if (findBar == null || findBar.getVisibility() != View.VISIBLE) return;
+        findBar.setVisibility(View.GONE);
+        findCount.setText("");
+        if (web != null) {
+            web.clearMatches();
+            web.requestFocus();
+        }
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(findField.getWindowToken(), 0);
+    }
+
+    // ---------- 방문 기록 ----------
+
+    private void loadHistory() {
+        try {
+            history = new JSONArray(getPreferences(MODE_PRIVATE).getString("history", "[]"));
+        } catch (JSONException e) {
+            history = new JSONArray();
+        }
+    }
+
+    private void persistHistory() {
+        getPreferences(MODE_PRIVATE).edit().putString("history", history.toString()).apply();
+    }
+
+    private void recordHistory(String url, String title) {
+        if (selftest || clearingData || !UrlPolicy.isAllowed(url)) return;
+        JSONArray next = new JSONArray();
+        try {
+            next.put(new JSONObject().put("url", url).put("title", title == null || title.trim().isEmpty() ? UrlPolicy.origin(url) : title));
+        } catch (JSONException e) {
+            return;
+        }
+        for (int i = 0; i < history.length() && next.length() < MAX_HISTORY; i++) {
+            JSONObject o = history.optJSONObject(i);
+            if (o != null && !url.equals(o.optString("url"))) next.put(o);
+        }
+        history = next;
+        persistHistory();
+    }
+
+    private void showHistory() {
+        if (history.length() == 0) {
+            Toast.makeText(this, "방문 기록이 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String[] items = new String[history.length()];
+        for (int i = 0; i < history.length(); i++) {
+            JSONObject o = history.optJSONObject(i);
+            items[i] = o == null ? "잘못된 항목" : o.optString("title") + "\n" + UrlPolicy.origin(o.optString("url"));
+        }
+        new AlertDialog.Builder(this).setTitle("방문 기록 (최근 " + history.length() + "개)")
+                .setItems(items, (d, which) -> {
+                    JSONObject o = history.optJSONObject(which);
+                    if (o != null) navigate(o.optString("url"));
+                })
+                .setNeutralButton("기록 모두 삭제", (d, w) -> new AlertDialog.Builder(this).setMessage("방문 기록을 모두 삭제할까요?")
+                        .setNegativeButton("취소", null)
+                        .setPositiveButton("삭제", (d2, w2) -> {
+                            history = new JSONArray();
+                            persistHistory();
+                        }).show())
+                .setNegativeButton("닫기", null).show();
+    }
+
+    // ---------- 화면 보호 · 자동 삭제 ----------
+
+    private void applySecureScreen() {
+        if (secureScreen) getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+    }
+
+    /** 로그인·쿠키·캐시·웹 저장소·방문 기록을 지운 뒤 done을 부릅니다 */
+    private void wipeWebData(Runnable done) {
+        CookieManager.getInstance().removeAllCookies(ok -> {
+            if (isFinishing() || isDestroyed()) return;
+            CookieManager.getInstance().flush();
+            web.clearCache(true);
+            web.clearFormData();
+            web.clearHistory();
+            WebStorage.getInstance().deleteAllData();
+            WebViewDatabase.getInstance(this).clearHttpAuthUsernamePassword();
+            history = new JSONArray();
+            persistHistory();
+            done.run();
+        });
     }
 
     // ---------- 화면 ----------
@@ -235,24 +543,75 @@ public class MainActivity extends Activity {
         notice.setVisibility(View.GONE);
         root.addView(notice);
 
-        // 가운데: 웹 화면 (+ 위에 겹친 가는 진행 표시)
+        // 페이지 안에서 찾기 (설정 메뉴 · Ctrl+F 로 열 때만 보입니다)
+        findBar = new LinearLayout(this);
+        findBar.setGravity(Gravity.CENTER_VERTICAL);
+        findBar.setPadding(dp(6), 0, dp(2), 0);
+        findBar.setVisibility(View.GONE);
+        findField = new EditText(this);
+        findField.setSingleLine(true);
+        findField.setTextColor(INK);
+        findField.setHintTextColor(INK_DIM);
+        findField.setHint("페이지에서 찾기");
+        findField.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        findField.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+        findField.setPadding(dp(12), 0, dp(12), 0);
+        GradientDrawable findPill = new GradientDrawable();
+        findPill.setColor(FIELD);
+        findPill.setCornerRadius(dp(17));
+        findField.setBackground(findPill);
+        findField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int a, int b, int c) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int a, int b, int c) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (web == null) return;
+                if (s.length() == 0) {
+                    web.clearMatches();
+                    findCount.setText("");
+                } else {
+                    web.findAllAsync(s.toString());
+                }
+            }
+        });
+        findField.setOnEditorActionListener((v, action, event) -> {
+            if (web != null) web.findNext(true);
+            return true;
+        });
+        findBar.addView(findField, new LinearLayout.LayoutParams(0, dp(34), 1f));
+        findCount = new TextView(this);
+        findCount.setTextColor(INK_DIM);
+        findCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        findCount.setPadding(dp(8), 0, dp(4), 0);
+        findBar.addView(findCount);
+        findBar.addView(barButton("▲", () -> web.findNext(false), INK, 10, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
+        findBar.addView(barButton("▼", () -> web.findNext(true), INK, 10, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
+        findBar.addView(barButton("닫기", this::closeFind, ACCENT, 9, 13), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
+        root.addView(findBar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(40)));
+
+        // 가운데: 웹 화면(탭마다 하나, 지금 탭만 보임) + 위에 겹친 가는 진행 표시
         stage = new FrameLayout(this);
-        web = new WebView(this);
-        stage.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progress.setMax(100);
         progress.setVisibility(View.GONE);
         stage.addView(progress, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(3), Gravity.TOP));
         root.addView(stage, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
-        // 아래: 뒤로 · 앞으로 · 홈 · 새로고침 · 즐겨찾기 · 설정
+        // 아래: 뒤로 · 앞으로 · 홈 · 새로고침 · 탭 · 즐겨찾기 · 설정
         bottomBar = new LinearLayout(this);
-        addNav("◀", () -> stepHistory(-1, true));
-        addNav("▶", () -> stepHistory(1, true));
-        addNav("홈", () -> web.loadUrl(HOME));
-        addNav("새로고침", () -> web.reload());
-        addNav("즐겨찾기", this::showBookmarks);
-        addNav("설정", this::settings);
+        addNav("◀", () -> stepHistory(-1, true), 0.7f);
+        addNav("▶", () -> stepHistory(1, true), 0.7f);
+        addNav("홈", () -> web.loadUrl(HOME), 0.8f);
+        addNav("새로고침", () -> web.reload(), 1.1f);
+        tabButton = addNav("탭 1", this::showTabs, 0.9f);
+        addNav("즐겨찾기", this::showBookmarks, 1.1f);
+        addNav("설정", this::settings, 0.9f);
         root.addView(bottomBar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(44)));
 
         // 동영상 전체 화면
@@ -283,8 +642,10 @@ public class MainActivity extends Activity {
         return b;
     }
 
-    private void addNav(String text, Runnable action) {
-        bottomBar.addView(barButton(text, action, INK, 0, 12.5f), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+    private TextView addNav(String text, Runnable action, float weight) {
+        TextView b = barButton(text, action, INK, 0, 12.5f);
+        bottomBar.addView(b, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, weight));
+        return b;
     }
 
     /**
@@ -314,8 +675,9 @@ public class MainActivity extends Activity {
     // ---------- 웹 화면 설정 ----------
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void setupWeb() {
-        WebSettings s = web.getSettings();
+    private void setupWeb(Tab tab) {
+        final WebView w = tab.view;
+        WebSettings s = w.getSettings();
         Matcher m = CHROME.matcher(s.getUserAgentString());
         String chrome = m.find() ? m.group(1) : "130.0.0.0";
         s.setUserAgentString("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + chrome + " Safari/537.36");
@@ -347,19 +709,20 @@ public class MainActivity extends Activity {
         s.setSaveFormData(false);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         s.setJavaScriptCanOpenWindowsAutomatically(false);
-        if (Build.VERSION.SDK_INT >= 27) WebView.startSafeBrowsing(this, ok -> safeBrowsingReady = ok);
-        CookieManager.getInstance().setAcceptCookie(true);
-        CookieManager.getInstance().setAcceptThirdPartyCookies(web, false);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(w, false);
         // 보이지 않을 때는 화면 그리는 프로세스의 우선순위를 낮춰 다른 앱에 메모리를 양보
-        web.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true);
-        web.setFilterTouchesWhenObscured(true);
-        installViewportScript();
+        w.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true);
+        w.setFilterTouchesWhenObscured(true);
+        installViewportScript(tab);
+        w.setFindListener((active, count, done) -> {
+            if (w == web && done) findCount.setText(count == 0 ? "0/0" : (active + 1) + "/" + count);
+        });
 
-        web.setWebViewClient(new WebViewClient() {
+        w.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (clearingData) return true;
-                if (request.isForMainFrame()) return handle(request.getUrl());
+                if (request.isForMainFrame()) return view != web ? !UrlPolicy.isAllowed(request.getUrl().toString()) : handle(request.getUrl());
                 return !UrlPolicy.isAllowed(request.getUrl().toString());
             }
 
@@ -374,36 +737,39 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                pageGeneration++;
-                cancelUpload();
                 if (!UrlPolicy.isAllowed(url) && !"about:blank".equals(url)) {
                     view.stopLoading();
                     return;
                 }
+                if (view != web) return;
+                pageGeneration++;
+                cancelUpload();
                 showNotice(null);
                 if (!address.hasFocus()) address.setText(url);
             }
 
             @Override
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-                historyLockUntil = 0; // 이동이 끝남 → 다음 뒤로·앞으로를 받음
+                if (view == web) historyLockUntil = 0; // 이동이 끝남 → 다음 뒤로·앞으로를 받음
             }
 
             @Override
             public void onPageCommitVisible(WebView view, String url) {
-                if (!clearingData) applyViewport();
+                if (!clearingData) applyViewport(view);
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 if (clearingData) {
-                    if ("about:blank".equals(url)) finishClearWebData();
+                    if (view == web && "about:blank".equals(url)) finishClearWebData();
                     return;
                 }
                 if (!UrlPolicy.isAllowed(url)) return;
-                applyViewport();
-                if (!address.hasFocus()) address.setText(url);
+                applyViewport(view);
                 CookieManager.getInstance().flush();
+                recordHistory(url, view.getTitle());
+                if (view != web) return;
+                if (!address.hasFocus()) address.setText(url);
                 if (clearHistoryAfterLoad) {
                     web.clearHistory();
                     clearHistoryAfterLoad = false;
@@ -413,7 +779,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (!request.isForMainFrame()) return;
+                if (!request.isForMainFrame() || view != web) return;
                 historyLockUntil = 0;
                 Toast.makeText(MainActivity.this, "페이지를 불러오지 못했습니다. 연결을 확인하고 새로고침하세요.", Toast.LENGTH_LONG).show();
                 if (selftest && !selftestDone) {
@@ -431,6 +797,7 @@ public class MainActivity extends Activity {
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.cancel();
+                if (view != web) return;
                 showNotice("인증서 오류 · 연결 차단");
                 Toast.makeText(MainActivity.this, "인증서를 확인할 수 없어 연결을 차단했습니다.", Toast.LENGTH_LONG).show();
             }
@@ -438,28 +805,33 @@ public class MainActivity extends Activity {
             @Override
             public void onSafeBrowsingHit(WebView view, WebResourceRequest request, int threatType, SafeBrowsingResponse callback) {
                 callback.backToSafety(false);
+                if (view != web) return;
                 showNotice("유해 사이트 감지 · 연결 차단");
                 Toast.makeText(MainActivity.this, "유해 사이트로 감지되어 차단했습니다.", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
-                // 메모리 부족 등으로 화면 그리는 프로세스가 꺼진 경우: 앱이 같이 꺼지지 않게 화면을 다시 만듭니다
-                recreate();
+                // 메모리 부족 등으로 화면 그리는 프로세스가 꺼진 경우: 앱이 같이 꺼지지 않게 열린 탭을 저장하고 화면을 다시 만듭니다
+                if (!isFinishing() && !isDestroyed()) {
+                    persistTabs();
+                    recreate();
+                }
                 return true;
             }
         });
 
-        web.setWebChromeClient(new WebChromeClient() {
+        w.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int value) {
+                if (view != web) return;
                 progress.setProgress(value);
                 progress.setVisibility(value >= 100 ? View.GONE : View.VISIBLE);
             }
 
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
-                if (clearingData || pickerActive || upload != null || !UrlPolicy.isAllowed(view.getUrl())) {
+                if (view != web || clearingData || pickerActive || upload != null || !UrlPolicy.isAllowed(view.getUrl())) {
                     callback.onReceiveValue(null);
                     return true;
                 }
@@ -470,9 +842,9 @@ public class MainActivity extends Activity {
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("파일 제공 확인")
                         .setMessage("현재 페이지: " + UrlPolicy.origin(view.getUrl()) + "\n\n선택한 파일을 이 페이지의 웹 콘텐츠에 제공합니다. 신뢰하는 페이지에서만 선택하세요.")
-                        .setNegativeButton("취소", (d, w) -> cancelUpload())
+                        .setNegativeButton("취소", (d, x) -> cancelUpload())
                         .setOnCancelListener(d -> cancelUpload())
-                        .setPositiveButton("파일 선택", (d, w) -> pickFile(generation))
+                        .setPositiveButton("파일 선택", (d, x) -> pickFile(generation))
                         .show();
                 return true;
             }
@@ -480,10 +852,11 @@ public class MainActivity extends Activity {
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 // 동영상 "전체 화면": 주소 줄·아래 줄을 숨기고 화면 가득
-                if (customView != null) {
+                if (customView != null || w != web) {
                     callback.onCustomViewHidden();
                     return;
                 }
+                closeFind();
                 customView = view;
                 customViewCallback = callback;
                 fullscreenHolder.addView(view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -492,25 +865,29 @@ public class MainActivity extends Activity {
 
             @Override
             public void onHideCustomView() {
-                exitFullscreen();
+                if (w == web) exitFullscreen();
             }
         });
 
-        web.setDownloadListener((url, userAgent, disposition, mime, length) -> onDownload(url, disposition, mime, length));
-        installDownloadBridge();
-        // 링크를 길게 누르면: 주소 복사 / 이미지를 길게 누르면: 이미지 저장
-        web.setOnLongClickListener(v -> {
-            WebView.HitTestResult hit = web.getHitTestResult();
+        w.setDownloadListener((url, userAgent, disposition, mime, length) -> {
+            if (w == web) onDownload(url, disposition, mime, length);
+        });
+        installDownloadBridge(tab);
+        // 링크를 길게 누르면: 열기 / 새 탭에서 열기 / 주소 복사, 이미지를 길게 누르면: 이미지 저장
+        w.setOnLongClickListener(v -> {
+            WebView.HitTestResult hit = w.getHitTestResult();
             int type = hit.getType();
             String extra = hit.getExtra();
             if (extra == null) return false;
             if (type == WebView.HitTestResult.IMAGE_TYPE || type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
                 final String img = extra;
                 new AlertDialog.Builder(this).setTitle("이미지")
-                        .setItems(new String[]{"이미지 저장", "이미지 주소 복사"}, (d, w) -> {
-                            if (w == 0) {
+                        .setItems(new String[]{"이미지 저장", "이미지 주소 복사"}, (d, x) -> {
+                            if (x == 0) {
                                 String mime = guessMime(DownloadNames.fromUrl(img), null);
-                                startDownload(img, DownloadNames.choose(null, img, null, extensionFor(mime)), mime);
+                                String name = DownloadNames.choose(null, img, null, extensionFor(mime));
+                                if (DownloadNames.isInstallFile(name, mime)) confirmDownload(img, name, mime, UrlPolicy.origin(img), "크기 알 수 없음");
+                                else startDownload(img, name, mime);
                             } else {
                                 ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                                 if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("이미지 주소", img));
@@ -519,12 +896,15 @@ public class MainActivity extends Activity {
                 return true;
             }
             if (type != WebView.HitTestResult.SRC_ANCHOR_TYPE) return false;
-            new AlertDialog.Builder(this).setTitle(UrlPolicy.origin(extra).isEmpty() ? "링크" : UrlPolicy.origin(extra))
-                    .setMessage(extra.length() > 300 ? extra.substring(0, 300) + "…" : extra)
-                    .setPositiveButton("열기", (d, w) -> navigate(extra))
-                    .setNeutralButton("주소 복사", (d, w) -> {
-                        ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                        if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("링크", extra));
+            String shown = extra.length() > 200 ? extra.substring(0, 200) + "…" : extra;
+            new AlertDialog.Builder(this).setTitle(shown)
+                    .setItems(new String[]{"열기", "새 탭에서 열기", "주소 복사"}, (d, x) -> {
+                        if (x == 0) navigate(extra);
+                        else if (x == 1) openLinkInNewTab(extra);
+                        else {
+                            ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                            if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("링크", extra));
+                        }
                     })
                     .setNegativeButton("닫기", null).show();
             return true;
@@ -554,19 +934,19 @@ public class MainActivity extends Activity {
      * 페이지가 그려지기 전에 화면 폭을 PC 폭으로 정해 둡니다.
      * (다 불러온 뒤에 바꾸면 모바일 폭으로 한 번 그렸다가 다시 그려서 화면이 출렁이고 느립니다)
      */
-    private void installViewportScript() {
+    private void installViewportScript(Tab t) {
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) return;
         try {
-            if (viewportScript != null) viewportScript.remove();
-            viewportScript = WebViewCompat.addDocumentStartJavaScript(web, viewportJs(), Collections.singleton("*"));
+            if (t.viewport != null) t.viewport.remove();
+            t.viewport = WebViewCompat.addDocumentStartJavaScript(t.view, viewportJs(), Collections.singleton("*"));
         } catch (RuntimeException e) {
             Log.w(TAG, "화면 폭 스크립트 설치 실패: " + e);
         }
     }
 
     /** 사이트가 나중에 화면 폭 설정을 바꿔 놓은 경우를 위한 확인 */
-    private void applyViewport() {
-        web.evaluateJavascript(viewportJs(), null);
+    private void applyViewport(WebView view) {
+        view.evaluateJavascript(viewportJs(), null);
     }
 
     // ---------- 주소 이동 ----------
@@ -608,6 +988,11 @@ public class MainActivity extends Activity {
     // 구글은 안드로이드 WebView로 만든 앱 안에서의 로그인을 막습니다("이 브라우저나 앱은 안전하지 않을 수 있음").
     // 그래서 로그인이 필요한 유튜브 스튜디오와 구글 로그인 화면은 크롬에서 엽니다.
 
+    /** 이 브라우저 안에서는 로그인이 막혀 크롬으로 보내는 주소 */
+    private static boolean needsChrome(Uri u) {
+        return u != null && ("studio.youtube.com".equalsIgnoreCase(u.getHost()) || isGoogleSignIn(u));
+    }
+
     private static boolean isGoogleSignIn(Uri u) {
         if (u == null || !"accounts.google.com".equalsIgnoreCase(u.getHost())) return false;
         String path = u.getPath() == null ? "" : u.getPath().toLowerCase(Locale.ROOT);
@@ -628,7 +1013,7 @@ public class MainActivity extends Activity {
         if (!UrlPolicy.isAllowed(url)) return;
         if (!getPreferences(MODE_PRIVATE).getBoolean("chromeTip", false)) {
             new AlertDialog.Builder(this).setTitle("크롬에서 열기")
-                    .setMessage("유튜브 스튜디오와 구글 로그인은 크롬에서 엽니다.\n\nPC 화면으로 보려면 크롬에서 처음 한 번만 오른쪽 위 메뉴(⋮) → \"PC 버전 사이트\"를 켜 두세요. 크롬이 사이트별로 기억합니다. (DeX에서는 처음부터 PC 화면으로 열립니다.)")
+                    .setMessage("유튜브 스튜디오·구글 로그인처럼 이 브라우저에서 막히는 사이트(증권·결제 등)는 크롬에서 엽니다.\n\nPC 화면으로 보려면 크롬에서 처음 한 번만 오른쪽 위 메뉴(⋮) → \"PC 버전 사이트\"를 켜 두세요. 크롬이 사이트별로 기억합니다. (DeX에서는 처음부터 PC 화면으로 열립니다.)")
                     .setNegativeButton("취소", null)
                     .setPositiveButton("열기", (d, w) -> {
                         getPreferences(MODE_PRIVATE).edit().putBoolean("chromeTip", true).apply();
@@ -774,31 +1159,82 @@ public class MainActivity extends Activity {
     // ---------- 설정 ----------
 
     private void settings() {
-        String[] items = {"PC 화면 폭 설정 (현재 " + desktopWidth + ")", "받은 파일 보기", "웹 데이터 삭제", "보안 상태", "앱 정보"};
+        String[] items = {
+                "PC 화면 폭 설정 (현재 " + desktopWidth + ")",
+                "페이지에서 찾기",
+                "이 페이지 크롬에서 열기",
+                "방문 기록",
+                "받은 파일 보기",
+                "화면 보호: " + (secureScreen ? "켜짐" : "꺼짐") + " (최근 앱 미리보기·캡처 막기)",
+                "닫을 때 웹 데이터 삭제: " + (autoClear ? "켜짐" : "꺼짐"),
+                "웹 데이터 지금 삭제",
+                "보안 상태",
+                "앱 정보"};
         new AlertDialog.Builder(this).setTitle("덜누름 브라우저").setItems(items, (d, which) -> {
-            if (which == 0) {
-                new AlertDialog.Builder(this).setTitle("PC 화면 폭")
-                        .setItems(new String[]{"1024 px", "1280 px", "1600 px", "1920 px"}, (d2, w) -> {
-                            desktopWidth = WIDTHS[w];
-                            getPreferences(MODE_PRIVATE).edit().putInt("width", desktopWidth).apply();
-                            installViewportScript();
-                            web.reload();
-                        }).show();
-            } else if (which == 1) {
-                openDownloads();
-            } else if (which == 2) {
-                new AlertDialog.Builder(this).setMessage("로그인·쿠키·캐시·웹 저장소·탐색 기록을 삭제할까요? 즐겨찾기는 유지됩니다.")
-                        .setNegativeButton("취소", null).setPositiveButton("삭제", (d2, w) -> clearWebData()).show();
-            } else if (which == 3) {
-                new AlertDialog.Builder(this).setTitle("보안 상태")
-                        .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단 (유튜브 스튜디오·구글 로그인은 크롬으로)\n• 제3자 쿠키 차단\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만\n\nSafe Browsing: "
-                                + (safeBrowsingReady ? "초기화 완료" : "활성화 요청됨 · 초기화 미확인")
-                                + "\n탐지 범위는 기기의 WebView와 서비스 상태에 따라 다릅니다.\n\nWebView를 최신 버전으로 유지하세요. HTTPS만으로 사이트의 신뢰성이 보장되지는 않습니다.")
-                        .setPositiveButton("확인", null).show();
-            } else {
-                new AlertDialog.Builder(this).setTitle("덜누름 브라우저 " + BuildConfig.VERSION_NAME)
-                        .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 받은 파일은 휴대폰의 \"다운로드\" 폴더에 저장됩니다. 구글이 앱 속 브라우저의 로그인을 막아, 유튜브 스튜디오와 구글 로그인은 크롬에서 엽니다. 동기화·확장 프로그램·다중 탭은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
-                        .setPositiveButton("확인", null).show();
+            switch (which) {
+                case 0:
+                    new AlertDialog.Builder(this).setTitle("PC 화면 폭")
+                            .setItems(new String[]{"1024 px", "1280 px", "1600 px", "1920 px"}, (d2, w) -> {
+                                desktopWidth = WIDTHS[w];
+                                getPreferences(MODE_PRIVATE).edit().putInt("width", desktopWidth).apply();
+                                for (Tab t : tabs) installViewportScript(t);
+                                web.reload();
+                            }).show();
+                    break;
+                case 1:
+                    openFind();
+                    break;
+                case 2:
+                    if (UrlPolicy.isAllowed(web.getUrl())) openInChrome(web.getUrl());
+                    else Toast.makeText(this, "크롬에서 열 HTTPS 페이지가 없습니다.", Toast.LENGTH_SHORT).show();
+                    break;
+                case 3:
+                    showHistory();
+                    break;
+                case 4:
+                    openDownloads();
+                    break;
+                case 5:
+                    secureScreen = !secureScreen;
+                    getPreferences(MODE_PRIVATE).edit().putBoolean("secureScreen", secureScreen).apply();
+                    applySecureScreen();
+                    Toast.makeText(this, secureScreen
+                            ? "화면 보호를 켰습니다. 최근 앱 목록에 화면이 보이지 않고, 화면 캡처·녹화가 막힙니다."
+                            : "화면 보호를 껐습니다.", Toast.LENGTH_LONG).show();
+                    break;
+                case 6:
+                    if (autoClear) {
+                        autoClear = false;
+                        getPreferences(MODE_PRIVATE).edit().putBoolean("autoClear", false).apply();
+                        Toast.makeText(this, "닫을 때 웹 데이터 삭제를 껐습니다. 다음부터 열린 탭을 이어서 보여 줍니다.", Toast.LENGTH_LONG).show();
+                    } else {
+                        new AlertDialog.Builder(this).setTitle("닫을 때 웹 데이터 삭제")
+                                .setMessage("앱을 닫았다가 다시 열 때마다 로그인·쿠키·캐시·웹 저장소·방문 기록을 지우고 첫 화면에서 시작합니다. 열려 있던 탭도 이어서 보여 주지 않습니다.\n\n여러 사람이 쓰는 기기에 알맞습니다. 즐겨찾기는 유지됩니다.")
+                                .setNegativeButton("취소", null)
+                                .setPositiveButton("켜기", (d2, w) -> {
+                                    autoClear = true;
+                                    getPreferences(MODE_PRIVATE).edit().putBoolean("autoClear", true).apply();
+                                    persistTabs();
+                                }).show();
+                    }
+                    break;
+                case 7:
+                    new AlertDialog.Builder(this).setMessage("로그인·쿠키·캐시·웹 저장소·탐색 기록·방문 기록을 삭제하고 다른 탭을 닫을까요? 즐겨찾기는 유지됩니다.")
+                            .setNegativeButton("취소", null).setPositiveButton("삭제", (d2, w) -> clearWebData()).show();
+                    break;
+                case 8:
+                    new AlertDialog.Builder(this).setTitle("보안 상태")
+                            .setMessage("• HTTPS 전용 / 인증서 오류 차단\n• HTTP 혼합 콘텐츠 차단\n• 로컬 파일·외부 앱 링크 차단 (유튜브 스튜디오·구글 로그인은 크롬으로)\n• 제3자 쿠키 차단\n• 카메라·마이크·위치 권한 없음\n• 앱 백업·웹 디버깅 비활성화\n• 파일 제공 전 확인\n• 파일 받기 전 확인 · HTTPS 파일만 · 확인한 이름 그대로 저장\n• 앱 설치 파일(APK) 별도 경고\n• 화면 보호: " + (secureScreen ? "켜짐" : "꺼짐")
+                                    + "\n• 닫을 때 웹 데이터 삭제: " + (autoClear ? "켜짐" : "꺼짐")
+                                    + "\n\nSafe Browsing: " + (safeBrowsingReady ? "초기화 완료" : "활성화 요청됨 · 초기화 미확인")
+                                    + "\n탐지 범위는 기기의 WebView와 서비스 상태에 따라 다릅니다.\n\nWebView를 최신 버전으로 유지하세요. HTTPS만으로 사이트의 신뢰성이 보장되지는 않습니다.")
+                            .setPositiveButton("확인", null).show();
+                    break;
+                default:
+                    new AlertDialog.Builder(this).setTitle("덜누름 브라우저 " + BuildConfig.VERSION_NAME)
+                            .setMessage("네이버를 시작 페이지로 사용하는 독립 WebView 앱입니다. 네이버·웨일·유튜브 공식 앱이 아닙니다.\n\nPC 사용자 에이전트와 넓은 화면 폭을 항상 사용합니다. 사이트별 정책에 따라 PC 표시·로그인·결제가 제한될 수 있습니다. 막히는 사이트는 설정 → \"이 페이지 크롬에서 열기\"로 크롬에서 이어 볼 수 있습니다. 받은 파일은 휴대폰의 \"다운로드\" 폴더에 저장됩니다. 탭은 " + MAX_TABS + "개까지 열 수 있고, 앱을 다시 열면 보던 탭을 이어서 보여 줍니다. 동기화·확장 프로그램은 지원하지 않습니다.\n\n단축키(키보드 연결 시): Ctrl+L 주소, F5·Ctrl+R 새로고침, Alt+←/→ 뒤로·앞으로, Ctrl+T 새 탭, Ctrl+W 탭 닫기, Ctrl+Tab 다음 탭, Ctrl+F 찾기, Ctrl+H 방문 기록, Ctrl+D 즐겨찾기 저장, Ctrl+J 받은 파일")
+                            .setPositiveButton("확인", null).show();
+                    break;
             }
         }).show();
     }
@@ -807,20 +1243,14 @@ public class MainActivity extends Activity {
         clearingData = true;
         blobToken = null;
         cancelUpload();
+        closeFind();
+        closeOtherTabs();
         web.stopLoading();
         web.loadUrl("about:blank");
     }
 
     private void finishClearWebData() {
-        CookieManager.getInstance().removeAllCookies(done -> {
-            if (isFinishing() || isDestroyed()) return;
-            CookieManager.getInstance().flush();
-            web.clearCache(true);
-            web.clearFormData();
-            web.clearHistory();
-            WebStorage.getInstance().deleteAllData();
-            WebViewDatabase db = WebViewDatabase.getInstance(this);
-            db.clearHttpAuthUsernamePassword();
+        wipeWebData(() -> {
             clearingData = false;
             clearHistoryAfterLoad = true;
             web.loadUrl(HOME);
@@ -892,10 +1322,10 @@ public class MainActivity extends Activity {
             + "try{var ck=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){rec(this);return ck.apply(this,arguments);};}catch(e){}"
             + "document.addEventListener('click',function(e){rec(e.target&&e.target.closest?e.target.closest('a[download]'):null);},true);})()";
 
-    private void installDownloadBridge() {
+    private void installDownloadBridge(Tab t) {
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             try {
-                downloadScript = WebViewCompat.addDocumentStartJavaScript(web, DOWNLOAD_HELPER_JS, Collections.singleton("*"));
+                t.download = WebViewCompat.addDocumentStartJavaScript(t.view, DOWNLOAD_HELPER_JS, Collections.singleton("*"));
             } catch (RuntimeException e) {
                 Log.w(TAG, "받기 도우미 설치 실패: " + e);
             }
@@ -903,9 +1333,9 @@ public class MainActivity extends Activity {
         // blob 주소의 내용을 페이지에서 꺼내 앱으로 건네받는 통로 (앱이 요청한 받기에만 응답)
         if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
             try {
-                WebViewCompat.addWebMessageListener(web, DL_BRIDGE, Collections.singleton("*"),
+                WebViewCompat.addWebMessageListener(t.view, DL_BRIDGE, Collections.singleton("*"),
                         (view, message, sourceOrigin, isMainFrame, reply) -> {
-                            if (isMainFrame) onBlobMessage(message.getData());
+                            if (isMainFrame && view == web) onBlobMessage(message.getData());
                         });
                 bridgeReady = true;
             } catch (RuntimeException e) {
@@ -928,19 +1358,57 @@ public class MainActivity extends Activity {
             Toast.makeText(this, "파일이 너무 커서 받을 수 없습니다.", Toast.LENGTH_LONG).show();
             return;
         }
-        String type = cleanMime(mime);
-        if (data && type == null) type = cleanMime(dataUrlMime(url));
-        String name = DownloadNames.choose(disposition, url, null, extensionFor(type));
-        final String finalType = guessMime(name, type);
+        final String type = data && cleanMime(mime) == null ? cleanMime(dataUrlMime(url)) : cleanMime(mime);
         String from = UrlPolicy.origin(https ? url : blob ? url.substring(5) : web.getUrl());
         String size = length > 0 ? Formatter.formatShortFileSize(this, length) : "크기 알 수 없음";
-        Runnable go = () -> startDownload(url, name, finalType);
+        if (blob) {
+            // 사이트가 정한 파일 이름(<a download>)을 확인 창을 띄우기 전에 받아 두고, 저장할 때도 그 이름을 그대로 씁니다
+            if (!bridgeReady) {
+                downloadFailed("파일", "이 기기의 WebView가 오래되어 이 방식의 파일은 받을 수 없습니다. Android System WebView를 업데이트하세요.");
+                return;
+            }
+            final WebView page = web;
+            page.evaluateJavascript("(function(){var u=" + JSONObject.quote(url) + ";var n=(window.__dnNames||{})[u]||null;"
+                    + "if(!n){try{var as=document.querySelectorAll('a[download]');for(var i=0;i<as.length;i++)if(as[i].href===u){n=as[i].getAttribute('download');break;}}catch(e){}}"
+                    + "return n;})()", v -> {
+                if (page != web || clearingData) return;
+                String hint = null;
+                try {
+                    JSONArray a = new JSONArray("[" + v + "]");
+                    if (!a.isNull(0)) hint = a.optString(0, null);
+                } catch (JSONException ignored) {
+                }
+                String name = hint != null && !hint.isEmpty()
+                        ? DownloadNames.choose(null, null, hint, extensionFor(type))
+                        : DownloadNames.choose(disposition, url, null, extensionFor(type));
+                confirmDownload(url, name, guessMime(name, type), from, size);
+            });
+            return;
+        }
+        String name = DownloadNames.choose(disposition, url, null, extensionFor(type));
+        confirmDownload(url, name, guessMime(name, type), from, size);
+    }
+
+    /** 받기 전 확인. 앱 설치 파일은 경고를 따로 보여 주고 기본 선택을 "취소"로 둡니다. */
+    private void confirmDownload(String url, String name, String mime, String from, String size) {
+        Runnable go = () -> startDownload(url, name, mime);
         if (selftest) {
             go.run();
             return;
         }
+        String where = from == null || from.isEmpty() ? "알 수 없음" : from;
+        if (DownloadNames.isInstallFile(name, mime)) {
+            new AlertDialog.Builder(this).setTitle("⚠ 앱 설치 파일")
+                    .setMessage(name + "\n" + size + "\n보낸 곳: " + where
+                            + "\n\n이 파일은 휴대폰에 앱을 설치하는 파일(APK)입니다. 출처가 확실한 경우에만 받으세요.\n"
+                            + "모르는 사이트나 문자·메신저 링크로 받은 설치 파일은 개인정보·금융 정보를 빼 가는 악성 앱일 수 있습니다.")
+                    .setNegativeButton("받지 않기", null)
+                    .setPositiveButton("그래도 받기", (d, w) -> go.run())
+                    .show();
+            return;
+        }
         new AlertDialog.Builder(this).setTitle("파일 받기")
-                .setMessage(name + "\n" + size + "\n보낸 곳: " + (from.isEmpty() ? "알 수 없음" : from)
+                .setMessage(name + "\n" + size + "\n보낸 곳: " + where
                         + "\n\n휴대폰의 \"다운로드\" 폴더에 저장합니다. 모르는 사이트에서 받은 파일은 열기 전에 주의하세요.")
                 .setNegativeButton("취소", null)
                 .setPositiveButton("받기", (d, w) -> go.run())
@@ -1031,11 +1499,9 @@ public class MainActivity extends Activity {
         blobMime = mime;
         String js = "(function(){var u=" + JSONObject.quote(url) + ",t=" + JSONObject.quote(blobToken) + ";"
                 + "function p(o){o.t=t;try{" + DL_BRIDGE + ".postMessage(JSON.stringify(o));}catch(e){}}"
-                + "var n=(window.__dnNames||{})[u]||null;"
-                + "if(!n){try{var as=document.querySelectorAll('a[download]');for(var i=0;i<as.length;i++)if(as[i].href===u){n=as[i].getAttribute('download');break;}}catch(e){}}"
                 + "fetch(u).then(function(r){return r.blob();}).then(function(b){"
                 + "if(b.size>" + MAX_INLINE_BYTES + "){p({err:'big'});return;}"
-                + "var f=new FileReader();f.onload=function(){p({data:f.result,type:b.type,name:n});};"
+                + "var f=new FileReader();f.onload=function(){p({data:f.result});};"
                 + "f.onerror=function(){p({err:'read'});};f.readAsDataURL(b);"
                 + "}).catch(function(e){p({err:String(e)});});})()";
         web.evaluateJavascript(js, null);
@@ -1065,15 +1531,7 @@ public class MainActivity extends Activity {
                     : "파일을 꺼내지 못했습니다. 페이지를 새로고침한 뒤 다시 받아 보세요.");
             return;
         }
-        String hint = o.optString("name", "");
-        if (!hint.isEmpty() && !"null".equals(hint)) {
-            String type = cleanMime(o.optString("type", null));
-            if (type == null) type = mime;
-            name = DownloadNames.choose(null, null, hint, extensionFor(type));
-            mime = guessMime(name, type);
-        } else if (mime == null) {
-            mime = cleanMime(o.optString("type", null));
-        }
+        // 이름·종류는 사용자가 확인한 그대로 씁니다 (페이지가 보낸 값으로 바꾸지 않음)
         saveDataUrl(o.optString("data", ""), name, mime);
     }
 
@@ -1100,11 +1558,15 @@ public class MainActivity extends Activity {
 
     /** "다운로드" 폴더에 저장 (같은 이름이 있으면 시스템이 번호를 붙입니다) */
     private void writeToDownloads(String name, String mime, byte[] bytes) throws IOException {
+        // 종류는 확인한 파일 이름의 확장자로만 정합니다. 이름과 다른 종류를 주면 시스템이 확장자를 덧붙여
+        // 확인한 것과 다른 파일(예: .apk)이 될 수 있습니다.
+        mime = guessMime(name, null);
+        if (mime == null) mime = "application/octet-stream";
         if (Build.VERSION.SDK_INT >= 29) {
             ContentResolver cr = getContentResolver();
             ContentValues v = new ContentValues();
             v.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-            v.put(MediaStore.MediaColumns.MIME_TYPE, mime != null ? mime : "application/octet-stream");
+            v.put(MediaStore.MediaColumns.MIME_TYPE, mime);
             v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
             v.put(MediaStore.MediaColumns.IS_PENDING, 1);
             Uri item = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
@@ -1257,6 +1719,30 @@ public class MainActivity extends Activity {
                 editBookmark(-1);
                 return true;
             }
+            if (ctrl && k == KeyEvent.KEYCODE_F) {
+                openFind();
+                return true;
+            }
+            if (ctrl && k == KeyEvent.KEYCODE_T) {
+                openNewTab(HOME);
+                return true;
+            }
+            if (ctrl && k == KeyEvent.KEYCODE_W) {
+                closeTab(current);
+                return true;
+            }
+            if (ctrl && k == KeyEvent.KEYCODE_TAB) {
+                nextTab();
+                return true;
+            }
+            if (ctrl && k == KeyEvent.KEYCODE_H) {
+                showHistory();
+                return true;
+            }
+            if (k == KeyEvent.KEYCODE_ESCAPE && findBar.getVisibility() == View.VISIBLE) {
+                closeFind();
+                return true;
+            }
             if (k == KeyEvent.KEYCODE_ESCAPE && address.hasFocus()) {
                 address.setText(web.getUrl());
                 address.clearFocus();
@@ -1271,6 +1757,7 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (clearingData) return;
         if (customView != null) exitFullscreen();
+        else if (findBar.getVisibility() == View.VISIBLE) closeFind();
         else if (historyLocked()) return; // 앞의 뒤로 가기가 아직 끝나지 않음: 앱이 닫히거나 여러 칸 넘어가지 않게
         else if (web.canGoBack()) stepHistory(-1, false);
         else super.onBackPressed();
@@ -1294,13 +1781,8 @@ public class MainActivity extends Activity {
         web.onPause();
         if (!pickerActive) web.pauseTimers();
         CookieManager.getInstance().flush();
+        persistTabs();
         super.onPause();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle out) {
-        super.onSaveInstanceState(out);
-        web.saveState(out);
     }
 
     @Override
@@ -1308,8 +1790,16 @@ public class MainActivity extends Activity {
         cancelUpload();
         if (downloadDone != null) unregisterReceiver(downloadDone);
         io.shutdown();
-        stage.removeView(web);
-        web.destroy();
+        if (autoClear && isFinishing() && !selftest) {
+            // 다음에 열 때도 지우지만, 닫는 순간에도 한 번 지웁니다
+            CookieManager.getInstance().removeAllCookies(null);
+            WebStorage.getInstance().deleteAllData();
+        }
+        for (Tab t : tabs) {
+            stage.removeView(t.view);
+            t.view.destroy();
+        }
+        tabs.clear();
         super.onDestroy();
     }
 
@@ -1374,6 +1864,28 @@ public class MainActivity extends Activity {
      * (고치기 전에는 세 칸을 한꺼번에 넘어가 첫 페이지까지 갔음)
      * 스크립트로 만든 기록(pushState)은 크롬이 뒤로 가기에서 건너뛰므로 실제 이동으로 시험합니다.
      */
+    /** 탭 점검: 새 탭을 열고 → 페이지 안에서 찾기 → 탭을 닫으면 앞의 탭(?dn=2)으로 돌아와야 합니다 */
+    private void selftestTabs() {
+        openNewTab("https://example.com/?dn=tab");
+        web.postDelayed(() -> {
+            String url = web.getUrl();
+            Log.i(TAG, (tabs.size() == 2 && url != null && url.endsWith("?dn=tab") ? "PASS" : "FAIL") + " new tab (tabs=" + tabs.size() + ", url=" + url + ")");
+            openFind();
+            findField.setText("Example");
+            web.postDelayed(() -> {
+                String found = findCount.getText().toString();
+                Log.i(TAG, (found.matches("[1-9][0-9]*/[1-9][0-9]*") ? "PASS" : "FAIL") + " find in page (" + found + ")");
+                closeFind();
+                closeTab(current);
+                web.postDelayed(() -> {
+                    String back = web.getUrl();
+                    Log.i(TAG, (tabs.size() == 1 && back != null && back.endsWith("?dn=2") ? "PASS" : "FAIL") + " close tab returns to previous (tabs=" + tabs.size() + ", url=" + back + ")");
+                    Log.i(TAG, "DONE");
+                }, 2000);
+            }, 3000);
+        }, 6000);
+    }
+
     private void selftestHistory() {
         String base = "https://example.com/?dn=";
         web.loadUrl(base + 1);
@@ -1386,7 +1898,7 @@ public class MainActivity extends Activity {
             web.postDelayed(() -> {
                 String url = web.getUrl();
                 Log.i(TAG, (url != null && url.endsWith("?dn=2") ? "PASS" : "FAIL") + " back button repeated taps step one page (url=" + url + ", want ?dn=2)");
-                Log.i(TAG, "DONE");
+                selftestTabs();
             }, 6000);
         }, 15000);
     }

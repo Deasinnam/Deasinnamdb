@@ -167,6 +167,13 @@ public final class DownloadNames {
         }
     }
 
+    /** 휴대폰에 앱을 설치하는 파일인지 (이름 또는 종류로 판단) — 받기 전에 따로 경고합니다 */
+    public static boolean isInstallFile(String name, String mime) {
+        if (mime != null && mime.trim().equalsIgnoreCase("application/vnd.android.package-archive")) return true;
+        String n = name == null ? "" : name.toLowerCase(java.util.Locale.ROOT).trim();
+        return n.endsWith(".apk") || n.endsWith(".apks") || n.endsWith(".xapk") || n.endsWith(".apkm") || n.endsWith(".aab");
+    }
+
     private static boolean blank(String s) {
         return s == null || s.trim().isEmpty();
     }
