@@ -435,11 +435,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .pd-row .pd-dex { background: #f4f4f5; color: #3f3f46; border-color: #e4e4e7; }
 .pd-row .pd-used { background: #fff; color: #52525b; border-color: #d4d4d8; }
 .pd { position: relative; }
-.pd-tip { display: block; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #ffd60a; color: #0b0b0c; border: 1.5px solid #0b0b0c; font: 600 12px/1.5 var(--font-body); }
-/* 말풍선(노랑 · 검정 글씨 · 검정 테두리)은 마우스로 가리키는 큰 화면에서만. 휴대폰·터치 위주 기기는 카드 아래에 늘 보이게 둡니다
+.pd-tip { display: block; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #fff4c2; color: #4a3800; border: 0; font: 600 12px/1.5 var(--font-body); }
+/* 말풍선(노랑 · 검정 글씨 · 검정 테두리), 카드 아래 안내는 연한 노랑(노랑 구매하기 버튼과 구분)은 마우스로 가리키는 큰 화면에서만. 휴대폰·터치 위주 기기는 카드 아래에 늘 보이게 둡니다
    (갤럭시는 S펜·DeX 때문에 "가리키기 가능"으로 잡히는 경우가 있어 화면 폭과 포인터 종류도 함께 봅니다) */
 @media (hover: hover) and (pointer: fine) and (min-width: 641px) {
-  .pd-tip { position: absolute; left: 10px; right: 10px; bottom: calc(100% - 6px); margin: 0; z-index: 20; background: #ffd60a; color: #0b0b0c; padding: 10px 12px; border-radius: 10px; box-shadow: 0 12px 30px -10px rgba(0,0,0,.45); opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; pointer-events: none; }
+  .pd-tip { position: absolute; left: 10px; right: 10px; bottom: calc(100% - 6px); margin: 0; z-index: 20; background: #ffd60a; color: #0b0b0c; border: 1.5px solid #0b0b0c; padding: 10px 12px; border-radius: 10px; box-shadow: 0 12px 30px -10px rgba(0,0,0,.45); opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; pointer-events: none; }
   .pd-tip::before, .pd-tip::after { content: ""; position: absolute; left: 50%; top: 100%; border: solid transparent; }
   .pd-tip::before { margin-left: -8px; border-width: 8px; border-top-color: #0b0b0c; }
   .pd-tip::after { margin-left: -6px; margin-top: -1px; border-width: 6px; border-top-color: #ffd60a; }
