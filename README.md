@@ -14,10 +14,19 @@
 - **키 매핑**: 게임패드·키보드 버튼 → 게임 화면의 정해 둔 자리 누르기(접근성 서비스 `KeymapService`, 화면 내용은 읽지 않음). 게임별로 켜고, 게임 화면 왼쪽 위 🎮 → 빈 곳 눌러 자리 → 패드 버튼으로 연결, 톡/꾹(누르는 동안) 바꾸기·옮기기·지우기. 아날로그 스틱·동시 누르기는 다음 단계
 - **화면 주사율**: 지금 주사율과 지원 주사율
 
+## 0.2에 들어간 것
+
+- **FPS 보기** (도구 › FPS 보기에서 고름)
+  - **끄기**
+  - **덜누름 표시 (Shizuku)**: 게임 위 작은 창에 FPS · 기기 온도 · 배터리. 끌어서 옮기고(자리 기억) 길게 누르면 닫힘, 덜누름 게임으로 돌아오면 저절로 닫힘. 기기가 뜨거우면 테두리가 주황·빨강. FPS는 Shizuku 셸 권한으로 `service call SurfaceFlinger 1013`(화면에 그려진 프레임 수)을 1초마다 읽어 계산(`FpsService`). 창 권한은 Shizuku로 `appops`를 켜고, 안 되면 설정 화면으로
+  - **삼성 게임 부스터**: 설치 없이 게임 부스터의 성능 모니터를 쓰는 방법 안내 + 삼성 게임 런처 열기
+- **고급 기능(Shizuku) 연결** (`Shizu`): 설치 → 시작 → 허용 3단계를 한 단추로 안내. 연결되면 "게임 시작할 때 맞춤 설정도 실제 적용"(기본 켬)으로 `cmd game mode` · `cmd game set`(FPS 상한·해상도) · 화면 주사율을 적용하고, 돌아오면 주사율을 원래대로
+
 ## 다음 단계
 
 - 게임 중 떠 있는 단추(녹화·FPS·최적화 바로 켜기)
-- 고급 기능(Shizuku) 연동: 맞춤 설정의 FPS 상한·해상도·게임 모드 실제 적용, 실제 FPS, 안드로이드 게임 성능 모드(`cmd game mode performance`), CPU·GPU 사용량
+- CPU·GPU 사용량 (Shizuku)
+- 실제 폴드7에서 FPS 숫자·`cmd game set` 적용 확인 (에뮬레이터에는 Shizuku가 없음)
 - 녹화에 게임 소리(내부 소리) 넣기
 
 ## 구조
@@ -27,8 +36,10 @@ MainActivity   WebView 화면(assets/ui/) + Bridge: 앱 목록·아이콘, 실�
 Optimizer      기기 분석 → 추천 단계·설정값, 게임별 저장, Shizuku용 명령 만들기
 KeymapService  키 매핑(접근성): 버튼 받기 → 화면 누르기, 게임 위 🎮 단추·편집 화면
 RecordService  화면 녹화 서비스(포그라운드), MediaStore에 MP4 저장
+FpsService     FPS 표시 창(포그라운드 · 다른 앱 위에 표시), Shizuku로 프레임 수 읽기
+Shizu          Shizuku 연결 · 권한 · 셸 명령 실행, 프레임 수 해석
 ```
 
 ## 빌드 (GitHub Actions, 브랜치 `deolnureum-game`)
 
-화면 코드 문법 확인 → 시험용 APK → 에뮬레이터 점검(`tools/emulator_selftest.sh`: 게임 목록·게임 추가·게임 앱·도구·녹화·다른 앱 실행) → 점검 기록 `game-ci` → 서명한 APK를 Releases `game-latest`에 올림.
+화면 코드 문법 확인 → 시험용 APK → 에뮬레이터 점검(`tools/emulator_selftest.sh`: 게임 목록·게임 추가·게임 앱·도구·FPS 보기 방식·FPS 표시 창·녹화·다른 앱 실행) → 점검 기록 `game-ci` → 서명한 APK를 Releases `game-latest`에 올림.

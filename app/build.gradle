@@ -8,8 +8,8 @@ android {
         applicationId 'com.daesinnam.game'
         minSdk 30
         targetSdk 35
-        versionCode 1
-        versionName "0.1"
+        versionCode 2
+        versionName "0.2"
     }
 
     buildFeatures { buildConfig true }
@@ -48,4 +48,7 @@ android {
 
 dependencies {
     implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+    // 고급 기능: Shizuku (사용자가 따로 설치한 Shizuku 앱과 연결)
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
 }

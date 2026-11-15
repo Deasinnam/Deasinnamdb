@@ -10,6 +10,9 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- 게임 최적화: 게임하는 동안 방해 금지. 사용자가 허용해야만 동작합니다 -->
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <!-- FPS 표시: 게임 위에 작은 창을 띄움 (Shizuku로 켜거나 사용자가 설정에서 허용) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <queries>
         <!-- 기기에 설치된 게임을 찾기 위해 앱 목록을 봅니다 -->
@@ -24,6 +27,7 @@
         <package android:name="com.valvesoftware.android.steam.community" />
         <package android:name="com.gamepass" />
         <package android:name="com.samsung.android.game.gamehome" />
+        <package android:name="com.samsung.android.game.gametools" />
         <package android:name="moe.shizuku.privileged.api" />
     </queries>
 
@@ -62,5 +66,23 @@
             android:name=".RecordService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection|microphone" />
+
+        <!-- FPS 표시 창 (게임하는 동안만) -->
+        <service
+            android:name=".FpsService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="게임 위에 FPS·온도·배터리를 보여 주는 작은 창" />
+        </service>
+
+        <!-- 고급 기능(Shizuku) 연결 -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
     </application>
 </manifest>

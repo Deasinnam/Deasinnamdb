@@ -6,6 +6,8 @@ PKG=com.daesinnam.game
 adb install -r -g "$APK" || exit 1
 # 화면 녹화 동의 창: 실제 기기에서는 매번 사용자가 허용합니다. 점검에서는 미리 허용해 둡니다.
 adb shell appops set "$PKG" PROJECT_MEDIA allow || true
+# FPS 표시 창(다른 앱 위에 표시): 실제 기기에서는 Shizuku가 켜 주거나 사용자가 허용합니다.
+adb shell appops set "$PKG" SYSTEM_ALERT_WINDOW allow || true
 # 펼친 폴드처럼 넓은 화면에서 점검
 adb shell wm size 1600x1080; adb shell wm density 240; sleep 3
 adb logcat -c
@@ -17,7 +19,7 @@ adb shell am start -n "$PKG/.MainActivity" --ez game.selftest true
 for i in $(seq 1 60); do
   sleep 2
   L=$(adb logcat -d -s GAME_SELFTEST:I)
-  for s in HOME GAMES PICKER APPS TOOLS REC; do
+  for s in HOME GAMES PICKER APPS TOOLS FPS REC; do
     if echo "$L" | grep -q "SHOT-$s" && [ ! -f "game-screen-$(echo $s | tr A-Z a-z).png" ]; then
       adb exec-out screencap -p > "game-screen-$(echo $s | tr A-Z a-z).png"
     fi
@@ -29,7 +31,9 @@ sleep 3
 adb shell input keyevent KEYCODE_BUTTON_A
 sleep 2
 adb exec-out screencap -p > game-screen-launched.png
-adb logcat -d -s GAME_SELFTEST:I Game:* GameRec:* GameConsole:* GameKeymap:* > selftest-result.txt
+adb logcat -d -s GAME_SELFTEST:I Game:* GameRec:* GameConsole:* GameKeymap:* GameFps:* GameShizuku:* > selftest-result.txt
+# FPS 읽는 명령(Shizuku가 셸 권한으로 실행할 것과 같은 것)이 이 안드로이드에서 숫자를 주는지 참고로 남김
+{ echo "--- SurfaceFlinger 1013 (셸 권한) ---"; adb shell service call SurfaceFlinger 1013; sleep 1; adb shell service call SurfaceFlinger 1013; } >> selftest-result.txt 2>&1
 adb logcat -d -b crash > crash-1.txt 2>/dev/null
 echo "===== 점검 결과 ====="
 cat selftest-result.txt | cut -c1-300
@@ -41,6 +45,9 @@ grep -q "TOOLS hz" selftest-result.txt || { echo "FAIL: 도구 화면"; fail=1; 
 grep -q "OPTIMIZE .* level [0-2]" selftest-result.txt || { echo "FAIL: 기기 맞춤 최적화"; fail=1; }
 grep -q "LAUNCH ok com.android.settings" selftest-result.txt || { echo "FAIL: 다른 앱 실행"; fail=1; }
 grep -q "$PKG" crash-1.txt && { echo "FAIL: 앱이 멈춤"; fail=1; }
+grep -q "FPS parse 123456 err -1" selftest-result.txt || { echo "FAIL: FPS 숫자 읽기"; fail=1; }
+grep -q "FPSMODE-UI deolnureum deol true sam false" selftest-result.txt || { echo "FAIL: FPS 보기 방식 고르기"; fail=1; }
+grep -q "FPS-PREVIEW shown" selftest-result.txt || { echo "FAIL: FPS 표시 창"; fail=1; }
 grep -q "KEYMAP service true" selftest-result.txt || { echo "FAIL: 키 매핑 권한 인식"; fail=1; }
 if grep -q "KEYMAP-TAP com.android.settings" selftest-result.txt; then echo "키 매핑: A 버튼 → 화면 누름 (PASS)"; else echo "키 매핑: 누름 확인 못 함 (참고)"; fi
 if grep -q "REC-SAVED" selftest-result.txt; then echo "녹화: 저장됨 (PASS)"; else echo "녹화: 저장 확인 못 함 (참고 — 에뮬레이터 인코더 한계일 수 있음)"; fi

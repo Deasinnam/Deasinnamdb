@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import rikka.shizuku.Shizuku;
+
 /**
  * 덜누름 게임 — 게임과 게임 앱을 한곳에 모으고, 게임 녹화·게임 최적화 도구를 붙인 허브 앱.
  * 화면은 assets/ui/ (WebView), 기기 기능은 아래 Bridge가 맡습니다.
@@ -56,15 +58,23 @@ public class MainActivity extends Activity {
     static final String SELFTEST_TAG = "GAME_SELFTEST";
     private static final int REQ_RECORD = 11;
     private static final int REQ_PERMS = 12;
+    private static final int REQ_SHIZUKU = 13;
 
     private WebView web;
     private boolean selftest;
     private boolean pendingMic;
     private boolean dndByUs;
+    private boolean fpsPreview;   // "지금 FPS 표시 켜기"로 켠 경우 다음 복귀 한 번은 닫지 않음
     private SharedPreferences prefs;
     private Optimizer optimizer;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
+    private final Shizuku.OnRequestPermissionResultListener shizukuResult = (code, result) -> {
+        boolean ok = result == PackageManager.PERMISSION_GRANTED;
+        log("SHIZUKU permission " + ok);
+        notifyJs("toast", ok ? "고급 기능(Shizuku)이 연결됐어요" : "Shizuku에서 덜누름 게임을 허용하지 않았어요");
+        notifyJs("refresh", "");
+    };
 
     /** 연결해 두는 게임 앱: 패키지, 이름, 설명, 공식 배포처 */
     static final String[][] GAME_APPS = {
@@ -95,6 +105,7 @@ public class MainActivity extends Activity {
             }
         });
         web.addJavascriptInterface(new Bridge(), "Android");
+        try { Shizuku.addRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
         setContentView(web);
         // 전체 화면: 위 상태 표시줄과 아래 내비게이션 바·작업 표시줄을 숨김 (가장자리에서 밀면 잠깐 나타남)
         getWindow().setDecorFitsSystemWindows(false);
@@ -108,6 +119,12 @@ public class MainActivity extends Activity {
         if (c == null) return;
         c.hide(WindowInsets.Type.systemBars());
         c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        try { Shizuku.removeRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
+        super.onDestroy();
     }
 
     @Override
@@ -126,6 +143,10 @@ public class MainActivity extends Activity {
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm.isNotificationPolicyAccessGranted()) nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
         }
+        // 게임에서 돌아오면 FPS 표시 창을 닫고, 게임 때문에 바꾼 화면 주사율을 되돌립니다
+        if (!fpsPreview) FpsService.stop(this);
+        fpsPreview = false;
+        restoreRefreshRate();
         if (web != null) web.evaluateJavascript("window.onResumeApp && onResumeApp()", null);
     }
 
@@ -305,6 +326,63 @@ public class MainActivity extends Activity {
         return new HashSet<>(prefs.getStringSet("added", Collections.emptySet()));
     }
 
+    // ---------- 고급 기능(Shizuku) · FPS 표시 ----------
+
+    /** FPS 보기 방식: off(끄기) / deolnureum(덜누름 표시 · Shizuku) / samsung(삼성 게임 부스터) */
+    String fpsMode() { return prefs.getString("fpsMode", "off"); }
+
+    private int maxHz() {
+        Display d = getDisplay();
+        int maxHz = 60;
+        if (d != null) for (Display.Mode m : d.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
+        return maxHz;
+    }
+
+    /** 맞춤 설정(FPS 상한·해상도·게임 모드)을 게임에 실제 적용. 화면 주사율은 돌아오면 되돌릴 수 있게 먼저 기억 */
+    private void applyAdvanced(String pkg, int level) {
+        try {
+            JSONArray cmds = Optimizer.shellCommands(pkg, Optimizer.settings(level, maxHz()));
+            if (!prefs.contains("prevPeak")) {
+                String prev = Shizu.run("settings get system peak_refresh_rate", 1500);
+                if (prev != null) prefs.edit().putString("prevPeak", prev).apply();
+            }
+            for (int i = 0; i < cmds.length(); i++) {
+                String out = Shizu.run(cmds.getString(i), 2000);
+                log("ADV " + cmds.getString(i) + " -> " + (out == null ? "fail" : out.isEmpty() ? "ok" : out.replace('\n', ' ')));
+            }
+        } catch (Exception e) {
+            log("ADV fail " + e);
+        }
+    }
+
+    private void restoreRefreshRate() {
+        if (!prefs.contains("prevPeak")) return;
+        String prev = prefs.getString("prevPeak", "null");
+        new Thread(() -> {
+            if (!Shizu.granted()) return;
+            String cmd = prev == null || prev.isEmpty() || "null".equals(prev)
+                ? "settings delete system peak_refresh_rate" : "settings put system peak_refresh_rate " + prev;
+            if (Shizu.run(cmd, 2000) != null) prefs.edit().remove("prevPeak").apply();
+        }).start();
+    }
+
+    /** FPS 표시 창 띄우기. 창 권한이 없으면 Shizuku로 켜거나, 안 되면 설정 화면으로 */
+    boolean startFpsOverlay() {
+        if (!Settings.canDrawOverlays(this)) {
+            if (Shizu.granted()) Shizu.run("appops set " + getPackageName() + " SYSTEM_ALERT_WINDOW allow", 2000);
+            if (!Settings.canDrawOverlays(this)) {
+                notifyJs("toast", "'다른 앱 위에 표시'를 허용해 주세요");
+                try {
+                    startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Exception ignored) { }
+                return false;
+            }
+        }
+        startForegroundService(new Intent(this, FpsService.class).setAction(FpsService.ACTION_START));
+        return true;
+    }
+
     /** 화면(WebView)에서 부르는 기능 */
     class Bridge {
         @JavascriptInterface
@@ -393,15 +471,20 @@ public class MainActivity extends Activity {
                 }
                 if (optimize) {
                     Display d = getDisplay();
-                    int maxHz = 60;
-                    if (d != null) for (Display.Mode m : d.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
                     int level = optimizer.effectiveLevel(pkg, d);
-                    optimizer.applyRecording(level, maxHz);
-                    // 다른 앱 설정(FPS 상한·해상도·게임 모드)은 고급 기능(Shizuku) 연결 뒤 적용
-                    log("OPT " + pkg + " level " + level + " " + Optimizer.shellCommands(pkg, Optimizer.settings(level, maxHz)));
+                    optimizer.applyRecording(level, maxHz());
+                    // 다른 앱 설정(FPS 상한·해상도·게임 모드)은 고급 기능(Shizuku)이 연결돼 있고 켜 둔 경우에만
+                    if (prefs.getBoolean("applyAdv", true) && Shizu.granted()) applyAdvanced(pkg, level);
+                    else log("OPT " + pkg + " level " + level + " (고급 기능 미연결 — 녹화 화질만)");
+                }
+                String mode = fpsMode();
+                if ("deolnureum".equals(mode)) main.post(MainActivity.this::startFpsOverlay);
+                else if ("samsung".equals(mode) && prefs.getInt("samsungHint", 0) < 3) {
+                    prefs.edit().putInt("samsungHint", prefs.getInt("samsungHint", 0) + 1).apply();
+                    notifyJs("toast", "게임 중 게임 부스터 › 성능 모니터에서 FPS를 볼 수 있어요");
                 }
                 launchPackage(pkg);
-                log("LAUNCH ok " + pkg);
+                log("LAUNCH ok " + pkg + " fps " + mode);
                 return true;
             } catch (Exception e) {
                 log("LAUNCH fail " + pkg + " " + e);
@@ -453,10 +536,14 @@ public class MainActivity extends Activity {
                     o.put("modes", modes);
                 }
                 o.put("recording", RecordService.running);
-                boolean shizuku;
-                try { getPackageManager().getApplicationInfo("moe.shizuku.privileged.api", 0); shizuku = true; }
-                catch (PackageManager.NameNotFoundException e) { shizuku = false; }
-                o.put("shizukuInstalled", shizuku);
+                o.put("shizukuInstalled", Shizu.installed(MainActivity.this));
+                o.put("shizukuRunning", Shizu.running());
+                o.put("shizukuGranted", Shizu.granted());
+                o.put("fpsMode", fpsMode());
+                o.put("applyAdv", prefs.getBoolean("applyAdv", true));
+                o.put("overlay", Settings.canDrawOverlays(MainActivity.this));
+                o.put("fpsRunning", FpsService.running);
+                o.put("fps", FpsService.lastFps);
                 boolean gameBooster;
                 try { getPackageManager().getApplicationInfo("com.samsung.android.game.gamehome", 0); gameBooster = true; }
                 catch (PackageManager.NameNotFoundException e) { gameBooster = false; }
@@ -478,6 +565,48 @@ public class MainActivity extends Activity {
                 } catch (Exception ignored) { }
             }
         }
+
+        // ---------- FPS 보기 · 고급 기능 ----------
+
+        @JavascriptInterface
+        public void setFpsMode(String mode) {
+            if (!"deolnureum".equals(mode) && !"samsung".equals(mode)) mode = "off";
+            prefs.edit().putString("fpsMode", mode).apply();
+            if (!"deolnureum".equals(mode)) FpsService.stop(MainActivity.this);
+            log("FPSMODE " + mode);
+        }
+
+        @JavascriptInterface
+        public void setApplyAdv(boolean on) { prefs.edit().putBoolean("applyAdv", on).apply(); }
+
+        /** Shizuku 단계: 설치 안 됨 → 받으러 가기, 꺼져 있음 → Shizuku 열기, 켜져 있음 → 권한 요청 */
+        @JavascriptInterface
+        public void shizukuConnect() {
+            main.post(() -> {
+                if (!Shizu.installed(MainActivity.this)) { openUrl(Shizu.DOWNLOAD); return; }
+                if (!Shizu.running()) {
+                    notifyJs("toast", "Shizuku에서 '시작'(무선 디버깅)을 누른 뒤 돌아와 주세요");
+                    try { launchPackage(Shizu.PKG); } catch (Exception e) { openUrl(Shizu.DOWNLOAD); }
+                    return;
+                }
+                if (!Shizu.granted()) Shizu.request(REQ_SHIZUKU);
+                else notifyJs("toast", "이미 연결돼 있어요");
+            });
+        }
+
+        /** 지금 바로 FPS 표시 켜기 (게임으로 나가도 유지, 덜누름 게임으로 한 번 더 돌아오면 닫힘) */
+        @JavascriptInterface
+        public boolean fpsPreview() {
+            fpsPreview = true;
+            main.post(MainActivity.this::startFpsOverlay);
+            return true;
+        }
+
+        @JavascriptInterface
+        public void fpsStop() { FpsService.stop(MainActivity.this); }
+
+        @JavascriptInterface
+        public String fpsParseTest(String line) { return String.valueOf(Shizu.parseFrameCount(line)); }
 
         @JavascriptInterface
         public void openSamsungGame() {

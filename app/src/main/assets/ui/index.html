@@ -113,10 +113,40 @@
       <p class="sub" id="hzModes"></p>
     </div>
 
-    <div class="card soon">
-      <h2>고급 기능 <span class="tag">다음 업데이트</span></h2>
-      <p>게임 중 실제 FPS, CPU·GPU 사용량, 그리고 위 맞춤 설정의 FPS 상한·게임 해상도·성능 모드를 게임에 직접 적용해요.</p>
-      <p class="sub" id="shizukuState"></p>
+    <div class="card wide" id="fpsCard">
+      <h2>FPS 보기</h2>
+      <p class="sub">게임하는 동안 FPS를 어떻게 볼지 골라요.</p>
+      <div class="levels" id="fpsModes">
+        <button data-f data-mode="off">끄기<small>보지 않음</small></button>
+        <button data-f data-mode="deolnureum">덜누름 표시<small>Shizuku 필요</small></button>
+        <button data-f data-mode="samsung">삼성 게임 부스터<small>설치 없이</small></button>
+      </div>
+
+      <div id="fpsDeol" class="rec-box" hidden>
+        <p>게임 위 작은 창에 <b>FPS · 기기 온도 · 배터리</b>를 띄워요. 창은 끌어서 옮기고, 길게 누르면 닫혀요. 덜누름 게임으로 돌아오면 저절로 닫혀요.</p>
+        <ol class="steps">
+          <li>도우미 앱 <b>Shizuku</b> 설치 <span id="szInst" class="pill"></span></li>
+          <li>Shizuku에서 <b>시작</b> (무선 디버깅으로 · 재부팅하면 다시) <span id="szRun" class="pill"></span></li>
+          <li>덜누름 게임 <b>허용</b> <span id="szOk" class="pill"></span></li>
+        </ol>
+        <div class="row">
+          <button class="primary" id="szBtn" data-f>Shizuku 연결</button>
+          <button class="ghost" id="fpsTry" data-f>지금 FPS 표시 켜기</button>
+        </div>
+        <label class="check"><input type="checkbox" id="applyAdv" data-f> 게임 시작할 때 맞춤 설정(FPS 상한 · 게임 해상도 · 게임 모드)도 실제 적용</label>
+        <p class="sub" id="fpsInfo"></p>
+      </div>
+
+      <div id="fpsSam" class="rec-box" hidden>
+        <p>삼성 기본 기능이라 따로 설치할 것이 없어요.</p>
+        <ol class="steps">
+          <li>게임을 시작해요</li>
+          <li>화면 아래(내비게이션 바)의 <b>게임 부스터</b> 아이콘을 눌러요 — 제스처 사용 중이면 아래에서 밀어 올려요</li>
+          <li><b>성능 모니터</b>(FPS · 온도)를 켜요 · One UI 버전에 따라 이름이 조금 달라요</li>
+        </ol>
+        <div class="row"><button class="ghost" id="samBtn" data-f>삼성 게임 런처 열기</button></div>
+        <p class="sub" id="samInfo"></p>
+      </div>
     </div>
 
     <p class="about">덜누름 게임 <span id="ver"></span> · deolnureum.com</p>

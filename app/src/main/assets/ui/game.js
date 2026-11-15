@@ -19,7 +19,9 @@ const A = window.Android || {
     { pkg: 'com.valvesoftware.steamlink', label: 'Steam Link', desc: '스팀 PC 게임 원격 플레이', url: '#', installed: false }]),
   launch: () => true, openUrl: () => {}, startRecording: () => {}, stopRecording: () => {},
   isRecording: () => false, lastSaved: () => '', openRecordings: () => {},
-  status: () => JSON.stringify({ dndAccess: false, dnd: false, hz: 120, modes: [60, 120], recording: false, shizukuInstalled: false, samsungGame: false, version: '0.1' }),
+  status: () => JSON.stringify({ dndAccess: false, dnd: false, hz: 120, modes: [60, 120], recording: false, shizukuInstalled: true, shizukuRunning: true, shizukuGranted: false, fpsMode: demoFps.mode, applyAdv: demoFps.adv, overlay: false, fpsRunning: false, fps: -1, samsungGame: true, version: '0.2' }),
+  setFpsMode: (m) => { demoFps.mode = m; }, setApplyAdv: (on) => { demoFps.adv = on; }, shizukuConnect: () => toast('(견본) Shizuku 연결'),
+  fpsPreview: () => toast('(견본) FPS 표시'), fpsStop: () => {}, fpsParseTest: () => '-1',
   setDnd: () => {}, openSamsungGame: () => {}, log: (m) => console.log(m),
   optimize: (pkg) => JSON.stringify({
     device: { model: '갤럭시 Z 폴드7', code: 'SM-F966N', soc: 'QTI SM8750', ramGb: 12, cores: 8, maxHz: 120, thermal: 0, batteryTemp: 31.5, battery: 80, charging: false, powerSave: false },
@@ -31,6 +33,7 @@ const A = window.Android || {
   keymapSetOn: (pkg, on) => { demoKm[pkg] = on; }, keymapClear: () => {}, keymapSet: () => {}, keymapSettings: () => toast('(견본) 접근성 설정이 열려요'),
 };
 var demoKm = {};
+var demoFps = { mode: 'off', adv: true };
 
 const parse = (s, d) => { try { return JSON.parse(s); } catch (e) { return d; } };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -211,6 +214,8 @@ function renderApps() {
 const MODE_KO = { performance: '성능 우선', standard: '표준', battery: '배터리 절약' };
 const THERMAL_KO = ['정상', '조금 따뜻함', '따뜻함', '뜨거움', '매우 뜨거움', '위험', '꺼짐 직전'];
 
+// 고급 기능이 연결돼 있고 '실제 적용'을 켜 두었으면 FPS 상한·해상도·게임 모드가 바로 적용됨
+function advReady() { const s = parse(A.status(), {}); return !!(s.shizukuGranted && s.applyAdv); }
 function settingsHtml(st, pending) {
   const p = pending ? ' <span class="pend">고급 기능 연결 후 적용</span>' : '';
   return `<dl><dt>FPS 상한</dt><dd>${st.fps}${p}</dd>` +
@@ -233,7 +238,7 @@ function renderLevels(box, detail, pkg) {
   box.innerHTML = extra + btns.map((b) => `<button data-f data-lv="${b.lv}" class="${current === b.lv ? 'on' : ''}">${b.name}<small>${b.small}</small></button>`).join('');
   const eff = current === 'base' ? (base < 0 ? rec.level : base) : (current < 0 ? rec.level : current);
   const why = (current === -1 || (current === 'base' && base < 0)) ? `<ul>${rec.why.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>` : '';
-  detail.innerHTML = `<b>${o.levels[eff].name}</b> 설정${settingsHtml(o.levels[eff], true)}${why}`;
+  detail.innerHTML = `<b>${o.levels[eff].name}</b> 설정${settingsHtml(o.levels[eff], !advReady())}${why}`;
   box.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
     const lv = b.dataset.lv;
     A.chooseLevel(pkg, Number(lv));
@@ -288,7 +293,7 @@ function renderTools() {
   $('#samsungRow').hidden = !s.samsungGame;
   $('#hzNow').textContent = s.hz ? `지금 ${s.hz}Hz` : '—';
   $('#hzModes').textContent = s.modes && s.modes.length ? `이 화면이 지원하는 주사율: ${s.modes.join(' · ')}Hz` : '';
-  $('#shizukuState').textContent = s.shizukuInstalled ? '필요한 도우미 앱(Shizuku)이 이미 설치되어 있어요. 다음 업데이트에서 연결합니다.' : '도우미 앱(Shizuku)을 한 번 설치하면 쓸 수 있어요. 다음 업데이트에서 차례대로 안내해 드려요.';
+  renderFps(s);
   $('#ver').textContent = s.version || '';
   const k = parse(A.keymap(''), {});
   $('#kmState').textContent = k.service ? '켜짐' : '꺼짐';
@@ -306,6 +311,39 @@ $('#optDnd').addEventListener('change', (e) => { A.setDnd(e.target.checked); set
 $('#samsungBtn').addEventListener('click', () => A.openSamsungGame());
 $('#kmSettings').addEventListener('click', () => A.keymapSettings());
 
+// ---------- FPS 보기 ----------
+function pill(el, ok, yes, no) { el.textContent = ok ? yes : no; el.classList.toggle('ok', !!ok); }
+function renderFps(st) {
+  const s = st || parse(A.status(), {});
+  const mode = s.fpsMode || 'off';
+  document.querySelectorAll('#fpsModes button').forEach((b) => b.classList.toggle('on', b.dataset.mode === mode));
+  $('#fpsDeol').hidden = mode !== 'deolnureum';
+  $('#fpsSam').hidden = mode !== 'samsung';
+  pill($('#szInst'), s.shizukuInstalled, '설치됨', '없음');
+  pill($('#szRun'), s.shizukuRunning, '켜짐', '꺼짐');
+  pill($('#szOk'), s.shizukuGranted, '허용됨', '아직');
+  $('#szBtn').textContent = !s.shizukuInstalled ? 'Shizuku 받으러 가기' : !s.shizukuRunning ? 'Shizuku 열어서 시작' : !s.shizukuGranted ? '덜누름 게임 허용하기' : '연결됨 ✓';
+  $('#szBtn').className = s.shizukuGranted ? 'ghost' : 'primary';
+  $('#applyAdv').checked = !!s.applyAdv;
+  $('#fpsTry').textContent = s.fpsRunning ? 'FPS 표시 끄기' : '지금 FPS 표시 켜기';
+  $('#fpsInfo').textContent = s.fpsRunning
+    ? `표시 중 · 지금 ${s.fps >= 0 ? s.fps + ' FPS' : 'FPS 읽는 중'}`
+    : (s.shizukuGranted ? '준비됐어요. 게임을 시작하면 FPS 창이 떠요.' : 'Shizuku가 연결되기 전에는 온도·배터리만 보이고 FPS는 "--"로 나와요.');
+  $('#samInfo').textContent = s.samsungGame ? '' : '이 기기에서 삼성 게임 런처를 찾지 못했어요. 삼성 기기가 아니면 "덜누름 표시"를 써 주세요.';
+  $('#samBtn').hidden = !s.samsungGame;
+  return s;
+}
+document.querySelectorAll('#fpsModes button').forEach((b) => b.addEventListener('click', () => {
+  A.setFpsMode(b.dataset.mode);
+  renderFps();
+  renderOptimize();
+  b.focus();
+}));
+$('#szBtn').addEventListener('click', () => A.shizukuConnect());
+$('#fpsTry').addEventListener('click', () => { const s = parse(A.status(), {}); if (s.fpsRunning) A.fpsStop(); else A.fpsPreview(); setTimeout(renderFps, 600); });
+$('#applyAdv').addEventListener('change', (e) => { A.setApplyAdv(e.target.checked); renderOptimize(); });
+$('#samBtn').addEventListener('click', () => A.openSamsungGame());
+
 // ---------- 위 줄: 시계·배터리 ----------
 function renderStatus() {
   $('#clock').textContent = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
@@ -320,7 +358,10 @@ window.onResumeApp = () => {
   if (tab === 'tools') { renderTools(); renderOptimize(); }
   else if ($('#picker').hidden && $('#gameSheet').hidden) showTab(tab);
 };
-window.onNative = (type, msg) => { if (type === 'toast') toast(msg); };
+window.onNative = (type, msg) => {
+  if (type === 'toast') toast(msg);
+  if (type === 'refresh' && tab === 'tools') { renderTools(); renderOptimize(); }
+};
 setInterval(() => { if (tab === 'tools') renderTools(); else if (tab === 'home') renderQuick(); }, 1500);
 
 // ---------- 패드·방향키로 움직이기 ----------
@@ -434,6 +475,26 @@ if (SELFTEST) {
     await wait(1200);
     log('SHOT-TOOLS');
     await wait(2500);
+    // FPS 보기: 세 방식 바꿔 보기 → 덜누름 표시 창 띄우기 (에뮬레이터엔 Shizuku가 없어 FPS는 "--")
+    log(`FPS parse ${A.fpsParseTest("Result: Parcel(0001e240   '@...')")} err ${A.fpsParseTest("Result: Parcel(fffffffc ffffffff '........')")}`);
+    for (const m of ['samsung', 'deolnureum']) {
+      $(`#fpsModes [data-mode="${m}"]`).click();
+      const st = parse(A.status(), {});
+      log(`FPSMODE-UI ${st.fpsMode} deol ${!$('#fpsDeol').hidden} sam ${!$('#fpsSam').hidden} shizuku ${st.shizukuInstalled}/${st.shizukuRunning}/${st.shizukuGranted}`);
+    }
+    $('#fpsCard').scrollIntoView({ block: 'start' });
+    A.fpsPreview();
+    let shown = false;
+    for (let i = 0; i < 10 && !shown; i++) { await wait(400); shown = !!parse(A.status(), {}).fpsRunning; }
+    renderFps();
+    log(`FPS-PREVIEW ${shown ? 'shown' : 'not-shown'}`);
+    await wait(1500);
+    log('SHOT-FPS');
+    await wait(2500);
+    A.fpsStop();
+    $('#fpsModes [data-mode="off"]').click();
+    await wait(500);
+    window.scrollTo(0, 0);
     // 녹화: 시작 → 5초 → 멈춤 → 저장 확인
     A.startRecording(false);
     let started = false;
