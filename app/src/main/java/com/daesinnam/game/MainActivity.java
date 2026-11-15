@@ -58,6 +58,7 @@ public class MainActivity extends Activity {
     private boolean pendingMic;
     private boolean dndByUs;
     private SharedPreferences prefs;
+    private Optimizer optimizer;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
 
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences("game", MODE_PRIVATE);
+        optimizer = new Optimizer(this, prefs);
         selftest = getIntent().getBooleanExtra("game.selftest", false);
         web = new WebView(this);
         WebSettings ws = web.getSettings();
@@ -329,6 +331,15 @@ public class MainActivity extends Activity {
                         dndByUs = true;
                     }
                 }
+                if (optimize) {
+                    Display d = getDisplay();
+                    int maxHz = 60;
+                    if (d != null) for (Display.Mode m : d.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
+                    int level = optimizer.effectiveLevel(pkg, d);
+                    optimizer.applyRecording(level, maxHz);
+                    // 다른 앱 설정(FPS 상한·해상도·게임 모드)은 고급 기능(Shizuku) 연결 뒤 적용
+                    log("OPT " + pkg + " level " + level + " " + Optimizer.shellCommands(pkg, Optimizer.settings(level, maxHz)));
+                }
                 launchPackage(pkg);
                 log("LAUNCH ok " + pkg);
                 return true;
@@ -411,6 +422,45 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void openSamsungGame() {
             try { launchPackage("com.samsung.android.game.gamehome"); } catch (Exception e) { notifyJs("toast", "삼성 게임 런처가 없어요"); }
+        }
+
+        /** 기기 정보 + 지금 추천 + 저장된 선택 (pkg가 비면 기본값) */
+        @JavascriptInterface
+        public String optimize(String pkg) {
+            try {
+                JSONObject d = optimizer.device(getDisplay());
+                JSONObject r = Optimizer.recommend(d);
+                JSONObject o = new JSONObject();
+                o.put("device", d);
+                o.put("recommend", r);
+                int chosen = optimizer.chosenLevel(pkg == null || pkg.isEmpty() ? null : pkg);
+                o.put("chosen", chosen);
+                o.put("perGame", pkg != null && !pkg.isEmpty() && prefs.contains("level." + pkg));
+                int maxHz = d.optInt("maxHz", 60);
+                JSONArray levels = new JSONArray();
+                for (int i = 0; i < 3; i++) {
+                    JSONObject l = Optimizer.settings(i, maxHz);
+                    l.put("name", Optimizer.LEVEL_NAMES[i]);
+                    levels.put(l);
+                }
+                o.put("levels", levels);
+                return o.toString();
+            } catch (Exception e) {
+                Log.w(TAG, "optimize", e);
+                return "{}";
+            }
+        }
+
+        /** level: -1 자동 추천, 0~2 단계, -2 게임별 값 지우기 */
+        @JavascriptInterface
+        public void chooseLevel(String pkg, int level) {
+            optimizer.choose(pkg, level);
+            if (pkg == null || pkg.isEmpty()) {
+                Display d = getDisplay();
+                int maxHz = 60;
+                if (d != null) for (Display.Mode m : d.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
+                optimizer.applyRecording(optimizer.effectiveLevel(null, d), maxHz);
+            }
         }
 
         @JavascriptInterface

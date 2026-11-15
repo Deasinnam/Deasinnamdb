@@ -118,7 +118,9 @@ public class RecordService extends Service {
         Rect b = getSystemService(WindowManager.class).getMaximumWindowMetrics().getBounds();
         int dpi = getResources().getDisplayMetrics().densityDpi;
         // 큰 화면 그대로 → 안 되면 긴 쪽 1280, 30프레임으로 다시 시도 (기기 인코더마다 한계가 다름)
-        int[][] tries = {{1920, 60}, {1280, 30}};
+        // 게임 최적화 단계에 맞춘 화질(긴 쪽·프레임)을 먼저 시도
+        android.content.SharedPreferences prefs = getSharedPreferences("game", MODE_PRIVATE);
+        int[][] tries = {{prefs.getInt("recSide", 1920), prefs.getInt("recFps", 60)}, {1280, 30}};
         for (int[] t : tries) {
             int[] size = fit(b.width(), b.height(), t[0]);
             if (prepare(size[0], size[1], t[1], mic)) {

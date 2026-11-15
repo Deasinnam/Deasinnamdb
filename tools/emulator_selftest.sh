@@ -30,6 +30,7 @@ fail=0
 grep -q "DONE" selftest-result.txt || { echo "FAIL: 점검이 끝까지 가지 못함"; fail=1; }
 grep -q "APPS 5" selftest-result.txt || { echo "FAIL: 게임 앱 목록"; fail=1; }
 grep -q "TOOLS hz" selftest-result.txt || { echo "FAIL: 도구 화면"; fail=1; }
+grep -q "OPTIMIZE .* level [0-2]" selftest-result.txt || { echo "FAIL: 기기 맞춤 최적화"; fail=1; }
 grep -q "LAUNCH ok com.android.settings" selftest-result.txt || { echo "FAIL: 다른 앱 실행"; fail=1; }
 grep -q "$PKG" crash-1.txt && { echo "FAIL: 앱이 멈춤"; fail=1; }
 if grep -q "REC-SAVED" selftest-result.txt; then echo "녹화: 저장됨 (PASS)"; else echo "녹화: 저장 확인 못 함 (참고 — 에뮬레이터 인코더 한계일 수 있음)"; fi

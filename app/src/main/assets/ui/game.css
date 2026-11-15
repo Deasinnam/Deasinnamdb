@@ -58,3 +58,14 @@ main { padding: 16px; }
   #tools .card { margin: 0; }
   #tools .about { grid-column: 1 / -1; }
 }
+.levels { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.levels button { background: var(--panel2); flex: 1 1 90px; }
+.levels button.on { background: var(--accent); color: #111; font-weight: 700; }
+.levels button small { display: block; font-size: 11px; opacity: .8; font-weight: 400; }
+.rec-box { background: var(--panel2); border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.7; }
+.rec-box dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin: 0; }
+.rec-box dt { color: var(--muted); }
+.rec-box dd { margin: 0; }
+.rec-box ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.pend { color: var(--accent2); font-size: 12px; }
+@media (min-width: 900px) { #tools .wide { grid-column: 1 / -1; } }

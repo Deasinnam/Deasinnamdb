@@ -43,8 +43,16 @@
       <p class="sub" id="recState"></p>
     </div>
 
+    <div class="card wide" id="optCard">
+      <h2>게임 최적화 · 기기 맞춤 설정</h2>
+      <p class="sub" id="devInfo"></p>
+      <div class="levels" id="levelBtns"></div>
+      <div class="rec-box" id="recBox"></div>
+      <p class="sub">게임을 길게 누르면 그 게임만 따로 정할 수 있어요.</p>
+    </div>
+
     <div class="card">
-      <h2>게임 최적화</h2>
+      <h2>게임하는 동안</h2>
       <label class="check"><input type="checkbox" id="optDnd"> 게임하는 동안 방해 금지 (돌아오면 꺼짐)</label>
       <p class="sub" id="dndState"></p>
       <div class="row" id="samsungRow" hidden>
@@ -59,8 +67,8 @@
     </div>
 
     <div class="card soon">
-      <h2>실제 FPS 보기 · 성능 모드 <span class="tag">다음 업데이트</span></h2>
-      <p>게임 중 실제 프레임 수와 CPU·GPU 사용량, 안드로이드 게임 성능 모드는 <b>Shizuku</b>로 켜요.</p>
+      <h2>고급 기능 <span class="tag">다음 업데이트</span></h2>
+      <p>게임 중 실제 FPS, CPU·GPU 사용량, 그리고 위 맞춤 설정의 FPS 상한·게임 해상도·성능 모드를 게임에 직접 적용해요.</p>
       <p class="sub" id="shizukuState"></p>
     </div>
 
@@ -72,6 +80,15 @@
   <div class="sheet-in">
     <div class="sheet-top"><h2>게임으로 보여 줄 앱</h2><button class="ghost" id="pickClose">닫기</button></div>
     <div id="pickList" class="list"></div>
+  </div>
+</div>
+
+<div id="gameSheet" class="sheet" hidden>
+  <div class="sheet-in">
+    <div class="sheet-top"><h2 id="gsTitle">게임 설정</h2><button class="ghost" id="gsClose">닫기</button></div>
+    <div class="levels" id="gsLevels"></div>
+    <div class="rec-box" id="gsBox"></div>
+    <div class="row"><button class="ghost" id="gsPlay">이 설정으로 시작</button><button class="ghost" id="gsHide">목록에서 빼기</button></div>
   </div>
 </div>
 
