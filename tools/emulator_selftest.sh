@@ -30,10 +30,9 @@ for i in $(seq 1 60); do
       echo "--- 셸 권한 FPS 명령 시험 ---"
       adb shell "dumpsys activity activities | grep -m3 -E 'topResumedActivity|mResumedActivity'"
       adb shell dumpsys SurfaceFlinger --list | grep -F "$PKG" | head -6
-      LAYER=$(adb shell dumpsys SurfaceFlinger --list | grep -F "$PKG/" | grep -v -E 'Background|Bounds|ActivityRecord' | head -1 | tr -d '\r')
-      echo "LAYER [$LAYER]"
-      adb shell "dumpsys SurfaceFlinger --latency '$LAYER'" | head -4
-      echo "frames $(adb shell "dumpsys SurfaceFlinger --latency '$LAYER'" | awk 'NR>1 && $2>0' | wc -l)"
+      adb shell dumpsys SurfaceFlinger --list | grep -F "$PKG" | grep -v -E 'Background|Bounds|ActivityRecord' | tr -d '\r' | while IFS= read -r LAYER; do
+        echo "LAYER [$LAYER] frames $(adb shell "dumpsys SurfaceFlinger --latency '$LAYER'" < /dev/null | awk 'NR>1 && $2>0' | wc -l)"
+      done
     } > fps-shell.txt 2>&1
   fi
   if echo "$L" | grep -q "DONE"; then break; fi

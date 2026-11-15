@@ -65,7 +65,7 @@ final class FpsMeter {
         int best = -1;
         String layer = null;
         List<Long> times = new ArrayList<>();
-        for (String raw : (out + "\n" + MARK).split("\n")) {
+        for (String raw : (out + "\n" + MARK + "end").split("\n")) {
             String line = raw.trim();
             if (line.startsWith(MARK)) {
                 if (layer != null) best = Math.max(best, layerFps(layer, times));
