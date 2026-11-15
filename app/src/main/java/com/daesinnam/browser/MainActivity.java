@@ -26,6 +26,7 @@ import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -135,6 +136,9 @@ public class MainActivity extends Activity {
     private ScriptHandler viewportScript;
     private boolean clearingData;
     private boolean clearHistoryAfterLoad;
+    /** 뒤로·앞으로 이동이 끝나기 전에 또 누르면 무시합니다 (이 시각까지) */
+    private long historyLockUntil;
+    private static final long HISTORY_LOCK_MS = 2500;
     private boolean safeBrowsingReady;
     private boolean pickerActive;
     private ValueCallback<Uri[]> upload;
@@ -243,8 +247,8 @@ public class MainActivity extends Activity {
 
         // 아래: 뒤로 · 앞으로 · 홈 · 새로고침 · 즐겨찾기 · 설정
         bottomBar = new LinearLayout(this);
-        addNav("◀", () -> { if (web.canGoBack()) web.goBack(); });
-        addNav("▶", () -> { if (web.canGoForward()) web.goForward(); });
+        addNav("◀", () -> stepHistory(-1, true));
+        addNav("▶", () -> stepHistory(1, true));
         addNav("홈", () -> web.loadUrl(HOME));
         addNav("새로고침", () -> web.reload());
         addNav("즐겨찾기", this::showBookmarks);
@@ -281,6 +285,25 @@ public class MainActivity extends Activity {
 
     private void addNav(String text, Runnable action) {
         bottomBar.addView(barButton(text, action, INK, 0, 12.5f), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+    }
+
+    /**
+     * 뒤로(-1)·앞으로(+1) 한 칸 이동.
+     * WebView는 아직 끝나지 않은 이동을 기준으로 다시 세기 때문에, 페이지가 뜨기 전에 ◀를 여러 번 누르면
+     * 여러 칸을 한꺼번에 넘어가 첫 페이지(네이버 홈)까지 가 버립니다. 그래서 이동이 끝날 때까지 다음 누름은 무시합니다.
+     */
+    private void stepHistory(int offset, boolean tellAtEnd) {
+        if (historyLocked()) return;
+        if (!web.canGoBackOrForward(offset)) {
+            if (tellAtEnd) Toast.makeText(this, offset < 0 ? "첫 페이지입니다." : "마지막 페이지입니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        historyLockUntil = SystemClock.uptimeMillis() + HISTORY_LOCK_MS;
+        web.goBackOrForward(offset);
+    }
+
+    private boolean historyLocked() {
+        return SystemClock.uptimeMillis() < historyLockUntil;
     }
 
     private void showNotice(String text) {
@@ -362,6 +385,11 @@ public class MainActivity extends Activity {
             }
 
             @Override
+            public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+                historyLockUntil = 0; // 이동이 끝남 → 다음 뒤로·앞으로를 받음
+            }
+
+            @Override
             public void onPageCommitVisible(WebView view, String url) {
                 if (!clearingData) applyViewport();
             }
@@ -386,6 +414,7 @@ public class MainActivity extends Activity {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (!request.isForMainFrame()) return;
+                historyLockUntil = 0;
                 Toast.makeText(MainActivity.this, "페이지를 불러오지 못했습니다. 연결을 확인하고 새로고침하세요.", Toast.LENGTH_LONG).show();
                 if (selftest && !selftestDone) {
                     // 에뮬레이터가 막 켜져 인터넷이 아직 안 될 수 있음 → 몇 번 다시 시도
@@ -1213,11 +1242,11 @@ public class MainActivity extends Activity {
                 return true;
             }
             if (alt && k == KeyEvent.KEYCODE_DPAD_LEFT) {
-                if (web.canGoBack()) web.goBack();
+                stepHistory(-1, false);
                 return true;
             }
             if (alt && k == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                if (web.canGoForward()) web.goForward();
+                stepHistory(1, false);
                 return true;
             }
             if (ctrl && k == KeyEvent.KEYCODE_J) {
@@ -1242,7 +1271,8 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (clearingData) return;
         if (customView != null) exitFullscreen();
-        else if (web.canGoBack()) web.goBack();
+        else if (historyLocked()) return; // 앞의 뒤로 가기가 아직 끝나지 않음: 앱이 닫히거나 여러 칸 넘어가지 않게
+        else if (web.canGoBack()) stepHistory(-1, false);
         else super.onBackPressed();
     }
 
@@ -1336,6 +1366,20 @@ public class MainActivity extends Activity {
     private void selftestDownloadResult(boolean ok, String what) {
         if (selftestDownloadsLeft <= 0) return;
         Log.i(TAG, (ok ? "PASS" : "FAIL") + " download " + what);
-        if (--selftestDownloadsLeft == 0) Log.i(TAG, "DONE");
+        if (--selftestDownloadsLeft == 0) selftestHistory();
+    }
+
+    /** 뒤로 가기 점검: ◀를 빠르게 세 번 눌러도 한 칸만 돌아가야 합니다 (예전에는 첫 페이지까지 넘어감) */
+    private void selftestHistory() {
+        web.evaluateJavascript("history.pushState(null,'','#dn1');history.pushState(null,'','#dn2');history.pushState(null,'','#dn3');", null);
+        web.postDelayed(() -> {
+            stepHistory(-1, true);
+            stepHistory(-1, true);
+            stepHistory(-1, true);
+            web.postDelayed(() -> web.evaluateJavascript("location.hash", v -> {
+                Log.i(TAG, ("\"#dn2\"".equals(v) ? "PASS" : "FAIL") + " back button repeated taps step one page (hash=" + v + ", want #dn2)");
+                Log.i(TAG, "DONE");
+            }), 1500);
+        }, 1000);
     }
 }
