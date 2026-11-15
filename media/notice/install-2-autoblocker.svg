@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" width="760" height="500" font-family="'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans CJK KR',sans-serif">
+<rect width="760" height="500" rx="24" fill="#f5f5f4"/>
+<text x="40" y="62" font-size="15" font-weight="600" fill="#8a8a8a" letter-spacing="2">STEP 2</text>
+<text x="40" y="98" font-size="26" font-weight="700" fill="#111">One UI 6.0 이상</text>
+<text x="40" y="132" font-size="26" font-weight="700" fill="#111">자동 차단 끄기</text>
+<rect x="40" y="176" width="250" height="44" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="58" y="204" font-size="16" font-weight="600" fill="#111">1. 설정</text>
+<path d="M165 224 v14 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="244" width="250" height="44" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="58" y="272" font-size="16" font-weight="600" fill="#111">2. 보안 및 개인정보 보호</text>
+<path d="M165 292 v14 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="312" width="250" height="44" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="58" y="340" font-size="16" font-weight="600" fill="#111">3. 자동 차단</text>
+<text x="40" y="442" font-size="15" fill="#4a4a4a">기종에 따라 메뉴 이름이</text>
+<text x="40" y="464" font-size="15" fill="#4a4a4a">조금 다를 수 있습니다.</text>
+<rect x="400" y="40" width="320" height="420" rx="34" fill="#111"/>
+<rect x="410" y="50" width="300" height="400" rx="26" fill="#fff"/>
+<path d="M432 92 l-8 8 l8 8" stroke="#111" stroke-width="2.4" fill="none"/>
+<text x="448" y="106" font-size="18" font-weight="700" fill="#111">자동 차단</text>
+<rect x="418" y="128" width="284" height="70" rx="14" fill="#fff6e6" stroke="#f5a524" stroke-width="2.5"/>
+<text x="432" y="158" font-size="16" font-weight="600" fill="#111">자동 차단</text>
+<text x="432" y="180" font-size="12.5" fill="#8a8a8a">공식 스토어 밖 앱 설치를 막습니다</text>
+<rect x="658" y="150.0" width="44" height="26" rx="13" fill="#d4d4d4"/>
+<circle cx="671" cy="163.0" r="10" fill="#fff"/>
+<text x="650" y="168.0" font-size="13" font-weight="700" fill="#b86e00" text-anchor="end">끄기</text>
+<text x="432" y="234" font-size="16" font-weight="500" fill="#111">앱 보안 검사</text>
+<path d="M686 222.0 l7 7 l-7 7" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<line x1="432" y1="259" x2="688" y2="259" stroke="#eee"/>
+<text x="432" y="294" font-size="16" font-weight="500" fill="#111">메시지 앱 보호</text>
+<path d="M686 282.0 l7 7 l-7 7" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<line x1="432" y1="319" x2="688" y2="319" stroke="#eee"/>
+</svg>

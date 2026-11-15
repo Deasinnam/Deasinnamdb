@@ -76,7 +76,7 @@ body[data-view="home"] .foot-brand svg, body[data-view="apps"] .foot-brand svg, 
 .logo-note { margin: 22px 0 0; font-size: 13px; color: var(--ink-3); }
 @media (max-width: 860px) { .logos { grid-template-columns: 1fr; } }
 nav { display: flex; gap: 24px; font-size: 14px; }
-nav a { text-decoration: none; color: var(--ink-2); }
+nav a { text-decoration: none; color: var(--ink-2); white-space: nowrap; }
 nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
 
@@ -661,7 +661,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 }
 @media (max-width: 480px) {
   .wrap { padding: 0 16px; }
-  nav { gap: 14px; }
+  nav { gap: 11px; font-size: 13px; }
   nav .hide-sm { display: none; }
   .keywell { width: 160px; height: 176px; }
   .bigkey { width: 160px; height: 160px; border-radius: 32px; }
@@ -698,6 +698,41 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ntf-dlg .row button { padding: 11px 18px; border-radius: 10px; font: 700 14px/1 var(--font-body); cursor: pointer; border: 1px solid #3f3f46; background: transparent; color: #d4d4d8; }
 .ntf-dlg .row button[type=submit] { background: #38bdf8; border-color: #0ea5e9; color: #04131d; }
 .ntf-dlg .st { min-height: 1.2em; font-size: 13px; color: #fca5a5; }
+
+/* ---------- 의견 반영(게시판) ---------- */
+.nt-list { list-style: none; margin: 0; padding: 0; border-top: 1.5px solid var(--ink); }
+.nt-post { border-bottom: 1px solid var(--line); }
+.nt-post > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 56px 1fr auto; gap: 16px; align-items: center; padding: 22px 4px; }
+.nt-post > summary::-webkit-details-marker { display: none; }
+.nt-post > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.nt-no { font: 500 13px/1 var(--font-mono); color: var(--ink-3); }
+.nt-tt { min-width: 0; }
+.nt-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.nt-tag { font: 600 12px/1 var(--font-body); padding: 5px 9px; border-radius: 999px; background: var(--wash); color: var(--ink-2); }
+.nt-tag.done { background: #fff6e6; color: #b86e00; }
+.nt-tt h2 { font-size: 20px; letter-spacing: -0.02em; line-height: 1.35; }
+.nt-date { font: 500 13px/1 var(--font-mono); color: var(--ink-3); white-space: nowrap; }
+.nt-post > summary .nt-date::after { content: "＋"; margin-left: 14px; font-family: var(--font-body); color: var(--ink); }
+.nt-post[open] > summary .nt-date::after { content: "－"; }
+.nt-body { padding: 4px 4px 40px 76px; max-width: 860px; }
+.nt-body h3 { font-size: 18px; margin: 30px 0 10px; }
+.nt-body p, .nt-body li { color: var(--ink-2); }
+.nt-body ol { padding-left: 20px; margin: 8px 0; }
+.nt-quote { margin: 0 0 8px; padding: 14px 18px; border-left: 3px solid #f5a524; background: #fff6e6; border-radius: 0 12px 12px 0; color: #1f2023; }
+.nt-quote small { display: block; margin-top: 6px; color: var(--ink-3); font-size: 13px; }
+.nt-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.nt-figs figure { margin: 0; }
+.nt-figs img { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); }
+.nt-figs figcaption { margin-top: 8px; font-size: 13px; color: var(--ink-3); }
+.nt-empty { padding: 28px 4px; color: var(--ink-3); }
+.nt-cta { margin-top: 36px; display: flex; gap: 14px; flex-wrap: wrap; }
+@media (max-width: 380px) { nav { gap: 8px; } header.top .brand .sw { display: none; } }
+@media (max-width: 720px) {
+  .nt-post > summary { grid-template-columns: 1fr; gap: 6px; }
+  .nt-no { display: none; }
+  .nt-body { padding: 0 4px 32px; }
+  .nt-figs { grid-template-columns: 1fr; }
+}
 </style>
 <link rel="canonical" href="https://deolnureum.com/dulsseum/">
 <meta property="og:url" content="https://deolnureum.com/dulsseum/">
@@ -710,7 +745,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
 <meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "SoftwareApplication", "name": "덜씀", "url": "https://deolnureum.com/dulsseum/", "description": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "operatingSystem": "macOS", "applicationCategory": "UtilitiesApplication", "image": "https://deolnureum.com/media/dulsseum-mac.webp", "inLanguage": "ko", "publisher": {"@id": "https://deolnureum.com/#org"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "앱센터", "item": "https://deolnureum.com/apps/"}, {"@type": "ListItem", "position": 3, "name": "덜씀", "item": "https://deolnureum.com/dulsseum/"}]}]}</script>
-<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 허브 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 일반 PC처럼 | 덜누름", "d": "오피스 작업과 그래픽 작업(사진·동영상 편집)을 한 앱에서. 갤럭시 Z 폴드의 넓은 화면에서 스마트폰 한 대로 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 허브 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#updates": {"t": "의견 반영 — 업데이트와 해결 방법 | 덜누름", "d": "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다.", "u": "https://deolnureum.com/updates/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 일반 PC처럼 | 덜누름", "d": "오피스 작업과 그래픽 작업(사진·동영상 편집)을 한 앱에서. 갤럭시 Z 폴드의 넓은 화면에서 스마트폰 한 대로 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다.", "u": "https://deolnureum.com/browser/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
 </head>
 <body data-view="app">
 
@@ -728,6 +763,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       <a href="/about/" data-view="about">소개</a>
       <a href="#install" class="hide-sm fb-off" data-view="home">설치 안내</a>
       <a href="/feedback/" class="fb-on" data-view="feedback">의견<span class="hide-sm"> 보내기</span></a>
+      <a href="/updates/" data-view="updates"><span class="hide-sm">의견 </span>반영</a>
     </nav>
   </div>
 </header>
@@ -1561,6 +1597,58 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     </div>
   </section>
   </div>
+  <div class="view" id="view-updates" hidden>
+  <section class="center-head" id="updates">
+    <div class="wrap">
+      <div class="eyebrow-ink">UPDATES</div>
+      <h1>의견 반영</h1>
+      <p>보내 주신 의견이 어떻게 반영됐는지, 업데이트와 해결 방법을 이곳에 모아 둡니다.</p>
+    </div>
+  </section>
+  <section class="block" style="border-top:0">
+    <div class="wrap">
+      <ul class="nt-list">
+        <li>
+          <details class="nt-post" id="post-install" open>
+            <summary>
+              <span class="nt-no">001</span>
+              <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 워크</span><span class="nt-tag">설치</span><span class="nt-tag done">해결 방법 안내</span></span><h2>갤럭시에서 앱이 설치되지 않거나 "유해한 앱"으로 막힐 때</h2></span>
+              <span class="nt-date">2026.11.15</span>
+            </summary>
+            <div class="nt-body">
+              <h3>받은 의견</h3>
+              <p class="nt-quote">갤럭시에서 "잠재적으로 유해한 앱 감지됨"이 뜨면서 내려받은 뒤 앱이 열리지 않아요. Play 스토어의 앱 보호 기능을 꺼도 안 돼요.<small>덜누름 워크 · 기타 · 2026.11.14</small></p>
+              <p class="nt-quote">권한 설정도 해 줬는데 덜누름 워크가 설치되지 않아요.<small>덜누름 전체 · 2026.11.14</small></p>
+
+              <h3>이렇게 해결하세요</h3>
+              <p>불편을 드려 죄송합니다. 갤럭시의 One UI 버전에 따라 해결 방법이 다릅니다. 먼저 <b>설정 → 휴대전화 정보 → 소프트웨어 정보</b>에서 One UI 버전을 확인해 주세요.</p>
+              <div class="nt-figs">
+                <figure><img src="/media/notice/install-1-version.svg" alt="1단계: 설정, 휴대전화 정보, 소프트웨어 정보로 들어가 One UI 버전을 확인합니다" width="760" height="500" loading="lazy"><figcaption>STEP 1 · One UI 버전 확인</figcaption></figure>
+                <figure><img src="/media/notice/install-2-autoblocker.svg" alt="2단계: One UI 6.0 이상은 설정, 보안 및 개인정보 보호, 자동 차단으로 들어가 자동 차단을 끕니다" width="760" height="500" loading="lazy"><figcaption>STEP 2 · One UI 6.0 이상: 자동 차단 끄기</figcaption></figure>
+                <figure><img src="/media/notice/install-3-unknown.svg" alt="3단계: One UI 5 이하는 설정, 생체 인식 및 보안, 출처를 알 수 없는 앱 설치에서 설치 파일을 연 앱을 허용합니다" width="760" height="500" loading="lazy"><figcaption>STEP 3 · One UI 5 이하: 출처를 알 수 없는 앱 허용</figcaption></figure>
+                <figure><img src="/media/notice/install-4-playprotect.svg" alt="4단계: Play 스토어, 프로필 사진, Play 프로텍트, 설정에서 Play 프로텍트로 앱 검사를 끕니다" width="760" height="500" loading="lazy"><figcaption>STEP 4 · 공통: Play 프로텍트 앱 검사 끄기</figcaption></figure>
+              </div>
+              <h3>One UI 6.0 이상 (주로 2023년 말 이후 업데이트한 기기)</h3>
+              <ol>
+                <li>설정 → 보안 및 개인정보 보호 → <b>자동 차단</b>을 꺼 주세요.</li>
+                <li>Play 스토어 → 프로필 → Play 프로텍트 → 설정(톱니)에서 <b>Play 프로텍트로 앱 검사</b>를 꺼 주세요.</li>
+                <li>이미 설치된 앱이 있다면 삭제한 뒤 다시 설치해 주세요.</li>
+              </ol>
+              <h3>One UI 5 이하</h3>
+              <ol>
+                <li>설정 → 생체 인식 및 보안 → <b>출처를 알 수 없는 앱 설치</b>에서 설치 파일을 연 앱(Chrome, 삼성 인터넷, 내 파일 등)을 허용해 주세요.</li>
+                <li>Play 프로텍트를 끈 다음 다시 설치해 주세요.</li>
+              </ol>
+              <p>설치가 끝나면 자동 차단과 Play 프로텍트를 다시 켜셔도 됩니다. 메뉴 이름과 위치는 기종과 통신사에 따라 조금씩 다를 수 있습니다. 그래도 안 되면 기종과 One UI 버전, 오류 화면 캡처를 의견 보내기로 알려 주세요.</p>
+              <p class="ap-disc light"><b>꼭 확인하세요</b>덜누름 앱은 Play 스토어 밖에서 내려받는 앱이라 갤럭시 보안 기능이 설치를 막을 수 있습니다. 덜누름 사이트(deolnureum.com)의 앱센터에서 받은 파일만 설치해 주세요.</p>
+            </div>
+          </details>
+        </li>
+      </ul>
+      <div class="nt-cta"><a class="key dark" href="/feedback/">의견 보내기</a><a class="key" href="/apps/">앱센터</a></div>
+    </div>
+  </section>
+  </div>
   <div class="view" id="view-about" hidden>
   <section class="center-head about-head" id="about">
     <div class="wrap about-grid">
@@ -1661,7 +1749,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 <footer>
   <div class="wrap">
     <span class="foot-brand"><svg viewBox="0 0 1394 378" role="img" aria-label="덜누름"><use href="#lg-word"/></svg>Software · 덜 누르고, 더 편하게</span>
-    <span>© 2026 덜누름<span class="fb-on"> · <a href="/feedback/">의견 보내기</a></span></span>
+    <span>© 2026 덜누름<span class="fb-on"> · <a href="/feedback/">의견 보내기</a></span> · <a href="/updates/">의견 반영</a></span>
   </div>
 </footer>
 
@@ -1715,9 +1803,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   // 주소 방식 두 가지. 빌드된 실제 사이트(<html data-paths>)는 화면마다 진짜 주소(/speedometer/ 등)를 쓰고,
   // 원본·시안은 # 주소를 씀. 실제 사이트에서도 링크를 누르면 새로 고치지 않고 화면만 바꿈.
   var PATHS = document.documentElement.hasAttribute("data-paths"), META = window.__PAGES || {};
-  var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-sseum": "/dulsseum/" }, P2H = {};
+  var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#updates": "/updates/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-sseum": "/dulsseum/" }, P2H = {};
   for (var hk in H2P) P2H[H2P[hk]] = hk;
-  function viewPath(h) { if (H2P[h]) return H2P[h]; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; return "/" + (h || ""); }
+  function viewPath(h) { if (H2P[h]) return H2P[h]; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; if (/^#post-/.test(h)) return "/updates/" + h; return "/" + (h || ""); }
   function logical() {
     if (!PATHS) return location.hash || "";
     var p = location.pathname.replace(/index\.html$/, ""); if (p.slice(-1) !== "/") p += "/";
@@ -1734,9 +1822,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
     var isAbout = hsh === "#about" || hsh === "#rules";
     var isFb = hsh === "#feedback" || hsh === "#notify";
     var isHw = hsh === "#hardware";
-    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : isHw ? "hardware" : "home";
+    var isUp = hsh === "#updates" || /^#post-/.test(hsh);
+    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : isHw ? "hardware" : isUp ? "updates" : "home";
     document.getElementById("view-feedback").hidden = view !== "feedback";
     document.getElementById("view-hardware").hidden = view !== "hardware";
+    document.getElementById("view-updates").hidden = view !== "updates";
     home.hidden = view !== "home"; center.hidden = view !== "apps"; appView.hidden = view !== "app"; about.hidden = view !== "about";
     pages.forEach(function (pg) { pg.hidden = pg !== page; });
     devs.forEach(function (d) {
@@ -1752,11 +1842,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
       var on = (dv === view || (view === "app" && dv === "apps")) && (view !== "home" || /^(#top|\/)$/.test(links[i].getAttribute("href")));
       links[i].classList.toggle("is-on", on);
     }
-    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" ? document.getElementById(hsh.slice(1)) : null;
+    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" && hsh !== "#updates" ? document.getElementById(hsh.slice(1)) : null;
     if (target) target.scrollIntoView();
     else { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } }
     if (PATHS) {   // 화면에 맞는 제목·설명·대표 주소
-      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : "#top"];
+      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : view === "updates" ? "#updates" : "#top"];
       if (m) { document.title = m.t; var md = document.querySelector('meta[name="description"]'), lc = document.querySelector('link[rel="canonical"]'); if (md) md.setAttribute("content", m.d); if (lc) lc.setAttribute("href", m.u); }
     }
     var ev;

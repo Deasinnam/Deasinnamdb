@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" width="760" height="500" font-family="'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans CJK KR',sans-serif">
+<rect width="760" height="500" rx="24" fill="#f5f5f4"/>
+<text x="40" y="62" font-size="15" font-weight="600" fill="#8a8a8a" letter-spacing="2">STEP 3</text>
+<text x="40" y="98" font-size="26" font-weight="700" fill="#111">One UI 5 이하</text>
+<text x="40" y="132" font-size="26" font-weight="700" fill="#111">출처를 알 수 없는 앱 허용</text>
+<rect x="40" y="176" width="250" height="44" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="58" y="204" font-size="16" font-weight="600" fill="#111">1. 설정</text>
+<path d="M165 224 v14 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="244" width="250" height="44" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="58" y="272" font-size="16" font-weight="600" fill="#111">2. 생체 인식 및 보안</text>
+<path d="M165 292 v14 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="312" width="250" height="44" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="58" y="340" font-size="16" font-weight="600" fill="#111">3. 출처를 알 수 없는 앱 설치</text>
+<text x="40" y="442" font-size="15" fill="#4a4a4a">설치 파일을 연 앱</text>
+<text x="40" y="464" font-size="15" fill="#4a4a4a">(브라우저·내 파일)을 켜 주세요.</text>
+<rect x="400" y="40" width="320" height="420" rx="34" fill="#111"/>
+<rect x="410" y="50" width="300" height="400" rx="26" fill="#fff"/>
+<path d="M432 92 l-8 8 l8 8" stroke="#111" stroke-width="2.4" fill="none"/>
+<text x="448" y="106" font-size="18" font-weight="700" fill="#111">출처를 알 수 없는 앱 설치</text>
+<rect x="418" y="128" width="284" height="58" rx="14" fill="#fff6e6" stroke="#f5a524" stroke-width="2.5"/>
+<text x="432" y="162" font-size="16" font-weight="600" fill="#111">Chrome</text>
+<rect x="658" y="144.0" width="44" height="26" rx="13" fill="#f5a524"/>
+<circle cx="689" cy="157.0" r="10" fill="#fff"/>
+<text x="650" y="162.0" font-size="13" font-weight="700" fill="#b86e00" text-anchor="end">켜기</text>
+<text x="432" y="222" font-size="16" font-weight="500" fill="#111">삼성 인터넷</text>
+<rect x="658" y="204.0" width="44" height="26" rx="13" fill="#d4d4d4"/>
+<circle cx="671" cy="217.0" r="10" fill="#fff"/>
+<line x1="432" y1="247" x2="688" y2="247" stroke="#eee"/>
+<text x="432" y="282" font-size="16" font-weight="500" fill="#111">내 파일</text>
+<rect x="658" y="264.0" width="44" height="26" rx="13" fill="#d4d4d4"/>
+<circle cx="671" cy="277.0" r="10" fill="#fff"/>
+<line x1="432" y1="307" x2="688" y2="307" stroke="#eee"/>
+</svg>

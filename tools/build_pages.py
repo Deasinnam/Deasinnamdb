@@ -53,6 +53,8 @@ PAGES = [
      "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게."),
     ("#feedback", "/feedback/", "feedback", "의견 보내기 · 공개 알림 신청" + SUFFIX,
      "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다."),
+    ("#updates", "/updates/", "updates", "의견 반영 — 업데이트와 해결 방법" + SUFFIX,
+     "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다."),
 ] + [(h, p, "app", t + SUFFIX, d) for h, p, t, d, *_ in APPS]
 
 ORG = {"@type": "Organization", "@id": SITE + "/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"],
@@ -119,7 +121,7 @@ def build():
         out = sub1(r"<body>", '<body data-view="%s">' % view, out)
         if view != "home":
             out = sub1(r'<div class="view" id="view-home">', '<div class="view" id="view-home" hidden>', out)
-            vid = {"apps": "view-apps", "app": "view-app", "about": "view-about", "feedback": "view-feedback", "hardware": "view-hardware"}[view]
+            vid = {"apps": "view-apps", "app": "view-app", "about": "view-about", "feedback": "view-feedback", "hardware": "view-hardware", "updates": "view-updates"}[view]
             out = sub1(r'(<div class="view[^"]*" id="%s") hidden>' % vid, r"\1>", out)
             if view == "app":
                 out = sub1(r'(<section class="amp-stage ap" id="%s"[^>]*?) hidden>' % h[1:], r"\1>", out)
