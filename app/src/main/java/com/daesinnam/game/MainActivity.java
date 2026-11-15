@@ -25,6 +25,9 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -93,12 +96,30 @@ public class MainActivity extends Activity {
         });
         web.addJavascriptInterface(new Bridge(), "Android");
         setContentView(web);
+        // 전체 화면: 위 상태 표시줄과 아래 내비게이션 바·작업 표시줄을 숨김 (가장자리에서 밀면 잠깐 나타남)
+        getWindow().setDecorFitsSystemWindows(false);
+        getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        hideSystemBars();
         web.loadUrl("file:///android_asset/ui/index.html" + (selftest ? "?selftest=1" : ""));
+    }
+
+    private void hideSystemBars() {
+        WindowInsetsController c = getWindow().getInsetsController();
+        if (c == null) return;
+        c.hide(WindowInsets.Type.systemBars());
+        c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) hideSystemBars();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        hideSystemBars();
         // 게임하러 나가며 켠 방해 금지는 돌아오면 끕니다
         if (dndByUs) {
             dndByUs = false;
