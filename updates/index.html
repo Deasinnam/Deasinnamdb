@@ -2580,6 +2580,9 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
      모든 앱 공통: 내려받기 버튼을 누를 때마다 abacus 카운터(deolnureum/dl-<앱>)를 1 올리고, 그 수를 "N회 내려받음"으로 보여 줍니다.
      새 앱도 DL 표에 open: true 와 파일(tag·file 또는 url·size)만 적으면 같은 방식으로 셉니다. 키는 key 로 바꿀 수 있습니다. */
   var CNT = "https://abacus.jasoncameron.dev/", NSK = "deolnureum/";
+  /* 카운터 서버가 20~30초씩 걸릴 때가 있어, 같은 사이트의 stats.json(주기적으로 받아 둔 숫자)을 먼저 보여 줍니다 */
+  var SNAP = window.__dnStats || (window.__dnStats = fetch("/stats.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }));
+  function snapN(key, cb) { SNAP.then(function (j) { var v = j && j.c && j.c[key]; if (typeof v === "number") cb(v); }); }
   /* 앱 하나에 숫자 하나: 목록(.al-count)과 소개 페이지(.dl-count)가 같은 상태 st 를 함께 씁니다.
      어느 쪽에서 눌러도 두 곳 숫자가 같이 오르고, 화면을 옮길 때마다 서버 숫자로 다시 맞춥니다. */
   var stores = [];
@@ -2588,6 +2591,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     st.outs.forEach(function (o) { o.innerHTML = html; });
   }
   function sync(st) {
+    snapN(st.key, function (v) { if (st.n == null || v > st.n) { st.n = v; render(st); } });
     fetch(CNT + "get/" + NSK + st.key, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { if (j && j.value != null && (st.n == null || j.value > st.n)) { st.n = j.value; render(st); } else if (st.n == null) { st.n = 0; render(st); } })
       .catch(function () {});
@@ -2671,6 +2675,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     nrender(st); nstores.push(st); nsync(st);
   });
   function nsync(st) {
+    snapN(st.key, function (v) { if (st.n == null || v > st.n) { st.n = v; nrender(st); } });
     fetch(CNT + "get/" + NSK + st.key, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { st.n = j && j.value != null ? Math.max(j.value, st.n || 0) : (st.n || 0); nrender(st); }).catch(function () {});
   }
@@ -2718,6 +2723,12 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   function show(){put('v-today',val.today);put('v-total',Math.max(val.total,val.today));document.getElementById('visits').hidden=false;
     ls('dn-visit-n',JSON.stringify({d:d,today:val.today,total:val.total}))}
   if(c&&typeof c.total==='number')show();
+  /* 같은 사이트의 stats.json(주기적으로 받아 둔 숫자): 처음 온 브라우저도 바로 보이게 */
+  var snap=window.__dnStats||(window.__dnStats=fetch('/stats.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}));
+  snap.then(function(j){if(!j||!j.c||typeof j.c.total!=='number')return;var ch=0;
+    if(j.c.total>val.total){val.total=j.c.total;ch=1}
+    if(j.day===d&&j.today>val.today){val.today=j.today;ch=1}
+    if(ch||!c){c=c||{};show()}});
   /* 키마다 따로: 오늘 아직 안 셌으면 hit(1 올림), 셌으면 get. 실패하면 4초·8초 뒤 다시 (센 것이 확인된 뒤에만 '셌음' 기록) */
   function load(name,key,n){
     var hit=!done[name];
