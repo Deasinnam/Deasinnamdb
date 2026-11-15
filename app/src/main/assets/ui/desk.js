@@ -917,8 +917,17 @@
       let L = [];
       try { L = JSON.parse(localStorage.getItem("desk_wlog") || "[]"); } catch (_) {}
       const t = h("textarea", { class: "notes mono", readonly: "", spellcheck: "false" });
-      t.value = "시각 | 일 | 위젯 넓이 | 화면(CSS)@비율 | 위젯 번호:x,y 너비x높이\n" + (L.length ? L.slice().reverse().map((r) => r.join(" | ")).join("\n") : "(기록 없음)");
+      const place = "시각 | 일 | 위젯 넓이 | 화면(CSS)@비율 | 위젯 번호:x,y 너비x높이\n" + (L.length ? L.slice().reverse().map((r) => r.join(" | ")).join("\n") : "(기록 없음)");
+      t.value = place;
       body.append(t);
+      /* 위젯 진단: 아이콘이 안 보이는 위젯이 있으면 이 창을 찍어 보내 달라고 안내 */
+      call("widgetDiag").then((list) => {
+        if (!Array.isArray(list) || !list.length) return;
+        const lines = list.map((d) => "[" + d.id + "] " + d.label + " (" + d.app + ") " + d.size + (d.night ? " 밤" : " 낮")
+          + " · 그림 " + d.images + "개 (빈 칸 " + d.empty + ", 투명 " + d.clear + ", 숨김 " + d.hidden + ") · 글자 " + d.texts + "개"
+          + (d.tints ? " · 색 " + d.tints.trim() : "") + (d.sample ? " · \"" + d.sample + "\"" : ""));
+        t.value = "위젯 진단 (아이콘이 안 보이면 이 화면을 찍어 의견 보내기로 보내 주세요)\n" + lines.join("\n") + "\n\n" + place;
+      }).catch(() => {});
     });
   }
 
@@ -1457,6 +1466,10 @@
         const v = Array.isArray(probe) ? probe[0] : null;
         const same = !!(was && v && v.id === was.id && v.sx === was.sx && v.sy === was.sy && v.w === was.w && v.h === was.h && v.shown && v.kids > 0);
         log((same ? "PASS" : "FAIL") + " widget kept place after restart before=" + JSON.stringify(was) + " after=" + JSON.stringify(v));
+        // 1.5.2: 위젯 진단이 위젯 안의 글자·그림 칸을 읽는지 (점검 위젯은 글자 칸 1개, "점검 위젯" 또는 "눌림 N번")
+        const diag = await call("widgetDiag");
+        const dg = Array.isArray(diag) ? diag[0] : null;
+        log((dg && dg.texts >= 1 && /점검 위젯|눌림/.test(dg.sample || "") && /^\d+x\d+$/.test(dg.size) ? "PASS" : "FAIL") + " widget diagnostic " + JSON.stringify(dg));
         log("SHOT2");
         await wait(4000);
         if (S.widgets[0]) removeWidget(S.widgets[0].id);

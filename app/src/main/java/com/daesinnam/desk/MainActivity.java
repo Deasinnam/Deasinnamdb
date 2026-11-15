@@ -17,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ImageDecoder;
@@ -35,6 +36,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.SizeF;
+import android.view.ContextThemeWrapper;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -119,6 +125,11 @@ public class MainActivity extends ComponentActivity {
     private static final int REQ_WIDGET_CONFIG = 21;
     private AppWidgetManager widgetManager;
     private AppWidgetHost widgetHost;
+    /**
+     * 다른 앱 위젯을 그릴 때 쓰는 테마. 삼성 위젯(모드 및 루틴 등)은 아이콘 색을 기기 기본 테마(One UI)에서 가져오는데,
+     * 앱 테마(Material)로 그리면 아이콘이 투명하거나 배경색과 같아져 안 보일 수 있습니다. 그래서 기기 기본 테마(낮/밤 따름)로 그립니다.
+     */
+    private Context widgetCtx;
     private FrameLayout widgetLayer;
     private final Map<Integer, AppWidgetHostView> widgetViews = new HashMap<>();
     /** 올리는 중인 위젯: 화면이 자기 목록에 넣었다고 알려 오기 전에는 지우지 않습니다 */
@@ -182,6 +193,7 @@ public class MainActivity extends ComponentActivity {
         setContentView(root);
         widgetManager = AppWidgetManager.getInstance(this);
         widgetHost = new Host(this);
+        widgetCtx = new ContextThemeWrapper(this, android.R.style.Theme_DeviceDefault_DayNight);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
@@ -462,6 +474,8 @@ public class MainActivity extends ComponentActivity {
                         a.optDouble(5, 0), a.optDouble(6, 0));
             case "widgetProbe":
                 return widgetProbe();
+            case "widgetDiag":
+                return widgetDiag();
             case "quick":
                 return quickState();
             case "setVolume": {
@@ -803,7 +817,7 @@ public class MainActivity extends ComponentActivity {
                     missing.put(id);
                     continue;
                 }
-                v = widgetHost.createView(this, id, info);
+                v = widgetHost.createView(widgetCtx, id, info);
                 widgetViews.put(id, v);
                 FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h);
                 lp.leftMargin = x;
@@ -825,7 +839,12 @@ public class MainActivity extends ComponentActivity {
                 // 위젯에게 자기 크기를 알려 줌 (크기에 맞춰 내용을 바꾸는 위젯용)
                 int wd = Math.round(w / density), hd = Math.round(h / density);
                 try {
-                    v.updateAppWidgetSize(null, wd, hd, wd, hd);
+                    if (android.os.Build.VERSION.SDK_INT >= 31) {
+                        // 안드로이드 12+: 크기 목록으로 알려야 크기별 모양을 가진 위젯이 이 크기에 맞는 모양(아이콘 포함)을 고릅니다
+                        v.updateAppWidgetSize(new Bundle(), Collections.singletonList(new SizeF(wd, hd)));
+                    } else {
+                        v.updateAppWidgetSize(null, wd, hd, wd, hd);
+                    }
                 } catch (RuntimeException ignored) {
                 }
                 v.setTag(size);
@@ -867,6 +886,53 @@ public class MainActivity extends ComponentActivity {
                     .put("shown", v.isShown()));
         }
         return out;
+    }
+
+    /**
+     * 위젯 진단(사용자가 "위젯 자리 기록"에서 봄): 위젯마다 그림 칸(ImageView)이 몇 개이고, 그중 비었거나 투명하거나
+     * 숨겨진 것이 몇 개인지. 아이콘이 안 보이는 위젯의 원인을 기기에서 찍어 보내 받기 위한 기록입니다.
+     */
+    private JSONArray widgetDiag() throws JSONException {
+        JSONArray out = new JSONArray();
+        boolean night = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        for (Map.Entry<Integer, AppWidgetHostView> e : widgetViews.entrySet()) {
+            AppWidgetHostView v = e.getValue();
+            AppWidgetProviderInfo info = v.getAppWidgetInfo();
+            int[] n = new int[5]; // 그림 칸, 빈 칸, 투명, 숨김, 글자 칸
+            StringBuilder tints = new StringBuilder();
+            StringBuilder texts = new StringBuilder();
+            walkWidget(v, n, tints, texts);
+            out.put(new JSONObject().put("id", e.getKey())
+                    .put("app", info == null ? "?" : info.provider.getPackageName())
+                    .put("label", info == null ? "?" : String.valueOf(info.loadLabel(getPackageManager())))
+                    .put("size", v.getWidth() + "x" + v.getHeight())
+                    .put("night", night)
+                    .put("images", n[0]).put("empty", n[1]).put("clear", n[2]).put("hidden", n[3]).put("texts", n[4])
+                    .put("tints", tints.toString())
+                    .put("sample", texts.length() > 80 ? texts.substring(0, 80) : texts.toString()));
+        }
+        return out;
+    }
+
+    private void walkWidget(View view, int[] n, StringBuilder tints, StringBuilder texts) {
+        if (view instanceof ImageView) {
+            ImageView iv = (ImageView) view;
+            Drawable d = iv.getDrawable();
+            n[0]++;
+            if (d == null || (d.getIntrinsicWidth() == 0 && d.getIntrinsicHeight() == 0)) n[1]++;
+            else if (d.getAlpha() == 0 || iv.getImageAlpha() == 0 || iv.getAlpha() == 0f) n[2]++;
+            if (iv.getVisibility() != View.VISIBLE) n[3]++;
+            ColorStateList t = iv.getImageTintList();
+            if (t != null && tints.length() < 60) tints.append(String.format(Locale.ROOT, "#%08X ", t.getDefaultColor()));
+        } else if (view instanceof TextView) {
+            n[4]++;
+            CharSequence c = ((TextView) view).getText();
+            if (c != null && c.length() > 0 && texts.length() < 80) texts.append(c).append(" / ");
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) view;
+            for (int i = 0; i < g.getChildCount(); i++) walkWidget(g.getChildAt(i), n, tints, texts);
+        }
     }
 
     // ---------- 배경 층 ----------
