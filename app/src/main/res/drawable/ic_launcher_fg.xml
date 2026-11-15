@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 직접 그린 게임 패드 (다른 회사 로고 없음) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M37,38 L71,38 C80,38 85,44 87,52 L91,68 C93,76 86,81 80,76 L72,68 L36,68 L28,76 C22,81 15,76 17,68 L21,52 C23,44 28,38 37,38 Z" />
+    <path android:fillColor="#2A2F7A" android:pathData="M34,47 h5 v6 h6 v5 h-6 v6 h-5 v-6 h-6 v-5 h6 Z" />
+    <path android:fillColor="#FF7A00" android:pathData="M72,50 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <path android:fillColor="#FFD60A" android:pathData="M64,58 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <path android:fillColor="#2A2F7A" android:pathData="M80,58 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+</vector>

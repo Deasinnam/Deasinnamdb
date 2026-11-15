@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>덜누름 게임</title>
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<header class="top">
+  <h1>덜누름 게임</h1>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="games" class="on">게임</button>
+    <button role="tab" data-tab="apps">게임 앱</button>
+    <button role="tab" data-tab="tools">도구</button>
+  </nav>
+</header>
+
+<main>
+  <section id="games" class="pane on">
+    <div class="bar">
+      <p class="hint">설치된 게임이 여기에 모입니다. 누르면 게임 최적화를 켜고 바로 시작해요.</p>
+      <button class="ghost" id="addGame">+ 게임 추가</button>
+    </div>
+    <div id="gameGrid" class="grid"></div>
+    <p id="gameEmpty" class="empty" hidden>아직 찾은 게임이 없어요. "+ 게임 추가"로 직접 넣을 수 있어요.</p>
+  </section>
+
+  <section id="apps" class="pane">
+    <p class="hint">게임 앱을 한곳에서 열어요. 설치되지 않은 앱은 원작 공식 배포처로 안내합니다. 덜누름은 각 앱과 제휴 관계가 아닙니다.</p>
+    <div id="appList" class="list"></div>
+  </section>
+
+  <section id="tools" class="pane">
+    <div class="card" id="recCard">
+      <h2>게임 녹화</h2>
+      <p>게임 화면을 동영상으로 남겨요. 저장 위치: 동영상 › 덜누름 게임</p>
+      <label class="check"><input type="checkbox" id="recMic"> 마이크 소리도 함께</label>
+      <div class="row">
+        <button class="primary" id="recBtn">녹화 시작</button>
+        <button class="ghost" id="recOpen">녹화한 영상 보기</button>
+      </div>
+      <p class="sub" id="recState"></p>
+    </div>
+
+    <div class="card">
+      <h2>게임 최적화</h2>
+      <label class="check"><input type="checkbox" id="optDnd"> 게임하는 동안 방해 금지 (돌아오면 꺼짐)</label>
+      <p class="sub" id="dndState"></p>
+      <div class="row" id="samsungRow" hidden>
+        <button class="ghost" id="samsungBtn">삼성 게임 부스터 열기</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>화면 주사율</h2>
+      <p id="hzNow">—</p>
+      <p class="sub" id="hzModes"></p>
+    </div>
+
+    <div class="card soon">
+      <h2>실제 FPS 보기 · 성능 모드 <span class="tag">다음 업데이트</span></h2>
+      <p>게임 중 실제 프레임 수와 CPU·GPU 사용량, 안드로이드 게임 성능 모드는 <b>Shizuku</b>로 켜요.</p>
+      <p class="sub" id="shizukuState"></p>
+    </div>
+
+    <p class="about">덜누름 게임 <span id="ver"></span> · deolnureum.com</p>
+  </section>
+</main>
+
+<div id="picker" class="sheet" hidden>
+  <div class="sheet-in">
+    <div class="sheet-top"><h2>게임으로 보여 줄 앱</h2><button class="ghost" id="pickClose">닫기</button></div>
+    <div id="pickList" class="list"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<script src="game.js"></script>
+</body>
+</html>
