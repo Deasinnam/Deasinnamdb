@@ -435,11 +435,13 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .pd-row .pd-dex { background: #f4f4f5; color: #3f3f46; border-color: #e4e4e7; }
 .pd-row .pd-used { background: #fff; color: #52525b; border-color: #d4d4d8; }
 .pd { position: relative; }
-.pd-tip { display: block; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #f4f4f5; color: #3f3f46; font: 500 12px/1.5 var(--font-body); }
-@media (hover: hover) {
-  .pd-tip { position: absolute; left: 10px; right: 10px; bottom: calc(100% - 6px); margin: 0; z-index: 20; background: #18181b; color: #fafafa; padding: 10px 12px; border-radius: 10px; box-shadow: 0 12px 30px -10px rgba(0,0,0,.45); opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; pointer-events: none; }
-  .pd-tip::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -6px; border: 6px solid transparent; border-top-color: #18181b; }
-  .pd:hover .pd-tip, .pd:focus-visible .pd-tip { opacity: 1; transform: none; }
+.pd-tip { display: block; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #ff7a00; color: #0b0b0c; font: 600 12px/1.5 var(--font-body); }
+/* 말풍선(주황 · 검정 글씨)은 마우스로 가리키는 큰 화면에서만. 휴대폰·터치 위주 기기는 카드 아래에 늘 보이게 둡니다
+   (갤럭시는 S펜·DeX 때문에 "가리키기 가능"으로 잡히는 경우가 있어 화면 폭과 포인터 종류도 함께 봅니다) */
+@media (hover: hover) and (pointer: fine) and (min-width: 641px) {
+  .pd-tip { position: absolute; left: 10px; right: 10px; bottom: calc(100% - 6px); margin: 0; z-index: 20; background: #ff7a00; color: #0b0b0c; padding: 10px 12px; border-radius: 10px; box-shadow: 0 12px 30px -10px rgba(0,0,0,.45); opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; pointer-events: none; }
+  .pd-tip::after { content: ""; position: absolute; left: 50%; top: 100%; margin-left: -6px; border: 6px solid transparent; border-top-color: #ff7a00; }
+  .pd:hover .pd-tip, .pd:focus-visible .pd-tip, .pd.tip-on .pd-tip { opacity: 1; transform: none; }
 }
 .pd-video { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 10px; background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; font: 700 13px/1 var(--font-body); text-decoration: none; }
 .pd-video:hover { background: #fbcfe8; }
@@ -2662,6 +2664,20 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   Promise.all([q('day-'+d),q('total')]).then(function(v){
     if(v[0]===null||v[1]===null)return;
     put('v-today',v[0]);put('v-total',Math.max(v[1],v[0]));document.getElementById('visits').hidden=false;
+  });
+})();
+</script>
+<script>
+/* 하드웨어 카드 말풍선: 말풍선 모드인데 손가락·펜으로 누른 경우(펼친 폴드 등) 첫 탭은 말풍선만 보여 주고, 한 번 더 누르면 판매처로 갑니다 */
+(function () {
+  var FLOAT = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 641px)"), lastType = "mouse";
+  document.addEventListener("pointerdown", function (e) { lastType = e.pointerType || "mouse"; }, true);
+  function clear(except) { Array.prototype.forEach.call(document.querySelectorAll(".pd.tip-on"), function (c) { if (c !== except) c.classList.remove("tip-on"); }); }
+  document.addEventListener("click", function (e) {
+    var card = e.target.closest && e.target.closest(".pd");
+    if (!card || !card.querySelector(".pd-tip") || !FLOAT.matches || lastType === "mouse") { clear(null); return; }
+    if (card.classList.contains("tip-on")) { card.classList.remove("tip-on"); return; } // 두 번째 탭: 그대로 이동
+    e.preventDefault(); clear(card); card.classList.add("tip-on");
   });
 })();
 </script>
