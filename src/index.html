@@ -2687,18 +2687,38 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   document.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[href]"); if (a && !a.matches(".al-get, .amp-btn")) setTimeout(syncAll, 300); });
 })();
 
-/* 방문자 수: abacus 카운터 (브라우저당 하루 1회 집계) */
+/* 방문자 수: abacus 카운터 (브라우저당 하루 1회 집계)
+   카운터 서버가 느리거나(응답 20초 이상) 실패할 때가 있어, 새로고침하면 숫자 줄이 안 보이던 문제:
+   - 마지막으로 받은 숫자를 이 브라우저에 기억해 두었다가 바로 보여 주고, 서버 답이 오면 바꿈
+   - 실패하면 잠시 뒤 두 번까지 다시 시도
+   - "오늘 방문" 집계(hit)가 성공한 뒤에만 오늘 센 것으로 기록 (실패하면 다음에 다시 셈) */
 (function(){
   var API='https://abacus.jasoncameron.dev', NS='deolnureum';
   var d=new Date(Date.now()+9*3600e3).toISOString().slice(0,10).replace(/-/g,'');
-  var seen=null; try{seen=localStorage.getItem('dn-visit')}catch(e){}
-  var first=seen!==d; if(first){try{localStorage.setItem('dn-visit',d)}catch(e){}}
-  function q(key){return fetch(API+'/'+(first?'hit':'get')+'/'+NS+'/'+key).then(function(r){return r.ok?r.json():{value:0}}).then(function(j){return j.value||0}).catch(function(){return null})}
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  /* 오늘 이미 센 카운터 기록: dn-visit = 날짜(예전 방식, 둘 다 셈), dn-visit-k = 날짜+센 키 목록 */
+  var done={}; if(ls('dn-visit')===d){done.day=done.total=1}
+  try{var k=JSON.parse(ls('dn-visit-k')||'null');if(k&&k.d===d)for(var i=0;i<k.k.length;i++)done[k.k[i]]=1}catch(e){}
+  function mark(name){done[name]=1;var l=[];for(var x in done)l.push(x);ls('dn-visit-k',JSON.stringify({d:d,k:l}));if(done.day&&done.total)ls('dn-visit',d)}
   function put(id,n){var el=document.getElementById(id);el.innerHTML=n.toLocaleString('en-US').replace(/\d/g,'<span>$&</span>')}
-  Promise.all([q('day-'+d),q('total')]).then(function(v){
-    if(v[0]===null||v[1]===null)return;
-    put('v-today',v[0]);put('v-total',Math.max(v[1],v[0]));document.getElementById('visits').hidden=false;
-  });
+  var c=null; try{c=JSON.parse(ls('dn-visit-n')||'null')}catch(e){}
+  var val={today:c&&c.d===d?c.today:0,total:c&&typeof c.total==='number'?c.total:0}, got={};
+  function show(){put('v-today',val.today);put('v-total',Math.max(val.total,val.today));document.getElementById('visits').hidden=false;
+    ls('dn-visit-n',JSON.stringify({d:d,today:val.today,total:val.total}))}
+  if(c&&typeof c.total==='number')show();
+  /* 키마다 따로: 오늘 아직 안 셌으면 hit(1 올림), 셌으면 get. 실패하면 4초·8초 뒤 다시 (센 것이 확인된 뒤에만 '셌음' 기록) */
+  function load(name,key,n){
+    var hit=!done[name];
+    fetch(API+'/'+(hit?'hit':'get')+'/'+NS+'/'+key,{cache:'no-store'}).then(function(r){
+      if(r.status===404)return 0; /* 오늘 아직 아무도 안 셈 */
+      if(!r.ok)throw new Error(r.status);return r.json().then(function(j){return j.value||0})
+    }).then(function(v){
+      if(hit)mark(name);
+      if(v>val[name==='day'?'today':'total']||!c)val[name==='day'?'today':'total']=v; /* 느린 서버의 예전 값으로 숫자가 줄어 보이지 않게 */
+      got[name]=1; if(got.day&&got.total||c)show();
+    }).catch(function(){if(n<2)setTimeout(function(){load(name,key,n+1)},(n+1)*4000);else if(got.day||got.total)show()}); /* 끝내 실패해도 받은 숫자는 보여 줌 */
+  }
+  load('day','day-'+d,0); load('total','total',0);
 })();
 </script>
 <script>
