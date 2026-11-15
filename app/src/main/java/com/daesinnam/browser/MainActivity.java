@@ -1369,17 +1369,25 @@ public class MainActivity extends Activity {
         if (--selftestDownloadsLeft == 0) selftestHistory();
     }
 
-    /** 뒤로 가기 점검: ◀를 빠르게 세 번 눌러도 한 칸만 돌아가야 합니다 (예전에는 첫 페이지까지 넘어감) */
+    /**
+     * 뒤로 가기 점검: 실제 페이지 3개를 차례로 연 뒤 ◀를 빠르게 세 번 눌러도 한 칸(dn=2)만 돌아가야 합니다.
+     * (고치기 전에는 세 칸을 한꺼번에 넘어가 첫 페이지까지 갔음)
+     * 스크립트로 만든 기록(pushState)은 크롬이 뒤로 가기에서 건너뛰므로 실제 이동으로 시험합니다.
+     */
     private void selftestHistory() {
-        web.evaluateJavascript("history.pushState(null,'','#dn1');history.pushState(null,'','#dn2');history.pushState(null,'','#dn3');", null);
+        String base = "https://example.com/?dn=";
+        web.loadUrl(base + 1);
+        web.postDelayed(() -> web.loadUrl(base + 2), 5000);
+        web.postDelayed(() -> web.loadUrl(base + 3), 10000);
         web.postDelayed(() -> {
             stepHistory(-1, true);
             stepHistory(-1, true);
             stepHistory(-1, true);
-            web.postDelayed(() -> web.evaluateJavascript("location.hash", v -> {
-                Log.i(TAG, ("\"#dn2\"".equals(v) ? "PASS" : "FAIL") + " back button repeated taps step one page (hash=" + v + ", want #dn2)");
+            web.postDelayed(() -> {
+                String url = web.getUrl();
+                Log.i(TAG, (url != null && url.endsWith("?dn=2") ? "PASS" : "FAIL") + " back button repeated taps step one page (url=" + url + ", want ?dn=2)");
                 Log.i(TAG, "DONE");
-            }), 1500);
-        }, 1000);
+            }, 6000);
+        }, 15000);
     }
 }
