@@ -1434,7 +1434,8 @@ const PfdMap=(()=>{
     if(!pathLine){pathLine=L.polyline([],{color:'#ffd23f',weight:5,opacity:.9,dashArray:'2 10',lineCap:'round',interactive:false}).addTo(map);camLayer=L.layerGroup().addTo(map)}
     const fresh=Date.now()-v.t<4000;if(v.t===lastV&&fresh)return;lastV=v.t;
     pathLine.setLatLngs(fresh&&v.path?v.path:[]);camLayer.clearLayers();
-    if(fresh)v.cams.slice(0,6).forEach((c,i)=>camLayer.addLayer(L.marker([c[0],c[1]],{interactive:false,keyboard:false,icon:L.divIcon({className:'pm-cam'+(i?'':' next'),html:'<b>'+(c[2]||'!')+'</b>',iconSize:null})})))}
+    // 1.73 경고 중인 과속 카메라 하나만, 카메라 모양 + 제한속도
+    if(fresh)v.cams.slice(0,1).forEach(c=>camLayer.addLayer(L.marker([c[0],c[1]],{interactive:false,keyboard:false,icon:L.divIcon({className:'pm-cam next pm-camera',html:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg><b>'+(c[2]||'!')+'</b>',iconSize:null})})))}
   setInterval(()=>{if(!document.hidden&&isCar())tick()},250);
   const s=$('#sPfdMap');if(s)s.onchange=e=>set(e.target.checked);const ss=$('#sPfdMapStyle');if(ss)ss.onchange=e=>setStyle(e.target.value);ui();
   return {set,setStyle,get style(){return style},get look(){return host&&host.dataset.look},get on(){return on},get host(){return host},get map(){return map}};
@@ -2560,8 +2561,8 @@ const AmpSfx=(()=>{
   const told=new Map();let cur=null,lastSay=0;
   // 말은 짧게, 사람이 옆에서 알려 주듯: "500미터 앞 단속 카메라, 50이에요." / "속도 줄이세요."
   // 1.44 안내는 두 번만: 500m 앞(표지판 + 음성) → 100m 앞(표지판 + 음성), 각각 몇 초 보이고 사라짐
-  const sayFar=(m,lim)=>m+'미터 앞 단속 카메라'+(lim?', '+lim+'이에요.':'예요.'),SAY_NEAR='속도 줄이세요.';
-  const sayNear=(lim,over)=>'100미터 앞'+(over?', 속도 줄이세요.':lim?', '+lim+'이에요.':' 단속 카메라예요.');
+  const sayFar=(m,lim)=>m+'미터 앞 과속 카메라'+(lim?', '+lim+'이에요.':'예요.'),SAY_NEAR='속도 줄이세요.';
+  const sayNear=(lim,over)=>'100미터 앞'+(over?', 속도 줄이세요.':lim?', '+lim+'이에요.':' 과속 카메라예요.');
   const SHOW_MS=7000,FAR_M=520,NEAR_M=130;
   function say(t){try{if(NB&&NB.speakCam){NB.speakCam(t);return}if(NB&&NB.speak){NB.speak(t);return}}catch(e){}
     try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=1.08;u.pitch=1.02;
@@ -2659,15 +2660,19 @@ const AmpSfx=(()=>{
       cand.push({o:usePath?{c:o.c,d:along}:o,along,cross,same,score:cross+(lim?Math.abs(lim-spd)*.5:15)-(same===true?25:0)})}
     cand.sort((a,b)=>a.along-b.along);
     if(cand.length){const a0=cand[0].along;const grp=cand.filter(c=>c.along-a0<60);grp.sort((x,y)=>x.score-y.score);best=grp[0].o}
-    view.cams=cand.map(c=>[c.o.c[0],c.o.c[1],c.o.c[2],Math.round(c.along)]);
+    view.cams=[];const pathPts=view.path;view.path=null; // 1.73 원형 지도에는 지금 경고 중인 과속 카메라 하나만(다른 카메라·제한속도 표지는 안 그림)
     seen.clear();for(const [k,d] of seenNow)seen.set(k,{d,t:now});
-    if(!best){show(null);return}let key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5);
+    if(!best){show(null);return}
+    if(best.d>FAR_M){show(null);return} // 1.73 500m 앞부터만 보임
+    let key=best.c[0].toFixed(5)+','+best.c[1].toFixed(5);
     if(!told.has(key))for(const k of told.keys()){const [a,b]=k.split(',').map(Number);if(dist(a,b,best.c[0],best.c[1])<80){key=k;break}} // 같은 지점 카메라끼리 바뀌어도 두 번 안내하지 않게
     const st=told.get(key)||{};
     const lim=best.c[2],over=!!(lim&&spd>lim+2);
-    if(!st.far&&!st.near&&best.d<=FAR_M&&best.d>NEAR_M+60){st.far=true;st.until=now+SHOW_MS;ding();say(sayFar(500,lim))}
-    if(!st.near&&best.d<=NEAR_M){st.near=true;st.far=true;st.until=now+SHOW_MS;ding();say(sayNear(lim,over))}
-    show(now<(st.until||0)?{lim,d:best.d,over}:null,spd);
+    // 1.73 앞에서 다가오는 과속 카메라를 500m 앞에서 경고음과 함께 띄우고, 지날 때까지 남은 거리를 줄여 가며 계속 보여 줌(100m 앞에서 한 번 더 알림)
+    if(!st.far&&!st.near&&best.d>NEAR_M+60){st.far=true;ding();say(sayFar(500,lim))}
+    if(!st.near&&best.d<=NEAR_M){st.near=true;st.far=true;ding();say(sayNear(lim,over))}
+    st.until=now+1600;view.path=pathPts;view.cams=[[best.c[0],best.c[1],lim,Math.round(best.d)]];
+    show({lim,d:best.d,over},spd);
     st.t=now;told.set(key,st);if(told.size>200)for(const [k,v] of told)if(now-v.t>6e5)told.delete(k)}
   function show(o,spd){const el=$('#camSign');if(!o){el.hidden=true;document.documentElement.removeAttribute('data-cam');return}
     el.hidden=false;document.documentElement.setAttribute('data-cam','1');$('#camLim').textContent=o.lim||'!';$('#camDist').textContent='전방 '+(o.d>=1000?(o.d/1000).toFixed(1)+'km':Math.round(o.d/10)*10+'m');el.classList.toggle('over',!!o.over)}

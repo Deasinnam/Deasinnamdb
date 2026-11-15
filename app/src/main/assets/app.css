@@ -2897,3 +2897,6 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
   padding:2px 14px 4px;border-radius:14px;background:rgba(4,8,12,.42);color:#fff;text-shadow:0 2px 6px #000c}
 :root[data-narrow] #pfdHost .nar-spd b{font:800 clamp(46px,15vw,72px)/1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.01em}
 :root[data-narrow] #pfdHost .nar-spd small{font:700 15px/1 "Noto Sans KR",sans-serif;color:#e9dcc0}
+/* 1.73 원형 지도: 경고 중인 과속 카메라 하나(카메라 모양 + 제한속도) */
+.pm-cam.pm-camera{width:auto!important;height:24px!important;margin:-12px 0 0 -26px!important;padding:0 6px 0 4px;border-radius:12px;display:flex!important;align-items:center;gap:3px;transform-origin:center}
+.pm-cam.pm-camera svg{width:14px;height:14px;fill:#e0201a;transform:rotate(calc(var(--pm-rot,0deg) * -1))}

@@ -18,15 +18,16 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   assert.ok(cov.w < 1036 * .7 && cov.h < 900 * .3, 'Sign card, not the whole screen: ' + JSON.stringify(cov));
   assert.ok(cov.gw >= 90 && cov.round === '50%', 'Round speed-limit sign');
   assert.match(await p.locator('#camDist').textContent(), /전방 5\d0m/);
-  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 50이에요.', 'First call 500 m ahead');
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 과속 카메라, 50이에요.', 'First call 500 m ahead');
   assert.equal(await p.locator('#camSign').evaluate(e => e.classList.contains('over')), true, 'Flashes when over the limit');
   // 몇 초 지나면 사라짐(같은 카메라를 계속 다가가도 다시 말하지 않음)
   await p.evaluate(() => { const n = Date.now; Date.now = () => n() + 8000; AmpCam.check(36.0 - 0.0032, 125.0, 70, 0); AmpCam.check(36.0 - 0.0030, 125.0, 70, 0); Date.now = n; });
-  assert.equal(await p.locator('#camSign').isVisible(), false, 'Hides after a few seconds');
+  assert.equal(await p.locator('#camSign').isVisible(), true, '1.73 stays on screen while the camera is still ahead (distance counts down)');
+  assert.match(await p.locator('#camDist').textContent(), /전방 3[0-9]0m/);
   assert.equal(await p.evaluate(() => __said.length), 1, 'No extra talking between 500 m and 100 m');
   // 100m 앞: 두 번째(마지막) 안내, 과속이면 "속도 줄이세요"
   await p.evaluate(() => { const n = Date.now; Date.now = () => n() + 8000; AmpCam.check(36.0 - 0.0011, 125.0, 70, 0); Date.now = n; AmpCam.check(36.0 - 0.0009, 125.0, 70, 0); });
-  assert.equal(await p.locator('#camSign').isVisible(), true, 'Shows again 100 m ahead');
+  assert.equal(await p.locator('#camSign').isVisible(), true, 'Still shown 100 m ahead');
   assert.equal(await p.evaluate(() => __said[1] || ''), '100미터 앞, 속도 줄이세요.', 'Second call 100 m ahead');
   await p.evaluate(() => AmpCam.check(36.0 - 0.0004, 125.0, 70, 0));
   assert.equal(await p.evaluate(() => __said.length), 2, 'Only two calls per camera');
@@ -41,10 +42,10 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   await p.evaluate(() => { AmpCam.osm = [[36.1, 125.0, 60]]; AmpCam.check(36.1 - 0.0044, 125.0, 70, 0); AmpCam.check(36.1 - 0.0044, 125.0, 70, 0); });
   assert.equal(await p.evaluate(() => __said.length), 0, 'Needs to be getting closer');
   await p.evaluate(() => AmpCam.check(36.1 - 0.0042, 125.0, 70, 0));
-  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 60이에요.', 'Same road, approaching');
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 과속 카메라, 60이에요.', 'Same road, approaching');
   // 1.54 넓은 간선도로: 길 건너편(진행선에서 50m 옆) 60km/h 카메라도 500m·100m 앞에서 안내
   await p.evaluate(() => { __said.length = 0; AmpCam.osm = [[36.2, 125.00056, 60]]; AmpCam.check(36.2 - 0.0047, 125.0, 65, 0); AmpCam.check(36.2 - 0.0045, 125.0, 65, 0); });
-  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 60이에요.', 'Wide arterial road camera (50 m to the side)');
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 과속 카메라, 60이에요.', 'Wide arterial road camera (50 m to the side)');
   await p.evaluate(() => { const n = Date.now; Date.now = () => n() + 8000; AmpCam.check(36.2 - 0.0011, 125.0, 65, 0); Date.now = n; AmpCam.check(36.2 - 0.0009, 125.0, 65, 0); });
   assert.match(await p.evaluate(() => __said[1] || ''), /^100미터 앞/, 'Second call near the camera even with the side offset');
   // 공공데이터 CSV 형식
@@ -60,7 +61,7 @@ run('Speed camera alerts and tire sounds', async ({context, origin, errors}) => 
   await p.locator('#setBtn').click(); await p.locator('#sCamDemo').scrollIntoViewIfNeeded(); await p.locator('#sCamDemo').click();
   await p.waitForTimeout(1500);
   assert.equal(await p.locator('#camSign').isVisible(), true, 'Demo shows the sign above settings');
-  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 단속 카메라, 50이에요.');
+  assert.equal(await p.evaluate(() => __said[0]), '500미터 앞 과속 카메라, 50이에요.');
   await p.waitForTimeout(3000);
   assert.equal(await p.locator('#camSign').isVisible(), false, 'Demo hides between the two calls');
   await p.waitForTimeout(1500);

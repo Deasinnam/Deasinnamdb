@@ -72,7 +72,8 @@ const PfdMap=(()=>{
     if(!pathLine){pathLine=L.polyline([],{color:'#ffd23f',weight:5,opacity:.9,dashArray:'2 10',lineCap:'round',interactive:false}).addTo(map);camLayer=L.layerGroup().addTo(map)}
     const fresh=Date.now()-v.t<4000;if(v.t===lastV&&fresh)return;lastV=v.t;
     pathLine.setLatLngs(fresh&&v.path?v.path:[]);camLayer.clearLayers();
-    if(fresh)v.cams.slice(0,6).forEach((c,i)=>camLayer.addLayer(L.marker([c[0],c[1]],{interactive:false,keyboard:false,icon:L.divIcon({className:'pm-cam'+(i?'':' next'),html:'<b>'+(c[2]||'!')+'</b>',iconSize:null})})))}
+    // 1.73 경고 중인 과속 카메라 하나만, 카메라 모양 + 제한속도
+    if(fresh)v.cams.slice(0,1).forEach(c=>camLayer.addLayer(L.marker([c[0],c[1]],{interactive:false,keyboard:false,icon:L.divIcon({className:'pm-cam next pm-camera',html:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11a2 2 0 0 1 2 2v1.5l4-2.5v8l-4-2.5V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg><b>'+(c[2]||'!')+'</b>',iconSize:null})})))}
   setInterval(()=>{if(!document.hidden&&isCar())tick()},250);
   const s=$('#sPfdMap');if(s)s.onchange=e=>set(e.target.checked);const ss=$('#sPfdMapStyle');if(ss)ss.onchange=e=>setStyle(e.target.value);ui();
   return {set,setStyle,get style(){return style},get look(){return host&&host.dataset.look},get on(){return on},get host(){return host},get map(){return map}};

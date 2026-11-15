@@ -88,6 +88,7 @@
   }
 
   /* ---------- 1·3. 붙이기와 설정 동기화 ---------- */
+  let pinAt = null; // 직접 고른 주간·야간을 정한 때의 자동 판단(그게 바뀌면 자동으로 돌아감)
   let theme = 'auto', fromDialog = false, P = null, lastFeed = 0, lastHdg = null;
   // 앱의 야간 기준: "자동"이면 오후 7시~오전 6시를 야간으로
   function applyTheme() {
@@ -95,6 +96,9 @@
     const hr = new Date().getHours();
     // 스페셜판은 실제 해 높이로 낮·밤을 정함(window.AmpAutoNight), 그 밖은 오후 7시~오전 6시
     const autoNight = typeof window.AmpAutoNight === 'function' ? !!window.AmpAutoNight() : (hr >= 19 || hr < 6);
+    // 1.73 주간·야간을 직접 골라 두었어도 다음 해 뜸·해 짐(자동 판단이 바뀌는 때)에는 다시 '자동'으로 — 시간대가 안 바뀌는 문제
+    if (theme !== 'auto') { if (pinAt === null) pinAt = autoNight; else if (autoNight !== pinAt) { theme = 'auto'; pinAt = null; try { H.save('pfdSet', Object.assign({}, H.load('pfdSet', {}) || {}, { theme: 'auto' })); } catch (e) {} } }
+    else pinAt = null;
     const t = theme === 'auto' ? (autoNight ? 'night' : 'day') : theme;
     if (P.settings.theme !== t) P.setSettings({ theme: t }); else P.renderText();
   }
@@ -105,7 +109,7 @@
       onCommand(e) {
         if (e.type === 'trip:reset') H.resetTrip();
         else if (e.type === 'settings:change') {
-          if (fromDialog) theme = e.theme;
+          if (fromDialog) { theme = e.theme; pinAt = null; }
           fromDialog = false;
           H.save('pfdSet', {
             skin: e.skin === 'airforce' ? 'airforce' : 'cockpit', theme, mirrorHud: !!e.mirrorHud,
@@ -275,7 +279,7 @@
   // 앱에서 주간/야간/자동 바꾸기(조종 패널 주간·야간 스위치)
   function setTheme(t) {
     if (!['auto', 'day', 'night'].includes(t)) return;
-    theme = t; H.save('pfdSet', Object.assign({}, H.load('pfdSet', {}) || {}, { theme: t }));
+    theme = t; pinAt = null; H.save('pfdSet', Object.assign({}, H.load('pfdSet', {}) || {}, { theme: t }));
     applyTheme(); try { P.renderText(); } catch (_) {}
   }
   window.AmpPfd = { ready: true, panel: P, feed, setTheme, get theme() { return theme; } };
