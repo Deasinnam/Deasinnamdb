@@ -41,9 +41,9 @@ window.addEventListener('scroll',()=>{if(!$('#briPick').hidden)briPickClose()},{
 // 태블릿 스킨을 나오면 태블릿 쪽이 시스템 밝기로 되돌리므로, 스킨이 바뀔 때마다 이 설정을 다시 적용
 new MutationObserver(()=>setTimeout(()=>{if(!isTab())briNative(scrBri)},60)).observe(document.documentElement,{attributes:true,attributeFilter:['data-skin']});
 briSet(scrBri,false);window.AmpBri={set:briSet,get:()=>scrBri};
-/* 1.57: 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 20%. 다시 주간이 되면 야간 전 밝기로 되돌림
+/* 1.57(1.74: 10%): 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 10%. 다시 주간이 되면 야간 전 밝기로 되돌림
  *  야간 중에 손으로 바꾼 밝기는 그대로 둠(바뀌는 순간에만 맞춤) */
-const BriNight=(()=>{let last=null;const NBRI=BUILD==='special'?35:20; /* 스페셜판은 밤 장면을 은은히 밝게 그리므로 35% */
+const BriNight=(()=>{let last=null;const NBRI=10; /* 1.74 야간은 모든 판에서 10% */
   const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&isCar()?!p.day:null}catch(e){return null}};
   function check(){const n=night();if(n===null||n===last)return;const first=last===null;last=n;
     if(n){if(scrBri!==NBRI)store.set('briDayPrev',scrBri);briSet(NBRI);if(!first)toast('야간 — 화면 밝기 '+NBRI+'%')}

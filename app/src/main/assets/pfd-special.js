@@ -824,7 +824,10 @@
   /* ---------- 1.62.2 하늘 고르기: 자동(실제 해) · 새벽 · 한낮 · 노을 · 해 질 녘 · 밤 ----------
    *  왼쪽 [테마] 버튼이 스페셜에서는 [하늘 …]: 누르면 고르는 창. 고정 시각을 고르면 그 시각 하늘에 멈추고 해는 앞쪽에 보이게 둠 */
   const SKY = [['auto', '자동'], ['dawn', '새벽'], ['noon', '한낮'], ['gold', '노을'], ['set', '해 질 녘'], ['night', '밤']];
-  let skyMode = 'auto'; try { const v = HOST && HOST.load ? HOST.load('spSky', 'auto') : 'auto'; if (SKY.some(s => s[0] === v)) skyMode = v; } catch (e) {}
+  // 1.74 하늘을 골라 두면 시계가 그 시각에 멈춰 낮·밤이 안 바뀌던 문제: 고른 하늘은 잠깐 보기 — 앱을 다시 켜면 자동,
+  //  켜 둔 채로도 실제 해가 뜨거나 지면(실제 낮·밤이 바뀌면) 자동으로 돌아감
+  let skyMode = 'auto', pickNight = null; try { HOST && HOST.save && HOST.load && HOST.load('spSky', 'auto') !== 'auto' && HOST.save('spSky', 'auto'); } catch (e) {}
+  function realNight() { const [lat, lon] = loc(); return solar(new Date(), lat, lon).el < -5; }
   function day0() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
   // 오늘(기기 시각대 기준 0~24시) 해 높이로 시각 찾기 — 시각대와 무관하게 해 자체로 정함
   function findEl(target, rising) { const [la, lo] = loc(); let prev = null; const t0 = day0();
@@ -839,7 +842,7 @@
     return null;
   }
   function skyApply(k, save) {
-    skyMode = k; if (save) try { HOST && HOST.save && HOST.save('spSky', k); } catch (e) {}
+    skyMode = k; pickNight = k === 'auto' ? null : realNight(); if (save) try { HOST && HOST.save && HOST.save('spSky', k); } catch (e) {}
     if (!window.__spPreview) { if (k !== 'auto') { window.__spTime = skyTime(k); window.__spSunAhead = k !== 'night' && k !== 'noon'; } else if (save) { window.__spTime = undefined; window.__spSunAhead = false; } }
     sunC = null; mKey = ''; try { window.AmpApplyTheme && window.AmpApplyTheme(); } catch (e) {} try { P.renderText(); P.draw(); } catch (e) {}
   }
@@ -873,6 +876,7 @@
     }, true);
     skyApply(skyMode, false);
     // 고정 시각은 날이 바뀌면 오늘 날짜로 다시 계산
+    setInterval(() => { if (skyMode !== 'auto' && !window.__spPreview && pickNight !== null && realNight() !== pickNight) skyApply('auto', true); }, 60000);
     setInterval(() => { if (skyMode !== 'auto' && !window.__spPreview) { const t = skyTime(skyMode); if (t && Math.abs(t - (window.__spTime || 0)) > 3600000) skyApply(skyMode, false); } }, 600000);
     window.AmpSpecialSky = { get mode() { return skyMode; }, set: k => skyApply(k, true) };
   })();

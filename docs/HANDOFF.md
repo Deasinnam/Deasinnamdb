@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-15 · v1.73 (versionCode 107)**
+마지막 갱신: **2026-11-16 · v1.74 (versionCode 108)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.73** (versionCode 107, versionName `1.73-one`) |
+| 최신 버전 | **1.74** (versionCode 108, versionName `1.74-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-16 · 1.74 — 진짜 원인: 스페셜 하늘 고르기(pfd-special.js `skyApply`)가 `window.__spTime`을 고른 시각으로 고정하고 `spSky`에 저장 → 다시 켜도 복원돼 `AmpAutoNight`(해 높이)가 영원히 그 시각 기준. 이제 시작할 때 spSky를 auto로 되돌리고, 고를 때 실제 낮·밤(`realNight()`, 실제 Date로 해 높이)을 `pickNight`에 기억, 60초마다 바뀌면 `skyApply('auto',true)`. 야간 밝기 `NBRI=10`(97-brightness.js, 판 구분 없음), 콕핏 스페셜 야간 스위치 10%, 스위치 표시는 계기 테마가 auto로 돌아가면 cksDay=null로 실제 낮·밤 표시(5초마다). 테스트 16·29·32 기대값 10%, 40 추가.
 - 2026-11-15 · 1.73 — 낮·밤 자동(pfd-amp.js): 주간·야간을 직접 고르면 `pinAt`에 그때의 autoNight를 기억, applyTheme(60초마다)에서 해 뜸·해 짐으로 autoNight가 바뀌면 theme=auto로 되돌리고 pfdSet에 저장(setTheme·설정 대화상자는 pinAt 초기화) — "시간대 자동 변경 안 됨"의 원인은 고정된 수동 테마. 과속 카메라(89-speedcam.js): 앞쪽 가장 가까운 카메라가 FAR_M(500m) 안일 때만 표시, 500m 첫 알림(삐+음성 "과속 카메라"), NEAR_M에서 두 번째, 지날 때까지 남은 거리 유지; 원형 지도(51-pfd-minimap.js)는 경고 중인 카메라 하나만 `.pm-cam.pm-camera`(카메라 아이콘+제한속도)로. 일반 속도 표지는 안 그림. 테스트 18 수정, 39(테마 자동 복귀) 추가.
 - 2026-11-14 · 1.72 — 좁은 화면 PFD 띠 감추기(pfd.js는 그대로): 패키지 띠 폭 = clamp(그림 폭×0.12, 67, 175)이므로 `94-narrow.js`가 `--nar-tape`를 계산(보이는 폭 V → 띠 t, 그림 폭 V+2t)하고 CSS가 `.pfd-canvas-wrap`을 그만큼 넓혀 `margin-left:-t`, `.pfd-glass{overflow:hidden}` — 띠는 유리 밖. `.flt-btns` right도 t만큼 안으로. 가운데 속도 `.nar-spd`(canvasWrap 안, 0.2초마다 `AmpPfd.panel.display.speedKmh`, valid일 때만), 자리는 조준 기호((H−나침반)×0.53) 아래 28px, 원형 지도와 겹치면 지도 오른쪽 빈자리 가운데. 테스트 38.
 - 2026-11-14 · 1.71 — `#bInput`(.tb.xin, 꺼내기 ⏏ 아이콘, bSwap 바로 뒤) + `#xinPick`(YouTube Music·Spotify, 글자 버튼 — 로고 없음) — `96-ext-input.js`(`AmpExtInput`)가 열고 고르면 `AmpExt.start(pkg)`. `#bEject`(내 음악 파일 열기)는 폴더+ 아이콘으로 바꿈. 좁은 화면 transport는 칸 수 상관없이 한 줄(grid-auto-flow column). 테스트 37.

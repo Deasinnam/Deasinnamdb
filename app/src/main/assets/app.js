@@ -3477,9 +3477,9 @@ window.addEventListener('scroll',()=>{if(!$('#briPick').hidden)briPickClose()},{
 // 태블릿 스킨을 나오면 태블릿 쪽이 시스템 밝기로 되돌리므로, 스킨이 바뀔 때마다 이 설정을 다시 적용
 new MutationObserver(()=>setTimeout(()=>{if(!isTab())briNative(scrBri)},60)).observe(document.documentElement,{attributes:true,attributeFilter:['data-skin']});
 briSet(scrBri,false);window.AmpBri={set:briSet,get:()=>scrBri};
-/* 1.57: 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 20%. 다시 주간이 되면 야간 전 밝기로 되돌림
+/* 1.57(1.74: 10%): 스피드미터가 야간(테마 야간, 또는 자동에서 밤)이 되면 화면 밝기 10%. 다시 주간이 되면 야간 전 밝기로 되돌림
  *  야간 중에 손으로 바꾼 밝기는 그대로 둠(바뀌는 순간에만 맞춤) */
-const BriNight=(()=>{let last=null;const NBRI=BUILD==='special'?35:20; /* 스페셜판은 밤 장면을 은은히 밝게 그리므로 35% */
+const BriNight=(()=>{let last=null;const NBRI=10; /* 1.74 야간은 모든 판에서 10% */
   const night=()=>{try{const p=window.AmpPfd&&AmpPfd.panel;return p&&p.root&&p.root.isConnected&&isCar()?!p.day:null}catch(e){return null}};
   function check(){const n=night();if(n===null||n===last)return;const first=last===null;last=n;
     if(n){if(scrBri!==NBRI)store.set('briDayPrev',scrBri);briSet(NBRI);if(!first)toast('야간 — 화면 밝기 '+NBRI+'%')}
@@ -3569,13 +3569,15 @@ cksApply();
   function muteUi(){const v=$i('dkVolumeValue'),m=v&&v.textContent.trim()==='0';lever('dkMuteSwitch',m);ro('dkMuteReadout',m?'MUTED':'SOUND ON',!m);note('dkMuteNote',m?'내리면 소리 켬':'올리면 소리 끔')}
   $i('dkMuteSwitch').onclick=()=>{const b=$i('dkMuteButton');if(b&&!b.disabled)b.click();setTimeout(muteUi,30)};
   if($i('dkVolumeValue'))new MutationObserver(muteUi).observe($i('dkVolumeValue'),{childList:true,characterData:true,subtree:true});muteUi();
-  /* 주간·야간: 주간 = 밝기 100% + 주간 활주로, 야간 = 밝기 50% + 야간 활주로 */
+  /* 주간·야간: 주간 = 밝기 100% + 주간 활주로, 야간 = 밝기 10% + 야간 활주로 */
   let dayMode=store.get('cksDay',null);
-  function dayUi(){const d=dayMode!=='night';lever('dkDaySwitch',d);ro('dkDayReadout',d?'DAY':'NIGHT',true);note('dkDayNote',d?'주간 밝기 100%':'야간 밝기 50%');$i('dkDayReadout').classList.toggle('night',!d)}
-  function dayApply(m,save=true){dayMode=m;if(save)store.set('cksDay',m);try{window.AmpBri&&window.AmpBri.set(m==='night'?50:100)}catch(e){}
+  function dayUi(){const d=dayMode?dayMode!=='night':!(window.pfd&&window.pfd.day===false);lever('dkDaySwitch',d);ro('dkDayReadout',d?'DAY':'NIGHT',true);note('dkDayNote',d?'주간 밝기 100%':'야간 밝기 10%');$i('dkDayReadout').classList.toggle('night',!d)}
+  function dayApply(m,save=true){dayMode=m;if(save)store.set('cksDay',m);try{window.AmpBri&&window.AmpBri.set(m==='night'?10:100)}catch(e){}
     try{window.AmpPfd&&window.AmpPfd.setTheme&&window.AmpPfd.setTheme(m)}catch(e){}dayUi()}
   $i('dkDaySwitch').onclick=()=>{const m=dayMode==='night'?'day':'night';press(m==='day');dayApply(m)};
   dayUi();
+  // 1.74 계기가 다음 해 뜸·해 짐에 자동으로 돌아가면 스위치도 자동(실제 낮·밤 표시)으로
+  setInterval(()=>{try{if(dayMode&&window.AmpPfd&&AmpPfd.theme==='auto'){dayMode=null;store.set('cksDay',null)}if(!document.hidden)dayUi()}catch(e){}},5000);
   window.AmpDay={get mode(){return dayMode},set:dayApply};
 })();
 

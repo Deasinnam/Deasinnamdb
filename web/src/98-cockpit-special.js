@@ -79,13 +79,15 @@ cksApply();
   function muteUi(){const v=$i('dkVolumeValue'),m=v&&v.textContent.trim()==='0';lever('dkMuteSwitch',m);ro('dkMuteReadout',m?'MUTED':'SOUND ON',!m);note('dkMuteNote',m?'내리면 소리 켬':'올리면 소리 끔')}
   $i('dkMuteSwitch').onclick=()=>{const b=$i('dkMuteButton');if(b&&!b.disabled)b.click();setTimeout(muteUi,30)};
   if($i('dkVolumeValue'))new MutationObserver(muteUi).observe($i('dkVolumeValue'),{childList:true,characterData:true,subtree:true});muteUi();
-  /* 주간·야간: 주간 = 밝기 100% + 주간 활주로, 야간 = 밝기 50% + 야간 활주로 */
+  /* 주간·야간: 주간 = 밝기 100% + 주간 활주로, 야간 = 밝기 10% + 야간 활주로 */
   let dayMode=store.get('cksDay',null);
-  function dayUi(){const d=dayMode!=='night';lever('dkDaySwitch',d);ro('dkDayReadout',d?'DAY':'NIGHT',true);note('dkDayNote',d?'주간 밝기 100%':'야간 밝기 50%');$i('dkDayReadout').classList.toggle('night',!d)}
-  function dayApply(m,save=true){dayMode=m;if(save)store.set('cksDay',m);try{window.AmpBri&&window.AmpBri.set(m==='night'?50:100)}catch(e){}
+  function dayUi(){const d=dayMode?dayMode!=='night':!(window.pfd&&window.pfd.day===false);lever('dkDaySwitch',d);ro('dkDayReadout',d?'DAY':'NIGHT',true);note('dkDayNote',d?'주간 밝기 100%':'야간 밝기 10%');$i('dkDayReadout').classList.toggle('night',!d)}
+  function dayApply(m,save=true){dayMode=m;if(save)store.set('cksDay',m);try{window.AmpBri&&window.AmpBri.set(m==='night'?10:100)}catch(e){}
     try{window.AmpPfd&&window.AmpPfd.setTheme&&window.AmpPfd.setTheme(m)}catch(e){}dayUi()}
   $i('dkDaySwitch').onclick=()=>{const m=dayMode==='night'?'day':'night';press(m==='day');dayApply(m)};
   dayUi();
+  // 1.74 계기가 다음 해 뜸·해 짐에 자동으로 돌아가면 스위치도 자동(실제 낮·밤 표시)으로
+  setInterval(()=>{try{if(dayMode&&window.AmpPfd&&AmpPfd.theme==='auto'){dayMode=null;store.set('cksDay',null)}if(!document.hidden)dayUi()}catch(e){}},5000);
   window.AmpDay={get mode(){return dayMode},set:dayApply};
 })();
 

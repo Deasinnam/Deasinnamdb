@@ -121,7 +121,7 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   assert.ok(tw.day && tw.tw > .5 && !tw.vis && tw.el < 0, 'blue hour after sunset: ' + JSON.stringify(tw));
   await p.close();
 
-  // 스페셜·밤: 남색 하늘(너무 캄캄하지 않게), 땅에 도로·마을 불빛, 화면 밝기 35%
+  // 스페셜·밤: 남색 하늘(너무 캄캄하지 않게), 땅에 도로·마을 불빛, 화면 밝기 10%
   p = await open('special', '21:30', 20);
   assert.equal(await p.evaluate(() => pfd.day), false, 'auto night from the sun');
   const n = await sample(p);
@@ -132,7 +132,7 @@ run('Special edition: painted PFD scenery only in the special app', async ({newP
   assert.ok(g.lit > 8, 'road and town lights on the ground: ' + g.lit);
   assert.equal(await p.evaluate(() => pfd.scene.lightDraw.length), 0, 'no floating package city lamps at night');
   await p.waitForTimeout(1300);
-  assert.equal(await p.evaluate(() => AmpBri.get()), 35, 'special night brightness 35%');
+  assert.equal(await p.evaluate(() => AmpBri.get()), 10, 'special night brightness 10%');
   await p.close();
 
   // 1.62.1 여는 화면: 켤 때 "대신남 AirLine"(시험에서는 기본으로 건너뛰므로 강제로 켬), 누르면 0.5초 안에 걷힘
