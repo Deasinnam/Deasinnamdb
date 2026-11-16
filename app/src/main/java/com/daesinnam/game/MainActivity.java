@@ -383,8 +383,93 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    // ---------- PC 게임(DroidDeck) 시작 안내 ----------
+
+    static final String DROIDDECK = "com.droiddeck.launcher";
+    /** 개발자 옵션 "자식 프로세스 제한 중지"가 바꾸는 기능 플래그. false = 제한 중지(스팀이 꺼지지 않음) */
+    static final String PHANTOM_FLAG = "settings_enable_monitor_phantom_procs";
+
+    /** 자식 프로세스 제한 상태: "off"(제한 중지됨 · 좋음) / "on"(제한 켜짐) / "unknown"(확인 못 함) */
+    String childProcessLimit() {
+        String g = null;
+        try { g = Settings.Global.getString(getContentResolver(), PHANTOM_FLAG); } catch (Exception ignored) { }
+        if ("false".equalsIgnoreCase(trim(g))) return "off";
+        if ("true".equalsIgnoreCase(trim(g))) return "on";
+        String prop = null;
+        try {
+            Class<?> sp = Class.forName("android.os.SystemProperties");
+            prop = (String) sp.getMethod("get", String.class).invoke(null, "persist.sys.fflag.override." + PHANTOM_FLAG);
+        } catch (Throwable ignored) { }
+        if ("false".equalsIgnoreCase(trim(prop))) return "off";
+        if ("true".equalsIgnoreCase(trim(prop))) return "on";
+        if (Shizu.granted()) {
+            String s = Shizu.run("settings get global " + PHANTOM_FLAG + "; getprop persist.sys.fflag.override." + PHANTOM_FLAG, 2000);
+            if (s != null) {
+                for (String line : s.split("\n")) if ("false".equalsIgnoreCase(line.trim())) return "off";
+                return "on";
+            }
+        }
+        // 안드로이드 12 미만은 이 제한이 없음
+        if (Build.VERSION.SDK_INT < 31) return "off";
+        // 개발자 옵션 스위치가 남기는 값을 앱이 읽지 못하는 기기가 많아, 여기서는 "확인 못 함"으로 둡니다
+        return "unknown";
+    }
+
+    private static String trim(String s) { return s == null ? null : s.trim(); }
+
+    private boolean developerOptionsOn() {
+        try { return Settings.Global.getInt(getContentResolver(), Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1; }
+        catch (Exception e) { return false; }
+    }
+
     /** 화면(WebView)에서 부르는 기능 */
     class Bridge {
+        /** PC 게임 시작 안내에 쓰는 상태 */
+        @JavascriptInterface
+        public String pcGuide() {
+            try {
+                JSONObject o = new JSONObject();
+                boolean dd;
+                try { getPackageManager().getApplicationInfo(DROIDDECK, 0); dd = true; }
+                catch (PackageManager.NameNotFoundException e) { dd = false; }
+                o.put("droiddeck", dd);
+                o.put("devOn", developerOptionsOn());
+                o.put("child", childProcessLimit());
+                o.put("shizukuGranted", Shizu.granted());
+                o.put("added", addedGames().contains(DROIDDECK));
+                o.put("sdk", Build.VERSION.SDK_INT);
+                return o.toString();
+            } catch (Exception e) {
+                return "{}";
+            }
+        }
+
+        /** 개발자 옵션이 켜져 있으면 개발자 옵션, 아니면 휴대전화 정보(빌드번호 7번 누르는 곳)를 엽니다 */
+        @JavascriptInterface
+        public void openDevSettings() {
+            main.post(() -> {
+                boolean on = developerOptionsOn();
+                Intent i = new Intent(on ? Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS : Settings.ACTION_DEVICE_INFO_SETTINGS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(i);
+                    notifyJs("toast", on ? "아래로 내려 '자식 프로세스 제한 중지'를 켜 주세요" : "'소프트웨어 정보' › '빌드번호'를 7번 눌러 주세요");
+                } catch (Exception e) {
+                    try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
+                    catch (Exception ignored) { notifyJs("toast", "설정을 열 수 없어요"); }
+                }
+            });
+        }
+
+        /** 고급 기능(Shizuku)으로 "자식 프로세스 제한 중지"를 켭니다. 개발자 옵션의 스위치를 켜는 것과 같은 설정입니다. */
+        @JavascriptInterface
+        public String fixChildProcess() {
+            if (!Shizu.granted()) return "noshizuku";
+            String out = Shizu.run("settings put global " + PHANTOM_FLAG + " false", 2000);
+            log("CHILDPROC fix -> " + (out == null ? "fail" : out.isEmpty() ? "ok" : out.replace('\n', ' ')));
+            return "off".equals(childProcessLimit()) ? "ok" : "fail";
+        }
+
         @JavascriptInterface
         public String games() {
             try {

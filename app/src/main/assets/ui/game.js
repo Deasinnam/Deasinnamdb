@@ -7,6 +7,7 @@ const SELFTEST = location.search.includes('selftest=1');
 var demoLevels = {};
 
 const A = window.Android || {
+  pcGuide: () => JSON.stringify(demoPc), openDevSettings: () => toast('(견본) 설정이 열려요'), fixChildProcess: () => { demoPc.child = 'off'; return 'ok'; },
   games: () => JSON.stringify([
     { pkg: 'demo.rpg', label: '견본 RPG', icon: '', auto: true },
     { pkg: 'demo.race', label: '견본 레이싱', icon: '', auto: true },
@@ -33,6 +34,7 @@ const A = window.Android || {
   keymapSetOn: (pkg, on) => { demoKm[pkg] = on; }, keymapClear: () => {}, keymapSet: () => {}, keymapSettings: () => toast('(견본) 접근성 설정이 열려요'),
 };
 var demoKm = {};
+var demoPc = { droiddeck: true, devOn: true, child: 'unknown', shizukuGranted: false, added: false, sdk: 35 };
 var demoFps = { mode: 'off', adv: true };
 
 const parse = (s, d) => { try { return JSON.parse(s); } catch (e) { return d; } };
@@ -86,6 +88,7 @@ function showTab(name) {
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 
 window.goBack = () => {
+  if (!$('#pcGuide').hidden) { closeGuide(); return true; }
   if (!$('#gameSheet').hidden) { closeGameSheet(); return true; }
   if (!$('#picker').hidden) { closePicker(); return true; }
   if (tab !== 'home') { showTab('home'); focusFirst(); return true; }
@@ -204,11 +207,103 @@ function renderApps() {
     `<div class="item">${iconImg(a)}<div class="txt"><b>${esc(a.label)}</b><span>${esc(a.desc)}</span></div>` +
     (a.installed
       ? `<button class="primary" data-f data-open="${esc(a.pkg)}">열기</button>`
-      : `<button class="ghost" data-f data-url="${esc(a.url)}">받으러 가기</button>`) + '</div>').join('');
-  $('#appList').querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => play(b.dataset.open, false)));
+      : `<button class="ghost" data-f data-url="${esc(a.url)}">받으러 가기</button>`) +
+    (a.pkg === DD ? '<button class="ghost" data-f data-guide>사용법</button>' : '') + '</div>').join('');
+  $('#appList').querySelectorAll('[data-guide]').forEach((b) => b.addEventListener('click', openGuide));
+  $('#appList').querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => {
+    // DroidDeck을 처음 열 때는 안내를 먼저 한 번 보여 줌 (스팀이 꺼지지 않게 하는 설정 때문)
+    if (b.dataset.open === DD && !localStorage.getItem('pcGuideSeen') && !SELFTEST) { openGuide(); return; }
+    play(b.dataset.open, false);
+  }));
+  renderPcEntry();
   $('#appList').querySelectorAll('[data-url]').forEach((b) => b.addEventListener('click', () => A.openUrl(b.dataset.url)));
   return apps;
 }
+
+// ---------- PC 게임(DroidDeck) 시작 안내 ----------
+const DD = 'com.droiddeck.launcher';
+const GUIDE_WEB = 'https://deolnureum.com/updates/#post-game-pc';
+function pcState() { return parse(A.pcGuide(), {}); }
+function renderPcEntry() {
+  const s = pcState();
+  const left = [!s.droiddeck, !s.devOn, s.child !== 'off'].filter(Boolean).length;
+  $('#pcEntrySub').textContent = !s.droiddeck ? 'DroidDeck 설치부터 게임 실행까지 차례대로 안내해요'
+    : left ? '준비가 조금 남았어요 · 눌러서 이어서 하기' : '준비 끝 · 스팀 · 배틀넷 로그인과 게임 실행 방법 보기';
+}
+function guideStep(done, now, title, body, buttons, badge) {
+  const pill = badge || (done ? '<span class="pill ok">완료</span>' : '');
+  return `<li class="${done ? 'done' : ''} ${now ? 'now' : ''}"><h3>${title}${pill}</h3>${body}` +
+    (buttons ? `<div class="row">${buttons}</div>` : '') + '</li>';
+}
+function renderGuide() {
+  const s = pcState();
+  const ddOk = !!s.droiddeck;
+  const childOk = s.child === 'off';
+  const first = !ddOk ? 1 : !s.devOn && !childOk ? 3 : !childOk ? 4 : 5;
+  const childBadge = childOk ? '<span class="pill ok">완료</span>'
+    : s.child === 'unknown' ? '<span class="pill">직접 확인</span>' : '<span class="pill warn">꺼져 있음</span>';
+  const steps = [
+    guideStep(ddOk, first === 1, 'DroidDeck 설치',
+      '<p>스팀 · 배틀넷 PC 게임을 폰에서 돌려 주는 앱이에요. 공식 배포 페이지(GitHub)에서 맨 위 최신 버전의 <b>.apk</b>를 받아 설치하세요.</p>',
+      ddOk ? '' : '<button class="primary" data-f data-act="get">받으러 가기</button>'),
+    guideStep(false, first === 2, 'DroidDeck 한 번 열기',
+      '<p>DroidDeck을 열고 <b>파일(저장 공간) 접근 권한</b>을 허용한 뒤 덜누름 게임으로 돌아오세요. 스팀은 아직 실행하지 않아도 돼요.</p>',
+      ddOk ? '<button class="ghost" data-f data-act="open">DroidDeck 열기</button>' : ''),
+    guideStep(!!s.devOn, first === 3, '개발자 옵션 켜기',
+      '<p>설정에서 <b>빌드번호</b>를 7번 연달아 누르면 "개발자 모드를 켰습니다"가 뜨고, 설정 맨 아래에 <b>개발자 옵션</b>이 생겨요.</p>' +
+      '<span class="path">설정 › 휴대전화 정보 › 소프트웨어 정보 › 빌드번호</span>',
+      s.devOn ? '' : '<button class="primary" data-f data-act="dev">휴대전화 정보 열기</button>'),
+    guideStep(childOk, first === 4, '자식 프로세스 제한 중지 켜기',
+      '<p>스팀은 뒤에서 여러 프로그램을 함께 돌려요. 이 스위치를 켜야 스팀이 중간에 꺼지지 않아요. 개발자 옵션에서 아래로 내려 <b>자식 프로세스 제한 중지</b>를 찾아 <b>켜세요</b>.</p>' +
+      '<span class="path">설정 › 개발자 옵션 › 자식 프로세스 제한 중지</span>' +
+      (s.child === 'unknown' ? '<p style="margin-top:8px">이 기기에서는 켜졌는지 앱이 알 수 없어요. 개발자 옵션에서 스위치가 켜져 있는지 직접 확인해 주세요.</p>' : '') +
+      '<p style="margin-top:8px">이 항목이 없는 기기는 DroidDeck에서 <b>Steam 실행</b>을 누를 때 나오는 안내(무선 디버깅 페어링)를 따르면 돼요.</p>',
+      (childOk ? '' : '<button class="primary" data-f data-act="dev">개발자 옵션 열기</button>') +
+      (!childOk && s.shizukuGranted ? '<button class="ghost" data-f data-act="fix">고급 기능으로 바로 켜기</button>' : ''),
+      childBadge),
+    guideStep(false, first === 5, '스팀 로그인 · 게임 설치',
+      '<p>DroidDeck 아래 메뉴 <b>Steam</b> › <b>▶ Steam 실행</b>. 처음엔 실행 환경(1GB 안팎)을 받으니 와이파이에서 기다려 주세요. 스팀 아이디 · 비밀번호로 로그인하거나 <b>스팀 모바일 앱으로 QR 코드</b>를 찍으면 돼요. 로그인 후 게임을 골라 <b>설치</b>하세요.</p>' +
+      '<span class="path">DroidDeck › Steam › ▶ Steam 실행</span>',
+      ddOk ? '<button class="ghost" data-f data-act="open">DroidDeck 열기</button>' : ''),
+    guideStep(false, false, '배틀넷 로그인 · 게임 설치',
+      '<p>DroidDeck 아래 메뉴 <b>스토어</b> › 위쪽 줄 맨 끝 <b>Battle.net</b> › <b>로그인</b>. 처음 한 번은 "데스크톱 준비 중"으로 몇 분 걸려요. 로그인 창에서 글자는 왼쪽 아래 <b>⌨</b> 단추로 입력하세요. 로그인 후 게임을 골라 설치하고, 진행은 스토어 위 <b>⤓</b>에서 봐요.</p>' +
+      '<span class="path">DroidDeck › 스토어 › Battle.net › 로그인</span>', ''),
+    guideStep(!!s.added, false, '게임 실행',
+      '<p>DroidDeck 아래 메뉴 <b>라이브러리</b>에 설치한 게임이 모여요. 덜누름 게임 라이브러리에 DroidDeck을 넣어 두면, 홈에서 <b>▶ 플레이</b>로 기기 맞춤 최적화와 함께 바로 열 수 있어요. 게임 중엔 홈 › 빠른 도구에서 녹화 · 방해 금지를 쓰세요.</p>',
+      (ddOk && !s.added ? '<button class="primary" data-f data-act="add">라이브러리에 DroidDeck 넣기</button>' : '') +
+      (ddOk ? '<button class="ghost" data-f data-act="play">▶ DroidDeck 실행</button>' : '')),
+  ];
+  $('#pgSteps').innerHTML = steps.join('');
+  $('#pgSteps').querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => guideAct(b.dataset.act)));
+  return s;
+}
+function guideAct(act) {
+  if (act === 'get') A.openUrl('https://github.com/Droid-Deck/DroidDeck/releases/latest');
+  if (act === 'open') { localStorage.setItem('pcGuideSeen', '1'); A.launch(DD, false); }
+  if (act === 'play') { localStorage.setItem('pcGuideSeen', '1'); play(DD, true); }
+  if (act === 'dev') A.openDevSettings();
+  if (act === 'fix') {
+    const r = A.fixChildProcess();
+    toast(r === 'ok' ? '자식 프로세스 제한 중지를 켰어요' : r === 'noshizuku' ? '고급 기능(Shizuku)을 먼저 연결해 주세요' : '켜지 못했어요. 개발자 옵션에서 직접 켜 주세요');
+    renderGuide(); focusFirst($('#pcGuide'));
+  }
+  if (act === 'add') { A.setGame(DD, true); toast('라이브러리에 DroidDeck을 넣었어요'); renderGuide(); focusFirst($('#pcGuide')); }
+}
+function openGuide() {
+  renderGuide();
+  $('#pcGuide').hidden = false;
+  const now = $('#pgSteps li.now [data-f]');
+  if (now) focusEl(now); else focusFirst($('#pcGuide'));
+}
+function closeGuide() {
+  localStorage.setItem('pcGuideSeen', '1');
+  $('#pcGuide').hidden = true;
+  if (tab === 'apps') renderApps();
+  focusFirst();
+}
+$('#pcEntry').addEventListener('click', openGuide);
+$('#pgClose').addEventListener('click', closeGuide);
+$('#pgWeb').addEventListener('click', () => A.openUrl(GUIDE_WEB));
 
 // ---------- 기기 맞춤 최적화 ----------
 const MODE_KO = { performance: '성능 우선', standard: '표준', battery: '배터리 절약' };
@@ -355,6 +450,7 @@ setInterval(renderStatus, 30000);
 
 window.onResumeApp = () => {
   renderStatus();
+  if (!$('#pcGuide').hidden) { renderGuide(); return; }
   if (tab === 'tools') { renderTools(); renderOptimize(); }
   else if ($('#picker').hidden && $('#gameSheet').hidden) showTab(tab);
 };
@@ -366,6 +462,7 @@ setInterval(() => { if (tab === 'tools') renderTools(); else if (tab === 'home')
 
 // ---------- 패드·방향키로 움직이기 ----------
 function layer() {
+  if (!$('#pcGuide').hidden) return $('#pcGuide');
   if (!$('#gameSheet').hidden) return $('#gameSheet');
   if (!$('#picker').hidden) return $('#picker');
   return document;
@@ -467,6 +564,13 @@ if (SELFTEST) {
     await wait(1200);
     log('SHOT-APPS');
     await wait(2500);
+    openGuide();
+    const pg = pcState();
+    log(`PCGUIDE steps ${$('#pgSteps').children.length} dd ${pg.droiddeck} dev ${pg.devOn} child ${pg.child} added ${pg.added}`);
+    await wait(1200);
+    log('SHOT-GUIDE');
+    await wait(2500);
+    closeGuide();
     showTab('tools');
     const s = renderTools();
     log(`TOOLS hz ${s.hz} modes ${(s.modes || []).join(',')}`);

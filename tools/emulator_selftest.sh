@@ -19,7 +19,7 @@ adb shell am start -n "$PKG/.MainActivity" --ez game.selftest true
 for i in $(seq 1 60); do
   sleep 2
   L=$(adb logcat -d -s GAME_SELFTEST:I)
-  for s in HOME GAMES PICKER APPS TOOLS FPS REC; do
+  for s in HOME GAMES PICKER APPS GUIDE TOOLS FPS REC; do
     if echo "$L" | grep -q "SHOT-$s" && [ ! -f "game-screen-$(echo $s | tr A-Z a-z).png" ]; then
       adb exec-out screencap -p > "game-screen-$(echo $s | tr A-Z a-z).png"
     fi
@@ -50,6 +50,7 @@ cat selftest-result.txt | cut -c1-300
 fail=0
 grep -q "DONE" selftest-result.txt || { echo "FAIL: 점검이 끝까지 가지 못함"; fail=1; }
 grep -q "APPS 5" selftest-result.txt || { echo "FAIL: 게임 앱 목록"; fail=1; }
+grep -q "PCGUIDE steps 7" selftest-result.txt || { echo "FAIL: PC 게임 시작 안내"; fail=1; }
 grep -q "HOME shelves" selftest-result.txt || { echo "FAIL: 홈 화면"; fail=1; }
 grep -q "TOOLS hz" selftest-result.txt || { echo "FAIL: 도구 화면"; fail=1; }
 grep -q "OPTIMIZE .* level [0-2]" selftest-result.txt || { echo "FAIL: 기기 맞춤 최적화"; fail=1; }
