@@ -504,6 +504,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-disc.light b { color: #b86e00; }
 .ap-disc.al-disc { margin: 0 0 22px; }
 .ap-disc b { display: block; margin-bottom: 4px; color: #f5a524; font-size: 14px; letter-spacing: .02em; }
+.ap-howto { margin: 22px 0 0; padding: 20px 20px 18px; border: 1px solid #2f3a4a; border-radius: 16px; background: linear-gradient(180deg, rgba(26,156,255,.08), rgba(26,156,255,.02)); max-width: 640px; }
+.ap .amp-copy .ap-howto h2, .ap-howto h2 { margin: 0 0 6px; font: 700 17px/1.4 var(--font-body); color: #fff; letter-spacing: -.01em; text-transform: none; max-width: none; }
+.ap-howto > p { margin: 0 0 14px; font-size: 14px; line-height: 1.6; color: #b4b4bb; word-break: keep-all; }
+.ap-howto ol { list-style: none; margin: 0; padding: 0; counter-reset: hw; display: grid; gap: 10px; }
+.ap-howto li { counter-increment: hw; position: relative; padding-left: 38px; min-height: 26px; }
+.ap-howto li::before { content: counter(hw); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: #1a9cff; color: #06121f; font: 800 13px/26px var(--font-body); text-align: center; }
+.ap-howto li b { display: block; font-size: 14.5px; color: #f4f4f5; line-height: 1.5; }
+.ap-howto li span { display: block; font-size: 13px; line-height: 1.55; color: #a1a1aa; word-break: keep-all; }
+.ap-howto-more { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 700; color: #7dd3fc; text-decoration: none; }
+.ap-howto-more:hover { text-decoration: underline; }
 .ap-nav { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 34px; padding-top: 22px; border-top: 1px solid #2a2a2e; }
 .ap-nav a { font: 600 14px/1.3 var(--font-body); color: #d4d4d8; text-decoration: none; }
 .ap-nav a:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
@@ -1411,9 +1421,19 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/game-latest/DeolnureumGame.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 게임">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="#hardware"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 앱이라 업데이트하면서 기능이 바뀔 수 있습니다. 게임 · 기기에 따라 일부 기능이 동작하지 않을 수 있습니다. FPS 보기 · 최적화 설정 적용 같은 고급 기능은 도우미 앱(Shizuku)을 함께 설치해야 쓸 수 있습니다. DroidDeck · Moonlight 등 다른 게임 앱은 각 원작자의 앱이며, 덜누름은 그 앱들과 제휴 관계가 아닙니다.</p>
+        <div class="ap-howto">
+          <h2>스팀 · 배틀넷 PC 게임 하는 법</h2>
+          <p>PC 게임은 <b>게임 앱</b>의 DroidDeck으로 폰에 직접 설치해 돌립니다. PC나 스트리밍이 필요 없습니다.</p>
+          <ol>
+            <li><b>DroidDeck 설치 · 한 번 열기</b><span>덜누름 게임 › 게임 앱 › DroidDeck 받으러 가기 → 설치 → 열기, 파일 접근 허용</span></li>
+            <li><b>자식 프로세스 제한 중지 켜기</b><span>설정 › 휴대전화 정보 › 소프트웨어 정보 › 빌드번호 7번 → 설정 › 개발자 옵션 › 자식 프로세스 제한 중지 켜기</span></li>
+            <li><b>스팀 · 배틀넷 로그인하고 게임 설치</b><span>DroidDeck › ▶ Steam 실행 → 스팀 로그인 · 설치 / 스토어 › Battle.net › 로그인</span></li>
+            <li><b>게임 실행</b><span>DroidDeck › 라이브러리에서 실행, 또는 덜누름 게임 라이브러리에 DroidDeck을 추가해 최적화와 함께 ▶ 플레이</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-game-pc">사진으로 보는 자세한 사용법 →</a>
+        </div>
         <dl class="speed-req">
           <div><dt>최신 버전</dt><dd>0.2 · 2026.11.15 업데이트</dd></div>
-          <div><dt>사용법</dt><dd><a href="#post-game-pc">스팀 · 배틀넷 PC 게임 설치하고 실행하기</a></dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
       </div>
