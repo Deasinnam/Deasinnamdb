@@ -292,6 +292,17 @@ section.block { padding: 64px 0; border-top: 1px solid var(--line); }
 .step h3 { font-size: 17px; margin: 10px 0 6px; }
 .step p { margin: 0; font-size: 14px; color: var(--ink-2); }
 .fineprint { margin: 20px 0 0; font-size: 13px; color: var(--ink-3); max-width: 60em; }
+.promise { padding: 8px 0 56px; }
+.promise-in { border: 1.5px solid var(--ink); border-radius: 24px; padding: 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 28px 40px; align-items: start; box-shadow: 0 6px 0 var(--ink); background: var(--paper, #fff); }
+.promise-head h2 { margin: 10px 0 10px; font-size: 30px; letter-spacing: -0.03em; line-height: 1.2; }
+.promise-head p { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 1.7; word-break: keep-all; }
+.promise-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.promise-list li { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.promise-list b { display: block; font-size: 16px; margin-bottom: 4px; }
+.promise-list span { display: block; color: var(--ink-2); font-size: 14px; line-height: 1.65; word-break: keep-all; }
+.promise-list { grid-row: span 2; }
+.promise-act { grid-column: 1; margin-top: 0; align-self: end; }
+@media (max-width: 760px) { .promise-in { grid-template-columns: 1fr; padding: 22px; gap: 18px; } .promise-list { grid-row: auto; } .promise-head h2 { font-size: 24px; } }
 
 footer { border-top: 1px solid var(--line); padding: 32px 0 48px; font-size: 13px; color: var(--ink-3); }
 footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -830,6 +841,27 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       <p class="appcenter-hint">앱을 내려받으려면 <b>앱센터</b>를 누르세요.</p>
     </div>
   </div>
+
+  <section class="promise" aria-labelledby="promise-t">
+    <div class="wrap">
+      <div class="promise-in">
+        <div class="promise-head">
+          <div class="hero-eyebrow">OUR PROMISE</div>
+          <h2 id="promise-t">친절한 설명, 쉬운 사용.</h2>
+          <p>덜누름이 앱을 만들 때 가장 먼저 생각하는 두 가지입니다. 아직 부족한 점이 있을 수 있지만, 보내 주시는 의견으로 하나씩 채워 가겠습니다.</p>
+        </div>
+        <ul class="promise-list">
+          <li><b>무료로, 광고 없이</b><span>덜누름의 앱은 누구나 무료로 내려받아 쓸 수 있고, 광고를 넣지 않습니다. 쓰는 동안 화면을 가리는 일이 없습니다.</span></li>
+          <li><b>불편한 점을 알려 주세요</b><span>쓰다가 불편하거나 이상한 점이 있으면 의견을 보내 주세요. 최대한 반영하고, 어떻게 고쳤는지 의견 반영 게시판에 올립니다.</span></li>
+          <li><b>필요한 기능을 제안해 주세요</b><span>있었으면 하는 기능, 꼭 필요한 기능도 언제든 좋습니다. 작은 아이디어도 환영합니다.</span></li>
+        </ul>
+        <div class="actions promise-act">
+          <a class="key dark fb-on" href="#feedback">의견 보내기 <span aria-hidden="true">→</span></a>
+          <a class="key" href="#updates">의견 반영 보기</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <div class="theme-dark">
   <section class="takeoff" id="takeoff" aria-label="대신남 스피드미터: 이제 차 안에서 이륙하세요">
@@ -1417,13 +1449,14 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <li><b>04</b><span>게임 녹화: 버튼 하나로 녹화, 동영상 › 덜누름 게임 폴더에 MP4</span></li>
           <li><b>05</b><span>기기 맞춤 최적화: 칩 · 메모리 · 발열을 보고 가볍게 / 균형 / 고성능 추천, 게임마다 따로</span></li>
           <li><b>06</b><span>스팀 · 배틀넷 PC 게임, PC 스트리밍 같은 게임 앱을 한곳에서 — 원작 앱 그대로 공식 배포처로 안내</span></li>
+          <li><b>07</b><span>PC 게임 시작 안내: 설치부터 실행까지 단계마다 완료 표시와 바로 가기 단추</span></li>
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/game-latest/DeolnureumGame.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 게임">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="#hardware"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 앱이라 업데이트하면서 기능이 바뀔 수 있습니다. 게임 · 기기에 따라 일부 기능이 동작하지 않을 수 있습니다. FPS 보기 · 최적화 설정 적용 같은 고급 기능은 도우미 앱(Shizuku)을 함께 설치해야 쓸 수 있습니다. DroidDeck · Moonlight 등 다른 게임 앱은 각 원작자의 앱이며, 덜누름은 그 앱들과 제휴 관계가 아닙니다.</p>
         <div class="ap-howto">
           <h2>스팀 · 배틀넷 PC 게임 하는 법</h2>
-          <p>PC 게임은 <b>게임 앱</b>의 DroidDeck으로 폰에 직접 설치해 돌립니다. PC나 스트리밍이 필요 없습니다.</p>
+          <p>PC 게임은 <b>게임 앱</b>의 DroidDeck으로 폰에 직접 설치해 돌립니다. PC나 스트리밍이 필요 없습니다. 0.3부터는 앱 안 <b>게임 앱 › 스팀 · 배틀넷 PC 게임 시작하기</b>에서 단계마다 바로 가기 단추와 함께 안내합니다.</p>
           <ol>
             <li><b>DroidDeck 설치 · 한 번 열기</b><span>덜누름 게임 › 게임 앱 › DroidDeck 받으러 가기 → 설치 → 열기, 파일 접근 허용</span></li>
             <li><b>자식 프로세스 제한 중지 켜기</b><span>설정 › 휴대전화 정보 › 소프트웨어 정보 › 빌드번호 7번 → 설정 › 개발자 옵션 › 자식 프로세스 제한 중지 켜기</span></li>
@@ -1433,7 +1466,8 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <a class="ap-howto-more" href="#post-game-pc">사진으로 보는 자세한 사용법 →</a>
         </div>
         <dl class="speed-req">
-          <div><dt>최신 버전</dt><dd>0.2 · 2026.11.15 업데이트</dd></div>
+          <div><dt>최신 버전</dt><dd>0.3 · 2026.11.16 업데이트 — <a href="#post-game-03">바뀐 점 보기</a> · 이전 버전 0.2(2026.11.15)도 내려받기에서 고를 수 있습니다</dd></div>
+          <div><dt>업데이트 기록</dt><dd>0.3 (2026.11.16) 앱 안에 PC 게임 시작 안내 · 0.2 (2026.11.15) FPS 보기 · 고급 기능으로 맞춤 설정 적용</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
       </div>
@@ -1712,6 +1746,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     <div class="wrap">
       <div id="ntList">
       <ul class="nt-list">
+        <li><a class="nt-row" href="#post-game-03">
+          <span class="nt-no">006</span>
+          <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 게임</span><span class="nt-tag">새 기능</span><span class="nt-tag done">업데이트 0.3</span></span><h2>앱 안에서 바로 따라 하는 PC 게임 시작 안내</h2></span>
+          <span class="nt-date">2026.11.16</span>
+        </a></li>
         <li><a class="nt-row" href="#post-game-pc">
           <span class="nt-no">005</span>
           <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 게임</span><span class="nt-tag">사용법</span></span><h2>덜누름 게임에서 스팀 · 배틀넷 PC 게임 설치하고 실행하기</h2></span>
@@ -1739,6 +1778,50 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </a></li>
       </ul>
       </div>
+      <article class="nt-article" id="post-game-03" data-post hidden>
+        <a class="nt-back" href="#updates">← 목록으로</a>
+        <header class="nt-head">
+          <div class="nt-tags"><span class="nt-tag">덜누름 게임</span><span class="nt-tag">새 기능</span><span class="nt-tag done">업데이트 0.3</span></div>
+          <h2>앱 안에서 바로 따라 하는 PC 게임 시작 안내</h2>
+          <span class="nt-date">006 · 2026.11.16</span>
+        </header>
+        <div class="nt-body">
+          <h3>무엇이 바뀌었나요</h3>
+          <p>스팀 · 배틀넷 PC 게임을 처음 시작할 때 무엇부터 해야 할지 헷갈린다는 이야기가 많았습니다. 그래서 덜누름 게임 0.3에 <b>PC 게임 시작 안내</b>를 넣었습니다. 사이트 글을 따로 찾아보지 않아도, 앱 안에서 차례대로 따라 하면 됩니다.</p>
+
+          <h3>어디서 여나요</h3>
+          <ul>
+            <li>덜누름 게임 → <b>게임 앱</b> 탭 맨 위 <b>스팀 · 배틀넷 PC 게임 시작하기</b></li>
+            <li>게임 앱 목록의 DroidDeck 옆 <b>사용법</b></li>
+            <li>DroidDeck을 처음 열 때 한 번 자동으로 열립니다</li>
+          </ul>
+
+          <h3>안내에 들어 있는 7단계</h3>
+          <ol>
+            <li><b>DroidDeck 설치</b> — 설치돼 있지 않으면 <b>받으러 가기</b>로 공식 배포 페이지를 엽니다.</li>
+            <li><b>DroidDeck 한 번 열기</b> — 파일 접근 권한을 허용합니다.</li>
+            <li><b>개발자 옵션 켜기</b> — <b>휴대전화 정보 열기</b> 단추로 빌드번호가 있는 화면까지 바로 갑니다.</li>
+            <li><b>자식 프로세스 제한 중지 켜기</b> — <b>개발자 옵션 열기</b> 단추로 바로 갑니다. 아래로 내려 스위치를 켜면 스팀이 중간에 꺼지지 않습니다.</li>
+            <li><b>스팀 로그인 · 게임 설치</b> — DroidDeck › ▶ Steam 실행</li>
+            <li><b>배틀넷 로그인 · 게임 설치</b> — DroidDeck › 스토어 › Battle.net › 로그인</li>
+            <li><b>게임 실행</b> — <b>라이브러리에 DroidDeck 넣기</b> 단추 한 번이면 홈에서 최적화와 함께 ▶ 플레이할 수 있습니다.</li>
+          </ol>
+          <ul>
+            <li>끝난 단계에는 <b>완료</b>가 붙고, 지금 할 차례인 단계가 파란 테두리로 표시됩니다. 설정을 마치고 돌아오면 바로 다시 확인합니다.</li>
+            <li>고급 기능(Shizuku)을 연결해 두었다면 4단계에서 <b>고급 기능으로 바로 켜기</b>로 한 번에 켤 수 있습니다. 개발자 옵션의 스위치를 켜는 것과 같은 설정입니다.</li>
+            <li>기기에 따라 앱이 자식 프로세스 제한 상태를 읽지 못하면 <b>직접 확인</b>이 표시됩니다. 이때는 개발자 옵션에서 스위치가 켜져 있는지 직접 봐 주세요.</li>
+            <li>안내 맨 아래 <b>사진으로 보는 자세한 사용법</b>을 누르면 <a href="#post-game-pc">005 사용법 글</a>이 열립니다.</li>
+          </ul>
+
+          <h3>업데이트 방법</h3>
+          <ol>
+            <li>앱센터의 <a href="#app-game">덜누름 게임</a> 페이지에서 <b>내려받기</b>를 누르면 버전 목록이 나옵니다. 맨 위 <b>0.3 (최신)</b>을 받아 주세요. 이전 버전 0.2가 필요하면 목록에서 고를 수 있습니다.</li>
+            <li>받은 파일을 열어 지금 앱 위에 덮어 설치합니다. 라이브러리와 게임별 설정은 그대로 남습니다.</li>
+          </ol>
+          <p>필요한 기능이나 불편한 점은 언제든 의견 보내기로 알려 주세요.</p>
+        </div>
+        <a class="nt-back" href="#updates">← 목록으로</a>
+      </article>
       <article class="nt-article" id="post-game-pc" data-post hidden>
         <a class="nt-back" href="#updates">← 목록으로</a>
         <header class="nt-head">
@@ -1748,6 +1831,8 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </header>
         <div class="nt-body">
           <p class="nt-lead">갤럭시 Z 폴드7 · Z 폴드8 울트라를 펼친 화면 기준으로, 실제 화면을 보면서 따라 할 수 있게 정리했습니다. 스팀 · 배틀넷 같은 PC 게임은 덜누름 게임의 <b>게임 앱</b>에 있는 <b>DroidDeck</b>으로 폰에 직접 설치하고 실행합니다. PC나 스트리밍이 필요 없습니다.</p>
+
+          <p class="nt-note">덜누름 게임 0.3부터는 앱 안 <b>게임 앱 › 스팀 · 배틀넷 PC 게임 시작하기</b>에서도 같은 순서를 단계별 바로 가기 단추와 함께 안내합니다.</p>
 
           <div class="nt-steps">
             <span><b>1</b>덜누름 게임 설치</span><span><b>2</b>DroidDeck 설치</span><span><b>3</b>자식 프로세스 제한 중지</span><span><b>4</b>스팀 로그인 · 게임 설치</span><span><b>5</b>배틀넷 로그인 · 게임 설치</span><span><b>6</b>게임 실행</span>
@@ -2825,7 +2910,12 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
                        { v: "2.3", date: "2026.11.15", tag: "browser-v2.3", file: "DeolnureumBrowser-2.3.apk", note: "◀ ▶를 여러 번 눌러도 한 페이지씩만 이동 (홈으로 넘어가던 문제 해결)" },
                        { v: "2.2", date: "2026.11.14", tag: "browser-v2.2", file: "DeolnureumBrowser-2.2.apk", note: "유튜브 스튜디오 · 구글 로그인은 크롬으로 열기" }
                      ] },
-    "app-game":    { open: true,  tag: "game-latest",    file: "DeolnureumGame.apk",   base: 0 },
+    "app-game":    { open: true,  tag: "game-latest",    file: "DeolnureumGame.apk",   base: 0,
+                     /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 game-v<버전>은 빌드가 자동으로 만듦) */
+                     versions: [
+                       { v: "0.3", date: "2026.11.16", tag: "game-v0.3", file: "DeolnureumGame-0.3.apk", note: "PC 게임 시작 안내: DroidDeck 설치 · 자식 프로세스 제한 중지 · 스팀 · 배틀넷까지 단계별로" },
+                       { v: "0.2", date: "2026.11.15", tag: "game-v0.2", file: "DeolnureumGame-0.2.apk", note: "FPS 보기 · 고급 기능(Shizuku) 연결로 맞춤 설정 실제 적용" }
+                     ] },
     "app-sseum":   { open: true,  url: "/download/Deolnureum-Dulsseum.pkg", size: "390KB", kind: "PKG", key: "dl-sseum",
                      note: "애플 서명 전이라 처음 열 때 \u201c확인되지 않은 개발자\u201d 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열고, 그래도 막히면 <b>시스템 설정 → 개인정보 보호 및 보안</b>에서 <b>그래도 열기</b>를 누르세요." }
   };
