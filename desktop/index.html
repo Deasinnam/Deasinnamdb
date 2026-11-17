@@ -292,6 +292,42 @@ section.block { padding: 64px 0; border-top: 1px solid var(--line); }
 .step h3 { font-size: 17px; margin: 10px 0 6px; }
 .step p { margin: 0; font-size: 14px; color: var(--ink-2); }
 .fineprint { margin: 20px 0 0; font-size: 13px; color: var(--ink-3); max-width: 60em; }
+/* ---------- 업데이트 내역 ---------- */
+.rel-h { margin: 0 0 16px; font-size: 20px; letter-spacing: -0.02em; }
+.rel-latest { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.rel-card { border: 1.5px solid var(--ink); border-radius: 18px; padding: 20px; box-shadow: 0 5px 0 var(--ink); display: flex; flex-direction: column; gap: 4px; }
+.rel-card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 16px; }
+.rel-new { font: 600 11px/1 var(--font-mono); letter-spacing: .06em; background: var(--ink); color: var(--paper); border-radius: 99px; padding: 5px 8px; }
+.rel-ver { font: 600 40px/1.1 var(--font-mono); letter-spacing: -0.02em; margin-top: 4px; }
+.rel-date { font-size: 14px; color: var(--ink-2); }
+.rel-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rel-act .key { padding: 10px 14px; font-size: 14px; }
+.rel-tip { margin: 18px 0 0; font-size: 14px; color: var(--ink-2); }
+.rel-loghead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px 24px; border-top: 1.5px solid var(--ink); margin-top: 40px; padding-top: 32px; }
+.rel-loghead .rel-h { margin: 0; }
+.rel-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.rel-chip { min-height: 40px; padding: 0 14px; border-radius: 99px; border: 1.5px solid #cfcfcf; background: var(--paper); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; }
+.rel-chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 600; }
+.rel-chip-fix { border-style: dashed; border-color: #9a9a9a; }
+.rel-day { margin: 28px 0 4px; font: 600 13px/1 var(--font-mono); letter-spacing: .08em; color: var(--ink-2); }
+.rel-item { display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; gap: 8px 24px; padding: 20px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.rel-app b { display: block; font-size: 15px; }
+.rel-vchg { display: inline-block; margin-top: 6px; font: 600 13px/1 var(--font-mono); border: 1.5px solid var(--ink); border-radius: 8px; padding: 5px 8px; }
+.rel-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.rel-tag { font-size: 12px; font-weight: 600; border-radius: 6px; padding: 3px 8px; }
+.rel-k-new { background: #e8f0fe; color: #1a3d8f; }
+.rel-k-fix { background: #fdecea; color: #8c1d18; }
+.rel-k-better { background: #fff4db; color: #7a4b00; }
+.rel-k-sec { background: #f3e8ff; color: #5b21b6; }
+.rel-t { margin: 0; font-size: 16px; font-weight: 600; word-break: keep-all; }
+.rel-d { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); word-break: keep-all; }
+.rel-ok { margin: 10px 0 0; font-size: 13px; color: #1f5130; background: #eaf6ec; border-radius: 8px; padding: 8px 10px; word-break: keep-all; }
+.rel-post { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.rel-none { color: var(--ink-3); font-weight: 400; }
+.rel-empty { color: var(--ink-2); padding: 20px 0; }
+.rel-foot { margin-top: 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; background: var(--wash); border-radius: 16px; padding: 18px 20px; }
+.rel-foot p { margin: 0; flex: 1 1 320px; font-size: 15px; }
+@media (max-width: 760px) { .rel-item { grid-template-columns: 1fr; gap: 6px; } .rel-ver { font-size: 34px; } }
 .promise { padding: 8px 0 56px; }
 .promise-in { border: 1.5px solid var(--ink); border-radius: 24px; padding: 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 28px 40px; align-items: start; box-shadow: 0 6px 0 var(--ink); background: var(--paper, #fff); }
 .promise-head h2 { margin: 10px 0 10px; font-size: 30px; letter-spacing: -0.03em; line-height: 1.2; }
@@ -711,6 +747,10 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   .wrap { padding: 0 16px; }
   nav { gap: 11px; font-size: 13px; }
   nav .hide-sm { display: none; }
+}
+@media (max-width: 400px) {
+  header.top .wrap { gap: 10px; }
+  nav { gap: 8px; font-size: 12.5px; letter-spacing: -0.02em; }
   .keywell { width: 160px; height: 176px; }
   .bigkey { width: 160px; height: 160px; border-radius: 32px; }
   .bigkey span { font-size: 46px; }
@@ -807,7 +847,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
 <link rel="alternate" type="application/rss+xml" title="덜누름 Software" href="https://deolnureum.com/rss.xml">
 <meta name="naver-site-verification" content="9f2c851a8d4460e1556866ff6c53cbc59e349186">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://deolnureum.com/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"], "url": "https://deolnureum.com/", "logo": "https://deolnureum.com/brand/deolnureum-logo-black.png", "slogan": "덜 누르고, 더 편하게"}, {"@type": "SoftwareApplication", "name": "덜누름 데스크탑앱", "url": "https://deolnureum.com/desktop/", "description": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "operatingSystem": "Android", "applicationCategory": "UtilitiesApplication", "image": "https://deolnureum.com/media/app-desk-poster.jpg", "inLanguage": "ko", "publisher": {"@id": "https://deolnureum.com/#org"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://deolnureum.com/"}, {"@type": "ListItem", "position": 2, "name": "앱센터", "item": "https://deolnureum.com/apps/"}, {"@type": "ListItem", "position": 3, "name": "덜누름 데스크탑앱", "item": "https://deolnureum.com/desktop/"}]}]}</script>
-<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 게임, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 게임, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 허브 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#updates": {"t": "의견 반영 — 업데이트와 해결 방법 | 덜누름", "d": "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 덜누름 브라우저 2.4에 탭 · 보던 탭 이어 보기 · 찾기 · 방문 기록을 넣었고, 덜누름 데스크탑앱 1.5.2에서 루틴 위젯 아이콘 문제를 개선했고, 덜누름 브라우저 2.3에서 ◀를 여러 번 누르면 홈으로 가던 문제를 고쳤고, 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다.", "u": "https://deolnureum.com/updates/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 일반 PC처럼 | 덜누름", "d": "오피스 작업과 그래픽 작업(사진·동영상 편집)을 한 앱에서. 갤럭시 Z 폴드의 넓은 화면에서 스마트폰 한 대로 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다. 탭 · 보던 탭 이어 보기 · 찾기 · 방문 기록 지원.", "u": "https://deolnureum.com/browser/"}, "#app-game": {"t": "덜누름 게임 — 폴드를 휴대용 게임기처럼 | 덜누름", "d": "게임과 게임 앱(스팀 · 배틀넷 PC 게임, PC 스트리밍 등)을 휴대용 게임기 같은 화면 하나에. 게임패드 조작, 키 매핑, 게임 녹화, 기기 맞춤 최적화. 지금 내려받을 수 있습니다.", "u": "https://deolnureum.com/game/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
+<script>window.__PAGES={"#top": {"t": "덜누름 Software — 덜 누르고, 더 편하게", "d": "덜누름은 누를 일을 줄이는 앱을 개발합니다. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 게임, 덜씀 앱을 만들고 있습니다.", "u": "https://deolnureum.com/"}, "#app-center": {"t": "앱센터 — 덜누름이 개발 중인 앱 | 덜누름", "d": "덜누름이 개발 중인 앱을 한곳에서 둘러보세요. 대신남 스피드미터, Daesinnam Amp, 덜누름 워크, 덜누름 데스크탑앱, 덜누름 브라우저, 덜누름 게임, 덜씀의 실제 화면을 볼 수 있습니다.", "u": "https://deolnureum.com/apps/"}, "#hardware": {"t": "덜누름 최적화 디바이스 — 갤럭시 Z 폴드7 · Z 폴드8 울트라 | 덜누름", "d": "덜누름 앱을 맞춰 만든 기기 갤럭시 Z 폴드7 · Z 폴드8 울트라와 스피드미터용 몬스타덱 · 다이얼 패드 · 차량 거치대 · 모니터 · 노트북 독 · 키보드 · 케이블 · 허브 · 후방 카메라를 한눈에. 판매처로 바로 연결됩니다.", "u": "https://deolnureum.com/hardware/"}, "#about": {"t": "덜누름 소개 — 누를 일을 줄이는 앱을 개발합니다 | 덜누름", "d": "덜누름의 이름과 세 가지 원칙, 로고 내려받기. 덜 누르고, 더 편하게.", "u": "https://deolnureum.com/about/"}, "#feedback": {"t": "의견 보내기 · 공개 알림 신청 | 덜누름", "d": "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다.", "u": "https://deolnureum.com/feedback/"}, "#updates": {"t": "의견 반영 — 업데이트와 해결 방법 | 덜누름", "d": "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 덜누름 브라우저 2.4에 탭 · 보던 탭 이어 보기 · 찾기 · 방문 기록을 넣었고, 덜누름 데스크탑앱 1.5.2에서 루틴 위젯 아이콘 문제를 개선했고, 덜누름 브라우저 2.3에서 ◀를 여러 번 누르면 홈으로 가던 문제를 고쳤고, 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다.", "u": "https://deolnureum.com/updates/"}, "#releases": {"t": "업데이트 내역 — 앱별 최신 버전과 바뀐 내용 | 덜누름", "d": "덜누름 앱마다 지금 최신 버전이 무엇인지, 무엇이 고쳐졌는지 한곳에서 확인하세요. 새 기능 · 버그 수정 · 개선 · 보안 업데이트를 날짜순으로 모았습니다.", "u": "https://deolnureum.com/releases/"}, "#app-speed": {"t": "대신남 스피드미터 — 차 안에서 이륙하는 GPS 조종석 계기판 | 덜누름", "d": "차가 달리면 조종석 계기판이 움직입니다. GPS 속도·고도, 주야간 비행 화면, 디지털 라디오와 이퀄라이저, 대시캠, T맵 화면 나누기, 물리 버튼까지. 갤럭시 Z 폴드에 최적화했습니다.", "u": "https://deolnureum.com/speedometer/"}, "#app-amp": {"t": "Daesinnam Amp(대신남 앰프) — 레트로 스킨 MP3 플레이어 | 덜누름", "d": "펼쳐도, 접어도 듣기 좋은 음악 플레이어. LED 스펙트럼, 10밴드 EQ, 레트로 스킨, 차에 타면 이어서 재생. 갤럭시 Z 폴드의 바깥 화면에서도 그대로 씁니다.", "u": "https://deolnureum.com/amp/"}, "#app-work": {"t": "덜누름 워크 — 안드로이드를 일반 PC처럼 | 덜누름", "d": "오피스 작업과 그래픽 작업(사진·동영상 편집)을 한 앱에서. 갤럭시 Z 폴드의 넓은 화면에서 스마트폰 한 대로 끝냅니다.", "u": "https://deolnureum.com/work/"}, "#app-desktop": {"t": "덜누름 데스크탑앱 — 펼친 폴드를 PC 바탕화면처럼 | 덜누름", "d": "시작 메뉴, 작업 표시줄, 바탕화면 아이콘과 위젯, 창으로 뜨는 앱. 갤럭시 Z 폴드를 PC처럼 쓰는 홈 화면 앱입니다.", "u": "https://deolnureum.com/desktop/"}, "#app-browser": {"t": "덜누름 브라우저 — 창으로 여는 PC형 브라우저 | 덜누름", "d": "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다. 탭 · 보던 탭 이어 보기 · 찾기 · 방문 기록 지원.", "u": "https://deolnureum.com/browser/"}, "#app-game": {"t": "덜누름 게임 — 폴드를 휴대용 게임기처럼 | 덜누름", "d": "게임과 게임 앱(스팀 · 배틀넷 PC 게임, PC 스트리밍 등)을 휴대용 게임기 같은 화면 하나에. 게임패드 조작, 키 매핑, 게임 녹화, 기기 맞춤 최적화. 지금 내려받을 수 있습니다.", "u": "https://deolnureum.com/game/"}, "#app-sseum": {"t": "덜씀 — 다 써 보고 만든 맥 최적화 앱 | 덜누름", "d": "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.", "u": "https://deolnureum.com/dulsseum/"}};</script>
 </head>
 <body data-view="app">
 
@@ -819,8 +859,9 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       <span class="sw">SOFTWARE</span>
     </a>
     <nav aria-label="주요 메뉴">
-      <a href="/" data-view="home">홈</a>
+      <a href="/" class="hide-sm" data-view="home">홈</a>
       <a href="/apps/" data-view="apps">앱센터</a>
+      <a href="/releases/" data-view="releases">업데이트</a>
       <a href="/hardware/" data-view="hardware">하드웨어</a>
       <a href="/about/" data-view="about">소개</a>
       <a href="#install" class="hide-sm fb-off" data-view="home">설치 안내</a>
@@ -1746,12 +1787,39 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     </div>
   </section>
   </div>
+  <div class="view" id="view-releases" hidden>
+  <section class="center-head" id="releases">
+    <div class="wrap">
+      <div class="eyebrow-ink">RELEASES</div>
+      <h1>업데이트 내역</h1>
+      <p>앱마다 지금 최신 버전이 무엇인지, 무엇이 고쳐졌는지 한곳에서 확인하세요. 새 버전이 나오면 가장 먼저 여기에 올립니다.</p>
+    </div>
+  </section>
+  <section class="block rel" style="border-top:0">
+    <div class="wrap">
+      <h2 class="rel-h">앱별 최신 버전</h2>
+      <div class="rel-latest" id="relLatest"></div>
+      <p class="rel-tip">지금 쓰는 버전은 각 앱의 <b>설정 › 앱 정보</b>에서 볼 수 있습니다. 위 숫자보다 낮으면 앱 페이지에서 받아 덮어 설치하세요. 기록과 설정은 그대로 남습니다.</p>
+      <div class="rel-loghead">
+        <h2 class="rel-h">바뀐 내용 · 날짜순</h2>
+        <div class="rel-filters" id="relFilters" role="group" aria-label="앱으로 거르기"></div>
+      </div>
+      <div id="relLog"></div>
+      <div class="rel-foot">
+        <p>고쳐 달라는 의견, 있었으면 하는 기능은 언제든 환영합니다. 반영하면 여기와 의견 반영 게시판에 올립니다.</p>
+        <a class="key fb-on" href="/feedback/">의견 보내기</a>
+        <a class="key" href="/updates/">의견 반영 보기</a>
+      </div>
+    </div>
+  </section>
+  </div>
+
   <div class="view" id="view-updates" hidden>
   <section class="center-head" id="updates">
     <div class="wrap">
       <div class="eyebrow-ink">UPDATES</div>
       <h1>의견 반영</h1>
-      <p>보내 주신 의견이 어떻게 반영됐는지, 업데이트와 해결 방법을 이곳에 모아 둡니다.</p>
+      <p>보내 주신 의견이 어떻게 반영됐는지, 업데이트와 해결 방법을 이곳에 모아 둡니다. 앱별 최신 버전과 바뀐 내용은 <a href="/releases/">업데이트 내역</a>에서 한눈에 볼 수 있습니다.</p>
     </div>
   </section>
   <section class="block" style="border-top:0">
@@ -2268,7 +2336,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   // 주소 방식 두 가지. 빌드된 실제 사이트(<html data-paths>)는 화면마다 진짜 주소(/speedometer/ 등)를 쓰고,
   // 원본·시안은 # 주소를 씀. 실제 사이트에서도 링크를 누르면 새로 고치지 않고 화면만 바꿈.
   var PATHS = document.documentElement.hasAttribute("data-paths"), META = window.__PAGES || {};
-  var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#updates": "/updates/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-game": "/game/", "#app-sseum": "/dulsseum/" }, P2H = {};
+  var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#updates": "/updates/", "#releases": "/releases/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-game": "/game/", "#app-sseum": "/dulsseum/" }, P2H = {};
   for (var hk in H2P) P2H[H2P[hk]] = hk;
   function viewPath(h) { if (H2P[h]) return H2P[h]; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; if (/^#post-/.test(h)) return "/updates/" + h; return "/" + (h || ""); }
   function logical() {
@@ -2288,10 +2356,12 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     var isFb = hsh === "#feedback" || hsh === "#notify";
     var isHw = hsh === "#hardware";
     var isUp = hsh === "#updates" || /^#post-/.test(hsh);
-    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : isHw ? "hardware" : isUp ? "updates" : "home";
+    var isRel = hsh === "#releases";
+    var view = page ? "app" : hsh === "#app-center" ? "apps" : isAbout ? "about" : isFb ? "feedback" : isHw ? "hardware" : isUp ? "updates" : isRel ? "releases" : "home";
     document.getElementById("view-feedback").hidden = view !== "feedback";
     document.getElementById("view-hardware").hidden = view !== "hardware";
     document.getElementById("view-updates").hidden = view !== "updates";
+    document.getElementById("view-releases").hidden = view !== "releases";
     var post = /^#post-/.test(hsh) ? document.getElementById(hsh.slice(1)) : null;
     document.getElementById("ntList").hidden = !!post;
     Array.prototype.forEach.call(document.querySelectorAll("[data-post]"), function (el) { el.hidden = el !== post; });
@@ -2310,11 +2380,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       var on = (dv === view || (view === "app" && dv === "apps")) && (view !== "home" || /^(#top|\/)$/.test(links[i].getAttribute("href")));
       links[i].classList.toggle("is-on", on);
     }
-    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" && hsh !== "#updates" && !/^#post-/.test(hsh) ? document.getElementById(hsh.slice(1)) : null;
+    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" && hsh !== "#updates" && hsh !== "#releases" && !/^#post-/.test(hsh) ? document.getElementById(hsh.slice(1)) : null;
     if (target) target.scrollIntoView();
     else { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } }
     if (PATHS) {   // 화면에 맞는 제목·설명·대표 주소
-      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : view === "updates" ? "#updates" : "#top"];
+      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : view === "updates" ? "#updates" : view === "releases" ? "#releases" : "#top"];
       if (m) { document.title = m.t; var md = document.querySelector('meta[name="description"]'), lc = document.querySelector('link[rel="canonical"]'); if (md) md.setAttribute("content", m.d); if (lc) lc.setAttribute("href", m.u); }
     }
     var ev;
@@ -2909,29 +2979,85 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   var DL = {
     "app-amp":     { open: false, tag: "latest",         file: "DaesinnamAmp.apk",     base: 0 },
     "app-speed":   { open: false, tag: "",               file: "",                     base: 0 },
-    "app-work":    { open: true, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3 },
+    "app-work":    { open: true, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
+                     /* 버전 목록이 없는 앱: 업데이트 페이지의 "앱별 최신 버전"에만 씀 */
+                     rel: { v: "1.0.2", date: "2026.11.11", note: "문서 · 사진 · 동영상 편집을 한 앱에" } },
     "app-desktop": { open: true, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2,
                      versions: [
-                       { v: "1.5.2", date: "2026.11.15", tag: "desk-v1.5.2", file: "DeolnureumDesk-1.5.2.apk", note: "다른 앱 위젯을 기기 기본 테마로 표시 (루틴 위젯 아이콘 대응), 위젯 진단 추가" },
-                       { v: "1.5.1", date: "2026.11.13", tag: "desk-v1.5.1", file: "DeolnureumDesk-1.5.1.apk", note: "앱 띄우기 기본 방식을 전체 화면으로" }
+                       { v: "1.5.2", date: "2026.11.15", tag: "desk-v1.5.2", file: "DeolnureumDesk-1.5.2.apk", note: "다른 앱 위젯을 기기 기본 테마로 표시 (루틴 위젯 아이콘 대응), 위젯 진단 추가", kind: ["fix"], post: "desk-widget", fix: "바탕화면에 올린 루틴 위젯의 아이콘이 보이지 않던 문제" },
+                       { v: "1.5.1", date: "2026.11.13", tag: "desk-v1.5.1", file: "DeolnureumDesk-1.5.1.apk", note: "앱 띄우기 기본 방식을 전체 화면으로", kind: ["better"] }
                      ] },
     "app-browser": { open: true, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 browser-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
-                       { v: "2.4", date: "2026.11.16", tag: "browser-v2.4", file: "DeolnureumBrowser-2.4.apk", note: "탭 · 보던 탭 이어 보기 · 페이지에서 찾기 · 방문 기록 · 크롬에서 열기, 설치 파일 경고 · 화면 보호" },
-                       { v: "2.3", date: "2026.11.15", tag: "browser-v2.3", file: "DeolnureumBrowser-2.3.apk", note: "◀ ▶를 여러 번 눌러도 한 페이지씩만 이동 (홈으로 넘어가던 문제 해결)" },
-                       { v: "2.2", date: "2026.11.14", tag: "browser-v2.2", file: "DeolnureumBrowser-2.2.apk", note: "유튜브 스튜디오 · 구글 로그인은 크롬으로 열기" }
+                       { v: "2.4", date: "2026.11.16", tag: "browser-v2.4", file: "DeolnureumBrowser-2.4.apk", note: "탭 · 보던 탭 이어 보기 · 페이지에서 찾기 · 방문 기록 · 크롬에서 열기, 설치 파일 경고 · 화면 보호", kind: ["new", "sec"], post: "browser-tabs", fb: "브라우저 탭 기능 요청" },
+                       { v: "2.3", date: "2026.11.15", tag: "browser-v2.3", file: "DeolnureumBrowser-2.3.apk", note: "◀ ▶를 여러 번 눌러도 한 페이지씩만 이동 (홈으로 넘어가던 문제 해결)", kind: ["fix"], post: "browser-back", fix: "아래 ◀를 여러 번 누르면 홈으로 가 버리던 문제" },
+                       { v: "2.2", date: "2026.11.14", tag: "browser-v2.2", file: "DeolnureumBrowser-2.2.apk", note: "유튜브 스튜디오 · 구글 로그인은 크롬으로 열기", kind: ["better"] }
                      ] },
     "app-game":    { open: true,  tag: "game-latest",    file: "DeolnureumGame.apk",   base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 game-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
-                       { v: "0.3", date: "2026.11.16", tag: "game-v0.3", file: "DeolnureumGame-0.3.apk", note: "PC 게임 시작 안내: DroidDeck 설치 · 자식 프로세스 제한 중지 · 스팀 · 배틀넷까지 단계별로" },
-                       { v: "0.2", date: "2026.11.15", tag: "game-v0.2", file: "DeolnureumGame-0.2.apk", note: "FPS 보기 · 고급 기능(Shizuku) 연결로 맞춤 설정 실제 적용" }
+                       { v: "0.3", date: "2026.11.16", tag: "game-v0.3", file: "DeolnureumGame-0.3.apk", note: "PC 게임 시작 안내: DroidDeck 설치 · 자식 프로세스 제한 중지 · 스팀 · 배틀넷까지 단계별로", kind: ["new"], post: "game-03" },
+                       { v: "0.2", date: "2026.11.15", tag: "game-v0.2", file: "DeolnureumGame-0.2.apk", note: "FPS 보기 · 고급 기능(Shizuku) 연결로 맞춤 설정 실제 적용", kind: ["new"] }
                      ] },
     "app-sseum":   { open: true,  url: "/download/Deolnureum-Dulsseum.pkg", size: "390KB", kind: "PKG", key: "dl-sseum",
                      note: "애플 서명 전이라 처음 열 때 \u201c확인되지 않은 개발자\u201d 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열고, 그래도 막히면 <b>시스템 설정 → 개인정보 보호 및 보안</b>에서 <b>그래도 열기</b>를 누르세요." }
   };
   if (window.__DL_TEST) for (var k in window.__DL_TEST) DL[k] = window.__DL_TEST[k];
+
+  /* ---------- 업데이트 내역(/releases/): DL 표의 versions · rel 로 자동으로 그림 ----------
+     새 버전을 내면 DL 표 versions 맨 위에 한 줄만 추가하세요. kind: new(새 기능) fix(버그 수정) better(개선) sec(보안),
+     post: 의견 반영 글 id(post-<여기>), fix: 해결한 문제 한 줄, fb: 반영한 의견 한 줄 */
+  (function () {
+    var latestEl = document.getElementById("relLatest"), logEl = document.getElementById("relLog"), filEl = document.getElementById("relFilters");
+    if (!latestEl) return;
+    var APPS_REL = [["app-browser", "덜누름 브라우저", "브라우저"], ["app-game", "덜누름 게임", "게임"], ["app-desktop", "덜누름 데스크탑앱", "데스크탑앱"], ["app-work", "덜누름 워크", "워크"]];
+    var KIND = { "new": "새 기능", fix: "버그 수정", better: "개선", sec: "보안" };
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function days(d) { var m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(d || ""); if (!m) return 999; return (Date.now() - new Date(+m[1], m[2] - 1, +m[3]).getTime()) / 864e5; }
+    function postNo(id) { var a = document.querySelector('.nt-row[href="#post-' + id + '"] .nt-no'); return a ? a.textContent.trim() : ""; }
+    var cards = [], log = [];
+    APPS_REL.forEach(function (ap) {
+      var d = DL[ap[0]]; if (!d || !d.open) return;
+      var vs = d.versions || [], top = vs[0] || d.rel; if (!top) return;
+      var isNew = days(top.date) <= 7;
+      var chg = top.post ? "#post-" + top.post : "#" + ap[0];
+      cards.push('<div class="rel-card"><div class="rel-card-top"><b>' + esc(ap[1]) + "</b>" + (isNew ? '<span class="rel-new">NEW</span>' : "") + "</div>" +
+        '<div class="rel-ver">' + esc(top.v) + "</div><div class=\"rel-date\">" + esc(top.date) + " 업데이트</div>" +
+        '<div class="rel-act"><a class="key dark" href="#' + ap[0] + '">받으러 가기</a><a class="key" href="' + chg + '">바뀐 점</a></div></div>');
+      vs.forEach(function (x, i) { log.push({ app: ap, x: x, prev: vs[i + 1] ? vs[i + 1].v : "" }); });
+    });
+    latestEl.innerHTML = cards.join("");
+    log.sort(function (a, b) { return a.x.date < b.x.date ? 1 : a.x.date > b.x.date ? -1 : 0; });
+    var fApp = "", fFix = false;
+    function drawLog() {
+      var html = "", last = "";
+      log.forEach(function (it) {
+        var x = it.x, kinds = x.kind || [];
+        if (fApp && it.app[0] !== fApp) return;
+        if (fFix && kinds.indexOf("fix") < 0) return;
+        if (x.date !== last) { html += '<h3 class="rel-day">' + esc(x.date) + "</h3>"; last = x.date; }
+        var no = x.post ? postNo(x.post) : "";
+        html += '<article class="rel-item"><div class="rel-app"><b>' + esc(it.app[1]) + '</b><span class="rel-vchg">' + (it.prev ? esc(it.prev) + " → " : "") + esc(x.v) + "</span></div>" +
+          '<div class="rel-body"><div class="rel-tags">' + kinds.map(function (k) { return '<span class="rel-tag rel-k-' + k + '">' + KIND[k] + "</span>"; }).join("") + "</div>" +
+          '<p class="rel-t">' + esc(x.fix || x.note) + "</p>" + (x.fix ? '<p class="rel-d">' + esc(x.note) + "</p>" : "") +
+          (x.fix ? '<p class="rel-ok"><b>해결됨 · ' + esc(x.v) + "부터</b> · 이전 버전을 쓰고 있다면 " + esc(x.v) + " 이상으로 업데이트하세요</p>" : "") +
+          (x.fb ? '<p class="rel-ok"><b>받은 의견 반영</b> · ' + esc(x.fb) + "</p>" : "") + "</div>" +
+          (x.post ? '<a class="rel-post" href="#post-' + x.post + '">의견 반영 ' + esc(no) + " →</a>" : '<span class="rel-post rel-none">글 없음</span>') + "</article>";
+      });
+      logEl.innerHTML = html || '<p class="rel-empty">해당하는 업데이트가 없습니다.</p>';
+    }
+    var chips = [["", "전체"]].concat(APPS_REL.filter(function (ap) { return DL[ap[0]] && (DL[ap[0]].versions || []).length; }).map(function (ap) { return [ap[0], ap[2]]; }));
+    filEl.innerHTML = chips.map(function (c) { return '<button type="button" class="rel-chip" data-app="' + c[0] + '" aria-pressed="' + (c[0] === "" ? "true" : "false") + '">' + c[1] + "</button>"; }).join("") +
+      '<button type="button" class="rel-chip rel-chip-fix" data-fix="1" aria-pressed="false">버그 수정만</button>';
+    filEl.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("button"); if (!b) return;
+      if (b.hasAttribute("data-fix")) { fFix = !fFix; b.setAttribute("aria-pressed", fFix ? "true" : "false"); }
+      else { fApp = b.getAttribute("data-app"); Array.prototype.forEach.call(filEl.querySelectorAll("[data-app]"), function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); }); }
+      drawLog();
+    });
+    drawLog();
+  })();
   function getRelease(tag, cb) {
     var key = "dl:" + tag, hit = null;
     try { hit = JSON.parse(sessionStorage.getItem(key) || "null"); } catch (e) {}

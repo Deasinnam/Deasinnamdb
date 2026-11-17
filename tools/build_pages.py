@@ -58,6 +58,8 @@ PAGES = [
      "개발 중인 덜누름 앱에 바라는 기능과 불편한 점을 알려 주세요. 이메일을 남기면 앱이 공개되는 날 알려 드립니다."),
     ("#updates", "/updates/", "updates", "의견 반영 — 업데이트와 해결 방법" + SUFFIX,
      "보내 주신 의견이 어떻게 반영됐는지 모아 둡니다. 덜누름 브라우저 2.4에 탭 · 보던 탭 이어 보기 · 찾기 · 방문 기록을 넣었고, 덜누름 데스크탑앱 1.5.2에서 루틴 위젯 아이콘 문제를 개선했고, 덜누름 브라우저 2.3에서 ◀를 여러 번 누르면 홈으로 가던 문제를 고쳤고, 갤럭시에서 덜누름 앱이 설치되지 않을 때 One UI 버전별 해결 방법을 안내합니다."),
+    ("#releases", "/releases/", "releases", "업데이트 내역 — 앱별 최신 버전과 바뀐 내용" + SUFFIX,
+     "덜누름 앱마다 지금 최신 버전이 무엇인지, 무엇이 고쳐졌는지 한곳에서 확인하세요. 새 기능 · 버그 수정 · 개선 · 보안 업데이트를 날짜순으로 모았습니다."),
 ] + [(h, p, "app", t + SUFFIX, d) for h, p, t, d, *_ in APPS]
 
 ORG = {"@type": "Organization", "@id": SITE + "/#org", "name": "덜누름", "alternateName": ["덜누름 Software", "deolnureum"],
@@ -124,7 +126,7 @@ def build():
         out = sub1(r"<body>", '<body data-view="%s">' % view, out)
         if view != "home":
             out = sub1(r'<div class="view" id="view-home">', '<div class="view" id="view-home" hidden>', out)
-            vid = {"apps": "view-apps", "app": "view-app", "about": "view-about", "feedback": "view-feedback", "hardware": "view-hardware", "updates": "view-updates"}[view]
+            vid = {"apps": "view-apps", "app": "view-app", "about": "view-about", "feedback": "view-feedback", "hardware": "view-hardware", "updates": "view-updates", "releases": "view-releases"}[view]
             out = sub1(r'(<div class="view[^"]*" id="%s") hidden>' % vid, r"\1>", out)
             if view == "app":
                 out = sub1(r'(<section class="amp-stage ap" id="%s"[^>]*?) hidden>' % h[1:], r"\1>", out)
