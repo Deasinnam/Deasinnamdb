@@ -2,6 +2,7 @@
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- GPS 속도계 (자동차 스킨) ---------- */
 const HAS_GPS=!!(NB&&NB.gpsStatus);
+let gpsTrk=-1; /* 1.75 차량 진행 방향(GPS 진행 방위, 움직일 때만 갱신 — 휴대폰 나침반·기울기 센서가 아님) */
 let gpsOn=false,gs={},gpsTimer=0,lastFix=null,spdNow=0,spdDisp=0,hdgNow=-1,hdgDisp=0,hudOn=false;
 let trip=store.get('trip',{dist:0,time:0,max:0}),gLimit=+store.get('gLimit',0);
 const DIRS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
@@ -18,15 +19,18 @@ function pollGps(){
     if(lastFix&&s.ts!==lastFix.ts){
       const dt=(s.ts-lastFix.ts)/1000,dd=hav(lastFix.lat,lastFix.lon,s.lat,s.lon);
       if(v<0&&dt>0)v=dd/dt;
+      if(dd>3&&dt>0&&dt<10&&s.acc<40&&dd/dt>2.5){const r=Math.PI/180,y=Math.sin((s.lon-lastFix.lon)*r)*Math.cos(s.lat*r),x=Math.cos(lastFix.lat*r)*Math.sin(s.lat*r)-Math.sin(lastFix.lat*r)*Math.cos(s.lat*r)*Math.cos((s.lon-lastFix.lon)*r);s.__trk=(Math.atan2(y,x)/r+360)%360}
       if(dt>0&&dt<10&&s.acc<35&&v>0.8){trip.dist+=dd;trip.time+=dt;try{AmpLog.addDist(dd)}catch(e){}}
       if(s.acc<35&&v*3.6>trip.max&&v*3.6<400)trip.max=v*3.6;
       store.set('trip',trip);
     }
     if(!lastFix||s.ts!==lastFix.ts)lastFix=s;
     spdNow=v>0.5?v*3.6:0;
-    hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
+    if(v>2.5){if(s.bearing>=0)gpsTrk=s.bearing;else if(s.__trk>=0)gpsTrk=s.__trk}
+    hdgNow=(gpsTrk>=0&&v>2.5)?gpsTrk:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
-  if(typeof att!=='undefined'&&att.on&&att.hdg>=0)hdgNow=att.hdg;
+  // 1.75 달리는 동안은 GPS 진행 방위가 우선(휴대폰을 비스듬히 거치하면 센서 방위가 차 방향과 달라 원형 지도·과속 카메라 방향이 틀어졌음)
+  if(typeof att!=='undefined'&&att.on&&att.hdg>=0&&!(s.fix&&spdNow>9&&gpsTrk>=0))hdgNow=att.hdg;
   try{if(s.fix)revAutoTick(s,spdNow/3.6)}catch(e){}
   gpsUi();mapUpdate(false);driveAutoTick();
 }

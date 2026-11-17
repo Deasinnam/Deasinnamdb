@@ -35,6 +35,14 @@ run('Round map on the speedometer PFD', async ({context, origin, errors}) => {
   await p.waitForTimeout(1800);
   const c2 = await p.evaluate(() => PfdMap.map.getCenter());
   assert.ok(Math.abs(c2.lat - 37.501) < 2e-4 && Math.abs(c2.lng - 127.002) < 2e-4, 'Follows GPS in real time ' + JSON.stringify(c2));
+  // 1.75 휴대폰 센서 방위(비스듬히 거치)는 무시하고 GPS 진행 방위로: 진행 방위가 없으면 위치 변화로 계산
+  await p.evaluate(() => Object.assign(__fix, {bearing: -1, azimuth: 200, lat: 37.501, lon: 127.0025}));
+  await p.waitForTimeout(1800);
+  assert.match(await p.evaluate(() => document.querySelector('.pfd-mini .pm-map').style.transform), /rotate\(-(8\d|9\d)(\.\d+)?deg\)/, 'GPS course, not the phone compass');
+  await p.evaluate(() => Object.assign(__fix, {lat: 37.5015, lon: 127.0025}));
+  await p.waitForTimeout(1800);
+  assert.match(await p.evaluate(() => document.querySelector('.pfd-mini .pm-map').style.transform), /rotate\((-?[0-4](\.\d+)?|-?3[5-6]\d(\.\d+)?)deg\)/, 'Turned north from movement');
+  await p.evaluate(() => Object.assign(__fix, {lat: 37.501, lon: 127.002, bearing: 90}));
   if (SHOT) await p.locator('#pfdHost').screenshot({path: SHOT + '/pfdmap.png'});
   // 1.51 지도 모양: 기본 GTA → 원 누르면 일반 지도, 스피드미터 주간·야간 따라 자동
   assert.equal(await p.evaluate(() => PfdMap.look), 'gta');

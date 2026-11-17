@@ -63,7 +63,8 @@ const PfdMap=(()=>{
     if(!on||!map||!fix)return;
     const now=performance.now();if(now-lastSet>900){lastSet=now;let z=spdNow>90?14:spdNow>40?15:16;{const v=window.AmpCam&&AmpCam.view,c=v&&Date.now()-v.t<4000&&v.cams[0];if(c&&c[3]<800)z=Math.min(z,c[3]>300?14:15)} /* 1.61 앞 카메라가 원 안에 들어오게 넓혀 봄 */map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
     // 진행 방향이 위: 지도를 반대로 돌리고, N 표시는 테두리를 따라 돎(359→0도 매끄럽게)
-    if(hdgNow>=0&&spdNow>=3){const want=-hdgDisp;let d=((want-rot)%360+540)%360-180;rot+=d}
+    // 1.75 지도는 GPS 진행 방위로만 돌림(9km/h 이상에서 갱신, 정차 중엔 마지막 방향 유지) — 화살표(위)와 지도 길 방향이 맞게
+    if(gpsTrk>=0&&spdNow>=9){const want=-gpsTrk;let d=((want-rot)%360+540)%360-180;rot+=d}
     overlay();host.style.setProperty('--pm-rot',rot+'deg');
     inner.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;nEl.style.transform=`rotate(${rot}deg) translateY(calc(var(--pm-d) / -2 + 9px)) rotate(${-rot}deg)`}
   /* 1.61 원형 지도 위에 과속 카메라 안내가 예상한 앞길(점선)과 그 길 위 카메라(제한속도 표지, 가장 가까운 것은 깜빡임) */

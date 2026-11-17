@@ -84,10 +84,10 @@ cksApply();
   function dayUi(){const d=dayMode?dayMode!=='night':!(window.pfd&&window.pfd.day===false);lever('dkDaySwitch',d);ro('dkDayReadout',d?'DAY':'NIGHT',true);note('dkDayNote',d?'주간 밝기 100%':'야간 밝기 10%');$i('dkDayReadout').classList.toggle('night',!d)}
   function dayApply(m,save=true){dayMode=m;if(save)store.set('cksDay',m);try{window.AmpBri&&window.AmpBri.set(m==='night'?10:100)}catch(e){}
     try{window.AmpPfd&&window.AmpPfd.setTheme&&window.AmpPfd.setTheme(m)}catch(e){}dayUi()}
-  $i('dkDaySwitch').onclick=()=>{const m=dayMode==='night'?'day':'night';press(m==='day');dayApply(m)};
+  $i('dkDaySwitch').onclick=()=>{const cur=dayMode||(window.pfd&&window.pfd.day===false?'night':'day'),m=cur==='night'?'day':'night';press(m==='day');dayApply(m)};
   dayUi();
   // 1.74 계기가 다음 해 뜸·해 짐에 자동으로 돌아가면 스위치도 자동(실제 낮·밤 표시)으로
-  setInterval(()=>{try{if(dayMode&&window.AmpPfd&&AmpPfd.theme==='auto'){dayMode=null;store.set('cksDay',null)}if(!document.hidden)dayUi()}catch(e){}},5000);
+  setInterval(()=>{try{if(dayMode&&window.AmpPfd&&AmpPfd.theme==='auto'&&(!window.AmpSpecialSky||AmpSpecialSky.mode==='auto')){dayMode=null;store.set('cksDay',null)}if(!document.hidden)dayUi()}catch(e){}},5000);
   window.AmpDay={get mode(){return dayMode},set:dayApply};
 })();
 

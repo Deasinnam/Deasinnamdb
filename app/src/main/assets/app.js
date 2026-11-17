@@ -825,6 +825,7 @@ window.AmpVis={level:()=>visLevel(0,1),names:VIS_NAMES,set:setVis,fav:()=>visFav
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* ---------- GPS 속도계 (자동차 스킨) ---------- */
 const HAS_GPS=!!(NB&&NB.gpsStatus);
+let gpsTrk=-1; /* 1.75 차량 진행 방향(GPS 진행 방위, 움직일 때만 갱신 — 휴대폰 나침반·기울기 센서가 아님) */
 let gpsOn=false,gs={},gpsTimer=0,lastFix=null,spdNow=0,spdDisp=0,hdgNow=-1,hdgDisp=0,hudOn=false;
 let trip=store.get('trip',{dist:0,time:0,max:0}),gLimit=+store.get('gLimit',0);
 const DIRS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
@@ -841,15 +842,18 @@ function pollGps(){
     if(lastFix&&s.ts!==lastFix.ts){
       const dt=(s.ts-lastFix.ts)/1000,dd=hav(lastFix.lat,lastFix.lon,s.lat,s.lon);
       if(v<0&&dt>0)v=dd/dt;
+      if(dd>3&&dt>0&&dt<10&&s.acc<40&&dd/dt>2.5){const r=Math.PI/180,y=Math.sin((s.lon-lastFix.lon)*r)*Math.cos(s.lat*r),x=Math.cos(lastFix.lat*r)*Math.sin(s.lat*r)-Math.sin(lastFix.lat*r)*Math.cos(s.lat*r)*Math.cos((s.lon-lastFix.lon)*r);s.__trk=(Math.atan2(y,x)/r+360)%360}
       if(dt>0&&dt<10&&s.acc<35&&v>0.8){trip.dist+=dd;trip.time+=dt;try{AmpLog.addDist(dd)}catch(e){}}
       if(s.acc<35&&v*3.6>trip.max&&v*3.6<400)trip.max=v*3.6;
       store.set('trip',trip);
     }
     if(!lastFix||s.ts!==lastFix.ts)lastFix=s;
     spdNow=v>0.5?v*3.6:0;
-    hdgNow=(s.bearing>=0&&v>2.5)?s.bearing:(s.azimuth>=0?s.azimuth:hdgNow);
+    if(v>2.5){if(s.bearing>=0)gpsTrk=s.bearing;else if(s.__trk>=0)gpsTrk=s.__trk}
+    hdgNow=(gpsTrk>=0&&v>2.5)?gpsTrk:(s.azimuth>=0?s.azimuth:hdgNow);
   }else{spdNow=0;hdgNow=s.azimuth>=0?s.azimuth:hdgNow}
-  if(typeof att!=='undefined'&&att.on&&att.hdg>=0)hdgNow=att.hdg;
+  // 1.75 달리는 동안은 GPS 진행 방위가 우선(휴대폰을 비스듬히 거치하면 센서 방위가 차 방향과 달라 원형 지도·과속 카메라 방향이 틀어졌음)
+  if(typeof att!=='undefined'&&att.on&&att.hdg>=0&&!(s.fix&&spdNow>9&&gpsTrk>=0))hdgNow=att.hdg;
   try{if(s.fix)revAutoTick(s,spdNow/3.6)}catch(e){}
   gpsUi();mapUpdate(false);driveAutoTick();
 }
@@ -1425,7 +1429,8 @@ const PfdMap=(()=>{
     if(!on||!map||!fix)return;
     const now=performance.now();if(now-lastSet>900){lastSet=now;let z=spdNow>90?14:spdNow>40?15:16;{const v=window.AmpCam&&AmpCam.view,c=v&&Date.now()-v.t<4000&&v.cams[0];if(c&&c[3]<800)z=Math.min(z,c[3]>300?14:15)} /* 1.61 앞 카메라가 원 안에 들어오게 넓혀 봄 */map.setView([gs.lat,gs.lon],z,{animate:true,duration:.8});}
     // 진행 방향이 위: 지도를 반대로 돌리고, N 표시는 테두리를 따라 돎(359→0도 매끄럽게)
-    if(hdgNow>=0&&spdNow>=3){const want=-hdgDisp;let d=((want-rot)%360+540)%360-180;rot+=d}
+    // 1.75 지도는 GPS 진행 방위로만 돌림(9km/h 이상에서 갱신, 정차 중엔 마지막 방향 유지) — 화살표(위)와 지도 길 방향이 맞게
+    if(gpsTrk>=0&&spdNow>=9){const want=-gpsTrk;let d=((want-rot)%360+540)%360-180;rot+=d}
     overlay();host.style.setProperty('--pm-rot',rot+'deg');
     inner.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;nEl.style.transform=`rotate(${rot}deg) translateY(calc(var(--pm-d) / -2 + 9px)) rotate(${-rot}deg)`}
   /* 1.61 원형 지도 위에 과속 카메라 안내가 예상한 앞길(점선)과 그 길 위 카메라(제한속도 표지, 가장 가까운 것은 깜빡임) */
@@ -2677,7 +2682,7 @@ const AmpSfx=(()=>{
   function show(o,spd){const el=$('#camSign');if(!o){el.hidden=true;document.documentElement.removeAttribute('data-cam');return}
     el.hidden=false;document.documentElement.setAttribute('data-cam','1');$('#camLim').textContent=o.lim||'!';$('#camDist').textContent='전방 '+(o.d>=1000?(o.d/1000).toFixed(1)+'km':Math.round(o.d/10)*10+'m');el.classList.toggle('over',!!o.over)}
   let manualT=0; // 시험·외부에서 직접 부른 직후에는 자동 확인이 덮어쓰지 않게
-  setInterval(()=>{if(demoOn||Date.now()-manualT<3000)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,hdgNow)},1000);
+  setInterval(()=>{if(demoOn||Date.now()-manualT<3000)return;if(!gpsOn||!gs||!gs.fix||!isFinite(gs.lat)){show(null);return}check(+gs.lat,+gs.lon,spdNow,gpsTrk>=0?gpsTrk:hdgNow)},1000);
   $('#sCam').checked=camOn();$('#sCam').onchange=e=>{store.set('camOn',e.target.checked);if(!e.target.checked)show(null)};
   $('#sCamCsv').onclick=()=>$('#sCamFile').click();$('#sCamFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importFile(f);e.target.value=''};
   $('#sCamClr').onclick=()=>{try{localStorage.removeItem('dna_camDb')}catch(e){}db=[];statUi();toast('불러온 자료를 지웠어요. 기본 내장 전국 자료로 안내해요.')};
@@ -3574,10 +3579,10 @@ cksApply();
   function dayUi(){const d=dayMode?dayMode!=='night':!(window.pfd&&window.pfd.day===false);lever('dkDaySwitch',d);ro('dkDayReadout',d?'DAY':'NIGHT',true);note('dkDayNote',d?'주간 밝기 100%':'야간 밝기 10%');$i('dkDayReadout').classList.toggle('night',!d)}
   function dayApply(m,save=true){dayMode=m;if(save)store.set('cksDay',m);try{window.AmpBri&&window.AmpBri.set(m==='night'?10:100)}catch(e){}
     try{window.AmpPfd&&window.AmpPfd.setTheme&&window.AmpPfd.setTheme(m)}catch(e){}dayUi()}
-  $i('dkDaySwitch').onclick=()=>{const m=dayMode==='night'?'day':'night';press(m==='day');dayApply(m)};
+  $i('dkDaySwitch').onclick=()=>{const cur=dayMode||(window.pfd&&window.pfd.day===false?'night':'day'),m=cur==='night'?'day':'night';press(m==='day');dayApply(m)};
   dayUi();
   // 1.74 계기가 다음 해 뜸·해 짐에 자동으로 돌아가면 스위치도 자동(실제 낮·밤 표시)으로
-  setInterval(()=>{try{if(dayMode&&window.AmpPfd&&AmpPfd.theme==='auto'){dayMode=null;store.set('cksDay',null)}if(!document.hidden)dayUi()}catch(e){}},5000);
+  setInterval(()=>{try{if(dayMode&&window.AmpPfd&&AmpPfd.theme==='auto'&&(!window.AmpSpecialSky||AmpSpecialSky.mode==='auto')){dayMode=null;store.set('cksDay',null)}if(!document.hidden)dayUi()}catch(e){}},5000);
   window.AmpDay={get mode(){return dayMode},set:dayApply};
 })();
 

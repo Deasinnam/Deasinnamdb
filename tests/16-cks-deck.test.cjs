@@ -47,11 +47,13 @@ run('Cockpit special deck switches', async ({context, origin, errors}) => {
   assert.equal(await p.locator('#dkDayReadout').textContent(), 'NIGHT');
   // 스위치를 누른 순간 10%로 맞춤
   assert.ok(await p.evaluate(n => __bri.slice(n).includes(10), bri0), 'Night brightness 10%');
-  assert.equal(await p.evaluate(() => window.AmpPfd && window.AmpPfd.theme), 'night', 'Night runway');
+  assert.equal(await p.evaluate(() => window.AmpSpecialSky ? AmpSpecialSky.mode : AmpPfd.theme), 'night', 'Night runway');
+  assert.equal(await p.evaluate(() => pfd.day), false, 'Night drawn');
   await p.locator('#dkDaySwitch').click();
   assert.equal(await p.locator('#dkDayReadout').textContent(), 'DAY');
   assert.equal(await p.evaluate(() => __bri[__bri.length - 1]), 100, 'Day brightness 100%');
-  assert.equal(await p.evaluate(() => window.AmpPfd.theme), 'day');
+  assert.ok(await p.evaluate(() => window.AmpSpecialSky ? AmpSpecialSky.mode === 'noon' : AmpPfd.theme === 'day'), 'Day runway');
+  assert.equal(await p.evaluate(() => pfd.day), true, 'Day drawn');
   // 다른 스킨은 원래 스위치
   await p.evaluate(() => { const s = document.getElementById('skin'); s.value = 'carnival5'; s.dispatchEvent(new Event('change')); });
   await p.waitForTimeout(200);

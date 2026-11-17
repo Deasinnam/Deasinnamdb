@@ -841,7 +841,10 @@
     if (k === 'night') { const s0 = findEl(-1, false); return s0 ? s0 + 4 * 3600000 : day0() + 21.5 * 3600000; }
     return null;
   }
+  // 1.75 주간·야간은 하늘 하나로 통일: 계기 테마는 늘 '자동'(낮·밤은 하늘이 정한 시각의 해 높이로), 주간·야간 고르기는 하늘로 옮김
+  const oSetTheme = A.setTheme;
   function skyApply(k, save) {
+    if (save && A.theme !== 'auto') try { oSetTheme('auto'); } catch (e) {}
     skyMode = k; pickNight = k === 'auto' ? null : realNight(); if (save) try { HOST && HOST.save && HOST.save('spSky', k); } catch (e) {}
     if (!window.__spPreview) { if (k !== 'auto') { window.__spTime = skyTime(k); window.__spSunAhead = k !== 'night' && k !== 'noon'; } else if (save) { window.__spTime = undefined; window.__spSunAhead = false; } }
     sunC = null; mKey = ''; try { window.AmpApplyTheme && window.AmpApplyTheme(); } catch (e) {} try { P.renderText(); P.draw(); } catch (e) {}
@@ -874,6 +877,19 @@
       const b = e.target.closest && e.target.closest('#pfdThemeQuick, #pfdHost .pfd-tool[data-role="settings"]'); if (!b) return;
       e.stopImmediatePropagation(); e.preventDefault(); open(b);
     }, true);
+    // 계기판 설정 창의 '주간·야간' 칸 = 하늘 고르기(같은 값)
+    const sel = P.els && P.els.theme;
+    if (sel) {
+      sel.innerHTML = SKY.map(([k, n]) => '<option value="' + k + '">' + (k === 'auto' ? '자동 (실제 해)' : n) + '</option>').join('');
+      try { const lb = sel.closest('label'); const tn = lb && [...lb.childNodes].find(n => n.nodeType === 3 && /주간/.test(n.textContent)); if (tn) tn.textContent = tn.textContent.replace(/주간\s*[·・]\s*야간/, '하늘 (주간·야간)'); else { const sp = lb && [...lb.querySelectorAll('span,b,strong')].find(n => /주간/.test(n.textContent)); if (sp) sp.textContent = '하늘 (주간·야간)'; } } catch (e) {}
+      const oOpenS = P.openSettings.bind(P);
+      P.openSettings = function () { oOpenS(); try { this.els.theme.value = skyMode; } catch (e) {} };
+      P.els.form.addEventListener('submit', () => { const k = SKY.some(x => x[0] === sel.value) ? sel.value : 'auto'; sel.value = 'auto';
+        setTimeout(() => { if (P.els.dialog.open) sel.value = k; else skyApply(k, true); }, 0); }, true);
+    }
+    // 앱의 주간·야간 스위치(콕핏 스페셜 등)도 하늘로: 주간 → 한낮, 야간 → 밤, 자동 → 실제 해
+    A.setTheme = t => skyApply(t === 'night' ? 'night' : t === 'day' ? 'noon' : 'auto', true);
+    if (A.theme !== 'auto') try { oSetTheme('auto'); } catch (e) {} // 예전에 고정해 둔 주간·야간은 풀어 줌
     skyApply(skyMode, false);
     // 고정 시각은 날이 바뀌면 오늘 날짜로 다시 계산
     setInterval(() => { if (skyMode !== 'auto' && !window.__spPreview && pickNight !== null && realNight() !== pickNight) skyApply('auto', true); }, 60000);
