@@ -7,7 +7,6 @@
 html, body { margin: 0; height: 100%; color: var(--cream); font-family: system-ui, "Noto Sans KR", sans-serif; user-select: none; -webkit-user-select: none; overflow: hidden;
   background:
     radial-gradient(120% 90% at 20% 0%, rgba(255,230,190,.06), transparent 60%),
-    repeating-radial-gradient(circle at 30% 40%, rgba(0,0,0,.05) 0 1px, transparent 1px 3px),
     linear-gradient(160deg, #31261f, #211913); }
 button { font: inherit; color: inherit; cursor: pointer; }
 svg { display: block; }
