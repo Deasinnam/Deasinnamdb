@@ -161,7 +161,34 @@
     }
     $("hint").textContent = editing ? "버튼을 눌러 바꾸고, 판 이름을 눌러 판을 고칩니다." :
       (b.keys.length ? "버튼을 길게 누르면 바로 고칠 수 있습니다." : "");
+    fitGrid();
   }
+
+  // 한 판이 스크롤 없이 화면에 다 들어오게 버튼 크기와 줄 수를 맞춤 (접은 화면 가로·세로, 펼친 화면 모두).
+  // 너무 작아질 때만(76px 미만) 스크롤을 씀
+  var GAP = 14, MIN_KEY = 76, MAX_KEY = 190;
+  function fitGrid() {
+    var grid = $("grid"), n = grid.children.length;
+    if (!n) return;
+    var cs = getComputedStyle(grid);
+    var w = grid.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    var h = grid.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 8; // 아래 그림자
+    var best = 0, bestC = 1;
+    for (var c = 1; c <= n; c++) {
+      var r = Math.ceil(n / c);
+      var size = Math.min((w - (c - 1) * GAP) / c, (h - (r - 1) * GAP) / r, MAX_KEY);
+      if (size > best + 0.5) { best = size; bestC = c; }
+    }
+    if (best < MIN_KEY) { // 다 못 넣으면 최소 크기로 줄 수를 정하고 스크롤
+      bestC = Math.max(1, Math.floor((w + GAP) / (MIN_KEY + GAP)));
+      best = Math.min(MAX_KEY, (w - (bestC - 1) * GAP) / bestC);
+    }
+    best = Math.floor(best);
+    grid.style.gridTemplateColumns = "repeat(" + bestC + ", " + best + "px)";
+    grid.style.justifyContent = "center";
+    grid.style.setProperty("--ksz", best + "px");
+  }
+  window.addEventListener("resize", function () { fitGrid(); });
 
   function bindKey(el, i) {
     var timer = 0, longDone = false;
