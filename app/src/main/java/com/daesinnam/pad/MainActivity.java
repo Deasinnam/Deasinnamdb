@@ -71,9 +71,13 @@ public class MainActivity extends Activity {
 
         web = new WebView(this);
         web.setBackgroundColor(Color.BLACK);
-        setContentView(web);
-        // 상태 표시줄·내비게이션 막대에 가리지 않게 여백을 둠 (안드로이드 15의 화면 끝까지 그리기)
-        web.setOnApplyWindowInsetsListener((v, insets) -> {
+        // 상태 표시줄·내비게이션 막대에 가리지 않게 여백을 둠 (안드로이드 15의 화면 끝까지 그리기).
+        // WebView 자신의 여백(padding)은 화면 내용에 적용되지 않으므로, 바깥 틀에 여백을 줌
+        android.widget.FrameLayout root = new android.widget.FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+        root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
+        setContentView(root);
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
             android.graphics.Insets b = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
             v.setPadding(b.left, b.top, b.right, b.bottom);
             return WindowInsets.CONSUMED;
