@@ -7,11 +7,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px 6px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .brand b { font-size: 17px; white-space: nowrap; }
+@media (max-width: 360px) { .brand b { font-size: 15px; } .top { padding: 10px 10px 4px; } .tbtn { padding: 7px 10px; } }
 .status { font-size: 12px; color: #a1a1aa; padding: 4px 9px; border-radius: 99px; background: #1c1c20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .status.on { color: #bbf7d0; background: #14301f; }
 .status.on::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; margin-right: 6px; vertical-align: 1px; }
 .top-act { display: flex; gap: 8px; }
-.tbtn { background: #1c1c20; border: 1px solid #2e2e34; border-radius: 10px; padding: 8px 14px; font-size: 14px; }
+.tbtn { white-space: nowrap; flex: none; background: #1c1c20; border: 1px solid #2e2e34; border-radius: 10px; padding: 8px 14px; font-size: 14px; }
 .tbtn.icon { padding: 8px 12px; font-size: 16px; line-height: 1; }
 .tbtn.on { background: #ff7a00; border-color: #c75a00; color: #fff; }
 
