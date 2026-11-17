@@ -1336,7 +1336,33 @@
     return S.layouts;
   }
   let shz = { installed: false, running: false, granted: false };
-  const refreshShizuku = () => call("shizuku").then((r) => { if (r && typeof r === "object") shz = r; redrawArrange(); }).catch(() => {});
+  const refreshShizuku = () => call("shizuku").then((r) => { if (r && typeof r === "object") shz = r; redrawArrange(); return shz; }).catch(() => shz);
+  /** Shizuku가 필요할 때: 창정리 창을 열고 연결 칸을 펼쳐 바로 다음 단계를 진행 */
+  async function needShizuku(why) {
+    S.arAdvOpen = true; save();
+    const w = openBuiltin("in:arrange"); if (w) focusWin(w);
+    toast(why + " — 고급 기능(Shizuku) 연결이 필요합니다. " + (!shz.installed ? "Shizuku를 받아 주세요." : !shz.running ? "Shizuku를 켜 주세요." : "허락을 눌러 주세요."));
+    const r = await call("shizukuConnect");
+    setTimeout(refreshShizuku, 1500);
+    return r;
+  }
+  /** 지금 열린 창을 개수에 맞게 자동으로 나눠 놓기 (2개 반반 · 3개 큰 창+둘 · 4개 4분할 · 5~6개 3×2) */
+  async function autoTile() {
+    await refreshShizuku();
+    if (!shz.granted) return needShizuku("열린 창을 옮기려면");
+    toast("열린 창을 찾는 중…");
+    const r = await call("windows", tbSpace());
+    const list = ((r && r.list) || []).filter((t) => t.visible);
+    if (!list.length) return toast("정렬할 창이 없습니다. 앱을 창으로 띄운 뒤 다시 눌러 주세요.");
+    list.sort((a, b) => (a.b[0] - b.b[0]) || (a.b[1] - b.b[1])); // 지금 왼쪽에 있는 창이 왼쪽으로
+    const n = Math.min(list.length, 6);
+    const grid = (c, rows) => { const z = []; for (let y = 0; y < rows; y++) for (let x = 0; x < c; x++) z.push([x / c, y / rows, (x + 1) / c, (y + 1) / rows]); return z; };
+    const Z = n === 1 ? [ZONES.max] : n === 2 ? [ZONES.left, ZONES.right] : n === 3 ? [ZONES.left, ZONES.tr, ZONES.br] : n === 4 ? [ZONES.tl, ZONES.tr, ZONES.bl, ZONES.br] : grid(3, 2);
+    const items = list.slice(0, n).map((t, i) => ({ pkg: t.pkg, cls: t.cls, zone: Z[i] }));
+    const res = await call("arrange", items, tbSpace());
+    const stuck = ((res && res.results) || []).filter((x) => x.how === "stuck").length;
+    toast(stuck ? "창 " + (n - stuck) + "개를 정렬했습니다. " + stuck + "개는 그 앱이 크기 바꾸기를 막고 있습니다." : "창 " + n + "개를 정렬했습니다" + (list.length > 6 ? " (최대 6개)" : ""));
+  }
   function redrawArrange() {
     const w = wins.find((x) => x.key === "in:arrange");
     if (w) { const b = w.el.querySelector(".win-body"); if (b && b._redraw) b._redraw(); }
@@ -1374,7 +1400,7 @@
     if (r && r.shizuku) {
       const stuck = (r.results || []).filter((x) => x.how === "stuck").length;
       toast(stuck ? stuck + "개 창은 자리를 옮기지 못했습니다. 그 앱이 창 크기 바꾸기를 막고 있을 수 있습니다." : L.name + " 배치를 펼쳤습니다");
-    } else if (status.dex) toast("DeX는 앱이 처음 뜰 자리를 따로 정할 때가 있습니다. 창이 제자리에 안 놓이면 창정리에서 고급 기능(Shizuku)을 연결해 주세요. 연 뒤 자리를 맞춥니다.");
+    } else if (status.dex) needShizuku("DeX는 앱이 뜰 자리를 스스로 정합니다. 배치대로 맞추려면");
     else toast(wasOpen ? "이미 열려 있던 앱은 자리가 안 바뀔 수 있습니다. 고급 기능(Shizuku)을 연결하면 열린 창도 옮깁니다." : L.name + " 배치를 펼쳤습니다");
     if (missing.length) setTimeout(() => toast("설치돼 있지 않은 앱 " + missing.length + "개는 건너뛰었습니다"), 2600);
   }
@@ -1384,7 +1410,9 @@
       body.textContent = "";
       const root = h("div", { class: "set ar" });
       if (mode === "list") {
-        root.append(h("p", { class: "ar-lead", text: "자주 쓰는 창 배치를 저장하고 한 번에 펼치세요." }));
+        root.append(h("p", { class: "ar-lead", text: "자주 쓰는 창 배치를 저장하고 한 번에 펼치세요." }),
+          h("button", { class: "btn primary wide ar-tile", onclick: autoTile }, "열린 창 자동 정렬"),
+          h("p", { class: "ar-sub", text: "지금 열린 창을 개수에 맞게 나눕니다 — 2개 반반 · 3개 큰 창과 둘 · 4개 4분할" + (shz.granted ? "" : " (고급 기능 연결 필요)") }));
         const list = h("div", { class: "ar-list" });
         layouts().forEach((L, idx) => {
           list.append(h("div", { class: "ar-card" },

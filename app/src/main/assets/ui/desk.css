@@ -518,3 +518,5 @@ body.light #ctx button.danger { color: var(--danger); }
 .win-arrange .btn[disabled] { opacity: .5; }
 .win-arrange .ar-diag-btn { display: block; margin: 10px 0 0; }
 .win-arrange .ar-diag { min-height: 300px; width: 100%; background: rgba(0,0,0,.28); color: var(--ar-cream); border: 1px solid var(--ar-line); border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.55; }
+.win-arrange .ar-tile { margin: 2px 0 2px; }
+.win-arrange .ar-sub { font-size: 12.5px !important; margin: 2px 0 12px !important; text-align: center; }

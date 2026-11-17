@@ -1147,31 +1147,28 @@ public class MainActivity extends ComponentActivity {
         return new int[]{a[2] - a[0], a[1], a[3], a[0]};
     }
 
-    private static final java.util.regex.Pattern TASK_LINE = java.util.regex.Pattern.compile(
-            "taskId=(\\d+): ([^/\\s]+)/(\\S+) bounds=\\[(-?\\d+),(-?\\d+)\\]\\[(-?\\d+),(-?\\d+)\\].*?visible=(true|false)");
-    private static final java.util.regex.Pattern ROOT_LINE = java.util.regex.Pattern.compile("RootTask id=\\d+ .*?displayId=(\\d+)");
+    private static final java.util.Set<String> NOT_WINDOWS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "com.android.systemui", "com.sec.android.app.desktoplauncher", "com.sec.android.app.launcher",
+            "com.google.android.apps.nexuslauncher", "com.android.launcher3", "com.samsung.android.app.taskedge"));
+    private String lastTaskSource = "";
 
-    /** 이 화면(같은 디스플레이)에 열린 다른 앱의 창: 위에 있는 것부터. Shizuku가 없으면 null */
+    /** 이 화면에 열린 다른 앱의 창: 위에 있는 것부터. Shizuku가 없으면 null */
     private JSONArray openTasks() throws JSONException {
         if (!Shizu.granted()) return null;
-        String out = Shizu.run("am stack list", 2500);
-        if (out == null) return null;
-        int myDisplay = getDisplay() != null ? getDisplay().getDisplayId() : 0, disp = -1;
+        java.util.List<TaskParser.T> all = TaskParser.stackList(Shizu.run("am stack list", 2500));
+        lastTaskSource = "stack";
+        if (all.isEmpty()) { all = TaskParser.dumpsys(Shizu.run("dumpsys activity activities", 4000)); lastTaskSource = "dumpsys"; }
+        int myDisplay = getDisplay() != null ? getDisplay().getDisplayId() : 0;
+        boolean anyHere = false;
+        for (TaskParser.T t : all) if (t.display == myDisplay) { anyHere = true; break; }
         JSONArray list = new JSONArray();
         java.util.Set<String> seen = new java.util.HashSet<>();
-        for (String line : out.split("\n")) {
-            java.util.regex.Matcher r = ROOT_LINE.matcher(line);
-            if (r.find()) { disp = Integer.parseInt(r.group(1)); continue; }
-            java.util.regex.Matcher m = TASK_LINE.matcher(line);
-            if (!m.find() || disp != myDisplay) continue;
-            String pkg = m.group(2);
-            if (pkg.equals(getPackageName()) || pkg.equals("com.android.systemui") || seen.contains(pkg)) continue;
-            seen.add(pkg);
-            String cls = m.group(3);
-            if (cls.startsWith(".")) cls = pkg + cls;
-            list.put(new JSONObject().put("task", Integer.parseInt(m.group(1))).put("pkg", pkg).put("cls", cls)
-                    .put("b", new JSONArray().put(Integer.parseInt(m.group(4))).put(Integer.parseInt(m.group(5))).put(Integer.parseInt(m.group(6))).put(Integer.parseInt(m.group(7))))
-                    .put("visible", "true".equals(m.group(8))));
+        for (TaskParser.T t : all) {
+            boolean here = anyHere ? t.display == myDisplay : (dexOn() && t.display != 0);
+            if (!here || t.pkg.equals(getPackageName()) || NOT_WINDOWS.contains(t.pkg) || seen.contains(t.pkg)) continue;
+            seen.add(t.pkg);
+            list.put(new JSONObject().put("task", t.task).put("pkg", t.pkg).put("cls", t.cls).put("display", t.display)
+                    .put("b", new JSONArray().put(t.l).put(t.t).put(t.r).put(t.b)).put("visible", t.visible));
         }
         return list;
     }
@@ -1204,6 +1201,19 @@ public class MainActivity extends ComponentActivity {
      */
     private JSONObject lastArrange = new JSONObject();
 
+    /** 그 창이 원하는 자리(±12px)에 있나 */
+    private boolean placed(int task, Rect want) throws JSONException {
+        JSONArray now = openTasks();
+        if (now == null) return false;
+        for (int i = 0; i < now.length(); i++) {
+            JSONObject t = now.getJSONObject(i);
+            if (t.getInt("task") != task) continue;
+            JSONArray b = t.getJSONArray("b");
+            return Math.abs(b.getInt(0) - want.left) <= 12 && Math.abs(b.getInt(1) - want.top) <= 12 && Math.abs(b.getInt(2) - want.right) <= 12 && Math.abs(b.getInt(3) - want.bottom) <= 12;
+        }
+        return false;
+    }
+
     private JSONObject arrange(JSONArray items, double reserveCss) throws Exception {
         JSONObject diag = new JSONObject();
         int[] area = arrangeArea(reserveCss);
@@ -1229,7 +1239,15 @@ public class MainActivity extends ComponentActivity {
                 try {
                     zoneArg = zone; reserveArg = reserveCss;
                     want[0] = boundsFor("zone");
-                    launch(pkg, cls, "zone", zone, reserveCss);
+                    Intent front = open.containsKey(pkg) ? getPackageManager().getLaunchIntentForPackage(pkg) : null;
+                    if (front != null) startActivity(front.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); // 이미 열린 창: 앞으로만
+                    else {
+                        try { launch(pkg, cls, "zone", zone, reserveCss); }
+                        catch (RuntimeException e) { // 저장된 클래스가 바로 열 수 없는 화면이면 앱의 첫 화면으로
+                            Intent li = getPackageManager().getLaunchIntentForPackage(pkg);
+                            if (li != null) launch(pkg, li.getComponent().getClassName(), "zone", zone, reserveCss); else throw e;
+                        }
+                    }
                 } catch (Exception e) { Log.w(TAG, "배치 펼치기: 열지 못함 " + pkg, e); }
                 done.countDown();
             });
@@ -1248,8 +1266,13 @@ public class MainActivity extends ComponentActivity {
             // 2) 자리 옮기기 (Shizuku)
             if (task != null && want[0] != null && Shizu.granted()) {
                 Rect b = want[0];
-                String out = Shizu.run("am task resize " + task + " " + b.left + " " + b.top + " " + b.right + " " + b.bottom, 2500);
+                String cmd = "am task resize " + task + " " + b.left + " " + b.top + " " + b.right + " " + b.bottom;
+                String out = Shizu.run(cmd, 2500);
                 boolean ok = out != null && !out.toLowerCase(java.util.Locale.ROOT).contains("error") && !out.contains("Exception");
+                if (ok) { // 정말 옮겨졌는지 확인하고, 아니면 잠깐 뒤 한 번 더
+                    Thread.sleep(250);
+                    if (!placed(task, b)) { Thread.sleep(400); out = Shizu.run(cmd, 2500); Thread.sleep(250); ok = placed(task, b); }
+                }
                 if (open.containsKey(pkg)) res.put("how", ok ? "moved" : "stuck");
                 if (!ok) res.put("detail", out == null ? "" : out.length() > 160 ? out.substring(0, 160) : out);
             } else if (open.isEmpty() && !Shizu.granted()) {
@@ -1273,6 +1296,7 @@ public class MainActivity extends ComponentActivity {
             diagItems.put(res);
         }
         diag.put("items", diagItems);
+        diag.put("source", lastTaskSource);
         if (Shizu.granted()) diag.put("stack", String.valueOf(Shizu.run("am stack list | grep -E 'RootTask|taskId=' | head -24", 2500)));
         lastArrange = diag;
         return new JSONObject().put("ok", true).put("shizuku", Shizu.granted()).put("results", results);
