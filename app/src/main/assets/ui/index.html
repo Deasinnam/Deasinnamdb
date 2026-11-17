@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>덜누름 패드</title>
+  <link rel="stylesheet" href="pad.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><b>덜누름 패드</b><span id="status" class="status">확인 중…</span></div>
+    <div class="top-act">
+      <button id="editBtn" class="tbtn" type="button">편집</button>
+      <button id="menuBtn" class="tbtn icon" type="button" aria-label="메뉴">⋯</button>
+    </div>
+  </header>
+  <div id="moveBar" class="movebar" hidden>
+    <span>지금 패드가 큰 화면에 떠 있습니다. 휴대폰 화면에서 쓰면 더 편합니다.</span>
+    <button id="moveBtn" type="button">휴대폰 화면으로 옮기기</button>
+  </div>
+  <nav id="tabs" class="tabs" aria-label="버튼 판"></nav>
+  <main id="grid" class="grid" aria-live="polite"></main>
+  <p id="hint" class="hint"></p>
+
+  <div id="menu" class="menu" hidden>
+    <button type="button" data-act="keepon"><span>화면 켜 두기</span><i id="keepState">켬</i></button>
+    <button type="button" data-act="addboard"><span>판 추가</span></button>
+    <button type="button" data-act="reset"><span>기본 판으로 되돌리기</span></button>
+    <button type="button" data-act="about"><span>정보</span></button>
+  </div>
+
+  <div id="sheet" class="sheet-wrap" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" id="sheetBox"></div>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="pad.js"></script>
+</body>
+</html>
