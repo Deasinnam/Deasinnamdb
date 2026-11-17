@@ -633,6 +633,11 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .al-get:active { transform: translateY(3px); box-shadow: 0 1px 0 #c75a00; }
 .al-get small { font: 600 11px/1 var(--font-mono); opacity: .85; }
 .al-count { font-size: 12px; color: #a1a1aa; }
+/* 최신 버전 줄: 업데이트 7일 동안 NEW 표시 (DL 표 versions 맨 위 항목으로 자동) */
+.dl-upd { font-size: 12px; color: #a1a1aa; white-space: nowrap; }
+.dl-upd b { color: #fff; font-weight: 600; }
+.dl-new { display: inline-block; background: #e5484d; color: #fff; font: 700 10px/1 var(--font-mono); letter-spacing: .04em; padding: 3px 6px 2px; border-radius: 4px; margin-right: 6px; vertical-align: 1px; }
+.amp-cta .dl-upd { flex-basis: 100%; margin-top: -8px; font-size: 13px; }
 .al-count b { color: #fff; font-weight: 600; }
 .al-soon { display: inline-block; padding: 11px 16px; border-radius: 12px; border: 1px dashed #3f3f46; color: #a1a1aa; font-size: 14px; }
 .al-more { padding: 12px 16px; border-radius: 12px; border: 1px solid #3f3f46; background: #18181b; color: #fff; font-size: 14px; text-decoration: none; white-space: nowrap; }
@@ -643,7 +648,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
   .al-act > * { flex: 1 1 0; text-align: center; }
   .al-dl { align-items: stretch; }
   .al-get, .al-soon, .ntf-btn { justify-content: center; text-align: center; }
-  .al-count { text-align: center; }
+  .al-count, .al-dl .dl-upd { text-align: center; }
   .al-info b { font-size: 17px; }
 }
 .show-bar { margin-top: 26px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
@@ -3151,17 +3156,25 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       document.addEventListener("click", function (e) { if (!menu.hidden && !box.contains(e.target)) show(false); });
       document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { show(false); btn.focus(); } });
     }
+    /* 최신 버전 줄: "NEW 1.0.3 · 11.17 업데이트". NEW는 업데이트 후 7일 동안만 */
+    var upd = "";
+    if (c.versions && c.versions.length) {
+      var top = c.versions[0], dm = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(top.date || "");
+      var fresh = dm && (Date.now() - new Date(+dm[1], dm[2] - 1, +dm[3]).getTime()) / 864e5 <= 7;
+      upd = '<span class="dl-upd">' + (fresh ? '<span class="dl-new">NEW</span>' : "") + "<b>" + top.v + "</b> · " +
+        (dm ? (+dm[2]) + "." + dm[3] : top.date) + " 업데이트</span>";
+    }
     /* 앱센터 앱 목록 */
     var row = document.querySelector('.al-row[data-app="' + id + '"] .al-dl');
     if (row) {
-      row.innerHTML = link.replace("%C", "al-get") + '<span class="al-count" aria-live="polite"></span>';
+      row.innerHTML = link.replace("%C", "al-get") + upd + '<span class="al-count" aria-live="polite"></span>';
       st.outs.push(row.querySelector(".al-count"));
       wire(row, ".al-get");
     }
     /* 앱 소개 페이지 */
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta");
     if (cta) {
-      cta.innerHTML = link.replace("%C", "amp-btn") + '<span class="dl-count" aria-live="polite"></span>' + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
+      cta.innerHTML = link.replace("%C", "amp-btn") + '<span class="dl-count" aria-live="polite"></span>' + upd + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
       st.outs.push(cta.querySelector(".dl-count"));
       wire(cta, ".amp-btn");
     }
