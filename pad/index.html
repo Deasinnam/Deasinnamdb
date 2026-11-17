@@ -855,6 +855,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   .nt-tt h2 { font-size: 18px; }
   .nt-figs { grid-template-columns: 1fr; }
 }
+/* 버튼 누름 효과: 스프링 눌림 · 로더 → 체크 모핑 (script: 버튼 모션) */
+.fx-host { position: relative; overflow: hidden; }
+.fx-ov { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.fx-ov svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; grid-area: 1 / 1; }
+.fx-ov .fx-ring { opacity: .25; }
 </style>
 <link rel="canonical" href="https://deolnureum.com/pad/">
 <meta property="og:url" content="https://deolnureum.com/pad/">
@@ -3416,6 +3421,131 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     if (card.classList.contains("tip-on")) { card.classList.remove("tip-on"); return; } // 두 번째 탭: 그대로 이동
     e.preventDefault(); clear(card); card.classList.add("tip-on");
   });
+})();
+</script>
+<script>
+/* 버튼 모션: 도형 하나가 눌리고, 줄어 로더가 되고, 체크로 끝나는 짧은 동작 + 소리.
+   움직임은 닫힌 형태 스프링(살짝만 넘침)을 샘플링해 Web Animations로 재생합니다. */
+(function () {
+  var SEL = ".al-get, .al-more, .ntf-btn, .rel-act .key, .amp-cta .amp-btn, .amp-cta a, .dl-menu a, .ap-fb .amp-btn";
+  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!Element.prototype.animate) return;
+
+  function spring(tau, f, z) {
+    if (tau <= 0) return 0;
+    var w = 2 * Math.PI * f, wd = w * Math.sqrt(1 - z * z);
+    return 1 - Math.exp(-z * w * tau) * (Math.cos(wd * tau) + (z * w / wd) * Math.sin(wd * tau));
+  }
+  // from → to 스프링을 n개 키프레임으로
+  function frames(prop, from, to, f, z, dur, fmt) {
+    var out = [], n = 24;
+    for (var i = 0; i <= n; i++) { var k = spring(dur * i / n, f, z); var o = {}; o[prop] = fmt(from + (to - from) * (i === n ? 1 : k)); out.push(o); }
+    return out;
+  }
+  function px(v) { return v.toFixed(2) + "px"; }
+
+  // ---- 소리: 파일 없이 Web Audio로 ----
+  var ac = null;
+  function ctx() {
+    if (!ac) { var A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); }
+    if (ac.state === "suspended") ac.resume();
+    return ac;
+  }
+  function tone(type, f0, f1, t, dur, vol) {
+    var a = ctx(); if (!a) return;
+    var o = a.createOscillator(), g = a.createGain(), at = a.currentTime + t;
+    o.type = type; o.frequency.setValueAtTime(f0, at); o.frequency.exponentialRampToValueAtTime(f1, at + dur);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(a.destination); o.start(at); o.stop(at + dur + 0.02);
+  }
+  function noise(t, dur, vol, hp) {
+    var a = ctx(); if (!a) return;
+    var n = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+    var src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    src.buffer = buf; f.type = "highpass"; f.frequency.value = hp; g.gain.value = vol;
+    src.connect(f); f.connect(g); g.connect(a.destination); src.start(a.currentTime + t);
+  }
+  var SND = {
+    tick: function () { noise(0, 0.03, 0.22, 2500); tone("sine", 1600, 700, 0, 0.045, 0.06); },
+    open: function () { noise(0, 0.025, 0.16, 3000); tone("sine", 520, 860, 0, 0.09, 0.06); },
+    load: function () { tone("sine", 660, 640, 0, 0.08, 0.025); },
+    done: function () { tone("triangle", 880, 880, 0, 0.14, 0.07); tone("triangle", 1318.5, 1318.5, 0.11, 0.22, 0.07); tone("sine", 2637, 2637, 0.11, 0.18, 0.012); }
+  };
+
+  // ---- 눌림: 줄었다가 스프링으로 복귀 ----
+  function press(el) {
+    if (still) return;
+    el.animate(frames("transform", 0.94, 1, 3.2, 0.62, 0.45, function (v) { return "scale(" + v.toFixed(4) + ")"; }), { duration: 450, easing: "linear" });
+  }
+
+  // ---- 모핑: 버튼 → 원(로더) → 체크 → 버튼 ----
+  var busy = new WeakSet();
+  function morph(el, label) {
+    if (busy.has(el)) return; busy.add(el);
+    var r = el.getBoundingClientRect(), w = r.width, h = r.height, cs = getComputedStyle(el), col = cs.color, rad = parseFloat(cs.borderTopLeftRadius) || 12;
+    if (cs.position === "static") el.style.position = "relative";
+    el.classList.add("fx-host");
+    var ov = document.createElement("span"); ov.className = "fx-ov"; ov.style.color = col;
+    ov.innerHTML = '<svg viewBox="0 0 24 24" class="fx-sp"><circle class="fx-ring" cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 8 8"/></svg><svg viewBox="0 0 24 24" class="fx-ck"><path d="M6.5 12.5l3.6 3.6L17.5 8.6" stroke-dasharray="16" stroke-dashoffset="16"/></svg>';
+    el.appendChild(ov);
+    var sp = ov.querySelector(".fx-sp"), ck = ov.querySelector(".fx-ck"), ckp = ck.querySelector("path");
+    ck.style.opacity = 0;
+    var T = still ? 0.01 : 1;
+    // 1) 글자는 흐려지며 빠지고, 버튼은 원으로
+    el.animate([{ color: col }, { color: "transparent" }], { duration: 120 * T, fill: "forwards" });
+    var shrink = el.animate(frames("width", w, h, 2.6, 0.82, 0.5, px), { duration: 500 * T, easing: "linear", fill: "forwards" });
+    el.animate(frames("borderRadius", rad, h / 2, 2.6, 0.82, 0.5, px), { duration: 500 * T, easing: "linear", fill: "forwards" });
+    sp.animate([{ opacity: 0, filter: "blur(4px)" }, { opacity: 1, filter: "blur(0)" }], { duration: 180 * T, delay: 90 * T, fill: "both" });
+    var spin = sp.animate([{ transform: "rotate(0)" }, { transform: "rotate(360deg)" }], { duration: 650, iterations: Infinity });
+    SND.load();
+    // 2) 체크
+    setTimeout(function () {
+      sp.animate([{ opacity: 1 }, { opacity: 0, filter: "blur(4px)" }], { duration: 120 * T, fill: "forwards" });
+      ck.style.opacity = 1;
+      ckp.animate([{ strokeDashoffset: 16 }, { strokeDashoffset: 0 }], { duration: 260 * T, easing: "cubic-bezier(.3,.7,.2,1)", fill: "forwards" });
+      ck.animate(frames("transform", 0.6, 1, 3, 0.7, 0.4, function (v) { return "scale(" + v.toFixed(4) + ")"; }), { duration: 400 * T, easing: "linear" });
+      SND.done();
+    }, 720 * T);
+    // 3) 원래 버튼으로
+    setTimeout(function () {
+      spin.cancel();
+      var back = el.animate(frames("width", h, w, 2.4, 0.84, 0.55, px), { duration: 550 * T, easing: "linear" });
+      el.animate(frames("borderRadius", h / 2, rad, 2.4, 0.84, 0.55, px), { duration: 550 * T, easing: "linear" });
+      ck.animate([{ opacity: 1 }, { opacity: 0, filter: "blur(4px)" }], { duration: 140 * T, fill: "forwards" });
+      el.getAnimations().forEach(function (a) { if (a !== back && a.effect && a.effect.getKeyframes().some(function (k) { return "width" in k || "color" in k || "borderRadius" in k; }) && a.playState === "finished") a.cancel(); });
+      el.animate([{ color: "transparent" }, { color: col }], { duration: 220 * T, delay: 160 * T, fill: "backwards" });
+      back.onfinish = function () { ov.remove(); el.classList.remove("fx-host"); busy.delete(el); };
+    }, 1500 * T);
+  }
+
+  // ---- 연결 (이벤트 위임: 나중에 그려지는 버튼도) ----
+  document.addEventListener("pointerdown", function (e) {
+    var el = e.target.closest && e.target.closest(SEL); if (!el || e.button > 0) return;
+    press(el.closest(".dl-menu") ? el : el);
+    if (el.matches("button.al-get, .amp-cta button")) SND.open(); else SND.tick();
+  }, true);
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    var el = document.activeElement; if (el && el.matches && el.matches(SEL)) { press(el); SND.tick(); }
+  }, true);
+  // 실제로 받을 때: 버전 목록의 항목이나 바로 받는 버튼
+  var armNtf = 0;
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest && e.target.closest(SEL); if (!el) return;
+    if (el.closest(".dl-menu")) { var trig = el.closest(".dl-pick").querySelector("button"); if (trig) morph(trig); return; }
+    var href = el.getAttribute("href") || "";
+    if (el.tagName === "A" && (el.hasAttribute("download") || /releases\/download\/|\/download\//.test(href))) morph(el);
+    if (el.classList.contains("ntf-btn")) armNtf = Date.now();
+  }, true);
+  // 알림 신청이 끝나 버튼이 "알림 신청됨"으로 바뀔 때
+  new MutationObserver(function (list) {
+    if (Date.now() - armNtf > 120000) return;
+    list.forEach(function (m) {
+      var el = m.target;
+      if (el.classList && el.classList.contains("ntf-btn") && el.classList.contains("is-on") && !(m.oldValue || "").includes("is-on")) morph(el);
+    });
+  }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class"], attributeOldValue: true });
 })();
 </script>
 </body>
