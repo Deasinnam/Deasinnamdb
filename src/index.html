@@ -14,7 +14,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* 덜누름: 흰 바탕, 검정 한 색. 모든 버튼은 "키" — 누르면 그림자만큼 내려간다.
    레이아웃: 왼쪽 정렬 단일 칼럼(최대 1120px), 앱은 2열 그리드 → 폰에서 1열. */
@@ -94,8 +94,7 @@ nav a.is-on { color: var(--ink); font-weight: 600; text-decoration: underline; t
 .hero .key-appcenter.dark:focus-visible { outline-color: #ff7a00; }
 .hero p.appcenter-hint { margin: 16px 0 0; font-size: 15px; color: var(--ink-2); }
 .hero p.appcenter-hint b { color: #e06a00; }
-#hero.hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center; }
-@media (max-width: 860px) { #hero.hero { grid-template-columns: 1fr; } }
+#hero.hero { grid-template-columns: 1fr; }
 @media (max-width: 560px) { .hero .key-appcenter { flex: 1 1 100%; font-size: 19px; } }
 .press-demo { justify-self: end; display: grid; gap: 30px; justify-items: end; }
 /* "덜" 키: 누를수록 낮아지고(--h), 기울고(--tilt), 금이 가다가(--crack) 결국 빠진다 */
@@ -856,62 +855,6 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   .nt-tt h2 { font-size: 18px; }
   .nt-figs { grid-template-columns: 1fr; }
 }
-/* 홈 모션: 도형 하나로 이어지는 UI (120 BPM · 14초 루프) */
-.mo-stage { position: relative; width: 100%; max-width: 520px; justify-self: end; aspect-ratio: 1 / 1; border-radius: 28px; background: #ecebe8; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
-.mo-stage .fit { position: absolute; left: 50%; top: 50%; width: 720px; height: 720px; transform-origin: 0 0; }
-.mo-stage .mo-beats { position: absolute; left: 18px; top: 18px; display: flex; gap: 4px; }
-.mo-stage .mo-beats i { width: 5px; height: 5px; border-radius: 50%; background: rgba(0,0,0,.14); }
-.mo-stage .mo-beats i.on { background: #111; }
-.mo-stage .mo-cap { position: absolute; left: 18px; right: 18px; bottom: 16px; display: flex; justify-content: space-between; font: 500 11px/1 "Geist Mono", "IBM Plex Mono", monospace; color: #8a8782; letter-spacing: .04em; pointer-events: none; }
-@media (max-width: 860px) { .mo-stage { justify-self: stretch; max-width: 460px; } }
-/* 모션 부품 */
-.mo-stage .mo-cam { position: absolute; inset: 0; transform-origin: 50% 50%; }
-.mo-stage .mo-shape { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); overflow: hidden; font-family: "Geist", "IBM Plex Sans KR", system-ui, sans-serif; }
-.mo-stage .mo-l { position: absolute; left: 50%; top: 50%; display: flex; align-items: center; white-space: nowrap; }
-.mo-stage .mo-btn { gap: 10px; color: #fff; font-weight: 600; font-size: 19px; letter-spacing: -0.01em; }
-.mo-stage .mo-btn svg, .mo-stage .mo-toast svg, .mo-stage .mo-vol svg, .mo-stage .mo-cover svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.mo-stage .mo-load svg, .mo-stage .mo-check svg { width: 40px; height: 40px; fill: none; stroke-linecap: round; }
-.mo-stage .mo-ring { stroke: rgba(255,255,255,.18); stroke-width: 3; } .mo-arc { stroke: #fff; stroke-width: 3; stroke-dasharray: 75.4; transform: rotate(-90deg); transform-origin: 50% 50%; }
-.mo-stage .mo-ck { stroke: #fff; stroke-width: 3; stroke-linejoin: round; stroke-dasharray: 24; }
-.mo-stage .mo-island { gap: 12px; color: #fff; font-size: 15px; font-weight: 500; width: 280px; }
-.mo-stage .mo-island span { flex: 1; }
-.mo-stage .mo-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
-.mo-stage .mo-eq { display: flex; gap: 3px; align-items: center; height: 18px; } .mo-eq i { width: 3px; height: 18px; border-radius: 2px; background: #fff; }
-.mo-stage .mo-player { display: grid; grid-template-columns: 72px 1fr 56px; grid-template-rows: 72px auto auto; column-gap: 16px; row-gap: 0; width: 392px; color: #fff; align-items: center; }
-.mo-stage .mo-cover { width: 72px; height: 72px; border-radius: 16px; background: rgba(255,255,255,.1); display: grid; place-items: center; color: rgba(255,255,255,.7); }
-.mo-stage .mo-cover svg { width: 34px; height: 34px; stroke-width: 1.5; }
-.mo-stage .mo-meta { display: grid; gap: 4px; } .mo-meta b { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; } .mo-meta span { font-size: 14px; color: rgba(255,255,255,.55); }
-.mo-stage .mo-play { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: grid; place-items: center; }
-.mo-stage .mo-play svg { width: 16px; height: 18px; fill: #111; margin-left: 1px; }
-.mo-stage .mo-bar { grid-column: 1 / -1; position: relative; height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); margin-top: 30px; }
-.mo-stage .mo-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: #fff; }
-.mo-stage .mo-knob { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
-.mo-stage .mo-times { grid-column: 1 / -1; display: flex; justify-content: space-between; margin-top: 10px; font: 500 12px/1 "Geist Mono", "IBM Plex Mono", ui-monospace, monospace; color: rgba(255,255,255,.5); }
-.mo-stage .mo-vol { gap: 14px; color: #111; width: 392px; }
-.mo-stage .mo-vol svg { width: 22px; height: 22px; flex: none; }
-.mo-stage .mo-vbar { flex: 1; height: 10px; border-radius: 5px; background: #e6e4e0; overflow: hidden; } .mo-vfill { display: block; height: 100%; background: #111; border-radius: 5px; }
-.mo-stage .mo-vnum { width: 32px; text-align: right; font: 600 15px/1 "Geist Mono", "IBM Plex Mono", ui-monospace, monospace; }
-.mo-stage .mo-ind { position: absolute; left: 50%; top: 50%; display: block; }
-.mo-stage .mo-tabs { width: 450px; justify-content: space-between; font-size: 15px; font-weight: 600; }
-.mo-stage .mo-tabs span { width: 140px; text-align: center; }
-.mo-stage .mo-chart { width: 520px; height: 360px; } .mo-chart svg { width: 520px; height: 360px; overflow: visible; }
-.mo-stage .mo-grid line { stroke: #ebe9e5; stroke-width: 1; } .mo-line { fill: none; stroke: #111; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
-.mo-stage .mo-pt { fill: #fff; stroke: #111; stroke-width: 3; }
-.mo-stage .mo-tip { position: absolute; left: calc(50% + 104px); top: 86px; background: #111; color: #fff; border-radius: 12px; padding: 9px 12px; display: grid; gap: 3px; }
-.mo-stage .mo-tip b { font: 600 16px/1 "Geist Mono", "IBM Plex Mono", ui-monospace, monospace; } .mo-tip span { font-size: 12px; color: rgba(255,255,255,.6); }
-.mo-stage .mo-cmd { top: 0; transform-origin: 50% 0; width: 520px; display: block; padding: 0; }
-.mo-stage .mo-cmd { top: 50%; }
-.mo-stage .mo-q { height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 20px; font-size: 18px; font-weight: 500; }
-.mo-stage .mo-q kbd { font: 600 12px/1 "Geist Mono", "IBM Plex Mono", ui-monospace, monospace; border: 1px solid #d9d7d2; border-radius: 7px; padding: 6px 7px; color: #55534f; }
-.mo-stage .mo-caret { width: 2px; height: 22px; background: #111; margin-left: -10px; } .mo-ph { font-style: normal; color: #a19e98; margin-left: -12px; position: absolute; left: 82px; }
-.mo-stage .mo-res { list-style: none; margin: 0; padding: 4px 8px 8px; border-top: 1px solid #eeece8; }
-.mo-stage .mo-res li { display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 12px; border-radius: 12px; font-size: 16px; }
-.mo-stage .mo-res li i { font-style: normal; width: 28px; height: 28px; border-radius: 8px; background: #111; color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 600; }
-.mo-stage .mo-res li b { flex: 1; font-weight: 500; } .mo-res li small { font: 500 12px/1 "Geist Mono", "IBM Plex Mono", ui-monospace, monospace; color: #8a8782; }
-.mo-stage .mo-toast { gap: 12px; color: #fff; width: 352px; font-size: 16px; }
-.mo-stage .mo-toast svg { width: 24px; height: 24px; } .mo-toast b { flex: 1; font-weight: 600; } .mo-toast span { font: 500 12px/1 "Geist Mono", "IBM Plex Mono", ui-monospace, monospace; color: rgba(255,255,255,.5); }
-.mo-stage .mo-cur { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -3px 0 0 -5px; transform-origin: 5px 3px; fill: #111; stroke: #fff; stroke-width: 1.6; stroke-linejoin: round; z-index: 5; }
-
 </style>
 </head>
 <body>
@@ -958,7 +901,6 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       </div>
       <p class="appcenter-hint">앱을 내려받으려면 <b>앱센터</b>를 누르세요.</p>
     </div>
-    <div class="mo-stage" id="moStage" role="img" aria-label="도형 하나가 끊기지 않고 내려받기 버튼, 로더, 체크, 음악 플레이어, 볼륨 슬라이더, 토글, 탭, 차트, 앱 찾기, 알림 토스트로 이어서 바뀌는 14초 모션"><div class="fit"></div><div class="mo-beats" aria-hidden="true"></div><div class="mo-cap" aria-hidden="true"><span class="mo-st">버튼</span><span>120 BPM · <b class="mo-bt">01.1</b></span></div></div>
   </div>
 
   <section class="promise" aria-labelledby="promise-t">
@@ -3462,275 +3404,6 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     if (card.classList.contains("tip-on")) { card.classList.remove("tip-on"); return; } // 두 번째 탭: 그대로 이동
     e.preventDefault(); clear(card); card.classList.add("tip-on");
   });
-})();
-</script>
-<script>
-/* 덜누름 모션: 도형 하나가 상태를 바꾸며 이어지는 루프.
-   모든 값은 seek(t) 안에서 시간으로만 계산합니다 (CSS 전환 · 타이머 · 프레임 간 상태 없음).
-   120 BPM · 7마디 = 28박 = 14초, 마지막 프레임 = 첫 프레임. */
-(function () {
-  "use strict";
-  var LOOP = 14, BEAT = 0.5;
-
-  // ---------- 스프링: 닫힌 형태의 계단 응답 ----------
-  function stepResp(tau, f, z) {
-    if (tau <= 0) return 0;
-    var w = 2 * Math.PI * f, wd = w * Math.sqrt(1 - z * z);
-    return 1 - Math.exp(-z * w * tau) * (Math.cos(wd * tau) + (z * w / wd) * Math.sin(wd * tau));
-  }
-  // 목표가 여러 번 바뀌는 값 = 바뀔 때마다 스프링 하나씩 더한 것
-  function track(t, keys, f, z) {
-    f = f || 2.4; z = z || 0.86;
-    var v = keys[0][1];
-    for (var i = 1; i < keys.length; i++) v += (keys[i][1] - keys[i - 1][1]) * stepResp(t - keys[i][0], keys[i][2] || f, z);
-    return v;
-  }
-  function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
-  function ease(x) { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); }
-  function lerp(a, b, k) { return a + (b - a) * k; }
-  // 내용 바뀜: 들어올 때와 나갈 때 시간을 따로 (겹치지 않게)
-  function vis(t, a, b) { return ease(Math.min((t - a) / 0.18, (b - t) / 0.12)); }
-
-  // ---------- 상태 (박자 · 시각) ----------
-  var S = {
-    button: 0, loader: 0.55, check: 1.0, island: 2.0, player: 2.5, slider: 5.0, toggle: 6.5,
-    tabs: 7.5, chart: 9.0, cmdk: 10.0, toast: 12.0, back: 13.0
-  };
-  var STATES = [
-    [0, "버튼", "내려받기"], [1, "누르기", "커서가 클릭"], [2, "로더", "도형이 원으로"], [3, "체크", "선이 그려짐"],
-    [4, "다이내믹 아일랜드", "Amp 연결됨"], [5, "음악 플레이어", "아일랜드가 펼쳐짐"], [6, "재생", "▶ → ❚❚ 모핑"], [7, "재생 중", "진행 바 흐름"],
-    [8, "재생바 잡기", "커서 누름"], [9, "끌어서 이동", "직접 조작"], [10, "볼륨 슬라이더", "놓으면 바뀜"], [11, "최대 넘겨 끌기", "늘어남"],
-    [12, "놓기", "스프링 복귀"], [13, "토글", "도형이 줄어듦"], [14, "토글 켜기", "박자에 맞춰"], [15, "탭 표시", "손잡이 → 탭"],
-    [16, "탭", "자주 쓰는 앱"], [17, "탭 바꾸기", "앞쪽 가장자리 먼저"], [18, "차트", "선이 그려짐"], [19, "툴팁", "커서 올림"],
-    [20, "⌘K", "도형이 접힘"], [21, "입력", "패"], [22, "거르기", "패드"], [23, "Enter", "선택"],
-    [24, "토스트", "알림 신청됨"], [25, "유지", "잠깐 머묾"], [26, "버튼으로", "처음 크기로"], [27, "루프", "첫 프레임과 같음"]
-  ];
-
-  // 도형 크기 · 모서리 · 색 (rgb)
-  var W = [[0, 232], [S.loader, 64], [S.island, 320], [S.player, 440], [S.slider, 440], [S.toggle, 128], [S.tabs, 480], [S.chart, 520], [S.cmdk, 520], [S.toast, 400], [S.back, 232]];
-  var H = [[0, 64], [S.loader, 64], [S.island, 56], [S.player, 232], [S.slider, 72], [S.toggle, 68], [S.tabs, 68], [S.chart, 360], [S.cmdk, 64], [10.5, 220], [11.0, 124], [S.toast, 64], [S.back, 64]];
-  var R = [[0, 32], [S.loader, 32], [S.island, 28], [S.player, 40], [S.slider, 36], [S.toggle, 34], [S.tabs, 34], [S.chart, 36], [S.cmdk, 22], [S.toast, 32], [S.back, 32]];
-  var BLACK = [17, 17, 17], WHITE = [255, 255, 255], GRAY = [214, 211, 205];
-  var C = [[0, BLACK], [S.slider, WHITE], [S.toggle, GRAY], [7.0, BLACK], [S.tabs, WHITE], [S.toast, BLACK]];
-  var CAM = [[0, 1.55], [S.loader, 1.8], [S.island, 1.45], [S.player, 1.2], [S.slider, 1.25], [S.toggle, 1.8], [S.tabs, 1.12], [S.chart, 1.0], [S.cmdk, 1.06], [10.5, 1.0], [S.toast, 1.3], [S.back, 1.55]];
-
-  // 커서: [시각, x, y] (도형 가운데 = 0,0)
-  var CUR = [[0, 190, 170], [0.12, 30, 12], [2.62, 168, -40], [3.25, 120, 10], [3.62, -118, 76], [4.1, 86, 76, 3.2],
-    [5.18, 6, 6], [5.55, 236, 6, 3.4], [6.12, 60, 44], [6.55, -6, 8], [7.25, 20, 40], [8.0, 0, 8], [8.6, 48, 26],
-    [9.28, 106, -14], [10.05, 140, 120], [11.6, 150, 140], [13.2, 190, 170]];
-  // 누름: [누른 시각, 뗀 시각]
-  var DOWN = [[0.42, 0.55], [2.88, 3.0], [4.0, 5.0], [5.5, 6.0], [6.9, 7.0], [8.38, 8.5]];
-  function curAt(t, i) {
-    var keys = CUR.map(function (k) { return [k[0], k[i], k[3]]; });
-    return track(t, keys, 2.6, 0.9);
-  }
-  function isDown(t) { for (var i = 0; i < DOWN.length; i++) if (t >= DOWN[i][0] && t < DOWN[i][1]) return true; return false; }
-  function downAmt(t) {
-    var v = 0;
-    DOWN.forEach(function (d) { v += stepResp(t - d[0], 6, 0.9) - stepResp(t - d[1], 6, 0.9); });
-    return v;
-  }
-
-  // ---------- 그림 요소 ----------
-  var PATH_LEN = 0;
-  var CHART = [0.32, 0.4, 0.35, 0.52, 0.48, 0.6, 0.55, 0.7, 0.82, 0.74, 0.86, 0.94];
-  function chartPath() {
-    var d = "";
-    CHART.forEach(function (v, i) { var x = -230 + i * (460 / 11), y = 150 - v * 210; d += (i ? " L" : "M") + x.toFixed(1) + " " + y.toFixed(1); });
-    return d;
-  }
-
-  function build(root) {
-    root.innerHTML =
-      '<div class="mo-cam">' +
-      '<div class="mo-shape">' +
-      // 버튼
-      '<div class="mo-l mo-btn"><span>내려받기</span><svg viewBox="0 0 24 24"><path d="M12 5v12M6 11l6 6 6-6"/></svg></div>' +
-      // 로더
-      '<div class="mo-l mo-load"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" class="mo-ring"/><circle cx="20" cy="20" r="12" class="mo-arc"/></svg></div>' +
-      // 체크
-      '<div class="mo-l mo-check"><svg viewBox="0 0 40 40"><path d="M12 20.5l5.5 5.5L28.5 14" class="mo-ck"/></svg></div>' +
-      // 아일랜드
-      '<div class="mo-l mo-island"><i class="mo-dot"></i><span>Daesinnam Amp</span><b class="mo-eq"><i></i><i></i><i></i><i></i></b></div>' +
-      // 플레이어
-      '<div class="mo-l mo-player"><div class="mo-cover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/></svg></div>' +
-      '<div class="mo-meta"><b>Night Drive</b><span>Daesinnam Amp</span></div>' +
-      '<div class="mo-play"><svg viewBox="0 0 16 18"><path class="mo-pp1"/><path class="mo-pp2"/></svg></div>' +
-      '<div class="mo-bar"><i class="mo-fill"></i><i class="mo-knob"></i></div><div class="mo-times"><span class="mo-t1">1:12</span><span>3:40</span></div></div>' +
-      // 볼륨
-      '<div class="mo-l mo-vol"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg><div class="mo-vbar"><i class="mo-vfill"></i></div><b class="mo-vnum">50</b></div>' +
-      // 토글 손잡이 + 탭 표시(같은 요소)
-      '<i class="mo-ind"></i>' +
-      // 탭 이름
-      '<div class="mo-l mo-tabs"><span>자주 쓰는 앱</span><span>문서 · 업무</span><span>미디어</span></div>' +
-      // 차트
-      '<div class="mo-l mo-chart"><svg viewBox="-260 -180 520 360"><g class="mo-grid"><line x1="-230" x2="230" y1="150" y2="150"/><line x1="-230" x2="230" y1="80" y2="80"/><line x1="-230" x2="230" y1="10" y2="10"/><line x1="-230" x2="230" y1="-60" y2="-60"/></g><path class="mo-line" d="' + chartPath() + '"/><circle class="mo-pt" r="6"/></svg><div class="mo-tip"><b>1,284</b><span>11.17 · 내려받기</span></div></div>' +
-      // ⌘K
-      '<div class="mo-l mo-cmd"><div class="mo-q"><kbd>⌘K</kbd><span class="mo-qt"></span><i class="mo-caret"></i><em class="mo-ph">앱 찾기…</em></div>' +
-      '<ul class="mo-res"><li class="r0"><i>패</i><b>덜누름 패드</b><small>개발 중</small></li><li class="r1"><i>워</i><b>덜누름 워크</b><small>1.0.3</small></li><li class="r2"><i>게</i><b>덜누름 게임</b><small>0.3</small></li></ul></div>' +
-      // 토스트
-      '<div class="mo-l mo-toast"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg><b>덜누름 패드 알림 신청됨</b><span>방금</span></div>' +
-      '</div>' +
-      '<svg class="mo-cur" viewBox="0 0 24 24"><path d="M5 3l14 8.2-6.3 1.4L9.6 19z"/></svg>' +
-      '</div>';
-    var q = function (s) { return root.querySelector(s); };
-    var e = {
-      cam: q(".mo-cam"), shape: q(".mo-shape"), cur: q(".mo-cur"),
-      btn: q(".mo-btn"), load: q(".mo-load"), arc: q(".mo-arc"), check: q(".mo-check"), ck: q(".mo-ck"),
-      island: q(".mo-island"), eq: root.querySelectorAll(".mo-eq i"), player: q(".mo-player"), pp1: q(".mo-pp1"), pp2: q(".mo-pp2"),
-      fill: q(".mo-fill"), knob: q(".mo-knob"), t1: q(".mo-t1"), vol: q(".mo-vol"), vfill: q(".mo-vfill"), vnum: q(".mo-vnum"),
-      ind: q(".mo-ind"), tabs: q(".mo-tabs"), tabEls: root.querySelectorAll(".mo-tabs span"), chart: q(".mo-chart"), line: q(".mo-line"), pt: q(".mo-pt"), tip: q(".mo-tip"),
-      cmd: q(".mo-cmd"), qt: q(".mo-qt"), ph: q(".mo-ph"), caret: q(".mo-caret"), res: root.querySelectorAll(".mo-res li"), toast: q(".mo-toast")
-    };
-    if (!PATH_LEN) PATH_LEN = e.line.getTotalLength();
-    return e;
-  }
-
-  function layer(el, o, extra) {
-    el.style.opacity = o.toFixed(3);
-    el.style.filter = o > 0.995 ? "none" : "blur(" + ((1 - o) * 8).toFixed(2) + "px)";
-    el.style.transform = "translate(-50%,-50%) scale(" + (0.96 + 0.04 * o).toFixed(4) + ")" + (extra || "");
-    el.style.visibility = o < 0.002 ? "hidden" : "visible";
-  }
-  function rgb(t) {
-    var c = [0, 1, 2].map(function (i) { return track(t, C.map(function (k) { return [k[0], k[1][i]]; })); });
-    return c;
-  }
-  function polyLerp(a, b, k) { return a.map(function (p, i) { return [lerp(p[0], b[i][0], k), lerp(p[1], b[i][1], k)]; }); }
-  function poly(pts) { return "M" + pts.map(function (p) { return p[0].toFixed(2) + " " + p[1].toFixed(2); }).join(" L") + "Z"; }
-
-  function seek(e, t) {
-    t = ((t % LOOP) + LOOP) % LOOP;
-    var cx = curAt(t, 1), cy = curAt(t, 2), held = isDown(t);
-
-    // --- 재생바 · 볼륨: 누르고 있는 동안은 커서 위치로, 놓으면 그 자리에서 스프링 ---
-    var prog;
-    if (t < 3.0) prog = 0.18;
-    else if (t < 4.0) prog = 0.18 + (t - 3.0) * 0.02;
-    else if (t < 5.0) prog = clamp((cx + 196) / 392, 0, 1);
-    else prog = 0.72;
-    var stretch = 0, vol;
-    var relX = curAt(6.0, 1), relVal = clamp((relX + 160) / 330, 0, 1), relOver = Math.max(0, relX - 170);
-    if (t < 5.5) vol = 0.5 + (prog - 0.5) * 0;
-    if (t < 5.5) vol = lerp(0.5, 0.5, 0);
-    if (t >= 5.5 && t < 6.0) { vol = clamp((cx + 160) / 330, 0, 1); stretch = Math.max(0, cx - 170) * 0.42; }
-    else if (t >= 6.0) { vol = relVal + (0.92 - relVal) * stepResp(t - 6.0, 3, 0.9); stretch = relOver * 0.42 * (1 - stepResp(t - 6.0, 3.2, 0.82)); }
-    else vol = 0.5;
-
-    // --- 도형 ---
-    var w = track(t, W) + stretch, h = track(t, H), r = track(t, R), c = rgb(t);
-    var lum = (c[0] + c[1] + c[2]) / 765;
-    e.shape.style.width = w.toFixed(2) + "px"; e.shape.style.height = h.toFixed(2) + "px";
-    e.shape.style.borderRadius = Math.min(r, h / 2, w / 2).toFixed(2) + "px";
-    e.shape.style.background = "rgb(" + c.map(function (x) { return Math.round(clamp(x, 0, 255)); }).join(",") + ")";
-    e.shape.style.boxShadow = "0 0 0 1px rgba(0,0,0," + (0.08 * lum).toFixed(3) + "), 0 12px 32px -18px rgba(0,0,0,.45)";
-    var cam = track(t, CAM, 1.6, 0.92);
-    e.cam.style.transform = "scale(" + cam.toFixed(4) + ")";
-
-    // --- 내용 ---
-    layer(e.btn, Math.max(vis(t, -1, S.loader), vis(t, S.back + 0.08, 99)));
-    var lo = vis(t, S.loader + 0.08, S.check); layer(e.load, lo);
-    e.arc.style.strokeDashoffset = (75.4 - 20 - 30 * Math.sin(t * 5)).toFixed(2);
-    e.load.querySelector("svg").style.transform = "rotate(" + (t * 520) + "deg)";
-    layer(e.check, vis(t, S.check + 0.06, S.island));
-    e.ck.style.strokeDashoffset = (24 * (1 - ease((t - 1.08) / 0.3))).toFixed(2);
-    layer(e.island, vis(t, S.island + 0.08, S.player));
-    var pl = vis(t, S.player + 0.1, S.slider); layer(e.player, pl);
-    // ▶ → ❚❚
-    var pk = stepResp(t - 3.0, 3.4, 0.86);
-    e.pp1.setAttribute("d", poly(polyLerp([[1, 0], [8.5, 4.5], [8.5, 13.5], [1, 18]], [[1, 0], [6, 0], [6, 18], [1, 18]], pk)));
-    e.pp2.setAttribute("d", poly(polyLerp([[8.5, 4.5], [16, 9], [16, 9], [8.5, 13.5]], [[10, 0], [15, 0], [15, 18], [10, 18]], pk)));
-    e.fill.style.width = (prog * 100).toFixed(2) + "%";
-    e.knob.style.left = (prog * 100).toFixed(2) + "%";
-    e.knob.style.transform = "translate(-50%,-50%) scale(" + (1 + 0.35 * (t >= 4 && t < 5.2 ? stepResp(t - 3.92, 5, 0.9) - stepResp(t - 5.0, 5, 0.9) : 0)).toFixed(3) + ")";
-    var sec = Math.round(prog * 220); e.t1.textContent = Math.floor(sec / 60) + ":" + ("0" + (sec % 60)).slice(-2);
-    for (var i = 0; i < e.eq.length; i++) e.eq[i].style.transform = "scaleY(" + (0.35 + 0.65 * Math.abs(Math.sin(t * 7.6 + i * 1.7))).toFixed(3) + ")";
-
-    layer(e.vol, vis(t, S.slider + 0.1, S.toggle));
-    e.vol.style.width = (392 + stretch).toFixed(1) + "px";
-    e.vfill.style.width = (vol * 100).toFixed(2) + "%";
-    e.vnum.textContent = Math.round(vol * 100);
-
-    // --- 토글 손잡이 → 탭 표시 (가장자리마다 다른 스프링) ---
-    var tabsTop = -h / 2 + 34;
-    var leftKeys = [[0, -58], [7.0, 2, 1.7], [S.tabs, -224, 2.2], [8.5, -72, 1.7]];
-    var rightKeys = [[0, -2], [7.0, 58, 3.4], [S.tabs, -78, 2.2], [8.5, 72, 3.4]];
-    var il = track(t, leftKeys), ir = track(t, rightKeys), ih = track(t, [[0, 56], [S.tabs, 52]]);
-    var indOn = Math.min(ease((t - S.toggle) / 0.2), ease((S.cmdk + 0.12 - t) / 0.12));
-    var ty = t < S.tabs ? 0 : tabsTop;
-    e.ind.style.width = Math.max(0, ir - il).toFixed(2) + "px"; e.ind.style.height = ih.toFixed(2) + "px";
-    e.ind.style.borderRadius = (ih / 2).toFixed(2) + "px";
-    e.ind.style.transform = "translate(" + il.toFixed(2) + "px," + (ty - ih / 2).toFixed(2) + "px)";
-    e.ind.style.opacity = indOn.toFixed(3);
-    e.ind.style.background = t < S.tabs ? "#fff" : "#111";
-    var tb = Math.min(vis(t, S.tabs + 0.1, S.cmdk), 1); layer(e.tabs, tb);
-    e.tabs.style.top = "calc(50% + " + tabsTop.toFixed(2) + "px)";
-    var centers = [-150, 0, 150];
-    for (var j = 0; j < 3; j++) { var inside = centers[j] > il && centers[j] < ir; e.tabEls[j].style.color = inside ? "#fff" : "#111"; }
-
-    // --- 차트: 스스로 그려짐 + 커서 올리면 툴팁 ---
-    var ch = vis(t, S.chart + 0.12, S.cmdk); layer(e.chart, ch);
-    var draw = ease((t - 9.08) / 0.55);
-    e.line.style.strokeDasharray = PATH_LEN.toFixed(1); e.line.style.strokeDashoffset = (PATH_LEN * (1 - draw)).toFixed(1);
-    var px = -230 + 8 * (460 / 11), py = 150 - CHART[8] * 210, tipo = ease((t - 9.62) / 0.16) * ch;
-    e.pt.setAttribute("cx", px); e.pt.setAttribute("cy", py); e.pt.style.opacity = tipo;
-    e.pt.setAttribute("r", (4 + 3 * tipo).toFixed(2));
-    e.tip.style.opacity = tipo.toFixed(3); e.tip.style.transform = "translate(-50%," + (-8 * (1 - tipo)).toFixed(2) + "px)";
-
-    // --- ⌘K: 입력 · 거르기 · Enter ---
-    layer(e.cmd, vis(t, S.cmdk + 0.12, S.toast));
-    e.cmd.style.top = "calc(50% + " + (110 - h / 2).toFixed(2) + "px)";
-    var typed = t >= 11.0 ? "패드" : t >= 10.5 ? "패" : "";
-    e.qt.textContent = typed; e.ph.style.opacity = typed ? 0 : 1;
-    e.caret.style.opacity = (Math.floor(t * 4) % 2 === 0 || typed) ? 1 : 0;
-    var listO = ease((t - 10.55) / 0.16);
-    for (var k = 0; k < 3; k++) {
-      var keep = k === 0 ? 1 : 1 - ease((t - 11.03) / 0.14);
-      var o = listO * keep;
-      e.res[k].style.opacity = o.toFixed(3);
-      e.res[k].style.filter = o > 0.99 ? "none" : "blur(" + ((1 - o) * 6).toFixed(2) + "px)";
-      e.res[k].style.transform = "translateY(" + (6 * (1 - o)).toFixed(2) + "px)";
-    }
-    var sel = ease((t - 11.2) / 0.12), ent = stepResp(t - 11.5, 5, 0.9) - stepResp(t - 11.68, 5, 0.9);
-    e.res[0].style.background = "rgba(17,17,17," + (0.06 * sel + 0.9 * ent).toFixed(3) + ")";
-    e.res[0].style.color = ent > 0.5 ? "#fff" : "#111";
-
-    layer(e.toast, vis(t, S.toast + 0.1, S.back));
-
-    // --- 커서 ---
-    var press = downAmt(t);
-    e.cur.style.transform = "translate(" + cx.toFixed(2) + "px," + cy.toFixed(2) + "px) scale(" + ((1 - 0.16 * press) / cam).toFixed(4) + ")";
-    e.cur.style.opacity = (t > 10.1 && t < 11.7) ? 0.0 + 1 - ease(Math.min((t - 10.1) / 0.2, (11.7 - t) / 0.2)) : 1;
-    return t;
-  }
-
-  window.DeolMorph = { build: build, seek: seek, LOOP: LOOP, BEAT: BEAT, STATES: STATES };
-})();
-
-(function () {
-  var st = document.getElementById("moStage"); if (!st || !window.DeolMorph) return;
-  var M = window.DeolMorph, fit = st.querySelector(".fit"), e = M.build(fit), dots = st.querySelector(".mo-beats"), lab = st.querySelector(".mo-st"), bt = st.querySelector(".mo-bt");
-  for (var i = 0; i < 28; i++) dots.appendChild(document.createElement("i"));
-  function size() { fit.style.transform = "scale(" + (st.clientWidth / 720) + ") translate(-50%,-50%)"; }
-  window.addEventListener("resize", size); size();
-  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var shown = true, run = false, t0 = 0, acc = 0, last = -1;
-  function draw(t) {
-    M.seek(e, t);
-    var b = Math.floor(t / M.BEAT) % 28;
-    if (b !== last) { last = b; lab.textContent = M.STATES[b][1]; bt.textContent = ("0" + (Math.floor(b / 4) + 1)).slice(-2) + "." + (b % 4 + 1); [].forEach.call(dots.children, function (d, k) { d.className = k === b ? "on" : ""; }); }
-  }
-  function frame(now) { if (!run) return; draw((Math.max(0, acc + now - t0) / 1000) % M.LOOP); requestAnimationFrame(frame); }
-  function sync() {
-    var go = shown && !document.hidden && !still && st.offsetParent !== null;
-    if (go && !run) { run = true; t0 = performance.now(); requestAnimationFrame(frame); }
-    else if (!go && run) { run = false; acc += performance.now() - t0; }
-  }
-  draw(still ? 3.4 : 0);
-  if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { shown = en[0].isIntersecting; sync(); }).observe(st);
-  document.addEventListener("visibilitychange", sync);
-  window.addEventListener("hashchange", function () { setTimeout(sync, 50); });
-  sync();
 })();
 </script>
 </body>
