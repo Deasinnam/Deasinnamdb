@@ -123,6 +123,10 @@ public class MainActivity extends ComponentActivity {
     // ---- 위젯 ----
     private static final int WIDGET_HOST_ID = 0x44454B; // "DEK"
     private static final int REQ_WIDGET_CONFIG = 21;
+    private static final int REQ_SHIZUKU = 31;
+    private final rikka.shizuku.Shizuku.OnRequestPermissionResultListener shizukuResult = (code, result) -> {
+        if (code == REQ_SHIZUKU) push("shizuku");
+    };
     private AppWidgetManager widgetManager;
     private AppWidgetHost widgetHost;
     /**
@@ -175,6 +179,7 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try { rikka.shizuku.Shizuku.addRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
         selftest = BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("desk.selftest");
 
         root = new FrameLayout(this);
@@ -359,6 +364,7 @@ public class MainActivity extends ComponentActivity {
         io.shutdownNow();
         if (web != null) web.destroy();
         if (wallWeb != null) wallWeb.destroy();
+        try { rikka.shizuku.Shizuku.removeRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
         super.onDestroy();
     }
 
@@ -379,6 +385,13 @@ public class MainActivity extends ComponentActivity {
             if (a == null) a = new JSONArray();
             if ("apps".equals(method)) {
                 io.execute(() -> reply(id, safe(this::listApps)));
+            } else if ("windows".equals(method)) { // 창정리: 셸 명령이라 시간이 걸려 따로
+                final double reserve = a.optDouble(0, 0);
+                io.execute(() -> reply(id, safe(() -> windows(reserve))));
+            } else if ("arrange".equals(method)) {
+                final JSONArray items = a.optJSONArray(0);
+                final double reserve = a.optDouble(1, 0);
+                io.execute(() -> reply(id, safe(() -> arrange(items == null ? new JSONArray() : items, reserve))));
             } else if ("widgetProviders".equals(method)) {
                 io.execute(() -> reply(id, safe(this::listWidgetProviders)));
             } else if ("lookProbe".equals(method)) { // 자동 점검: 배경 층에 실제로 걸린 배경
@@ -443,6 +456,10 @@ public class MainActivity extends ComponentActivity {
                 return launch(a.getString(0), a.getString(1), a.optString(2, "window"), a.optJSONArray(3), a.optDouble(4, 0));
             case "exitSplit":
                 return exitSplit();
+            case "shizuku":
+                return shizukuState();
+            case "shizukuConnect":
+                return shizukuConnect();
             case "appInfo":
                 startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.getString(0), null))
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -1060,6 +1077,139 @@ public class MainActivity extends ComponentActivity {
         x = Math.max(0, x);
         y = Math.max(usableTop, y);
         return new Rect(x, y, x + w, y + h);
+    }
+
+    // ---------- 창정리: 배치 펼치기 · 열린 창 옮기기 (고급 기능 Shizuku) ----------
+
+    private JSONObject shizukuState() throws JSONException {
+        return new JSONObject().put("installed", Shizu.installed(this)).put("running", Shizu.running()).put("granted", Shizu.granted());
+    }
+
+    /** 단계별로: 설치 안 됨 → 받으러 가기, 꺼져 있음 → Shizuku 열기, 켜져 있음 → 허락 요청 */
+    private String shizukuConnect() {
+        if (!Shizu.installed(this)) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Shizu.DOWNLOAD)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return "install";
+        }
+        if (!Shizu.running()) {
+            Intent i = getPackageManager().getLaunchIntentForPackage(Shizu.PKG);
+            if (i != null) startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return "start";
+        }
+        if (!Shizu.granted()) { Shizu.request(REQ_SHIZUKU); return "request"; }
+        return "ok";
+    }
+
+    /** 창 자리 계산에 쓰는 넓이: 화면 너비 W, 쓸 수 있는 위·아래(작업 표시줄 자리는 뺌) */
+    private int[] usable(double reserveCss) {
+        Rect screen = getWindowManager().getMaximumWindowMetrics().getBounds();
+        float dp = getResources().getDisplayMetrics().density;
+        int bar = reserveCss > 0 ? (int) Math.round(reserveCss * dp) : Math.round(64 * dp);
+        return new int[]{screen.width(), root.getPaddingTop(), screen.height() - root.getPaddingBottom() - bar};
+    }
+
+    private static final java.util.regex.Pattern TASK_LINE = java.util.regex.Pattern.compile(
+            "taskId=(\\d+): ([^/\\s]+)/(\\S+) bounds=\\[(-?\\d+),(-?\\d+)\\]\\[(-?\\d+),(-?\\d+)\\].*?visible=(true|false)");
+    private static final java.util.regex.Pattern ROOT_LINE = java.util.regex.Pattern.compile("RootTask id=\\d+ .*?displayId=(\\d+)");
+
+    /** 이 화면(같은 디스플레이)에 열린 다른 앱의 창: 위에 있는 것부터. Shizuku가 없으면 null */
+    private JSONArray openTasks() throws JSONException {
+        if (!Shizu.granted()) return null;
+        String out = Shizu.run("am stack list", 2500);
+        if (out == null) return null;
+        int myDisplay = getDisplay() != null ? getDisplay().getDisplayId() : 0, disp = -1;
+        JSONArray list = new JSONArray();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (String line : out.split("\n")) {
+            java.util.regex.Matcher r = ROOT_LINE.matcher(line);
+            if (r.find()) { disp = Integer.parseInt(r.group(1)); continue; }
+            java.util.regex.Matcher m = TASK_LINE.matcher(line);
+            if (!m.find() || disp != myDisplay) continue;
+            String pkg = m.group(2);
+            if (pkg.equals(getPackageName()) || pkg.equals("com.android.systemui") || seen.contains(pkg)) continue;
+            seen.add(pkg);
+            String cls = m.group(3);
+            if (cls.startsWith(".")) cls = pkg + cls;
+            list.put(new JSONObject().put("task", Integer.parseInt(m.group(1))).put("pkg", pkg).put("cls", cls)
+                    .put("b", new JSONArray().put(Integer.parseInt(m.group(4))).put(Integer.parseInt(m.group(5))).put(Integer.parseInt(m.group(6))).put(Integer.parseInt(m.group(7))))
+                    .put("visible", "true".equals(m.group(8))));
+        }
+        return list;
+    }
+
+    /** 지금 열린 창과 자리 (창정리의 "지금 배치 저장"용). 자리는 작업 표시줄 위 넓이 기준 비율 */
+    private JSONObject windows(double reserveCss) throws JSONException {
+        JSONObject r = new JSONObject().put("shizuku", Shizu.granted());
+        JSONArray tasks = openTasks();
+        if (tasks == null) return r.put("list", new JSONArray());
+        int[] u = usable(reserveCss);
+        double uh = Math.max(1, u[2] - u[1]);
+        JSONArray list = new JSONArray();
+        for (int i = 0; i < tasks.length(); i++) {
+            JSONObject t = tasks.getJSONObject(i);
+            if (!t.optBoolean("visible")) continue;
+            JSONArray b = t.getJSONArray("b");
+            double l = b.getInt(0) / (double) u[0], top = (b.getInt(1) - u[1]) / uh, rr = b.getInt(2) / (double) u[0], bot = (b.getInt(3) - u[1]) / uh;
+            if (rr - l < 0.05 || bot - top < 0.05) continue; // 접힌 창·작은 팝업은 빼기
+            t.put("zone", new JSONArray().put(clamp01(l)).put(clamp01(top)).put(clamp01(rr)).put(clamp01(bot)));
+            list.put(t);
+        }
+        return r.put("list", list);
+    }
+
+    private static double clamp01(double v) { return Math.round(Math.max(0, Math.min(1, v)) * 1000) / 1000.0; }
+
+    /**
+     * 배치 펼치기: items = [{pkg, cls, zone:[왼,위,오른,아래 비율]}]
+     * 안 열린 앱은 그 자리로 열고, 이미 열린 앱은 Shizuku가 있으면 앞으로 불러 그 자리로 옮깁니다.
+     */
+    private JSONObject arrange(JSONArray items, double reserveCss) throws Exception {
+        JSONArray before = openTasks();
+        java.util.Map<String, Integer> open = new HashMap<>();
+        if (before != null) for (int i = 0; i < before.length(); i++) open.put(before.getJSONObject(i).getString("pkg"), before.getJSONObject(i).getInt("task"));
+        JSONArray results = new JSONArray();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject it = items.getJSONObject(i);
+            String pkg = it.getString("pkg"), cls = it.getString("cls");
+            JSONArray zone = it.getJSONArray("zone");
+            JSONObject res = new JSONObject().put("pkg", pkg);
+            // 1) 그 자리로 열기 (이미 열린 앱이면 앞으로만 나옴)
+            java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+            final Rect[] want = new Rect[1];
+            main.post(() -> {
+                try {
+                    zoneArg = zone; reserveArg = reserveCss;
+                    want[0] = boundsFor("zone");
+                    launch(pkg, cls, "zone", zone, reserveCss);
+                } catch (Exception e) { Log.w(TAG, "배치 펼치기: 열지 못함 " + pkg, e); }
+                done.countDown();
+            });
+            done.await(3, java.util.concurrent.TimeUnit.SECONDS);
+            Integer task = open.get(pkg);
+            if (task == null && Shizu.granted()) { // 새로 연 창: 앱이 자리를 무시했을 수 있어 확인 후 맞춤
+                Thread.sleep(700);
+                JSONArray now = openTasks();
+                if (now != null) for (int k = 0; k < now.length(); k++) if (now.getJSONObject(k).getString("pkg").equals(pkg)) { task = now.getJSONObject(k).getInt("task"); break; }
+                res.put("how", "opened");
+            } else if (task == null) {
+                res.put("how", "opened");
+            } else {
+                Thread.sleep(250);
+            }
+            // 2) 자리 옮기기 (Shizuku)
+            if (task != null && want[0] != null && Shizu.granted()) {
+                Rect b = want[0];
+                String out = Shizu.run("am task resize " + task + " " + b.left + " " + b.top + " " + b.right + " " + b.bottom, 2500);
+                boolean ok = out != null && !out.toLowerCase(java.util.Locale.ROOT).contains("error") && !out.contains("Exception");
+                if (open.containsKey(pkg)) res.put("how", ok ? "moved" : "stuck");
+                if (!ok) res.put("detail", out == null ? "" : out.length() > 160 ? out.substring(0, 160) : out);
+            } else if (open.isEmpty() && !Shizu.granted()) {
+                res.put("maybeStuck", true); // 이미 열려 있던 앱이면 자리가 안 바뀌었을 수 있음
+            }
+            results.put(res);
+            Thread.sleep(220);
+        }
+        return new JSONObject().put("ok", true).put("shizuku", Shizu.granted()).put("results", results);
     }
 
     // ---------- 화면 나누기(분할 화면) 막기 ----------

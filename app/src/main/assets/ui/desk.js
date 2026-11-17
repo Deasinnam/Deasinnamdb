@@ -136,6 +136,7 @@
     { key: "in:calc", label: "계산기", glyph: "계", color: 1 },
     { key: "in:cal", label: "달력", glyph: "달", color: 2 },
     { key: "in:settings", label: "데스크 설정", glyph: "설", color: 3 },
+    { key: "in:arrange", label: "창정리", glyph: "창", color: 2 },
   ];
   const HIDDEN = [{ key: "in:wlog", label: "위젯 자리 기록", glyph: "기", color: 3 }]; // 목록에는 안 나오는 내부 창
   let apps = [];                 // 설치된 앱 {key, pkg, cls, label}
@@ -162,6 +163,7 @@
       S.pins.push("in:notes");
     }
     if (!S.desktop) S.desktop = BUILTIN.map((b) => b.key);
+    if (!S.arrV) { S.arrV = 1; if (!S.desktop.includes("in:arrange")) S.desktop.push("in:arrange"); } // 1.6: 창정리를 바탕화면에
     save();
     renderDesk(); renderTaskbar();
     if (!$("start").hidden) renderStart();
@@ -913,6 +915,7 @@
     if (key === "in:calc") return openWindow(key, { w: 300, h: 420 }, buildCalc);
     if (key === "in:cal") return openWindow(key, { w: 340, h: 380 }, buildCal);
     if (key === "in:settings") return openWindow(key, { w: 460, h: 520 }, buildSettings);
+    if (key === "in:arrange") return openWindow(key, { w: 540, h: 560 }, buildArrange);
     if (key === "in:wlog") return openWindow(key, { w: 560, h: 420 }, (body) => {
       let L = [];
       try { L = JSON.parse(localStorage.getItem("desk_wlog") || "[]"); } catch (_) {}
@@ -1315,6 +1318,167 @@
   if (A) new MutationObserver(syncNative).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "style", "class"] });
 
   // ---------- 이벤트 ----------
+  // ---------- 창정리: 창 배치 저장 · 한 번에 펼치기 ----------
+  // 배치 = { id, name, items: [{ key, zone: [왼, 위, 오른, 아래] 비율 }] } — 자리는 작업 표시줄 위 넓이 기준
+  const pickPkg = (list) => { for (const p of list) { const a = apps.find((x) => x.pkg === p); if (a) return a.key; } return null; };
+  function defaultLayouts() {
+    const work = pickPkg(["com.daesinnam.work"]);
+    const web = pickPkg(["com.daesinnam.browser", "com.sec.android.app.sbrowser", "com.android.chrome", "com.naver.whale"]);
+    const files = pickPkg(["com.sec.android.app.myfiles", "com.google.android.documentsui"]);
+    const L = [];
+    const doc = [[work || web, ZONES.left], [work ? web : files, ZONES.tr], ["in:notes", ZONES.br]].filter((x) => x[0]);
+    L.push({ id: "doc", name: "문서 작업", items: doc.map(([key, zone]) => ({ key, zone })) });
+    if (web) L.push({ id: "read", name: "자료 찾기", items: [{ key: web, zone: ZONES.left2 }, { key: "in:notes", zone: ZONES.right1 }] });
+    return L;
+  }
+  function layouts() {
+    if (!S.layouts) { S.layouts = defaultLayouts(); save(); }
+    return S.layouts;
+  }
+  let shz = { installed: false, running: false, granted: false };
+  const refreshShizuku = () => call("shizuku").then((r) => { if (r && typeof r === "object") shz = r; redrawArrange(); }).catch(() => {});
+  function redrawArrange() {
+    const w = wins.find((x) => x.key === "in:arrange");
+    if (w) { const b = w.el.querySelector(".win-body"); if (b && b._redraw) b._redraw(); }
+  }
+  /** 작은 미리보기: 자리마다 앱 아이콘 */
+  function layoutThumb(items, cls) {
+    const box = h("div", { class: "ar-thumb" + (cls ? " " + cls : "") });
+    for (const it of items) {
+      const z = it.zone, app = byKey.get(it.key);
+      const cell = h("div", { class: "ar-cell" + (app ? "" : " gone") }, app ? iconOf(app) : h("span", { text: "?" }));
+      Object.assign(cell.style, { left: "calc(" + (z[0] * 100) + "% + 2px)", top: "calc(" + (z[1] * 100) + "% + 2px)", width: "calc(" + ((z[2] - z[0]) * 100) + "% - 4px)", height: "calc(" + ((z[3] - z[1]) * 100) + "% - 4px)" });
+      box.append(cell);
+    }
+    return box;
+  }
+  /** 배치 펼치기: 내부 창은 이 화면 안에서, 바깥 앱은 안드로이드가 정해진 자리에 */
+  async function applyLayout(L) {
+    closePanels();
+    const outside = [], missing = [];
+    for (const it of L.items) {
+      const app = byKey.get(it.key);
+      if (!app) { missing.push(it.key); continue; }
+      if (it.key.startsWith("in:")) {
+        const w = openBuiltin(it.key);
+        if (w) { const a = area(), z = it.zone; w.max = false; Object.assign(w, { x: Math.round(a.w * z[0]), y: Math.round(a.h * z[1]), w: Math.round(a.w * (z[2] - z[0])), h: Math.round(a.h * (z[3] - z[1])) }); w.min = false; w.el.hidden = false; applyRect(w); remember(w); }
+      } else outside.push({ pkg: app.pkg, cls: app.cls, zone: it.zone, key: it.key });
+    }
+    if (!outside.length) return toast(L.name + " 배치를 펼쳤습니다");
+    toast(L.name + " 펼치는 중…");
+    const wasOpen = outside.filter((o) => recent.includes(o.key)).length;
+    const r = await call("arrange", outside.map(({ pkg, cls, zone }) => ({ pkg, cls, zone })), tbSpace());
+    for (const o of outside) { const i = recent.indexOf(o.key); if (i >= 0) recent.splice(i, 1); recent.unshift(o.key); }
+    if (recent.length > 8) recent.length = 8;
+    renderTaskbar();
+    if (r && r.shizuku) {
+      const stuck = (r.results || []).filter((x) => x.how === "stuck").length;
+      toast(stuck ? stuck + "개 창은 자리를 옮기지 못했습니다. 그 앱이 창 크기 바꾸기를 막고 있을 수 있습니다." : L.name + " 배치를 펼쳤습니다");
+    } else toast(wasOpen ? "이미 열려 있던 앱은 자리가 안 바뀔 수 있습니다. 고급 기능(Shizuku)을 연결하면 열린 창도 옮깁니다." : L.name + " 배치를 펼쳤습니다");
+    if (missing.length) setTimeout(() => toast("설치돼 있지 않은 앱 " + missing.length + "개는 건너뛰었습니다"), 2600);
+  }
+  function buildArrange(body) {
+    let mode = "list", draft = null, step = 0;
+    const draw = () => {
+      body.textContent = "";
+      const root = h("div", { class: "set ar" });
+      if (mode === "list") {
+        root.append(h("p", { text: "자주 쓰는 창 배치를 저장해 두고 한 번에 다시 펼칩니다. 앱은 정해 둔 자리에 열립니다." }));
+        const list = h("div", { class: "ar-list" });
+        layouts().forEach((L, idx) => {
+          list.append(h("div", { class: "ar-card" },
+            layoutThumb(L.items),
+            h("div", { class: "ar-info" }, h("b", { text: L.name }), h("span", { text: L.items.map((it) => (byKey.get(it.key) || { label: "없는 앱" }).label).join(" · ") })),
+            h("div", { class: "ar-act" },
+              h("button", { class: "btn primary", onclick: () => applyLayout(L) }, "펼치기"),
+              h("button", { class: "btn", onclick: () => { draft = JSON.parse(JSON.stringify(L)); draft._idx = idx; mode = "edit"; step = 2; draw(); } }, "편집"),
+              h("button", { class: "btn", "aria-label": L.name + " 지우기", onclick: () => { if (body._confirm === L.id) { S.layouts.splice(idx, 1); save(); body._confirm = null; } else { body._confirm = L.id; toast("한 번 더 누르면 지웁니다"); } draw(); } }, body._confirm === L.id ? "정말 지우기" : "지우기"))));
+        });
+        if (!layouts().length) list.append(h("div", { class: "note", text: "저장한 배치가 없습니다. 아래에서 새로 만들어 보세요." }));
+        root.append(list,
+          h("div", null,
+            h("button", { class: "btn primary", onclick: () => { draft = { id: "L" + Date.now().toString(36), name: "새 배치 " + (layouts().length + 1), items: [] }; draft._idx = -1; mode = "edit"; step = 1; draw(); } }, "+ 새 배치 만들기"),
+            h("button", { class: "btn", disabled: shz.granted ? null : "", onclick: captureNow }, "지금 창 배치 저장")));
+        // 고급 기능
+        root.append(h("h4", { text: "고급 기능 (Shizuku)" }),
+          h("div", { class: "note ar-adv" + (shz.granted ? " on" : "") },
+            h("b", { text: shz.granted ? "연결됨 — 이미 열린 창도 정해진 자리로 옮기고, 지금 배치를 그대로 저장합니다" : "연결하면 이미 열려 있는 창도 자리를 옮기고, 지금 화면의 창 배치를 그대로 저장할 수 있습니다" }),
+            shz.granted ? null : h("span", { text: !shz.installed ? "Shizuku(무료 공개 앱)를 설치한 뒤 무선 디버깅으로 한 번 켜 두면 됩니다. 덜누름 게임에서 이미 연결했다면 같은 방법입니다." : !shz.running ? "Shizuku 앱을 열어 '시작'을 누른 뒤 돌아와 주세요." : "Shizuku가 켜져 있습니다. 덜누름 데스크를 허락해 주세요." }),
+            shz.granted ? null : h("button", { class: "btn primary", onclick: async () => { const r = await call("shizukuConnect"); if (r === "start") toast("Shizuku에서 '시작'을 누른 뒤 돌아와 주세요"); setTimeout(refreshShizuku, 1200); } }, !shz.installed ? "Shizuku 받으러 가기" : !shz.running ? "Shizuku 열기" : "허락하기")),
+          h("p", { text: "고급 기능 없이도 배치 펼치기는 됩니다. 다만 안드로이드는 이미 떠 있는 다른 앱 창을 홈 앱이 옮기지 못하게 해서, 열려 있던 앱은 자리가 그대로일 수 있습니다." }));
+      } else {
+        // 편집: 1) 모양 고르기 2) 자리마다 앱 고르기 · 이름
+        root.append(h("div", { class: "ar-steps" },
+          h("button", { class: "pill back", onclick: () => { mode = "list"; draw(); } }, "← 목록"),
+          h("span", { text: step === 1 ? "1/2 · 화면 나누는 모양 고르기" : "2/2 · 자리마다 띄울 앱 고르기" })));
+        if (step === 1) {
+          const grid = h("div", { class: "ar-shapes" });
+          const shapes = layoutsFor().filter((lk) => lk !== "F1");
+          for (const lk of shapes.length ? shapes : ["L2"]) {
+            const items = LAYOUTS[lk].map((zk) => ({ key: "", zone: ZONES[zk] }));
+            const b = h("button", { class: "ar-shape", onclick: () => { draft.items = LAYOUTS[lk].map((zk) => ({ key: "", zone: ZONES[zk].slice() })); step = 2; draw(); } }, layoutThumb(items, "big"));
+            grid.append(b);
+          }
+          root.append(grid, h("p", { text: "넓은 화면(펼친 화면 · DeX)일수록 더 많이 나눌 수 있습니다." }));
+        } else {
+          const name = h("input", { class: "field", type: "text", maxlength: "20", value: draft.name, "aria-label": "배치 이름" });
+          name.addEventListener("input", () => { draft.name = name.value.trim() || "이름 없는 배치"; });
+          root.append(h("h4", { text: "이름" }), name, h("h4", { text: "자리" }));
+          const sel = body._zone || 0, cur = draft.items[Math.min(sel, draft.items.length - 1)];
+          const thumb = layoutThumb(draft.items.map((it) => ({ key: it.key, zone: it.zone })), "big pick");
+          [...thumb.children].forEach((c, i) => { if (i === sel) c.classList.add("sel"); c.addEventListener("click", () => { body._zone = i; draw(); }); c.setAttribute("role", "button"); });
+          root.append(thumb, h("p", { text: "칸을 누르고, 아래에서 그 자리에 띄울 앱을 고르세요." }));
+          const pool = [];
+          const skip = (k) => k === "in:arrange" || k === "in:settings" || pool.includes(k) || !byKey.has(k);
+          for (const k of (S.pins || []).concat(recent, lately().map((x) => x.k))) if (!skip(k)) pool.push(k);
+          for (const b of BUILTIN.concat(apps)) if (!skip(b.key)) pool.push(b.key);
+          root.append(h("div", { class: "as-grid ar-apps" }, pool.slice(0, 40).map((k) => {
+            const app = byKey.get(k);
+            return h("button", { class: "gitem" + (cur && cur.key === k ? " on" : ""), title: app.label, onclick: () => {
+              cur.key = k;
+              const next = draft.items.findIndex((it) => !it.key);
+              if (next >= 0) body._zone = next;
+              draw();
+            } }, iconOf(app), h("span", { text: app.label }));
+          })));
+          const ready = draft.items.every((it) => it.key);
+          root.append(h("div", null,
+            h("button", { class: "btn primary", disabled: ready ? null : "", onclick: () => {
+              const L = { id: draft.id, name: draft.name, items: draft.items.map((it) => ({ key: it.key, zone: it.zone })) };
+              if (draft._idx >= 0) S.layouts[draft._idx] = L; else layouts().push(L);
+              save(); mode = "list"; body._zone = 0; toast("\"" + L.name + "\" 배치를 저장했습니다"); draw();
+            } }, ready ? "저장" : "빈 자리를 채워 주세요"),
+            h("button", { class: "btn", onclick: () => { step = 1; body._zone = 0; draw(); } }, "모양 다시 고르기")));
+        }
+      }
+      body.append(root);
+    };
+    async function captureNow() {
+      if (!shz.granted) return toast("고급 기능(Shizuku)을 연결하면 지금 배치를 그대로 저장할 수 있습니다");
+      const r = await call("windows", tbSpace());
+      const list = (r && r.list) || [];
+      const items = [];
+      for (const t of list) {
+        let key = t.pkg + "/" + t.cls;
+        if (!byKey.has(key)) { const a = apps.find((x) => x.pkg === t.pkg); if (!a) continue; key = a.key; }
+        items.push({ key, zone: t.zone });
+      }
+      // 이 화면 안의 내부 창도 함께
+      const a = area();
+      for (const w of wins) if (!w.min && !w.el.hidden && w.key !== "in:arrange" && w.key !== "in:wlog") {
+        const z = w.max ? [0, 0, 1, 1] : [w.x / a.w, w.y / a.h, (w.x + w.w) / a.w, (w.y + w.h) / a.h].map((v) => Math.round(Math.max(0, Math.min(1, v)) * 1000) / 1000);
+        items.push({ key: w.key, zone: z });
+      }
+      if (!items.length) return toast("저장할 창이 없습니다. 앱을 창으로 띄운 뒤 다시 눌러 주세요.");
+      draft = { id: "L" + Date.now().toString(36), name: "내 배치 " + (layouts().length + 1), items, _idx: -1 };
+      mode = "edit"; step = 2; body._zone = 0; draw();
+      toast("창 " + items.length + "개의 자리를 담았습니다. 이름을 정하고 저장하세요.");
+    }
+    body._redraw = draw;
+    draw();
+    refreshShizuku();
+  }
+
   function redrawSettings() {
     const w = wins.find((x) => x.key === "in:settings");
     if (w) w.el.querySelector(".win-body")._redraw();
@@ -1330,6 +1494,7 @@
       refreshStatus().then(() => { applyLook(); redrawSettings(); toast("배경을 바꿨습니다"); });
     }
     else if (what === "wallpaper-failed") toast("이 사진은 읽지 못했습니다. 다른 사진을 골라 주세요.");
+    else if (what === "shizuku") { refreshShizuku(); toast("고급 기능(Shizuku) 연결을 확인했습니다"); }
     else if (what === "status") refreshStatus().then(() => { applyLook(); redrawSettings(); });
     else if (what === "resume") relayout("resume");
     else if (what === "home") { closePanels(); exitWidgetEdit(); }
@@ -1616,6 +1781,21 @@
         " split launch tl app=" + (fresh && fresh.pkg) + " bounds=" + (z && z.bounds) + " half=" + half + " cap=" + splitCap() + " layouts=" + layoutsFor().join() + " deskSplit=" + status.split);
       await wait(2500);
       log("SHOT3");
+      // 1.6 창정리: 기본 배치가 보이는지, 새 배치를 펼치면 바깥 앱은 앱 쪽에서 그 자리로 여는지
+      await wait(1500);
+      const aw = openBuiltin("in:arrange");
+      await wait(500);
+      const cards = aw.el.querySelectorAll(".ar-card").length;
+      log((cards >= 1 && S.layouts && S.layouts[0].name === "문서 작업" && S.desktop.includes("in:arrange") ? "PASS" : "FAIL") + " arrange window cards=" + cards + " first=" + (S.layouts && S.layouts[0] && S.layouts[0].name) + " items=" + JSON.stringify(S.layouts && S.layouts[0] && S.layouts[0].items));
+      const fresh2 = apps.find((a) => !recent.includes(a.key) && a.pkg !== "com.android.settings" && a.pkg !== (fresh && fresh.pkg));
+      const testL = { id: "t", name: "점검 배치", items: [{ key: "in:notes", zone: ZONES.left1 }].concat(fresh2 ? [{ key: fresh2.key, zone: ZONES.right2 }] : []) };
+      for (const x of wins) if (x.key === "in:arrange") { x.min = true; x.el.hidden = true; }
+      await applyLayout(testL);
+      const nw = wins.find((x) => x.key === "in:notes"), ar = area();
+      log((nw && !nw.el.hidden && Math.abs(nw.w - ar.w / 3) <= 2 && nw.x === 0 ? "PASS" : "FAIL") + " arrange inner window left third w=" + (nw && nw.w) + " area=" + Math.round(ar.w));
+      log("ARRANGE-PKG " + (fresh2 && fresh2.pkg));
+      await wait(2500);
+      log("SHOT4");
 
     } catch (e) {
       log("FAIL exception " + (e && e.stack || e));

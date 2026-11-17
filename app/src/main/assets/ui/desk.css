@@ -421,3 +421,33 @@ body.light #ctx button.danger { color: var(--danger); }
 #calfly .cal-head svg, .calfly-head svg { width: 12px; height: 12px; }
 .calfly-head .tbtn { height: 32px; min-width: 32px; }
 .sres .best { width: 100%; }
+
+/* 창정리: 창 배치 저장 · 펼치기 */
+.ar-list { display: grid; gap: 8px; margin: 6px 0 4px; }
+.ar-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto auto; gap: 6px 14px; align-items: center; padding: 10px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); border-top-color: var(--stroke-top); }
+.ar-card .ar-thumb { grid-row: span 2; }
+.ar-info { display: grid; gap: 2px; min-width: 0; }
+.ar-info b { font-size: 14px; color: var(--ink); }
+.ar-info span { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ar-act .btn { margin: 0 6px 0 0; }
+.ar-thumb { position: relative; width: 96px; aspect-ratio: 16 / 10; border-radius: 6px; background: var(--panel-3); border: 1px solid var(--line); }
+.ar-thumb.big { width: 100%; max-width: 360px; }
+.ar-cell { position: absolute; display: grid; place-items: center; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; color: var(--ink-3); font-size: 12px; }
+.ar-cell .ico { width: 20px; height: 20px; border-radius: 5px; font-size: 11px; }
+.ar-thumb.big .ar-cell .ico { width: 34px; height: 34px; border-radius: 8px; font-size: 15px; }
+.ar-cell.gone { opacity: .5; }
+.ar-thumb.pick .ar-cell { cursor: pointer; }
+.ar-thumb.pick .ar-cell.sel { border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.ar-shapes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.ar-shape { padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); }
+.ar-shape:hover { border-color: var(--accent); }
+.ar-shape .ar-thumb { width: 100%; }
+.ar-steps { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); margin: 4px 0 6px; }
+.ar-apps { max-height: 220px; grid-auto-rows: 78px; border-top: 1px solid var(--line); margin-top: 6px; }
+.ar-apps .gitem.on { background: var(--panel-4); border-color: var(--accent); }
+.ar-adv { display: grid; gap: 6px; }
+.ar-adv b { color: var(--ink); font-weight: 600; }
+.ar-adv.on { border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); }
+.ar-adv .btn { justify-self: start; }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+@media (max-width: 600px) { .ar-card { grid-template-columns: 72px minmax(0, 1fr); } .ar-thumb { width: 72px; } }

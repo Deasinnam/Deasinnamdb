@@ -8,8 +8,8 @@ android {
         applicationId 'com.daesinnam.desk'
         minSdk 30
         targetSdk 35
-        versionCode 9
-        versionName "1.5.2"
+        versionCode 10
+        versionName "1.6"
     }
 
     buildFeatures { buildConfig true }
@@ -51,4 +51,7 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.12.1'
     implementation 'androidx.activity:activity:1.9.3'
     implementation 'androidx.core:core:1.13.1'
+    // 창정리 고급 기능: Shizuku (사용자가 따로 설치한 Shizuku 앱과 연결)
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
 }
