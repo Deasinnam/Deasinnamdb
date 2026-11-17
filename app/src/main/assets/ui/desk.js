@@ -1410,7 +1410,29 @@
             h("b", { text: shz.granted ? "연결됨 — 열려 있는 창도 옮기고, 현재 배치를 저장합니다." : "열려 있는 창을 옮기고, 현재 배치를 저장할 수 있습니다." }),
             shz.granted ? null : h("span", { text: !shz.installed ? "Shizuku(무료 공개 앱)를 설치한 뒤 무선 디버깅으로 한 번 켜 두면 됩니다. 덜누름 게임에서 이미 연결했다면 같은 방법입니다." : !shz.running ? "Shizuku 앱을 열어 '시작'을 누른 뒤 돌아와 주세요." : "Shizuku가 켜져 있습니다. 덜누름 데스크를 허락해 주세요." }),
             shz.granted ? null : h("button", { class: "btn primary", onclick: async () => { const r = await call("shizukuConnect"); if (r === "start") toast("Shizuku에서 '시작'을 누른 뒤 돌아와 주세요"); setTimeout(refreshShizuku, 1200); } }, !shz.installed ? "Shizuku 받으러 가기" : !shz.running ? "Shizuku 열기" : "허락하기")),
+          h("button", { class: "ar-link ar-diag-btn", onclick: async () => { body._diag = await call("arrangeDiag"); mode = "diag"; draw(); } }, "마지막 펼치기 점검 보기"),
           h("p", { class: "ar-foot", text: "고급 기능 없이도 배치 펼치기는 됩니다. 다만 안드로이드는 이미 떠 있는 다른 앱 창을 홈 앱이 옮기지 못하게 해서, 열려 있던 앱은 자리가 그대로일 수 있습니다." }));
+      } else if (mode === "diag") {
+        const d = body._diag || {};
+        const lines = [];
+        if (!d.time) lines.push("아직 펼친 기록이 없습니다. 배치를 한 번 펼친 뒤 다시 보세요.");
+        else {
+          lines.push("시각 " + new Date(d.time).toLocaleString("ko-KR"));
+          lines.push("화면 " + d.display + " · DeX " + (d.dex ? "켜짐" : "꺼짐") + " · 데스크 " + (d.deskWindowed ? "창으로 떠 있음" : "화면 전체") + " · 자유 창 " + (d.freeform ? "지원" : "알 수 없음") + " · Shizuku " + (d.shizuku ? "연결됨" : "없음"));
+          lines.push("화면 크기 " + d.screen + " · 데스크 창 " + d.desk + " · 자리 넓이 " + d.area);
+          lines.push("");
+          for (const it of d.items || []) {
+            const app = apps.find((x) => x.pkg === it.pkg);
+            lines.push((app ? app.label : it.pkg) + (it.wasOpen ? " (열려 있던 앱)" : " (새로 엶)"));
+            lines.push("  원한 자리 " + (it.want || "-") + "  →  실제 자리 " + (it.got || (d.shizuku ? "못 읽음" : "Shizuku가 있어야 읽을 수 있음")) + "  · " + ({ moved: "옮김", stuck: "못 옮김", opened: "열기" }[it.how] || it.how || ""));
+            if (it.detail) lines.push("  " + it.detail);
+          }
+          if (d.stack) lines.push("", "창 목록", d.stack);
+        }
+        const t = h("textarea", { class: "notes mono ar-diag", readonly: "", spellcheck: "false" });
+        t.value = lines.join("\n");
+        root.append(h("div", { class: "ar-steps" }, h("button", { class: "pill back", onclick: () => { mode = "list"; draw(); } }, "← 목록"), h("span", { text: "마지막 펼치기 점검" })),
+          h("p", { text: "창이 제자리에 안 놓이면 이 화면을 찍어 의견 보내기로 보내 주세요." }), t);
       } else {
         // 편집: 1) 모양 고르기 2) 자리마다 앱 고르기 · 이름
         root.append(h("div", { class: "ar-steps" },

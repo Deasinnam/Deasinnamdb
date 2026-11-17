@@ -460,6 +460,8 @@ public class MainActivity extends ComponentActivity {
                 return shizukuState();
             case "shizukuConnect":
                 return shizukuConnect();
+            case "arrangeDiag":
+                return lastArrange;
             case "appInfo":
                 startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.getString(0), null))
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -1060,9 +1062,10 @@ public class MainActivity extends ComponentActivity {
         int W = screen.width(), H = screen.height();
         int usableTop = top, usableBottom = H - bottom - bar;
         if ("zone".equals(mode) && zoneArg != null && zoneArg.length() == 4) {
-            int uh = usableBottom - usableTop;
-            return new Rect((int) Math.round(W * zoneArg.optDouble(0)), usableTop + (int) Math.round(uh * zoneArg.optDouble(1)),
-                    (int) Math.round(W * zoneArg.optDouble(2)), usableTop + (int) Math.round(uh * zoneArg.optDouble(3)));
+            int[] u = arrangeArea(reserveArg); // [왼, 위, 오른, 아래] — 화면 전체 기준(DeX에서 데스크가 창이어도)
+            int uw = u[2] - u[0], uh = u[3] - u[1];
+            return new Rect(u[0] + (int) Math.round(uw * zoneArg.optDouble(0)), u[1] + (int) Math.round(uh * zoneArg.optDouble(1)),
+                    u[0] + (int) Math.round(uw * zoneArg.optDouble(2)), u[1] + (int) Math.round(uh * zoneArg.optDouble(3)));
         }
         if ("left".equals(mode)) return new Rect(0, usableTop, W / 2, usableBottom);
         if ("right".equals(mode)) return new Rect(W / 2, usableTop, W, usableBottom);
@@ -1101,11 +1104,45 @@ public class MainActivity extends ComponentActivity {
     }
 
     /** 창 자리 계산에 쓰는 넓이: 화면 너비 W, 쓸 수 있는 위·아래(작업 표시줄 자리는 뺌) */
+    /** 데스크가 화면 전체(바탕화면)가 아니라 창으로 떠 있나 — DeX에서 앱으로 열었을 때 */
+    private boolean deskWindowed() {
+        Configuration c = getResources().getConfiguration();
+        if (c.toString().contains("mWindowingMode=freeform")) return true;
+        Rect mine = getWindowManager().getCurrentWindowMetrics().getBounds(), max = getWindowManager().getMaximumWindowMetrics().getBounds();
+        return mine.width() < max.width() - 8 || mine.height() < max.height() - 8;
+    }
+
+    /** 삼성 DeX가 켜져 있나 (삼성 기기의 Configuration.semDesktopModeEnabled) */
+    private boolean dexOn() {
+        try {
+            Configuration c = getResources().getConfiguration();
+            java.lang.reflect.Field f = c.getClass().getField("semDesktopModeEnabled"), on = c.getClass().getField("SEM_DESKTOP_MODE_ENABLED");
+            return f.getInt(c) == on.getInt(c);
+        } catch (Throwable t) { return false; }
+    }
+
+    /**
+     * 창정리 자리 계산 넓이 [왼, 위, 오른, 아래] (화면 픽셀).
+     * 화면 전체에서 시스템 막대(상태 표시줄 · DeX 작업 표시줄 · 내비게이션)를 뺀 곳.
+     * 데스크가 바탕화면으로 화면 전체를 쓰면 데스크 작업 표시줄 자리도 뺍니다.
+     */
+    private int[] arrangeArea(double reserveCss) {
+        android.view.WindowMetrics m = getWindowManager().getMaximumWindowMetrics();
+        Rect s = m.getBounds();
+        android.graphics.Insets in = m.getWindowInsets().getInsetsIgnoringVisibility(
+                android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout());
+        int l = s.left + in.left, t = s.top + in.top, r = s.right - in.right, b = s.bottom - in.bottom;
+        if (!deskWindowed()) {
+            float dp = getResources().getDisplayMetrics().density;
+            b -= reserveCss > 0 ? (int) Math.round(reserveCss * dp) : Math.round(64 * dp);
+            t = Math.max(t, root.getPaddingTop());
+        }
+        return new int[]{l, t, r, Math.max(t + 100, b)};
+    }
+
     private int[] usable(double reserveCss) {
-        Rect screen = getWindowManager().getMaximumWindowMetrics().getBounds();
-        float dp = getResources().getDisplayMetrics().density;
-        int bar = reserveCss > 0 ? (int) Math.round(reserveCss * dp) : Math.round(64 * dp);
-        return new int[]{screen.width(), root.getPaddingTop(), screen.height() - root.getPaddingBottom() - bar};
+        int[] a = arrangeArea(reserveCss);
+        return new int[]{a[2] - a[0], a[1], a[3], a[0]};
     }
 
     private static final java.util.regex.Pattern TASK_LINE = java.util.regex.Pattern.compile(
@@ -1149,7 +1186,7 @@ public class MainActivity extends ComponentActivity {
             JSONObject t = tasks.getJSONObject(i);
             if (!t.optBoolean("visible")) continue;
             JSONArray b = t.getJSONArray("b");
-            double l = b.getInt(0) / (double) u[0], top = (b.getInt(1) - u[1]) / uh, rr = b.getInt(2) / (double) u[0], bot = (b.getInt(3) - u[1]) / uh;
+            double l = (b.getInt(0) - u[3]) / (double) u[0], top = (b.getInt(1) - u[1]) / uh, rr = (b.getInt(2) - u[3]) / (double) u[0], bot = (b.getInt(3) - u[1]) / uh;
             if (rr - l < 0.05 || bot - top < 0.05) continue; // 접힌 창·작은 팝업은 빼기
             t.put("zone", new JSONArray().put(clamp01(l)).put(clamp01(top)).put(clamp01(rr)).put(clamp01(bot)));
             list.put(t);
@@ -1163,7 +1200,17 @@ public class MainActivity extends ComponentActivity {
      * 배치 펼치기: items = [{pkg, cls, zone:[왼,위,오른,아래 비율]}]
      * 안 열린 앱은 그 자리로 열고, 이미 열린 앱은 Shizuku가 있으면 앞으로 불러 그 자리로 옮깁니다.
      */
+    private JSONObject lastArrange = new JSONObject();
+
     private JSONObject arrange(JSONArray items, double reserveCss) throws Exception {
+        JSONObject diag = new JSONObject();
+        int[] area = arrangeArea(reserveCss);
+        Rect max = getWindowManager().getMaximumWindowMetrics().getBounds(), cur = getWindowManager().getCurrentWindowMetrics().getBounds();
+        diag.put("time", System.currentTimeMillis()).put("display", getDisplay() != null ? getDisplay().getDisplayId() + " " + getDisplay().getName() : "?")
+                .put("dex", dexOn()).put("deskWindowed", deskWindowed()).put("freeform", freeformSupported()).put("shizuku", Shizu.granted())
+                .put("screen", max.flattenToString()).put("desk", cur.flattenToString())
+                .put("area", area[0] + "," + area[1] + " - " + area[2] + "," + area[3]).put("reserveCss", reserveCss);
+        JSONArray diagItems = new JSONArray();
         JSONArray before = openTasks();
         java.util.Map<String, Integer> open = new HashMap<>();
         if (before != null) for (int i = 0; i < before.length(); i++) open.put(before.getJSONObject(i).getString("pkg"), before.getJSONObject(i).getInt("task"));
@@ -1206,9 +1253,26 @@ public class MainActivity extends ComponentActivity {
             } else if (open.isEmpty() && !Shizu.granted()) {
                 res.put("maybeStuck", true); // 이미 열려 있던 앱이면 자리가 안 바뀌었을 수 있음
             }
+            res.put("want", want[0] == null ? "" : want[0].flattenToString()).put("wasOpen", open.containsKey(pkg));
             results.put(res);
             Thread.sleep(220);
         }
+        // 실제로 놓인 자리 (Shizuku가 있을 때만 읽을 수 있음)
+        Thread.sleep(600);
+        JSONArray after = openTasks();
+        for (int i = 0; i < results.length(); i++) {
+            JSONObject res = results.getJSONObject(i);
+            String got = "";
+            if (after != null) for (int k = 0; k < after.length(); k++) {
+                JSONObject t = after.getJSONObject(k);
+                if (t.getString("pkg").equals(res.getString("pkg"))) { JSONArray b = t.getJSONArray("b"); got = b.getInt(0) + " " + b.getInt(1) + " " + b.getInt(2) + " " + b.getInt(3); break; }
+            }
+            res.put("got", got);
+            diagItems.put(res);
+        }
+        diag.put("items", diagItems);
+        if (Shizu.granted()) diag.put("stack", String.valueOf(Shizu.run("am stack list | grep -E 'RootTask|taskId=' | head -24", 2500)));
+        lastArrange = diag;
         return new JSONObject().put("ok", true).put("shizuku", Shizu.granted()).put("results", results);
     }
 
