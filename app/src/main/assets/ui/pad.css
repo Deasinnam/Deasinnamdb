@@ -7,7 +7,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px 6px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .brand b { font-size: 17px; white-space: nowrap; }
-@media (max-width: 360px) { .brand b { font-size: 15px; } .top { padding: 10px 10px 4px; } .tbtn { padding: 7px 10px; } }
 .status { font-size: 12px; color: #a1a1aa; padding: 4px 9px; border-radius: 99px; background: #1c1c20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .status.on { color: #bbf7d0; background: #14301f; }
 .status.on::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; margin-right: 6px; vertical-align: 1px; }
@@ -68,3 +67,4 @@ input[type=text], input[type=search] { width: 100%; background: #0c0c0e; color: 
 .toast.show { opacity: 1; }
 .row .ph { width: 44px; height: 44px; border-radius: 10px; background: #27272a; flex: none; }
 .sheet-open .toast { bottom: auto; top: 18px; }
+@media (max-width: 360px) { .brand b { font-size: 15px; } .top { padding: 10px 10px 4px; } .tbtn { padding: 7px 10px; } }
