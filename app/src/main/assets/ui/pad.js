@@ -135,6 +135,12 @@
       a.addEventListener("click", addBoard);
       tabs.appendChild(a);
     }
+    var cur = tabs.querySelector(".tab.cur");
+    if (cur) { // 고른 판 이름이 가장자리에서 잘리지 않게
+      var l = cur.offsetLeft, r = l + cur.offsetWidth;
+      if (l < tabs.scrollLeft + 8) tabs.scrollLeft = Math.max(0, l - 24);
+      else if (r > tabs.scrollLeft + tabs.clientWidth - 8) tabs.scrollLeft = r - tabs.clientWidth + 24;
+    }
   }
 
   function keyStyle(el, color) {
@@ -236,7 +242,7 @@
 
   // 한 판이 스크롤 없이 화면에 다 들어오게 버튼 크기와 줄 수를 맞춤 (접은 화면 가로·세로, 펼친 화면 모두).
   // 너무 작아질 때만(76px 미만) 스크롤을 씀
-  var GAP = 14, MIN_KEY = 76, MAX_KEY = 190;
+  var GAP = 12, MIN_KEY = 62, MAX_KEY = 190;
   function fitGrid() {
     var grid = $("grid"), n = grid.children.length;
     if (!n) return;
@@ -259,6 +265,14 @@
     grid.style.setProperty("--ksz", best + "px");
   }
   window.addEventListener("resize", function () { fitGrid(); });
+  // 화면 배치가 늦게 정해지거나(접기·펴기, 회전) 크기가 바뀌면 다시 맞춤
+  if (window.ResizeObserver) {
+    var lastWH = "";
+    new ResizeObserver(function () {
+      var g = $("grid"), wh = g.clientWidth + "x" + g.clientHeight;
+      if (wh !== lastWH) { lastWH = wh; fitGrid(); }
+    }).observe($("grid"));
+  }
 
   function bindKey(el, i) {
     var timer = 0, longDone = false;
