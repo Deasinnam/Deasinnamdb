@@ -57,15 +57,15 @@ for i in $(seq 1 90); do
     adb shell dumpsys activity activities > activities-arrange.txt
     echo "창정리 바깥 앱: $apkg"; grep -A40 "$apkg" activities-arrange.txt | grep -m2 -E "mBounds=" || true
     # 고급 기능(Shizuku)과 같은 셸 권한으로: 창 목록 형식, 열린 창 옮기기
-    adb shell am stack list > stack-list.txt 2>&1
-    head -30 stack-list.txt
-    if grep -qE "taskId=[0-9]+: [^/ ]+/[^ ]+ bounds=\[-?[0-9]+,-?[0-9]+\]\[-?[0-9]+,-?[0-9]+\].*visible=" stack-list.txt; then echo "창 목록 형식 점검: PASS"; else echo "창 목록 형식 점검: FAIL"; fi
-    tid=$(grep -oE "taskId=[0-9]+: com.android.settings" stack-list.txt | head -1 | grep -oE "[0-9]+" | head -1)
+    adb shell am stack list > selftest-stack.txt 2>&1
+    head -30 selftest-stack.txt
+    if grep -qE "taskId=[0-9]+: [^/ ]+/[^ ]+ bounds=\[-?[0-9]+,-?[0-9]+\]\[-?[0-9]+,-?[0-9]+\].*visible=" selftest-stack.txt; then echo "창 목록 형식 점검: PASS"; else echo "창 목록 형식 점검: FAIL"; fi
+    tid=$(grep -oE "taskId=[0-9]+: com.android.settings" selftest-stack.txt | head -1 | grep -oE "[0-9]+" | head -1)
     if [ -n "$tid" ]; then
       adb shell am task resize "$tid" 100 120 900 700 2>&1 | head -3
       sleep 1
-      adb shell am stack list | grep "taskId=$tid:" | tee stack-after.txt
-      if grep -q "bounds=\[100,120\]\[900,700\]" stack-after.txt; then echo "열린 창 옮기기 점검: PASS"; else echo "열린 창 옮기기 점검: FAIL"; fi
+      adb shell am stack list | grep "taskId=$tid:" | tee selftest-stack-after.txt
+      if grep -q "bounds=\[100,120\]\[900,700\]" selftest-stack-after.txt; then echo "열린 창 옮기기 점검: PASS"; else echo "열린 창 옮기기 점검: FAIL"; fi
     else echo "열린 창 옮기기 점검: 설정 창 없음"; fi
   fi
   if [ "$shot" = 0 ] && adb logcat -d -s DESK_SELFTEST:I | grep -q "SHOT"; then adb exec-out screencap -p > desk-screen-windows.png; shot=1; fi

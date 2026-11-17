@@ -451,3 +451,68 @@ body.light #ctx button.danger { color: var(--danger); }
 .ar-adv .btn { justify-self: start; }
 .btn[disabled] { opacity: .45; pointer-events: none; }
 @media (max-width: 600px) { .ar-card { grid-template-columns: 72px minmax(0, 1fr); } .ar-thumb { width: 72px; } }
+
+/* 창정리 — 가죽 · 황동 (덜누름 패드와 같은 결) */
+.win.win-arrange {
+  --ar-cream: #efe3cc; --ar-cream-2: #bfae91; --ar-gold: #c9a15c; --ar-gold-hi: #e2c483; --ar-line: rgba(201,161,92,.42);
+  background: radial-gradient(120% 80% at 15% 0%, rgba(255,230,190,.05), transparent 60%), linear-gradient(160deg, #2f241d, #1f1813);
+  border: 1px solid var(--ar-line); color: var(--ar-cream); box-shadow: 0 24px 60px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(0,0,0,.4);
+}
+.win-arrange .win-bar { background: transparent; border-bottom: 1px solid var(--ar-line); }
+.win-arrange .win-title { color: var(--ar-cream); font-weight: 700; font-size: 15px; }
+.win-arrange .win-ctl { color: var(--ar-cream); }
+.win-arrange .win-body { background: transparent; }
+.win-arrange .set { padding: 14px 18px 20px; gap: 6px; }
+.win-arrange .set p { color: var(--ar-cream-2); }
+.win-arrange .set h4 { color: var(--ar-cream-2); font-size: 13px; margin: 12px 0 6px; }
+.win-arrange .ar-lead { color: var(--ar-cream) !important; font-size: 17px !important; font-weight: 700; letter-spacing: -0.01em; margin: 2px 0 10px !important; }
+/* 버튼 */
+.win-arrange .btn { min-height: 36px; padding: 7px 16px; border-radius: 9px; background: linear-gradient(#3a2d24, #2b211a); border: 1px solid rgba(201,161,92,.55); color: var(--ar-cream); font-weight: 600; box-shadow: inset 0 1px 0 rgba(255,235,200,.08), 0 2px 4px rgba(0,0,0,.35); margin: 0 8px 0 0; }
+.win-arrange .btn:hover { border-color: var(--ar-gold-hi); }
+.win-arrange .btn:active { transform: translateY(1px); }
+.win-arrange .btn.primary { background: linear-gradient(#d9b56b, #a8823c); border-color: #e7cc8e; color: #24180b; box-shadow: inset 0 1px 0 rgba(255,245,215,.55), 0 2px 6px rgba(0,0,0,.4); }
+.win-arrange .btn.primary:hover { background: linear-gradient(#e3c07a, #b38c44); }
+.win-arrange .btn.wide { display: block; width: 100%; min-height: 46px; font-size: 16px; font-weight: 800; border-radius: 10px; margin: 0; }
+.win-arrange .ar-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 4px; }
+.win-arrange .ar-row .btn { min-height: 42px; padding: 8px 20px; font-size: 14px; margin: 0; }
+.win-arrange .ar-row .btn.primary { background: linear-gradient(#4b3a24, #33271a); color: var(--ar-cream); border: 1.5px solid var(--ar-gold); }
+.win-arrange .ar-row .btn.primary:hover { background: linear-gradient(#5a452b, #3b2d1e); }
+/* 배치 카드 */
+.win-arrange .ar-card { grid-template-columns: 128px minmax(0, 1fr); gap: 8px 18px; padding: 14px; border-radius: 14px; background: linear-gradient(170deg, rgba(58,45,36,.9), rgba(40,31,25,.9)); border: 1px solid var(--ar-line); box-shadow: inset 0 1px 0 rgba(255,235,200,.05); }
+.win-arrange .ar-info b { color: var(--ar-cream); font-size: 17px; font-weight: 800; }
+.win-arrange .ar-info span { color: var(--ar-cream-2); font-size: 13px; }
+.win-arrange .ar-act { display: flex; gap: 8px; flex-wrap: wrap; }
+.win-arrange .ar-act .btn { margin: 0; min-width: 64px; }
+.win-arrange .ar-act .btn.primary { min-width: 84px; }
+.win-arrange .ar-thumb { width: 128px; background: rgba(0,0,0,.18); border: 1px solid rgba(239,227,204,.16); border-radius: 8px; }
+.win-arrange .ar-cell { background: rgba(255,235,200,.035); border: 1px solid rgba(239,227,204,.14); border-radius: 6px; }
+.win-arrange .ar-thumb.big { width: 100%; max-width: 330px; border-radius: 12px; }
+.win-arrange .ar-apps { max-height: 170px !important; }
+.win-arrange .ar-thumb.big .ar-cell { border-radius: 9px; }
+.win-arrange .ar-thumb.pick .ar-cell.sel { border: 2px solid var(--ar-gold-hi); background: rgba(201,161,92,.2); }
+/* 고급 기능 접기 */
+.win-arrange .ar-fold { display: flex; align-items: center; gap: 10px; width: 100%; margin: 14px 0 4px; padding: 12px 4px 8px; border-top: 1px solid var(--ar-line); color: var(--ar-cream); font-size: 15px; font-weight: 700; text-align: left; }
+.win-arrange .ar-fold > span:first-child { flex: 1; }
+.win-arrange .ar-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(239,227,204,.25); }
+.win-arrange .ar-dot.on { background: #6fe06f; box-shadow: 0 0 6px rgba(111,224,111,.6); }
+.win-arrange .ar-chev { width: 18px; height: 18px; display: grid; place-items: center; color: var(--ar-gold-hi); transition: transform .18s; transform: rotate(180deg); }
+.win-arrange .ar-fold.open .ar-chev { transform: none; }
+.win-arrange .ar-chev svg { width: 14px; height: 14px; }
+.win-arrange .note.ar-adv { padding: 14px 16px; border-radius: 12px; background: rgba(255,235,200,.03); border: 1px solid var(--ar-line); color: var(--ar-cream-2); font-size: 13px; line-height: 1.6; gap: 8px; }
+.win-arrange .note.ar-adv b { color: var(--ar-cream); font-size: 14px; }
+.win-arrange .note.ar-adv .btn { margin-top: 4px; }
+.win-arrange .ar-foot { font-size: 12.5px !important; line-height: 1.6; margin-top: 10px !important; }
+/* 편집 */
+.win-arrange .pill { background: transparent; border: 1px solid var(--ar-line); color: var(--ar-cream); height: 30px; padding: 0 12px; border-radius: 8px; }
+.win-arrange .ar-steps { color: var(--ar-cream); font-size: 14px; }
+.win-arrange .field { background: rgba(0,0,0,.25); border: 1px solid rgba(239,227,204,.22); color: var(--ar-cream); border-radius: 8px; height: 38px; padding: 0 12px; max-width: 380px; }
+.win-arrange .field:focus { border-color: var(--ar-gold); outline: none; }
+.win-arrange .ar-apps { border-top: 1px solid var(--ar-line); border-bottom: 1px solid var(--ar-line); padding: 6px 0; max-height: 200px; }
+.win-arrange .ar-apps .gitem > span:not(.ico) { color: var(--ar-cream); }
+.win-arrange .ar-apps .gitem:hover { background: rgba(255,235,200,.05); border-color: transparent; }
+.win-arrange .ar-apps .gitem.on { background: rgba(201,161,92,.12); border: 1.5px solid var(--ar-gold-hi); }
+.win-arrange .ar-save { display: grid; gap: 6px; margin-top: 12px; }
+.win-arrange .ar-link { justify-self: center; color: var(--ar-cream-2); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
+.win-arrange .ar-shape { background: rgba(255,235,200,.03); border: 1px solid var(--ar-line); border-radius: 12px; }
+.win-arrange .ar-shape:hover { border-color: var(--ar-gold-hi); }
+.win-arrange .btn[disabled] { opacity: .5; }

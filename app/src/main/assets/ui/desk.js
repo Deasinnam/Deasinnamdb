@@ -915,7 +915,7 @@
     if (key === "in:calc") return openWindow(key, { w: 300, h: 420 }, buildCalc);
     if (key === "in:cal") return openWindow(key, { w: 340, h: 380 }, buildCal);
     if (key === "in:settings") return openWindow(key, { w: 460, h: 520 }, buildSettings);
-    if (key === "in:arrange") return openWindow(key, { w: 540, h: 560 }, buildArrange);
+    if (key === "in:arrange") { const w = openWindow(key, { w: 560, h: 660 }, buildArrange); if (w) w.el.classList.add("win-arrange"); return w; }
     if (key === "in:wlog") return openWindow(key, { w: 560, h: 420 }, (body) => {
       let L = [];
       try { L = JSON.parse(localStorage.getItem("desk_wlog") || "[]"); } catch (_) {}
@@ -1383,7 +1383,7 @@
       body.textContent = "";
       const root = h("div", { class: "set ar" });
       if (mode === "list") {
-        root.append(h("p", { text: "자주 쓰는 창 배치를 저장해 두고 한 번에 다시 펼칩니다. 앱은 정해 둔 자리에 열립니다." }));
+        root.append(h("p", { class: "ar-lead", text: "자주 쓰는 창 배치를 저장하고 한 번에 펼치세요." }));
         const list = h("div", { class: "ar-list" });
         layouts().forEach((L, idx) => {
           list.append(h("div", { class: "ar-card" },
@@ -1396,16 +1396,21 @@
         });
         if (!layouts().length) list.append(h("div", { class: "note", text: "저장한 배치가 없습니다. 아래에서 새로 만들어 보세요." }));
         root.append(list,
-          h("div", null,
+          h("div", { class: "ar-row" },
             h("button", { class: "btn primary", onclick: () => { draft = { id: "L" + Date.now().toString(36), name: "새 배치 " + (layouts().length + 1), items: [] }; draft._idx = -1; mode = "edit"; step = 1; draw(); } }, "+ 새 배치 만들기"),
             h("button", { class: "btn", disabled: shz.granted ? null : "", onclick: captureNow }, "지금 창 배치 저장")));
-        // 고급 기능
-        root.append(h("h4", { text: "고급 기능 (Shizuku)" }),
+        // 고급 기능 (접고 펴기)
+        const open = S.arAdvOpen !== false;
+        root.append(h("button", { class: "ar-fold" + (open ? " open" : ""), "aria-expanded": open ? "true" : "false", onclick: () => { S.arAdvOpen = !open; save(); draw(); } },
+          h("span", { text: "고급 기능 (Shizuku)" }), h("i", { class: "ar-dot" + (shz.granted ? " on" : ""), title: shz.granted ? "연결됨" : "연결 안 됨" }),
+          h("span", { class: "ar-chev" })));
+        root.lastChild.querySelector(".ar-chev").innerHTML = '<svg viewBox="0 0 12 12"><path d="M3 7.5l3-3 3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        if (open) root.append(
           h("div", { class: "note ar-adv" + (shz.granted ? " on" : "") },
-            h("b", { text: shz.granted ? "연결됨 — 이미 열린 창도 정해진 자리로 옮기고, 지금 배치를 그대로 저장합니다" : "연결하면 이미 열려 있는 창도 자리를 옮기고, 지금 화면의 창 배치를 그대로 저장할 수 있습니다" }),
+            h("b", { text: shz.granted ? "연결됨 — 열려 있는 창도 옮기고, 현재 배치를 저장합니다." : "열려 있는 창을 옮기고, 현재 배치를 저장할 수 있습니다." }),
             shz.granted ? null : h("span", { text: !shz.installed ? "Shizuku(무료 공개 앱)를 설치한 뒤 무선 디버깅으로 한 번 켜 두면 됩니다. 덜누름 게임에서 이미 연결했다면 같은 방법입니다." : !shz.running ? "Shizuku 앱을 열어 '시작'을 누른 뒤 돌아와 주세요." : "Shizuku가 켜져 있습니다. 덜누름 데스크를 허락해 주세요." }),
             shz.granted ? null : h("button", { class: "btn primary", onclick: async () => { const r = await call("shizukuConnect"); if (r === "start") toast("Shizuku에서 '시작'을 누른 뒤 돌아와 주세요"); setTimeout(refreshShizuku, 1200); } }, !shz.installed ? "Shizuku 받으러 가기" : !shz.running ? "Shizuku 열기" : "허락하기")),
-          h("p", { text: "고급 기능 없이도 배치 펼치기는 됩니다. 다만 안드로이드는 이미 떠 있는 다른 앱 창을 홈 앱이 옮기지 못하게 해서, 열려 있던 앱은 자리가 그대로일 수 있습니다." }));
+          h("p", { class: "ar-foot", text: "고급 기능 없이도 배치 펼치기는 됩니다. 다만 안드로이드는 이미 떠 있는 다른 앱 창을 홈 앱이 옮기지 못하게 해서, 열려 있던 앱은 자리가 그대로일 수 있습니다." }));
       } else {
         // 편집: 1) 모양 고르기 2) 자리마다 앱 고르기 · 이름
         root.append(h("div", { class: "ar-steps" },
@@ -1427,7 +1432,7 @@
           const sel = body._zone || 0, cur = draft.items[Math.min(sel, draft.items.length - 1)];
           const thumb = layoutThumb(draft.items.map((it) => ({ key: it.key, zone: it.zone })), "big pick");
           [...thumb.children].forEach((c, i) => { if (i === sel) c.classList.add("sel"); c.addEventListener("click", () => { body._zone = i; draw(); }); c.setAttribute("role", "button"); });
-          root.append(thumb, h("p", { text: "칸을 누르고, 아래에서 그 자리에 띄울 앱을 고르세요." }));
+          root.append(thumb, h("p", { text: "칸을 누른 뒤, 아래에서 앱을 고르세요." }));
           const pool = [];
           const skip = (k) => k === "in:arrange" || k === "in:settings" || pool.includes(k) || !byKey.has(k);
           for (const k of (S.pins || []).concat(recent, lately().map((x) => x.k))) if (!skip(k)) pool.push(k);
@@ -1442,13 +1447,13 @@
             } }, iconOf(app), h("span", { text: app.label }));
           })));
           const ready = draft.items.every((it) => it.key);
-          root.append(h("div", null,
-            h("button", { class: "btn primary", disabled: ready ? null : "", onclick: () => {
+          root.append(h("div", { class: "ar-save" },
+            h("button", { class: "btn primary wide", disabled: ready ? null : "", onclick: () => {
               const L = { id: draft.id, name: draft.name, items: draft.items.map((it) => ({ key: it.key, zone: it.zone })) };
               if (draft._idx >= 0) S.layouts[draft._idx] = L; else layouts().push(L);
               save(); mode = "list"; body._zone = 0; toast("\"" + L.name + "\" 배치를 저장했습니다"); draw();
-            } }, ready ? "저장" : "빈 자리를 채워 주세요"),
-            h("button", { class: "btn", onclick: () => { step = 1; body._zone = 0; draw(); } }, "모양 다시 고르기")));
+            } }, ready ? "저장하기" : "빈 자리를 채워 주세요"),
+            h("button", { class: "ar-link", onclick: () => { step = 1; body._zone = 0; draw(); } }, "모양 다시 고르기")));
         }
       }
       body.append(root);
