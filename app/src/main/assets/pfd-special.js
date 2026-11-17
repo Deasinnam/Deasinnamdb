@@ -722,6 +722,7 @@
       + '.sp-odo i{font-style:normal;font-size:20px;line-height:1;color:#a9cdf2;transform:rotate(-30deg)}.sp-odo small{display:block;font-size:11px;font-weight:700;color:#b9d2f0;white-space:nowrap}'
       + '.sp-odo b{font:800 18px/1.1 "Barlow Condensed","Noto Sans KR",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.05em;color:#f2f7ff}.sp-odo b span{font-size:.7em;opacity:.7}.sp-odo u{text-decoration:none;font-size:12px;color:#b9d2f0;margin-left:4px}'
       + '.sp-odo.empty b{font:700 14px "Noto Sans KR",sans-serif;color:#ffd27e}'
+      + '.sp-odo.oil i{transform:none;font-size:18px}.sp-odo.oil.due{border-color:rgba(255,120,110,.8)}.sp-odo.oil.due b{color:#ff8a7a}.sp-odo.oil.none b{font:700 14px "Noto Sans KR",sans-serif;color:#ffd27e}'
       + '.sp-odo form{display:flex;gap:6px;align-items:center}.sp-odo input{width:9.5em;min-height:36px;padding:0 8px;border-radius:8px;border:1px solid #9cc4f0;background:#08101e;color:#fff;font:700 17px "Barlow Condensed","Noto Sans KR",sans-serif}'
       + '.sp-odo button{min-height:36px;min-width:44px;padding:0 10px;border-radius:8px;border:0;font:700 13px "Noto Sans KR",sans-serif;cursor:pointer;background:#ffcf7a;color:#1b1630}.sp-odo button.no{background:#2a3350;color:#dfe8ff}'
       + '@media (max-width:600px){.sp-odo{top:132px;padding:5px 10px 5px 8px}.sp-odo b{font-size:17px}}';
@@ -731,8 +732,21 @@
     wrapEl.appendChild(el);
     let editing = false;
     const fmt = v => { const k = Math.floor(v), d = Math.floor((v - k) * 10 + 1e-6); return k.toLocaleString('ko-KR') + '<span>.' + d + '</span>'; };
+    // 1.76 칩을 한 번 더 누르면 엔진오일 교체까지 남은 거리(차계부 기록 기준) ↔ 누적 주행거리. 길게 누르면 계기판 km 고치기
+    let view = 'odo';
+    const OIL = () => { const L = LOG(); try { return L && L.oil ? L.oil() : null; } catch (e) { return null; } };
     function render() {
       if (editing) return;
+      const o = view === 'oil' ? OIL() : null;
+      el.classList.toggle('oil', !!o); el.classList.remove('due', 'none');
+      if (o) {
+        el.classList.remove('empty');
+        if (!o.has) { el.classList.add('none'); el.innerHTML = '<i aria-hidden="true">🛢</i><div><small>엔진오일 교체</small><b>차계부에 교환 기록 없음</b></div>'; }
+        else { const due = o.left <= 0; el.classList.toggle('due', due);
+          el.innerHTML = '<i aria-hidden="true">🛢</i><div><small>' + (due ? '엔진오일 교체 필요' : '엔진오일 교체까지') + '</small><b>' + (due ? Math.abs(o.left).toLocaleString('ko-KR') + '</b><u>km 지남</u>' : o.left.toLocaleString('ko-KR') + '</b><u>km</u>') + '</div>'; }
+        el.setAttribute('aria-label', '엔진오일 교체까지 남은 거리 — 누르면 누적 주행거리'); return;
+      }
+      el.setAttribute('aria-label', '차 누적 주행거리 — 누르면 엔진오일 교체 거리, 길게 누르면 계기판 값 입력');
       const v = get(); el.classList.toggle('empty', !(v > 0));
       el.innerHTML = '<i aria-hidden="true">✈</i><div><small>누적 주행거리</small>' + (v > 0 ? '<b>' + fmt(v) + '</b><u>km</u>' : '<b>계기판 km 입력</b>') + '</div>';
     }
@@ -744,8 +758,15 @@
       f.addEventListener('submit', e => { e.preventDefault(); const n = +inp.value; editing = false; if (fin(n) && n >= 0 && n <= 2000000 && inp.value !== '') set(n); render(); });
       f.querySelector('.no').addEventListener('click', e => { e.stopPropagation(); editing = false; render(); });
     }
-    el.addEventListener('click', e => { e.stopPropagation(); if (!editing) edit(); });
-    el.addEventListener('keydown', e => { if (!editing && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); edit(); } });
+    let lpT = 0, lpDone = false;
+    el.addEventListener('pointerdown', () => { lpDone = false; clearTimeout(lpT); if (!editing) lpT = setTimeout(() => { lpDone = true; view = 'odo'; edit(); }, 650); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(k => el.addEventListener(k, () => clearTimeout(lpT)));
+    function tap() { if (editing) return; if (lpDone) { lpDone = false; return; }
+      if (view === 'oil') { view = 'odo'; render(); return; }
+      if (!(get() > 0) || !OIL()) { edit(); return; } // 아직 km를 안 넣었거나 엔진오일이 없는 차(전기차)·미리보기는 바로 입력
+      view = 'oil'; render(); }
+    el.addEventListener('click', e => { e.stopPropagation(); tap(); });
+    el.addEventListener('keydown', e => { if (!editing && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tap(); } });
     render();
     // 미리보기(차계부 없음): 달린 거리를 직접 더함. 앱에서는 차계부가 더하므로 표시만 새로 고침
     let last = performance.now();
@@ -758,7 +779,7 @@
       }
       render();
     }, 1000);
-    window.AmpSpecialOdo = { get: get, set: v => { set(v); render(); } };
+    window.AmpSpecialOdo = { get: get, set: v => { set(v); render(); }, get view() { return view; }, edit: () => { view = 'odo'; edit(); } };
     // 1.62.2 폴드7: 비행 배지 높이(글자 크기 설정에 따라 달라짐)를 재서 그 바로 아래에 마일리지 → 누적 주행거리 순서로 쌓음(겹치지 않게)
     setInterval(() => {
       const bd = wrapEl.querySelector('.flt-badge'), mi = wrapEl.querySelector('.sp-miles'); if (!bd || !mi || !wrapEl.clientWidth) return;

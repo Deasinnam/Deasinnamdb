@@ -2900,3 +2900,8 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 /* 1.73 원형 지도: 경고 중인 과속 카메라 하나(카메라 모양 + 제한속도) */
 .pm-cam.pm-camera{width:auto!important;height:24px!important;margin:-12px 0 0 -26px!important;padding:0 6px 0 4px;border-radius:12px;display:flex!important;align-items:center;gap:3px;transform-origin:center}
 .pm-cam.pm-camera svg{width:14px;height:14px;fill:#e0201a;transform:rotate(calc(var(--pm-rot,0deg) * -1))}
+/* 1.76 PFD 오른쪽 아래 재생 중인 노래 제목: 상자 없이 녹색 글자만 */
+#pfdHost .pfd-song{position:absolute;z-index:4;right:calc(var(--pfd-tape,70px) + 14px);bottom:calc(var(--pfd-cmp,50px) + 34px);max-width:46%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:right;pointer-events:none;
+  font:700 clamp(15px,2.3vw,26px)/1.2 "Noto Sans KR",sans-serif;color:#6dff7a;text-shadow:0 0 3px #000,0 1px 2px #000,0 0 10px #000c;letter-spacing:.01em}
+#pfdHost .pfd-song[hidden]{display:none}
+:root[data-narrow] #pfdHost .pfd-song{right:calc(var(--nar-tape,67px) + 10px);bottom:calc(var(--pfd-cmp,50px) + 12px);max-width:58%;font-size:15px}

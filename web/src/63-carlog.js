@@ -65,6 +65,8 @@ const AmpLog=(()=>{
     $('#logFills').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.fills.splice(+b.closest('li').dataset.i,1);save();render()});
     $('#logFillD').value=today()}
   bind();render();
-  return {render,addDist,setOdo,get state(){return S},status:()=>list().map(i=>({key:i.key,name:i.name,...status(i)}))};
+  /* 1.76 엔진오일 교체까지 남은 거리(스피드미터 누적 주행거리 칩을 한 번 더 누르면 보임). 전기차는 null */
+  function oil(){const it=list().find(i=>i.key===S.fuel+':oil');if(!it)return null;const last=it.hist[it.hist.length-1];if(!last||!it.ikm)return {has:false};return {has:true,left:Math.round(it.ikm-(S.odo-last.km)),ikm:it.ikm}}
+  return {render,addDist,setOdo,oil,get state(){return S},status:()=>list().map(i=>({key:i.key,name:i.name,...status(i)}))};
 })();
 window.AmpLog=AmpLog;

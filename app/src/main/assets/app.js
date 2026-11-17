@@ -1736,7 +1736,9 @@ const AmpLog=(()=>{
     $('#logFills').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.fills.splice(+b.closest('li').dataset.i,1);save();render()});
     $('#logFillD').value=today()}
   bind();render();
-  return {render,addDist,setOdo,get state(){return S},status:()=>list().map(i=>({key:i.key,name:i.name,...status(i)}))};
+  /* 1.76 엔진오일 교체까지 남은 거리(스피드미터 누적 주행거리 칩을 한 번 더 누르면 보임). 전기차는 null */
+  function oil(){const it=list().find(i=>i.key===S.fuel+':oil');if(!it)return null;const last=it.hist[it.hist.length-1];if(!last||!it.ikm)return {has:false};return {has:true,left:Math.round(it.ikm-(S.odo-last.km)),ikm:it.ikm}}
+  return {render,addDist,setOdo,oil,get state(){return S},status:()=>list().map(i=>({key:i.key,name:i.name,...status(i)}))};
 })();
 window.AmpLog=AmpLog;
 /* ===== 64-lyrics.js ===== */
@@ -3492,6 +3494,17 @@ const BriNight=(()=>{let last=null;const NBRI=10; /* 1.74 야간은 모든 판�
   setInterval(()=>{if(!document.hidden)check()},1000);
   return {check,get night(){return night()}}})();
 window.AmpBriNight=BriNight;
+/* ===== 97-pfd-song.js ===== */
+// 1.76 스피드미터(PFD) 오른쪽 아래에 지금 재생 중인 노래 제목 — 상자 없이 녹색 글자만(계기 글씨처럼)
+//  재생 중일 때만 보임(재생 버튼 불 = 내 음악·외부 앱·라디오 모두), 멈추면 사라짐
+const PfdSong=(()=>{let el=null;
+  function tick(){const w=document.querySelector('#pfdHost .pfd-canvas-wrap');if(!w||w.offsetParent===null)return;
+    if(!el||!w.contains(el)){el=document.createElement('div');el.className='pfd-song';el.setAttribute('aria-live','polite');w.appendChild(el)}
+    const t=(($('#npTitle')||{}).textContent||'').trim(),on=$('#bPlay')&&$('#bPlay').classList.contains('hot')&&t&&t!=='—';
+    const txt=on?'♪ '+t:'';if(el.textContent!==txt)el.textContent=txt;el.hidden=!on}
+  setInterval(()=>{if(!document.hidden)tick()},1000);
+  return {tick,get text(){return el?el.textContent:''}}})();
+window.PfdSong=PfdSong;
 /* ===== 98-cockpit-special.js ===== */
 // 콕핏 스페셜 스킨(carnival6) 전용 배치: 플레이어+NOW PLAYING 한 창, 관제탑은 스피드미터 제목줄의 작은 표시, 블랙박스는 기본 접힘
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
