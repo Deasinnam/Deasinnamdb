@@ -1033,9 +1033,11 @@ public class MainActivity extends ComponentActivity {
             } else {
                 Rect b = boundsFor(mode);
                 o.setLaunchBounds(b);
+                if (getDisplay() != null) o.setLaunchDisplayId(getDisplay().getDisplayId());
                 opts = o.toBundle();
-                opts.putInt(KEY_WINDOWING_MODE, 5);
-                r.put("bounds", b.flattenToString());
+                // DeX는 이미 모든 창이 자유 창 — 창 방식까지 지정하면 자리 요청을 무시하는 경우가 있어 DeX에서는 자리만 줌
+                if (!dexOn()) opts.putInt(KEY_WINDOWING_MODE, 5);
+                r.put("bounds", b.flattenToString()).put("dex", dexOn());
             }
         } catch (RuntimeException e) {
             opts = null;
@@ -1335,6 +1337,7 @@ public class MainActivity extends ComponentActivity {
         }
         r.put("net", net);
         r.put("freeform", freeformSupported());
+        r.put("dex", dexOn());
         r.put("split", inSplit());
         r.put("isDefault", isDefaultHome());
         File wp = wallpaperFile();

@@ -1374,7 +1374,8 @@
     if (r && r.shizuku) {
       const stuck = (r.results || []).filter((x) => x.how === "stuck").length;
       toast(stuck ? stuck + "개 창은 자리를 옮기지 못했습니다. 그 앱이 창 크기 바꾸기를 막고 있을 수 있습니다." : L.name + " 배치를 펼쳤습니다");
-    } else toast(wasOpen ? "이미 열려 있던 앱은 자리가 안 바뀔 수 있습니다. 고급 기능(Shizuku)을 연결하면 열린 창도 옮깁니다." : L.name + " 배치를 펼쳤습니다");
+    } else if (status.dex) toast("DeX는 앱이 처음 뜰 자리를 따로 정할 때가 있습니다. 창이 제자리에 안 놓이면 창정리에서 고급 기능(Shizuku)을 연결해 주세요. 연 뒤 자리를 맞춥니다.");
+    else toast(wasOpen ? "이미 열려 있던 앱은 자리가 안 바뀔 수 있습니다. 고급 기능(Shizuku)을 연결하면 열린 창도 옮깁니다." : L.name + " 배치를 펼쳤습니다");
     if (missing.length) setTimeout(() => toast("설치돼 있지 않은 앱 " + missing.length + "개는 건너뛰었습니다"), 2600);
   }
   function buildArrange(body) {
