@@ -269,18 +269,24 @@ jobs:
       # 이전 버전도 계속 받을 수 있게: work-latest를 바꾸기 전에, 그 버전이 work-v<버전>으로 남아 있지 않으면 옮겨 둠
       # (1.0.2까지는 설명에 버전이 없어 1.0.2로 봄)
       - name: 이전 버전 보존 (work-v<버전>)
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
         run: |
-          if gh release view work-latest > /dev/null 2>&1; then
-            OLD=$(gh release view work-latest --json body -q .body | grep -oP '버전 \K[0-9]+(\.[0-9]+)+' | head -1 || true)
+          set -x
+          df -h / | tail -1
+          if gh api "repos/$R/releases/tags/work-latest" --jq .id > /dev/null 2>&1; then
+            BODY=$(gh api "repos/$R/releases/tags/work-latest" --jq .body)
+            OLD=$(printf '%s' "$BODY" | grep -oP '버전 \K[0-9]+(\.[0-9]+)+' | head -1 || true)
             OLD=${OLD:-1.0.2}
-            if [ "$OLD" != "$APP_VERSION" ] && ! gh release view "work-v$OLD" > /dev/null 2>&1; then
-              mkdir -p "$RUNNER_TEMP/old" && gh release download work-latest --pattern DeolnureumWork.apk --dir "$RUNNER_TEMP/old"
+            if [ "$OLD" != "$APP_VERSION" ] && ! gh api "repos/$R/releases/tags/work-v$OLD" --jq .id > /dev/null 2>&1; then
+              mkdir -p "$RUNNER_TEMP/old"
+              gh release download work-latest -R "$R" --pattern DeolnureumWork.apk --dir "$RUNNER_TEMP/old" --clobber
               mv "$RUNNER_TEMP/old/DeolnureumWork.apk" "$RUNNER_TEMP/old/DeolnureumWork-$OLD.apk"
-              OLDSHA=$(gh release view work-latest --json targetCommitish -q .targetCommitish)
-              gh release create "work-v$OLD" "$RUNNER_TEMP/old/DeolnureumWork-$OLD.apk" --target "$OLDSHA" \
+              gh release create "work-v$OLD" "$RUNNER_TEMP/old/DeolnureumWork-$OLD.apk" -R "$R" \
                 --title "덜누름 워크 $OLD" --notes "덜누름 워크 $OLD (이전 버전). 최신 버전은 work-latest."
+              rm -f "$RUNNER_TEMP/old/DeolnureumWork-$OLD.apk"
               echo "이전 버전 $OLD 보존"
             fi
           fi
