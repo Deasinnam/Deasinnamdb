@@ -50,6 +50,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: 에뮬레이터 점검 (기본 판 · 저장 · 두 번째 화면에서 앱 열기)
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
