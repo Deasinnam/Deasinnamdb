@@ -20,3 +20,4 @@ app/src/main/assets/photo/
 app/src/main/assets/film/
 app/src/main/assets/work/licenses/
 app/src/main/assets/build.txt
+__pycache__/
