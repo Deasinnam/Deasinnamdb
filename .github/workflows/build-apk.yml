@@ -59,7 +59,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete desk-ci --yes --cleanup-tag || true
-          gh release create desk-ci $(find . -maxdepth 1 -size +0 \( -name 'desk-screen-*.png' -o -name selftest-result.txt -o -name exit-info.txt -o -name crash-1.txt -o -name logcat-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease \
+          gh release create desk-ci $(find . -maxdepth 1 -size +0 \( -name 'desk-screen-*.png' -o -name 'selftest-*.txt' -o -name exit-info.txt -o -name crash-1.txt -o -name logcat-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease \
             --title "덜누름 데스크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비
@@ -94,3 +94,9 @@ jobs:
           gh release delete desk-latest --yes --cleanup-tag || true
           gh release create desk-latest DeolnureumDesk.apk --target "$GITHUB_SHA" \
             --title "덜누름 데스크 (최신 빌드)" --notes "안드로이드를 데스크톱처럼: 바탕화면 · 작업 표시줄 · 시작 메뉴 · 창. 빌드 ${{ github.run_number }} ($VARIANT)"
+          # 버전별 릴리스(desk-v<버전>): 사이트에서 이전 버전도 고를 수 있게 남겨 둠
+          VER=$(grep -oP 'versionName "\K[^"]+' app/build.gradle)
+          cp DeolnureumDesk.apk "DeolnureumDesk-$VER.apk"
+          gh release delete "desk-v$VER" --yes --cleanup-tag || true
+          gh release create "desk-v$VER" "DeolnureumDesk-$VER.apk" --target "$GITHUB_SHA" --title "덜누름 데스크 $VER" \
+            --notes "덜누름 데스크 버전 $VER. 빌드 ${{ github.run_number }} ($VARIANT)"
