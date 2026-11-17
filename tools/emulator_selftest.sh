@@ -8,7 +8,13 @@ fail=0
 adb() { timeout 40 command adb "$@"; local r=$?; [ $r = 124 ] && echo "!! adb $* 시간 초과" | tee -a selftest-trace.txt; return $r; }
 step() { echo "== $*" | tee -a selftest-trace.txt; }
 step "설치"
-timeout 240 command adb install -r -g "$APK" || { echo "설치 실패" | tee -a selftest-trace.txt; exit 1; }
+ok=0
+for t in 1 2 3; do
+  command adb wait-for-device
+  if timeout 240 command adb install -r -g "$APK" >> selftest-trace.txt 2>&1; then ok=1; break; fi
+  echo "설치 실패 $t" | tee -a selftest-trace.txt; sleep 15
+done
+[ $ok = 1 ] || exit 1
 adb shell settings put global overlay_display_devices 1280x720/213
 sleep 6
 adb shell dumpsys display | grep -E "mDisplayId=|mBaseDisplayInfo" | head -8 > selftest-displays.txt
