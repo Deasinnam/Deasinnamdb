@@ -73,6 +73,18 @@ await sleep(3000);
 await page.screenshot({ path: "web-screen-end.png" });
 const r = await page.evaluate(() => window.__fc);
 
+// 한국어 화면: 웹에는 시스템 글꼴이 없어 예전에는 "no Korean font is installed"로 거부됨 → 함께 넣은 한글 글꼴로 바뀌어야 함
+const korean = await page.evaluate(async () => {
+  try {
+    await window.filmcraft.execute("app.language.korean", {});
+    await new Promise((res) => setTimeout(res, 3000));
+    const lang = await window.filmcraft.execute("prefs.get", { key: "general.interfaceLanguage" });
+    await window.filmcraft.execute("app.language.english", {});
+    return String(lang);
+  } catch (e) { return "error: " + (e && e.message || e); }
+}).catch((e) => "error: " + e);
+console.log("web korean: " + korean);
+
 // 화면 확인용: 헤드리스 크롬은 WebGPU 캔버스를 스크린샷에 못 담는 경우가 많아 WebGL2로 한 번 더 띄워 찍음
 try {
   const p2 = await browser.newPage();
@@ -97,4 +109,5 @@ console.log((imp.items > 0 ? "PASS" : "FAIL") + " web import (filmcraft.importFi
 console.log((openedOk ? "PASS" : "FAIL") + " web open from app (chunks → importFiles)");
 console.log((txt ? "PASS" : "FAIL") + " web save hook");
 console.log((mp4 ? "PASS" : "FAIL") + " web export mp4 (H.264) → app");
-process.exit(pageStep.started && imp.items > 0 && openedOk && txt && mp4 ? 0 : 1);
+console.log((korean === "ko" ? "PASS" : "FAIL") + " web korean interface (bundled Hangul font)");
+process.exit(pageStep.started && imp.items > 0 && openedOk && txt && mp4 && korean === "ko" ? 0 : 1);

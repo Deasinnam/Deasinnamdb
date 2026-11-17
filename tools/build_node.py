@@ -54,6 +54,37 @@ def add_tree(z: zipfile.ZipFile, src: pathlib.Path, arc: str, keep=lambda rel: T
     return n
 
 
+# 엑셀 메인 코드 끝에 붙이는 "빈 새 통합 문서" 함수 (node/host.js가 새 엑셀 문서를 열 때 부름).
+# 데스크톱판 껍데기 앱이 하던 일: 빈 .xlsx를 임시 폴더에 만들고 "저장 안 한 새 문서"로 등록 → 첫 저장 때 저장 위치를 물음
+SHEETS_NEW_BLANK = """
+// ---- 덜누름 워크 (tools/build_node.py): 새 엑셀 문서 ----
+globalThis.__ieumSheetsNewBlank = async function (name) {
+  const base = String(name || "").trim() || "새 통합 문서";
+  const fileName = /\\.xlsx$/i.test(base) ? base : base + ".xlsx";
+  const bytes = await sheetCsvToXlsxBuffer("", "Sheet1");
+  const staged = await stageRecoveredCopy(bytes, fileName);
+  unsavedNewWorkbooks.set(staged.openPath, {
+    suggestSaveAs: node_path.join(configuredDefaultSaveDir(electron.app), fileName),
+    tempDir: staged.importTempDir
+  });
+  return staged.openPath;
+};
+"""
+SHEETS_NEEDS = [
+    "async function sheetCsvToXlsxBuffer(", "async function stageRecoveredCopy(", "const unsavedNewWorkbooks =",
+    "function configuredDefaultSaveDir(", 'const node_path = require("node:path");', 'const electron = require("electron");',
+    "suggestSaveAs: unsavedNew.suggestSaveAs,",
+]
+
+
+def sheets_main_with_new_blank(index: pathlib.Path) -> str:
+    text = index.read_text(encoding="utf-8")
+    missing = [n for n in SHEETS_NEEDS if n not in text]
+    if missing:
+        sys.exit("엑셀 메인 코드에서 새 문서용으로 쓸 곳을 찾지 못했습니다 (원본이 바뀜): " + ", ".join(missing))
+    return text + SHEETS_NEW_BLANK
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -72,7 +103,11 @@ def main() -> None:
         add_tree(z, NODE_SRC / "vendor" / "node_modules", "vendor/node_modules", keep_vendor)
         add_tree(z, NODE_SRC / "vendor" / "local", "vendor/local")
         for m in MODULES:
-            n = add_tree(z, res / "modules" / m / "main", f"resources/modules/{m}/main")
+            keep = (lambda rel: str(rel) != "index.js") if m == "sheets" else (lambda rel: True)
+            n = add_tree(z, res / "modules" / m / "main", f"resources/modules/{m}/main", keep)
+            if m == "sheets":
+                z.writestr("resources/modules/sheets/main/index.js", sheets_main_with_new_blank(res / "modules/sheets/main/index.js"))
+                n += 1
             print(f"  {m}: {n}개 파일")
         add_tree(z, res / "modules" / "diagram" / "drawio", "resources/modules/diagram/drawio")
         add_tree(z, res / "modules" / "diagram" / "bridge", "resources/modules/diagram/bridge")

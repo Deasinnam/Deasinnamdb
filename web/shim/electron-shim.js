@@ -618,12 +618,20 @@
     if (MOD === "pdf") { toast("PDF는 아직 보기 전용입니다"); return; }
     if (NODE) {
       // 워드·엑셀·파워포인트: 데스크톱 메뉴의 저장 항목(Ctrl+S / Ctrl+Shift+S)을 그대로 누릅니다
-      const want = mode === "saveAs" ? /^(CmdOrCtrl|CommandOrControl|Ctrl)\+Shift\+S$/i : /^(CmdOrCtrl|CommandOrControl|Ctrl)\+S$/i;
-      const hit = findMenu(NODE.menu(), (it) => it.accelerator && want.test(it.accelerator));
+      // 모듈마다 단축키 표기 순서가 다릅니다(파워포인트 "CmdOrCtrl+Shift+S", 워드·엑셀 "Shift+CmdOrCtrl+S").
+      // 순서와 상관없이 비교해야 워드·엑셀의 "다른 이름으로 저장"도 메뉴 항목을 찾습니다.
+      const want = mode === "saveAs" ? "ctrl+s+shift" : "ctrl+s";
+      const hit = findMenu(NODE.menu(), (it) => it.accelerator && normAccelerator(it.accelerator) === want);
       if (hit) { NODE.clickMenu(hit); return; }
     }
     if (!emit(MOD + ":save-request", mode || "save")) toast("이 화면에서는 저장할 수 없습니다");
   };
+  function normAccelerator(acc) {
+    return String(acc).split("+").map((k) => k.trim().toLowerCase())
+      .map((k) => (k === "cmdorctrl" || k === "commandorcontrol" || k === "control" ? "ctrl" : k))
+      .sort().join("+");
+  }
+  window.__ieumNormAccelerator = normAccelerator; // 자동 점검용
   function findMenu(items, test, path) {
     if (!Array.isArray(items)) return null;
     for (let i = 0; i < items.length; i++) {

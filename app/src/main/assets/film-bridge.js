@@ -136,6 +136,32 @@
   }
   if (!wire()) document.addEventListener("DOMContentLoaded", wire);
 
+  // ---------- 화면 언어 기억 ----------
+  // 웹판 편집기는 환경설정을 저장하지 않아 다시 열면 언어가 "시스템"으로 돌아갑니다.
+  // 사용자가 고른 화면 언어를 기억해 두었다가 다음에 열 때 다시 적용합니다.
+  (function rememberLanguage() {
+    const KEY = "dn.film.interfaceLanguage";
+    const get = () => window.filmcraft.execute("prefs.get", { key: "general.interfaceLanguage" });
+    whenReady(240000).then(async () => {
+      let saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (_) {}
+      if (saved && saved !== "system") {
+        try { await window.filmcraft.execute("prefs.set", { key: "general.interfaceLanguage", value: saved }); }
+        catch (e) { log("언어 복원 실패: " + e); }
+      }
+      let last = null;
+      try { last = await get(); } catch (_) {}
+      setInterval(async () => {
+        let now;
+        try { now = await get(); } catch (_) { return; }
+        if (typeof now === "string" && now !== last) {
+          last = now;
+          try { localStorage.setItem(KEY, now); } catch (_) {}
+        }
+      }, 2000);
+    }).catch(() => {});
+  })();
+
   // ---------- 시작 실패 시 다시 시도 ----------
   // WebGPU가 있다고 나오지만 장치 한도가 모자라 시작하지 못하면(일부 기기·에뮬레이터) WebGL2로 한 번 더 시도합니다.
   // 웹판 index.html 은 오류 문구에 wgpu/webgpu 가 있을 때만 이렇게 하므로, 한도 오류도 같은 길로 보냅니다.

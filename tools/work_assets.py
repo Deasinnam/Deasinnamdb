@@ -40,6 +40,32 @@ def replace_all(path: pathlib.Path, pairs, label: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+KOREAN_FONT_DIR = ROOT / "tools/fonts/korean"
+KOREAN_FONT = "NotoSansCJKkr-Regular-subset.otf"
+
+
+def add_photo_korean_font(photo: pathlib.Path) -> None:
+    """사진 편집의 한국어 화면용 한글 글꼴.
+
+    웹판 PhotoCraft는 브라우저에 시스템 글꼴이 없어서, 한국어로 바꾸면 한글이 네모로 나옵니다.
+    웹판은 사이트의 fonts/manifest.txt에 적힌 글꼴을 받아 쓰고, 스크립트가 Kore인 글꼴을
+    한국어 화면 글꼴로 씁니다. 그 자리에 한글 글꼴을 넣습니다 (공식 빌드에 manifest가 있으면 앞에 덧붙임)."""
+    import hashlib
+    rel = f"fonts/dn-korean/{KOREAN_FONT}"
+    dst = photo / rel
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(KOREAN_FONT_DIR / KOREAN_FONT, dst)
+    shutil.copy(KOREAN_FONT_DIR / "OFL.txt", dst.parent / "OFL.txt")
+    sha = hashlib.sha256(dst.read_bytes()).hexdigest()
+    line = (f"Noto Sans CJK KR | Regular | {rel} | Kore,Hang,Latn | OFL-1.1 | fonts/dn-korean/OFL.txt | {sha}"
+            " | https://github.com/notofonts/noto-cjk\n")
+    manifest = photo / "fonts/manifest.txt"
+    head = "# family | style | file (relative to the site root) | scripts | licence | licence file | sha256 | source\n"
+    old = manifest.read_text(encoding="utf-8") if manifest.exists() else ""
+    manifest.write_text(head + line + "".join(l + "\n" for l in old.splitlines() if l.strip() and not l.startswith("#")), encoding="utf-8")
+    print("사진 편집 한글 글꼴:", rel)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--photo", required=True)
@@ -50,7 +76,7 @@ def main() -> None:
     ap.add_argument("--node-license", required=True)
     ap.add_argument("--versions", required=True)
     ap.add_argument("--build", default="dev")
-    ap.add_argument("--app-version", default="1.0.2")
+    ap.add_argument("--app-version", default="1.0.3")
     a = ap.parse_args()
     ver = dict(kv.split("=", 1) for kv in a.versions.split(","))
 
@@ -65,6 +91,7 @@ def main() -> None:
     ], "사진 index.html")
     for fav in photo.glob("favicon*.png"):
         shutil.copy(ICON, fav)
+    add_photo_korean_font(photo)
 
     # ---------- 동영상 편집 ----------
     film = copy_site(pathlib.Path(a.film), "film")
@@ -99,6 +126,8 @@ def main() -> None:
             shutil.copy(f, d / n)
     (lic / "node").mkdir()
     shutil.copy(a.node_license, lic / "node/LICENSE.txt")
+    (lic / "fonts").mkdir()
+    shutil.copy(KOREAN_FONT_DIR / "OFL.txt", lic / "fonts/OFL-NotoSansCJK.txt")
 
     about = WORK / "about.html"
     replace_all(about, [

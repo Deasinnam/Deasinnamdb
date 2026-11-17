@@ -75,6 +75,10 @@ for m in docs sheets slides mindmap; do
   adb exec-out screencap -p > "work-screen-new-$m${SUF}.png"
   adb logcat -d -s IEUM_PAGE:I IeumNode:I >> "selftest-flow${SUF}.txt"
   page_check "$m" "새 문서 $m" || fail=1
+  # 새 엑셀 문서는 빈 통합 문서 파일로 열려야 저장·다른 이름으로 저장이 됨 (1.0.3)
+  if [ "$m" = sheets ]; then
+    if adb logcat -d -s IeumNode:I | grep -q "새 통합 문서 준비"; then echo "새 엑셀 문서 파일 준비 통과"; else echo "새 엑셀 문서 파일 준비 실패 (저장할 수 없는 보기용 시트)"; fail=1; fi
+  fi
 done
 # 문서 화면을 닫았다가(문서 엔진이 멈춘 뒤) 다시 들어가서 열기
 adb shell am start -n "$PKG/.OfficeActivity" --es ieum.flow none >/dev/null; sleep 5   # 문서 첫 화면으로

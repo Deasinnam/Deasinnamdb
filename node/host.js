@@ -157,6 +157,15 @@ class Session {
       this.log("메인 코드 불러오기 실패: " + (err && err.stack || err));
       throw err;
     }
+    // 새 엑셀 문서: 데스크톱판에서는 껍데기 앱이 빈 통합 문서를 만들어 넘기지만, 독립 실행용 메인 코드는
+    // 파일 없이 열면 저장할 수 없는 보기용 시트만 띄웁니다(저장 → "저장할 수 없음").
+    // 빈 .xlsx를 "저장 안 한 새 문서"로 준비해 그 파일로 열면, 첫 저장 때 저장 위치를 묻고 이후 저장도 됩니다.
+    // (빈 문서 만드는 함수는 tools/build_node.py가 엑셀 메인 코드 끝에 붙임)
+    if (this.module === "sheets" && !this.docPath && typeof globalThis.__ieumSheetsNewBlank === "function") {
+      this.newDocReady = globalThis.__ieumSheetsNewBlank("새 통합 문서")
+        .then((p) => { this.docPath = p; this.log("새 통합 문서 준비"); })
+        .catch((err) => this.log("새 통합 문서 준비 실패: " + (err && err.stack || err)));
+    }
     this.isReady = true;
     this._resolveReady();
     // 창이 늦게 만들어지는 모듈도 있으니 잠시 기다립니다
@@ -247,6 +256,7 @@ class Session {
   }
 
   async onMessage(msg) {
+    if (this.newDocReady) await this.newDocReady;
     if (msg.t === "invoke") {
       // 데스크톱 껍데기 앱이 대신 해 주던 "이 파일 열기"를 모듈별로 이어 줍니다
       const hooked = OPEN_HOOKS[this.module] && OPEN_HOOKS[this.module](this, msg.ch);

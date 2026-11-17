@@ -21,6 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 앱 버전 읽기
+        run: echo "APP_VERSION=$(grep -oP 'versionName "\K[^"]+' app/build.gradle)" >> "$GITHUB_ENV"
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -167,7 +170,7 @@ jobs:
           python3 tools/work_assets.py --photo "$PHOTO_SITE" --film upstream-film/target/web/dist \
             --office-res "$IEUM_RES" --photo-src "$PHOTO_SITE" --film-src upstream-film \
             --node-license "$RUNNER_TEMP/node-LICENSE.txt" \
-            --versions "office=$IEUM_VERSION,photo=$PHOTO_TAG,film=$FILM_TAG,node=$NODE_VER" --build "${{ github.run_number }}"
+            --versions "office=$IEUM_VERSION,photo=$PHOTO_TAG,film=$FILM_TAG,node=$NODE_VER" --build "${{ github.run_number }}" --app-version "$APP_VERSION"
           du -sh app/src/main/assets/* app/src/main/jniLibs/* | sort -h
 
       - name: 크롬에서 동영상 편집 점검 (시작·가져오기·열기·MP4 내보내기·저장)
@@ -263,11 +266,35 @@ jobs:
           cp DeolnureumWork.apk DaesinnamWork.apk
           ls -la DeolnureumWork.apk
 
+      # 이전 버전도 계속 받을 수 있게: work-latest를 바꾸기 전에, 그 버전이 work-v<버전>으로 남아 있지 않으면 옮겨 둠
+      # (1.0.2까지는 설명에 버전이 없어 1.0.2로 봄)
+      - name: 이전 버전 보존 (work-v<버전>)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view work-latest > /dev/null 2>&1; then
+            OLD=$(gh release view work-latest --json body -q .body | grep -oP '버전 \K[0-9]+(\.[0-9]+)+' | head -1 || true)
+            OLD=${OLD:-1.0.2}
+            if [ "$OLD" != "$APP_VERSION" ] && ! gh release view "work-v$OLD" > /dev/null 2>&1; then
+              mkdir -p "$RUNNER_TEMP/old" && gh release download work-latest --pattern DeolnureumWork.apk --dir "$RUNNER_TEMP/old"
+              mv "$RUNNER_TEMP/old/DeolnureumWork.apk" "$RUNNER_TEMP/old/DeolnureumWork-$OLD.apk"
+              OLDSHA=$(gh release view work-latest --json targetCommitish -q .targetCommitish)
+              gh release create "work-v$OLD" "$RUNNER_TEMP/old/DeolnureumWork-$OLD.apk" --target "$OLDSHA" \
+                --title "덜누름 워크 $OLD" --notes "덜누름 워크 $OLD (이전 버전). 최신 버전은 work-latest."
+              echo "이전 버전 $OLD 보존"
+            fi
+          fi
+
       - name: Releases에 APK 올리기
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
           gh release delete work-latest --yes --cleanup-tag || true
           gh release create work-latest DeolnureumWork.apk DaesinnamWork.apk --target "$GITHUB_SHA" \
-            --title "덜누름 워크 (최신 빌드)" \
-            --notes "문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264 수정) 편집을 한 앱에. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+            --title "덜누름 워크 (최신 빌드)" --notes "$NOTES"
+          # 버전별 릴리스: 나중에 새 버전이 나와도 이 버전을 골라 받을 수 있음
+          cp DeolnureumWork.apk "DeolnureumWork-$APP_VERSION.apk"
+          gh release delete "work-v$APP_VERSION" --yes --cleanup-tag || true
+          gh release create "work-v$APP_VERSION" "DeolnureumWork-$APP_VERSION.apk" --target "$GITHUB_SHA" \
+            --title "덜누름 워크 $APP_VERSION" --notes "$NOTES"
