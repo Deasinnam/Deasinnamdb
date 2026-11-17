@@ -1392,11 +1392,14 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <li><b>02</b><span>그래픽 작업 · 레이어 · 마스크 · 보정 · 사진 편집</span></li>
           <li><b>03</b><span>컷 편집 · 색 보정 · 자막 · MP4 내보내기</span></li>
           <li><b>04</b><span>편집은 모두 기기 안에서, 파일을 바깥으로 보내지 않음</span></li>
+          <li><b>05</b><span>사진 · 동영상 편집도 한국어 화면으로 (1.0.3부터)</span></li>
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="#hardware"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
+          <div><dt>최신 버전</dt><dd>1.0.3 · 2026.11.17 업데이트 — <a href="#post-work-103">바뀐 점 보기</a> · 이전 버전 1.0.2(2026.11.11)도 내려받기에서 고를 수 있습니다</dd></div>
+          <div><dt>업데이트 기록</dt><dd>1.0.3 (2026.11.17) 새 엑셀 문서 저장 · 다른 이름으로 저장, 사진 · 동영상 편집 한국어 화면 — <a href="#post-work-103">자세히</a> · 1.0.2 (2026.11.11) 문서 · 사진 · 동영상 편집을 한 앱에</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>필요</dt><dd>Android 8.0 이상 · 64비트 · 무료</dd></div>
         </dl>
@@ -1814,6 +1817,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     <div class="wrap">
       <div id="ntList">
       <ul class="nt-list">
+        <li><a class="nt-row" href="#post-work-103">
+          <span class="nt-no">007</span>
+          <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 워크</span><span class="nt-tag">버그 수정</span><span class="nt-tag done">업데이트 1.0.3</span></span><h2>새 엑셀 문서 저장, 사진 · 동영상 편집 한국어 화면 문제를 고쳤습니다</h2></span>
+          <span class="nt-date">2026.11.17</span>
+        </a></li>
         <li><a class="nt-row" href="#post-game-03">
           <span class="nt-no">006</span>
           <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 게임</span><span class="nt-tag">새 기능</span><span class="nt-tag done">업데이트 0.3</span></span><h2>앱 안에서 바로 따라 하는 PC 게임 시작 안내</h2></span>
@@ -1846,6 +1854,45 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </a></li>
       </ul>
       </div>
+      <article class="nt-article" id="post-work-103" data-post hidden>
+        <a class="nt-back" href="#updates">← 목록으로</a>
+        <header class="nt-head">
+          <div class="nt-tags"><span class="nt-tag">덜누름 워크</span><span class="nt-tag">버그 수정</span><span class="nt-tag done">업데이트 1.0.3</span></div>
+          <h2>새 엑셀 문서 저장, 사진 · 동영상 편집 한국어 화면 문제를 고쳤습니다</h2>
+          <span class="nt-date">007 · 2026.11.17</span>
+        </header>
+        <div class="nt-body">
+          <h3>고친 문제</h3>
+          <ul>
+            <li><b>엑셀:</b> 새 파일을 만들어 작성하면 PDF · CSV로 내보내기는 되는데, <b>저장</b>과 <b>다른 이름으로 저장</b>이 되지 않았습니다.</li>
+            <li><b>사진 · 동영상 편집:</b> 화면 언어를 한국어로 바꿔도 바뀌지 않았습니다.</li>
+          </ul>
+
+          <h3>무엇이 바뀌었나요</h3>
+          <p>불편을 드려 죄송합니다. 1.0.3에서 아래와 같이 고쳤습니다.</p>
+          <ul>
+            <li><b>새 엑셀 문서 저장:</b> 지금까지 새 엑셀 문서는 파일 없이 화면만 열려서 저장할 곳이 없었습니다. 이제 새 문서도 빈 통합 문서 파일로 열립니다. 처음 <b>저장</b>을 누르면 저장할 위치와 이름을 묻고, 그다음부터는 누르는 대로 그 파일에 저장됩니다.</li>
+            <li><b>다른 이름으로 저장 (엑셀 · 워드):</b> 화면 오른쪽 아래 ⋯ 메뉴의 <b>다른 이름으로 저장</b>이 아무 반응이 없던 문제를 고쳤습니다.</li>
+            <li><b>동영상 편집 한국어 화면:</b> 편집기가 한글 글꼴을 찾지 못해 "한국어 글꼴이 없어 영어로 유지합니다"라며 바꾸기를 거부했습니다. 앱에 한글 글꼴을 함께 넣어, 이제 한국어로 바뀌고 다음에 열 때도 고른 언어가 유지됩니다.</li>
+            <li><b>사진 편집 한국어 화면:</b> 한국어로 바꾸면 글자가 나오지 않던 문제를 같은 한글 글꼴로 고쳤습니다.</li>
+          </ul>
+
+          <h3>업데이트 방법</h3>
+          <ol>
+            <li>앱센터의 <a href="#app-work">덜누름 워크</a> 페이지에서 <b>내려받기</b>를 누르면 버전 목록이 나옵니다. 맨 위 <b>1.0.3 (최신)</b>을 눌러 받아 주세요. 이전 버전 <b>1.0.2</b>가 필요하면 목록에서 골라 받을 수 있습니다.</li>
+            <li>받은 파일을 열어 설치해 주세요. 지금 쓰시는 앱 위에 그대로 덮어 설치되고, 최근 문서 목록은 그대로 남아 있습니다.</li>
+            <li>설정 → 앱 정보에서 버전이 <b>1.0.3</b>인지 확인해 주세요.</li>
+          </ol>
+
+          <h3>한국어로 바꾸는 방법</h3>
+          <ul>
+            <li><b>동영상 편집:</b> 위쪽 메뉴 <b>Edit → Language → 한국어</b>를 고르거나, <b>Settings → General → Interface Language</b>에서 한국어를 고르세요.</li>
+            <li><b>사진 편집:</b> 위쪽 메뉴 <b>Edit → Preferences → Interface</b>의 <b>Language</b>에서 <b>한국어</b>를 고르세요.</li>
+          </ul>
+          <p>업데이트한 뒤에도 저장이 안 되거나 언어가 바뀌지 않으면 의견 보내기로 알려 주세요.</p>
+        </div>
+        <a class="nt-back" href="#updates">← 목록으로</a>
+      </article>
       <article class="nt-article" id="post-game-03" data-post hidden>
         <a class="nt-back" href="#updates">← 목록으로</a>
         <header class="nt-head">
@@ -2968,8 +3015,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     "app-amp":     { open: false, tag: "latest",         file: "DaesinnamAmp.apk",     base: 0 },
     "app-speed":   { open: false, tag: "",               file: "",                     base: 0 },
     "app-work":    { open: true, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
-                     /* 버전 목록이 없는 앱: 업데이트 페이지의 "앱별 최신 버전"에만 씀 */
-                     rel: { v: "1.0.2", date: "2026.11.11", note: "문서 · 사진 · 동영상 편집을 한 앱에" } },
+                     /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 work-v<버전>은 빌드가 자동으로 만듦) */
+                     versions: [
+                       { v: "1.0.3", date: "2026.11.17", tag: "work-v1.0.3", file: "DeolnureumWork-1.0.3.apk", note: "새 엑셀 문서 저장 · 다른 이름으로 저장, 사진 · 동영상 편집 한국어 화면", kind: ["fix"], post: "work-103", fix: "새로 만든 엑셀 문서가 저장되지 않고, 사진 · 동영상 편집에서 언어를 바꿔도 바뀌지 않던 문제" },
+                       { v: "1.0.2", date: "2026.11.11", tag: "work-v1.0.2", file: "DeolnureumWork-1.0.2.apk", note: "문서 · 사진 · 동영상 편집을 한 앱에", kind: ["fix"] }
+                     ] },
     "app-desktop": { open: true, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2,
                      versions: [
                        { v: "1.5.2", date: "2026.11.15", tag: "desk-v1.5.2", file: "DeolnureumDesk-1.5.2.apk", note: "다른 앱 위젯을 기기 기본 테마로 표시 (루틴 위젯 아이콘 대응), 위젯 진단 추가", kind: ["fix"], post: "desk-widget", fix: "바탕화면에 올린 루틴 위젯의 아이콘이 보이지 않던 문제" },
