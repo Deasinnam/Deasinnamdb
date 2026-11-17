@@ -300,6 +300,8 @@ section.block { padding: 64px 0; border-top: 1px solid var(--line); }
 .rel-new { font: 600 11px/1 var(--font-mono); letter-spacing: .06em; background: var(--ink); color: var(--paper); border-radius: 99px; padding: 5px 8px; }
 .rel-ver { font: 600 40px/1.1 var(--font-mono); letter-spacing: -0.02em; margin-top: 4px; }
 .rel-date { font-size: 14px; color: var(--ink-2); }
+.rel-date .dl-new, .rel-app .dl-new { vertical-align: 2px; }
+.rel-app .dl-new { margin: 0 0 0 6px; }
 .rel-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .rel-act .key { padding: 10px 14px; font-size: 14px; }
 .rel-tip { margin: 18px 0 0; font-size: 14px; color: var(--ink-2); }
@@ -3072,13 +3074,14 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     function days(d) { var m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(d || ""); if (!m) return 999; return (Date.now() - new Date(+m[1], m[2] - 1, +m[3]).getTime()) / 864e5; }
     function postNo(id) { var a = document.querySelector('.nt-row[href="#post-' + id + '"] .nt-no'); return a ? a.textContent.trim() : ""; }
     var cards = [], log = [];
+    function i0(it) { var vs = (DL[it.app[0]] || {}).versions || []; return vs[0] === it.x; }
     APPS_REL.forEach(function (ap) {
       var d = DL[ap[0]]; if (!d || !d.open) return;
       var vs = d.versions || [], top = vs[0] || d.rel; if (!top) return;
       var isNew = days(top.date) <= 7;
       var chg = top.post ? "#post-" + top.post : "#" + ap[0];
-      cards.push('<div class="rel-card"><div class="rel-card-top"><b>' + esc(ap[1]) + "</b>" + (isNew ? '<span class="rel-new">NEW</span>' : "") + "</div>" +
-        '<div class="rel-ver">' + esc(top.v) + "</div><div class=\"rel-date\">" + esc(top.date) + " 업데이트</div>" +
+      cards.push('<div class="rel-card"><div class="rel-card-top"><b>' + esc(ap[1]) + "</b></div>" +
+        '<div class="rel-ver">' + esc(top.v) + "</div><div class=\"rel-date\">" + (isNew ? '<span class="dl-new">NEW</span>' : "") + esc(top.date) + " 업데이트</div>" +
         '<div class="rel-act"><a class="key dark" href="#' + ap[0] + '">받으러 가기</a><a class="key" href="' + chg + '">바뀐 점</a></div></div>');
       vs.forEach(function (x, i) { log.push({ app: ap, x: x, prev: vs[i + 1] ? vs[i + 1].v : "" }); });
     });
@@ -3093,7 +3096,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         if (fFix && kinds.indexOf("fix") < 0) return;
         if (x.date !== last) { html += '<h3 class="rel-day">' + esc(x.date) + "</h3>"; last = x.date; }
         var no = x.post ? postNo(x.post) : "";
-        html += '<article class="rel-item"><div class="rel-app"><b>' + esc(it.app[1]) + '</b><span class="rel-vchg">' + (it.prev ? esc(it.prev) + " → " : "") + esc(x.v) + "</span></div>" +
+        html += '<article class="rel-item"><div class="rel-app"><b>' + esc(it.app[1]) + '</b><span class="rel-vchg">' + (it.prev ? esc(it.prev) + " → " : "") + esc(x.v) + "</span>" + (days(x.date) <= 7 && i0(it) ? '<span class="dl-new">NEW</span>' : "") + "</div>" +
           '<div class="rel-body"><div class="rel-tags">' + kinds.map(function (k) { return '<span class="rel-tag rel-k-' + k + '">' + KIND[k] + "</span>"; }).join("") + "</div>" +
           '<p class="rel-t">' + esc(x.fix || x.note) + "</p>" + (x.fix ? '<p class="rel-d">' + esc(x.note) + "</p>" : "") +
           (x.fix ? '<p class="rel-ok"><b>해결됨 · ' + esc(x.v) + "부터</b> · 이전 버전을 쓰고 있다면 " + esc(x.v) + " 이상으로 업데이트하세요</p>" : "") +
