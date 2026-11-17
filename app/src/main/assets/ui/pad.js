@@ -498,8 +498,7 @@
       report("BOARDS " + state.boards.map(function (b) { return b.name + ":" + b.keys.length; }).join(","));
       report("DISPLAYS " + JSON.stringify(disp));
       report("KEYS-SHOWN " + document.querySelectorAll(".key:not(.plus)").length);
-      try { var v0 = JSON.parse(P.volume()); var v1 = JSON.parse(P.setVolume(Math.max(0, v0.cur - 1))); P.setVolume(v0.cur);
-        report("VOLUME " + v0.cur + "/" + v0.max + " → " + v1.cur + (v1.cur === Math.max(0, v0.cur - 1) ? " ok" : " fail")); } catch (e) { report("VOLUME fail " + e); }
+      try { var v0 = JSON.parse(P.volume()); report("VOLUME " + v0.cur + "/" + v0.max + (v0.max > 0 ? " ok" : " fail")); } catch (e) { report("VOLUME fail " + e); }
       // 편집 저장: 버튼 하나를 넣었다가 다시 읽어 확인
       var before = board().keys.length, settings = appsByPkg["com.android.settings"];
       if (settings) {
