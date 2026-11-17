@@ -3270,7 +3270,12 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     function wire(box, btnSel) {
       var btn = box.querySelector(btnSel), menu = box.querySelector(".dl-menu");
       if (!menu) { btn.addEventListener("click", function () { hit(st); }); return; }
-      function show(on) { menu.hidden = !on; btn.setAttribute("aria-expanded", on ? "true" : "false"); }
+      function show(on) {
+        if (on) Array.prototype.forEach.call(document.querySelectorAll(".dl-menu"), function (m) { // 다른 버전 목록은 닫기
+          if (m !== menu && !m.hidden) { m.hidden = true; var b = m.parentNode.querySelector("button[aria-expanded]"); if (b) b.setAttribute("aria-expanded", "false"); }
+        });
+        menu.hidden = !on; btn.setAttribute("aria-expanded", on ? "true" : "false");
+      }
       btn.addEventListener("click", function (e) { e.stopPropagation(); show(menu.hidden); });
       Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) { a.addEventListener("click", function () { hit(st); show(false); }); });
       document.addEventListener("click", function (e) { if (!menu.hidden && !box.contains(e.target)) show(false); });
