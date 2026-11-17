@@ -2,7 +2,10 @@ package com.daesinnam.pad;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -56,6 +59,13 @@ public class MainActivity extends Activity {
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
     private boolean selftest;
+    private AudioManager audio;
+
+    // 휴대폰 볼륨 단추 등으로 미디어 소리가 바뀌면 화면의 다이얼도 따라가게
+    private final BroadcastReceiver volumeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) { notifyVolume(); }
+    };
 
     private final DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener() {
         @Override public void onDisplayAdded(int id) { notifyDisplays(); }
@@ -68,6 +78,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         selftest = getIntent() != null && getIntent().getBooleanExtra("pad.selftest", false);
         displays = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+        audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         web = new WebView(this);
         web.setBackgroundColor(Color.BLACK);
@@ -109,11 +120,17 @@ public class MainActivity extends Activity {
         super.onResume();
         displays.registerDisplayListener(displayListener, main);
         notifyDisplays();
+        IntentFilter f = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
+        f.addAction("android.media.STREAM_MUTE_CHANGED_ACTION");
+        if (android.os.Build.VERSION.SDK_INT >= 33) registerReceiver(volumeReceiver, f, Context.RECEIVER_EXPORTED);
+        else registerReceiver(volumeReceiver, f);
+        notifyVolume();
     }
 
     @Override
     protected void onPause() {
         displays.unregisterDisplayListener(displayListener);
+        try { unregisterReceiver(volumeReceiver); } catch (RuntimeException ignored) { }
         super.onPause();
     }
 
@@ -173,6 +190,22 @@ public class MainActivity extends Activity {
             web.evaluateJavascript("window.padDisplays && padDisplays(" + JSONObject.quote(displayInfo().toString()) + ")", null);
         } catch (JSONException ignored) {
         }
+    }
+
+    // ---------- 볼륨 (미디어 소리) ----------
+
+    private JSONObject volumeInfo() throws JSONException {
+        int s = AudioManager.STREAM_MUSIC;
+        return new JSONObject().put("cur", audio.getStreamVolume(s)).put("max", audio.getStreamMaxVolume(s)).put("muted", audio.isStreamMute(s));
+    }
+
+    private String volumeJson() {
+        try { return volumeInfo().toString(); } catch (JSONException e) { return "{}"; }
+    }
+
+    private void notifyVolume() {
+        if (web == null || audio == null) return;
+        web.evaluateJavascript("window.padVolume && padVolume(" + JSONObject.quote(volumeJson()) + ")", null);
     }
 
     // ---------- 앱 목록 · 아이콘 ----------
@@ -365,6 +398,33 @@ public class MainActivity extends Activity {
                 if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
+        }
+
+        @JavascriptInterface
+        public String volume() {
+            return volumeJson();
+        }
+
+        @JavascriptInterface
+        public String setVolume(int level) {
+            try {
+                int s = AudioManager.STREAM_MUSIC;
+                if (audio.isStreamMute(s)) audio.adjustStreamVolume(s, AudioManager.ADJUST_UNMUTE, 0);
+                audio.setStreamVolume(s, Math.max(0, Math.min(level, audio.getStreamMaxVolume(s))), 0);
+            } catch (RuntimeException e) {
+                Log.w(TAG, "볼륨을 바꾸지 못함: " + e);
+            }
+            return volumeJson();
+        }
+
+        @JavascriptInterface
+        public String toggleMute() {
+            try {
+                audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, 0);
+            } catch (RuntimeException e) {
+                Log.w(TAG, "음소거를 바꾸지 못함: " + e);
+            }
+            return volumeJson();
         }
 
         @JavascriptInterface

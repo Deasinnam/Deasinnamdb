@@ -7,7 +7,7 @@
 
   // ---------- 앱과 연결 (브라우저 시험용 가짜 포함) ----------
   var P = window.Pad || (function () {
-    var mem = "";
+    var mem = "", vol = { cur: 10, max: 15, muted: false };
     var fake = [["com.daesinnam.work", "덜누름 워크", "productivity"], ["com.android.chrome", "Chrome", ""], ["com.sec.android.app.myfiles", "내 파일", ""],
       ["com.samsung.android.app.notes", "Samsung Notes", "productivity"], ["com.kakao.talk", "카카오톡", "social"], ["com.google.android.youtube", "YouTube", "video"],
       ["com.android.settings", "설정", ""], ["com.spotify.music", "Spotify", "audio"], ["com.microsoft.office.word", "Word", "productivity"]];
@@ -17,21 +17,25 @@
       launch: function (p) { return JSON.stringify({ ok: true, external: true, display: 2 }); },
       displays: function () { return JSON.stringify({ here: 0, onPhone: true, external: true, targetId: 2, targetName: "DeX" }); },
       moveToPhone: function () {}, load: function () { return mem; }, save: function (s) { mem = s; },
-      tap: function () {}, keepScreenOn: function () {}, version: function () { return "dev"; }, report: function (l) { console.log("REPORT " + l); }
+      tap: function () {}, keepScreenOn: function () {}, version: function () { return "dev"; }, report: function (l) { console.log("REPORT " + l); },
+      volume: function () { return JSON.stringify(vol); },
+      setVolume: function (n) { vol.cur = Math.max(0, Math.min(vol.max, n)); vol.muted = false; return JSON.stringify(vol); },
+      toggleMute: function () { vol.muted = !vol.muted; return JSON.stringify(vol); }
     };
   })();
   var SELFTEST = /[?&]selftest\b/.test(location.search);
   function report(s) { try { P.report(s); } catch (e) {} }
 
   // ---------- 색 ----------
+  // 버튼 아래쪽 띠 색 (가죽 버튼에 포인트로)
   var COLORS = {
-    white:  { k: "#f4f4f5", ks: "#a1a1aa", kt: "#18181b", name: "흰색" },
-    orange: { k: "#ff7a00", ks: "#c75a00", kt: "#ffffff", name: "주황" },
-    blue:   { k: "#3b82f6", ks: "#1d4ed8", kt: "#ffffff", name: "파랑" },
-    green:  { k: "#22c55e", ks: "#15803d", kt: "#ffffff", name: "초록" },
-    purple: { k: "#8b5cf6", ks: "#6d28d9", kt: "#ffffff", name: "보라" },
-    red:    { k: "#ef4444", ks: "#b91c1c", kt: "#ffffff", name: "빨강" },
-    dark:   { k: "#3f3f46", ks: "#18181b", kt: "#f4f4f5", name: "검정" }
+    white:  { acc: "",        name: "기본" },
+    orange: { acc: "#ff9a3d", name: "주황" },
+    blue:   { acc: "#5b9cf6", name: "파랑" },
+    green:  { acc: "#6fe06f", name: "초록" },
+    purple: { acc: "#a78bfa", name: "보라" },
+    red:    { acc: "#f87171", name: "빨강" },
+    dark:   { acc: "#d9bb7a", name: "금색" }
   };
 
   // ---------- 기본 판 ----------
@@ -135,7 +139,7 @@
 
   function keyStyle(el, color) {
     var c = COLORS[color] || COLORS.white;
-    el.style.setProperty("--k", c.k); el.style.setProperty("--ks", c.ks); el.style.setProperty("--kt", c.kt);
+    if (c.acc) el.style.setProperty("--acc", c.acc); else el.style.removeProperty("--acc");
   }
 
   function renderGrid() {
@@ -163,6 +167,72 @@
       (b.keys.length ? "버튼을 길게 누르면 바로 고칠 수 있습니다." : "");
     fitGrid();
   }
+
+  // ---------- 볼륨 (미디어 소리) ----------
+  var vol = { cur: 0, max: 15, muted: false }, dragging = false;
+  var NS = "http://www.w3.org/2000/svg", A0 = -135, A1 = 135;
+  function pt(r, deg) { var t = deg * Math.PI / 180; return [120 + r * Math.sin(t), 120 - r * Math.cos(t)]; }
+  function arcPath(r, a, b) {
+    var p = pt(r, a), q = pt(r, b), large = (b - a) > 180 ? 1 : 0;
+    return "M" + p[0].toFixed(2) + " " + p[1].toFixed(2) + " A" + r + " " + r + " 0 " + large + " 1 " + q[0].toFixed(2) + " " + q[1].toFixed(2);
+  }
+  (function drawDial() {
+    var ticks = $("ticks"), grooves = $("grooves");
+    for (var i = 0; i <= 40; i++) {
+      var a = A0 + (A1 - A0) * i / 40, big = i % 5 === 0;
+      var p = pt(big ? 103 : 106, a), q = pt(big ? 117 : 114, a);
+      var l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", p[0]); l.setAttribute("y1", p[1]); l.setAttribute("x2", q[0]); l.setAttribute("y2", q[1]);
+      l.setAttribute("class", "tick" + (big ? " big" : ""));
+      ticks.appendChild(l);
+    }
+    for (var r = 40; r <= 64; r += 3) {
+      var c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", 120); c.setAttribute("cy", 120); c.setAttribute("r", r);
+      c.setAttribute("fill", "none"); c.setAttribute("stroke", "#3b2a10"); c.setAttribute("stroke-width", ".8");
+      grooves.appendChild(c);
+    }
+    $("arcBg").setAttribute("d", arcPath(94, A0, A1));
+  })();
+  function drawVolume() {
+    var f = vol.max ? vol.cur / vol.max : 0, shown = vol.muted ? 0 : f;
+    var ang = A0 + (A1 - A0) * f;
+    $("arc").setAttribute("d", shown > 0.004 ? arcPath(94, A0, A0 + (A1 - A0) * shown) : "");
+    $("arc").setAttribute("stroke", vol.muted ? "#7a6a55" : "#9be07f");
+    $("pointer").setAttribute("transform", "rotate(" + ang.toFixed(1) + " 120 120)");
+    $("volNum").textContent = vol.muted ? "0" : String(Math.round(f * 100));
+    $("dial").setAttribute("aria-valuenow", String(Math.round(f * 100)));
+    $("muteBtn").classList.toggle("on", !!vol.muted);
+    $("muteLabel").textContent = vol.muted ? "음소거 해제" : "음소거";
+    $("muteX").style.display = vol.muted ? "" : "none";
+  }
+  function applyVol(json) { try { var v = JSON.parse(json); if (v && typeof v.cur === "number") vol = v; } catch (e) {} drawVolume(); }
+  function setVol(n) {
+    n = Math.max(0, Math.min(vol.max, n));
+    if (n === vol.cur && !vol.muted) return;
+    applyVol(P.setVolume(n));
+  }
+  function angleToLevel(ev) {
+    var r = $("dial").getBoundingClientRect();
+    var x = ev.clientX - (r.left + r.width / 2), y = ev.clientY - (r.top + r.height / 2);
+    var a = Math.atan2(x, -y) * 180 / Math.PI;
+    if (a < A0) a = A0; if (a > A1) a = A1;
+    return Math.round((a - A0) / (A1 - A0) * vol.max);
+  }
+  $("dial").addEventListener("pointerdown", function (e) { dragging = true; $("dial").setPointerCapture(e.pointerId); setVol(angleToLevel(e)); });
+  $("dial").addEventListener("pointermove", function (e) { if (dragging) setVol(angleToLevel(e)); });
+  $("dial").addEventListener("pointerup", function () { dragging = false; try { P.tap(); } catch (e) {} });
+  $("dial").addEventListener("pointercancel", function () { dragging = false; });
+  $("dial").addEventListener("wheel", function (e) { e.preventDefault(); setVol(vol.cur + (e.deltaY < 0 ? 1 : -1)); }, { passive: false });
+  $("dial").addEventListener("keydown", function (e) {
+    if (e.key === "ArrowUp" || e.key === "ArrowRight") { setVol(vol.cur + 1); e.preventDefault(); }
+    if (e.key === "ArrowDown" || e.key === "ArrowLeft") { setVol(vol.cur - 1); e.preventDefault(); }
+  });
+  $("volUp").addEventListener("click", function () { P.tap(); setVol(vol.cur + 1); });
+  $("volDown").addEventListener("click", function () { P.tap(); setVol(vol.cur - 1); });
+  $("muteBtn").addEventListener("click", function () { P.tap(); applyVol(P.toggleMute()); });
+  // 앱(Java)에서 부름: 볼륨 단추 등으로 소리가 바뀌었을 때
+  window.padVolume = function (json) { if (!dragging) applyVol(json); };
 
   // 한 판이 스크롤 없이 화면에 다 들어오게 버튼 크기와 줄 수를 맞춤 (접은 화면 가로·세로, 펼친 화면 모두).
   // 너무 작아질 때만(76px 미만) 스크롤을 씀
@@ -224,13 +294,13 @@
   function renderStatus() {
     var st = $("status");
     st.className = "status" + (disp.external ? " on" : "");
-    st.textContent = disp.external ? "큰 화면에 연결됨" : "이 화면에서 열림";
+    st.textContent = disp.external ? (/dex|desktop/i.test(disp.targetName || "") ? "DeX 연결됨" : "큰 화면 연결됨") : "이 화면에서 열림";
     $("moveBar").hidden = !!disp.onPhone || !disp.external;
   }
 
   function render() {
     document.body.classList.toggle("editing", editing);
-    $("editBtn").textContent = editing ? "완료" : "편집";
+    $("editLabel").textContent = editing ? "완료" : "편집";
     $("editBtn").classList.toggle("on", editing);
     renderTabs(); renderGrid(); renderStatus();
     $("keepState").textContent = state.keepOn ? "켬" : "끔";
@@ -417,6 +487,7 @@
   try { disp = JSON.parse(P.displays()); } catch (e) {}
   render();
   applyKeepOn();
+  try { applyVol(P.volume()); } catch (e) {}
   // 다른 앱을 설치·삭제하고 돌아오면 목록을 다시 읽음
   document.addEventListener("visibilitychange", function () { if (!document.hidden) { loadApps(); render(); } });
 
@@ -427,6 +498,8 @@
       report("BOARDS " + state.boards.map(function (b) { return b.name + ":" + b.keys.length; }).join(","));
       report("DISPLAYS " + JSON.stringify(disp));
       report("KEYS-SHOWN " + document.querySelectorAll(".key:not(.plus)").length);
+      try { var v0 = JSON.parse(P.volume()); var v1 = JSON.parse(P.setVolume(Math.max(0, v0.cur - 1))); P.setVolume(v0.cur);
+        report("VOLUME " + v0.cur + "/" + v0.max + " → " + v1.cur + (v1.cur === Math.max(0, v0.cur - 1) ? " ok" : " fail")); } catch (e) { report("VOLUME fail " + e); }
       // 편집 저장: 버튼 하나를 넣었다가 다시 읽어 확인
       var before = board().keys.length, settings = appsByPkg["com.android.settings"];
       if (settings) {
