@@ -17,6 +17,8 @@ done
 # TV처럼 가로 화면
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1
+# 홈 단추 점검용: "다른 앱 위에 표시" 허락
+adb shell appops set $PKG SYSTEM_ALERT_WINDOW allow
 step "앱 시작"
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez tv.selftest true
@@ -36,6 +38,23 @@ if [ "${n:-0}" = 5 ]; then echo "기본 서비스 5개 통과"; else echo "기�
 grep -q "SAVE ok" selftest-result.txt && echo "저장 통과" || { echo "저장 실패"; fail=1; }
 grep -q "FOCUS [a-z]" selftest-result.txt && echo "방향키 포커스 통과" || { echo "방향키 포커스 실패"; fail=1; }
 grep -q 'LAUNCH {"ok":true' selftest-result.txt && echo "앱 열기 통과" || { echo "앱 열기 실패"; fail=1; }
+step "홈 단추"
+sleep 2
+adb shell dumpsys activity services $PKG > selftest-services.txt
+if grep -q "HomeButton" selftest-services.txt; then echo "홈 단추 뜸 통과"; else echo "홈 단추 뜸 실패"; fail=1; fi
+adb exec-out screencap -p > tv-screen-home-button.png
+# 기본 자리(오른쪽 가장자리, 높이 42%)를 눌러 덜누름 TV로 돌아오는지
+read W H < <(adb shell wm size | grep -oE "[0-9]+x[0-9]+" | tail -1 | tr x ' ')
+D=$(adb shell wm density | grep -oE "[0-9]+" | tail -1)
+size=$(( 56 * D / 160 )); m=$(( 20 * D / 160 ))
+# 가로로 돌렸으면 너비 · 높이 바꾸기
+if [ "$(adb shell dumpsys input | grep -m1 -oE 'SurfaceOrientation: [0-9]' | grep -oE '[0-9]$')" = 1 ]; then t=$W; W=$H; H=$t; fi
+x=$(( W - m - size / 2 )); y=$(( H * 42 / 100 + size / 2 ))
+echo "홈 단추 누르기: $x,$y (화면 ${W}x${H})"
+adb shell input tap $x $y
+sleep 3
+adb shell dumpsys activity activities | grep -m3 -E "topResumedActivity|mResumedActivity" | tee selftest-top.txt
+if grep -q "$PKG" selftest-top.txt; then echo "홈 단추로 돌아오기 통과"; else echo "홈 단추로 돌아오기 실패"; fail=1; fi
 step "작업 목록"
 adb shell dumpsys activity activities > selftest-activities.txt
 grep -q "com.android.settings" selftest-activities.txt && echo "설정 앱 열림 통과" || { echo "설정 앱 열림 실패"; fail=1; }

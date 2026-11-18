@@ -135,6 +135,7 @@ public class MainActivity extends Activity {
             registerReceiver(packageReceiver, p);
         }
         notifyVolume();
+        HomeButton.hide(this); // 돌아왔으니 홈 단추는 숨김
         push("resume");
     }
 
@@ -305,20 +306,43 @@ public class MainActivity extends Activity {
         try {
             ActivityOptions o = ActivityOptions.makeBasic();
             o.setLaunchDisplayId(currentDisplayId());
+            if (full) o.setLaunchBounds(getWindowManager().getMaximumWindowMetrics().getBounds()); // 화면 전체 크기의 창 (DeX)
             Bundle b = o.toBundle();
-            if (full) b.putInt(KEY_WINDOWING_MODE, 1);
+            // DeX는 일반 앱이 창 방식(전체 화면)까지 지정하면 요청 전체를 무시하는 경우가 있어, DeX에서는 크기만 줌
+            if (full && !dexOn()) b.putInt(KEY_WINDOWING_MODE, 1);
             startActivity(i, b);
             Log.i(TAG, "열기 " + pkg + " 화면 " + currentDisplayId() + (full ? " 전체 화면" : ""));
-            return r.put("ok", true).put("display", currentDisplayId()).put("full", full);
+            afterLaunch();
+            return r.put("ok", true).put("display", currentDisplayId()).put("full", full).put("how", "bounds");
         } catch (RuntimeException e) {
             Log.w(TAG, "옵션으로 열지 못해 보통으로 엽니다: " + e);
         }
         try {
             startActivity(i);
+            afterLaunch();
             return r.put("ok", true).put("display", currentDisplayId()).put("fallback", true);
         } catch (RuntimeException e) {
             return r.put("ok", false).put("error", "열지 못했습니다: " + e.getMessage());
         }
+    }
+
+    /** 고급 기능(Shizuku): 셸 권한으로 확실히 전체 화면으로 열기. 안 되면 null */
+    private JSONObject launchShell(String pkg, String cls, int display) throws JSONException {
+        if (!Shizu.granted()) return null;
+        if (cls == null || cls.isEmpty()) {
+            Intent li = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (li == null || li.getComponent() == null) return null;
+            cls = li.getComponent().getClassName();
+        }
+        String out = Shizu.run("am start --windowingMode 1 --display " + display + " -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n " + pkg + "/" + cls, 5000);
+        if (out == null || out.contains("Error") || out.contains("Exception")) { Log.w(TAG, "셸로 열지 못함: " + out); return null; }
+        main.post(this::afterLaunch);
+        return new JSONObject().put("ok", true).put("display", display).put("full", true).put("how", "shell");
+    }
+
+    /** 앱을 연 뒤: 덜누름 TV로 돌아올 홈 단추 띄우기 */
+    private void afterLaunch() {
+        if (prefs().getBoolean("homeButton", true)) HomeButton.show(this, currentDisplayId());
     }
 
     /** 설치 안 된 서비스: Play 스토어의 그 앱 페이지 */
@@ -371,7 +395,56 @@ public class MainActivity extends Activity {
         public String icon(String pkg, String cls) { return iconDataUrl(pkg, cls, 192); }
 
         @JavascriptInterface
-        public String launch(String pkg, String cls, boolean full) { return onMain(() -> MainActivity.this.launch(pkg, cls, full).toString()); }
+        public String launch(String pkg, String cls, boolean full) {
+            if (full) {
+                try {
+                    final int d = currentDisplayId();
+                    JSONObject r = launchShell(pkg, cls, d);
+                    if (r != null) return r.toString();
+                } catch (Exception e) { Log.w(TAG, "셸로 열기 실패: " + e); }
+            }
+            return onMain(() -> MainActivity.this.launch(pkg, cls, full).toString());
+        }
+
+        /** 홈 단추: on = 쓰기로 함, allowed = "다른 앱 위에 표시" 권한 있음 */
+        @JavascriptInterface
+        public String homeButton() {
+            try { return new JSONObject().put("on", prefs().getBoolean("homeButton", true)).put("allowed", HomeButton.allowed(MainActivity.this)).toString(); }
+            catch (JSONException e) { return "{}"; }
+        }
+
+        @JavascriptInterface
+        public void setHomeButton(boolean on) { prefs().edit().putBoolean("homeButton", on).apply(); }
+
+        /** "다른 앱 위에 표시" 설정 화면 열기 */
+        @JavascriptInterface
+        public void askOverlay() {
+            main.post(() -> {
+                try { startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()))); }
+                catch (RuntimeException e) { Log.w(TAG, "권한 화면을 열지 못함: " + e); }
+            });
+        }
+
+        @JavascriptInterface
+        public String shizuku() {
+            try { return new JSONObject().put("installed", Shizu.installed(MainActivity.this)).put("running", Shizu.running()).put("granted", Shizu.granted()).toString(); }
+            catch (JSONException e) { return "{}"; }
+        }
+
+        /** 단계별: 설치 안 됨 → 받으러 가기, 꺼짐 → Shizuku 열기, 켜짐 → 허락 요청 */
+        @JavascriptInterface
+        public String shizukuConnect() {
+            return onMain(() -> {
+                if (!Shizu.installed(MainActivity.this)) { openStore(Shizu.PKG); return "install"; }
+                if (!Shizu.running()) {
+                    Intent i = getPackageManager().getLaunchIntentForPackage(Shizu.PKG);
+                    if (i != null) startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    return "start";
+                }
+                if (!Shizu.granted()) { Shizu.request(41); return "request"; }
+                return "ok";
+            });
+        }
 
         @JavascriptInterface
         public boolean store(String pkg) {

@@ -23,7 +23,9 @@
       tap: function () {}, keepScreenOn: function () {}, version: function () { return "dev"; }, report: function (l) { console.log("REPORT " + l); },
       volume: function () { return JSON.stringify(vol); },
       setVolume: function (n) { vol.cur = Math.max(0, Math.min(vol.max, n)); vol.muted = false; return JSON.stringify(vol); },
-      toggleMute: function () { vol.muted = !vol.muted; return JSON.stringify(vol); }
+      toggleMute: function () { vol.muted = !vol.muted; return JSON.stringify(vol); },
+      homeButton: function () { return JSON.stringify({ on: true, allowed: false }); }, setHomeButton: function () {}, askOverlay: function () {},
+      shizuku: function () { return JSON.stringify({ installed: false, running: false, granted: false }); }, shizukuConnect: function () { return "install"; }
     };
   })();
 
@@ -169,8 +171,24 @@
   }
 
   // ---------- 앱 열기 ----------
+  function homeInfo() { try { return JSON.parse(P.homeButton()) || {}; } catch (e) { return {}; } }
+  function shzInfo() { try { return JSON.parse(P.shizuku()) || {}; } catch (e) { return {}; } }
+  /** 처음 앱을 열 때 한 번: 돌아오는 홈 단추에 필요한 권한 안내 */
+  function askHome(then) {
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "앱에서 덜누름 TV로 돌아오기"));
+      box.appendChild(el("p", null, "앱을 전체 화면으로 여는 동안, 화면 가장자리에 작은 홈 단추를 띄워 두면 한 번에 덜누름 TV로 돌아옵니다(끌어서 옮길 수 있음). 이 단추를 띄우려면 '다른 앱 위에 표시'를 허락해 주세요."));
+      var g = el("div", "sbtns");
+      g.appendChild(sbtn("허락하러 가기", "설정에서 덜누름 TV 켜기", function () { state.askedHome = true; save(); closeSheet(); P.askOverlay(); toast("허락한 뒤 돌아와서 다시 눌러 주세요"); }));
+      g.appendChild(sbtn("이번엔 그냥 열기", "뒤로 단추로도 돌아올 수 있음", function () { state.askedHome = true; save(); closeSheet(); then(); }));
+      box.appendChild(g);
+    });
+  }
   function openApp(pkg) {
     tap();
+    var hb = homeInfo();
+    if (byPkg[pkg] && hb.on && !hb.allowed && !state.askedHome) return askHome(function () { openApp(pkg); });
     var a = byPkg[pkg];
     if (!a) {
       if (CAT[pkg]) { P.store(pkg); toast(nameOf(pkg) + " — Play 스토어에서 설치해 주세요"); }
@@ -272,11 +290,23 @@
       var imm = sbtn("시스템 막대 숨기기", scr.immersive === false ? "끔" : "켬", function () { var on = scr.immersive === false; P.setImmersive(on); scr.immersive = on; imm.lastChild.textContent = on ? "켬" : "끔"; imm.classList.toggle("on", on); }, scr.immersive === false ? "" : "on");
       var sv = sbtn("화면 보호기", saverName(), function () { var o = [0, 3, 10, 30], i = o.indexOf(state.saver); state.saver = o[(i + 1) % o.length]; save(); sv.lastChild.textContent = saverName(); idle(); });
       g.appendChild(full); g.appendChild(imm); g.appendChild(sv);
+      var hb = homeInfo();
+      var home = sbtn("홈 단추 (앱 위에 떠 있는)", !hb.on ? "끔" : hb.allowed ? "켬" : "권한 필요", function () {
+        var h = homeInfo();
+        if (h.on && !h.allowed) { P.askOverlay(); return; }
+        P.setHomeButton(!h.on); home.lastChild.textContent = !h.on ? (h.allowed ? "켬" : "권한 필요") : "끔"; home.classList.toggle("on", !h.on && h.allowed);
+      }, hb.on && hb.allowed ? "on" : "");
+      g.appendChild(home);
+      var z = shzInfo();
+      g.appendChild(sbtn("확실한 전체 화면 (고급 기능 Shizuku)", z.granted ? "연결됨" : !z.installed ? "Shizuku 받기" : !z.running ? "Shizuku 켜기" : "허락하기", function () {
+        if (shzInfo().granted) return toast("연결되어 있습니다. 앱이 DeX에서도 전체 화면으로 열립니다.");
+        var r = P.shizukuConnect(); toast(r === "start" ? "Shizuku에서 '시작'을 누른 뒤 돌아와 주세요" : r === "request" ? "허락을 눌러 주세요" : "Shizuku를 설치한 뒤 무선 디버깅으로 한 번 켜 주세요");
+      }, z.granted ? "on" : ""));
       if (scr.windowed) g.appendChild(sbtn("이 앱을 전체 화면으로", null, function () { P.goFullscreen(); }));
       g.appendChild(sbtn("기본 서비스로 되돌리기", "넷플릭스 · 웨이브 · 티빙 · 유튜브 · 스포티파이", function () { state.my = DEFAULT_MY.slice(); save(); renderHome(); closeSheet(); toast("기본 서비스로 되돌렸습니다"); }));
       g.appendChild(sbtn("닫기", null, closeSheet));
       box.appendChild(g);
-      box.appendChild(el("p", null, "앱 이름과 아이콘은 각 회사의 것입니다. 덜누름 TV는 설치된 앱을 열어 줄 뿐, 영상은 각 앱이 재생합니다."));
+      box.appendChild(el("p", null, "DeX는 앱이 창으로 뜨도록 정할 때가 있습니다. 화면 전체 크기로 열도록 요청하고, 고급 기능(Shizuku)을 연결하면 확실히 전체 화면으로 엽니다. 앱 이름과 아이콘은 각 회사의 것입니다. 덜누름 TV는 설치된 앱을 열어 줄 뿐, 영상은 각 앱이 재생합니다."));
     });
   }
 

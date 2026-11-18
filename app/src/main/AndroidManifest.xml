@@ -3,6 +3,8 @@
 
     <!-- 타일을 누를 때 짧은 진동. 인터넷 권한은 없습니다 (각 서비스 앱이 직접 재생). -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 앱을 연 동안 덜누름 TV로 돌아오는 떠 있는 홈 단추 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <queries>
         <!-- 타일에 넣을 수 있는 앱(런처에 나오는 앱) 목록 -->
@@ -38,5 +40,14 @@
             <meta-data android:name="com.samsung.android.dex.launchwidth" android:value="1600" />
             <meta-data android:name="com.samsung.android.dex.launchheight" android:value="900" />
         </activity>
+        <service android:name=".HomeButton" android:exported="false" />
+        <!-- 고급 기능(Shizuku) 연결 -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
     </application>
 </manifest>
