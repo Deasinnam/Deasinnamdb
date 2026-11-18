@@ -1,0 +1,449 @@
+package com.daesinnam.tv;
+
+import android.app.Activity;
+import android.app.ActivityOptions;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.util.Base64;
+import android.util.Log;
+import android.view.Display;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 덜누름 TV: DeX로 연결한 (터치) 모니터를 스마트 TV처럼.
+ * 넷플릭스 · 웨이브 · 티빙 · 유튜브 · 스포티파이 같은 서비스를 큰 타일에서 골라 전체 화면으로 엽니다.
+ *
+ * 화면은 assets/ui (WebView), 이 클래스는 앱 목록 · 아이콘 · 앱 열기 · 설치 페이지 · 볼륨 · 전체 화면을 화면에 알려 줍니다.
+ * 설정은 기기 안(SharedPreferences)에만 저장합니다. 인터넷 권한은 없습니다.
+ */
+public class MainActivity extends Activity {
+    static final String TAG = "DeolnureumTV";
+    static final String SELFTEST_TAG = "TV_SELFTEST";
+    /** ActivityOptions 숨은 키: 창 방식 (1 = 전체 화면) */
+    static final String KEY_WINDOWING_MODE = "android.activity.windowingMode";
+
+    private WebView web;
+    private android.widget.FrameLayout root;
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private final Map<String, String> iconCache = new HashMap<>();
+    private boolean selftest, immersive = true;
+    private AudioManager audio;
+
+    private final BroadcastReceiver volumeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) { notifyVolume(); }
+    };
+    // 앱을 새로 깔거나 지우면 타일을 다시 그림
+    private final BroadcastReceiver packageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) { push("apps"); }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        selftest = getIntent() != null && getIntent().getBooleanExtra("tv.selftest", false);
+        audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        immersive = prefs().getBoolean("immersive", true);
+
+        web = new WebView(this);
+        web.setBackgroundColor(Color.BLACK);
+        root = new android.widget.FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+        root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
+        setContentView(root);
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            android.graphics.Insets b = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+            v.setPadding(b.left, b.top, b.right, b.bottom);
+            return WindowInsets.CONSUMED;
+        });
+
+        WebSettings s = web.getSettings();
+        s.setJavaScriptEnabled(true);
+        s.setDomStorageEnabled(true);
+        s.setAllowFileAccess(true);
+        s.setAllowContentAccess(false);
+        s.setSupportZoom(false);
+        s.setBuiltInZoomControls(false);
+        s.setTextZoom(100);
+        s.setMediaPlaybackRequiresUserGesture(true);
+        web.setVerticalScrollBarEnabled(false);
+        web.setHorizontalScrollBarEnabled(false);
+        web.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        web.addJavascriptInterface(new Bridge(), "TV");
+        web.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return !"file".equals(request.getUrl().getScheme());
+            }
+        });
+        web.loadUrl("file:///android_asset/ui/index.html" + (selftest ? "?selftest" : ""));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        applyImmersive();
+        IntentFilter f = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
+        f.addAction("android.media.STREAM_MUTE_CHANGED_ACTION");
+        IntentFilter p = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+        p.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        p.addDataScheme("package");
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(volumeReceiver, f, Context.RECEIVER_EXPORTED);
+            registerReceiver(packageReceiver, p, Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(volumeReceiver, f);
+            registerReceiver(packageReceiver, p);
+        }
+        notifyVolume();
+        push("resume");
+    }
+
+    @Override
+    protected void onPause() {
+        try { unregisterReceiver(volumeReceiver); } catch (RuntimeException ignored) { }
+        try { unregisterReceiver(packageReceiver); } catch (RuntimeException ignored) { }
+        super.onPause();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) applyImmersive();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration c) {
+        super.onConfigurationChanged(c);
+        push("window");
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (web != null) web.destroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // 고르기 창 · 화면 보호기가 열려 있으면 화면이 먼저 닫음
+        web.evaluateJavascript("window.tvBack ? tvBack() : false", v -> {
+            if (!"true".equals(v)) MainActivity.super.onBackPressed();
+        });
+    }
+
+    private void push(String what) {
+        if (web != null) web.evaluateJavascript("window.tvPush && tvPush(" + JSONObject.quote(what) + ")", null);
+    }
+
+    // ---------- 전체 화면 (TV처럼) ----------
+
+    /** 상태 표시줄 · 내비게이션 막대를 숨김 (가장자리를 밀면 잠깐 나옴) */
+    private void applyImmersive() {
+        WindowInsetsController c = getWindow().getInsetsController();
+        if (c == null) return;
+        if (immersive) {
+            c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            c.hide(WindowInsets.Type.systemBars());
+        } else {
+            c.show(WindowInsets.Type.systemBars());
+        }
+    }
+
+    /** 이 앱이 화면 전체가 아니라 창으로 떠 있나 (DeX) */
+    private boolean windowed() {
+        Rect cur = getWindowManager().getCurrentWindowMetrics().getBounds(), max = getWindowManager().getMaximumWindowMetrics().getBounds();
+        return cur.width() < max.width() - 8 || cur.height() < max.height() - 8;
+    }
+
+    /** 삼성 DeX가 켜져 있나 */
+    private boolean dexOn() {
+        try {
+            Configuration c = getResources().getConfiguration();
+            return c.getClass().getField("semDesktopModeEnabled").getInt(c) == c.getClass().getField("SEM_DESKTOP_MODE_ENABLED").getInt(c);
+        } catch (Throwable t) { return false; }
+    }
+
+    private int currentDisplayId() {
+        Display d = getDisplay();
+        return d == null ? Display.DEFAULT_DISPLAY : d.getDisplayId();
+    }
+
+    /** DeX에서 창으로 떠 있을 때: 같은 화면에 전체 화면으로 다시 열기 */
+    private boolean goFullscreen() {
+        try {
+            ActivityOptions o = ActivityOptions.makeBasic();
+            o.setLaunchDisplayId(currentDisplayId());
+            Bundle b = o.toBundle();
+            b.putInt(KEY_WINDOWING_MODE, 1);
+            Intent i = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            startActivity(i, b);
+            finishAndRemoveTask();
+            return true;
+        } catch (RuntimeException e) {
+            Log.w(TAG, "전체 화면으로 다시 열지 못함: " + e);
+            return false;
+        }
+    }
+
+    private JSONObject screenInfo() throws JSONException {
+        Rect max = getWindowManager().getMaximumWindowMetrics().getBounds();
+        Display d = getDisplay();
+        return new JSONObject().put("display", currentDisplayId()).put("name", d == null ? "" : String.valueOf(d.getName()))
+                .put("dex", dexOn()).put("windowed", windowed()).put("w", max.width()).put("h", max.height())
+                .put("immersive", immersive).put("onPhone", currentDisplayId() == Display.DEFAULT_DISPLAY);
+    }
+
+    // ---------- 볼륨 (미디어 소리) ----------
+
+    private String volumeJson() {
+        try {
+            int s = AudioManager.STREAM_MUSIC;
+            return new JSONObject().put("cur", audio.getStreamVolume(s)).put("max", audio.getStreamMaxVolume(s)).put("muted", audio.isStreamMute(s)).toString();
+        } catch (JSONException e) { return "{}"; }
+    }
+
+    private void notifyVolume() {
+        if (web == null || audio == null) return;
+        web.evaluateJavascript("window.tvVolume && tvVolume(" + JSONObject.quote(volumeJson()) + ")", null);
+    }
+
+    // ---------- 앱 목록 · 아이콘 ----------
+
+    private List<ResolveInfo> launchables() {
+        Intent q = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+        return getPackageManager().queryIntentActivities(q, 0);
+    }
+
+    private String iconDataUrl(String pkg, String cls, int size) {
+        String key = pkg + "/" + cls + "@" + size;
+        String hit = iconCache.get(key);
+        if (hit != null) return hit;
+        PackageManager pm = getPackageManager();
+        Drawable d;
+        try {
+            d = cls == null || cls.isEmpty() ? pm.getApplicationIcon(pkg) : pm.getActivityIcon(new ComponentName(pkg, cls));
+        } catch (PackageManager.NameNotFoundException e) {
+            try { d = pm.getApplicationIcon(pkg); } catch (PackageManager.NameNotFoundException e2) { return ""; }
+        }
+        Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bmp);
+        d.setBounds(0, 0, size, size);
+        d.draw(c);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+        String url = "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+        iconCache.put(key, url);
+        return url;
+    }
+
+    private static String categoryName(int c) {
+        switch (c) {
+            case ApplicationInfo.CATEGORY_GAME: return "game";
+            case ApplicationInfo.CATEGORY_AUDIO: return "audio";
+            case ApplicationInfo.CATEGORY_VIDEO: return "video";
+            case ApplicationInfo.CATEGORY_IMAGE: return "image";
+            case ApplicationInfo.CATEGORY_SOCIAL: return "social";
+            case ApplicationInfo.CATEGORY_NEWS: return "news";
+            case ApplicationInfo.CATEGORY_PRODUCTIVITY: return "productivity";
+            default: return "";
+        }
+    }
+
+    // ---------- 앱 열기 · 설치 페이지 ----------
+
+    /** 이 화면(TV로 쓰는 모니터)에서 열기. full이면 전체 화면으로 (안 되는 기기 · 앱은 보통 창으로) */
+    private JSONObject launch(String pkg, String cls, boolean full) throws JSONException {
+        JSONObject r = new JSONObject();
+        Intent i;
+        if (cls != null && !cls.isEmpty()) {
+            i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(new ComponentName(pkg, cls));
+        } else {
+            i = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (i == null) return r.put("ok", false).put("missing", true);
+        }
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        try {
+            ActivityOptions o = ActivityOptions.makeBasic();
+            o.setLaunchDisplayId(currentDisplayId());
+            Bundle b = o.toBundle();
+            if (full) b.putInt(KEY_WINDOWING_MODE, 1);
+            startActivity(i, b);
+            Log.i(TAG, "열기 " + pkg + " 화면 " + currentDisplayId() + (full ? " 전체 화면" : ""));
+            return r.put("ok", true).put("display", currentDisplayId()).put("full", full);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "옵션으로 열지 못해 보통으로 엽니다: " + e);
+        }
+        try {
+            startActivity(i);
+            return r.put("ok", true).put("display", currentDisplayId()).put("fallback", true);
+        } catch (RuntimeException e) {
+            return r.put("ok", false).put("error", "열지 못했습니다: " + e.getMessage());
+        }
+    }
+
+    /** 설치 안 된 서비스: Play 스토어의 그 앱 페이지 */
+    private boolean openStore(String pkg) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return true;
+        } catch (RuntimeException e) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + pkg)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                return true;
+            } catch (RuntimeException e2) {
+                return false;
+            }
+        }
+    }
+
+    private String onMain(java.util.concurrent.Callable<String> job) {
+        final String[] out = {"{\"ok\":false}"};
+        java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        main.post(() -> {
+            try { out[0] = job.call(); } catch (Exception e) { out[0] = "{\"ok\":false,\"error\":" + JSONObject.quote(String.valueOf(e.getMessage())) + "}"; }
+            done.countDown();
+        });
+        try { done.await(3, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
+        return out[0];
+    }
+
+    // ---------- 화면(웹)에서 부르는 것 ----------
+
+    class Bridge {
+        @JavascriptInterface
+        public String apps() {
+            JSONArray arr = new JSONArray();
+            PackageManager pm = getPackageManager();
+            for (ResolveInfo ri : launchables()) {
+                try {
+                    if (ri.activityInfo == null) continue;
+                    String pkg = ri.activityInfo.packageName;
+                    if (pkg.equals(getPackageName())) continue;
+                    ApplicationInfo ai = ri.activityInfo.applicationInfo;
+                    arr.put(new JSONObject().put("pkg", pkg).put("cls", ri.activityInfo.name).put("label", String.valueOf(ri.loadLabel(pm)))
+                            .put("cat", ai == null ? "" : categoryName(ai.category)).put("system", ai != null && (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0));
+                } catch (JSONException ignored) { }
+            }
+            return arr.toString();
+        }
+
+        @JavascriptInterface
+        public String icon(String pkg, String cls) { return iconDataUrl(pkg, cls, 192); }
+
+        @JavascriptInterface
+        public String launch(String pkg, String cls, boolean full) { return onMain(() -> MainActivity.this.launch(pkg, cls, full).toString()); }
+
+        @JavascriptInterface
+        public boolean store(String pkg) {
+            final boolean[] ok = {false};
+            onMain(() -> { ok[0] = openStore(pkg); return ""; });
+            return ok[0];
+        }
+
+        @JavascriptInterface
+        public String screen() {
+            try { return screenInfo().toString(); } catch (JSONException e) { return "{}"; }
+        }
+
+        @JavascriptInterface
+        public void setImmersive(boolean on) {
+            immersive = on;
+            prefs().edit().putBoolean("immersive", on).apply();
+            main.post(MainActivity.this::applyImmersive);
+        }
+
+        @JavascriptInterface
+        public void goFullscreen() { main.post(MainActivity.this::goFullscreen); }
+
+        @JavascriptInterface
+        public String load() { return prefs().getString("state", ""); }
+
+        @JavascriptInterface
+        public void save(String json) { prefs().edit().putString("state", json).apply(); }
+
+        @JavascriptInterface
+        public void tap() {
+            try {
+                Vibrator v = getSystemService(Vibrator.class);
+                if (v != null && v.hasVibrator()) v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+            } catch (RuntimeException ignored) { }
+        }
+
+        @JavascriptInterface
+        public void keepScreenOn(boolean on) {
+            main.post(() -> {
+                if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            });
+        }
+
+        @JavascriptInterface
+        public String volume() { return volumeJson(); }
+
+        @JavascriptInterface
+        public String setVolume(int level) {
+            try {
+                int s = AudioManager.STREAM_MUSIC;
+                if (audio.isStreamMute(s)) audio.adjustStreamVolume(s, AudioManager.ADJUST_UNMUTE, 0);
+                audio.setStreamVolume(s, Math.max(0, Math.min(level, audio.getStreamMaxVolume(s))), 0);
+            } catch (RuntimeException e) { Log.w(TAG, "볼륨을 바꾸지 못함: " + e); }
+            return volumeJson();
+        }
+
+        @JavascriptInterface
+        public String toggleMute() {
+            try { audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, 0); }
+            catch (RuntimeException e) { Log.w(TAG, "음소거를 바꾸지 못함: " + e); }
+            return volumeJson();
+        }
+
+        @JavascriptInterface
+        public String version() { return BuildConfig.VERSION_NAME; }
+
+        /** 자동 점검(에뮬레이터)에서만: 화면 상태를 기록에 남김 */
+        @JavascriptInterface
+        public void report(String line) { if (selftest) Log.i(SELFTEST_TAG, line); }
+    }
+
+    private SharedPreferences prefs() { return getSharedPreferences("tv", MODE_PRIVATE); }
+}

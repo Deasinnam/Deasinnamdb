@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 타일을 누를 때 짧은 진동. 인터넷 권한은 없습니다 (각 서비스 앱이 직접 재생). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <queries>
+        <!-- 타일에 넣을 수 있는 앱(런처에 나오는 앱) 목록 -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- 설치 안 된 서비스: Play 스토어 페이지 열기 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="market" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- 삼성 DeX: 처음 열 때 넓은 창(16:9)으로 -->
+            <meta-data android:name="com.samsung.android.dex.launchwidth" android:value="1600" />
+            <meta-data android:name="com.samsung.android.dex.launchheight" android:value="900" />
+        </activity>
+    </application>
+</manifest>

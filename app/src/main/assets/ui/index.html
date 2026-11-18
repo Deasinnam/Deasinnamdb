@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>덜누름 TV</title>
+  <link rel="stylesheet" href="tv.css">
+</head>
+<body>
+  <div class="shell" id="shell">
+    <header class="top">
+      <div class="brand"><i class="logo" aria-hidden="true"></i><b>덜누름 TV</b></div>
+      <nav class="tabs" id="tabs" aria-label="보기">
+        <button type="button" class="tab cur" data-tab="home" data-nav>홈</button>
+        <button type="button" class="tab" data-tab="apps" data-nav>앱</button>
+      </nav>
+      <div class="right">
+        <button type="button" id="fullBtn" class="ibtn" data-nav hidden aria-label="전체 화면으로">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
+        <div class="vol" id="vol">
+          <button type="button" id="muteBtn" class="ibtn" data-nav aria-label="음소거">
+            <svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path id="volWave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path id="volX" d="M16 9l5 6M21 9l-5 6"/></svg>
+          </button>
+          <button type="button" id="volDown" class="ibtn sm" data-nav aria-label="소리 줄이기">−</button>
+          <div class="vbar" id="vbar" role="slider" aria-label="볼륨" tabindex="-1"><i id="vfill"></i></div>
+          <button type="button" id="volUp" class="ibtn sm" data-nav aria-label="소리 키우기">+</button>
+        </div>
+        <button type="button" id="setBtn" class="ibtn" data-nav aria-label="설정">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8"/></svg>
+        </button>
+        <time class="clock" id="clock"></time>
+      </div>
+    </header>
+
+    <main id="home" class="view">
+      <section class="hero" id="hero" aria-live="polite">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-copy">
+          <small id="heroKind"></small>
+          <h1 id="heroName"></h1>
+          <p id="heroDesc"></p>
+          <div class="hero-act">
+            <button type="button" class="pbtn" id="heroOpen" data-nav><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg><span>열기</span></button>
+            <span class="hero-note" id="heroNote"></span>
+          </div>
+        </div>
+        <div class="hero-art" id="heroArt"></div>
+        <div class="hero-dots" id="heroDots"></div>
+      </section>
+      <section class="row">
+        <h2>내 서비스</h2>
+        <div class="tiles big" id="myRow"></div>
+      </section>
+      <section class="row" id="moreSec">
+        <h2>다른 영상 · 음악 앱</h2>
+        <div class="tiles" id="moreRow"></div>
+      </section>
+    </main>
+
+    <main id="appsView" class="view" hidden>
+      <div class="apps-head">
+        <h2>모든 앱</h2>
+        <input id="search" type="search" placeholder="앱 이름으로 찾기" autocomplete="off" data-nav>
+      </div>
+      <div class="grid" id="allGrid"></div>
+    </main>
+  </div>
+
+  <div id="sheet" class="sheet-wrap" hidden><div class="sheet" id="sheetBox" role="dialog" aria-modal="true"></div></div>
+  <div id="splash" class="splash" hidden><div class="splash-in"><img id="splashIcon" alt=""><b id="splashName"></b><span>여는 중…</span></div></div>
+  <div id="saver" class="saver" hidden><div class="saver-in" id="saverIn"><b id="saverTime"></b><span id="saverDate"></span><small>화면을 누르면 돌아갑니다</small></div></div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="tv.js"></script>
+</body>
+</html>
