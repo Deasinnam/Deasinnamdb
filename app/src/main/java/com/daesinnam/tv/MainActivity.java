@@ -149,7 +149,13 @@ public class MainActivity extends Activity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) applyImmersive();
+        if (hasFocus) { applyImmersive(); HomeButton.hide(this); } // 덜누름 TV가 다시 보이면 홈 단추는 숨김
+    }
+
+    @Override
+    public void onTopResumedActivityChanged(boolean top) {
+        super.onTopResumedActivityChanged(top);
+        if (top) HomeButton.hide(this);
     }
 
     @Override

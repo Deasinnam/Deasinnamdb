@@ -58,6 +58,10 @@ svg { display: block; }
 .tile img, .tile .ph { width: 42%; max-width: 72px; aspect-ratio: 1; border-radius: 22%; pointer-events: none; }
 .tile .ph { background: rgba(255,255,255,.15); display: grid; place-items: center; font-size: 26px; font-weight: 800; }
 .tile b { position: absolute; left: 14px; bottom: 10px; right: 14px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+/* 작은 타일(다른 앱): 아이콘 위, 이름 아래 — 겹치지 않게 */
+.tiles:not(.big) .tile { flex-direction: column; justify-content: center; gap: 8px; padding: 10px 10px 8px; }
+.tiles:not(.big) .tile img, .tiles:not(.big) .tile .ph { width: clamp(36px, 3.6vw, 52px); height: auto; aspect-ratio: 1; max-width: none; flex: none; }
+.tiles:not(.big) .tile b { position: static; text-align: center; font-size: 13px; width: 100%; }
 .tiles.big .tile { width: clamp(220px, 19vw, 320px); border-radius: 20px; background: linear-gradient(135deg, var(--tc, #333), var(--td, #111)); flex-direction: column; justify-content: center; }
 .tiles.big .tile img, .tiles.big .tile .ph { width: 34%; max-width: 92px; margin-top: -14px; }
 .tiles.big .tile b { font-size: 17px; font-weight: 700; color: var(--tt, #fff); bottom: 12px; text-align: center; }
