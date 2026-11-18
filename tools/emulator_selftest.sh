@@ -57,7 +57,8 @@ adb shell dumpsys activity activities | grep -m3 -E "topResumedActivity|mResumed
 if grep -q "$PKG" selftest-top.txt; then echo "홈 단추로 돌아오기 통과"; else echo "홈 단추로 돌아오기 실패"; fail=1; fi
 step "작업 목록"
 adb shell dumpsys activity activities > selftest-activities.txt
-grep -q "com.android.settings" selftest-activities.txt && echo "설정 앱 열림 통과" || { echo "설정 앱 열림 실패"; fail=1; }
+LP=$(grep -o "LAUNCH-PKG [a-z0-9._]*" selftest-result.txt | awk '{print $2}')
+grep -q "${LP:-none}" selftest-activities.txt && echo "앱 열림 통과 ($LP)" || { echo "앱 열림 실패"; fail=1; }
 adb shell settings put system user_rotation 0
 if [ "$fail" = 0 ]; then echo "자동 점검 통과"; exit 0; fi
 echo "자동 점검 실패"; exit 1

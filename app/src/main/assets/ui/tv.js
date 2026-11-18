@@ -437,7 +437,10 @@
     report("FOCUS " + (cur ? (cur.dataset.pkg || cur.textContent.trim()) : "none"));
     try { report("VOLUME " + JSON.parse(P.volume()).max); } catch (e) { report("VOLUME fail"); }
     setTimeout(function () {
-      report("LAUNCH " + P.launch("com.android.settings", "", true));
+      // 설정 앱은 다른 앱의 떠 있는 단추를 가리므로(안드로이드 12+) 시계 · 캘린더 등으로 시험
+      var t = ["com.google.android.deskclock", "com.android.deskclock", "com.google.android.calendar", "com.android.chrome"].filter(function (p) { return byPkg[p]; })[0] || "com.android.settings";
+      report("LAUNCH-PKG " + t);
+      report("LAUNCH " + P.launch(t, "", true));
       setTimeout(function () { report("DONE"); }, 1500);
     }, 1500);
   }, 1500);
