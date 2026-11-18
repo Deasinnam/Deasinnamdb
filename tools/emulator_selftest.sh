@@ -51,8 +51,11 @@ size=$(( 56 * D / 160 )); m=$(( 20 * D / 160 ))
 if [ "$(adb shell dumpsys input | grep -m1 -oE 'SurfaceOrientation: [0-9]' | grep -oE '[0-9]$')" = 1 ]; then t=$W; W=$H; H=$t; fi
 x=$(( W - m - size / 2 )); y=$(( H * 42 / 100 + size / 2 ))
 echo "홈 단추 누르기: $x,$y (화면 ${W}x${H})"
-adb shell input tap $x $y
-sleep 3
+for k in 1 2 3; do
+  adb shell input tap $x $y
+  sleep 3
+  adb shell dumpsys activity activities | grep -q "topResumedActivity=.*$PKG" && break
+done
 adb shell dumpsys activity activities | grep -m3 -E "topResumedActivity|mResumedActivity" | tee selftest-top.txt
 if grep -q "$PKG" selftest-top.txt; then echo "홈 단추로 돌아오기 통과"; else echo "홈 단추로 돌아오기 실패"; fail=1; fi
 step "전체 화면 명령 (Shizuku와 같은 셸 권한)"

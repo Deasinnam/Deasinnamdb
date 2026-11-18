@@ -334,6 +334,19 @@ public class MainActivity extends Activity {
             if (li == null || li.getComponent() == null) return null;
             cls = li.getComponent().getClassName();
         }
+        // 이미 창으로 열려 있으면 "전체 화면으로 열기"가 그 창을 앞으로만 불러오므로, 그 창을 닫고 전체 화면으로 다시 엶
+        String dump = Shizu.run("dumpsys activity activities", 4000);
+        if (dump != null) {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("Task\\{[0-9a-f]+ #(\\d+) type=standard A=\\d+:(\\S+) .*?mode=(\\w+)").matcher(dump);
+            while (m.find()) {
+                String aff = m.group(2);
+                if ((aff.equals(pkg) || aff.startsWith(pkg + ":")) && !"fullscreen".equals(m.group(3))) {
+                    Log.i(TAG, "창으로 열린 " + pkg + " (작업 " + m.group(1) + ", " + m.group(3) + ") 닫고 전체 화면으로");
+                    Shizu.run("am stack remove " + m.group(1) + " ; cmd activity remove-task " + m.group(1), 3000);
+                    try { Thread.sleep(400); } catch (InterruptedException ignored) { }
+                }
+            }
+        }
         String out = Shizu.run("am start --windowingMode 1 --display " + display + " -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n " + pkg + "/" + cls, 5000);
         if (out == null || out.contains("Error") || out.contains("Exception")) { Log.w(TAG, "셸로 열지 못함: " + out); return null; }
         main.post(this::afterLaunch);
