@@ -1076,6 +1076,23 @@ public class MainActivity extends Activity {
             JSONObject o = saved.optJSONObject(i);
             if (o != null && UrlPolicy.isAllowed(o.optString("url"))) bookmarks.put(o);
         }
+        seedSiteBookmark();
+    }
+
+    /** 덜누름 사이트(새 버전 · 다른 앱)를 즐겨찾기 맨 앞에 한 번만 넣음. 지우면 다시 넣지 않음 */
+    private void seedSiteBookmark() {
+        if (getPreferences(MODE_PRIVATE).getBoolean("seed_site_v1", false)) return;
+        getPreferences(MODE_PRIVATE).edit().putBoolean("seed_site_v1", true).apply();
+        for (int i = 0; i < bookmarks.length(); i++) {
+            JSONObject o = bookmarks.optJSONObject(i);
+            if (o != null && o.optString("url").contains("deolnureum.com")) return;
+        }
+        try {
+            JSONArray next = new JSONArray().put(new JSONObject().put("title", "덜누름 — 앱 · 업데이트").put("url", "https://deolnureum.com/"));
+            for (int i = 0; i < bookmarks.length() && next.length() < MAX_BOOKMARKS; i++) next.put(bookmarks.get(i));
+            bookmarks = next;
+            persistBookmarks();
+        } catch (JSONException ignored) { }
     }
 
     private void persistBookmarks() {
