@@ -365,6 +365,14 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .center-head h1 { margin-top: 14px; font-size: clamp(44px, 7vw, 84px); line-height: 1; letter-spacing: -0.05em; }
 .center-head p { margin: 18px 0 0; color: var(--ink-2); max-width: 36em; font-size: 17px; }
 .rel-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 440px); gap: 40px; align-items: end; }
+.rel-spots { position: relative; display: grid; }
+.rel-spots .rel-spot { grid-area: 1 / 1; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .45s ease, transform .45s ease, visibility 0s .45s; }
+.rel-spots .rel-spot.on { opacity: 1; visibility: visible; transform: none; transition: opacity .45s ease, transform .45s ease; }
+.rel-spot-dots { position: absolute; right: 14px; top: 12px; display: flex; gap: 5px; z-index: 2; }
+.rel-spot-dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 4px; background: rgba(239,227,204,.35); cursor: pointer; transition: width .25s, background .25s; }
+.rel-spot-dots button::before { content: ""; position: absolute; } 
+.rel-spot-dots button.on { width: 20px; background: #e2c483; }
+@media (prefers-reduced-motion: reduce) { .rel-spots .rel-spot { transition: none; } }
 .rel-spot { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: center; padding: 14px; border-radius: 18px; text-decoration: none; color: #efe3cc; background: linear-gradient(160deg, #33281f, #1f1712); border: 1px solid rgba(201,161,92,.55); box-shadow: 0 6px 0 #0b0b0c; transition: transform .15s ease, box-shadow .15s ease; }
 .rel-spot:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #0b0b0c; }
 .rel-spot-img { display: block; border-radius: 10px; overflow: hidden; border: 3px solid #050506; aspect-ratio: 1200 / 969; }
@@ -1909,15 +1917,63 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <h1>업데이트 내역</h1>
           <p>앱마다 지금 최신 버전이 무엇인지, 무엇이 고쳐졌는지 한곳에서 확인하세요. 새 버전이 나오면 가장 먼저 여기에 올립니다.</p>
         </div>
-        <a class="rel-spot" href="/pad/" aria-label="새로 개발 중인 앱 덜누름 패드 자세히 보기">
-          <span class="rel-spot-img"><img src="/media/app-pad.jpg?v=1117" alt="덜누름 패드 실제 화면: 앱 버튼 판과 황동 볼륨 다이얼" loading="lazy"></span>
-          <span class="rel-spot-txt">
-            <small><i>NEW APP</i> 새로 개발 중</small>
-            <b>덜누름 패드</b>
-            <span>DeX로 큰 화면을 쓰는 동안, 휴대폰은 앱 버튼 판과 볼륨 다이얼로. 누르면 앱이 큰 화면에서 열립니다.</span>
-            <em>자세히 보기 · 알림받기 →</em>
-          </span>
-        </a>
+        <div class="rel-spots" id="relSpots" aria-roledescription="carousel" aria-label="덜누름 앱 소식">
+          <a class="rel-spot on" href="/pad/" aria-label="덜누름 패드 자세히 보기">
+            <span class="rel-spot-img"><img src="/media/app-pad.jpg?v=1117" alt="덜누름 패드 실제 화면: 앱 버튼 판과 황동 볼륨 다이얼" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>NEW APP</i> 새로 개발 중</small>
+              <b>덜누름 패드</b>
+              <span>DeX로 큰 화면을 쓰는 동안, 휴대폰은 앱 버튼 판과 볼륨 다이얼로. 누르면 앱이 큰 화면에서 열립니다.</span>
+              <em>자세히 보기 · 알림받기 →</em>
+            </span>
+          </a>
+          <a class="rel-spot" href="/work/" aria-label="덜누름 워크 자세히 보기" tabindex="-1" aria-hidden="true">
+            <span class="rel-spot-img"><img src="/media/app-work-poster.jpg" alt="덜누름 워크 실제 화면" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>UPDATE</i> 1.0.3 · 11.17</small>
+              <b>덜누름 워크</b>
+              <span>안드로이드를 일반 PC처럼. 문서 · 사진 · 동영상 편집을 한 앱에서.</span>
+              <em>자세히 보기 · 받으러 가기 →</em>
+            </span>
+          </a>
+          <a class="rel-spot" href="/browser/" aria-label="덜누름 브라우저 자세히 보기" tabindex="-1" aria-hidden="true">
+            <span class="rel-spot-img"><img src="/media/app-browser-poster.jpg" alt="덜누름 브라우저 실제 화면" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>UPDATE</i> 2.4 · 11.16</small>
+              <b>덜누름 브라우저</b>
+              <span>PC처럼, 창으로 여는 브라우저. 탭 · 찾기 · 방문 기록.</span>
+              <em>자세히 보기 · 받으러 가기 →</em>
+            </span>
+          </a>
+          <a class="rel-spot" href="/game/" aria-label="덜누름 게임 자세히 보기" tabindex="-1" aria-hidden="true">
+            <span class="rel-spot-img"><img src="/media/app-game-poster.jpg" alt="덜누름 게임 실제 화면" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>UPDATE</i> 0.3 · 11.16</small>
+              <b>덜누름 게임</b>
+              <span>폴드를 휴대용 게임기처럼. 게임 앱 · 녹화 · 키 매핑 · 최적화.</span>
+              <em>자세히 보기 · 받으러 가기 →</em>
+            </span>
+          </a>
+          <a class="rel-spot" href="/desktop/" aria-label="덜누름 데스크탑앱 자세히 보기" tabindex="-1" aria-hidden="true">
+            <span class="rel-spot-img"><img src="/media/app-desk-poster.jpg" alt="덜누름 데스크탑앱 실제 화면" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>UPDATE</i> 1.5.2 · 11.15</small>
+              <b>덜누름 데스크탑앱</b>
+              <span>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창.</span>
+              <em>자세히 보기 · 받으러 가기 →</em>
+            </span>
+          </a>
+          <a class="rel-spot" href="/speedometer/" aria-label="대신남 스피드미터 자세히 보기" tabindex="-1" aria-hidden="true">
+            <span class="rel-spot-img"><img src="/media/spd-landing-poster.jpg" alt="대신남 스피드미터 실제 화면" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>개발 중</i> 공개 준비 중</small>
+              <b>대신남 스피드미터</b>
+              <span>차가 달리면 조종석 계기판이 움직입니다.</span>
+              <em>자세히 보기 · 알림받기 →</em>
+            </span>
+          </a>
+          <div class="rel-spot-dots" role="tablist" aria-label="소식 고르기"><button type="button" role="tab" aria-label="덜누름 패드" class="on" aria-selected="true"></button><button type="button" role="tab" aria-label="덜누름 워크"></button><button type="button" role="tab" aria-label="덜누름 브라우저"></button><button type="button" role="tab" aria-label="덜누름 게임"></button><button type="button" role="tab" aria-label="덜누름 데스크탑앱"></button><button type="button" role="tab" aria-label="대신남 스피드미터"></button></div>
+        </div>
       </div>
     </div>
   </section>
@@ -3551,6 +3607,33 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       if (el.classList && el.classList.contains("ntf-btn") && el.classList.contains("is-on") && !(m.oldValue || "").includes("is-on")) morph(el);
     });
   }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+})();
+</script>
+<script>
+/* 업데이트 내역 머리의 앱 소식: 5초마다 다음 앱으로 (올려 두거나 포커스하면 멈춤, 동작 줄이기면 자동 넘김 없음) */
+(function () {
+  var box = document.getElementById("relSpots"); if (!box) return;
+  var slides = box.querySelectorAll(".rel-spot"), dots = box.querySelectorAll(".rel-spot-dots button"), i = 0, t = 0, hold = false;
+  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function show(n) {
+    i = (n + slides.length) % slides.length;
+    for (var k = 0; k < slides.length; k++) {
+      var on = k === i;
+      slides[k].classList.toggle("on", on);
+      if (on) { slides[k].removeAttribute("tabindex"); slides[k].removeAttribute("aria-hidden"); } else { slides[k].setAttribute("tabindex", "-1"); slides[k].setAttribute("aria-hidden", "true"); }
+      dots[k].classList.toggle("on", on); dots[k].setAttribute("aria-selected", on ? "true" : "false");
+    }
+  }
+  function loop() { clearTimeout(t); if (still) return; t = setTimeout(function () { if (!hold && !document.hidden) show(i + 1); loop(); }, 5000); }
+  [].forEach.call(dots, function (d, k) { d.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); show(k); loop(); }); });
+  box.addEventListener("mouseenter", function () { hold = true; });
+  box.addEventListener("mouseleave", function () { hold = false; });
+  box.addEventListener("focusin", function () { hold = true; });
+  box.addEventListener("focusout", function () { hold = false; });
+  // 손가락으로 옆으로 밀기
+  var sx = 0; box.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
+  box.addEventListener("touchend", function (e) { var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) { show(i + (dx < 0 ? 1 : -1)); loop(); } });
+  loop();
 })();
 </script>
 </body>
