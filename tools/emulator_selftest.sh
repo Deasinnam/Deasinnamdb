@@ -65,9 +65,25 @@ CMP=$(adb shell cmd package resolve-activity --brief -a android.intent.action.MA
 adb shell am force-stop "$CLK"; sleep 1
 adb shell am start --windowingMode 5 -n "$CMP" 2>&1 | head -2; sleep 2
 adb shell dumpsys activity activities | grep -m2 -E "Task\{.*$CLK" | tee selftest-mode-before.txt
-adb shell am start --windowingMode 1 --display 0 -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n "$CMP" 2>&1 | head -2; sleep 2
-adb shell dumpsys activity activities | grep -m2 -E "Task\{.*$CLK" | tee selftest-mode-after.txt
-if grep -q "mode=freeform" selftest-mode-before.txt && grep -q "mode=fullscreen" selftest-mode-after.txt; then echo "창 → 전체 화면 명령 통과"; else echo "창 → 전체 화면 명령: 확인 못함 (참고용)"; fi
+mode() { adb shell dumpsys activity activities | grep -m1 -oE "Task\{[^}]*$CLK[^}]*mode=[a-z]+" | grep -oE "mode=[a-z]+"; }
+# 방법 1: 새 작업으로 (CLEAR_TASK)
+adb shell am start --windowingMode 1 --display 0 -f 0x10008000 -n "$CMP" 2>&1 | head -1; sleep 2
+echo "방법1 CLEAR_TASK: $(mode)" | tee -a selftest-modes.txt
+adb shell am start --windowingMode 5 -n "$CMP" >/dev/null 2>&1; sleep 1
+adb shell am force-stop "$CLK"; adb shell am start --windowingMode 5 -n "$CMP" >/dev/null 2>&1; sleep 2
+echo "다시 창: $(mode)" | tee -a selftest-modes.txt
+# 방법 2: 작업을 닫고(remove-task) 전체 화면으로 다시
+TID=$(adb shell dumpsys activity activities | grep -m1 -oE "Task\{[0-9a-f]+ #[0-9]+[^}]*$CLK" | grep -oE "#[0-9]+" | tr -d '#')
+adb shell am stack remove "$TID" 2>&1 | head -1
+adb shell cmd activity remove-task "$TID" 2>&1 | head -1
+sleep 1
+adb shell am start --windowingMode 1 --display 0 -f 0x10200000 -n "$CMP" 2>&1 | head -1; sleep 2
+echo "방법2 작업 닫고 다시: $(mode)" | tee -a selftest-modes.txt
+# 방법 3: force-stop 후 전체 화면
+adb shell am start --windowingMode 5 -n "$CMP" >/dev/null 2>&1; sleep 1
+adb shell am force-stop "$CLK"; sleep 1
+adb shell am start --windowingMode 1 --display 0 -f 0x10200000 -n "$CMP" 2>&1 | head -1; sleep 2
+echo "방법3 force-stop 후: $(mode)" | tee -a selftest-modes.txt
 step "작업 목록"
 adb shell dumpsys activity activities > selftest-activities.txt
 LP=$(grep -o "LAUNCH-PKG [a-z0-9._]*" selftest-result.txt | awk '{print $2}')
