@@ -60,6 +60,8 @@ public class MainActivity extends Activity {
     static final String KEY_WINDOWING_MODE = "android.activity.windowingMode";
 
     private WebView web;
+    private RemoteLink rlink;
+    private volatile boolean keyTest; // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
     private android.widget.FrameLayout root;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
@@ -166,8 +168,28 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (rlink != null) rlink.destroy();
         if (web != null) web.destroy();
         super.onDestroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] p, int[] r) {
+        super.onRequestPermissionsResult(code, p, r);
+        if (rlink != null) rlink.onPermResult(code);
+    }
+
+    @Override
+    protected void onActivityResult(int code, int res, Intent data) {
+        super.onActivityResult(code, res, data);
+        if (rlink != null) rlink.onEnableResult(code);
+    }
+
+    private RemoteLink link() {
+        if (rlink == null) rlink = new RemoteLink(this, (fn, arg) -> main.post(() -> {
+            if (web != null) web.evaluateJavascript("window." + fn + " && " + fn + "(" + JSONObject.quote(arg) + ")", null);
+        }));
+        return rlink;
     }
 
     /** 리모컨 · 키보드 단추: 웹 화면이 모르는 TV 단추는 이름을 붙여 화면에 넘김 (볼륨 단추는 시스템이 처리) */
@@ -191,6 +213,14 @@ public class MainActivity extends Activity {
                     int c = e.getKeyCode();
                     if (c >= android.view.KeyEvent.KEYCODE_1 && c <= android.view.KeyEvent.KEYCODE_9) k = "n" + (c - android.view.KeyEvent.KEYCODE_0);
                     else if (c >= android.view.KeyEvent.KEYCODE_NUMPAD_1 && c <= android.view.KeyEvent.KEYCODE_NUMPAD_9) k = "n" + (c - android.view.KeyEvent.KEYCODE_NUMPAD_0);
+            }
+            if (k == null && keyTest && web != null) {
+                // 시험 중: 덜누름 TV가 모르는 단추도 이름(KEYCODE_…)을 보여 줌. 방향 · 확인 · 뒤로는 화면이 직접 처리
+                int c = e.getKeyCode();
+                boolean web0 = c == android.view.KeyEvent.KEYCODE_DPAD_UP || c == android.view.KeyEvent.KEYCODE_DPAD_DOWN || c == android.view.KeyEvent.KEYCODE_DPAD_LEFT
+                        || c == android.view.KeyEvent.KEYCODE_DPAD_RIGHT || c == android.view.KeyEvent.KEYCODE_DPAD_CENTER || c == android.view.KeyEvent.KEYCODE_ENTER
+                        || c == android.view.KeyEvent.KEYCODE_BACK || c == android.view.KeyEvent.KEYCODE_ESCAPE || c == android.view.KeyEvent.KEYCODE_VOLUME_UP || c == android.view.KeyEvent.KEYCODE_VOLUME_DOWN;
+                if (!web0) k = "raw:" + android.view.KeyEvent.keyCodeToString(c);
             }
             if (k != null && web != null) { web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(k) + ")", null); return true; }
         }
@@ -564,6 +594,13 @@ public class MainActivity extends Activity {
                 catch (RuntimeException e) { try { startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (RuntimeException ignored) { } }
             });
         }
+
+        /** 삼성 스마트 리모컨 바로 연결: 상태 · 찾기 · 멈추기 · 짝짓기 · 단추 시험 */
+        @JavascriptInterface public String rcState() { return link().state(); }
+        @JavascriptInterface public void rcScan() { main.post(() -> link().scan()); }
+        @JavascriptInterface public void rcStop() { main.post(() -> { if (rlink != null) rlink.stopScan(); }); }
+        @JavascriptInterface public void rcPair(String addr) { main.post(() -> link().pair(addr)); }
+        @JavascriptInterface public void setKeyTest(boolean on) { keyTest = on; }
 
         /** 지금 연결된 바깥 입력 장치(리모컨 · 키보드 · 마우스 · 게임패드) 이름 */
         @JavascriptInterface

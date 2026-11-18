@@ -26,7 +26,14 @@
       toggleMute: function () { vol.muted = !vol.muted; return JSON.stringify(vol); },
       homeButton: function () { return JSON.stringify({ on: true, allowed: false }); }, setHomeButton: function () {}, askOverlay: function () {},
       shizuku: function () { return JSON.stringify({ installed: false, running: false, granted: false }); }, shizukuConnect: function () { return "install"; },
-      openBluetooth: function () {}, remotes: function () { return JSON.stringify([{ name: "Bluetooth Remote", kind: "remote" }]); }
+      openBluetooth: function () {}, setKeyTest: function () {},
+      rcState: function () { return JSON.stringify({ bt: true, on: true, perm: true }); },
+      rcScan: function () {
+        setTimeout(function () { window.rcFound(JSON.stringify({ addr: "AA:01", name: "Samsung Smart Control", remote: true, samsung: true, bonded: false })); }, 700);
+        setTimeout(function () { window.rcFound(JSON.stringify({ addr: "AA:02", name: "Galaxy Buds2", remote: false, samsung: true, bonded: false })); }, 1100);
+        setTimeout(function () { window.rcScanDone("ok"); }, 2500);
+      },
+      rcStop: function () {}, rcPair: function (a) { setTimeout(function () { window.rcBond(JSON.stringify({ addr: a, state: "bonding" })); }, 300); setTimeout(function () { window.rcBond(JSON.stringify({ addr: a, state: "bonded" })); }, 1600); }, remotes: function () { return JSON.stringify([{ name: "Bluetooth Remote", kind: "remote" }]); }
     };
   })();
 
@@ -235,7 +242,7 @@
     build(box); $("sheet").hidden = false;
     var first = box.querySelector("[data-nav]"); if (first) focusEl(first);
   }
-  function closeSheet() { remoteTest = null; $("sheet").hidden = true; if (sheetBack) { var b = sheetBack; sheetBack = null; if (document.body.contains(b)) focusEl(b); } }
+  function closeSheet() { if (remoteTest && P.setKeyTest) P.setKeyTest(false); remoteTest = null; rcOpen = null; if (P.rcStop) P.rcStop(); $("sheet").hidden = true; if (sheetBack) { var b = sheetBack; sheetBack = null; if (document.body.contains(b)) focusEl(b); } }
   $("sheet").addEventListener("click", function (e) { if (e.target.id === "sheet") closeSheet(); });
   function sbtn(label, sub, fn, cls) {
     var b = el("button", "sbtn" + (cls ? " " + cls : "")); b.type = "button"; b.setAttribute("data-nav", "");
@@ -306,10 +313,92 @@
   };
   function showKey(k) {
     if (!remoteTest) return;
-    var n = KEYNAME[k] || (k.charAt(0) === "n" && k.length === 2 ? ["숫자 " + k.slice(1), "내 서비스 " + k.slice(1) + "번째 열기"] : [k, "덜누름 TV에서는 쓰지 않는 단추"]);
+    var n = KEYNAME[k] || (k.indexOf("raw:") === 0 ? [k.slice(4).replace("KEYCODE_", ""), "덜누름 TV에서는 쓰지 않는 단추 (다른 앱에서는 쓰일 수 있음)"] : null) || (k.charAt(0) === "n" && k.length === 2 ? ["숫자 " + k.slice(1), "내 서비스 " + k.slice(1) + "번째 열기"] : [k, "덜누름 TV에서는 쓰지 않는 단추"]);
     remoteTest.querySelector("b").textContent = n[0]; remoteTest.querySelector("span").textContent = n[1];
     remoteTest.classList.remove("hit"); void remoteTest.offsetWidth; remoteTest.classList.add("hit");
   }
+  // ---------- 삼성 스마트 리모컨 바로 연결 ----------
+  var rcOpen = null; // { list, btn, msg, rows:{addr:el} }
+  function samsungSheet() {
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "삼성 스마트 리모컨 바로 연결"));
+      box.appendChild(el("p", "rc-lead", "삼성 TV 리모컨(스마트 리모컨 · 원리모컨 · 스마트 컨트롤)을 휴대폰에 블루투스로 짝지어 덜누름 TV를 조작합니다."));
+
+      var warn = el("div", "rc-warn");
+      warn.appendChild(el("b", null, "먼저 알아 두세요"));
+      warn.appendChild(el("span", null, "삼성 리모컨은 한 번에 한 기기만 연결됩니다. 휴대폰에 연결하면 TV와의 연결이 풀리고, TV에서 다시 쓰려면 리모컨을 TV에 다시 연결해야 합니다 (TV를 향해 뒤로 + 재생/일시정지 3초)."));
+      box.appendChild(warn);
+
+      box.appendChild(el("h4", "rc-h", "1. 리모컨을 연결 모드로"));
+      var ol = el("ol", "rc-steps");
+      ["TV가 리모컨을 다시 잡아가지 않도록 TV 전원을 끄거나 TV에서 멀리 떨어집니다",
+       "요즘 모델(스마트 리모컨 · 원리모컨): 뒤로(↩) + 재생/일시정지(⏯)를 3초 이상 함께 누릅니다",
+       "예전 모델(스마트 컨트롤 · 터치 리모컨): RETURN + GUIDE를 함께 누릅니다",
+       "누른 뒤 바로 아래 [리모컨 찾기]를 누르세요. 연결 모드는 잠깐만 유지됩니다"].forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      box.appendChild(ol);
+
+      box.appendChild(el("h4", "rc-h", "2. 찾아서 연결"));
+      var g = el("div", "sbtns"); var btn = sbtn("리모컨 찾기", "20초 동안 주변 검색", function () { rcStartScan(); }); g.appendChild(btn); box.appendChild(g);
+      var msg = el("div", "rc-msg", ""); box.appendChild(msg);
+      var list = el("div", "rc-list"); box.appendChild(list);
+
+      box.appendChild(el("h4", "rc-h", "3. 단추 확인"));
+      var g3 = el("div", "sbtns");
+      g3.appendChild(sbtn("단추 눌러 보기", "연결된 리모컨 단추 시험", function () { closeSheet(); remoteSheet(); }));
+      box.appendChild(g3);
+
+      box.appendChild(el("h4", "rc-h", "안 될 때"));
+      var ul = el("ul", "rc-notes");
+      ["목록에 안 보이면 1번을 다시 하고 곧바로 [리모컨 찾기]를 누르세요. 리모컨 LED가 깜빡이는 동안만 찾을 수 있습니다.",
+       "모델에 따라 휴대폰과 짝지어지지 않거나 일부 단추만 동작할 수 있습니다. 음성(마이크) 단추는 쓸 수 없습니다.",
+       "리모컨의 홈 단추는 안드로이드가 처리해 DeX 바탕화면으로 갑니다.",
+       "휴대폰에서 지우려면 블루투스 설정에서 리모컨 → 연결 해제(등록 해제)를 누르세요."].forEach(function (t) { ul.appendChild(el("li", null, t)); });
+      box.appendChild(ul);
+      var g2 = el("div", "sbtns"); g2.style.marginTop = "14px";
+      g2.appendChild(sbtn("블루투스 설정 열기", null, function () { P.openBluetooth(); }));
+      g2.appendChild(sbtn("닫기", null, closeSheet)); box.appendChild(g2);
+
+      rcOpen = { list: list, btn: btn, msg: msg, rows: {} };
+      var st = {}; try { st = JSON.parse(P.rcState()); } catch (e) {}
+      if (st.bt === false) rcSay("이 휴대폰에는 블루투스가 없습니다.");
+    }, true);
+  }
+  function rcSay(t) { if (rcOpen) rcOpen.msg.textContent = t; }
+  function rcStartScan() {
+    if (!rcOpen) return;
+    rcOpen.list.innerHTML = ""; rcOpen.rows = {};
+    rcOpen.btn.classList.add("busy"); rcOpen.btn.querySelector("small") && (rcOpen.btn.querySelector("small").textContent = "찾는 중…");
+    rcSay("찾는 중… 리모컨이 연결 모드인지 확인하세요 (권한이나 블루투스 켜기를 물으면 허용)");
+    P.rcScan();
+  }
+  window.rcFound = function (j) {
+    if (!rcOpen) return; var d; try { d = JSON.parse(j); } catch (e) { return; }
+    if (rcOpen.rows[d.addr]) return;
+    var sub = (d.bonded ? "짝지어짐 · " : "") + (d.remote ? (d.samsung ? "삼성 리모컨으로 보임" : "리모컨으로 보임") : "다른 블루투스 장치");
+    var b = sbtn(d.name, sub, function () { rcSay(d.name + " 연결 중… 휴대폰에 확인 창이 뜨면 [연결]을 누르세요"); P.rcPair(d.addr); }, d.remote ? "rc-hot" : "rc-other");
+    rcOpen.rows[d.addr] = b;
+    if (d.remote) rcOpen.list.insertBefore(b, rcOpen.list.firstChild); else rcOpen.list.appendChild(b);
+  };
+  window.rcScanDone = function (why) {
+    if (!rcOpen) return;
+    rcOpen.btn.classList.remove("busy"); var sm = rcOpen.btn.querySelector("small"); if (sm) sm.textContent = "20초 동안 주변 검색";
+    var n = Object.keys(rcOpen.rows).length;
+    rcSay(why === "perm" ? "근처 기기 권한이 없어 찾을 수 없습니다. 다시 누르고 허용해 주세요."
+      : why === "off" ? "블루투스가 꺼져 있습니다. 켠 뒤 다시 찾아 주세요."
+      : why === "nobt" ? "이 휴대폰에는 블루투스가 없습니다."
+      : n ? "리모컨 이름을 눌러 연결하세요. 목록에 없으면 연결 모드로 다시 두고 찾기를 누르세요."
+      : "찾은 장치가 없습니다. 리모컨을 연결 모드로 두고 바로 다시 찾아 주세요.");
+  };
+  window.rcBond = function (j) {
+    var d; try { d = JSON.parse(j); } catch (e) { return; }
+    var row = rcOpen && rcOpen.rows[d.addr]; var sm = row && row.querySelector("small");
+    if (d.state === "bonding") { if (sm) sm.textContent = "연결 중…"; }
+    else if (d.state === "bonded") { if (sm) sm.textContent = "연결됨 ✓"; if (row) row.classList.add("on"); rcSay("연결됐습니다. [단추 눌러 보기]에서 단추를 확인하세요."); toast("리모컨이 연결됐습니다"); }
+    else if (d.state === "fail") { if (sm) sm.textContent = "연결 실패 · 다시 누르기"; rcSay("연결하지 못했습니다. 리모컨을 연결 모드로 다시 두고 이름을 다시 눌러 주세요."); }
+  };
+  window.rcChanged = function () { /* 리모컨이 붙거나 떨어짐: 설정이 열려 있으면 다음에 열 때 반영 */ };
+
   function remoteSheet() {
     sheetBack = cur;
     openSheet(function (box) {
@@ -330,11 +419,12 @@
       box.appendChild(ol);
       var g = el("div", "sbtns");
       g.appendChild(sbtn("블루투스 설정 열기", "새 기기 연결", function () { P.openBluetooth(); toast("연결한 뒤 덜누름 TV로 돌아와 주세요"); }));
+      g.appendChild(sbtn("삼성 스마트 리모컨 바로 연결", "TV 리모컨을 휴대폰에", function () { closeSheet(); samsungSheet(); }));
       box.appendChild(g);
 
       box.appendChild(el("h4", "rc-h", "단추 눌러 보기"));
       var test = el("div", "rc-test"); test.appendChild(el("b", null, "리모컨 단추를 눌러 보세요")); test.appendChild(el("span", null, "누른 단추와 덜누름 TV에서 하는 일이 여기 뜹니다 · 뒤로 단추는 이 창을 닫습니다"));
-      box.appendChild(test); remoteTest = test;
+      box.appendChild(test); remoteTest = test; if (P.setKeyTest) P.setKeyTest(true);
 
       box.appendChild(el("h4", "rc-h", "단추마다 하는 일"));
       var tb = el("div", "rc-map");
@@ -363,6 +453,7 @@
       box.appendChild(el("p", null, "덜누름 TV " + P.version() + (scr.dex ? " · DeX에서 실행 중" : "")));
       var g = el("div", "sbtns");
       var rc = []; try { rc = JSON.parse(P.remotes()) || []; } catch (e) {}
+      g.appendChild(sbtn("삼성 스마트 리모컨 바로 연결", "TV 리모컨을 휴대폰에 연결", function () { samsungSheet(); }));
       g.appendChild(sbtn("리모컨 연결 · 단추 안내", rc.length ? rc.length + "개 연결됨" : "연결 안 됨", function () { remoteSheet(); }, rc.length ? "on" : ""));
       var full = sbtn("앱을 전체 화면으로 열기", state.fullOpen ? "켬" : "끔", function () { state.fullOpen = !state.fullOpen; save(); full.lastChild.textContent = state.fullOpen ? "켬" : "끔"; full.classList.toggle("on", state.fullOpen); setHero(heroIdx); }, state.fullOpen ? "on" : "");
       var imm = sbtn("시스템 막대 숨기기", scr.immersive === false ? "끔" : "켬", function () { var on = scr.immersive === false; P.setImmersive(on); scr.immersive = on; imm.lastChild.textContent = on ? "켬" : "끔"; imm.classList.toggle("on", on); }, scr.immersive === false ? "" : "on");
