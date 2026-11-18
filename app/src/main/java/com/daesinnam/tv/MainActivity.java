@@ -170,6 +170,33 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    /** 리모컨 · 키보드 단추: 웹 화면이 모르는 TV 단추는 이름을 붙여 화면에 넘김 (볼륨 단추는 시스템이 처리) */
+    @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+        if (e.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+            String k = null;
+            switch (e.getKeyCode()) {
+                case android.view.KeyEvent.KEYCODE_CHANNEL_UP: case android.view.KeyEvent.KEYCODE_PAGE_UP: k = "chUp"; break;
+                case android.view.KeyEvent.KEYCODE_CHANNEL_DOWN: case android.view.KeyEvent.KEYCODE_PAGE_DOWN: k = "chDown"; break;
+                case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE: case android.view.KeyEvent.KEYCODE_MEDIA_PLAY: k = "play"; break;
+                case android.view.KeyEvent.KEYCODE_MENU: case android.view.KeyEvent.KEYCODE_SETTINGS: k = "menu"; break;
+                case android.view.KeyEvent.KEYCODE_PROG_RED: k = "red"; break;
+                case android.view.KeyEvent.KEYCODE_PROG_GREEN: k = "green"; break;
+                case android.view.KeyEvent.KEYCODE_PROG_YELLOW: k = "yellow"; break;
+                case android.view.KeyEvent.KEYCODE_PROG_BLUE: k = "blue"; break;
+                case android.view.KeyEvent.KEYCODE_GUIDE: case android.view.KeyEvent.KEYCODE_TV: k = "home"; break;
+                case android.view.KeyEvent.KEYCODE_MUTE: case android.view.KeyEvent.KEYCODE_VOLUME_MUTE:
+                    audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI); return true;
+                default:
+                    int c = e.getKeyCode();
+                    if (c >= android.view.KeyEvent.KEYCODE_1 && c <= android.view.KeyEvent.KEYCODE_9) k = "n" + (c - android.view.KeyEvent.KEYCODE_0);
+                    else if (c >= android.view.KeyEvent.KEYCODE_NUMPAD_1 && c <= android.view.KeyEvent.KEYCODE_NUMPAD_9) k = "n" + (c - android.view.KeyEvent.KEYCODE_NUMPAD_0);
+            }
+            if (k != null && web != null) { web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(k) + ")", null); return true; }
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
     @Override
     public void onBackPressed() {
         // 고르기 창 · 화면 보호기가 열려 있으면 화면이 먼저 닫음

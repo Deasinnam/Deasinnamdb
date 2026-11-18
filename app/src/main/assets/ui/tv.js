@@ -410,6 +410,28 @@
   });
   document.addEventListener("pointerdown", function (e) { var t = e.target.closest && e.target.closest("[data-nav]"); if (t) focusEl(t); else if (cur) { cur.classList.remove("focus"); cur = null; } }, true);
 
+  // 리모컨 단추 (안드로이드에서 넘겨줌): CH ± = 서비스 넘기기, 재생 = 배너 서비스 열기, 숫자 = n번째 서비스, 메뉴 = 설정
+  window.tvKey = function (k) {
+    if (!$("saver").hidden) { hideSaver(); return; }
+    var list = myList();
+    if (k === "chUp" || k === "chDown") {
+      if (!$("home").hidden) { setHero(heroIdx + (k === "chUp" ? -1 : 1), true); var t = document.querySelector('#myRow .tile[data-pkg="' + list[heroIdx] + '"]'); if (t) focusEl(t); }
+    } else if (k === "play") {
+      if (cur && cur.dataset.pkg && $("sheet").hidden) openApp(cur.dataset.pkg); else if (list.length) openApp(list[heroIdx]);
+    } else if (k.charAt(0) === "n") {
+      var i = parseInt(k.slice(1), 10) - 1; if (list[i]) { showTab("home"); setHero(i, true); openApp(list[i]); }
+    } else if (k === "menu" || k === "red") { if ($("sheet").hidden) settingsSheet(); else closeSheet(); }
+    else if (k === "green") { showTab("home"); }
+    else if (k === "yellow") { showTab("apps"); }
+    else if (k === "blue") { if ($("sheet").hidden) addSheet(); }
+    else if (k === "home") { if (!$("sheet").hidden) closeSheet(); showTab("home"); }
+  };
+  document.addEventListener("keydown", function (e) {
+    var map = { MediaPlayPause: "play", ChannelUp: "chUp", ChannelDown: "chDown", PageUp: "chUp", PageDown: "chDown", ContextMenu: null };
+    if (map[e.key]) { e.preventDefault(); window.tvKey(map[e.key]); }
+    else if (/^[1-9]$/.test(e.key) && !(document.activeElement && document.activeElement.id === "search")) { e.preventDefault(); window.tvKey("n" + e.key); }
+  });
+
   // 뒤로 (안드로이드 뒤로 단추 · Esc)
   window.tvBack = function () {
     if (!$("saver").hidden) { hideSaver(); return true; }
