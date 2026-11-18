@@ -61,6 +61,8 @@ public class MainActivity extends Activity {
 
     private WebView web;
     private RemoteLink rlink;
+    static final String EXTRA_OPEN = "open"; // 키보드 단축키: 0 = 홈, 1~9 = n번째 서비스
+    private int pendingOpen = -1;
     private volatile boolean keyTest; // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
     private android.widget.FrameLayout root;
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -81,6 +83,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getIntent() != null) pendingOpen = getIntent().getIntExtra(EXTRA_OPEN, -1);
         selftest = getIntent() != null && getIntent().getBooleanExtra("tv.selftest", false);
         audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         immersive = prefs().getBoolean("immersive", true);
@@ -171,6 +174,14 @@ public class MainActivity extends Activity {
         if (rlink != null) rlink.destroy();
         if (web != null) web.destroy();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        int n = intent == null ? -1 : intent.getIntExtra(EXTRA_OPEN, -1);
+        if (n >= 0 && web != null) web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(n == 0 ? "home" : "n" + n) + ")", null);
     }
 
     @Override
@@ -601,6 +612,45 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void rcStop() { main.post(() -> { if (rlink != null) rlink.stopScan(); }); }
         @JavascriptInterface public void rcPair(String addr) { main.post(() -> link().pair(addr)); }
         @JavascriptInterface public void setKeyTest(boolean on) { keyTest = on; }
+
+        /** 앱을 처음 열 때 받은 키보드 단축키 (0 홈, 1~9 서비스, -1 없음) */
+        @JavascriptInterface public int takeOpen() { int n = pendingOpen; pendingOpen = -1; return n; }
+
+        /** 다른 앱 위에서도 쓰는 키보드 단축키(접근성 서비스) 상태 */
+        @JavascriptInterface
+        public String kbGlobal() {
+            try { return new JSONObject().put("on", KeyService.enabled(MainActivity.this)).put("shizuku", Shizu.granted()).toString(); }
+            catch (JSONException e) { return "{}"; }
+        }
+
+        /** 켜기: Shizuku가 연결돼 있으면 바로 켜고, 아니면 접근성 설정 화면을 엶 */
+        @JavascriptInterface
+        public String kbEnable() {
+            if (Shizu.granted()) {
+                String cur = Shizu.run("settings get secure enabled_accessibility_services", 3000);
+                cur = cur == null ? "" : cur.trim();
+                if (cur.equals("null")) cur = "";
+                if (!cur.contains(KeyService.COMPONENT)) {
+                    String v = cur.isEmpty() ? KeyService.COMPONENT : cur + ":" + KeyService.COMPONENT;
+                    Shizu.run("settings put secure enabled_accessibility_services '" + v + "' ; settings put secure accessibility_enabled 1", 3000);
+                }
+                if (KeyService.enabled(MainActivity.this)) return "on";
+            }
+            main.post(() -> {
+                try { startActivity(new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
+                catch (RuntimeException ignored) { }
+            });
+            return "settings";
+        }
+
+        /** 앱 정보 화면 (안드로이드 13+ '제한된 설정 허용'을 여기서) */
+        @JavascriptInterface
+        public void openAppInfo() {
+            main.post(() -> {
+                try { startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
+                catch (RuntimeException ignored) { }
+            });
+        }
 
         /** 지금 연결된 바깥 입력 장치(리모컨 · 키보드 · 마우스 · 게임패드) 이름 */
         @JavascriptInterface

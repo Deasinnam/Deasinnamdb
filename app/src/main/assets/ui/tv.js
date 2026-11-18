@@ -26,7 +26,8 @@
       toggleMute: function () { vol.muted = !vol.muted; return JSON.stringify(vol); },
       homeButton: function () { return JSON.stringify({ on: true, allowed: false }); }, setHomeButton: function () {}, askOverlay: function () {},
       shizuku: function () { return JSON.stringify({ installed: false, running: false, granted: false }); }, shizukuConnect: function () { return "install"; },
-      openBluetooth: function () {}, setKeyTest: function () {},
+      openBluetooth: function () {}, setKeyTest: function () {}, takeOpen: function () { return -1; },
+      kbGlobal: function () { return JSON.stringify({ on: false, shizuku: false }); }, kbEnable: function () { return "settings"; }, openAppInfo: function () {},
       rcState: function () { return JSON.stringify({ bt: true, on: true, perm: true }); },
       rcScan: function () {
         setTimeout(function () { window.rcFound(JSON.stringify({ addr: "AA:01", name: "Samsung Smart Control", remote: true, samsung: true, bonded: false })); }, 700);
@@ -453,6 +454,8 @@
       box.appendChild(el("p", null, "덜누름 TV " + P.version() + (scr.dex ? " · DeX에서 실행 중" : "")));
       var g = el("div", "sbtns");
       var rc = []; try { rc = JSON.parse(P.remotes()) || []; } catch (e) {}
+      var kbg = {}; try { kbg = JSON.parse(P.kbGlobal()); } catch (e) {}
+      g.appendChild(sbtn("키보드로 조작 · 단축키", kbg.on ? "다른 앱에서도 켜짐" : "? 를 누르면 언제든 보기", function () { kbSheet(); }, kbg.on ? "on" : ""));
       g.appendChild(sbtn("삼성 스마트 리모컨 바로 연결", "TV 리모컨을 휴대폰에 연결", function () { samsungSheet(); }));
       g.appendChild(sbtn("리모컨 연결 · 단추 안내", rc.length ? rc.length + "개 연결됨" : "연결 안 됨", function () { remoteSheet(); }, rc.length ? "on" : ""));
       var full = sbtn("앱을 전체 화면으로 열기", state.fullOpen ? "켬" : "끔", function () { state.fullOpen = !state.fullOpen; save(); full.lastChild.textContent = state.fullOpen ? "켬" : "끔"; full.classList.toggle("on", state.fullOpen); setHero(heroIdx); }, state.fullOpen ? "on" : "");
@@ -562,8 +565,77 @@
     else if ((k === "Enter" || k === " ") && cur && !typing) { e.preventDefault(); cur.click(); }
     else if (k === "Escape" || (k === "Backspace" && !typing)) { if (window.tvBack()) e.preventDefault(); }
     else if (k === "ContextMenu" && cur && cur.dataset.pkg) { e.preventDefault(); tileSheet(cur.dataset.pkg); }
+    else if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && kbShortcut(k)) { e.preventDefault(); }
   });
   document.addEventListener("pointerdown", function (e) { var t = e.target.closest && e.target.closest("[data-nav]"); if (t) focusEl(t); else if (cur) { cur.classList.remove("focus"); cur = null; } }, true);
+
+  // ---------- 블루투스 키보드 ----------
+  function typingNow() { return document.activeElement && document.activeElement.id === "search"; }
+  var KB = [
+    ["방향키", "고르기"], ["Enter · Space", "고른 것 열기"], ["Esc · Backspace", "뒤로 · 창 닫기"],
+    ["1 ~ 9", "내 서비스 그 번째 바로 열기"], ["N · ]", "다음 서비스"], ["P · [", "이전 서비스"], ["H", "홈"], ["A", "모든 앱"],
+    ["/", "앱 찾기 (이름 입력)"], ["S", "설정"], ["+ · −", "소리 키우기 · 줄이기"], ["M", "음소거"], ["F", "전체 화면"], ["?", "이 단축키 안내"]
+  ];
+  function kbShortcut(k) {
+    if (k.length === 1) k = k.toLowerCase();
+    var sheetOpen = !$("sheet").hidden;
+    if (k === "?" || k === "F1") { if (sheetOpen) closeSheet(); kbSheet(); return true; }
+    if (sheetOpen) return false; // 창이 열려 있으면 방향 · 확인 · 뒤로만
+    kbHint();
+    switch (k) {
+      case "h": showTab("home"); return true;
+      case "a": showTab("apps"); return true;
+      case "/": showTab("apps"); setTimeout(function () { $("search").focus(); }, 30); return true;
+      case "s": settingsSheet(); return true;
+      case "n": case "]": window.tvKey("chDown"); return true;
+      case "p": case "[": window.tvKey("chUp"); return true;
+      case "m": applyVol(P.toggleMute()); toast(vol.muted ? "음소거" : "소리 켬"); return true;
+      case "=": case "+": applyVol(P.setVolume(vol.cur + 1)); return true;
+      case "-": case "_": applyVol(P.setVolume(vol.cur - 1)); return true;
+      case "f": P.goFullscreen(); return true;
+    }
+    return false;
+  }
+  function kbHint() { if (state.kbHint) return; state.kbHint = 1; save(); toast("키보드 단축키 안내는 ? 키"); }
+  function kbSheet() {
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "키보드로 조작"));
+      box.appendChild(el("p", "rc-lead", "블루투스 키보드를 휴대폰(또는 DeX)에 연결하면 바로 씁니다. 연결은 블루투스 설정 › 새 기기 연결에서 키보드를 고르면 됩니다."));
+      box.appendChild(el("h4", "rc-h", "덜누름 TV 화면에서"));
+      var tb = el("div", "rc-map kb-map");
+      KB.forEach(function (r) { var b = el("b"); r[0].split(" · ").forEach(function (x, i) { if (i) b.appendChild(document.createTextNode(" · ")); b.appendChild(el("kbd", null, x)); }); tb.appendChild(b); tb.appendChild(el("span", null, r[1])); });
+      box.appendChild(tb);
+
+      box.appendChild(el("h4", "rc-h", "넷플릭스 등 다른 앱을 보는 중에도"));
+      var tb2 = el("div", "rc-map kb-map");
+      [["F12", "덜누름 TV 홈으로 돌아오기"], ["Alt + H", "덜누름 TV 홈으로 돌아오기"], ["Alt + 1 ~ 9", "내 서비스 그 번째로 바로 바꾸기"]].forEach(function (r) {
+        var b = el("b"); r[0].split(" + ").forEach(function (x, i) { if (i) b.appendChild(document.createTextNode(" + ")); b.appendChild(el("kbd", null, x)); }); tb2.appendChild(b); tb2.appendChild(el("span", null, r[1]));
+      });
+      box.appendChild(tb2);
+      var kbg = {}; try { kbg = JSON.parse(P.kbGlobal()); } catch (e) {}
+      var g = el("div", "sbtns"); g.style.marginTop = "10px";
+      var onb = sbtn("다른 앱에서도 단축키 쓰기", kbg.on ? "켜짐" : "꺼짐 · 눌러서 켜기", function () {
+        var r = P.kbEnable();
+        if (r === "on") { onb.lastChild.textContent = "켜짐"; onb.classList.add("on"); toast("이제 다른 앱에서도 F12 · Alt+H로 돌아옵니다"); }
+        else toast("접근성 › 설치된 앱 › 덜누름 TV 키보드 단축키를 켜 주세요");
+      }, kbg.on ? "on" : "");
+      g.appendChild(onb);
+      box.appendChild(g);
+      var ul = el("ul", "rc-notes");
+      [kbg.shizuku ? "Shizuku가 연결돼 있어 누르면 바로 켜집니다." : "누르면 접근성 설정이 열립니다. 설치된 앱(또는 설치된 서비스) › 덜누름 TV 키보드 단축키 › 켜기. (Shizuku를 연결해 두면 한 번에 켜집니다)",
+       "켤 수 없게 회색으로 막혀 있으면: 아래 [앱 정보 열기] › 오른쪽 위 ⋮ › 제한된 설정 허용 뒤 다시 켜세요. 파일로 설치한 앱에 안드로이드가 거는 제한입니다.",
+       "이 기능은 위 단축키만 가로채고, 나머지 키는 그대로 보고 있는 앱에 갑니다. 화면 내용이나 입력한 글자는 읽거나 저장하지 않습니다.",
+       "다른 앱 안에서의 재생 · 멈춤(Space), 앞뒤로 넘기기(방향키), 전체 화면(F)은 그 앱의 키보드 기능을 따릅니다."].forEach(function (t) { ul.appendChild(el("li", null, t)); });
+      box.appendChild(ul);
+      var g2 = el("div", "sbtns"); g2.style.marginTop = "12px";
+      g2.appendChild(sbtn("앱 정보 열기", "제한된 설정 허용", function () { P.openAppInfo(); }));
+      g2.appendChild(sbtn("블루투스 설정 열기", "키보드 연결", function () { P.openBluetooth(); }));
+      g2.appendChild(sbtn("닫기", null, closeSheet));
+      box.appendChild(g2);
+    }, true);
+    setTimeout(function () { $("sheetBox").scrollTop = 0; }, 0);
+  }
 
   // 리모컨 단추 (안드로이드에서 넘겨줌): CH ± = 서비스 넘기기, 재생 = 배너 서비스 열기, 숫자 = n번째 서비스, 메뉴 = 설정
   window.tvKey = function (k) {
@@ -574,6 +646,8 @@
       if (!$("home").hidden) { setHero(heroIdx + (k === "chUp" ? -1 : 1), true); var t = document.querySelector('#myRow .tile[data-pkg="' + list[heroIdx] + '"]'); if (t) focusEl(t); }
     } else if (k === "play") {
       if (cur && cur.dataset.pkg && $("sheet").hidden) openApp(cur.dataset.pkg); else if (list.length) openApp(list[heroIdx]);
+    } else if (k.charAt(0) === "n" && typingNow()) {
+      var sch = $("search"); sch.value += k.slice(1); renderApps();
     } else if (k.charAt(0) === "n") {
       var i = parseInt(k.slice(1), 10) - 1; if (list[i]) { showTab("home"); setHero(i, true); openApp(list[i]); }
     } else if (k === "menu" || k === "red") { if ($("sheet").hidden) settingsSheet(); else closeSheet(); }
@@ -617,6 +691,7 @@
 
   loadApps();
   renderHome();
+  setTimeout(function () { var n = -1; try { n = P.takeOpen(); } catch (e) {} if (n === 0) window.tvKey("home"); else if (n > 0) window.tvKey("n" + n); }, 300);
   refreshScreen();
   try { applyVol(P.volume()); } catch (e) {}
   idle();

@@ -146,6 +146,9 @@ svg { display: block; }
 .busy small { animation: blink 1s ease-in-out infinite; }
 @keyframes blink { 50% { opacity: .35; } }
 
+.kb-map b { font-weight: 500; }
+kbd { display: inline-block; min-width: 26px; padding: 2px 8px; border-radius: 7px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); border-bottom-width: 3px; font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.4; text-align: center; color: var(--ink); }
+
 /* 좁거나 낮은 화면 */
 @media (max-height: 640px) {
   .hero { height: 44vh; min-height: 200px; } .hero-copy h1 { font-size: clamp(36px, 5vw, 64px); } .pbtn { height: 48px; }

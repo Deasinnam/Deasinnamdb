@@ -49,6 +49,17 @@
             <meta-data android:name="com.samsung.android.dex.launchheight" android:value="900" />
         </activity>
         <service android:name=".HomeButton" android:exported="false" />
+        <!-- 다른 앱을 보는 중에도 키보드로 덜누름 TV 부르기 (사용자가 접근성에서 켤 때만 동작) -->
+        <service
+            android:name=".KeyService"
+            android:exported="false"
+            android:label="@string/key_service_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/key_service" />
+        </service>
         <!-- 고급 기능(Shizuku) 연결 -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
