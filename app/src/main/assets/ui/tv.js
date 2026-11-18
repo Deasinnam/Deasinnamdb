@@ -25,7 +25,8 @@
       setVolume: function (n) { vol.cur = Math.max(0, Math.min(vol.max, n)); vol.muted = false; return JSON.stringify(vol); },
       toggleMute: function () { vol.muted = !vol.muted; return JSON.stringify(vol); },
       homeButton: function () { return JSON.stringify({ on: true, allowed: false }); }, setHomeButton: function () {}, askOverlay: function () {},
-      shizuku: function () { return JSON.stringify({ installed: false, running: false, granted: false }); }, shizukuConnect: function () { return "install"; }
+      shizuku: function () { return JSON.stringify({ installed: false, running: false, granted: false }); }, shizukuConnect: function () { return "install"; },
+      openBluetooth: function () {}, remotes: function () { return JSON.stringify([{ name: "Bluetooth Remote", kind: "remote" }]); }
     };
   })();
 
@@ -234,7 +235,7 @@
     build(box); $("sheet").hidden = false;
     var first = box.querySelector("[data-nav]"); if (first) focusEl(first);
   }
-  function closeSheet() { $("sheet").hidden = true; if (sheetBack) { var b = sheetBack; sheetBack = null; if (document.body.contains(b)) focusEl(b); } }
+  function closeSheet() { remoteTest = null; $("sheet").hidden = true; if (sheetBack) { var b = sheetBack; sheetBack = null; if (document.body.contains(b)) focusEl(b); } }
   $("sheet").addEventListener("click", function (e) { if (e.target.id === "sheet") closeSheet(); });
   function sbtn(label, sub, fn, cls) {
     var b = el("button", "sbtn" + (cls ? " " + cls : "")); b.type = "button"; b.setAttribute("data-nav", "");
@@ -295,6 +296,63 @@
     }, true);
   }
 
+  // ---------- 리모컨 연결 · 안내 · 단추 시험 ----------
+  var remoteTest = null; // 시험 중이면 눌린 단추를 보여 주는 칸
+  var KEYNAME = {
+    ArrowUp: ["▲ 위", "위로 고르기"], ArrowDown: ["▼ 아래", "아래로 고르기"], ArrowLeft: ["◀ 왼쪽", "왼쪽으로 고르기"], ArrowRight: ["▶ 오른쪽", "오른쪽으로 고르기"],
+    Enter: ["확인 (OK)", "고른 것 열기"], " ": ["확인 (OK)", "고른 것 열기"], play: ["재생 / 일시정지", "고른 서비스 열기"], chUp: ["CH ▲", "앞 서비스로"], chDown: ["CH ▼", "다음 서비스로"],
+    menu: ["메뉴", "설정 열기"], red: ["빨강", "설정 열기"], green: ["초록", "홈"], yellow: ["노랑", "모든 앱"], blue: ["파랑", "서비스 추가"], home: ["TV · 가이드", "홈"],
+    AudioVolumeUp: ["볼륨 +", "소리 키우기"], AudioVolumeDown: ["볼륨 −", "소리 줄이기"]
+  };
+  function showKey(k) {
+    if (!remoteTest) return;
+    var n = KEYNAME[k] || (k.charAt(0) === "n" && k.length === 2 ? ["숫자 " + k.slice(1), "내 서비스 " + k.slice(1) + "번째 열기"] : [k, "덜누름 TV에서는 쓰지 않는 단추"]);
+    remoteTest.querySelector("b").textContent = n[0]; remoteTest.querySelector("span").textContent = n[1];
+    remoteTest.classList.remove("hit"); void remoteTest.offsetWidth; remoteTest.classList.add("hit");
+  }
+  function remoteSheet() {
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "리모컨 연결"));
+      var rc = []; try { rc = JSON.parse(P.remotes()) || []; } catch (e) {}
+      var kinds = { remote: "리모컨", keyboard: "키보드", mouse: "마우스 · 에어마우스", gamepad: "게임패드", keys: "단추 장치" };
+      var st = el("div", "rc-state" + (rc.length ? " on" : ""));
+      st.appendChild(el("b", null, rc.length ? "연결됨" : "연결된 리모컨이 없습니다"));
+      st.appendChild(el("span", null, rc.length ? rc.map(function (d) { return d.name + " (" + (kinds[d.kind] || "장치") + ")"; }).join(" · ") : "블루투스 리모컨 · 에어마우스 · 무선 키보드를 휴대폰에 연결하면 바로 씁니다"));
+      box.appendChild(st);
+
+      box.appendChild(el("h4", "rc-h", "등록하는 방법"));
+      var ol = el("ol", "rc-steps");
+      ["리모컨을 연결(페어링) 모드로: 보통 확인 + 홈, 또는 뒤로 + 홈을 LED가 깜빡일 때까지 3~5초 함께 누릅니다 (제품 설명서 기준)",
+       "아래 [블루투스 설정 열기] → 새 기기 연결(스캔) → 목록에 뜬 리모컨 이름을 누릅니다",
+       "덜누름 TV로 돌아와 [단추 눌러 보기]에서 리모컨 단추를 눌러 이름이 뜨면 끝입니다",
+       "USB 동글이 있는 에어마우스 · 리모컨은 동글을 DeX 독(또는 USB-C 허브)에 꽂기만 하면 됩니다"].forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      box.appendChild(ol);
+      var g = el("div", "sbtns");
+      g.appendChild(sbtn("블루투스 설정 열기", "새 기기 연결", function () { P.openBluetooth(); toast("연결한 뒤 덜누름 TV로 돌아와 주세요"); }));
+      box.appendChild(g);
+
+      box.appendChild(el("h4", "rc-h", "단추 눌러 보기"));
+      var test = el("div", "rc-test"); test.appendChild(el("b", null, "리모컨 단추를 눌러 보세요")); test.appendChild(el("span", null, "누른 단추와 덜누름 TV에서 하는 일이 여기 뜹니다 · 뒤로 단추는 이 창을 닫습니다"));
+      box.appendChild(test); remoteTest = test;
+
+      box.appendChild(el("h4", "rc-h", "단추마다 하는 일"));
+      var tb = el("div", "rc-map");
+      [["방향 · 확인", "타일 고르기 · 열기"], ["뒤로", "창 닫기 · 홈으로"], ["재생 / 일시정지", "고른 서비스 열기"], ["CH ▲▼", "서비스 하나씩 넘기기"], ["숫자 1~9", "내 서비스 그 번째 바로 열기"], ["메뉴 · 빨강", "설정"], ["초록 · 노랑 · 파랑", "홈 · 모든 앱 · 서비스 추가"], ["볼륨 · 음소거", "미디어 소리"]].forEach(function (r) {
+        tb.appendChild(el("b", null, r[0])); tb.appendChild(el("span", null, r[1]));
+      });
+      box.appendChild(tb);
+
+      box.appendChild(el("h4", "rc-h", "알아 두세요"));
+      var ul = el("ul", "rc-notes");
+      ["TV에 딸려 온 적외선(IR) 리모컨은 휴대폰이 신호를 받지 못해 쓸 수 없습니다. 블루투스 또는 USB 동글 방식 리모컨을 쓰세요.",
+       "넷플릭스 등 다른 앱을 보는 동안 방향 · 확인 · 뒤로 · 재생 단추는 그 앱이 받습니다.",
+       "리모컨의 홈 단추는 안드로이드가 처리해 DeX 바탕화면으로 갑니다. 덜누름 TV로는 화면 가장자리의 떠 있는 홈 단추나 뒤로 단추로 돌아오세요."].forEach(function (t) { ul.appendChild(el("li", null, t)); });
+      box.appendChild(ul);
+      var g2 = el("div", "sbtns"); g2.style.marginTop = "14px"; g2.appendChild(sbtn("닫기", null, closeSheet)); box.appendChild(g2);
+    }, true);
+  }
+
   var scr = {};
   function refreshScreen() { try { scr = JSON.parse(P.screen()) || {}; } catch (e) { scr = {}; } $("fullBtn").hidden = !scr.windowed; }
   function settingsSheet() {
@@ -304,6 +362,8 @@
       box.appendChild(el("h3", null, "설정"));
       box.appendChild(el("p", null, "덜누름 TV " + P.version() + (scr.dex ? " · DeX에서 실행 중" : "")));
       var g = el("div", "sbtns");
+      var rc = []; try { rc = JSON.parse(P.remotes()) || []; } catch (e) {}
+      g.appendChild(sbtn("리모컨 연결 · 단추 안내", rc.length ? rc.length + "개 연결됨" : "연결 안 됨", function () { remoteSheet(); }, rc.length ? "on" : ""));
       var full = sbtn("앱을 전체 화면으로 열기", state.fullOpen ? "켬" : "끔", function () { state.fullOpen = !state.fullOpen; save(); full.lastChild.textContent = state.fullOpen ? "켬" : "끔"; full.classList.toggle("on", state.fullOpen); setHero(heroIdx); }, state.fullOpen ? "on" : "");
       var imm = sbtn("시스템 막대 숨기기", scr.immersive === false ? "끔" : "켬", function () { var on = scr.immersive === false; P.setImmersive(on); scr.immersive = on; imm.lastChild.textContent = on ? "켬" : "끔"; imm.classList.toggle("on", on); }, scr.immersive === false ? "" : "on");
       var sv = sbtn("화면 보호기", saverName(), function () { var o = [0, 3, 10, 30], i = o.indexOf(state.saver); state.saver = o[(i + 1) % o.length]; save(); sv.lastChild.textContent = saverName(); idle(); });
@@ -399,6 +459,10 @@
     if (best) focusEl(best);
   }
   document.addEventListener("keydown", function (e) {
+    if (remoteTest && !$("sheet").hidden && e.key !== "Escape" && e.key !== "Backspace" && e.key !== "Tab") {
+      var m = { MediaPlayPause: "play", ChannelUp: "chUp", ChannelDown: "chDown", PageUp: "chUp", PageDown: "chDown" };
+      showKey(m[e.key] || (/^[1-9]$/.test(e.key) ? "n" + e.key : e.key)); e.preventDefault(); e.stopImmediatePropagation(); return;
+    }
     if (!$("saver").hidden) { hideSaver(); e.preventDefault(); return; }
     var typing = document.activeElement && document.activeElement.id === "search";
     var k = e.key;
@@ -412,6 +476,7 @@
 
   // 리모컨 단추 (안드로이드에서 넘겨줌): CH ± = 서비스 넘기기, 재생 = 배너 서비스 열기, 숫자 = n번째 서비스, 메뉴 = 설정
   window.tvKey = function (k) {
+    if (remoteTest && !$("sheet").hidden) { showKey(k); return; }
     if (!$("saver").hidden) { hideSaver(); return; }
     var list = myList();
     if (k === "chUp" || k === "chDown") {

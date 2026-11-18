@@ -556,6 +556,34 @@ public class MainActivity extends Activity {
             return volumeJson();
         }
 
+        /** 블루투스 설정 화면 (리모컨 연결) */
+        @JavascriptInterface
+        public void openBluetooth() {
+            main.post(() -> {
+                try { startActivity(new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
+                catch (RuntimeException e) { try { startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (RuntimeException ignored) { } }
+            });
+        }
+
+        /** 지금 연결된 바깥 입력 장치(리모컨 · 키보드 · 마우스 · 게임패드) 이름 */
+        @JavascriptInterface
+        public String remotes() {
+            JSONArray arr = new JSONArray();
+            for (int id : android.view.InputDevice.getDeviceIds()) {
+                android.view.InputDevice d = android.view.InputDevice.getDevice(id);
+                if (d == null || d.isVirtual() || !d.isExternal()) continue;
+                try {
+                    int src = d.getSources();
+                    String kind = (src & android.view.InputDevice.SOURCE_DPAD) == android.view.InputDevice.SOURCE_DPAD ? "remote"
+                            : (src & android.view.InputDevice.SOURCE_GAMEPAD) == android.view.InputDevice.SOURCE_GAMEPAD ? "gamepad"
+                            : (src & android.view.InputDevice.SOURCE_MOUSE) == android.view.InputDevice.SOURCE_MOUSE && d.getKeyboardType() != android.view.InputDevice.KEYBOARD_TYPE_ALPHABETIC ? "mouse"
+                            : d.getKeyboardType() == android.view.InputDevice.KEYBOARD_TYPE_ALPHABETIC ? "keyboard" : "keys";
+                    arr.put(new JSONObject().put("name", d.getName()).put("kind", kind));
+                } catch (JSONException ignored) { }
+            }
+            return arr.toString();
+        }
+
         @JavascriptInterface
         public String version() { return BuildConfig.VERSION_NAME; }
 
