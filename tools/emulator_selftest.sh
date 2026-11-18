@@ -55,6 +55,19 @@ adb shell input tap $x $y
 sleep 3
 adb shell dumpsys activity activities | grep -m3 -E "topResumedActivity|mResumedActivity" | tee selftest-top.txt
 if grep -q "$PKG" selftest-top.txt; then echo "홈 단추로 돌아오기 통과"; else echo "홈 단추로 돌아오기 실패"; fail=1; fi
+step "전체 화면 명령 (Shizuku와 같은 셸 권한)"
+adb shell settings put global enable_freeform_support 1
+adb shell settings put global force_resizable_activities 1
+CLK=$(grep -o "LAUNCH-PKG [a-z0-9._]*" selftest-result.txt | awk '{print $2}')
+adb shell am force-stop "$CLK"; sleep 1
+adb shell am start --windowingMode 5 -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -p "$CLK" > /dev/null 2>&1 || true
+CMP=$(adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "$CLK" | tail -1)
+adb shell am force-stop "$CLK"; sleep 1
+adb shell am start --windowingMode 5 -n "$CMP" 2>&1 | head -2; sleep 2
+adb shell dumpsys activity activities | grep -m2 -E "Task\{.*$CLK" | tee selftest-mode-before.txt
+adb shell am start --windowingMode 1 --display 0 -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n "$CMP" 2>&1 | head -2; sleep 2
+adb shell dumpsys activity activities | grep -m2 -E "Task\{.*$CLK" | tee selftest-mode-after.txt
+if grep -q "mode=freeform" selftest-mode-before.txt && grep -q "mode=fullscreen" selftest-mode-after.txt; then echo "창 → 전체 화면 명령 통과"; else echo "창 → 전체 화면 명령: 확인 못함 (참고용)"; fi
 step "작업 목록"
 adb shell dumpsys activity activities > selftest-activities.txt
 LP=$(grep -o "LAUNCH-PKG [a-z0-9._]*" selftest-result.txt | awk '{print $2}')

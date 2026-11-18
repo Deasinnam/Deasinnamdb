@@ -185,8 +185,26 @@
       box.appendChild(g);
     });
   }
+  /** DeX에서 확실한 전체 화면은 Shizuku가 있어야 함: 연결 안내 (한 번, 설정에서 다시 볼 수 있음) */
+  function askShizuku(then) {
+    var z = shzInfo();
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "DeX에서 전체 화면으로 열기"));
+      box.appendChild(el("p", null, "DeX는 다른 앱이 정한 창 크기를 따르지 않고 스스로 창으로 띄웁니다. 전체 화면으로 확실히 열려면 Shizuku(무료 공개 앱)를 한 번 연결해 주세요. 무선 디버깅으로 켜 두면 덜누름 TV가 안드로이드 기본 명령으로 앱을 전체 화면에 엽니다."));
+      var g = el("div", "sbtns");
+      var step = !z.installed ? "1. Shizuku 받기" : !z.running ? "2. Shizuku 켜기 (무선 디버깅 → 시작)" : "3. 덜누름 TV 허락하기";
+      g.appendChild(sbtn(step, z.installed ? (z.running ? "허락 창이 뜹니다" : "Shizuku 앱이 열립니다") : "Play 스토어", function () {
+        state.askedShz = true; save(); var r = P.shizukuConnect(); closeSheet();
+        toast(r === "start" ? "Shizuku에서 무선 디버깅으로 '시작'을 누른 뒤 돌아와 주세요" : r === "request" ? "허락을 누르면 바로 전체 화면으로 열립니다" : r === "ok" ? "연결되었습니다" : "Shizuku를 설치한 뒤 돌아와 주세요");
+      }));
+      g.appendChild(sbtn("지금은 창으로 열기", "설정에서 언제든 연결", function () { state.askedShz = true; save(); closeSheet(); then(); }));
+      box.appendChild(g);
+    });
+  }
   function openApp(pkg) {
     tap();
+    if (byPkg[pkg] && state.fullOpen && scr.dex && !shzInfo().granted && !state.askedShz) return askShizuku(function () { openApp(pkg); });
     var hb = homeInfo();
     if (byPkg[pkg] && hb.on && !hb.allowed && !state.askedHome) return askHome(function () { openApp(pkg); });
     var a = byPkg[pkg];
