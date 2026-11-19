@@ -354,6 +354,8 @@
       });
       box.appendChild(tb);
 
+      box.appendChild(el("h4", "rc-h", "넷플릭스 등 다른 앱에서도 단추 유지"));
+      box.appendChild(el("p", "rc-lead", "덜누름 TV를 켜 두면 넷플릭스 · 유튜브 등으로 넘어가도 같은 배치로 씁니다: ＋ − 위 · 아래, 〈 〉 왼쪽 · 오른쪽, ▶/II 짧게 = 확인 · 길게(0.5초) = 재생/일시정지, • 볼륨 모드, ↩ 뒤로, ⌂ 덜누름 TV 홈. 아래 '다른 앱에서도 단축키 쓰기'가 켜져 있어야 합니다."));
       box.appendChild(el("h4", "rc-h", "홈 단추로 덜누름 TV 부르기"));
       var kbg = {}; try { kbg = JSON.parse(P.kbGlobal()); } catch (e) {}
       var g4 = el("div", "sbtns");
@@ -452,7 +454,10 @@
   var rmSeen = "";
   function rmCheck() {
     var rm = rmGet();
-    if (rm.connected && rm.connected !== rmSeen && rm.on) toast(rm.connected + " 연결됨 · 미테르 최적화 적용");
+    if (rm.connected && rm.connected !== rmSeen && rm.on) {
+      var kg = {}; try { kg = JSON.parse(P.kbGlobal()); } catch (e) {}
+      toast(rm.connected + " 연결됨 · 미테르 최적화 적용" + (kg.on ? "" : " · 다른 앱에서도 쓰려면 설정 › 미테르 리모컨 최적화"));
+    }
     rmSeen = rm.connected || "";
   }
 

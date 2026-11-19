@@ -19,6 +19,8 @@ import java.util.Locale;
  */
 final class RemoteMap {
     static final String DEF_DEV = "miter";
+    /** • 단추: + − 를 볼륨으로 쓰는 중 (덜누름 TV와 다른 앱이 함께 씀) */
+    static volatile boolean volMode;
 
     /** 미테르 기본값: 설명서 기준 단추 기능을 TV 홈에 맞게 */
     static JSONObject preset() {

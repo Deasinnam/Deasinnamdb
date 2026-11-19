@@ -66,7 +66,8 @@ public class MainActivity extends Activity {
     private volatile boolean keyTest;
     private volatile boolean learning; // 리모컨 단추 맞추기 중이면 모든 키를 화면에 넘김
     private int rmUp = -1;
-    private boolean rmVolMode; // 미테르 • 단추: + − 를 볼륨으로 쓰는 중 // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
+    /** 덜누름 TV가 켜져 있는지 · 지금 화면을 잡고 있는지 (다른 앱에서 리모컨 단추 유지용) */
+    static volatile boolean alive, focused; // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
     private android.widget.FrameLayout root;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
@@ -86,6 +87,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        alive = true;
         if (getIntent() != null) pendingOpen = getIntent().getIntExtra(EXTRA_OPEN, -1);
         // 리모컨 · 키보드가 붙거나 떨어지면 화면에 알림 (미테르 자동 인식)
         android.hardware.input.InputManager im = (android.hardware.input.InputManager) getSystemService(INPUT_SERVICE);
@@ -165,6 +167,7 @@ public class MainActivity extends Activity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+        focused = hasFocus;
         if (hasFocus) { applyImmersive(); HomeButton.hide(this); } // 덜누름 TV가 다시 보이면 홈 단추는 숨김
     }
 
@@ -182,6 +185,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        alive = false; focused = false;
         if (rlink != null) rlink.destroy();
         if (web != null) web.destroy();
         super.onDestroy();
@@ -236,13 +240,13 @@ public class MainActivity extends Activity {
                 rmUp = kc;
                 if (act.equals("mode")) {
                     if (e.getRepeatCount() == 0) {
-                        rmVolMode = !rmVolMode;
-                        web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(rmVolMode ? "mode:vol" : "mode:nav") + ")", null);
+                        RemoteMap.volMode = !RemoteMap.volMode;
+                        web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(RemoteMap.volMode ? "mode:vol" : "mode:nav") + ")", null);
                     }
                     return true;
                 }
-                if (act.equals("upVol")) act = rmVolMode ? "volUp" : "up";
-                else if (act.equals("downVol")) act = rmVolMode ? "volDown" : "down";
+                if (act.equals("upVol")) act = RemoteMap.volMode ? "volUp" : "up";
+                else if (act.equals("downVol")) act = RemoteMap.volMode ? "volDown" : "down";
                 if (act.equals("volUp") || act.equals("volDown")) {
                     // 볼륨은 길게 누르면 계속 바뀌게
                     audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, act.equals("volUp") ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
