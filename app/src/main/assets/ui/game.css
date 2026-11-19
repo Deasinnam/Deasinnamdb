@@ -174,3 +174,17 @@ main { padding: 8px 20px 20px; }
 .pg-note ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .km-row { background: var(--panel); padding: 10px 12px; margin-bottom: 4px; }
 .km-row .sub { margin: 0 0 0 auto; }
+
+/* 새 버전 알림 */
+.upd { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; margin: 0 0 14px; border-radius: 12px;
+  background: rgba(64, 160, 255, .14); border: 1px solid rgba(64, 160, 255, .45); }
+.upd-tx { flex: 1 1 220px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.upd-tx b { font-size: 15px; }
+.upd-tx small { color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.upd-btn { display: flex; gap: 8px; flex-wrap: wrap; }
+.upd-btn button { padding: 8px 14px; }
+.upd-set { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.04); }
+.upd-sw { flex: 1 1 240px; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.upd-sw small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.upd-state { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 12.5px; }
+.upd-state.new { color: #6fb8ff; }

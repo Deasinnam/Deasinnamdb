@@ -305,6 +305,16 @@ public class MainActivity extends Activity {
 
     // ---------- 그 밖 ----------
 
+    String updateJson(UpdateCheck.Result r) {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("current", BuildConfig.VERSION_NAME).put("latest", r.latest).put("date", r.date).put("note", r.note)
+                .put("page", r.page).put("changes", r.changes).put("newer", r.newer).put("dismissed", r.dismissed)
+                .put("checkedAt", r.checkedAt).put("enabled", UpdateCheck.enabled(this));
+        } catch (Exception ignored) { }
+        return o.toString();
+    }
+
     void notifyJs(String type, String msg) {
         String js = "window.onNative && onNative(" + JSONObject.quote(type) + "," + JSONObject.quote(msg) + ")";
         main.post(() -> { if (web != null) web.evaluateJavascript(js, null); });
@@ -424,6 +434,22 @@ public class MainActivity extends Activity {
 
     /** 화면(WebView)에서 부르는 기능 */
     class Bridge {
+        /** 새 버전 알림: 저장된 확인 결과 (인터넷 없이) */
+        @JavascriptInterface
+        public String updateInfo() { return updateJson(UpdateCheck.cached(MainActivity.this, BuildConfig.VERSION_NAME)); }
+
+        /** 새 버전 확인. force=false 면 하루 한 번만 실제로 확인합니다. 결과는 onNative('update', json)으로 */
+        @JavascriptInterface
+        public void checkUpdate(boolean force) {
+            UpdateCheck.check(MainActivity.this, "game", BuildConfig.VERSION_NAME, force, r -> notifyJs("update", updateJson(r)));
+        }
+
+        @JavascriptInterface
+        public void dismissUpdate(String version) { UpdateCheck.dismiss(MainActivity.this, version); }
+
+        @JavascriptInterface
+        public void setUpdateCheck(boolean on) { UpdateCheck.setEnabled(MainActivity.this, on); }
+
         /** PC 게임 시작 안내에 쓰는 상태 */
         @JavascriptInterface
         public String pcGuide() {

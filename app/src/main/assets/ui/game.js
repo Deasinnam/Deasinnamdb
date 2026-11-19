@@ -5,6 +5,7 @@
 const $ = (s) => document.querySelector(s);
 const SELFTEST = location.search.includes('selftest=1');
 var demoLevels = {};
+var demoUpd = { current: '0.3', latest: '0.4', date: '2026.11.19', note: '앱 안에서 새 버전 알림, 배틀넷 업데이트 멈춤 해결 안내', page: 'https://deolnureum.com/game/', changes: 'https://deolnureum.com/releases/', newer: true, dismissed: false, checkedAt: 0, enabled: true };
 
 const A = window.Android || {
   pcGuide: () => JSON.stringify(demoPc), openDevSettings: () => toast('(견본) 설정이 열려요'), fixChildProcess: () => { demoPc.child = 'off'; return 'ok'; },
@@ -20,10 +21,12 @@ const A = window.Android || {
     { pkg: 'com.valvesoftware.steamlink', label: 'Steam Link', desc: '스팀 PC 게임 원격 플레이', url: '#', installed: false }]),
   launch: () => true, openUrl: () => {}, startRecording: () => {}, stopRecording: () => {},
   isRecording: () => false, lastSaved: () => '', openRecordings: () => {},
-  status: () => JSON.stringify({ dndAccess: false, dnd: false, hz: 120, modes: [60, 120], recording: false, shizukuInstalled: true, shizukuRunning: true, shizukuGranted: false, fpsMode: demoFps.mode, applyAdv: demoFps.adv, overlay: false, fpsRunning: false, fps: -1, samsungGame: true, version: '0.2' }),
+  status: () => JSON.stringify({ dndAccess: false, dnd: false, hz: 120, modes: [60, 120], recording: false, shizukuInstalled: true, shizukuRunning: true, shizukuGranted: false, fpsMode: demoFps.mode, applyAdv: demoFps.adv, overlay: false, fpsRunning: false, fps: -1, samsungGame: true, version: '0.3' }),
   setFpsMode: (m) => { demoFps.mode = m; }, setApplyAdv: (on) => { demoFps.adv = on; }, shizukuConnect: () => toast('(견본) Shizuku 연결'),
   fpsPreview: () => toast('(견본) FPS 표시'), fpsStop: () => {}, fpsSelfTest: () => '60 0 demo',
   setDnd: () => {}, openSamsungGame: () => {}, log: (m) => console.log(m),
+  updateInfo: () => JSON.stringify(demoUpd), dismissUpdate: () => {}, setUpdateCheck: (on) => { demoUpd.enabled = on; },
+  checkUpdate: () => setTimeout(() => window.onNative('update', JSON.stringify(Object.assign(demoUpd, { checkedAt: Date.now() }))), 300),
   optimize: (pkg) => JSON.stringify({
     device: { model: '갤럭시 Z 폴드7', code: 'SM-F966N', soc: 'QTI SM8750', ramGb: 12, cores: 8, maxHz: 120, thermal: 0, batteryTemp: 31.5, battery: 80, charging: false, powerSave: false },
     recommend: { level: 2, why: ['기기 성능 기준: 고성능'], settings: { fps: 120, scale: 1, mode: 'performance', recSide: 1920, recFps: 60 } },
@@ -454,7 +457,39 @@ window.onResumeApp = () => {
   if (tab === 'tools') { renderTools(); renderOptimize(); }
   else if ($('#picker').hidden && $('#gameSheet').hidden) showTab(tab);
 };
+// ---------- 새 버전 알림 ----------
+let updManual = false;
+function renderUpd(u) {
+  if (!u) return;
+  const show = u.newer && !u.dismissed && u.enabled;
+  $('#updBar').hidden = !show;
+  if (u.newer) {
+    $('#updTitle').textContent = `새 버전(${u.latest})이 나왔어요 · 지금 ${u.current}`;
+    $('#updNote').textContent = u.note ? `바뀐 점: ${u.note}` : '';
+  }
+  $('#updAuto').checked = !!u.enabled;
+  const when = u.checkedAt ? new Date(u.checkedAt).toLocaleDateString('ko-KR') + ' 확인' : '아직 확인하지 않았어요';
+  const st = $('#updState');
+  st.textContent = u.newer ? `새 버전(${u.latest})을 받을 수 있어요 · ${when}` : (u.latest ? `지금 최신 버전(${u.current})을 쓰고 있어요 · ${when}` : when);
+  st.classList.toggle('new', !!u.newer);
+}
+$('#updGet').onclick = () => { const u = parse(A.updateInfo(), {}); A.openUrl(u.page || 'https://deolnureum.com/game/'); };
+$('#updLog').onclick = () => { const u = parse(A.updateInfo(), {}); A.openUrl(u.changes || 'https://deolnureum.com/releases/'); };
+$('#updClose').onclick = () => { const u = parse(A.updateInfo(), {}); A.dismissUpdate(u.latest || ''); $('#updBar').hidden = true; toast('다음 새 버전이 나오면 다시 알려 드려요'); };
+$('#updAuto').onchange = (e) => { A.setUpdateCheck(e.target.checked); renderUpd(parse(A.updateInfo(), {})); };
+$('#updNow').onclick = () => { updManual = true; $('#updState').textContent = '확인하는 중…'; A.checkUpdate(true); };
+renderUpd(parse(A.updateInfo(), {}));
+if (!SELFTEST) A.checkUpdate(false);
+
 window.onNative = (type, msg) => {
+  if (type === 'update') {
+    const u = parse(msg, {});
+    if (updManual && u.newer) { u.dismissed = false; }
+    renderUpd(u);
+    if (updManual && !u.newer) toast(u.latest ? '지금 최신 버전이에요' : '확인하지 못했어요. 인터넷 연결을 확인해 주세요');
+    updManual = false;
+    return;
+  }
   if (type === 'toast') toast(msg);
   if (type === 'refresh' && tab === 'tools') { renderTools(); renderOptimize(); }
 };

@@ -23,6 +23,14 @@
 <main>
   <!-- 홈: 큰 화면 + 줄 단위 선반 -->
   <section id="home" class="pane on">
+    <div class="upd" id="updBar" hidden>
+      <div class="upd-tx"><b id="updTitle">새 버전이 나왔어요</b><small id="updNote"></small></div>
+      <div class="upd-btn">
+        <button class="primary" id="updGet" data-f>받으러 가기</button>
+        <button class="ghost" id="updLog" data-f>바뀐 점</button>
+        <button class="ghost" id="updClose" data-f aria-label="닫기">닫기</button>
+      </div>
+    </div>
     <div class="hero" id="hero">
       <div class="hero-bg" id="heroBg"></div>
       <div class="hero-in">
@@ -150,6 +158,11 @@
       </div>
     </div>
 
+    <div class="upd-set">
+      <label class="upd-sw"><input type="checkbox" id="updAuto" checked> <span>새 버전 알림 받기 <small>하루 한 번 덜누름 사이트에서 최신 버전을 확인해요. 보내는 정보는 없어요.</small></span></label>
+      <button class="ghost" id="updNow" data-f>지금 확인</button>
+      <p class="upd-state" id="updState"></p>
+    </div>
     <p class="about">덜누름 게임 <span id="ver"></span> · deolnureum.com</p>
   </section>
 </main>
