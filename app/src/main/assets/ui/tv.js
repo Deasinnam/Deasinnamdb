@@ -29,6 +29,7 @@
       openBluetooth: function () {}, setKeyTest: function () {}, takeOpen: function () { return -1; },
       rmGet: function () { return JSON.stringify(fakeRm); }, rmSet: function (j) { var o = JSON.parse(j); for (var k in o) fakeRm[k] = o[k]; if (o.reset) { delete fakeRm.reset; fakeRm.custom = false; } else if (o.map) fakeRm.custom = true; return JSON.stringify(fakeRm); },
       setLearn: function () {},
+      diag: function () { return JSON.stringify({ dex: true, shizuku: true, keyService: true, keyServiceLive: true, sdk: 34, display: 2, remote: "MITER BTR2nd", log: "16:40:01  키 서비스 연결됨\n16:40:12  com.netflix.mediaclient 전체 화면 ✓ (작업 41, 화면 2)\n16:40:20  다른 앱에서 리모컨 VOLUME_UP → up (상하)\n16:40:20    키 넣기 up 화면 2 ✓" }); },
       kbGlobal: function () { return JSON.stringify({ on: false, shizuku: false }); }, kbEnable: function () { return "settings"; }, openAppInfo: function () {},
       rcState: function () { return JSON.stringify({ bt: true, on: true, perm: true }); },
       rcScan: function () {
@@ -198,6 +199,18 @@
     });
   }
   /** DeX에서 확실한 전체 화면은 Shizuku가 있어야 함: 연결 안내 (한 번, 설정에서 다시 볼 수 있음) */
+  function askKeys(then) {
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "넷플릭스 등에서도 리모컨 단추 그대로"));
+      box.appendChild(el("p", null, "지금은 다른 앱으로 넘어가면 미테르 단추가 원래 기능(＋ − 볼륨)으로 돌아갑니다. 접근성의 '덜누름 TV 키보드 단축키'를 한 번 켜면 다른 앱에서도 ＋ − 위 · 아래, • 볼륨 모드, ⌂ 덜누름 TV 홈이 그대로 동작합니다."));
+      var g = el("div", "sbtns");
+      g.appendChild(sbtn("지금 켜기", "접근성 설정 열기", function () { state.askedKs = 1; save(); var r = P.kbEnable(); closeSheet(); if (r === "on") { toast("켜졌습니다"); then(); } else toast("설치된 앱 › 덜누름 TV 키보드 단축키 › 켜기 · 회색이면 앱 정보 › ⋮ › 제한된 설정 허용"); }));
+      g.appendChild(sbtn("나중에", "그냥 열기", function () { state.askedKs = 1; save(); closeSheet(); then(); }));
+      box.appendChild(g);
+    });
+  }
+
   function askShizuku(then) {
     var z = shzInfo();
     sheetBack = cur;
@@ -207,16 +220,20 @@
       var g = el("div", "sbtns");
       var step = !z.installed ? "1. Shizuku 받기" : !z.running ? "2. Shizuku 켜기 (무선 디버깅 → 시작)" : "3. 덜누름 TV 허락하기";
       g.appendChild(sbtn(step, z.installed ? (z.running ? "허락 창이 뜹니다" : "Shizuku 앱이 열립니다") : "Play 스토어", function () {
-        state.askedShz = true; save(); var r = P.shizukuConnect(); closeSheet();
+        state.askedShz = Date.now(); save(); var r = P.shizukuConnect(); closeSheet();
         toast(r === "start" ? "Shizuku에서 무선 디버깅으로 '시작'을 누른 뒤 돌아와 주세요" : r === "request" ? "허락을 누르면 바로 전체 화면으로 열립니다" : r === "ok" ? "연결되었습니다" : "Shizuku를 설치한 뒤 돌아와 주세요");
       }));
-      g.appendChild(sbtn("지금은 창으로 열기", "설정에서 언제든 연결", function () { state.askedShz = true; save(); closeSheet(); then(); }));
+      g.appendChild(sbtn("지금은 창으로 열기", "설정에서 언제든 연결", function () { state.askedShz = Date.now(); save(); closeSheet(); then(); }));
       box.appendChild(g);
     });
   }
   function openApp(pkg) {
     tap();
-    if (byPkg[pkg] && state.fullOpen && scr.dex && !shzInfo().granted && !state.askedShz) return askShizuku(function () { openApp(pkg); });
+    if (byPkg[pkg] && state.fullOpen && scr.dex && !shzInfo().granted && (!state.askedShz || state.askedShz < Date.now() - 864e5)) { state.askedShz = Date.now(); save(); return askShizuku(function () { openApp(pkg); }); }
+    if (byPkg[pkg] && !state.askedKs) {
+      var rm0 = rmGet(), kg1 = {}; try { kg1 = JSON.parse(P.kbGlobal()); } catch (e) {}
+      if (rm0.connected && rm0.on && !kg1.on) { if (kg1.shizuku && P.kbEnable() === "on") {} else return askKeys(function () { openApp(pkg); }); }
+    }
     var hb = homeInfo();
     if (byPkg[pkg] && hb.on && !hb.allowed && !state.askedHome) return askHome(function () { openApp(pkg); });
     var a = byPkg[pkg];
@@ -384,10 +401,36 @@
        "단추가 생각과 다르게 움직이면 [단추 맞추기]로 한 번 맞춰 주세요. 리모컨 판매 시기에 따라 보내는 키가 다를 수 있습니다."].forEach(function (t) { ul.appendChild(el("li", null, t)); });
       box.appendChild(ul);
       var g2 = el("div", "sbtns"); g2.style.marginTop = "12px";
+      g2.appendChild(sbtn("점검 (리모컨 · 전체 화면)", "안 될 때 이 화면을 캡처해 보내 주세요", function () { diagSheet(); }));
       g2.appendChild(sbtn("블루투스 설정 열기", "새 기기 연결", function () { P.openBluetooth(); }));
       if (rm.custom) g2.appendChild(sbtn("기본값으로 되돌리기", "직접 맞춘 단추 지우기", function () { P.rmSet(JSON.stringify({ reset: true })); toast("기본 설정으로 되돌렸습니다"); closeSheet(); miterSheet(); }));
       g2.appendChild(sbtn("닫기", null, closeSheet));
       box.appendChild(g2);
+    }, true);
+    setTimeout(function () { $("sheetBox").scrollTop = 0; }, 0);
+  }
+
+  function diagSheet() {
+    var d = {}; try { d = JSON.parse(P.diag()); } catch (e) {}
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "점검"));
+      var tb = el("div", "rc-map");
+      function yn(v) { return v ? "✓" : "✗"; }
+      [["DeX", yn(d.dex)], ["Shizuku 연결 · 허락", d.shizuku ? "✓" : d.shizukuRunning ? "켜짐 · 허락 안 됨" : "✗ (전체 화면 · 다른 앱 단추에 필요)"],
+       ["다른 앱 단추 기능 (접근성)", d.keyService ? (d.keyServiceLive ? "✓ 동작 중" : "켜짐 · 아직 연결 안 됨") : "✗ 꺼짐"],
+       ["미테르 리모컨", d.remote || "연결 안 됨"], ["안드로이드", "SDK " + d.sdk + " · 화면 " + d.display]].forEach(function (r) {
+        tb.appendChild(el("b", null, r[0])); tb.appendChild(el("span", null, r[1]));
+      });
+      box.appendChild(tb);
+      box.appendChild(el("h4", "rc-h", "최근 기록"));
+      var pre = el("pre", "diag-log", d.log || "아직 기록이 없습니다. 앱을 하나 열고, 그 앱에서 리모컨 ＋ − 를 눌러 본 뒤 다시 여기를 여세요.");
+      box.appendChild(pre);
+      var g = el("div", "sbtns"); g.style.marginTop = "12px";
+      if (!d.keyService) g.appendChild(sbtn("다른 앱 단추 기능 켜기", null, function () { var r = P.kbEnable(); toast(r === "on" ? "켜졌습니다" : "설치된 앱 › 덜누름 TV 키보드 단축키 › 켜기"); closeSheet(); }));
+      if (!d.shizuku) g.appendChild(sbtn("Shizuku 연결", null, function () { closeSheet(); askShizuku(function () {}); }));
+      g.appendChild(sbtn("닫기", null, closeSheet));
+      box.appendChild(g);
     }, true);
     setTimeout(function () { $("sheetBox").scrollTop = 0; }, 0);
   }
@@ -454,6 +497,10 @@
   var rmSeen = "";
   function rmCheck() {
     var rm = rmGet();
+    if (rm.connected && rm.on) {
+      var kg0 = {}; try { kg0 = JSON.parse(P.kbGlobal()); } catch (e) {}
+      if (!kg0.on && kg0.shizuku) P.kbEnable(); // Shizuku가 있으면 다른 앱용 단추 기능을 알아서 켬
+    }
     if (rm.connected && rm.connected !== rmSeen && rm.on) {
       var kg = {}; try { kg = JSON.parse(P.kbGlobal()); } catch (e) {}
       toast(rm.connected + " 연결됨 · 미테르 최적화 적용" + (kg.on ? "" : " · 다른 앱에서도 쓰려면 설정 › 미테르 리모컨 최적화"));

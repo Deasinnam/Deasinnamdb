@@ -27,6 +27,8 @@ public class KeyService extends AccessibilityService {
         return s != null && (s.contains(COMPONENT) || s.contains("com.daesinnam.tv/.KeyService"));
     }
 
+    static volatile boolean live; // 접근성 서비스가 실제로 붙어 동작 중
+    private int logged; // 점검 기록은 처음 몇 번만
     private long okDown; // ▶/II 길게 누름 판단
     private int heldRemote = -1; // 미테르에서 눌러 가로챈 키
 
@@ -72,6 +74,7 @@ public class KeyService extends AccessibilityService {
         boolean down = e.getAction() == KeyEvent.ACTION_DOWN;
         if (!down) { if (c == heldRemote) { heldRemote = -1; finishOk(c); return true; } return null; }
         String a = RemoteMap.map(this).optString(KeyEvent.keyCodeToString(c), "");
+        if (logged < 12 && e.getRepeatCount() == 0) { logged++; Sys.log("다른 앱에서 리모컨 " + KeyEvent.keyCodeToString(c).replace("KEYCODE_", "") + " → " + (a.isEmpty() ? "그대로" : a) + (a.endsWith("Vol") ? (RemoteMap.volMode ? " (볼륨)" : " (상하)") : "")); }
         if (a.equals("upVol")) a = RemoteMap.volMode ? "volUp" : "up";
         else if (a.equals("downVol")) a = RemoteMap.volMode ? "volDown" : "down";
         boolean first = e.getRepeatCount() == 0;
@@ -121,13 +124,28 @@ public class KeyService extends AccessibilityService {
 
     /** 앱에 방향 · 확인 키 보내기: 안드로이드 13+ 는 접근성 동작, 그 아래는 Shizuku로 */
     private void dpad(String a) {
+        final int k = a.equals("up") ? KeyEvent.KEYCODE_DPAD_UP : a.equals("down") ? KeyEvent.KEYCODE_DPAD_DOWN : a.equals("left") ? KeyEvent.KEYCODE_DPAD_LEFT
+                : a.equals("right") ? KeyEvent.KEYCODE_DPAD_RIGHT : KeyEvent.KEYCODE_DPAD_CENTER;
+        // 1) Shizuku: 앱이 떠 있는 DeX 화면에 바로 키 넣기 (가장 확실)
+        if (Shizu.granted()) {
+            final int d = MainActivity.tvDisplay;
+            new Thread(() -> {
+                boolean ok = Sys.injectKey(k, d);
+                if (logged < 16) { logged++; Sys.log("  키 넣기 " + a + " 화면 " + d + (ok ? " ✓" : " ✗ → 접근성 동작으로")); }
+                if (!ok) globalDpad(a);
+            }).start();
+            return;
+        }
+        globalDpad(a);
+    }
+
+    private void globalDpad(String a) {
         if (Build.VERSION.SDK_INT >= 33) {
             int g = a.equals("up") ? GLOBAL_ACTION_DPAD_UP : a.equals("down") ? GLOBAL_ACTION_DPAD_DOWN : a.equals("left") ? GLOBAL_ACTION_DPAD_LEFT
                     : a.equals("right") ? GLOBAL_ACTION_DPAD_RIGHT : GLOBAL_ACTION_DPAD_CENTER;
-            if (performGlobalAction(g)) return;
-        }
-        final int k = a.equals("up") ? 19 : a.equals("down") ? 20 : a.equals("left") ? 21 : a.equals("right") ? 22 : 23;
-        if (Shizu.granted()) new Thread(() -> Shizu.run("input keyevent " + k, 2000)).start();
+            boolean ok = performGlobalAction(g);
+            if (logged < 16) { logged++; Sys.log("  접근성 방향 동작 " + a + (ok ? " ✓" : " ✗")); }
+        } else if (logged < 16) { logged++; Sys.log("  안드로이드 12 이하: Shizuku 연결이 있어야 위 · 아래를 보낼 수 있음"); }
     }
 
     private void media(int code) {
@@ -137,6 +155,16 @@ public class KeyService extends AccessibilityService {
         am.dispatchMediaKeyEvent(new KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0));
         am.dispatchMediaKeyEvent(new KeyEvent(t, t, KeyEvent.ACTION_UP, code, 0));
     }
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        live = true; Sys.bypass();
+        Sys.log("키 서비스 연결됨");
+    }
+
+    @Override
+    public void onDestroy() { live = false; super.onDestroy(); }
 
     @Override public void onAccessibilityEvent(AccessibilityEvent event) { }
     @Override public void onInterrupt() { }

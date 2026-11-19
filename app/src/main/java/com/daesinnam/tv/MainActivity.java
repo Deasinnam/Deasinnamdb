@@ -67,7 +67,9 @@ public class MainActivity extends Activity {
     private volatile boolean learning; // 리모컨 단추 맞추기 중이면 모든 키를 화면에 넘김
     private int rmUp = -1;
     /** 덜누름 TV가 켜져 있는지 · 지금 화면을 잡고 있는지 (다른 앱에서 리모컨 단추 유지용) */
-    static volatile boolean alive, focused; // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
+    static volatile boolean alive, focused;
+    /** 덜누름 TV가 떠 있는 화면 (DeX 화면) — 다른 앱에 키를 넣을 곳 */
+    static volatile int tvDisplay = -1; // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
     private android.widget.FrameLayout root;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
@@ -88,6 +90,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         alive = true;
+        Sys.bypass();
         if (getIntent() != null) pendingOpen = getIntent().getIntExtra(EXTRA_OPEN, -1);
         // 리모컨 · 키보드가 붙거나 떨어지면 화면에 알림 (미테르 자동 인식)
         android.hardware.input.InputManager im = (android.hardware.input.InputManager) getSystemService(INPUT_SERVICE);
@@ -168,6 +171,7 @@ public class MainActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         focused = hasFocus;
+        if (hasFocus) tvDisplay = currentDisplayId();
         if (hasFocus) { applyImmersive(); HomeButton.hide(this); } // 덜누름 TV가 다시 보이면 홈 단추는 숨김
     }
 
@@ -453,32 +457,59 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 고급 기능(Shizuku): 셸 권한으로 확실히 전체 화면으로 열기. 안 되면 null */
+    /** 고급 기능(Shizuku): 셸 권한으로 확실히 전체 화면으로 열기. 열고 나서 실제 창 방식을 확인해 안 되면 다른 방법으로 다시. 안 되면 null */
     private JSONObject launchShell(String pkg, String cls, int display) throws JSONException {
-        if (!Shizu.granted()) return null;
+        if (!Shizu.granted()) { Sys.log("전체 화면: Shizuku 연결 안 됨 → 창으로 열림"); return null; }
         if (cls == null || cls.isEmpty()) {
             Intent li = getPackageManager().getLaunchIntentForPackage(pkg);
             if (li == null || li.getComponent() == null) return null;
             cls = li.getComponent().getClassName();
         }
-        // 이미 창으로 열려 있으면 "전체 화면으로 열기"가 그 창을 앞으로만 불러오므로, 그 창을 닫고 전체 화면으로 다시 엶
-        String dump = Shizu.run("dumpsys activity activities", 4000);
-        if (dump != null) {
-            java.util.regex.Matcher m = java.util.regex.Pattern.compile("Task\\{[0-9a-f]+ #(\\d+) type=standard A=\\d+:(\\S+) .*?mode=(\\w+)").matcher(dump);
-            while (m.find()) {
-                String aff = m.group(2);
-                if ((aff.equals(pkg) || aff.startsWith(pkg + ":")) && !"fullscreen".equals(m.group(3))) {
-                    Log.i(TAG, "창으로 열린 " + pkg + " (작업 " + m.group(1) + ", " + m.group(3) + ") 닫고 전체 화면으로");
-                    Shizu.run("am stack remove " + m.group(1) + " ; cmd activity remove-task " + m.group(1), 3000);
-                    try { Thread.sleep(400); } catch (InterruptedException ignored) { }
-                }
+        tvDisplay = display;
+        String comp = pkg + "/" + cls;
+        // 1) 이미 창으로 떠 있으면 그 작업을 먼저 전체 화면으로 바꾸거나 닫기
+        for (Sys.Task t : Sys.tasks(Shizu.run("dumpsys activity activities", 4000), pkg)) {
+            if ("fullscreen".equals(t.mode)) continue;
+            Sys.log(pkg + " 작업 " + t.id + " 이(가) " + (t.mode.isEmpty() ? "?" : t.mode) + " → 바꾸기");
+            if (!Sys.setFullscreen(t.id)) {
+                Shizu.run("am stack remove " + t.id + " ; cmd activity remove-task " + t.id, 3000);
+                sleep(450);
             }
         }
-        String out = Shizu.run("am start --windowingMode 1 --display " + display + " -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n " + pkg + "/" + cls, 5000);
-        if (out == null || out.contains("Error") || out.contains("Exception")) { Log.w(TAG, "셸로 열지 못함: " + out); return null; }
+        // 2) 전체 화면 방식으로 열기
+        String out = Shizu.run("am start --windowingMode 1 --display " + display + " -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n " + comp, 5000);
+        if (out == null || out.contains("Error") || out.contains("Exception")) { Sys.log("셸로 열지 못함: " + out); return null; }
         main.post(this::afterLaunch);
+        // 3) 실제로 전체 화면인지 확인하고 아니면 고치기 (뒤에서)
+        final String c2 = comp;
+        new Thread(() -> verifyFull(pkg, c2, display), "tv-full").start();
         return new JSONObject().put("ok", true).put("display", display).put("full", true).put("how", "shell");
     }
+
+    private void verifyFull(String pkg, String comp, int display) {
+        for (int round = 0; round < 3; round++) {
+            sleep(round == 0 ? 900 : 1200);
+            List<Sys.Task> ts = Sys.tasks(Shizu.run("dumpsys activity activities", 4000), pkg);
+            Sys.Task t = ts.isEmpty() ? null : ts.get(0);
+            if (t == null) { Sys.log(pkg + " 작업을 찾지 못함 (확인 생략)"); return; }
+            if ("fullscreen".equals(t.mode)) { Sys.log(pkg + " 전체 화면 ✓ (작업 " + t.id + ", 화면 " + t.display + ")"); return; }
+            Sys.log(pkg + " 아직 " + (t.mode.isEmpty() ? "?" : t.mode) + " (시도 " + (round + 1) + ")");
+            if (round == 0 && Sys.setFullscreen(t.id)) continue;
+            // 닫고 새 작업으로 전체 화면 열기 (CLEAR_TASK)
+            Shizu.run("am stack remove " + t.id + " ; cmd activity remove-task " + t.id, 3000);
+            sleep(500);
+            Shizu.run("am start --windowingMode 1 --display " + display + " -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10008000 -n " + comp, 5000);
+        }
+        // 마지막: 창이라도 화면 가득
+        List<Sys.Task> ts = Sys.tasks(Shizu.run("dumpsys activity activities", 4000), pkg);
+        if (!ts.isEmpty() && !"fullscreen".equals(ts.get(0).mode)) {
+            Rect b = getWindowManager().getMaximumWindowMetrics().getBounds();
+            Shizu.run("am task resize " + ts.get(0).id + " 0 0 " + b.width() + " " + b.height(), 3000);
+            Sys.log(pkg + " 전체 화면 방식이 막혀 화면 가득 창으로 (" + ts.get(0).mode + ")");
+        }
+    }
+
+    private static void sleep(long ms) { try { Thread.sleep(ms); } catch (InterruptedException ignored) { } }
 
     /** 앱을 연 뒤: 덜누름 TV로 돌아올 홈 단추 띄우기 */
     private void afterLaunch() {
@@ -667,6 +698,17 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void setKeyTest(boolean on) { keyTest = on; }
 
         /** 리모컨 맞춤 단추 (미테르 등) */
+        /** 점검: 리모컨 · 전체 화면 상태와 최근 기록 */
+        @JavascriptInterface
+        public String diag() {
+            try {
+                return new JSONObject().put("dex", dexOn()).put("shizuku", Shizu.granted()).put("shizukuRunning", Shizu.running())
+                        .put("keyService", KeyService.enabled(MainActivity.this)).put("keyServiceLive", KeyService.live)
+                        .put("sdk", android.os.Build.VERSION.SDK_INT).put("display", currentDisplayId()).put("remote", RemoteMap.connected(MainActivity.this))
+                        .put("log", Sys.logText()).toString();
+            } catch (JSONException e) { return "{}"; }
+        }
+
         @JavascriptInterface public String rmGet() { return RemoteMap.json(MainActivity.this); }
         @JavascriptInterface public String rmSet(String js) { RemoteMap.save(MainActivity.this, js); return RemoteMap.json(MainActivity.this); }
         @JavascriptInterface public void setLearn(boolean on) { learning = on; }
