@@ -193,7 +193,7 @@ final class Cleaner {
             // 다운로드 폴더의 설치 파일 (Shizuku)
             JSONArray apks = new JSONArray(); long apkBytes = 0;
             if (Shizu.granted()) {
-                String out = Shizu.run("find /sdcard/Download /sdcard/Downloads -maxdepth 3 -type f -iname '*.apk' -exec stat -c '%s|%n' {} \; 2>/dev/null", 8000);
+                String out = Shizu.run("find /sdcard/Download /sdcard/Downloads -maxdepth 3 -type f -iname '*.apk' -exec stat -c '%s|%n' {} + 2>/dev/null", 8000);
                 if (out != null) for (String line : out.split("\n")) {
                     int k = line.indexOf('|'); if (k <= 0) continue;
                     try { long b = Long.parseLong(line.substring(0, k).trim()); apkBytes += b; apks.put(new JSONObject().put("path", line.substring(k + 1)).put("bytes", b)); }
