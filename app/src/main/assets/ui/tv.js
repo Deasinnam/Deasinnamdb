@@ -223,6 +223,7 @@
         state.askedShz = Date.now(); save(); var r = P.shizukuConnect(); closeSheet();
         toast(r === "start" ? "Shizuku에서 무선 디버깅으로 '시작'을 누른 뒤 돌아와 주세요" : r === "request" ? "허락을 누르면 바로 전체 화면으로 열립니다" : r === "ok" ? "연결되었습니다" : "Shizuku를 설치한 뒤 돌아와 주세요");
       }));
+      g.appendChild(sbtn("설정 방법 보기 (그림)", "처음 한 번 5분 · 왜 필요한지도", function () { closeSheet(); guide(); }));
       g.appendChild(sbtn("지금은 창으로 열기", "설정에서 언제든 연결", function () { state.askedShz = Date.now(); save(); closeSheet(); then(); }));
       box.appendChild(g);
     });
@@ -429,6 +430,7 @@
       var g = el("div", "sbtns"); g.style.marginTop = "12px";
       if (!d.keyService) g.appendChild(sbtn("다른 앱 단추 기능 켜기", null, function () { var r = P.kbEnable(); toast(r === "on" ? "켜졌습니다" : "설치된 앱 › 덜누름 TV 키보드 단축키 › 켜기"); closeSheet(); }));
       if (!d.shizuku) g.appendChild(sbtn("Shizuku 연결", null, function () { closeSheet(); askShizuku(function () {}); }));
+      g.appendChild(sbtn("Shizuku 설정 방법 (그림)", "따라 하기 · 막힐 때", function () { closeSheet(); guide(); }));
       g.appendChild(sbtn("닫기", null, closeSheet));
       box.appendChild(g);
     }, true);
@@ -654,6 +656,8 @@
       var imm = sbtn("시스템 막대 숨기기", scr.immersive === false ? "끔" : "켬", function () { var on = scr.immersive === false; P.setImmersive(on); scr.immersive = on; imm.lastChild.textContent = on ? "켬" : "끔"; imm.classList.toggle("on", on); }, scr.immersive === false ? "" : "on");
       var sv = sbtn("화면 보호기", saverName(), function () { var o = [0, 3, 10, 30], i = o.indexOf(state.saver); state.saver = o[(i + 1) % o.length]; save(); sv.lastChild.textContent = saverName(); idle(); });
       g.appendChild(full); g.appendChild(imm); g.appendChild(sv);
+      var zi = shzInfo();
+      g.appendChild(sbtn("고급 기능 Shizuku · 설정 방법", zi.granted ? "연결됨 ✓ · 그림 안내 보기" : "연결 안 됨 · 그림으로 따라 하기", function () { closeSheet(); guide(); }, zi.granted ? "on" : ""));
       var hb = homeInfo();
       var home = sbtn("홈 단추 (앱 위에 떠 있는)", !hb.on ? "끔" : hb.allowed ? "켬" : "권한 필요", function () {
         var h = homeInfo();
@@ -832,6 +836,12 @@
   // 리모컨 단추 (안드로이드에서 넘겨줌): CH ± = 서비스 넘기기, 재생 = 배너 서비스 열기, 숫자 = n번째 서비스, 메뉴 = 설정
   window.tvKey = function (k) {
     if (remoteTest && !$("sheet").hidden) { showKey(k); return; }
+    if (window.ShizukuGuide && ShizukuGuide.isOpen()) {
+      if (k === "back" || k === "home") ShizukuGuide.close();
+      else if (k === "up" || k === "chUp") ShizukuGuide.scroll(-300);
+      else if (k === "down" || k === "chDown") ShizukuGuide.scroll(300);
+      return;
+    }
     if (!$("saver").hidden) { hideSaver(); return; }
     var list = myList();
     if (k === "mode:vol" || k === "mode:nav") {
@@ -867,7 +877,10 @@
   });
 
   // 뒤로 (안드로이드 뒤로 단추 · Esc)
+  // Shizuku 설정 방법 (그림 안내, 앱 안에서 열기). 리모컨 위 · 아래로 스크롤, 뒤로로 닫기
+  function guide() { if (window.ShizukuGuide) ShizukuGuide.open("tv"); }
   window.tvBack = function () {
+    if (window.ShizukuGuide && ShizukuGuide.isOpen()) { ShizukuGuide.close(); return true; }
     if (!$("saver").hidden) { hideSaver(); return true; }
     if (!$("splash").hidden) { $("splash").hidden = true; return true; }
     if (!$("sheet").hidden) { closeSheet(); return true; }

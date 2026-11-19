@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shizuku 연결하기 — 덜누름</title>
+<meta name="description" content="덜누름 앱의 고급 기능에 쓰는 Shizuku를 처음부터 끝까지 그림으로 따라 하는 방법과, 왜 필요한지 설명합니다.">
+<style>
+:root { --ink:#16181f; --ink2:#555a6b; --ink3:#8b90a0; --line:#e6e7ee; --acc:#ff7a1a; --blue:#2f6cf6; --bg:#f6f7fb; }
+* { box-sizing:border-box; }
+html,body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"Pretendard","Noto Sans KR",system-ui,sans-serif; line-height:1.6; -webkit-text-size-adjust:100%; }
+main { max-width:860px; margin:0 auto; padding:18px 18px 60px; }
+.bar { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:10px 18px; background:rgba(246,247,251,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+.bar b { font-size:16px; } .bar .sp { flex:1; }
+.bar button, .bar a.btn { font:inherit; font-size:14px; font-weight:700; border:0; border-radius:18px; padding:8px 16px; background:#16181f; color:#fff; text-decoration:none; cursor:pointer; }
+.bar .ghost { background:#e9eaf1; color:var(--ink); }
+h1 { font-size:30px; letter-spacing:-.04em; line-height:1.25; margin:18px 0 6px; }
+.lead { font-size:16.5px; color:var(--ink2); margin:0 0 18px; }
+h2 { font-size:21px; letter-spacing:-.03em; margin:34px 0 10px; }
+p, li { font-size:15.5px; }
+.box { background:#fff; border:1px solid var(--line); border-radius:20px; padding:18px 20px; margin:12px 0; }
+.why ul { margin:8px 0 0; padding-left:0; list-style:none; display:grid; gap:8px; }
+.why li { padding:10px 14px; border-radius:14px; background:#f3f4f9; }
+.why li b { display:block; font-size:15px; }
+.why li span { font-size:14px; color:var(--ink2); }
+.why li.me { background:#fff3e8; outline:2px solid var(--acc); }
+.why li.me b::after { content:"  ← 지금 이 앱"; color:var(--acc); font-size:13px; }
+.safe { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:10px; }
+.safe div { background:#eef6f0; border-radius:14px; padding:12px 14px; font-size:14px; color:#245b34; }
+.safe b { display:block; color:#1d4d2b; font-size:14.5px; }
+.need { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 0; padding:0; list-style:none; }
+.need li { font-size:14px; padding:6px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); }
+.steps { counter-reset:s; display:grid; gap:16px; margin-top:10px; }
+.step { background:#fff; border:1px solid var(--line); border-radius:22px; overflow:hidden; display:grid; grid-template-columns:minmax(0,300px) 1fr; }
+.step.wide { grid-template-columns:1fr; }
+.step img { display:block; width:100%; height:auto; background:#fff; padding:14px; }
+.step .tx { padding:18px 20px; }
+.step h3 { margin:0 0 6px; font-size:18px; letter-spacing:-.02em; }
+.step h3 i { font-style:normal; display:inline-block; min-width:30px; height:30px; line-height:30px; text-align:center; border-radius:50%; background:#16181f; color:#fff; font-size:15px; margin-right:8px; }
+.step p { margin:6px 0; color:#2b2f3b; }
+.step .tip { font-size:14px; color:#9a4a08; background:#fff3e8; border-radius:12px; padding:9px 12px; margin-top:10px; }
+.faq details { background:#fff; border:1px solid var(--line); border-radius:16px; padding:12px 16px; margin:8px 0; }
+.faq summary { font-weight:700; cursor:pointer; font-size:15.5px; }
+.faq p { margin:8px 0 2px; color:var(--ink2); }
+.end { text-align:center; color:var(--ink3); font-size:13px; margin-top:36px; }
+.inapp .site-only { display:none !important; }
+@media (max-width:640px) { .step { grid-template-columns:1fr; } .step img { max-width:340px; margin:0 auto; } h1 { font-size:26px; } }
+</style>
+</head>
+<body>
+<div class="bar"><b>Shizuku 연결하기</b><span class="sp"></span><a class="btn ghost site-only" href="/">덜누름</a><button type="button" id="closeBtn" hidden>닫기</button></div>
+<main>
+  <h1>Shizuku, 처음 한 번만<br>5분이면 됩니다.</h1>
+  <p class="lead">덜누름 앱의 <b>고급 기능</b>은 Shizuku라는 무료 공개 앱을 통해 동작합니다. 아래 그림을 순서대로 따라 하면 됩니다. 컴퓨터도, 루팅도 필요 없습니다.</p>
+
+  <h2>왜 필요한가요?</h2>
+  <div class="box why">
+    <p>안드로이드는 안전을 위해 <b>앱끼리 서로 건드리지 못하게</b> 막아 둡니다. 그래서 일반 앱은 다른 앱을 전체 화면으로 띄우거나, 다른 앱을 끄거나, 캐시를 지우거나, 다른 앱 화면에 리모컨 키를 넣을 수 없습니다.</p>
+    <p>이런 일은 원래 개발자가 컴퓨터에 선을 연결해 쓰는 <b>개발자 권한(ADB)</b>으로만 할 수 있습니다. <b>Shizuku</b>는 그 권한을 컴퓨터 없이 휴대폰 안에서 켜 두고, <b>내가 허락한 앱에만</b> 빌려 주는 앱입니다.</p>
+    <ul id="appList">
+      <li data-app="tv"><b>덜누름 TV</b><span>넷플릭스 등을 DeX에서 완전한 전체 화면으로 · 다른 앱을 보는 중에도 리모컨 ＋ − 위 · 아래 · 다른 앱 단추 기능(접근성) 바로 켜기</span></li>
+      <li data-app="game"><b>덜누름 게임</b><span>게임 위 FPS 표시 · 게임별 맞춤 설정(FPS 상한 · 해상도 · 게임 모드) 실제 적용</span></li>
+      <li data-app="desk"><b>덜누름 데스크탑앱</b><span>창정리: 열린 창을 저장한 자리 · 크기로 정확히 배치</span></li>
+      <li data-app="sseum"><b>덜씀</b><span>안 쓰는 앱 완전 종료 · 모든 앱 캐시 정리 · 남은 설치 파일 정리 · 절전 모드 자동 · 화면 효과 줄이기</span></li>
+    </ul>
+    <p style="margin-top:12px;color:var(--ink2)">Shizuku가 없어도 덜누름 앱의 기본 기능은 그대로 쓸 수 있습니다. 위 기능만 동작하지 않습니다.</p>
+  </div>
+
+  <h2>안전한가요?</h2>
+  <div class="safe">
+    <div><b>루팅이 아닙니다</b>휴대폰을 개조하지 않고, 보증 · 삼성 페이 등에도 영향이 없습니다.</div>
+    <div><b>허락한 앱만</b>앱마다 '허용'을 눌러야 쓸 수 있고, Shizuku 앱에서 언제든 거둘 수 있습니다.</div>
+    <div><b>재부팅하면 꺼집니다</b>무선 디버깅으로 켠 Shizuku는 휴대폰을 다시 켜면 자동으로 멈춥니다.</div>
+    <div><b>필요한 명령만</b>덜누름 앱은 위 기능에 필요한 안드로이드 기본 명령만 쓰고, 정보를 밖으로 보내지 않습니다.</div>
+  </div>
+
+  <h2>준비</h2>
+  <ul class="need"><li>안드로이드 11 이상</li><li>Wi-Fi 연결 (인터넷이 안 되는 Wi-Fi도 OK)</li><li>폴드라면 펼친 상태가 편해요</li></ul>
+
+  <h2>따라 하기</h2>
+  <div class="steps">
+    <div class="step"><img src="img/step1.webp" alt="설정 소프트웨어 정보에서 빌드번호를 7번 누르는 그림" loading="lazy"><div class="tx"><h3><i>1</i>개발자 옵션 켜기</h3>
+      <p><b>설정 › 휴대전화 정보 › 소프트웨어 정보</b>에서 <b>빌드번호</b>를 7번 연속 누릅니다. 잠금 PIN을 물으면 입력합니다.</p>
+      <p>"개발자 모드를 켰습니다"가 뜨면 설정 맨 아래에 <b>개발자 옵션</b>이 생깁니다.</p></div></div>
+    <div class="step"><img src="img/step2.webp" alt="Play 스토어에서 Shizuku를 설치하는 그림" loading="lazy"><div class="tx"><h3><i>2</i>Shizuku 설치</h3>
+      <p>Play 스토어에서 <b>Shizuku</b>를 검색해 설치하고 엽니다. 무료 공개 앱입니다.</p>
+      <p>Shizuku가 <b>알림을 보내도록 허용</b>해 주세요. 7번에서 코드를 알림에 입력합니다.</p></div></div>
+    <div class="step wide"><img src="img/step3.webp" alt="왼쪽 Shizuku, 오른쪽 설정을 분할 화면으로 띄우고 Shizuku에서 페어링을 누르는 그림" loading="lazy"><div class="tx"><h3><i>3</i>분할 화면으로 두 앱을 함께 띄우고 '페어링'</h3>
+      <p>최근 앱(|||)에서 설정 아이콘을 눌러 <b>분할 화면으로 열기</b> → 다른 쪽에 Shizuku를 띄웁니다. Shizuku의 <b>무선 디버깅을 통해 시작 › 페어링</b>을 누릅니다.</p>
+      <p class="tip">설정과 Shizuku를 번갈아 열면 코드 창이 닫혀 버립니다. 분할 화면(또는 팝업 창)이 가장 확실합니다.</p></div></div>
+    <div class="step"><img src="img/step4.webp" alt="개발자 옵션에서 무선 디버깅의 글자 부분을 누르는 그림" loading="lazy"><div class="tx"><h3><i>4</i>무선 디버깅 들어가기</h3>
+      <p>설정 › <b>개발자 옵션</b>에서 <b>무선 디버깅</b>의 <b>글자 부분</b>을 누릅니다. 오른쪽 스위치만 켜면 안 되고, 글자를 눌러 안으로 들어가야 합니다.</p>
+      <p>"이 네트워크에서 무선 디버깅을 허용할까요?"가 뜨면 <b>허용</b>.</p></div></div>
+    <div class="step"><img src="img/step5.webp" alt="무선 디버깅 화면에서 페어링 코드로 기기 페어링을 누르는 그림" loading="lazy"><div class="tx"><h3><i>5</i>'페어링 코드로 기기 페어링'</h3>
+      <p>맨 위 <b>사용 중</b>이 켜져 있는지 보고, <b>페어링 코드로 기기 페어링</b>을 누릅니다.</p></div></div>
+    <div class="step"><img src="img/step6.webp" alt="6자리 Wi-Fi 페어링 코드 창이 떠 있는 그림" loading="lazy"><div class="tx"><h3><i>6</i>6자리 코드 창을 띄워 둔 채로</h3>
+      <p><b>기기와 페어링</b> 창에 6자리 코드가 나옵니다. <b>이 창을 닫지 마세요.</b> 이 창이 떠 있는 동안에만 Shizuku가 페어링 상대를 찾을 수 있습니다.</p>
+      <p class="tip">Shizuku 알림이 계속 "페어링 서비스 검색중"이면, 대부분 이 창이 닫혀 있어서입니다.</p></div></div>
+    <div class="step"><img src="img/step7.webp" alt="알림창의 Shizuku 알림에 6자리 코드를 입력하는 그림" loading="lazy"><div class="tx"><h3><i>7</i>알림에 코드 입력</h3>
+      <p>화면 위에서 알림창을 내리면 Shizuku 알림이 <b>코드 입력</b>으로 바뀌어 있습니다. 6자리를 입력하고 보냅니다.</p>
+      <p><b>페어링 성공</b> 알림이 뜨면 페어링은 끝입니다. 페어링은 처음 한 번만 합니다.</p></div></div>
+    <div class="step"><img src="img/step8.webp" alt="Shizuku에서 시작을 눌러 실행 중이 된 그림" loading="lazy"><div class="tx"><h3><i>8</i>Shizuku에서 '시작'</h3>
+      <p>Shizuku로 돌아가 <b>무선 디버깅을 통해 시작 › 시작</b>을 누릅니다. 맨 위에 <b>Shizuku 실행 중</b>이 보이면 됩니다.</p></div></div>
+    <div class="step"><img src="img/step9.webp" alt="덜누름 앱에서 Shizuku 연결을 누르고 항상 허용을 누르는 그림" loading="lazy"><div class="tx"><h3><i>9</i>덜누름 앱에서 '허용'</h3>
+      <p>덜누름 앱으로 돌아와 <b id="connName">Shizuku 연결</b>을 누르고, 뜨는 창에서 <b>항상 허용</b>을 누릅니다. 앱마다 한 번씩입니다.</p></div></div>
+    <div class="step wide"><img src="img/step10.webp" alt="재부팅 후 무선 디버깅을 켜고 Shizuku에서 시작을 누르는 그림" loading="lazy"><div class="tx"><h3><i>↻</i>휴대폰을 다시 켠 뒤에는</h3>
+      <p>Shizuku는 재부팅하면 꺼집니다. <b>개발자 옵션 › 무선 디버깅 스위치 켜기 → Shizuku에서 시작</b>, 이 두 가지만 하면 됩니다. 페어링과 허용은 다시 하지 않아도 됩니다.</p></div></div>
+  </div>
+
+  <h2>막힐 때</h2>
+  <div class="faq">
+    <details open><summary>알림이 "페어링 서비스 검색중"에서 멈춰요</summary><p>6번의 6자리 코드 창이 닫혀 있어서입니다. 3번처럼 분할 화면으로 설정을 띄우고 <b>페어링 코드로 기기 페어링</b> 창을 연 채로 알림을 내려 코드를 입력하세요. 검색 알림을 지웠다면 Shizuku에서 페어링을 다시 누릅니다.</p></details>
+    <details><summary>알림에 코드 입력 칸이 안 보여요</summary><p>설정 › 애플리케이션 › Shizuku › 알림을 허용하세요. 알림을 길게 눌러 펼치면 입력 칸이 나오기도 합니다.</p></details>
+    <details><summary>무선 디버깅이 켜지자마자 꺼져요</summary><p>Wi-Fi에 연결돼 있지 않으면 꺼집니다. 아무 Wi-Fi(인터넷이 안 되는 것도 됨)에 연결한 뒤 다시 켜세요. 휴대폰 핫스팟을 켜 둔 상태에서도 쓸 수 있습니다.</p></details>
+    <details><summary>설정이 막혀 있다는 창이 떠요 (자동 차단)</summary><p>설정 › 보안 및 개인정보 보호 › <b>자동 차단</b>이 켜져 있으면 디버깅이 막힐 수 있습니다. 연결하는 동안만 잠깐 끄고, 끝나면 다시 켜도 됩니다.</p></details>
+    <details><summary>어제는 됐는데 오늘은 안 돼요</summary><p>휴대폰을 다시 켰거나 Wi-Fi가 바뀌었을 수 있습니다. 맨 아래 '휴대폰을 다시 켠 뒤에는'처럼 무선 디버깅을 켜고 Shizuku에서 시작을 누르세요.</p></details>
+    <details><summary>그만 쓰고 싶어요</summary><p>Shizuku 앱 › 오른쪽 위 메뉴 › 중지, 또는 휴대폰을 다시 켜면 꺼집니다. 앱별 허락은 Shizuku › 권한이 부여된 앱에서 거둘 수 있습니다.</p></details>
+  </div>
+
+  <p class="end">덜누름 · 그림은 이해를 돕기 위한 예시이며, 기기와 버전에 따라 글자나 위치가 조금 다를 수 있습니다. Shizuku는 RikkaApps의 무료 공개 앱입니다.</p>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), app = q.get("app"), inapp = q.has("inapp") || window.parent !== window;
+  if (inapp) {
+    document.body.classList.add("inapp");
+    var c = document.getElementById("closeBtn"); c.hidden = false;
+    c.onclick = function () { try { window.parent.postMessage({ shizukuGuide: "close" }, "*"); } catch (e) {} };
+  }
+  // 리모컨 · 키보드로 보는 앱(덜누름 TV 등): 부모 화면이 스크롤을 부탁함
+  window.addEventListener("message", function (e) {
+    var d = e.data || {};
+    if (d.shizukuGuide === "scroll") window.scrollBy({ top: d.dy || 0, behavior: "smooth" });
+  });
+  if (app) {
+    var li = document.querySelector('#appList li[data-app="' + app + '"]');
+    if (li) { li.classList.add("me"); li.parentNode.insertBefore(li, li.parentNode.firstChild); }
+    var conn = { tv: "설정 › 미테르 리모컨 최적화 › 점검 › Shizuku 연결", game: "도구 › FPS 보기 › 덜누름 게임 허용하기", desk: "창정리 › Shizuku 연결 · 허락하기", sseum: "권한 › Shizuku 허락" }[app];
+    if (conn) document.getElementById("connName").textContent = conn;
+  }
+})();
+</script>
+</body>
+</html>
