@@ -1,6 +1,20 @@
 {
- "updated": "2026-11-19T15:20:17+09:00",
+ "updated": "2026-11-19T17:01:03+09:00",
  "apps": {
+  "pad": {
+   "version": "0.2.1",
+   "date": "2026.11.19",
+   "note": "첫 공개: 가죽 · 황동 디자인 버튼 판, 볼륨 다이얼 · 음소거, 가로 화면 버튼 크기 자동 맞춤",
+   "page": "https://deolnureum.com/pad/",
+   "changes": "https://deolnureum.com/releases/"
+  },
+  "tv": {
+   "version": "0.8.1",
+   "date": "2026.11.19",
+   "note": "첫 공개: 넷플릭스 등 다른 앱에서도 리모컨 단추 그대로, 앱을 연 뒤 완전 전체 화면인지 확인해 고치기, 점검 화면",
+   "page": "https://deolnureum.com/tv/",
+   "changes": "https://deolnureum.com/releases/"
+  },
   "work": {
    "version": "1.0.3",
    "date": "2026.11.17",
