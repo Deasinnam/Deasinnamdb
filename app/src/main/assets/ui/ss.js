@@ -61,7 +61,9 @@
   var perm = {};
   function readPerms() { perm = J(P.perms()); return perm; }
   function needBtn(label, fn) { var b = el("button", "need", label); b.type = "button"; b.onclick = function (e) { e.preventDefault(); e.stopPropagation(); fn(); }; return b; }
+  function guide() { if (window.ShizukuGuide) ShizukuGuide.open("sseum", function () { readPerms(); if (cur) show(cur); }); }
   function shz() {
+    if (!perm.shzRunning) { guide(); return; } // 아직 켜지 않았으면 그림 안내부터
     var r = P.shizukuConnect();
     toast(r === "install" ? "Shizuku를 설치한 뒤 무선 디버깅으로 시작해 주세요" : r === "start" ? "Shizuku 앱에서 '시작'을 누른 뒤 돌아와 주세요" : r === "ok" ? "Shizuku가 연결돼 있습니다" : "허락 창에서 '허용'을 눌러 주세요");
   }
@@ -214,8 +216,9 @@
   function permPanel(box) {
     box.appendChild(el("p", "p-lead", "덜씀은 인터넷 권한이 없고, 정리는 모두 휴대폰 안에서만 합니다. 아래를 켤수록 더 깊게 정리합니다. 모두 선택 사항입니다."));
     var w = el("div", "perm"); box.appendChild(w);
+    var gb2 = el("button", "run lite", "Shizuku 설정 방법 · 왜 필요한지 (그림 안내)"); gb2.type = "button"; gb2.onclick = guide; gb2.style.marginTop = "0"; gb2.style.marginBottom = "10px"; box.insertBefore(gb2, w);
     [["사용 기록 접근", "30분 넘게 안 쓴 앱 찾기 · 앱 캐시 크기", perm.usage, P.openUsage, "켜기"],
-     ["Shizuku (고급 기능)", "앱 완전 종료 · 모든 앱 캐시 정리 · 설치 파일 정리 · 절전 모드 · 화면 효과. 무선 디버깅으로 Shizuku 앱을 시작해 두면 됩니다", perm.shizuku, shz, perm.shzInstalled ? (perm.shzRunning ? "허락" : "시작") : "설치"],
+     ["Shizuku (고급 기능)", "앱 완전 종료 · 모든 앱 캐시 정리 · 설치 파일 정리 · 절전 모드 · 화면 효과. 처음이면 위 그림 안내를 따라 하세요", perm.shizuku, shz, perm.shzInstalled ? (perm.shzRunning ? "허락" : "방법 보기") : "방법 보기"],
      ["시스템 설정 변경", "배터리 덜씀의 화면 밝기", perm.write, P.openWrite, "허락"],
      ["사진 · 동영상", "휴지통 비우기", perm.media, P.askMedia, "허용"],
      ["알림", "덜씀 지킴이(자동 기능)가 도는 동안 표시", perm.notif, P.askNotif, "허용"]].forEach(function (p) {
@@ -231,7 +234,7 @@
     if (kind === "memDone") kind = "mem";
     if (res[kind]) res[kind](data);
   };
-  window.goBack = function () { if (cur) { cur = ""; $("panel").textContent = ""; Array.prototype.forEach.call(document.querySelectorAll(".dbtn"), function (b) { b.classList.remove("on"); }); return true; } return false; };
+  window.goBack = function () { if (window.ShizukuGuide && ShizukuGuide.isOpen()) { ShizukuGuide.close(); return true; } if (cur) { cur = ""; $("panel").textContent = ""; Array.prototype.forEach.call(document.querySelectorAll(".dbtn"), function (b) { b.classList.remove("on"); }); return true; } return false; };
 
   Array.prototype.forEach.call(document.querySelectorAll(".dbtn"), function (b) { b.onclick = function () { P.tap(); show(b.dataset.p); }; });
   $("permBtn").onclick = function () { show("perm"); };
