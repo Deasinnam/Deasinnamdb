@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>덜씀</title>
+<link rel="stylesheet" href="ss.css">
+</head>
+<body>
+<div class="blobs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<main id="app">
+  <header class="top">
+    <div class="brand"><span class="bars"><i></i><i></i><i></i></span><b>덜씀</b><small>갤럭시</small></div>
+    <button type="button" class="ghost" id="permBtn">권한</button>
+  </header>
+
+  <section class="card mem glass">
+    <div class="mem-head"><span class="mem-ico"></span><b>메모리</b><span class="pill" id="memPill">정상</span></div>
+    <div class="mem-big"><strong id="memPct">–%</strong><span><em id="memUsed">–</em><em id="memTotal">–</em></span></div>
+    <div class="membar"><i id="barUsed"></i></div>
+    <div class="graph"><small>최근 2분</small><canvas id="graph"></canvas></div>
+  </section>
+
+  <h2 class="sec">덜씀 버튼</h2>
+  <section class="btns">
+    <button type="button" class="dbtn mem" data-p="mem"><span class="ico i-mem"></span><b>메모리 덜씀</b><small>안 쓰는 앱 · 남은 메모리 정리</small></button>
+    <button type="button" class="dbtn sto" data-p="sto"><span class="ico i-sto"></span><b>저장공간 덜씀</b><small>캐시 · 설치 파일 · 휴지통</small></button>
+    <button type="button" class="dbtn bat" data-p="bat"><span class="ico i-bat"></span><b>배터리 덜씀</b><small>절전 · 화면 밝기 낮춤</small></button>
+    <button type="button" class="dbtn old" data-p="old"><span class="ico i-old"></span><b>오래된 갤럭시 가볍게</b><small>효과 줄이고 자동 정리</small></button>
+  </section>
+
+  <section class="panel glass" id="panel"></section>
+
+  <footer class="foot">
+    <button type="button" class="rel" id="relBtn">덜누름 업데이트 내역 <span>›</span></button>
+    <small id="ver"></small>
+  </footer>
+</main>
+<div class="toast" id="toast" hidden></div>
+<script src="ss.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.daesinnam.sseum'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.daesinnam.sseum'
+        minSdk 30
+        targetSdk 35
+        versionCode 1
+        versionName "0.1"
+    }
+
+    buildFeatures { buildConfig true }
+
+    // 서명 키는 저장소에 두지 않습니다. CI가 GitHub 비밀값에서 꺼내 씁니다 (다른 덜누름 앱과 같은 키).
+    def keystore = System.getenv('AMP_KEYSTORE_FILE')
+    signingConfigs {
+        daesinnam {
+            if (keystore) {
+                storeFile file(keystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('AMP_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('AMP_KEY_ALIAS') ?: 'amp'
+                keyPassword System.getenv('AMP_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (keystore) signingConfig signingConfigs.daesinnam
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // 고급 기능: Shizuku (사용자가 따로 설치한 Shizuku 앱과 연결) — 다른 앱 종료 · 앱 캐시 정리 · 절전 모드 · 애니메이션
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+}
