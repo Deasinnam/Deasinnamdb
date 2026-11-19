@@ -1342,6 +1342,7 @@
     S.arAdvOpen = true; save();
     const w = openBuiltin("in:arrange"); if (w) focusWin(w);
     toast(why + " — 고급 기능(Shizuku) 연결이 필요합니다. " + (!shz.installed ? "Shizuku를 받아 주세요." : !shz.running ? "Shizuku를 켜 주세요." : "허락을 눌러 주세요."));
+    if (!shz.running && window.ShizukuGuide) { ShizukuGuide.open("desk", refreshShizuku); return "guide"; } // 아직 켜지 않았으면 그림 안내부터
     const r = await call("shizukuConnect");
     setTimeout(refreshShizuku, 1500);
     return r;
@@ -1439,6 +1440,7 @@
             h("b", { text: shz.granted ? "연결됨 — 열려 있는 창도 옮기고, 현재 배치를 저장합니다." : "열려 있는 창을 옮기고, 현재 배치를 저장할 수 있습니다." }),
             shz.granted ? null : h("span", { text: !shz.installed ? "Shizuku(무료 공개 앱)를 설치한 뒤 무선 디버깅으로 한 번 켜 두면 됩니다. 덜누름 게임에서 이미 연결했다면 같은 방법입니다." : !shz.running ? "Shizuku 앱을 열어 '시작'을 누른 뒤 돌아와 주세요." : "Shizuku가 켜져 있습니다. 덜누름 데스크를 허락해 주세요." }),
             shz.granted ? null : h("button", { class: "btn primary", onclick: async () => { const r = await call("shizukuConnect"); if (r === "start") toast("Shizuku에서 '시작'을 누른 뒤 돌아와 주세요"); setTimeout(refreshShizuku, 1200); } }, !shz.installed ? "Shizuku 받으러 가기" : !shz.running ? "Shizuku 열기" : "허락하기")),
+            h("button", { class: "btn", onclick: () => window.ShizukuGuide && ShizukuGuide.open("desk", refreshShizuku) }, shz.granted ? "Shizuku 안내 다시 보기" : "설정 방법 (그림)"),
           h("button", { class: "ar-link ar-diag-btn", onclick: async () => { body._diag = await call("arrangeDiag"); mode = "diag"; draw(); } }, "마지막 펼치기 점검 보기"),
           h("p", { class: "ar-foot", text: "고급 기능 없이도 배치 펼치기는 됩니다. 다만 안드로이드는 이미 떠 있는 다른 앱 창을 홈 앱이 옮기지 못하게 해서, 열려 있던 앱은 자리가 그대로일 수 있습니다." }));
       } else if (mode === "diag") {
