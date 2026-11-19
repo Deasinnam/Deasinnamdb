@@ -2,5 +2,5 @@
 <resources>
     <string name="app_name">덜누름 TV</string>
     <string name="key_service_name">덜누름 TV 키보드 단축키</string>
-    <string name="key_service_desc">다른 앱을 보는 중에도 블루투스 키보드의 F12 · Alt+H로 덜누름 TV 홈에 돌아오고, Alt+1~9로 내 서비스를 바로 엽니다. 이 두 가지 키만 가로채며 화면 내용이나 입력한 글자는 읽거나 저장하지 않습니다.</string>
+    <string name="key_service_desc">다른 앱을 보는 중에도 블루투스 키보드의 F12 · Alt+H로 덜누름 TV 홈에 돌아오고, Alt+1~9로 내 서비스를 바로 엽니다. 미테르 등 맞춤 리모컨의 홈 단추를 누르면 덜누름 TV 홈으로 갑니다. 이 키들만 가로채며 화면 내용이나 입력한 글자는 읽거나 저장하지 않습니다.</string>
 </resources>

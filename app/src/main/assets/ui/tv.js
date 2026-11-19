@@ -27,6 +27,8 @@
       homeButton: function () { return JSON.stringify({ on: true, allowed: false }); }, setHomeButton: function () {}, askOverlay: function () {},
       shizuku: function () { return JSON.stringify({ installed: false, running: false, granted: false }); }, shizukuConnect: function () { return "install"; },
       openBluetooth: function () {}, setKeyTest: function () {}, takeOpen: function () { return -1; },
+      rmGet: function () { return JSON.stringify(fakeRm); }, rmSet: function (j) { var o = JSON.parse(j); for (var k in o) fakeRm[k] = o[k]; if (o.reset) { delete fakeRm.reset; fakeRm.custom = false; } else if (o.map) fakeRm.custom = true; return JSON.stringify(fakeRm); },
+      setLearn: function () {},
       kbGlobal: function () { return JSON.stringify({ on: false, shizuku: false }); }, kbEnable: function () { return "settings"; }, openAppInfo: function () {},
       rcState: function () { return JSON.stringify({ bt: true, on: true, perm: true }); },
       rcScan: function () {
@@ -56,6 +58,7 @@
   var CAT = {}; CATALOG.forEach(function (s) { CAT[s.pkg] = s; });
 
   // ---------- 상태 ----------
+  var fakeRm = { on: true, dev: "miter", home: true, connected: "MITER BTR2nd", custom: false, map: { KEYCODE_DPAD_LEFT: "left", KEYCODE_DPAD_RIGHT: "right", KEYCODE_PAGE_UP: "left", KEYCODE_PAGE_DOWN: "right", KEYCODE_MEDIA_PREVIOUS: "prev", KEYCODE_MEDIA_NEXT: "next", KEYCODE_VOLUME_UP: "volUp", KEYCODE_VOLUME_DOWN: "volDown", KEYCODE_DPAD_UP: "up", KEYCODE_DPAD_DOWN: "down", KEYCODE_MEDIA_PLAY_PAUSE: "ok", KEYCODE_F5: "settings", KEYCODE_BACK: "back" } };
   var state = { v: 1, my: DEFAULT_MY.slice(), fullOpen: true, saver: 10, recent: [] };
   try { var saved = JSON.parse(P.load() || "null"); if (saved && saved.v === 1) state = Object.assign(state, saved); } catch (e) {}
   function save() { try { P.save(JSON.stringify(state)); } catch (e) {} }
@@ -243,7 +246,7 @@
     build(box); $("sheet").hidden = false;
     var first = box.querySelector("[data-nav]"); if (first) focusEl(first);
   }
-  function closeSheet() { if (remoteTest && P.setKeyTest) P.setKeyTest(false); remoteTest = null; rcOpen = null; if (P.rcStop) P.rcStop(); $("sheet").hidden = true; if (sheetBack) { var b = sheetBack; sheetBack = null; if (document.body.contains(b)) focusEl(b); } }
+  function closeSheet() { if (learn) { learn = null; if (P.setLearn) P.setLearn(false); } if (remoteTest && P.setKeyTest) P.setKeyTest(false); remoteTest = null; rcOpen = null; if (P.rcStop) P.rcStop(); $("sheet").hidden = true; if (sheetBack) { var b = sheetBack; sheetBack = null; if (document.body.contains(b)) focusEl(b); } }
   $("sheet").addEventListener("click", function (e) { if (e.target.id === "sheet") closeSheet(); });
   function sbtn(label, sub, fn, cls) {
     var b = el("button", "sbtn" + (cls ? " " + cls : "")); b.type = "button"; b.setAttribute("data-nav", "");
@@ -318,6 +321,142 @@
     remoteTest.querySelector("b").textContent = n[0]; remoteTest.querySelector("span").textContent = n[1];
     remoteTest.classList.remove("hit"); void remoteTest.offsetWidth; remoteTest.classList.add("hit");
   }
+  // ---------- 미테르 블루투스 리모컨 (MIT_BTR02 / RM1) 최적화 ----------
+  var ACT = { left: "왼쪽으로 고르기", right: "오른쪽으로 고르기", up: "위 줄로", down: "아래 줄로", ok: "고른 것 열기", back: "뒤로", play: "재생 (고른 서비스 열기)",
+    prev: "이전 서비스", next: "다음 서비스", volUp: "소리 키우기", volDown: "소리 줄이기", mute: "음소거", settings: "설정 열기", tvhome: "덜누름 TV 홈", apps: "모든 앱", sys: "그대로 (안드로이드 기본)" };
+  var ACT_ORDER = ["left", "right", "up", "down", "ok", "back", "prev", "next", "volUp", "volDown", "mute", "settings", "apps", "tvhome", "sys"];
+  // 미테르 앞면 단추 (위→아래)와 추천 기능
+  var MITER_BTN = [["＋", "volUp"], ["−", "volDown"], ["〈", "left"], ["▶/II", "ok"], ["〉", "right"], ["홈 ⌂", "tvhome"], ["•", "settings"], ["뒤로 ↩", "back"]];
+  var learn = null; // { step, got:{} }
+  function rmGet() { try { return JSON.parse(P.rmGet()) || {}; } catch (e) { return {}; } }
+  function keyLabel(k) { return k.replace("KEYCODE_", ""); }
+  function miterSheet() {
+    sheetBack = cur;
+    var rm = rmGet();
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "미테르 리모컨 최적화"));
+      box.appendChild(el("p", "rc-lead", "미테르(MITER) 블루투스 리모컨 MIT_BTR02 · RM1 단추 8개를 덜누름 TV에 맞게 바꿉니다. 이 리모컨에서 온 키만 바꾸고, 다른 키보드 · 리모컨은 그대로 둡니다."));
+      var st = el("div", "rc-state" + (rm.connected ? " on" : ""));
+      st.appendChild(el("b", null, rm.connected ? "연결됨 · " + rm.connected : "미테르 리모컨이 연결되지 않았습니다"));
+      st.appendChild(el("span", null, rm.connected ? (rm.on ? "최적화 적용 중" + (rm.custom ? " (직접 맞춘 단추)" : " (기본 설정)") : "최적화 꺼짐") : "아래 '연결하기'대로 먼저 휴대폰에 연결하세요"));
+      box.appendChild(st);
+
+      var g = el("div", "sbtns"); g.style.marginTop = "10px";
+      var onb = sbtn("최적화 사용", rm.on ? "켬" : "끔", function () { rm = JSON.parse(P.rmSet(JSON.stringify({ on: !rm.on }))); onb.lastChild.textContent = rm.on ? "켬" : "끔"; onb.classList.toggle("on", rm.on); }, rm.on ? "on" : "");
+      g.appendChild(onb);
+      g.appendChild(sbtn("단추 맞추기", "단추를 하나씩 눌러 정확히 맞추기 (추천)", function () { learnSheet(); }));
+      box.appendChild(g);
+
+      box.appendChild(el("h4", "rc-h", "단추마다 하는 일"));
+      var tb = el("div", "rc-map");
+      [["〈  〉", "타일 왼쪽 · 오른쪽으로 고르기"], ["〈  〉 길게", "이전 · 다음 서비스"], ["▶/II", "고른 서비스 열기"], ["＋  −", "소리 키우기 · 줄이기 (누르고 있으면 계속)"],
+       ["＋  − 두 번", "위 · 아래 줄로 (리모컨이 위·아래 키를 보낼 때)"], ["•", "설정 열기 · 닫기"], ["뒤로 ↩", "창 닫기 · 홈으로"], ["홈 ⌂", "덜누름 TV 홈 (다른 앱을 보는 중에도)"]].forEach(function (r) {
+        tb.appendChild(el("b", null, r[0])); tb.appendChild(el("span", null, r[1]));
+      });
+      box.appendChild(tb);
+
+      box.appendChild(el("h4", "rc-h", "홈 단추로 덜누름 TV 부르기"));
+      var kbg = {}; try { kbg = JSON.parse(P.kbGlobal()); } catch (e) {}
+      var g4 = el("div", "sbtns");
+      var hb = sbtn("홈 단추 → 덜누름 TV 홈", !rm.home ? "끔 (DeX 바탕화면으로)" : kbg.on ? "켬" : "켬 · 아래 단축키 기능을 켜야 동작", function () {
+        rm = JSON.parse(P.rmSet(JSON.stringify({ home: !rm.home }))); hb.lastChild.textContent = rm.home ? (kbg.on ? "켬" : "켬 · 아래 단축키 기능을 켜야 동작") : "끔 (DeX 바탕화면으로)"; hb.classList.toggle("on", rm.home && kbg.on);
+      }, rm.home && kbg.on ? "on" : "");
+      g4.appendChild(hb);
+      if (!kbg.on) g4.appendChild(sbtn("다른 앱에서도 단축키 쓰기 켜기", "넷플릭스 등을 보다가도 홈 단추로 돌아오기", function () {
+        var r = P.kbEnable(); if (r === "on") { toast("켜졌습니다. 이제 홈 단추로 덜누름 TV에 돌아옵니다"); closeSheet(); miterSheet(); } else toast("접근성 › 설치된 앱 › 덜누름 TV 키보드 단축키를 켜 주세요");
+      }));
+      box.appendChild(g4);
+
+      box.appendChild(el("h4", "rc-h", "연결하기"));
+      var ol = el("ol", "rc-steps");
+      ["옆면 스위치를 위로 밀어 켭니다. LED가 파란색이어야 블루투스 모드입니다 (빨간색이면 B를 짧게 눌러 바꿈)",
+       "B 단추를 3초 이상 눌러 파란 LED가 계속 깜빡이게 합니다 (연결 모드)",
+       "아래 [블루투스 설정 열기] → 새 기기 연결 → 목록의 MITER 이름을 누릅니다",
+       "연결되면 파란 불이 10초 켜집니다. 덜누름 TV로 돌아오면 자동으로 최적화가 적용됩니다"].forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      box.appendChild(ol);
+
+      box.appendChild(el("h4", "rc-h", "알아 두세요"));
+      var ul = el("ul", "rc-notes");
+      ["리모컨이 '키보드'로 연결되어 휴대폰 화면 키보드가 안 뜰 수 있습니다. 앱 찾기 등에 글자를 칠 때는 설정 › 일반 › 키보드 › 실제 키보드 › '화면 키보드 표시'를 켜 두세요.",
+       "넷플릭스 등 다른 앱 안에서는 단추가 그 앱으로 갑니다 (〈 〉 = 앞뒤, ▶/II = 재생 · 멈춤, ＋ − = 소리). 홈 단추만 덜누름 TV로 돌아옵니다.",
+       "빨간 LED(2.4GHz 모드)는 USB 동글이 있을 때만 씁니다. 휴대폰 · DeX에서는 파란색(블루투스)으로 두세요.",
+       "단추가 생각과 다르게 움직이면 [단추 맞추기]로 한 번 맞춰 주세요. 리모컨 판매 시기에 따라 보내는 키가 다를 수 있습니다."].forEach(function (t) { ul.appendChild(el("li", null, t)); });
+      box.appendChild(ul);
+      var g2 = el("div", "sbtns"); g2.style.marginTop = "12px";
+      g2.appendChild(sbtn("블루투스 설정 열기", "새 기기 연결", function () { P.openBluetooth(); }));
+      if (rm.custom) g2.appendChild(sbtn("기본값으로 되돌리기", "직접 맞춘 단추 지우기", function () { P.rmSet(JSON.stringify({ reset: true })); toast("기본 설정으로 되돌렸습니다"); closeSheet(); miterSheet(); }));
+      g2.appendChild(sbtn("닫기", null, closeSheet));
+      box.appendChild(g2);
+    }, true);
+    setTimeout(function () { $("sheetBox").scrollTop = 0; }, 0);
+  }
+
+  // 단추 맞추기: 미테르 단추를 하나씩 누르면 그 키를 기억하고 추천 기능을 붙임
+  function learnSheet() {
+    learn = { step: 0, got: {}, dev: "" };
+    if (P.setLearn) P.setLearn(true);
+    sheetBack = cur;
+    openSheet(function (box) {
+      box.appendChild(el("h3", null, "단추 맞추기"));
+      box.appendChild(el("p", "rc-lead", "화면에 나온 단추를 미테르 리모컨에서 한 번 누르세요. 8개를 차례로 맞춥니다. 홈 단추는 안드로이드가 먼저 가져가면 [건너뛰기]를 누르세요."));
+      var big = el("div", "rc-test lrn"); big.appendChild(el("b")); big.appendChild(el("span")); box.appendChild(big);
+      var prog = el("div", "lrn-dots"); MITER_BTN.forEach(function () { prog.appendChild(el("i")); }); box.appendChild(prog);
+      var g = el("div", "sbtns"); g.style.marginTop = "12px";
+      g.appendChild(sbtn("건너뛰기", "이 단추는 그대로 두기", function () { learnNext(null); }));
+      g.appendChild(sbtn("그만두기", "저장하지 않고 닫기", function () { learnEnd(false); }));
+      box.appendChild(g);
+      learn.big = big; learn.prog = prog;
+      learnShow();
+    }, true);
+  }
+  function learnShow() {
+    if (!learn || !learn.big) return;
+    var b = MITER_BTN[learn.step];
+    learn.big.querySelector("b").textContent = b[0] + " 단추를 누르세요";
+    learn.big.querySelector("span").textContent = (learn.step + 1) + " / " + MITER_BTN.length + " · 맞추면: " + ACT[b[1]];
+    [].forEach.call(learn.prog.children, function (d, i) { d.className = i < learn.step ? "done" : i === learn.step ? "now" : ""; });
+  }
+  window.rmLearn = function (j) {
+    if (!learn) return; var d; try { d = JSON.parse(j); } catch (e) { return; }
+    if (learn.got[d.key]) { toast("이미 맞춘 단추와 같은 키(" + keyLabel(d.key) + ")입니다"); return; }
+    if (d.dev) learn.dev = d.dev;
+    learn.big.classList.remove("hit"); void learn.big.offsetWidth; learn.big.classList.add("hit");
+    learnNext(d.key);
+  };
+  function learnNext(key) {
+    if (!learn) return;
+    var act = MITER_BTN[learn.step][1];
+    if (key) learn.got[key] = act === "tvhome" && key !== "KEYCODE_HOME" ? "tvhome" : act;
+    learn.step++;
+    if (learn.step >= MITER_BTN.length) learnEnd(true); else learnShow();
+  }
+  function learnEnd(saveIt) {
+    if (P.setLearn) P.setLearn(false);
+    var l = learn; learn = null;
+    if (saveIt && l) {
+      var keys = Object.keys(l.got);
+      if (!keys.length) { toast("맞춘 단추가 없어 그대로 둡니다"); closeSheet(); miterSheet(); return; }
+      // 기본값 위에 맞춘 키를 덮어써서, 길게 누름(이전/다음 곡) 같은 다른 키는 계속 동작
+      var rm = rmGet(), map = {}, k;
+      for (k in (rm.map || {})) map[k] = rm.map[k];
+      keys.forEach(function (k) { map[k] = l.got[k]; });
+      var save = { map: map, on: true };
+      // 맞춘 키를 보낸 장치 이름으로 자동 인식 (MITER가 안 들어간 이름이어도)
+      if (l.dev && l.dev.toLowerCase().indexOf((rm.dev || "miter").toLowerCase()) < 0) save.dev = l.dev;
+      P.rmSet(JSON.stringify(save));
+      toast("단추 " + keys.length + "개를 맞췄습니다");
+    }
+    closeSheet(); miterSheet();
+  }
+
+  // 미테르 리모컨이 새로 연결되면 한 번 알려 주기
+  var rmSeen = "";
+  function rmCheck() {
+    var rm = rmGet();
+    if (rm.connected && rm.connected !== rmSeen && rm.on) toast(rm.connected + " 연결됨 · 미테르 최적화 적용");
+    rmSeen = rm.connected || "";
+  }
+
   // ---------- 삼성 스마트 리모컨 바로 연결 ----------
   var rcOpen = null; // { list, btn, msg, rows:{addr:el} }
   function samsungSheet() {
@@ -398,7 +537,7 @@
     else if (d.state === "bonded") { if (sm) sm.textContent = "연결됨 ✓"; if (row) row.classList.add("on"); rcSay("연결됐습니다. [단추 눌러 보기]에서 단추를 확인하세요."); toast("리모컨이 연결됐습니다"); }
     else if (d.state === "fail") { if (sm) sm.textContent = "연결 실패 · 다시 누르기"; rcSay("연결하지 못했습니다. 리모컨을 연결 모드로 다시 두고 이름을 다시 눌러 주세요."); }
   };
-  window.rcChanged = function () { /* 리모컨이 붙거나 떨어짐: 설정이 열려 있으면 다음에 열 때 반영 */ };
+  window.rcChanged = function () { rmCheck(); };
 
   function remoteSheet() {
     sheetBack = cur;
@@ -456,6 +595,8 @@
       var rc = []; try { rc = JSON.parse(P.remotes()) || []; } catch (e) {}
       var kbg = {}; try { kbg = JSON.parse(P.kbGlobal()); } catch (e) {}
       g.appendChild(sbtn("키보드로 조작 · 단축키", kbg.on ? "다른 앱에서도 켜짐" : "? 를 누르면 언제든 보기", function () { kbSheet(); }, kbg.on ? "on" : ""));
+      var rm = {}; try { rm = JSON.parse(P.rmGet()); } catch (e) {}
+      g.appendChild(sbtn("미테르 리모컨 최적화", rm.connected ? (rm.on ? "연결됨 · 적용 중" : "연결됨 · 꺼짐") : (rm.on ? "켬 · 리모컨 연결 안 됨" : "끔"), function () { miterSheet(); }, rm.connected && rm.on ? "on" : ""));
       g.appendChild(sbtn("삼성 스마트 리모컨 바로 연결", "TV 리모컨을 휴대폰에 연결", function () { samsungSheet(); }));
       g.appendChild(sbtn("리모컨 연결 · 단추 안내", rc.length ? rc.length + "개 연결됨" : "연결 안 됨", function () { remoteSheet(); }, rc.length ? "on" : ""));
       var full = sbtn("앱을 전체 화면으로 열기", state.fullOpen ? "켬" : "끔", function () { state.fullOpen = !state.fullOpen; save(); full.lastChild.textContent = state.fullOpen ? "켬" : "끔"; full.classList.toggle("on", state.fullOpen); setHero(heroIdx); }, state.fullOpen ? "on" : "");
@@ -642,6 +783,13 @@
     if (remoteTest && !$("sheet").hidden) { showKey(k); return; }
     if (!$("saver").hidden) { hideSaver(); return; }
     var list = myList();
+    if (k === "left" || k === "right" || k === "up" || k === "down") { moveFocus(k); return; }
+    if (k === "ok") { if (cur) cur.click(); else if (list.length && $("sheet").hidden) openApp(list[heroIdx]); return; }
+    if (k === "back") { window.tvBack(); return; }
+    if (k === "settings") { if ($("sheet").hidden) settingsSheet(); else closeSheet(); return; }
+    if (k === "apps") { if (!$("sheet").hidden) closeSheet(); showTab("apps"); return; }
+    if (k === "tvhome") k = "home";
+    if (k === "prev") k = "chUp"; else if (k === "next") k = "chDown";
     if (k === "chUp" || k === "chDown") {
       if (!$("home").hidden) { setHero(heroIdx + (k === "chUp" ? -1 : 1), true); var t = document.querySelector('#myRow .tile[data-pkg="' + list[heroIdx] + '"]'); if (t) focusEl(t); }
     } else if (k === "play") {
@@ -672,7 +820,7 @@
   };
   window.tvPush = function (what) {
     if (what === "apps") { icons = {}; loadApps(); renderHome(); if (!$("appsView").hidden) renderApps(); }
-    else if (what === "resume") { $("splash").hidden = true; refreshScreen(); idle(); }
+    else if (what === "resume") { $("splash").hidden = true; refreshScreen(); idle(); rmCheck(); }
     else if (what === "window") refreshScreen();
   };
 
@@ -691,6 +839,7 @@
 
   loadApps();
   renderHome();
+  setTimeout(rmCheck, 800);
   setTimeout(function () { var n = -1; try { n = P.takeOpen(); } catch (e) {} if (n === 0) window.tvKey("home"); else if (n > 0) window.tvKey("n" + n); }, 300);
   refreshScreen();
   try { applyVol(P.volume()); } catch (e) {}

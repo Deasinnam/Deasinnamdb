@@ -63,7 +63,9 @@ public class MainActivity extends Activity {
     private RemoteLink rlink;
     static final String EXTRA_OPEN = "open"; // 키보드 단축키: 0 = 홈, 1~9 = n번째 서비스
     private int pendingOpen = -1;
-    private volatile boolean keyTest; // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
+    private volatile boolean keyTest;
+    private volatile boolean learning; // 리모컨 단추 맞추기 중이면 모든 키를 화면에 넘김
+    private int rmUp = -1; // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
     private android.widget.FrameLayout root;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
@@ -84,6 +86,14 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getIntent() != null) pendingOpen = getIntent().getIntExtra(EXTRA_OPEN, -1);
+        // 리모컨 · 키보드가 붙거나 떨어지면 화면에 알림 (미테르 자동 인식)
+        android.hardware.input.InputManager im = (android.hardware.input.InputManager) getSystemService(INPUT_SERVICE);
+        if (im != null) im.registerInputDeviceListener(new android.hardware.input.InputManager.InputDeviceListener() {
+            private void ping() { main.postDelayed(() -> { if (web != null) web.evaluateJavascript("window.rcChanged && rcChanged('')", null); }, 600); }
+            @Override public void onInputDeviceAdded(int id) { ping(); }
+            @Override public void onInputDeviceRemoved(int id) { ping(); }
+            @Override public void onInputDeviceChanged(int id) { }
+        }, main);
         selftest = getIntent() != null && getIntent().getBooleanExtra("tv.selftest", false);
         audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         immersive = prefs().getBoolean("immersive", true);
@@ -206,6 +216,35 @@ public class MainActivity extends Activity {
     /** 리모컨 · 키보드 단추: 웹 화면이 모르는 TV 단추는 이름을 붙여 화면에 넘김 (볼륨 단추는 시스템이 처리) */
     @Override
     public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+        int kc = e.getKeyCode();
+        if (e.getAction() == android.view.KeyEvent.ACTION_UP && kc == rmUp) { rmUp = -1; return true; }
+        if (learning && web != null) {
+            // 단추 맞추기: 어떤 키든 이름과 보낸 장치를 화면에 넘기고 삼킴
+            if (e.getAction() == android.view.KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {
+                android.view.InputDevice d = e.getDevice();
+                try {
+                    String j = new JSONObject().put("key", android.view.KeyEvent.keyCodeToString(kc)).put("dev", d == null ? "" : d.getName()).put("long", false).toString();
+                    web.evaluateJavascript("window.rmLearn && rmLearn(" + JSONObject.quote(j) + ")", null);
+                } catch (JSONException ignored) { }
+            }
+            return true;
+        }
+        if (e.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+            String act = RemoteMap.action(this, e);
+            if (act != null && web != null) {
+                rmUp = kc;
+                if (act.equals("volUp") || act.equals("volDown")) {
+                    // 볼륨은 길게 누르면 계속 바뀌게
+                    audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, act.equals("volUp") ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
+                    web.evaluateJavascript("window.tvVolume && tvVolume(" + JSONObject.quote(volumeJson()) + ")", null);
+                } else if (act.equals("mute")) {
+                    audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI);
+                } else if (e.getRepeatCount() == 0 || act.equals("left") || act.equals("right") || act.equals("up") || act.equals("down")) {
+                    web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(act) + ")", null);
+                }
+                return true;
+            }
+        }
         if (e.getAction() == android.view.KeyEvent.ACTION_DOWN) {
             String k = null;
             switch (e.getKeyCode()) {
@@ -612,6 +651,11 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void rcStop() { main.post(() -> { if (rlink != null) rlink.stopScan(); }); }
         @JavascriptInterface public void rcPair(String addr) { main.post(() -> link().pair(addr)); }
         @JavascriptInterface public void setKeyTest(boolean on) { keyTest = on; }
+
+        /** 리모컨 맞춤 단추 (미테르 등) */
+        @JavascriptInterface public String rmGet() { return RemoteMap.json(MainActivity.this); }
+        @JavascriptInterface public String rmSet(String js) { RemoteMap.save(MainActivity.this, js); return RemoteMap.json(MainActivity.this); }
+        @JavascriptInterface public void setLearn(boolean on) { learning = on; }
 
         /** 앱을 처음 열 때 받은 키보드 단축키 (0 홈, 1~9 서비스, -1 없음) */
         @JavascriptInterface public int takeOpen() { int n = pendingOpen; pendingOpen = -1; return n; }
