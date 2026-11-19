@@ -226,6 +226,29 @@ public class MainActivity extends Activity {
         } else {
             restoreTabs();
         }
+        if (!selftest) UpdateCheck.check(this, "browser", BuildConfig.VERSION_NAME, false, r -> showUpdate(r, false));
+    }
+
+    // ---------- 새 버전 알림 ----------
+    /** 새 버전이 있으면 한 번 알려 줍니다. manual=true(설정에서 "지금 확인")면 결과를 늘 보여 줍니다. */
+    private void showUpdate(UpdateCheck.Result r, boolean manual) {
+        if (isFinishing() || isDestroyed()) return;
+        if (!r.newer) {
+            if (manual) Toast.makeText(this, r.latest.isEmpty() ? "확인하지 못했습니다. 인터넷 연결을 확인해 주세요."
+                    : "지금 최신 버전(" + BuildConfig.VERSION_NAME + ")을 쓰고 있습니다.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (!manual && (r.dismissed || !UpdateCheck.enabled(this))) return;
+        new AlertDialog.Builder(this).setTitle("새 버전(" + r.latest + ")이 나왔습니다")
+                .setMessage("지금 쓰는 버전: " + BuildConfig.VERSION_NAME + (r.date.isEmpty() ? "" : "\n새 버전: " + r.latest + " · " + r.date)
+                        + (r.note.isEmpty() ? "" : "\n\n바뀐 점: " + r.note)
+                        + "\n\n덜누름 사이트에서 받아 지금 앱 위에 덮어 설치하면 즐겨찾기와 탭은 그대로 남습니다.")
+                .setPositiveButton("받으러 가기", (d, w) -> openNewTab(r.page))
+                .setNeutralButton("바뀐 점", (d, w) -> openNewTab(r.changes))
+                .setNegativeButton("나중에", (d, w) -> {
+                    UpdateCheck.dismiss(this, r.latest);
+                    Toast.makeText(this, "다음 새 버전이 나오면 다시 알려 드립니다. 설정 → 새 버전 확인에서 언제든 볼 수 있습니다.", Toast.LENGTH_LONG).show();
+                }).show();
     }
 
     // ---------- 탭 ----------
@@ -1186,6 +1209,8 @@ public class MainActivity extends Activity {
                 "닫을 때 웹 데이터 삭제: " + (autoClear ? "켜짐" : "꺼짐"),
                 "웹 데이터 지금 삭제",
                 "보안 상태",
+                "새 버전 확인 (지금 " + BuildConfig.VERSION_NAME + ")",
+                "새 버전 알림: " + (UpdateCheck.enabled(this) ? "켜짐" : "꺼짐") + " (하루 한 번 확인)",
                 "앱 정보"};
         new AlertDialog.Builder(this).setTitle("덜누름 브라우저").setItems(items, (d, which) -> {
             switch (which) {
@@ -1246,6 +1271,16 @@ public class MainActivity extends Activity {
                                     + "\n\nSafe Browsing: " + (safeBrowsingReady ? "초기화 완료" : "활성화 요청됨 · 초기화 미확인")
                                     + "\n탐지 범위는 기기의 WebView와 서비스 상태에 따라 다릅니다.\n\nWebView를 최신 버전으로 유지하세요. HTTPS만으로 사이트의 신뢰성이 보장되지는 않습니다.")
                             .setPositiveButton("확인", null).show();
+                    break;
+                case 9:
+                    Toast.makeText(this, "새 버전을 확인하는 중입니다…", Toast.LENGTH_SHORT).show();
+                    UpdateCheck.check(this, "browser", BuildConfig.VERSION_NAME, true, r -> showUpdate(r, true));
+                    break;
+                case 10:
+                    boolean on = !UpdateCheck.enabled(this);
+                    UpdateCheck.setEnabled(this, on);
+                    Toast.makeText(this, on ? "새 버전 알림을 켰습니다. 하루 한 번 덜누름 사이트에서 최신 버전을 확인합니다. 보내는 정보는 없습니다."
+                            : "새 버전 알림을 껐습니다. 설정 → 새 버전 확인으로 직접 확인할 수 있습니다.", Toast.LENGTH_LONG).show();
                     break;
                 default:
                     new AlertDialog.Builder(this).setTitle("덜누름 브라우저 " + BuildConfig.VERSION_NAME)

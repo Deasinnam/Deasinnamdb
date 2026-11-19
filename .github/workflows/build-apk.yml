@@ -96,6 +96,7 @@ jobs:
             --title "덜누름 브라우저 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: Releases에 APK 올리기
+        if: github.ref == 'refs/heads/deolnureum-browser'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -106,7 +107,7 @@ jobs:
       # 버전별 보관: 사이트의 "내려받기 → 버전 고르기"가 browser-v<버전> 릴리스를 씁니다.
       # 이미 있는 버전이면 건드리지 않습니다(사용자에게 나간 파일을 바꾸지 않음). 새 버전은 build.gradle의 versionName을 올리세요.
       - name: 버전별 릴리스 남기기
-        if: env.VARIANT == 'release'
+        if: env.VARIANT == 'release' && github.ref == 'refs/heads/deolnureum-browser'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
