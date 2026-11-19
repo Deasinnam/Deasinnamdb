@@ -1,0 +1,33 @@
+{
+ "updated": "2026-11-19T14:16:07+09:00",
+ "apps": {
+  "work": {
+   "version": "1.0.3",
+   "date": "2026.11.17",
+   "note": "새 엑셀 문서 저장 · 다른 이름으로 저장, 사진 · 동영상 편집 한국어 화면",
+   "page": "https://deolnureum.com/work/",
+   "changes": "https://deolnureum.com/releases/"
+  },
+  "desktop": {
+   "version": "1.6.3",
+   "date": "2026.11.17",
+   "note": "창정리: 창 배치 저장 · 한 번에 펼치기, 열린 창 자동 정렬, DeX에서 창 자리 맞추기",
+   "page": "https://deolnureum.com/desktop/",
+   "changes": "https://deolnureum.com/releases/"
+  },
+  "browser": {
+   "version": "2.5",
+   "date": "2026.11.19",
+   "note": "새 버전이 나오면 앱이 알려 줌 (설정에서 끄기 · 지금 확인)",
+   "page": "https://deolnureum.com/browser/",
+   "changes": "https://deolnureum.com/releases/"
+  },
+  "game": {
+   "version": "0.4",
+   "date": "2026.11.19",
+   "note": "새 버전이 나오면 앱이 알려 줌 (도구 탭에서 끄기 · 지금 확인)",
+   "page": "https://deolnureum.com/game/",
+   "changes": "https://deolnureum.com/releases/"
+  }
+ }
+}

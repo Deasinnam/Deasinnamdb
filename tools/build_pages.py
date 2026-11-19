@@ -153,7 +153,29 @@ def build():
     (ROOT / "rss.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n  <title>덜누름 Software</title>\n  <link>%s/</link>\n'
                                   '  <description>덜누름은 누를 일을 줄이는 앱을 개발합니다.</description>\n  <language>ko</language>\n  <lastBuildDate>%s</lastBuildDate>\n%s</channel>\n</rss>\n'
                                   % (SITE, now, items), encoding="utf-8")
-    print("만든 파일:", ", ".join(written), "+ sitemap.xml, robots.txt, rss.xml")
+    write_versions()
+    print("만든 파일:", ", ".join(written), "+ sitemap.xml, robots.txt, rss.xml, versions.json")
+
+
+def write_versions():
+    """앱 안 "새 버전" 알림이 읽는 /versions.json — 원본의 내려받기 표(DL)에서 앱마다 맨 위 버전을 뽑는다.
+    앱은 하루 한 번 이 파일을 읽어 자기 버전과 비교한다. 새 버전은 DL 표 versions 맨 위에 한 줄 추가하면 된다."""
+    src = (ROOT / "src" / "index.html").read_text(encoding="utf-8")
+    start = src.index("  var DL = {")
+    block = src[start:src.index("\n  };", start)]
+    paths = {h: p for h, p, *_ in APPS}
+    out = {}
+    for m in re.finditer(r'"(app-[a-z]+)":\s*\{(.*?)(?=\n    "app-|\Z)', block, re.S):
+        key, body = m.group(1), m.group(2)
+        if not re.search(r"open:\s*true", body):
+            continue
+        v = re.search(r'\{ v: "([^"]+)", date: "([^"]+)"[^\n]*?note: "([^"]*)"', body)
+        if not v:
+            continue
+        out[key[4:]] = {"version": v.group(1), "date": v.group(2), "note": v.group(3),
+                        "page": SITE + paths.get("#" + key, "/apps/"), "changes": SITE + "/releases/"}
+    data = {"updated": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec="seconds"), "apps": out}
+    (ROOT / "versions.json").write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
