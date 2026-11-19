@@ -91,6 +91,7 @@ function showTab(name) {
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 
 window.goBack = () => {
+  if (window.ShizukuGuide && ShizukuGuide.isOpen()) { ShizukuGuide.close(); return true; }
   if (!$('#pcGuide').hidden) { closeGuide(); return true; }
   if (!$('#gameSheet').hidden) { closeGameSheet(); return true; }
   if (!$('#picker').hidden) { closePicker(); return true; }
@@ -437,7 +438,13 @@ document.querySelectorAll('#fpsModes button').forEach((b) => b.addEventListener(
   renderOptimize();
   b.focus();
 }));
-$('#szBtn').addEventListener('click', () => A.shizukuConnect());
+$('#szBtn').addEventListener('click', () => {
+  // 아직 Shizuku를 켜지 않았으면 그림 안내부터 (설치 · 페어링 · 시작을 순서대로)
+  const st = parse(A.status(), {});
+  if (!st.shizukuRunning && window.ShizukuGuide) { ShizukuGuide.open('game', () => setTimeout(() => window.onResumeApp && onResumeApp(), 300)); return; }
+  A.shizukuConnect();
+});
+$('#szHow').addEventListener('click', () => window.ShizukuGuide && ShizukuGuide.open('game'));
 $('#fpsTry').addEventListener('click', () => { const s = parse(A.status(), {}); if (s.fpsRunning) A.fpsStop(); else A.fpsPreview(); setTimeout(renderFps, 600); });
 $('#applyAdv').addEventListener('change', (e) => { A.setApplyAdv(e.target.checked); renderOptimize(); });
 $('#samBtn').addEventListener('click', () => A.openSamsungGame());
@@ -546,6 +553,11 @@ function nextTab(step) {
 // 안드로이드가 패드 버튼을 이 이름으로 넘겨 줍니다 (MainActivity.dispatchKeyEvent)
 window.onPad = (k) => {
   document.body.classList.add('pad');
+  if (window.ShizukuGuide && ShizukuGuide.isOpen()) { // 그림 안내: 위 · 아래로 넘기고 B로 닫기
+    if (k === 'up' || k === 'down') ShizukuGuide.scroll(k === 'up' ? -320 : 320);
+    else if (k === 'b') ShizukuGuide.close();
+    return true;
+  }
   if (k === 'up' || k === 'down' || k === 'left' || k === 'right') { move(k); return true; }
   if (k === 'a') { const el = document.activeElement; if (el && el !== document.body) el.click(); else focusFirst(); return true; }
   if (k === 'b') { if (!window.goBack()) return false; return true; }
