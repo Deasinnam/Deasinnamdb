@@ -14,6 +14,7 @@ import java.util.Locale;
 /**
  * 리모컨 맞춤 단추 (기본: 미테르 MITER 블루투스 리모컨 MIT_BTR02 / RM1).
  * 리모컨이 보내는 키(KEYCODE_…)를 덜누름 TV 동작으로 바꿉니다.
+ * upVol/downVol = 평소 위/아래, 볼륨 모드에서는 소리 키우기/줄이기. mode = 두 모드 바꾸기.
  * 동작: left · right · up · down · ok · back · play · prev · next · volUp · volDown · mute · settings · tvhome · apps · sys(그대로 두기)
  */
 final class RemoteMap {
@@ -28,13 +29,13 @@ final class RemoteMap {
             m.put("KEYCODE_PAGE_UP", "left").put("KEYCODE_PAGE_DOWN", "right");
             // < > (길게) 이전/다음 곡 → 이전/다음 서비스
             m.put("KEYCODE_MEDIA_PREVIOUS", "prev").put("KEYCODE_MEDIA_NEXT", "next");
-            // + − 볼륨 (두 번 누름 = 위/아래 → 줄 바꾸기)
-            m.put("KEYCODE_VOLUME_UP", "volUp").put("KEYCODE_VOLUME_DOWN", "volDown");
+            // + − 위/아래 고르기 (• 를 누르면 볼륨 모드로 바뀜)
+            m.put("KEYCODE_VOLUME_UP", "upVol").put("KEYCODE_VOLUME_DOWN", "downVol");
             m.put("KEYCODE_DPAD_UP", "up").put("KEYCODE_DPAD_DOWN", "down");
             // ▶/II → 고른 것 열기
             m.put("KEYCODE_MEDIA_PLAY_PAUSE", "ok").put("KEYCODE_MEDIA_PLAY", "ok").put("KEYCODE_ENTER", "ok").put("KEYCODE_DPAD_CENTER", "ok");
-            // • (새로 고침) → 설정, ↩ → 뒤로
-            m.put("KEYCODE_F5", "settings").put("KEYCODE_REFRESH", "settings");
+            // • (새로 고침) → + − 상하 ↔ 볼륨 바꾸기, ↩ → 뒤로
+            m.put("KEYCODE_F5", "mode").put("KEYCODE_REFRESH", "mode");
             m.put("KEYCODE_BACK", "back").put("KEYCODE_ESCAPE", "back");
         } catch (JSONException ignored) { }
         return m;
@@ -48,7 +49,18 @@ final class RemoteMap {
 
     static JSONObject map(Context c) {
         String s = p(c).getString("rmMap", null);
-        if (s != null) try { return new JSONObject(s); } catch (JSONException ignored) { }
+        if (s != null) try {
+            JSONObject m = new JSONObject(s);
+            if (p(c).getInt("rmV", 1) < 2) {
+                // 0.6에서 맞춘 단추: + − 는 상하(볼륨 모드), • 는 모드 바꾸기로
+                for (Iterator<String> it = m.keys(); it.hasNext(); ) {
+                    String k = it.next(), v = m.optString(k);
+                    if (v.equals("volUp")) m.put(k, "upVol"); else if (v.equals("volDown")) m.put(k, "downVol"); else if (v.equals("settings")) m.put(k, "mode");
+                }
+                p(c).edit().putString("rmMap", m.toString()).putInt("rmV", 2).apply();
+            }
+            return m;
+        } catch (JSONException ignored) { }
         return preset();
     }
 

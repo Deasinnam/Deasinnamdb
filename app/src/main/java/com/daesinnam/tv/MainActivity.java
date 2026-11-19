@@ -65,7 +65,8 @@ public class MainActivity extends Activity {
     private int pendingOpen = -1;
     private volatile boolean keyTest;
     private volatile boolean learning; // 리모컨 단추 맞추기 중이면 모든 키를 화면에 넘김
-    private int rmUp = -1; // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
+    private int rmUp = -1;
+    private boolean rmVolMode; // 미테르 • 단추: + − 를 볼륨으로 쓰는 중 // 맞춤으로 처리한 키의 '뗌'도 삼킴 // 설정의 '단추 눌러 보기' 중이면 모든 단추 이름을 화면에 넘김
     private android.widget.FrameLayout root;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, String> iconCache = new HashMap<>();
@@ -233,6 +234,15 @@ public class MainActivity extends Activity {
             String act = RemoteMap.action(this, e);
             if (act != null && web != null) {
                 rmUp = kc;
+                if (act.equals("mode")) {
+                    if (e.getRepeatCount() == 0) {
+                        rmVolMode = !rmVolMode;
+                        web.evaluateJavascript("window.tvKey && tvKey(" + JSONObject.quote(rmVolMode ? "mode:vol" : "mode:nav") + ")", null);
+                    }
+                    return true;
+                }
+                if (act.equals("upVol")) act = rmVolMode ? "volUp" : "up";
+                else if (act.equals("downVol")) act = rmVolMode ? "volDown" : "down";
                 if (act.equals("volUp") || act.equals("volDown")) {
                     // 볼륨은 길게 누르면 계속 바뀌게
                     audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, act.equals("volUp") ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);

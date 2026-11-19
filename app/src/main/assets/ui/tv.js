@@ -58,7 +58,7 @@
   var CAT = {}; CATALOG.forEach(function (s) { CAT[s.pkg] = s; });
 
   // ---------- 상태 ----------
-  var fakeRm = { on: true, dev: "miter", home: true, connected: "MITER BTR2nd", custom: false, map: { KEYCODE_DPAD_LEFT: "left", KEYCODE_DPAD_RIGHT: "right", KEYCODE_PAGE_UP: "left", KEYCODE_PAGE_DOWN: "right", KEYCODE_MEDIA_PREVIOUS: "prev", KEYCODE_MEDIA_NEXT: "next", KEYCODE_VOLUME_UP: "volUp", KEYCODE_VOLUME_DOWN: "volDown", KEYCODE_DPAD_UP: "up", KEYCODE_DPAD_DOWN: "down", KEYCODE_MEDIA_PLAY_PAUSE: "ok", KEYCODE_F5: "settings", KEYCODE_BACK: "back" } };
+  var fakeRm = { on: true, dev: "miter", home: true, connected: "MITER BTR2nd", custom: false, map: { KEYCODE_DPAD_LEFT: "left", KEYCODE_DPAD_RIGHT: "right", KEYCODE_PAGE_UP: "left", KEYCODE_PAGE_DOWN: "right", KEYCODE_MEDIA_PREVIOUS: "prev", KEYCODE_MEDIA_NEXT: "next", KEYCODE_VOLUME_UP: "upVol", KEYCODE_VOLUME_DOWN: "downVol", KEYCODE_DPAD_UP: "up", KEYCODE_DPAD_DOWN: "down", KEYCODE_MEDIA_PLAY_PAUSE: "ok", KEYCODE_F5: "mode", KEYCODE_BACK: "back" } };
   var state = { v: 1, my: DEFAULT_MY.slice(), fullOpen: true, saver: 10, recent: [] };
   try { var saved = JSON.parse(P.load() || "null"); if (saved && saved.v === 1) state = Object.assign(state, saved); } catch (e) {}
   function save() { try { P.save(JSON.stringify(state)); } catch (e) {} }
@@ -323,10 +323,10 @@
   }
   // ---------- 미테르 블루투스 리모컨 (MIT_BTR02 / RM1) 최적화 ----------
   var ACT = { left: "왼쪽으로 고르기", right: "오른쪽으로 고르기", up: "위 줄로", down: "아래 줄로", ok: "고른 것 열기", back: "뒤로", play: "재생 (고른 서비스 열기)",
-    prev: "이전 서비스", next: "다음 서비스", volUp: "소리 키우기", volDown: "소리 줄이기", mute: "음소거", settings: "설정 열기", tvhome: "덜누름 TV 홈", apps: "모든 앱", sys: "그대로 (안드로이드 기본)" };
+    prev: "이전 서비스", next: "다음 서비스", upVol: "위로 (볼륨 모드: 소리 키우기)", downVol: "아래로 (볼륨 모드: 소리 줄이기)", mode: "＋ − 상하 ↔ 볼륨 바꾸기", volUp: "소리 키우기", volDown: "소리 줄이기", mute: "음소거", settings: "설정 열기", tvhome: "덜누름 TV 홈", apps: "모든 앱", sys: "그대로 (안드로이드 기본)" };
   var ACT_ORDER = ["left", "right", "up", "down", "ok", "back", "prev", "next", "volUp", "volDown", "mute", "settings", "apps", "tvhome", "sys"];
   // 미테르 앞면 단추 (위→아래)와 추천 기능
-  var MITER_BTN = [["＋", "volUp"], ["−", "volDown"], ["〈", "left"], ["▶/II", "ok"], ["〉", "right"], ["홈 ⌂", "tvhome"], ["•", "settings"], ["뒤로 ↩", "back"]];
+  var MITER_BTN = [["＋", "upVol"], ["−", "downVol"], ["〈", "left"], ["▶/II", "ok"], ["〉", "right"], ["홈 ⌂", "tvhome"], ["•", "mode"], ["뒤로 ↩", "back"]];
   var learn = null; // { step, got:{} }
   function rmGet() { try { return JSON.parse(P.rmGet()) || {}; } catch (e) { return {}; } }
   function keyLabel(k) { return k.replace("KEYCODE_", ""); }
@@ -349,8 +349,7 @@
 
       box.appendChild(el("h4", "rc-h", "단추마다 하는 일"));
       var tb = el("div", "rc-map");
-      [["〈  〉", "타일 왼쪽 · 오른쪽으로 고르기"], ["〈  〉 길게", "이전 · 다음 서비스"], ["▶/II", "고른 서비스 열기"], ["＋  −", "소리 키우기 · 줄이기 (누르고 있으면 계속)"],
-       ["＋  − 두 번", "위 · 아래 줄로 (리모컨이 위·아래 키를 보낼 때)"], ["•", "설정 열기 · 닫기"], ["뒤로 ↩", "창 닫기 · 홈으로"], ["홈 ⌂", "덜누름 TV 홈 (다른 앱을 보는 중에도)"]].forEach(function (r) {
+      [["＋  −", "위 · 아래로 고르기 (줄 바꾸기 · 설정 창 안에서도)"], ["•", "＋ − 를 볼륨으로 바꾸기 · 한 번 더 누르면 다시 위 · 아래"], ["〈  〉", "타일 왼쪽 · 오른쪽으로 고르기"], ["〈  〉 길게", "이전 · 다음 서비스"], ["▶/II", "고른 것 열기"], ["뒤로 ↩", "창 닫기 · 홈으로"], ["홈 ⌂", "덜누름 TV 홈 (다른 앱을 보는 중에도)"]].forEach(function (r) {
         tb.appendChild(el("b", null, r[0])); tb.appendChild(el("span", null, r[1]));
       });
       box.appendChild(tb);
@@ -783,6 +782,11 @@
     if (remoteTest && !$("sheet").hidden) { showKey(k); return; }
     if (!$("saver").hidden) { hideSaver(); return; }
     var list = myList();
+    if (k === "mode:vol" || k === "mode:nav") {
+      var vm = k === "mode:vol"; document.body.classList.toggle("rm-vol", vm);
+      $("rmMode").textContent = vm ? "＋ − 볼륨 · • 로 되돌리기" : "";
+      toast(vm ? "＋ − 볼륨 조절 (• 를 다시 누르면 위 · 아래)" : "＋ − 위 · 아래 고르기"); return;
+    }
     if (k === "left" || k === "right" || k === "up" || k === "down") { moveFocus(k); return; }
     if (k === "ok") { if (cur) cur.click(); else if (list.length && $("sheet").hidden) openApp(list[heroIdx]); return; }
     if (k === "back") { window.tvBack(); return; }
@@ -839,6 +843,7 @@
 
   loadApps();
   renderHome();
+  (function () { var b = document.createElement("div"); b.id = "rmMode"; document.body.appendChild(b); })();
   setTimeout(rmCheck, 800);
   setTimeout(function () { var n = -1; try { n = P.takeOpen(); } catch (e) {} if (n === 0) window.tvKey("home"); else if (n > 0) window.tvKey("n" + n); }, 300);
   refreshScreen();
