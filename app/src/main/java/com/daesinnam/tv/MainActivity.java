@@ -727,6 +727,8 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String kbEnable() {
             if (Shizu.granted()) {
+                // 파일로 설치한 앱의 '제한된 설정'을 셸 권한으로 풀고(삼성 자동 차단 · 안드로이드 15 포함), 접근성 서비스를 바로 켬
+                Shizu.run("appops set " + getPackageName() + " ACCESS_RESTRICTED_SETTINGS allow", 3000);
                 String cur = Shizu.run("settings get secure enabled_accessibility_services", 3000);
                 cur = cur == null ? "" : cur.trim();
                 if (cur.equals("null")) cur = "";
@@ -734,7 +736,9 @@ public class MainActivity extends Activity {
                     String v = cur.isEmpty() ? KeyService.COMPONENT : cur + ":" + KeyService.COMPONENT;
                     Shizu.run("settings put secure enabled_accessibility_services '" + v + "' ; settings put secure accessibility_enabled 1", 3000);
                 }
-                if (KeyService.enabled(MainActivity.this)) return "on";
+                boolean ok = KeyService.enabled(MainActivity.this);
+                Sys.log("다른 앱 단추 기능 Shizuku로 켜기 → " + (ok ? "✓" : "✗"));
+                if (ok) return "on";
             }
             main.post(() -> {
                 try { startActivity(new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
