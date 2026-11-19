@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19T17:01:03+09:00",
+ "updated": "2026-11-19T18:54:31+09:00",
  "apps": {
   "pad": {
    "version": "0.2.1",
@@ -9,9 +9,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "tv": {
-   "version": "0.8.1",
+   "version": "0.8.2",
    "date": "2026.11.19",
-   "note": "첫 공개: 넷플릭스 등 다른 앱에서도 리모컨 단추 그대로, 앱을 연 뒤 완전 전체 화면인지 확인해 고치기, 점검 화면",
+   "note": "Shizuku 설정 방법을 그림으로 (설정 › 고급 기능 Shizuku · 설정 방법)",
    "page": "https://deolnureum.com/tv/",
    "changes": "https://deolnureum.com/releases/"
   },
@@ -23,9 +23,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "desktop": {
-   "version": "1.6.3",
-   "date": "2026.11.17",
-   "note": "창정리: 창 배치 저장 · 한 번에 펼치기, 열린 창 자동 정렬, DeX에서 창 자리 맞추기",
+   "version": "1.6.4",
+   "date": "2026.11.19",
+   "note": "Shizuku 설정 방법을 그림으로 (창정리 › 고급 기능 › 설정 방법)",
    "page": "https://deolnureum.com/desktop/",
    "changes": "https://deolnureum.com/releases/"
   },
@@ -37,9 +37,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "game": {
-   "version": "0.4",
+   "version": "0.4.1",
    "date": "2026.11.19",
-   "note": "새 버전이 나오면 앱이 알려 줌 (도구 탭에서 끄기 · 지금 확인)",
+   "note": "Shizuku 설정 방법을 그림으로 (도구 › FPS 보기 › 설정 방법)",
    "page": "https://deolnureum.com/game/",
    "changes": "https://deolnureum.com/releases/"
   }
