@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-17 · v1.76 (versionCode 110)**
+마지막 갱신: **2026-11-19 · v1.77 (versionCode 111)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.76** (versionCode 110, versionName `1.76-one`) |
+| 최신 버전 | **1.77** (versionCode 111, versionName `1.77-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-19 · 1.77 — 땅이 방향 따라 옆으로: pfd-flight.js update()에서 `F.lo -= angleDelta(prev,hd)*LO_K`(LO_K=.92/72.5*800/.79 ≈ 하늘과 같은 화면 이동, ±2400), 앞으로 달린 거리만큼 `F.lo*=exp(-moved/3000)`로 가운데 복귀. drawAirport에 `pxL=(X+LO)*f/Z`·`quadL`(들판·길·나무·drawCountry·afterCountry, 공항 잔디·활주로는 px 그대로), 반복 범위는 -LO 중심. pfd-special: edgePts 역변환에 -g.lo, 전신주·고랑·nightGround(px에 LO, 들판·가로 길·마을·외딴집·가로 불빛 범위 C0=-LO 중심). 테스트 42.
 - 2026-11-17 · 1.76 — `web/src/97-pfd-song.js`(`PfdSong`): 1초마다 `#npTitle`을 읽어 `#bPlay.hot`(재생 중)일 때만 PFD canvasWrap에 `.pfd-song`("♪ 제목") — CSS는 right=띠+14px, bottom=나침반+34px, 녹색 #6dff7a·검은 그림자, 배경·테두리 없음, 좁은 화면은 --nar-tape 기준. 스페셜 누적 주행거리 칩(pfd-special.js odoUi): `view` odo↔oil 토글(탭), 길게 누르기(650ms)=km 입력, km가 0이거나 `AmpLog.oil()`이 null(전기차·미리보기)이면 탭=입력. `AmpLog.oil()`={has,left,ikm} 추가(63-carlog.js). 테스트 41.
 - 2026-11-17 · 1.75 — (1) 하늘 자동이 안 먹던 원인: 계기 테마(pfdSet.theme)가 주간·야간으로 고정돼 있으면 하늘과 무관하게 그 값이 이김. 스페셜판(pfd-special.js skyUi)에서 테마는 늘 auto: 시작 때 고정 해제, `A.setTheme`를 하늘로 바꿔 끼움(day→noon, night→night, auto→auto), 설정 창 `els.theme` 옵션을 SKY 목록으로 바꾸고 라벨 "하늘 (주간·야간)", openSettings는 skyMode를 보여 주며 submit(capture)에서 값을 auto로 바꿔 패키지에 넘기고 setTimeout으로 skyApply. 98-cockpit-special 스위치는 지금 낮·밤 기준으로 토글. (2) 원형 지도가 차 방향과 안 맞던 원인: hdgNow가 달리는 중에도 att.hdg(휴대폰 기울기·나침반)로 덮어써짐. 40-gps-speedo에 `gpsTrk`(GPS bearing, 없으면 연속 위치로 계산, 9km/h 이상에서만 갱신) 추가, 달리는 동안은 hdgNow도 gpsTrk 우선; 원형 지도 회전·과속 카메라 앞쪽 판단은 gpsTrk 사용. 테스트 16·25 수정, 39 재작성.
 - 2026-11-16 · 1.74 — 진짜 원인: 스페셜 하늘 고르기(pfd-special.js `skyApply`)가 `window.__spTime`을 고른 시각으로 고정하고 `spSky`에 저장 → 다시 켜도 복원돼 `AmpAutoNight`(해 높이)가 영원히 그 시각 기준. 이제 시작할 때 spSky를 auto로 되돌리고, 고를 때 실제 낮·밤(`realNight()`, 실제 Date로 해 높이)을 `pickNight`에 기억, 60초마다 바뀌면 `skyApply('auto',true)`. 야간 밝기 `NBRI=10`(97-brightness.js, 판 구분 없음), 콕핏 스페셜 야간 스위치 10%, 스위치 표시는 계기 테마가 auto로 돌아가면 cksDay=null로 실제 낮·밤 표시(5초마다). 테스트 16·29·32 기대값 10%, 40 추가.

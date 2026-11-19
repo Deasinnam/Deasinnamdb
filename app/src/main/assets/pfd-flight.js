@@ -180,7 +180,7 @@
         break;
       }
     }
-    { const moved = rw0 - F.rwS; if (moved > 0 && moved < 800) F.wz += moved; }
+    { const moved = rw0 - F.rwS; if (moved > 0 && moved < 800) { F.wz += moved; if (F.lo) F.lo *= Math.exp(-moved / 3000); } }
     { const k = wxKind(); if (k === 'snow') { if (!F.snowInit) { F.snowInit = true; F.snow = Math.max(F.snow, .25); } F.snow = Math.min(.4, F.snow + dt * .02); } else { F.snowInit = false; F.snow = Math.max(0, F.snow - dt * .01); } }
     // 기수 각도(시각 효과)
     let tp = 0;
@@ -197,6 +197,9 @@
     let tb = 0;
     if (hd !== null && F.hdgPrev !== null && dt > 0) { const inst = clamp(angleDelta(F.hdgPrev, hd) / dt, -40, 40); F.hRate = (F.hRate || 0) + (inst - (F.hRate || 0)) * clamp(dt / 1.1, 0, 1); } // 선회 속도도 1초쯤 걸러서 GPS 방향 튐에 흔들리지 않게
     if (hd !== null && ['climb', 'cruise', 'approach'].includes(F.phase) && Math.abs(F.hRate || 0) > 1.5) tb = clamp((F.hRate - Math.sign(F.hRate) * 1.5) * 1.6, -BANK_MAX, BANK_MAX);
+    // 1.77 땅·바다도 진행 방향을 따라 옆으로: 오른쪽으로 돌면 세상이 왼쪽으로 밀림(하늘·구름과 같은 빠르기, 중간 거리 기준).
+    //  카메라 옆 자리 F.lo(세상 단위). 앞으로 달리면 천천히 0으로 돌아와 들판·강이 화면 가운데를 벗어나지 않음
+    if (hd !== null && F.hdgPrev !== null) { const d = angleDelta(F.hdgPrev, hd); if (Math.abs(d) < 60) F.lo = clamp((F.lo || 0) - d * LO_K, -2400, 2400); }
     F.hdgPrev = hd;
     F.bank += (tb - F.bank) * clamp(dt * .9, 0, 1);               // 배경과 피치 눈금이 함께 최대 6.5°까지 부드럽게 기울어 숫자는 읽기 편하게
     renderBadge();
@@ -216,6 +219,7 @@
   const C = { white: '255,240,210', amber: '255,184,80', green: '110,255,150', red: '255,64,52', blue: '80,140,255', strobe: '220,235,255' };
 
   /* ---------- 순항 풍경: 굽은 강 하나 + 작은 마을 하나(공항을 벗어나면 나타남). 들판보다 천천히 흘러 깊이감 ---------- */
+  const LO_K = .92 / 72.5 * 800 / .79;                              // 1.77 방향 1°당 땅이 옆으로 밀리는 거리(하늘 FOV 72.5°, 800 거리에서 같은 화면 이동)
   const RK = .55;                                                   // 강·마을이 흐르는 빠르기(들판 대비)
   const riverX = Zw => -120 + 900 * Math.sin(Zw / 2100) + 380 * Math.sin(Zw / 700 + 1.3);
   const VIL_P = 3600, HOUSES = Array.from({ length: 30 }, (_, i) => ({ dx: (srand(i + 300) - .5) * 520, dz: (srand(i + 340) - .5) * 460, w: 18 + srand(i + 380) * 16, d: 14 + srand(i + 420) * 12, hh: 9 + srand(i + 460) * 7, r: Math.floor(srand(i + 500) * 4) }));
@@ -263,7 +267,7 @@
         for (const side of [-1, 1]) { const h = srand(j * 3.1 + side), X = riverX(Zw) + side * (96 + h * 70); if (h > .82) continue; trees.push([X, z, 9 + h * 9]); } }
       const FC = 320, f0 = Math.floor((zn + F.wz) / FC);                     // 들판 경계 나무 무리(들판과 같은 빠르기)
       for (let j = f0; j < f0 + 16; j++) { const z0 = j * FC - F.wz; if (z0 > 5200) break;
-        for (let i = -8; i < 8; i++) { const h = srand(i * 17.3 + j * 5.7); if (h > .32) continue;
+        const ic = Math.round(-(F.lo || 0) / FC); for (let i = ic - 8; i < ic + 8; i++) { const h = srand(i * 17.3 + j * 5.7); if (h > .32) continue;
           const n = 2 + Math.floor(h * 12); for (let q = 0; q < n; q++) { const X = i * FC + (srand(q + i * 3 + j) - .5) * 90, z = z0 + (srand(q * 7 + j + i) - .5) * 60; if (z > zn * 1.3) trees.push([X, z, 7 + srand(q + j) * 7]); } } }
       trees.sort((a, b) => b[1] - a[1]);
       for (const [X, z, r] of trees) {
@@ -300,6 +304,7 @@
   function drawAirport(c, w, h, night, quality) {
     const f = w * .79, Hc = EYE + F.alt, zn = Math.max(1.2, Hc * f / (h * 2.6)), zf = 16000, now = performance.now() / 1000;
     const py = Z => Hc * f / Z, px = (X, Z) => X * f / Z;
+    const LO = F.lo || 0, pxL = (X, Z) => (X + LO) * f / Z;               // 1.77 땅·강·마을·바다용(공항은 그대로)
     const gA = clamp(1 - F.alt / 260, 0, 1);
     const rwE = F.rwS + F.rwLen;
     const showRw = rwE > zn && F.rwS < zf;
@@ -314,21 +319,22 @@
       c.globalAlpha = alpha === undefined ? 1 : alpha; c.fillStyle = style;
       c.beginPath(); c.moveTo(px(x1, z1), y1); c.lineTo(px(x2, z1), y1); c.lineTo(px(x2, z2), y2); c.lineTo(px(x1, z2), y2); c.closePath(); c.fill();
     };
+    const quadL = (x1, x2, z1, z2, style, alpha) => quad(x1 + LO, x2 + LO, z1, z2, style, alpha), icL = Math.round(-LO / 320);
     // 1) 땅: 낮에는 논밭 조각보 + 길(세상 거리 F.wz에 붙어 흐름), 공항 구역은 잔디와 깎은 띠
     if (!night) {
       const hq = quality !== 'balanced', fA = clamp(.92 - F.alt / 1800, .62, .92), cell = 320, j0 = Math.floor((zn + F.wz) / cell), tones = FIELD, ni = hq ? 12 : 8;
       for (let j = j0; j < j0 + (hq ? 34 : 20); j++) {
         const z1 = j * cell - F.wz, z2 = z1 + cell; if (z1 > 11000) break;
-        for (let i = -ni; i < ni; i++) {
+        for (let i = icL - ni; i < icL + ni; i++) {
           const hsh = Math.abs(Math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1;
-          quad(i * cell + 4, (i + 1) * cell - 4, z1 + 4, z2 - 4, tones[Math.floor(hsh * tones.length)], fA);
+          quadL(i * cell + 4, (i + 1) * cell - 4, z1 + 4, z2 - 4, tones[Math.floor(hsh * tones.length)], fA);
         }
       }
-      for (const rx of [-1310, 870, 2590]) quad(rx - 6, rx + 6, zn, 11000, '#8b8b84', fA * .9);
-      for (let j = Math.floor((zn + F.wz) / 2240); j < Math.floor((zn + F.wz) / 2240) + 6; j++) { const z = j * 2240 - F.wz + 1100; quad(-3800, 3800, z - 5, z + 5, '#8b8b84', fA * .8); }
+      for (const rx of [-1310, 870, 2590]) quadL(rx - 6, rx + 6, zn, 11000, '#8b8b84', fA * .9);
+      for (let j = Math.floor((zn + F.wz) / 2240); j < Math.floor((zn + F.wz) / 2240) + 6; j++) { const z = j * 2240 - F.wz + 1100; quadL(-3800 - LO, 3800 - LO, z - 5, z + 5, '#8b8b84', fA * .8); }
     }
-    drawCountry(c, w, h, night, quality, f, Hc, zn, py, px, quad);
-    if (X.afterCountry) X.afterCountry(c, w, h, night, quality, { f, Hc, zn, py, px, quad, k: clamp((F.alt - 40) / 110, 0, 1) });
+    drawCountry(c, w, h, night, quality, f, Hc, zn, py, pxL, quadL);
+    if (X.afterCountry) X.afterCountry(c, w, h, night, quality, { f, Hc, zn, py, px: pxL, quad: quadL, lo: LO, k: clamp((F.alt - 40) / 110, 0, 1) });
     if (gA > .01) {
       let g = c.createLinearGradient(0, 0, 0, h * 2.6);
       if (night) {

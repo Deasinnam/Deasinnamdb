@@ -356,7 +356,7 @@
     const pts = [];
     for (let i = 0; i <= 64; i++) {
       const x = -w * 1.4 + i / 64 * w * 2.8; let z = fn(k, 0) - wz, X = 0;
-      for (let it = 0; it < 3; it++) { X = x * Math.max(z, g.zn) / g.f; z = fn(k, X) - wz; }
+      for (let it = 0; it < 3; it++) { X = x * Math.max(z, g.zn) / g.f - (g.lo || 0); z = fn(k, X) - wz; }
       pts.push({ x, X, z });
     }
     return pts;
@@ -456,7 +456,7 @@
     const hj0 = Math.floor((zn + wz) / 2240);
     for (let j = hj0; j < hj0 + 2; j++) { const z = j * 2240 - wz + 1100 + 12; if (z < zn * 1.5 || z > maxZ) continue;
       const y0 = py(z), y1 = (Hc - POLE_H) * f / z, lw = Math.max(1.1, .5 * f / z), arm = Math.max(2.2, 2.2 * f / z), fade = clamp(1.3 - z / maxZ, .35, 1), xs = [];
-      for (let X = -3600; X <= 3600; X += POLE_GAP * 1.2) { const x = px(X, z); if (x < -w * 1.2 || x > w * 1.2 || seaAt(X, z + wz)) continue; xs.push(x); }
+      for (let X = -3600 - (g.lo || 0); X <= 3600 - (g.lo || 0); X += POLE_GAP * 1.2) { const x = px(X, z); if (x < -w * 1.2 || x > w * 1.2 || seaAt(X, z + wz)) continue; xs.push(x); }
       c.globalAlpha = fade; c.strokeStyle = pole; c.lineWidth = lw; c.beginPath();
       for (const x of xs) { c.moveTo(x, y0); c.lineTo(x, y1); c.moveTo(x - arm * .3, y1 + lw * 1.5); c.lineTo(x + arm * .3, y1 + lw * 1.5); } c.stroke();
       c.strokeStyle = wire; c.lineWidth = Math.max(.7, arm * .08); c.beginPath();
@@ -467,7 +467,7 @@
   function drawFurrows(c, g) {
     const { f, zn, quad } = g, wz = F.wz || 0, cell = 320, j0 = Math.floor((zn + wz) / cell);
     for (let j = j0; j < j0 + 9; j++) { const z1 = j * cell - wz; if (z1 > 2800) break;
-      for (let i = -8; i < 8; i++) { const hs = Math.abs(Math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1; if (hs < .35) continue;
+      for (let i = Math.round(-(g.lo || 0) / cell) - 8; i < Math.round(-(g.lo || 0) / cell) + 8; i++) { const hs = Math.abs(Math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1; if (hs < .35) continue;
         const along = hs > .7, n = 7;
         for (let q = 1; q < n; q++) { const t = q / n;
           if (along) quad(i * cell + 4 + t * (cell - 8) - 1.6, i * cell + 4 + t * (cell - 8) + 1.6, z1 + 6, z1 + cell - 6, '#2a2a10', .1);
@@ -540,7 +540,8 @@
   let preDone = false;
   function nightGround(c, w, h, quality) {
     const m = mood(true), hq = quality !== 'balanced', f = w * .79, Hc = 4 + (F.alt || 0), zn = Math.max(1.2, Hc * f / (h * 2.6)), wz = F.wz || 0, t = idleT();
-    const py = Z => Hc * f / Z, px = (X, Z) => X * f / Z;
+    const LO = F.lo || 0, C0 = -LO;                                       // 1.77 땅이 진행 방향 따라 옆으로(낮과 같은 F.lo)
+    const py = Z => Hc * f / Z, px = (X, Z) => (X + LO) * f / Z;
     const quad = (x1, x2, z1, z2, style, alpha) => {
       z1 = Math.max(z1, zn); z2 = Math.min(z2, 16000); if (z2 <= z1) return;
       const y1 = py(z1), y2 = py(z2); if (y1 - y2 < .25 && (x2 - x1) * f / z2 < .25) return;
@@ -555,7 +556,7 @@
     // 들판 조각보(낮 무늬를 달빛 색으로)
     const cell = 320, j0 = Math.floor((zn + wz) / cell);
     for (let j = j0; j < j0 + (hq ? 30 : 18); j++) { const z1 = j * cell - wz, z2 = z1 + cell; if (z1 > 11000) break;
-      for (let i = -10; i < 10; i++) { const hs = Math.abs(Math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1; quad(i * cell + 5, (i + 1) * cell - 5, z1 + 5, z2 - 5, css(NFIELD[Math.floor(hs * NFIELD.length)]), .9); } }
+      for (let i = Math.round(C0 / cell) - 10; i < Math.round(C0 / cell) + 10; i++) { const hs = Math.abs(Math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1; quad(i * cell + 5, (i + 1) * cell - 5, z1 + 5, z2 - 5, css(NFIELD[Math.floor(hs * NFIELD.length)]), .9); } }
     // 강(달빛 받은 물) — 강가 가로등은 아래 불빛 단계에서
     const wr = wz * G.RK, rX = G.riverX;
     if (k > .01) {
@@ -567,12 +568,12 @@
     // 도로: 세로 3줄 + 가로 띠(낮과 같은 자리), 노면은 짙은 회색
     for (const rx of ROADS_X) quad(rx - 7, rx + 7, zn, 11000, '#3a3f45', .85);
     const hj0 = Math.floor((zn + wz) / 2240);
-    for (let j = hj0; j < hj0 + 6; j++) { const z = j * 2240 - wz + 1100; quad(-3800, 3800, z - 6, z + 6, '#3a3f45', .8); }
+    for (let j = hj0; j < hj0 + 6; j++) { const z = j * 2240 - wz + 1100; quad(C0 - 3800, C0 + 3800, z - 6, z + 6, '#3a3f45', .8); }
     // 지평선 쪽 안개(밤에도 은은히)
     const fz = c.createLinearGradient(0, 0, 0, h * .1); fz.addColorStop(0, css(m.fog, .7)); fz.addColorStop(1, css(m.fog, 0)); c.globalAlpha = 1; c.fillStyle = fz; c.fillRect(-w * 2, 0, w * 4, h * .1);
     // 바다(해안선은 낮과 같은 모양)
-    drawSea(c, w, h, true, quality, { f, Hc, zn, py, px }, m);
-    drawPoles(c, w, h, true, { f, Hc, zn, py, px });
+    drawSea(c, w, h, true, quality, { f, Hc, zn, py, px, lo: LO }, m);
+    drawPoles(c, w, h, true, { f, Hc, zn, py, px, lo: LO });
     c.restore();
 
     // ---- 불빛(더해지는 빛) ----
@@ -593,11 +594,11 @@
       }
     }
     for (let j = hj0; j < hj0 + 6; j++) { const zr = j * 2240 + 1100, z = zr - wz;
-      for (let X = -3780; X <= 3780; X += 46 + srand(X * .37 + j) * 60) { if (srand(Math.floor(X / 380) * 5.1 + j) < .45) continue; dot(X, z + (srand(X + j) - .5) * 14, srand(X * .9 + j) < .75 ? AMBER : COOL, 5 + srand(X) * 3, .45 + srand(X * 1.7) * .45); } }
+      for (let X = Math.round(C0 / 380) * 380 - 3780; X <= Math.round(C0 / 380) * 380 + 3780; X += 46 + srand(X * .37 + j) * 60) { if (srand(Math.floor(X / 380) * 5.1 + j) < .45) continue; dot(X, z + (srand(X + j) - .5) * 14, srand(X * .9 + j) < .75 ? AMBER : COOL, 5 + srand(X) * 3, .45 + srand(X * 1.7) * .45); } }
     // 마을·동네: 세상에 고정된 칸(700m)마다 있을 수도 없을 수도. 크기·밀도가 다르고 가운데가 촘촘, 가장자리는 듬성듬성,
     // 가운데서 뻗은 구불구불한 길을 따라 불빛 줄. 색은 나트륨등 주황·따뜻한 흰빛·차가운 LED가 섞임
     const CS = 700, zc0 = Math.floor((zn + wz) / CS), maxZ = hq ? 9500 : 6000;
-    for (let j = zc0 + Math.ceil(maxZ / CS); j >= zc0; j--) for (let i = -9; i <= 9; i++) {
+    const iv = Math.round(C0 / CS); for (let j = zc0 + Math.ceil(maxZ / CS); j >= zc0; j--) for (let i = iv - 9; i <= iv + 9; i++) {
       const hs = srand(i * 91.7 + j * 13.3); if (hs > .5) continue;
       const big = Math.pow(srand(i * 7.1 + j * 3.9), 2.2), n = Math.round(6 + big * 90), cx = i * CS + (srand(i + j * 5.5) - .5) * CS * .7, cz = j * CS + (srand(i * 2.2 + j) - .5) * CS * .7;
       const zc = cz - wz; if (zc < zn * 1.2 || zc > maxZ + 400) continue;
@@ -621,7 +622,7 @@
     }
     // 외딴집: 들판에 드문드문, 밝기·색 제각각
     for (let j = j0; j < j0 + (hq ? 26 : 14); j++) { const z1 = j * cell - wz; if (z1 > 9000) break;
-      for (let i = -12; i < 12; i++) { const hs = srand(i * 13.1 + j * 7.7); if (hs > .3) continue; const nn = 1 + (hs < .08 ? 2 : 0);
+      for (let i = Math.round(C0 / cell) - 12; i < Math.round(C0 / cell) + 12; i++) { const hs = srand(i * 13.1 + j * 7.7); if (hs > .3) continue; const nn = 1 + (hs < .08 ? 2 : 0);
         for (let q = 0; q < nn; q++) dot(i * cell + srand(i + j + q) * cell, z1 + srand(i * 3 + j + q) * cell, srand(i + q + j * 3) < .6 ? WARM : AMBER, 3 + srand(q + i) * 2, .3 + srand(i * j + q) * .5); } }
     // 오가는 차: 다가오는 전조등(흰빛) / 멀어지는 후미등(빨강) — 각자 제 속도로
     for (const rx of ROADS_X) for (let i = 0; i < 7; i++) {
