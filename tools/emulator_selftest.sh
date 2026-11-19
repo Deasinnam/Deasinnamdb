@@ -3,12 +3,13 @@
 set -u
 APK="$1"
 PKG=com.daesinnam.sseum
-adb() { timeout 40 command adb "$@"; }
+ADB=$(command -v adb)
+adb() { timeout 40 "$ADB" "$@"; }
 echo "== 설치" | tee -a selftest-trace.txt
 ok=0
 for t in 1 2 3; do
-  command adb wait-for-device
-  if timeout 240 command adb install -r -g "$APK" >> selftest-trace.txt 2>&1; then ok=1; break; fi
+  "$ADB" wait-for-device
+  if timeout 240 "$ADB" install -r -g "$APK" >> selftest-trace.txt 2>&1; then ok=1; break; fi
   sleep 15
 done
 [ $ok = 1 ] || exit 1
