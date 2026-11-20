@@ -111,9 +111,9 @@ public class MainActivity extends Activity {
         root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets b = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-            v.setPadding(b.left, b.top, b.right, b.bottom);
-            return WindowInsets.CONSUMED;
+            int[] b = Compat.bars(insets);
+            v.setPadding(b[0], b[1], b[2], b[3]);
+            return Compat.consumed(insets);
         });
 
         WebSettings s = web.getSettings();
@@ -311,19 +311,12 @@ public class MainActivity extends Activity {
 
     /** 상태 표시줄 · 내비게이션 막대를 숨김 (가장자리를 밀면 잠깐 나옴) */
     private void applyImmersive() {
-        WindowInsetsController c = getWindow().getInsetsController();
-        if (c == null) return;
-        if (immersive) {
-            c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            c.hide(WindowInsets.Type.systemBars());
-        } else {
-            c.show(WindowInsets.Type.systemBars());
-        }
+        Compat.immersive(getWindow(), immersive);
     }
 
     /** 이 앱이 화면 전체가 아니라 창으로 떠 있나 (DeX) */
     private boolean windowed() {
-        Rect cur = getWindowManager().getCurrentWindowMetrics().getBounds(), max = getWindowManager().getMaximumWindowMetrics().getBounds();
+        Rect cur = Compat.curBounds(MainActivity.this), max = Compat.maxBounds(MainActivity.this);
         return cur.width() < max.width() - 8 || cur.height() < max.height() - 8;
     }
 
@@ -336,7 +329,7 @@ public class MainActivity extends Activity {
     }
 
     private int currentDisplayId() {
-        Display d = getDisplay();
+        Display d = Compat.display(MainActivity.this);
         return d == null ? Display.DEFAULT_DISPLAY : d.getDisplayId();
     }
 
@@ -358,8 +351,8 @@ public class MainActivity extends Activity {
     }
 
     private JSONObject screenInfo() throws JSONException {
-        Rect max = getWindowManager().getMaximumWindowMetrics().getBounds();
-        Display d = getDisplay();
+        Rect max = Compat.maxBounds(MainActivity.this);
+        Display d = Compat.display(MainActivity.this);
         return new JSONObject().put("display", currentDisplayId()).put("name", d == null ? "" : String.valueOf(d.getName()))
                 .put("dex", dexOn()).put("windowed", windowed()).put("w", max.width()).put("h", max.height())
                 .put("immersive", immersive).put("onPhone", currentDisplayId() == Display.DEFAULT_DISPLAY);
@@ -437,7 +430,7 @@ public class MainActivity extends Activity {
         try {
             ActivityOptions o = ActivityOptions.makeBasic();
             o.setLaunchDisplayId(currentDisplayId());
-            if (full) o.setLaunchBounds(getWindowManager().getMaximumWindowMetrics().getBounds()); // 화면 전체 크기의 창 (DeX)
+            if (full) o.setLaunchBounds(Compat.maxBounds(MainActivity.this)); // 화면 전체 크기의 창 (DeX)
             Bundle b = o.toBundle();
             // DeX는 일반 앱이 창 방식(전체 화면)까지 지정하면 요청 전체를 무시하는 경우가 있어, DeX에서는 크기만 줌
             if (full && !dexOn()) b.putInt(KEY_WINDOWING_MODE, 1);
@@ -503,7 +496,7 @@ public class MainActivity extends Activity {
         // 마지막: 창이라도 화면 가득
         List<Sys.Task> ts = Sys.tasks(Shizu.run("dumpsys activity activities", 4000), pkg);
         if (!ts.isEmpty() && !"fullscreen".equals(ts.get(0).mode)) {
-            Rect b = getWindowManager().getMaximumWindowMetrics().getBounds();
+            Rect b = Compat.maxBounds(MainActivity.this);
             Shizu.run("am task resize " + ts.get(0).id + " 0 0 " + b.width() + " " + b.height(), 3000);
             Sys.log(pkg + " 전체 화면 방식이 막혀 화면 가득 창으로 (" + ts.get(0).mode + ")");
         }
@@ -649,7 +642,7 @@ public class MainActivity extends Activity {
         public void tap() {
             try {
                 Vibrator v = getSystemService(Vibrator.class);
-                if (v != null && v.hasVibrator()) v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+                Compat.tick(v, true);
             } catch (RuntimeException ignored) { }
         }
 
@@ -762,7 +755,7 @@ public class MainActivity extends Activity {
             JSONArray arr = new JSONArray();
             for (int id : android.view.InputDevice.getDeviceIds()) {
                 android.view.InputDevice d = android.view.InputDevice.getDevice(id);
-                if (d == null || d.isVirtual() || !d.isExternal()) continue;
+                if (d == null || d.isVirtual() || !Compat.external(d)) continue;
                 try {
                     int src = d.getSources();
                     String kind = (src & android.view.InputDevice.SOURCE_DPAD) == android.view.InputDevice.SOURCE_DPAD ? "remote"
