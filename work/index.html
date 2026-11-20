@@ -585,6 +585,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-howto li span { display: block; font-size: 13px; line-height: 1.55; color: #a1a1aa; word-break: keep-all; }
 .ap-howto-more { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 700; color: #7dd3fc; text-decoration: none; }
 .ap-howto-more:hover { text-decoration: underline; }
+.ap-install { margin-top: 18px; }
 .ap-nav { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 34px; padding-top: 22px; border-top: 1px solid #2a2a2e; }
 .ap-nav a { font: 600 14px/1.3 var(--font-body); color: #d4d4d8; text-decoration: none; }
 .ap-nav a:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
@@ -1028,6 +1029,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <p>설치를 누르면 끝입니다. 새 버전은 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다.</p>
         </div>
       </div>
+      <p class="fineprint"><b>"기기 보호를 위해 앱 차단됨" 창이 뜨면</b> <a href="#post-install-guide">그림으로 보는 설치 방법</a>을 봐 주세요.</p>
       <p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p>
     </div>
   </section>
@@ -1200,6 +1202,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="Daesinnam Amp">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="Daesinnam Amp">공개되면 알림 받기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>기기와 안드로이드 버전 등 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
@@ -1278,6 +1290,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>기기와 안드로이드 버전 등 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
@@ -1470,6 +1492,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
           <div><dt>최신 버전</dt><dd>1.0.3 · 2026.11.17 업데이트 — <a href="#post-work-103">바뀐 점 보기</a> · 이전 버전 1.0.2(2026.11.11)도 내려받기에서 고를 수 있습니다</dd></div>
@@ -1502,6 +1534,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/desk-latest/DeolnureumDesk.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 데스크탑앱">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
           <div><dt>최신 버전</dt><dd>1.6.4 · 2026.11.19 업데이트 — 창정리의 Shizuku 설정 방법을 그림으로 (<a href="/shizuku/">Shizuku 연결하기</a>) · 1.6.3 창정리(<a href="/releases/">바뀐 점</a>) · 이전 버전 1.5.2(2026.11.15) · 1.5.1(2026.11.13)도 내려받기에서 고를 수 있습니다</dd></div>
@@ -1536,6 +1578,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/browser-latest/DeolnureumBrowser.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 브라우저">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
           <div><dt>최신 버전</dt><dd>2.5 · 2026.11.19 업데이트 — <a href="#post-update-notice">바뀐 점 보기</a> · 이전 버전 2.4.1(2026.11.18) · 2.4 · 2.3 · 2.2도 내려받기에서 고를 수 있습니다</dd></div>
@@ -1573,6 +1625,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/game-latest/DeolnureumGame.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 게임">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 앱이라 업데이트하면서 기능이 바뀔 수 있습니다. 게임 · 기기에 따라 일부 기능이 동작하지 않을 수 있습니다. FPS 보기 · 최적화 설정 적용 같은 고급 기능은 도우미 앱(Shizuku)을 함께 설치해야 쓸 수 있습니다. DroidDeck · Moonlight 등 다른 게임 앱은 각 원작자의 앱이며, 덜누름은 그 앱들과 제휴 관계가 아닙니다.</p>
         <div class="ap-howto">
           <h2>스팀 · 배틀넷 PC 게임 하는 법</h2>
@@ -1618,6 +1680,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 패드">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="덜누름 패드">공개되면 알림 받기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 0.x 버전이라 화면과 기능이 계속 바뀝니다. 큰 화면에서 앱을 여는 기능은 삼성 DeX 등 외부 화면에 연결했을 때 동작하며, 앱에 따라 큰 화면에서 열리지 않을 수 있습니다. 버튼 판의 앱 이름 · 아이콘은 각 회사의 것입니다.</p>
         <dl class="speed-req">
           <div><dt>최신 버전</dt><dd>0.2.1 · 2026.11.17 — 가죽 · 황동 디자인, 볼륨 다이얼 · 음소거, 가로 화면 버튼 크기 자동 맞춤</dd></div>
@@ -1695,6 +1767,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </ul>
         <div class="amp-cta"><span class="amp-soon">개발 중 · 공개되면 이곳에 내려받기가 생깁니다</span></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 TV">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>처음 설치하시나요?</h2>
+          <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
+          <ol>
+            <li><b>자동 차단 끄기</b><span>설정 › 보안 및 개인정보 보호 › 자동 차단</span></li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b><span>Play 스토어 › 프로필 사진 › Play 프로텍트 › 톱니바퀴 › Play 프로텍트로 앱 검사</span></li>
+            <li><b>다시 설치하고, 끝나면 다시 켜기</b><span>경고가 뜨면 세부정보 더보기 › 무시하고 설치 · 설치 뒤 1 · 2번을 다시 켭니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#post-install-guide">그림으로 보는 설치 방법 →</a>
+        </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 0.x 버전이라 화면과 기능이 계속 바뀝니다. 덜누름 TV는 설치된 앱을 열어 줄 뿐이고, 영상 · 음악은 각 서비스 앱이 재생합니다(각 서비스의 이용권이 필요합니다). DeX는 앱을 창으로 띄우기도 해서, 확실한 전체 화면은 고급 기능(Shizuku)을 연결했을 때 동작합니다. 앱 이름 · 아이콘은 각 회사의 것입니다.</p>
         <dl class="speed-req">
           <div><dt>최신 버전</dt><dd>0.8.2 · 2026.11.19 — Shizuku 설정 방법을 그림으로 · <a href="/shizuku/">Shizuku 연결하기</a></dd></div>
@@ -2145,6 +2227,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     <div class="wrap">
       <div id="ntList">
       <ul class="nt-list">
+        <li><a class="nt-row" href="#post-install-guide">
+          <span class="nt-no">012</span>
+          <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 전체</span><span class="nt-tag">설치</span><span class="nt-tag done">해결 방법 안내</span></span><h2>"기기 보호를 위해 앱 차단됨"이 뜰 때 — 그림 보고 3분이면 설치됩니다</h2></span>
+          <span class="nt-date">2026.11.20</span>
+        </a></li>
         <li><a class="nt-row" href="#post-shizuku">
           <span class="nt-no">011</span>
           <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 TV · 게임 · 데스크탑앱</span><span class="nt-tag">사용 안내</span><span class="nt-tag done">업데이트 0.8.2 · 0.4.1 · 1.6.4</span></span><h2>Shizuku, 그림 보고 따라 하면 5분입니다 — 왜 필요한지도</h2></span>
@@ -2202,6 +2289,53 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </a></li>
       </ul>
       </div>
+      <article class="nt-article" id="post-install-guide" data-post hidden>
+        <a class="nt-back" href="/updates/">← 목록으로</a>
+        <header class="nt-head">
+          <div class="nt-tags"><span class="nt-tag">덜누름 전체</span><span class="nt-tag">설치</span><span class="nt-tag done">해결 방법 안내</span></div>
+          <h2>"기기 보호를 위해 앱 차단됨"이 뜰 때 — 그림 보고 3분이면 설치됩니다</h2>
+          <span class="nt-date">012 · 2026.11.20</span>
+        </header>
+        <div class="nt-body">
+          <h3>받은 의견</h3>
+          <p class="nt-quote">"기기 보호를 위해 차단됨"이라면서 설치가 안 됩니다. 이유가 뭘까요?<small>덜누름 게임 · 2026.11.19</small></p>
+          <p class="nt-quote">내려받았는데 보안을 풀어 봐도 안 된다고 나와요.<small>덜누름 TV · 2026.11.19</small></p>
+          <p class="nt-quote">폴드6인데 설치하려고 하니 V3와 Google Play 프로텍트가 막아 버리네요.<small>덜누름 게임 · 2026.11.17</small></p>
+
+          <h3>왜 막히나요</h3>
+          <p>불편을 드려 죄송합니다. 덜누름 앱은 Play 스토어가 아니라 이 사이트에서 직접 받아 설치합니다. 안드로이드는 이렇게 받은 앱 가운데 문자 · 알림 · 접근성 같은 권한을 쓰는 앱을 자동으로 막습니다. 휴대폰이나 앱이 고장 난 것이 아니라, 휴대폰 보안 기능이 제 할 일을 하는 것입니다.</p>
+          <p>그래서 휴대폰 보안 기능 두 가지를 <b>설치하는 동안만</b> 잠시 끄면 설치됩니다. 아래 그림 순서대로 따라 해 주세요.</p>
+          <div class="nt-figs">
+            <figure><img src="/media/notice/guide-0-blocked.webp" alt="이런 창이 뜨면: 기기 보호를 위해 앱 차단됨, 이 앱에서 민감한 정보에 대한 액세스 권한을 요청할 수 있습니다" width="840" height="1350" loading="lazy"><figcaption>이런 창이 뜨셨나요?</figcaption></figure>
+            <figure><img src="/media/notice/guide-1-autoblock.webp" alt="1단계: 설정, 보안 및 개인정보 보호, 자동 차단을 끕니다" width="840" height="1350" loading="lazy"><figcaption>1 · 자동 차단 끄기</figcaption></figure>
+            <figure><img src="/media/notice/guide-2-playprotect.webp" alt="2단계: Play 스토어, 프로필 사진, Play 프로텍트, 톱니바퀴에서 Play 프로텍트로 앱 검사를 잠시 끕니다" width="840" height="1350" loading="lazy"><figcaption>2 · Play 프로텍트 앱 검사 잠시 끄기</figcaption></figure>
+            <figure><img src="/media/notice/guide-3-unknown.webp" alt="3단계: 출처를 알 수 없는 앱 설치에서 내 파일과 삼성 인터넷 또는 Chrome을 허용합니다" width="840" height="1350" loading="lazy"><figcaption>3 · 설치 허용해 주기</figcaption></figure>
+            <figure><img src="/media/notice/guide-4-install.webp" alt="4단계: 받은 파일을 다시 눌러 설치하고, 경고가 뜨면 세부정보 더보기, 무시하고 설치를 누릅니다" width="840" height="1350" loading="lazy"><figcaption>4 · 다시 설치하기</figcaption></figure>
+            <figure><img src="/media/notice/guide-5-restore.webp" alt="5단계: 설치가 끝나면 자동 차단과 Play 프로텍트 앱 검사를 다시 켭니다" width="840" height="1350" loading="lazy"><figcaption>5 · 설치가 끝나면 다시 켜기</figcaption></figure>
+          </div>
+
+          <h3>따라 하기</h3>
+          <ol>
+            <li><b>자동 차단 끄기</b> — 설정 → 보안 및 개인정보 보호 → <b>자동 차단</b>(기기에 따라 "보안 위험 자동 차단")을 끕니다. 이미 꺼져 있으면 넘어가세요.</li>
+            <li><b>Play 프로텍트 앱 검사 잠시 끄기</b> — Play 스토어 → 오른쪽 위 프로필 사진 → Play 프로텍트 → 오른쪽 위 톱니바퀴에서 <b>Play 프로텍트로 앱 검사</b>를 끕니다. "기기 보호를 위해 앱 차단됨" 창은 이 기능이 띄웁니다.</li>
+            <li><b>설치 허용해 주기</b> — 설정 → 보안 및 개인정보 보호 → 기타 보안 설정 → <b>출처를 알 수 없는 앱 설치</b>에서 파일을 연 앱(보통 <b>내 파일</b>과 <b>삼성 인터넷</b> 또는 <b>Chrome</b>)을 켭니다. One UI 5 이하는 설정 → 생체 인식 및 보안에 있습니다.</li>
+            <li><b>다시 설치하기</b> — 이 사이트에서 받은 파일을 다시 누릅니다. 경고 창이 뜨면 <b>세부정보 더보기 → 무시하고 설치</b>를 누릅니다.</li>
+            <li><b>설치가 끝나면 다시 켜기</b> — 1번과 2번에서 끈 기능을 원래대로 켜 주세요. 이미 설치된 덜누름 앱은 그대로 쓸 수 있고, 새 버전을 설치할 때만 1~4번을 다시 하면 됩니다.</li>
+          </ol>
+
+          <h3>V3 같은 백신 앱이 막을 때</h3>
+          <p>V3 모바일 등 백신 앱이 설치를 막는다면, 그 앱에서 실시간 검사를 잠시 끄거나 덜누름 앱을 예외(허용) 목록에 넣어 주세요. 설치가 끝나면 실시간 검사는 다시 켜 두세요.</p>
+
+          <h3>그래도 안 되면</h3>
+          <ul>
+            <li>설치 단추가 보이지 않거나 "설치 실패"만 반복되면 기종, 안드로이드(One UI) 버전, 화면 캡처를 의견 보내기로 알려 주세요.</li>
+            <li>회사 · 학교에서 관리하는 휴대폰은 관리자 설정 때문에 위 방법이 막혀 있을 수 있습니다.</li>
+          </ul>
+          <p>보안 기능을 끄지 않고도 설치되도록 방법을 찾고 있습니다. 바뀌는 내용이 생기면 이 글에 이어서 알려 드리겠습니다.</p>
+          <p class="ap-disc light"><b>꼭 확인하세요</b>이 방법은 덜누름 사이트(deolnureum.com)에서 받은 파일에만 써 주세요. 다른 곳에서 받은 파일은 이렇게 설치하지 마세요.</p>
+        </div>
+        <a class="nt-back" href="/updates/">← 목록으로</a>
+      </article>
       <article class="nt-article" id="post-fb-1119" data-post hidden>
         <a class="nt-back" href="/updates/">← 목록으로</a>
         <header class="nt-head">
@@ -2345,7 +2479,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <h3>1. 덜누름 게임이 설치되지 않을 때</h3>
           <p>화면에 뜬 메시지에 따라 하면 됩니다.</p>
           <ul>
-            <li><b>"잠재적으로 유해한 앱" · "자동 차단으로 차단됨"</b> — 갤럭시 보안 기능이 Play 스토어 밖에서 받은 앱을 막은 것입니다. <b>설정 → 보안 및 개인정보 보호 → 자동 차단</b>을 끄고, <b>Play 스토어 → 프로필 → Play 프로텍트 → 설정(톱니)</b>에서 <b>Play 프로텍트로 앱 검사</b>를 끈 다음 다시 설치합니다. 그림 설명은 <a href="#post-install">001 글</a>에 있습니다.</li>
+            <li><b>"잠재적으로 유해한 앱" · "자동 차단으로 차단됨"</b> — 갤럭시 보안 기능이 Play 스토어 밖에서 받은 앱을 막은 것입니다. <b>설정 → 보안 및 개인정보 보호 → 자동 차단</b>을 끄고, <b>Play 스토어 → 프로필 → Play 프로텍트 → 설정(톱니)</b>에서 <b>Play 프로텍트로 앱 검사</b>를 끈 다음 다시 설치합니다. 그림 설명은 <a href="#post-install-guide">012 글</a>에 있습니다.</li>
             <li><b>"앱이 설치되지 않았습니다"</b> — 이미 설치된 덜누름 게임과 설치 파일이 맞지 않을 때 뜹니다. 설정 → 애플리케이션에서 덜누름 게임을 삭제하고 다시 설치해 주세요. 라이브러리에 넣은 게임 목록은 다시 넣어야 합니다.</li>
             <li><b>"파일을 분석하는 중 문제가 발생했습니다"</b> — 파일이 끝까지 받아지지 않은 것입니다. 받은 파일을 지우고 다시 받아 주세요.</li>
             <li><b>"출처를 알 수 없는 앱"</b> — 설치 파일을 연 앱(내 파일 · 삼성 인터넷 · Chrome 등)에 <b>이 출처 허용</b>을 켜 주세요.</li>
@@ -2700,6 +2834,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <p class="nt-quote">갤럭시에서 "잠재적으로 유해한 앱 감지됨"이 뜨면서 내려받은 뒤 앱이 열리지 않아요. Play 스토어의 앱 보호 기능을 꺼도 안 돼요.<small>덜누름 워크 · 기타 · 2026.11.14</small></p>
           <p class="nt-quote">권한 설정도 해 줬는데 덜누름 워크가 설치되지 않아요.<small>덜누름 전체 · 2026.11.14</small></p>
 
+          <p class="ap-disc light"><b>새 안내가 있습니다</b>"기기 보호를 위해 앱 차단됨" 창까지 다룬 최신 그림 안내는 <a href="#post-install-guide">012 글</a>에 있습니다.</p>
           <h3>이렇게 해결하세요</h3>
           <p>불편을 드려 죄송합니다. 갤럭시의 One UI 버전에 따라 해결 방법이 다릅니다. 먼저 <b>설정 → 휴대전화 정보 → 소프트웨어 정보</b>에서 One UI 버전을 확인해 주세요.</p>
           <div class="nt-figs">
