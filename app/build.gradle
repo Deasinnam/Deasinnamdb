@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId 'com.daesinnam.pad'
-        minSdk 30
+        minSdk 26
         targetSdk 35
         versionCode 5
         versionName "0.2.1"
@@ -36,8 +36,11 @@ android {
     }
 
     lint {
-        checkReleaseBuilds false
+        checkOnly 'NewApi'
         abortOnError false
+        checkReleaseBuilds false
+        textReport true
+        textOutput file('lint-newapi.txt')
     }
 
     compileOptions {
