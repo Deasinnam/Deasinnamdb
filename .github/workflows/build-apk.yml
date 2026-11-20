@@ -57,6 +57,7 @@ jobs:
           arch: x86_64
           target: google_apis
           ram-size: 4096M
+          emulator-build: 16740729
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none -no-audio
           disable-animations: true
