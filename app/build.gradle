@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId 'com.daesinnam.tv'
-        minSdk 30
+        minSdk 26
         targetSdk 35
         versionCode 14
         versionName "0.8.2"
@@ -36,8 +36,11 @@ android {
     }
 
     lint {
-        checkReleaseBuilds false
+        checkOnly 'NewApi'
         abortOnError false
+        checkReleaseBuilds false
+        textReport true
+        textOutput file('lint-newapi.txt')
     }
 
     compileOptions {
