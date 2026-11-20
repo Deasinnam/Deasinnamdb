@@ -71,7 +71,7 @@ final class Optimizer {
         if (display != null) for (Display.Mode m : display.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
         d.put("maxHz", maxHz);
         PowerManager pm = ctx.getSystemService(PowerManager.class);
-        d.put("thermal", pm.getCurrentThermalStatus());
+        d.put("thermal", Compat.thermal(pm));
         d.put("powerSave", pm.isPowerSaveMode());
         Intent bat = ctx.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         if (bat != null) {

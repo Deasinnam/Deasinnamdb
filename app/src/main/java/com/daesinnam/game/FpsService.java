@@ -145,7 +145,7 @@ public class FpsService extends Service {
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.TOP | Gravity.END;
-        lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        if (Compat.SDK >= 28) lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
         lp.x = prefs.getInt("fpsX", dp(16));
         lp.y = prefs.getInt("fpsY", dp(10));
         final float[] down = new float[4];
@@ -194,7 +194,7 @@ public class FpsService extends Service {
                 if (t > 0) s.append("  ").append(t / 10).append('.').append(t % 10).append("°C");
                 if (level >= 0) s.append("  ").append(level * 100 / Math.max(scale, 1)).append('%');
             }
-            int thermal = getSystemService(PowerManager.class).getCurrentThermalStatus();
+            int thermal = Compat.thermal(getSystemService(PowerManager.class));
             view.setText(s);
             // 기기가 뜨거우면 테두리를 주황 → 빨강으로
             GradientDrawable bg = (GradientDrawable) view.getBackground();

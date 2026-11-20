@@ -108,17 +108,14 @@ public class MainActivity extends Activity {
         try { Shizuku.addRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
         setContentView(web);
         // 전체 화면: 위 상태 표시줄과 아래 내비게이션 바·작업 표시줄을 숨김 (가장자리에서 밀면 잠깐 나타남)
-        getWindow().setDecorFitsSystemWindows(false);
-        getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        Compat.edgeToEdge(getWindow());
+        Compat.cutoutShortEdges(getWindow());
         hideSystemBars();
         web.loadUrl("file:///android_asset/ui/index.html" + (selftest ? "?selftest=1" : ""));
     }
 
     private void hideSystemBars() {
-        WindowInsetsController c = getWindow().getInsetsController();
-        if (c == null) return;
-        c.hide(WindowInsets.Type.systemBars());
-        c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        Compat.immersive(getWindow(), true);
     }
 
     @Override
@@ -342,7 +339,7 @@ public class MainActivity extends Activity {
     String fpsMode() { return prefs.getString("fpsMode", "off"); }
 
     private int maxHz() {
-        Display d = getDisplay();
+        Display d = Compat.display(MainActivity.this);
         int maxHz = 60;
         if (d != null) for (Display.Mode m : d.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
         return maxHz;
@@ -581,7 +578,7 @@ public class MainActivity extends Activity {
                     }
                 }
                 if (optimize) {
-                    Display d = getDisplay();
+                    Display d = Compat.display(MainActivity.this);
                     int level = optimizer.effectiveLevel(pkg, d);
                     optimizer.applyRecording(level, maxHz());
                     // 다른 앱 설정(FPS 상한·해상도·게임 모드)은 고급 기능(Shizuku)이 연결돼 있고 켜 둔 경우에만
@@ -607,7 +604,10 @@ public class MainActivity extends Activity {
         public void openUrl(String url) { MainActivity.this.openUrl(url); }
 
         @JavascriptInterface
-        public void startRecording(boolean mic) { main.post(() -> requestRecording(mic)); }
+        public void startRecording(boolean mic) {
+            if (Compat.SDK < 29) { notifyJs("toast", "화면 녹화는 안드로이드 10 이상에서 쓸 수 있어요"); return; }
+            main.post(() -> requestRecording(mic));
+        }
 
         @JavascriptInterface
         public void stopRecording() {
@@ -635,7 +635,7 @@ public class MainActivity extends Activity {
                 NotificationManager nm = getSystemService(NotificationManager.class);
                 o.put("dndAccess", nm.isNotificationPolicyAccessGranted());
                 o.put("dnd", prefs.getBoolean("dnd", false));
-                Display d = getDisplay();
+                Display d = Compat.display(MainActivity.this);
                 if (d != null) {
                     o.put("hz", Math.round(d.getRefreshRate()));
                     JSONArray modes = new JSONArray();
@@ -735,7 +735,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String optimize(String pkg) {
             try {
-                JSONObject d = optimizer.device(getDisplay());
+                JSONObject d = optimizer.device(Compat.display(MainActivity.this));
                 JSONObject r = Optimizer.recommend(d);
                 JSONObject o = new JSONObject();
                 o.put("device", d);
@@ -763,7 +763,7 @@ public class MainActivity extends Activity {
         public void chooseLevel(String pkg, int level) {
             optimizer.choose(pkg, level);
             if (pkg == null || pkg.isEmpty()) {
-                Display d = getDisplay();
+                Display d = Compat.display(MainActivity.this);
                 int maxHz = 60;
                 if (d != null) for (Display.Mode m : d.getSupportedModes()) maxHz = Math.max(maxHz, Math.round(m.getRefreshRate()));
                 optimizer.applyRecording(optimizer.effectiveLevel(null, d), maxHz);
