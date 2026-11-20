@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-20T11:23:40+09:00",
+ "updated": "2026-11-20T14:06:48+09:00",
  "apps": {
   "pad": {
    "version": "0.2.1",
@@ -16,9 +16,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "work": {
-   "version": "1.0.3",
-   "date": "2026.11.17",
-   "note": "새 엑셀 문서 저장 · 다른 이름으로 저장, 사진 · 동영상 편집 한국어 화면",
+   "version": "1.0.4",
+   "date": "2026.11.20",
+   "note": "문서 편집의 열기에서 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 · 다이어그램 파일을 고를 수 없던 문제 수정",
    "page": "https://deolnureum.com/work/",
    "changes": "https://deolnureum.com/releases/"
   },
