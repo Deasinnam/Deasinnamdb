@@ -150,7 +150,8 @@
       lead.textContent = "현재 여유 공간 " + gb(s.free) + " · 지워도 되는 것만 골라 정리합니다.";
       c.sub.textContent = s.cache >= 0 ? "앱들이 다시 만들 수 있는 임시 파일 " + gb(s.cache) + (perm.shizuku ? "" : " · 지우려면 Shizuku 연결") : (perm.usage ? "크기를 알 수 없음" : "크기를 보려면 '사용 기록 접근'을 켜세요");
       if (perm.shizuku) { var n = (s.apks || []).length; k.sub.textContent = n ? n + "개 · " + gb(s.apkBytes) + " — 이미 설치한 앱은 그대로 남습니다" : "남은 설치 파일이 없습니다"; if (!n) k.cb.checked = false; }
-      if (perm.media) { t.sub.textContent = s.trashCount > 0 ? s.trashCount + "개 · " + gb(s.trashBytes) + " — 비운 파일은 되돌릴 수 없습니다" : "휴지통이 비어 있습니다"; if (!(s.trashCount > 0)) { t.cb.checked = false; t.cb.disabled = true; } }
+      if (perm.media && s.trashCount < 0) { t.sub.textContent = "휴지통 비우기는 안드로이드 11 이상에서 쓸 수 있습니다"; t.cb.checked = false; t.cb.disabled = true; }
+      else if (perm.media) { t.sub.textContent = s.trashCount > 0 ? s.trashCount + "개 · " + gb(s.trashBytes) + " — 비운 파일은 되돌릴 수 없습니다" : "휴지통이 비어 있습니다"; if (!(s.trashCount > 0)) { t.cb.checked = false; t.cb.disabled = true; } }
     };
     res.storageDone = function (r) {
       run.classList.remove("busy"); run.textContent = "저장공간 덜씀 실행";

@@ -91,7 +91,8 @@ final class Cleaner {
     // ---------- 권한 ----------
     static boolean usageOk(Context c) {
         AppOpsManager ao = (AppOpsManager) c.getSystemService(Context.APP_OPS_SERVICE);
-        int m = ao.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName());
+        int m = Compat.SDK >= 29 ? ao.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName())
+                : ao.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), c.getPackageName());
         return m == AppOpsManager.MODE_ALLOWED;
     }
 
@@ -210,6 +211,7 @@ final class Cleaner {
 
     /** 휴지통 항목 수 · 크기. uris 가 있으면 그 목록도 채움. 볼 권한이 없으면 -1 */
     static long[] trash(Context c, List<Uri> uris) {
+        if (Compat.SDK < 30) return new long[]{-1, -1}; // 휴지통은 안드로이드 11부터
         boolean can = c.checkSelfPermission(android.os.Build.VERSION.SDK_INT >= 33 ? android.Manifest.permission.READ_MEDIA_IMAGES : android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         if (!can) return new long[]{-1, -1};
         long n = 0, bytes = 0;
