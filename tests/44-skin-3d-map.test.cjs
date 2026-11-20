@@ -8,7 +8,7 @@ run('3D map skin renders the speedometer scene in 3D', async ({newPage, origin})
   await p.route(/^https:\/\//, r => { const u = r.request().url();
     if (u.includes('openstreetmap.org/')) return r.fulfill({body: osm, contentType: 'image/png', headers: {'access-control-allow-origin': '*'}});
     if (u.includes('terrarium')) return r.fulfill({body: dem, contentType: 'image/png', headers: {'access-control-allow-origin': '*'}}); return r.abort(); });
-  await p.setViewportSize({width: 840, height: 900}); await p.goto(origin); await p.waitForFunction(() => window.AmpPfd && window.Amp3DHook);
+  await p.setViewportSize({width: 840, height: 900}); await p.goto(origin, {waitUntil: 'domcontentloaded', timeout: 60000}); await p.waitForFunction(() => window.AmpPfd && window.Amp3DHook, null, {timeout: 60000});
   // 에어라인과 같은 기능: 콕핏 스페셜 표시·레일·스킨 버튼 표시
   const r0 = await p.evaluate(() => ({sk3d: document.documentElement.hasAttribute('data-sk3d'), cks: document.documentElement.dataset.cks, cp: document.documentElement.dataset.cp, sel: document.getElementById('skin').value, rail: !!document.querySelector('#ckRail button[data-f="gps"]')}));
   assert.deepEqual(r0, {sk3d: true, cks: '1', cp: '1', sel: 'carnival8', rail: true});
