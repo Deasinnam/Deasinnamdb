@@ -37,6 +37,7 @@ final class Sys {
 
     static void bypass() {
         if (bypassed) return;
+        if (android.os.Build.VERSION.SDK_INT < 28) { bypassed = true; return; } // 안드로이드 8에는 숨은 API 제한이 없음
         try { HiddenApiBypass.addHiddenApiExemptions(""); bypassed = true; } catch (Throwable t) { Log.w(TAG, "bypass " + t); }
     }
 

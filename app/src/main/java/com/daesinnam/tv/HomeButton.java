@@ -56,7 +56,8 @@ public class HomeButton extends Service {
     private void addBubble() {
         Display display = getSystemService(DisplayManager.class).getDisplay(displayId);
         if (display == null) display = getSystemService(DisplayManager.class).getDisplay(Display.DEFAULT_DISPLAY);
-        Context wc = createDisplayContext(display).createWindowContext(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, null);
+        Context dc = createDisplayContext(display);
+        Context wc = Compat.SDK >= 30 ? dc.createWindowContext(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, null) : dc;
         wm = wc.getSystemService(WindowManager.class);
         float dp = wc.getResources().getDisplayMetrics().density;
         int size = Math.round(56 * dp);
@@ -64,7 +65,7 @@ public class HomeButton extends Service {
         lp = new WindowManager.LayoutParams(size, size, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.TOP | Gravity.START;
-        Rect b = wm.getMaximumWindowMetrics().getBounds();
+        Rect b = Compat.maxBounds(wm);
         android.content.SharedPreferences sp = getSharedPreferences("tv", MODE_PRIVATE);
         lp.x = sp.getInt("homeX", b.width() - size - Math.round(20 * dp));
         lp.y = sp.getInt("homeY", Math.round(b.height() * 0.42f));
@@ -136,7 +137,7 @@ public class HomeButton extends Service {
                 case MotionEvent.ACTION_UP:
                     setAlpha(1f);
                     if (!moved) { performClick(); goHome(); return true; }
-                    Rect b = wm.getMaximumWindowMetrics().getBounds(); // 가까운 왼쪽 · 오른쪽 가장자리에 붙이기
+                    Rect b = Compat.maxBounds(wm); // 가까운 왼쪽 · 오른쪽 가장자리에 붙이기
                     int m = Math.round(12 * getResources().getDisplayMetrics().density);
                     lp.x = lp.x + getWidth() / 2 < b.width() / 2 ? m : b.width() - getWidth() - m;
                     lp.y = Math.max(m, Math.min(lp.y, b.height() - getHeight() - m));
