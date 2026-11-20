@@ -113,6 +113,12 @@
     kick(); renderBadge(true); return true;
   }
 
+  function tripEnd() {
+    const T = F.trip; F.trip = null; if (!T || T.t < 20 || T.d < .05) return;
+    const score = clamp(Math.round(100 - T.acc * 4 - T.brk * 5 - Math.floor(T.over / 10)), 0, 100);
+    F.lastTrip = { avg: Math.round(T.d / (T.t / 3600)), score, km: Math.round(T.d * 10) / 10, min: Math.round(T.t / 60), acc: T.acc, brk: T.brk, over: Math.round(T.over), at: Date.now(),
+      grade: score >= 90 ? '아주 좋아요' : score >= 75 ? '좋아요' : score >= 60 ? '보통이에요' : '조심 운전' };
+  }
   function update(now, vIn) {
     const dt = F.lastT ? clamp((now - F.lastT) / 1000, 0, 0.1) : 0;
     F.lastT = now;
@@ -120,12 +126,15 @@
     let vEff = F.auto ? F.vAuto : v;
     F.v = vEff;
     F.vs += (vEff - F.vs) * clamp(dt * (vEff < F.vs ? .8 : 1.6), 0, 1); // 지면이 흐르는 빠르기: 멈출 때는 1~2초에 걸쳐 부드럽게 감속
+    // 1.78 이륙 활주부터 착륙까지 운전 기록: 시간·거리·급가속·급감속·과속(110km/h 넘은 시간) → 착륙하면 평균 속도와 운전 평점
+    if (F.trip) { const T = F.trip, dr = clamp((now - T.lt) / 1000, 0, 2); T.lt = now; T.t += dr; T.d += v * dr / 3600; if (v > 110) T.over += dr;
+      T.wt += dr; if (T.wt >= 1) { const a = (v - T.vw) / T.wt; if (now - T.ev > 3000 && Math.abs(a) < 38) { if (a > 11) { T.acc++; T.ev = now; } else if (a < -13) { T.brk++; T.ev = now; } } T.vw = v; T.wt = 0; } }
     const rw0 = F.rwS;
     switch (F.phase) {
       case 'hold':
       case 'landed':
         F.alt = 0;
-        if (v > 3) { if (F.phase === 'landed') newDeparture(); F.phase = 'roll'; F.stopT = 0; F.rollT = 0; F.rolled = 0; sfx('rollStart'); }
+        if (v > 3) { if (F.phase === 'landed') newDeparture(); F.trip = { t: 0, d: 0, acc: 0, brk: 0, over: 0, lt: now, vw: v, wt: 0, ev: 0 }; F.phase = 'roll'; F.stopT = 0; F.rollT = 0; F.rolled = 0; sfx('rollStart'); }
         break;
       case 'roll': {
         // 5km/h만 넘으면 이륙: 활주는 실제 비행기처럼 몇 초 만에 빨라지는 모습으로 보여 줌
@@ -176,7 +185,7 @@
         F.rwS -= vEff / 3.6 * 2.2 * dt;
         if (F.rwS + F.rwLen < 900) F.rwLen += 1200;
         if ((now - F.tdAt) > 900 && vEff > 6) { sfx('rollStart'); sfxRoll(vEff); }                 // 접지 뒤 감속 활주: 바퀴 진동이 속도와 함께 잦아듦
-        if (vEff < 6) { F.stopT += dt; if (F.stopT > 1.2) { F.phase = 'landed'; F.auto = false; F.stopT = 0; sfx('rollStop'); } } else F.stopT = 0;
+        if (vEff < 6) { F.stopT += dt; if (F.stopT > 1.2) { F.phase = 'landed'; F.auto = false; F.stopT = 0; sfx('rollStop'); tripEnd(); } } else F.stopT = 0;
         break;
       }
     }
@@ -770,7 +779,7 @@
   setInterval(() => { if (F.sim && document.hidden === false) simStep(); }, 100);
 
   window.AmpFlight = {
-    get state() { return { vs: F.vs, still: F.stillT, snow: F.snow, wx: wxKind(), phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
+    get state() { return { trip: F.lastTrip || null, vs: F.vs, still: F.stillT, snow: F.snow, wx: wxKind(), phase: F.phase, alt: F.alt, pitch: F.pitch, bank: F.bank, rwS: F.rwS, rem: F.rem, auto: F.auto, rwNum: F.rwNum, sim: !!F.sim }; },
     step(sec, v) { const n = Math.max(1, Math.round(sec / .05)); let t = performance.now() + F.off; F.lastT = t; for (let i = 0; i < n; i++) { t += 50; update(t, v); } F.off += n * 50; renderBadge(true); return this.state; },
     ext: X, geo: { F, riverX, RK, srand }, active,
     land, goAround, sim, redraw() { try { P.draw(); } catch (e) {} }

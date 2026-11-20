@@ -176,10 +176,14 @@ function attPoll(){
   if(HAS_ATT){try{const o=JSON.parse(NB.attitude());if(o.ok&&o.r&&o.r.length===9){R=o.r;srot=(o.srot|0)&3;decl=+o.decl||0;compass=!!o.compass}}catch(e){}}
   else if(att.web&&now-att.web.t<2000){const w=att.web;R=eulerR(w.a,w.b,w.g);srot=((Math.round(((screen.orientation&&screen.orientation.angle)||window.orientation||0)/90)%4)+4)%4;compass=w.abs}
   att.ok=!!R;if(!R){att.hdg=-1;return}
+  // 1.78 화면 방향이 바뀌면(폴드 펼침·가로↔세로) 그 자세를 다시 수평으로 잡음
+  if(att.srot!==undefined&&att.srot!==srot){att.ref=null;att.acc=[]}att.srot=srot;
   const [rt,up]=SCR[srot],gv=[R[6],R[7],R[8]],u=v3.nrm([v3.dot(gv,rt),v3.dot(gv,up),gv[2]]);att.u=u;
   // 처음 1초 남짓의 자세를 "수평"으로 삼습니다(거치대 각도 보정). 수평 맞춤 버튼으로 다시 정할 수 있어요.
   if(!att.ref){att.acc.push(u);if(att.acc.length<20)return;const s=att.acc.reduce((p,q)=>[p[0]+q[0],p[1]+q[1],p[2]+q[2]],[0,0,0]);att.ref=v3.nrm(s);att.acc=[];store.set('attRef',att.ref)}
-  const u0=att.ref,r0=v3.nrm([1-u0[0]*u0[0],-u0[0]*u0[1],-u0[0]*u0[2]]),f0=v3.cross(u0,r0);
+  // 1.78 기준 '오른쪽'은 화면 평면 안에서 수평 기준(위쪽)에 직각인 방향 — 세워 거치하면 화면 축 이름(폴드 세로에서 어긋남)과 상관없이
+  //  기울기가 정해짐. 예전 식(화면 x축 투영)은 위쪽이 x축과 겹치면 0벡터가 되어 화면이 뒤집히듯 튀었음. 눕혀 거치하면 예전 식
+  const u0=att.ref,pl=Math.hypot(u0[0],u0[1]),r0=pl>.45?v3.nrm([u0[1],-u0[0],0]):v3.nrm([1-u0[0]*u0[0],-u0[0]*u0[1],-u0[0]*u0[2]]),f0=v3.cross(u0,r0);
   const a=v3.dot(u,r0),b=v3.dot(u,f0),c=v3.dot(u,u0);
   att.bank=Math.max(-75,Math.min(75,Math.atan2(-a,c)*DEG));att.pitch=Math.max(-40,Math.min(40,Math.atan2(-b,c)*DEG));
   // 나침반: 거치된 기기의 "앞"(수평일 때 화면 위쪽, 세웠을 때 뒷면 카메라 쪽)이 가리키는 방위

@@ -999,10 +999,14 @@ function attPoll(){
   if(HAS_ATT){try{const o=JSON.parse(NB.attitude());if(o.ok&&o.r&&o.r.length===9){R=o.r;srot=(o.srot|0)&3;decl=+o.decl||0;compass=!!o.compass}}catch(e){}}
   else if(att.web&&now-att.web.t<2000){const w=att.web;R=eulerR(w.a,w.b,w.g);srot=((Math.round(((screen.orientation&&screen.orientation.angle)||window.orientation||0)/90)%4)+4)%4;compass=w.abs}
   att.ok=!!R;if(!R){att.hdg=-1;return}
+  // 1.78 화면 방향이 바뀌면(폴드 펼침·가로↔세로) 그 자세를 다시 수평으로 잡음
+  if(att.srot!==undefined&&att.srot!==srot){att.ref=null;att.acc=[]}att.srot=srot;
   const [rt,up]=SCR[srot],gv=[R[6],R[7],R[8]],u=v3.nrm([v3.dot(gv,rt),v3.dot(gv,up),gv[2]]);att.u=u;
   // 처음 1초 남짓의 자세를 "수평"으로 삼습니다(거치대 각도 보정). 수평 맞춤 버튼으로 다시 정할 수 있어요.
   if(!att.ref){att.acc.push(u);if(att.acc.length<20)return;const s=att.acc.reduce((p,q)=>[p[0]+q[0],p[1]+q[1],p[2]+q[2]],[0,0,0]);att.ref=v3.nrm(s);att.acc=[];store.set('attRef',att.ref)}
-  const u0=att.ref,r0=v3.nrm([1-u0[0]*u0[0],-u0[0]*u0[1],-u0[0]*u0[2]]),f0=v3.cross(u0,r0);
+  // 1.78 기준 '오른쪽'은 화면 평면 안에서 수평 기준(위쪽)에 직각인 방향 — 세워 거치하면 화면 축 이름(폴드 세로에서 어긋남)과 상관없이
+  //  기울기가 정해짐. 예전 식(화면 x축 투영)은 위쪽이 x축과 겹치면 0벡터가 되어 화면이 뒤집히듯 튀었음. 눕혀 거치하면 예전 식
+  const u0=att.ref,pl=Math.hypot(u0[0],u0[1]),r0=pl>.45?v3.nrm([u0[1],-u0[0],0]):v3.nrm([1-u0[0]*u0[0],-u0[0]*u0[1],-u0[0]*u0[2]]),f0=v3.cross(u0,r0);
   const a=v3.dot(u,r0),b=v3.dot(u,f0),c=v3.dot(u,u0);
   att.bank=Math.max(-75,Math.min(75,Math.atan2(-a,c)*DEG));att.pitch=Math.max(-40,Math.min(40,Math.atan2(-b,c)*DEG));
   // 나침반: 거치된 기기의 "앞"(수평일 때 화면 위쪽, 세웠을 때 뒷면 카메라 쪽)이 가리키는 방위
@@ -3505,6 +3509,19 @@ const PfdSong=(()=>{let el=null;
   setInterval(()=>{if(!document.hidden)tick()},1000);
   return {tick,get text(){return el?el.textContent:''}}})();
 window.PfdSong=PfdSong;
+/* ===== 97-pfd-trip.js ===== */
+// 1.78 착륙하면 이번 비행(이륙 활주~착륙)의 평균 속도와 운전 평점을 PFD에 글자로만(노래 제목처럼 상자·효과 없이)
+//  다음 출발(바퀴가 굴러가면)이나 40초 뒤 사라짐
+const PfdTrip=(()=>{let el=null,shown=0,until=0;
+  function tick(){const w=document.querySelector('#pfdHost .pfd-canvas-wrap');if(!w||!window.AmpFlight)return;
+    if(!el||!w.contains(el)){el=document.createElement('div');el.className='pfd-trip';el.setAttribute('aria-live','polite');el.hidden=true;w.appendChild(el)}
+    const st=AmpFlight.state||{},tr=st.trip;
+    if(tr&&tr.at>shown&&st.phase==='landed'){shown=tr.at;until=Date.now()+40000;
+      el.innerHTML='<b>평균 속도 '+tr.avg+' km/h</b><span>운전 평점 '+tr.score+'점 · '+tr.grade+'</span><small>'+tr.km+' km · '+tr.min+'분 · 급가속 '+tr.acc+' · 급감속 '+tr.brk+'</small>'}
+    el.hidden=!(until>Date.now()&&st.phase==='landed')}
+  setInterval(()=>{if(!document.hidden)tick()},500);
+  return {tick,get text(){return el?el.textContent:''}}})();
+window.PfdTrip=PfdTrip;
 /* ===== 98-cockpit-special.js ===== */
 // 콕핏 스페셜 스킨(carnival6) 전용 배치: 플레이어+NOW PLAYING 한 창, 관제탑은 스피드미터 제목줄의 작은 표시, 블랙박스는 기본 접힘
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.

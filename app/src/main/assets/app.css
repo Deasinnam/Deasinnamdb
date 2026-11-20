@@ -2905,3 +2905,10 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
   font:700 clamp(15px,2.3vw,26px)/1.2 "Noto Sans KR",sans-serif;color:#6dff7a;text-shadow:0 0 3px #000,0 1px 2px #000,0 0 10px #000c;letter-spacing:.01em}
 #pfdHost .pfd-song[hidden]{display:none}
 :root[data-narrow] #pfdHost .pfd-song{right:calc(var(--nar-tape,67px) + 10px);bottom:calc(var(--pfd-cmp,50px) + 12px);max-width:58%;font-size:15px}
+/* 1.78 착륙 뒤 평균 속도·운전 평점: 상자 없이 글자만(노래 제목과 같은 녹색) */
+#pfdHost .pfd-trip{position:absolute;z-index:4;left:50%;top:40%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;text-align:center;white-space:nowrap;
+  font-family:"Noto Sans KR",sans-serif;color:#6dff7a;text-shadow:0 0 3px #000,0 1px 2px #000,0 0 12px #000c}
+#pfdHost .pfd-trip b{font-size:clamp(20px,3.4vw,36px);font-weight:800;line-height:1.15}
+#pfdHost .pfd-trip span{font-size:clamp(17px,2.7vw,28px);font-weight:700}
+#pfdHost .pfd-trip small{font-size:clamp(12px,1.6vw,16px);font-weight:600;opacity:.85}
+#pfdHost .pfd-trip[hidden]{display:none}
