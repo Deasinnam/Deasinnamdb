@@ -126,7 +126,7 @@ public class KeymapService extends AccessibilityService {
     }
 
     private float[] toScreen(JSONObject m) {
-        Rect b = wm.getMaximumWindowMetrics().getBounds();
+        Rect b = Compat.maxBounds(wm);
         return new float[]{(float) (m.optDouble("x", .5) * b.width()), (float) (m.optDouble("y", .5) * b.height())};
     }
 
@@ -266,7 +266,7 @@ public class KeymapService extends AccessibilityService {
             if (ev.getAction() == MotionEvent.ACTION_UP) {
                 if (pending != null) root.removeView(pending);
                 pending = marker("?", ev.getX(), ev.getY(), false);
-                Rect sb = wm.getMaximumWindowMetrics().getBounds();
+                Rect sb = Compat.maxBounds(wm);
                 pending.setTag(new float[]{ev.getRawX() / sb.width(), ev.getRawY() / sb.height()});
                 root.addView(pending);
             }
@@ -332,7 +332,7 @@ public class KeymapService extends AccessibilityService {
             View c = root.getChildAt(i);
             if ("marker".equals(c.getContentDescription())) root.removeViewAt(i);
         }
-        Rect sb = wm.getMaximumWindowMetrics().getBounds();
+        Rect sb = Compat.maxBounds(wm);
         int[] loc = new int[2];
         root.getLocationOnScreen(loc);
         int w = sb.width(), h = sb.height();

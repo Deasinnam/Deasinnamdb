@@ -65,7 +65,7 @@ public class RecordService extends Service {
             int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION;
             if (mic) type |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
             try {
-                startForeground(NOTI_ID, notification(), type);
+                if (Compat.SDK >= 29) startForeground(NOTI_ID, notification(), type); else startForeground(NOTI_ID, notification());
             } catch (Exception e) {
                 Log.w(TAG, "REC-FAIL foreground " + e);
                 stopSelf();
@@ -115,7 +115,7 @@ public class RecordService extends Service {
             public void onStop() { main.post(() -> stopRecording(true)); }
         }, main);
 
-        Rect b = getSystemService(WindowManager.class).getMaximumWindowMetrics().getBounds();
+        Rect b = Compat.maxBounds(getSystemService(WindowManager.class));
         int dpi = getResources().getDisplayMetrics().densityDpi;
         // 큰 화면 그대로 → 안 되면 긴 쪽 1280, 30프레임으로 다시 시도 (기기 인코더마다 한계가 다름)
         // 게임 최적화 단계에 맞춘 화질(긴 쪽·프레임)을 먼저 시도
@@ -161,7 +161,7 @@ public class RecordService extends Service {
             if (uri == null) return false;
             pfd = cr.openFileDescriptor(uri, "rw");
 
-            recorder = new MediaRecorder(this);
+            recorder = Compat.SDK >= 31 ? new MediaRecorder(this) : new MediaRecorder();
             if (mic) recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             recorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
