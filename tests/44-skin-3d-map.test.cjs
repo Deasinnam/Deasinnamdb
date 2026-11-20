@@ -6,7 +6,6 @@ run('3D map skin renders the speedometer scene in 3D', async ({newPage, origin})
   const osm = fs.readFileSync(path.join(__dirname, 'fixtures', 'osm-tile.png')), dem = fs.readFileSync(path.join(__dirname, 'fixtures', 'dem-tile.png'));
   const p = await newPage(() => { window.__build = 'special'; window.__3dPause = 1; window.addEventListener('error', e => console.log('PAGEERR', e.message)); localStorage.setItem('dna_skin2', JSON.stringify('carnival8')); });
   await p.route(/^https:\/\//, r => { const u = r.request().url();
-    if (u.includes('cartocdn.com/')) return r.abort();   // 기호 없는 지도를 못 받으면 OSM 지도로(기호를 지워서)
     if (u.includes('openstreetmap.org/')) return r.fulfill({body: osm, contentType: 'image/png', headers: {'access-control-allow-origin': '*'}});
     if (u.includes('terrarium')) return r.fulfill({body: dem, contentType: 'image/png', headers: {'access-control-allow-origin': '*'}}); return r.abort(); });
   await p.setViewportSize({width: 840, height: 900}); await p.goto(origin); await p.waitForFunction(() => window.AmpPfd && window.Amp3DHook);

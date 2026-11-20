@@ -16,8 +16,8 @@ const R = 6378137, PI = Math.PI, D2R = PI / 180;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
 const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const mercX = lon => R * lon * D2R, mercY = lat => R * Math.log(Math.tan(PI / 4 + lat * D2R / 2));
-// 1.81 땅에 지도 기호·글자가 찍히지 않게: 글자·기호 없는 지도(CARTO Voyager, OSM 자료)를 먼저, 안 되면 OSM 지도에서 기호를 지워 씀
-const TILE_URLS = ['https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'];
+// 1.82 OSM 지도에서 글자·기호를 지워 씀(1.81의 CARTO 글자 없는 지도는 이제 API 키가 있어야 해 "API KEY REQUIRED" 그림이 땅에 깔렸음)
+const TILE_URLS = ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'];
 const DEM_URL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LEVELS = [{ z: 15, r: 2 }, { z: 13, r: 2 }, { z: 11, r: 2 }];   // 가까이부터(5×5씩)
 const SEG = 32;
@@ -212,24 +212,28 @@ export function create() {
       if (mat.map) mat.map.dispose(); mat.map = tex; t.tex = tex; mat.userData.osm.value = 1; mat.userData.bg.value = t.bg; mat.needsUpdate = true;
       if (near && cv) { const go = () => extrude(t, cv.canvas); t.dem ? go() : setTimeout(go, 900); }
     };
-    const first = srcIdx;   // 이 요청이 쓴 지도(동시에 여러 장이 실패해도 OSM으로 한 번씩만 다시)
-    loadImg(url(first), im => got(im, first), () => { if (first === 0) { srcIdx = 1; loadImg(url(1), im => got(im, 1), () => { if (++fails > 12) net = false; }); } else if (++fails > 12) net = false; });
+    loadImg(url(0), im => got(im, 1), () => { if (++fails > 12) net = false; });
     return t;
   }
-  let srcIdx = 0;   // 0 = 기호 없는 지도, 못 받으면 1 = OSM(기호 지움)
+  const srcIdx = 1;   // OSM(글자·기호 지움)
   /* 지도 그림 다듬기: 바탕색(가장 흔한 무채색) 찾기 + OSM이면 글자·기호(주변보다 확 어둡거나 튀는 작은 점)를 주변 색으로 지움 */
   function cleanTile(im, osm) {
     const c = canvas(256, 256), x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     const id = x.getImageData(0, 0, 256, 256), d = id.data, hist = new Map();
     for (let i = 0; i < d.length; i += 16) { const r = d[i], g = d[i + 1], b = d[i + 2]; if (Math.max(r, g, b) - Math.min(r, g, b) > 20) continue; const k = (r + g + b) / 3 >> 2; hist.set(k, (hist.get(k) || 0) + 1); }
     let bk = 0, bn = -1; for (const [k, n] of hist) if (n > bn) { bn = n; bk = k; } const bg = (bk * 4 + 2) / 255;
-    if (osm) {   // 닫힘 연산(최댓값 → 최솟값, 반경 2): 폭 4px보다 가는 어두운 글자·나무 기호·번호는 사라지고 큰 면(건물·숲)과 밝은 길은 남음
-      const W = 256, a = new Uint8ClampedArray(d.length), pass = (src, dst, dx, dy, mx) => {
+    if (osm) {   // 1.82 숲·풀밭의 나무·풀 기호만 지움(초록 기운의 작은 어두운 점). 산 높이·도로 번호·지명 글자(갈색·회색·검정, 흰 테두리)는 그대로
+      const W = 256, a = new Uint8ClampedArray(d.length), c2 = new Uint8ClampedArray(d.length), pass = (src, dst, dx, dy, mx) => {
         for (let y = 0; y < W; y++) for (let x2 = 0; x2 < W; x2++) { const o = (y * W + x2) * 4;
           for (let ch = 0; ch < 3; ch++) { let v = src[o + ch];
             for (let k = -2; k <= 2; k++) { const xx = Math.min(W - 1, Math.max(0, x2 + k * dx)), yy = Math.min(W - 1, Math.max(0, y + k * dy)), w = src[(yy * W + xx) * 4 + ch]; v = mx ? Math.max(v, w) : Math.min(v, w); }
             dst[o + ch] = v; } dst[o + 3] = 255; } };
-      pass(d, a, 1, 0, true); pass(a, d, 0, 1, true); pass(d, a, 1, 0, false); pass(a, d, 0, 1, false);
+      pass(d, a, 1, 0, true); pass(a, c2, 0, 1, true); pass(c2, a, 1, 0, false); pass(a, c2, 0, 1, false);   // c2 = 닫힘 결과
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2], R = c2[i], G = c2[i + 1], B = c2[i + 2];
+        const greenBg = G > R + 10 && G > B + 4, greenInk = g >= r + 4 && g >= b - 4, darker = (R + G + B) - (r + g + b) > 30;
+        if (greenBg && greenInk && darker) { d[i] = R; d[i + 1] = G; d[i + 2] = B; }
+      }
       x.putImageData(id, 0, 0);
     }
     return { canvas: c, bg };

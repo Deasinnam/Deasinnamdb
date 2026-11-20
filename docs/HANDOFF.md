@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-20 · v1.81 (versionCode 115)**
+마지막 갱신: **2026-11-20 · v1.82 (versionCode 116)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.81** (versionCode 115, versionName `1.81-one`) |
+| 최신 버전 | **1.82** (versionCode 116, versionName `1.82-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-20 · 1.82 — CARTO basemaps가 API 키 없이 "API KEY REQUIRED" 그림을 돌려줘(실패가 아니라 그림이라 대체도 안 됨) 땅이 하얗게 덮였음 → TILE_URLS는 OSM 하나. `cleanTile`은 사용자 요청대로 글자(산 높이·도로 번호·지명)는 남기고 숲·풀밭 기호만 지움: 5×5 닫힘 결과가 초록 바탕(G>R+10, G>B+4)이고 원래 점이 초록 기운(g≥r+4)이면서 30 넘게 어두울 때만 닫힘 색으로. 출처 "© OpenStreetMap". 키 없는 다른 타일 서버를 쓸 땐 실제 그림이 오는지 꼭 확인.
 - 2026-11-20 · 1.81 — 3D 맵: 활주로 rwMesh·유도등 lights는 depthTest·depthWrite 끔, transparent, renderOrder 1000/1001(맨 마지막). 지도 TILE_URLS[0]=CARTO voyager_nolabels({s}=a~d), 실패한 요청은 그 타일만 OSM으로 다시(`first`로 출처 기억 — 동시 실패를 fails로 세어 net=false 되던 버그 피함). `cleanTile`: 무채색 최빈값으로 바탕 밝기(uBg) 추정 + OSM이면 5×5 닫힘(최댓값→최솟값)으로 글자·기호 지움. 물=파란 기운, 건물=바탕보다 .025~.17 어두운 무채색, 숲=초록 기운으로 색 이름 없이 분류(셰이더·건물 세우기 둘 다). 출처 표시 "© OpenStreetMap · © CARTO". 테스트 44: CARTO 막고 OSM 대체·활주로 맨 위 확인.
 - 2026-11-20 · 1.80 — 대신남 3D 맵 스킨(`carnival8`, 00-core SKINS·CAR_SKINS·ONE_SKINS). setSkin0에서 안으로는 carnival7로 바꾸고 `:root[data-sk3d]`만 더함(그래서 모든 기능이 에어라인과 같음, 고른 값·버튼 표시는 skinPref). 엔진: `web3d/scene3d.js`(three 0.187 + Sky·EffectComposer·UnrealBloom·OutputPass) → `node tools/build-3d.cjs`(esbuild, devDeps three·esbuild)로 `assets/pfd3d.js` 한 파일(약 600KB, 커밋함). 연결: `assets/pfd-3d.js`(index.html에서 pfd-special 다음) — data-sk3d면 drawSky를 건너뛰고 drawGround에서 엔진 그림을 피치·롤을 되돌린 좌표에 drawImage(카메라는 같은 피치·롤, 수평선 0.53·h/58°로 맞춤). 지도: OSM 타일 z15/z13/z11 각 5×5(가까운 단계가 덮는 곳은 먼 단계에서 discard), 고도 AWS terrarium, 가까운 3×3 타일의 건물색(#d9d0c9)·숲색 칸을 InstancedMesh 상자·원뿔로. 위치는 GPS(1초 위치를 속도·방향으로 이어 붙임), GPS 없으면 서울 시청에서 F.wz만큼. 활주로·관제탑·격납고는 지상·접근 단계에 내 앞, 이륙 뒤엔 그 자리. 가볍게 모드: 그림자 끔·해상도 1.25배 이하·초당 30번. (2) pfd-flight P.drawHorizon이 d/dp 자세 값을 0/비행 기울기로 바꾸고 되돌리지 않아 추가 그리기마다 피치가 쌓였음 → finally에서 `save` 되돌림. 테스트 44(가짜 지도·고도 타일 tests/fixtures), 01·26·28 스킨 목록.
 - 2026-11-20 · 1.79 — 무료 공개 자료(Poly Haven·Kenney)는 작업 공간에서 내려받을 수 없어 코드로 만듦: pfd-special.js `FTEX`(256px, 8×8 값 노이즈 얼룩 + 64px 구획마다 방향·간격이 다른 이랑 + 잔 알갱이, 128 회색 바탕) → `drawFieldDetail`이 X.river 맨 앞(강·마을·바다보다 먼저)에서 `slices`로 soft-light, 고화질 4200·1.28 / 가볍게 2200·1.6. `slices` 패턴 변환에 F.lo 가로 이동 추가(바다 물결도 함께). 데스크톱 측정 draw ≈4.5ms. 사용자가 자료 파일을 올려 주면 FTEX·RTEX를 그 이미지로 바꾸면 됨.
