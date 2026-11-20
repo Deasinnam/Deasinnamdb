@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../pblsketch/ieumoffice/packages/agent-core/src/skill-mcp-refs.ts
+// ../ieum/packages/agent-core/src/skill-mcp-refs.ts
 var skill_mcp_refs_exports = {};
 __export(skill_mcp_refs_exports, {
   SKILL_SKIPPED_STEPS_SENTENCE: () => SKILL_SKIPPED_STEPS_SENTENCE,

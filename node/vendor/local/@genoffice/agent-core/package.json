@@ -1,3 +1,17 @@
-{ "name": "@genoffice/agent-core", "version": "0.1.0", "license": "Apache-2.0",
-  "description": "IeumOffice packages/agent-core 일부 (esbuild로 CJS 변환)",
-  "exports": { "./redact-core": "./redact-core.js", "./redact-range": "./redact-range.js", "./skill-mcp-refs": "./skill-mcp-refs.js", "./user-skill-names": "./user-skill-names.js" } }
+{
+ "name": "@genoffice/agent-core",
+ "version": "0.1.0",
+ "license": "Apache-2.0",
+ "description": "IeumOffice packages/agent-core 일부 (esbuild로 CJS 변환, v0.13.0)",
+ "exports": {
+  "./redact-core": "./redact-core.js",
+  "./redact-range": "./redact-range.js",
+  "./skill-mcp-refs": "./skill-mcp-refs.js",
+  "./user-skill-names": "./user-skill-names.js",
+  "./skill-editors": "./skill-editors.js",
+  "./mind-map": "./mind-map.js",
+  "./doubled-escapes": "./doubled-escapes.js",
+  "./user-mcp/names": "./user-mcp/names.js",
+  "./user-mcp/result": "./user-mcp/result.js"
+ }
+}

@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../pblsketch/ieumoffice/packages/agent-core/src/user-skill-names.ts
+// ../ieum/packages/agent-core/src/user-skill-names.ts
 var user_skill_names_exports = {};
 __export(user_skill_names_exports, {
   RESERVED_USER_SKILL_NAMES: () => RESERVED_USER_SKILL_NAMES

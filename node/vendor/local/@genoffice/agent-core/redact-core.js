@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../pblsketch/ieumoffice/packages/agent-core/src/redact-core.ts
+// ../ieum/packages/agent-core/src/redact-core.ts
 var redact_core_exports = {};
 __export(redact_core_exports, {
   MAX_LABEL_LENGTH: () => MAX_LABEL_LENGTH,
@@ -36,7 +36,17 @@ var MAX_LABEL_LENGTH = 40;
 var LABEL_STRIP = /[{}<>="']/g;
 var LABEL_STRIP_COMMENT = /[{}<>="'*/]/g;
 function sanitizeLabel(raw, options = {}) {
-  return raw.replace(options.forComment ? LABEL_STRIP_COMMENT : LABEL_STRIP, "").replace(/\s+/g, " ").trim().slice(0, MAX_LABEL_LENGTH).trim();
+  return cutLabel(
+    raw.replace(options.forComment ? LABEL_STRIP_COMMENT : LABEL_STRIP, "").replace(/\s+/g, " ").trim(),
+    MAX_LABEL_LENGTH
+  ).trim();
+}
+function cutLabel(text, max) {
+  if (text.length <= max) return text;
+  let end = max;
+  const last = text.charCodeAt(end - 1);
+  if (last >= 55296 && last <= 56319) end -= 1;
+  return text.slice(0, end);
 }
 function placeholderSource(label) {
   return `${OPEN}${sanitizeLabel(label) || "private"}${CLOSE}`;
