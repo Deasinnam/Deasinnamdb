@@ -964,18 +964,34 @@ public class MainActivity extends ComponentActivity {
         return new File(getFilesDir(), "wallpaper.jpg");
     }
 
+    /** 안드로이드 8: ImageDecoder가 없어 크기를 먼저 재고 줄여서 읽음 */
+    private Bitmap decodeOld(Uri uri) throws java.io.IOException {
+        android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        try (java.io.InputStream in = getContentResolver().openInputStream(uri)) { android.graphics.BitmapFactory.decodeStream(in, null, o); }
+        int longSide = Math.max(o.outWidth, o.outHeight), sample = 1;
+        while (longSide / sample > 2600) sample *= 2;
+        android.graphics.BitmapFactory.Options d = new android.graphics.BitmapFactory.Options();
+        d.inSampleSize = sample;
+        try (java.io.InputStream in = getContentResolver().openInputStream(uri)) {
+            Bitmap b = android.graphics.BitmapFactory.decodeStream(in, null, d);
+            if (b == null) throw new java.io.IOException("사진을 읽지 못함");
+            return b;
+        }
+    }
+
     private void onWallpaperPicked(Uri uri) {
         if (uri == null) return; // 고르지 않고 닫음
         io.execute(() -> {
             try {
                 // 화면보다 지나치게 큰 사진은 줄여서 저장 (긴 쪽 2600px 이하). 사진의 회전 정보는 자동 반영됩니다.
-                Bitmap b = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver(), uri), (decoder, info, src) -> {
+                Bitmap b = Compat.SDK >= 28 ? ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver(), uri), (decoder, info, src) -> {
                     decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
                     int longSide = Math.max(info.getSize().getWidth(), info.getSize().getHeight());
                     int sample = 1;
                     while (longSide / sample > 2600) sample *= 2;
                     decoder.setTargetSampleSize(sample);
-                });
+                }) : decodeOld(uri);
                 saveWallpaper(b);
                 push("wallpaper");
             } catch (Exception e) {
@@ -1033,7 +1049,7 @@ public class MainActivity extends ComponentActivity {
             } else {
                 Rect b = boundsFor(mode);
                 o.setLaunchBounds(b);
-                if (getDisplay() != null) o.setLaunchDisplayId(getDisplay().getDisplayId());
+                if (Compat.display(MainActivity.this) != null) o.setLaunchDisplayId(Compat.display(MainActivity.this).getDisplayId());
                 opts = o.toBundle();
                 // DeX는 이미 모든 창이 자유 창 — 창 방식까지 지정하면 자리 요청을 무시하는 경우가 있어 DeX에서는 자리만 줌
                 if (!dexOn()) opts.putInt(KEY_WINDOWING_MODE, 5);
@@ -1057,7 +1073,7 @@ public class MainActivity extends ComponentActivity {
     private double reserveArg;
 
     private Rect boundsFor(String mode) {
-        Rect screen = getWindowManager().getMaximumWindowMetrics().getBounds();
+        Rect screen = Compat.maxBounds(MainActivity.this);
         float dp = getResources().getDisplayMetrics().density;
         int top = root.getPaddingTop(), bottom = root.getPaddingBottom();
         int bar = reserveArg > 0 ? (int) Math.round(reserveArg * dp) : Math.round(64 * dp); // 작업 표시줄 자리는 비워 둠
@@ -1110,7 +1126,7 @@ public class MainActivity extends ComponentActivity {
     private boolean deskWindowed() {
         Configuration c = getResources().getConfiguration();
         if (c.toString().contains("mWindowingMode=freeform")) return true;
-        Rect mine = getWindowManager().getCurrentWindowMetrics().getBounds(), max = getWindowManager().getMaximumWindowMetrics().getBounds();
+        Rect mine = Compat.curBounds(MainActivity.this), max = Compat.maxBounds(MainActivity.this);
         return mine.width() < max.width() - 8 || mine.height() < max.height() - 8;
     }
 
@@ -1128,12 +1144,21 @@ public class MainActivity extends ComponentActivity {
      * 화면 전체에서 시스템 막대(상태 표시줄 · DeX 작업 표시줄 · 내비게이션)를 뺀 곳.
      * 데스크가 바탕화면으로 화면 전체를 쓰면 데스크 작업 표시줄 자리도 뺍니다.
      */
+    /** 화면 가장자리 시스템 막대 두께 {왼, 위, 오, 아래} — 안드로이드 11+는 숨겨져 있어도 포함 */
+    private int[] barsOf() {
+        if (Compat.SDK >= 30) {
+            android.graphics.Insets in = getWindowManager().getMaximumWindowMetrics().getWindowInsets().getInsetsIgnoringVisibility(
+                    android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout());
+            return new int[]{in.left, in.top, in.right, in.bottom};
+        }
+        android.view.WindowInsets wi = getWindow().getDecorView().getRootWindowInsets();
+        return wi == null ? new int[4] : Compat.bars(wi);
+    }
+
     private int[] arrangeArea(double reserveCss) {
-        android.view.WindowMetrics m = getWindowManager().getMaximumWindowMetrics();
-        Rect s = m.getBounds();
-        android.graphics.Insets in = m.getWindowInsets().getInsetsIgnoringVisibility(
-                android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout());
-        int l = s.left + in.left, t = s.top + in.top, r = s.right - in.right, b = s.bottom - in.bottom;
+        Rect s = Compat.maxBounds(MainActivity.this);
+        int[] in = barsOf();
+        int l = s.left + in[0], t = s.top + in[1], r = s.right - in[2], b = s.bottom - in[3];
         if (!deskWindowed()) {
             float dp = getResources().getDisplayMetrics().density;
             b -= reserveCss > 0 ? (int) Math.round(reserveCss * dp) : Math.round(64 * dp);
@@ -1158,7 +1183,7 @@ public class MainActivity extends ComponentActivity {
         java.util.List<TaskParser.T> all = TaskParser.stackList(Shizu.run("am stack list", 2500));
         lastTaskSource = "stack";
         if (all.isEmpty()) { all = TaskParser.dumpsys(Shizu.run("dumpsys activity activities", 4000)); lastTaskSource = "dumpsys"; }
-        int myDisplay = getDisplay() != null ? getDisplay().getDisplayId() : 0;
+        int myDisplay = Compat.display(MainActivity.this) != null ? Compat.display(MainActivity.this).getDisplayId() : 0;
         boolean anyHere = false;
         for (TaskParser.T t : all) if (t.display == myDisplay) { anyHere = true; break; }
         JSONArray list = new JSONArray();
@@ -1217,8 +1242,8 @@ public class MainActivity extends ComponentActivity {
     private JSONObject arrange(JSONArray items, double reserveCss) throws Exception {
         JSONObject diag = new JSONObject();
         int[] area = arrangeArea(reserveCss);
-        Rect max = getWindowManager().getMaximumWindowMetrics().getBounds(), cur = getWindowManager().getCurrentWindowMetrics().getBounds();
-        diag.put("time", System.currentTimeMillis()).put("display", getDisplay() != null ? getDisplay().getDisplayId() + " " + getDisplay().getName() : "?")
+        Rect max = Compat.maxBounds(MainActivity.this), cur = Compat.curBounds(MainActivity.this);
+        diag.put("time", System.currentTimeMillis()).put("display", Compat.display(MainActivity.this) != null ? Compat.display(MainActivity.this).getDisplayId() + " " + Compat.display(MainActivity.this).getName() : "?")
                 .put("dex", dexOn()).put("deskWindowed", deskWindowed()).put("freeform", freeformSupported()).put("shizuku", Shizu.granted())
                 .put("screen", max.flattenToString()).put("desk", cur.flattenToString())
                 .put("area", area[0] + "," + area[1] + " - " + area[2] + "," + area[3]).put("reserveCss", reserveCss);
@@ -1372,13 +1397,17 @@ public class MainActivity extends ComponentActivity {
     }
 
     private boolean isDefaultHome() {
+        if (Compat.SDK < 29) { // 안드로이드 8 · 9: 기본 홈 앱을 직접 확인
+            android.content.pm.ResolveInfo ri = getPackageManager().resolveActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), android.content.pm.PackageManager.MATCH_DEFAULT_ONLY);
+            return ri != null && ri.activityInfo != null && getPackageName().equals(ri.activityInfo.packageName);
+        }
         RoleManager rm = getSystemService(RoleManager.class);
         return rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && rm.isRoleHeld(RoleManager.ROLE_HOME);
     }
 
     @SuppressWarnings("deprecation")
     private boolean makeDefault() {
-        try {
+        if (Compat.SDK >= 29) try {
             RoleManager rm = getSystemService(RoleManager.class);
             if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
                 startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_HOME), 7);
