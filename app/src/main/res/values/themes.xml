@@ -3,8 +3,8 @@
     <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- 안드로이드 8: 내비게이션 막대 아이콘이 흰색뿐이라 막대를 어둡게 -->
+        <item name="android:navigationBarColor">#99000000</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
     </style>
 </resources>

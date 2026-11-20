@@ -49,11 +49,11 @@ public class MainActivity extends Activity {
         android.widget.FrameLayout root = new android.widget.FrameLayout(this);
         root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
-        getWindow().setDecorFitsSystemWindows(false);
+        Compat.edgeToEdge(getWindow());
         root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets s = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-            v.setPadding(s.left, s.top, s.right, s.bottom);
-            return WindowInsets.CONSUMED;
+            int[] s = Compat.bars(insets);
+            v.setPadding(s[0], s[1], s[2], s[3]);
+            return Compat.consumed(insets);
         });
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -196,7 +196,7 @@ public class MainActivity extends Activity {
                 if (o.optBoolean("trash")) {
                     List<Uri> uris = new ArrayList<>();
                     long[] t = Cleaner.trash(MainActivity.this, uris);
-                    if (!uris.isEmpty()) {
+                    if (!uris.isEmpty() && Compat.SDK >= 30) {
                         PendingIntent pi = MediaStore.createDeleteRequest(getContentResolver(), uris);
                         main.post(() -> {
                             try { startIntentSenderForResult(pi.getIntentSender(), REQ_TRASH, null, 0, 0, 0); }
