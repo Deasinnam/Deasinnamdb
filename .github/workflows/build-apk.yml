@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  IEUM_VERSION: v0.12.12
+  IEUM_VERSION: v0.13.0
   IEUM_UPSTREAM: pblsketch/ieumoffice
   PHOTO_UPSTREAM: storytold/photocraft
   FILM_UPSTREAM: storytold/filmcraft

@@ -4,7 +4,7 @@
 
 | 기능 | 바탕이 된 오픈소스 | 라이선스 |
 |---|---|---|
-| 문서 편집 (워드·엑셀·파워포인트·한글·PDF 보기·EPUB·마인드맵·다이어그램·마크다운·HTML) | [IeumOffice](https://github.com/pblsketch/ieumoffice) v0.12.12 | Apache-2.0 |
+| 문서 편집 (워드·엑셀·파워포인트·한글·PDF 보기·EPUB·마인드맵·다이어그램·마크다운·HTML) | [IeumOffice](https://github.com/pblsketch/ieumoffice) v0.13.0 | Apache-2.0 |
 | 사진 편집 (레이어·마스크·보정·PSD) | [PhotoCraft](https://github.com/storytold/photocraft) 최신 웹 빌드 | MIT 또는 Apache-2.0 |
 | 동영상 편집 (컷·색·효과·오디오·자막·MP4) | [FilmCraft](https://github.com/storytold/filmcraft) 최신 릴리스 소스 | MIT 또는 Apache-2.0 |
 
