@@ -69,7 +69,7 @@ function glowTexture(rgb) {
 }
 
 /* ---------- 지도 바닥 재질: 낮엔 지도 색에 해·구름 그림자, 밤엔 길이 불빛(블룸), 물은 하늘을 비춤 ---------- */
-const SH = { uTime: { value: 0 }, uNight: { value: 0 }, uCloud: { value: 1 }, uWind: { value: new THREE.Vector2() } };
+const SH = { uRw: { value: new THREE.Vector4(1e9, 1e9, 0, -1) }, uRwS: { value: new THREE.Vector2(230, 900) }, uRwY: { value: 0 }, uTime: { value: 0 }, uNight: { value: 0 }, uCloud: { value: 1 }, uWind: { value: new THREE.Vector2() } };
 const GLSL_NOISE = `
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}
@@ -79,7 +79,11 @@ function groundMaterial(level, map) {
   m.userData.hole = { value: new THREE.Vector4(1, 1, -1, -1) }; m.userData.osm = { value: 0 }; m.userData.bg = { value: .94 };
   m.onBeforeCompile = s => {
     Object.assign(s.uniforms, SH, { uHole: m.userData.hole, uOsm: m.userData.osm, uBg: m.userData.bg });
-    s.vertexShader = 'varying vec3 vW;\n' + s.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvW=(modelMatrix*vec4(transformed,1.)).xyz;');
+    // 1.83 공항 구역은 땅을 활주로 높이로 평평하게(산이 활주로를 뚫거나 카메라가 땅속에 들어가지 않게)
+    s.vertexShader = 'varying vec3 vW;uniform vec4 uRw;uniform vec2 uRwS;uniform float uRwY;\n' + s.vertexShader
+      .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nvec2 rq=(modelMatrix*vec4(position,1.)).xz-uRw.xy;float rwF=(1.-smoothstep(uRwS.x,uRwS.x+260.,abs(dot(rq,vec2(-uRw.w,uRw.z)))))*(1.-smoothstep(uRwS.y,uRwS.y+320.,abs(dot(rq,uRw.zw))));objectNormal=normalize(mix(objectNormal,vec3(0.,1.,0.),rwF));')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed.y=mix(transformed.y,uRwY,rwF);')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvW=(modelMatrix*vec4(transformed,1.)).xyz;');
     s.fragmentShader = 'varying vec3 vW;uniform float uTime,uNight,uCloud;uniform vec2 uWind;uniform vec4 uHole;uniform float uOsm,uBg;\n' + GLSL_NOISE + "\n" + s.fragmentShader
       .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif(vW.x>uHole.x&&vW.x<uHole.z&&vW.z>uHole.y&&vW.z<uHole.w)discard;\nfloat isWater=0.,glow=0.;vec3 glowC=vec3(0.);')
       .replace('#include <map_fragment>', `#ifdef USE_MAP
@@ -104,13 +108,14 @@ function groundMaterial(level, map) {
   m.polygonOffset = true; m.polygonOffsetFactor = level; m.polygonOffsetUnits = level;
   return m;
 }
-function buildingMaterial() {
+function buildingMaterial(tree) {
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .78, metalness: .05 });
   m.onBeforeCompile = s => {
     Object.assign(s.uniforms, SH);
     s.vertexShader = 'varying vec3 vB;varying vec3 vN0;\n' + s.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n#ifdef USE_INSTANCING\nvB=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz;\n#else\nvB=(modelMatrix*vec4(transformed,1.)).xyz;\n#endif\nvN0=normal;');
-    s.fragmentShader = 'varying vec3 vB;varying vec3 vN0;uniform float uNight;\n' + GLSL_NOISE + "\n" + s.fragmentShader
-      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+    s.fragmentShader = 'varying vec3 vB;varying vec3 vN0;uniform float uNight;uniform vec4 uRw;uniform vec2 uRwS;\n' + GLSL_NOISE + "\n" + s.fragmentShader
+      .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{vec2 q=vB.xz-uRw.xy;if(abs(dot(q,vec2(-uRw.w,uRw.z)))<uRwS.x&&abs(dot(q,uRw.zw))<uRwS.y)discard;}')   // 1.83 공항 구역 안 건물·나무는 그리지 않음
+      .replace('#include <emissivemap_fragment>', tree ? '#include <emissivemap_fragment>' : `#include <emissivemap_fragment>
   if(abs(vN0.y)<.5){vec2 g=vec2((abs(vN0.x)>.5?vB.z:vB.x)/3.6,vB.y/3.3);vec2 f=fract(g);float win=step(.25,f.x)*step(f.x,.8)*step(.3,f.y)*step(f.y,.8);
     float lit=step(.55,h21(floor(g)+floor(vB.xz/40.)));diffuseColor.rgb*=mix(1.,.72,win*(1.-uNight));
     totalEmissiveRadiance+=win*lit*vec3(1.,.78,.45)*uNight*1.6;}else{diffuseColor.rgb*=.86;}`);
@@ -170,7 +175,7 @@ export function create() {
   }
   // 지도 그림에서 건물·숲 칸을 찾아 3D로 세움(가까운 3×3 타일만)
   const bGeo = new THREE.BoxGeometry(1, 1, 1).translate(0, .5, 0), bMat = buildingMaterial();
-  const tGeo = new THREE.ConeGeometry(.5, 1, 7).translate(0, .5, 0), tMat = new THREE.MeshStandardMaterial({ color: 0x3f6a33, roughness: .9 });
+  const tGeo = new THREE.ConeGeometry(.5, 1, 7).translate(0, .5, 0), tMat = buildingMaterial(true); tMat.color.set(0x3f6a33); tMat.roughness = .9; tMat.customProgramCacheKey = () => 'tree';
   function extrude(t, img) {
     const c = canvas(256, 256), x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0); let d; try { d = x.getImageData(0, 0, 256, 256).data; } catch (e) { return; }
     const bg = t.bg, S = tileSize(t.z) * geo.k, mpp = S / 256, B = [], T = [], step = 4, m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
@@ -252,6 +257,9 @@ export function create() {
     for (const [k, t] of tiles) if (frame - t.seen > 2) { dropTile(t); tiles.delete(k); }
   }
 
+  // 1.83 지도 단계 사이 틈으로 하늘이 비쳐 땅과 하늘이 엉켜 보이지 않게: 지도 아래에 큰 바닥판(안개 색에 묻힘)
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(90000, 90000).rotateX(-PI / 2), new THREE.MeshBasicMaterial({ color: 0x6f7d6a, fog: true }));
+  under.renderOrder = -1; scene.add(under);
   // 구름(빌보드 무리)
   const clouds = [], cTex = [cloudTexture(1), cloudTexture(40), cloudTexture(90)];
   for (let i = 0; i < 70; i++) { const sm = new THREE.SpriteMaterial({ map: cTex[i % 3], transparent: true, depthWrite: false, fog: true, opacity: .95 }); const s = new THREE.Sprite(sm);
@@ -279,6 +287,15 @@ export function create() {
   composer.addPass(new RenderPass(scene, cam)); composer.addPass(bloom); composer.addPass(new OutputPass());
 
   const st = { x: 0, z: 0, hd: 0, wz: null, t0: performance.now(), rwSet: false, fixT: 0, fx: 0, fz: 0, vx: 0, vz: 0 };
+  function placeRunway(x, z, f) {
+    rw.position.set(x, st.rwY, z); rw.rotation.y = Math.atan2(-f[0], -f[1]); st.rwSet = true;
+    SH.uRw.value.set(x + f[0] * 700, z + f[1] * 700, f[0], f[1]); SH.uRwY.value = st.rwY;
+  }
+  function flatAt(x, z, h) {   // 셰이더와 같은 평평하게 만들기(카메라 높이용)
+    const u = SH.uRw.value, qx = x - u.x, qz = z - u.y, ax = Math.abs(-qx * u.w + qz * u.z), al = Math.abs(qx * u.z + qz * u.w), S = SH.uRwS.value;
+    const sm = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+    const f = (1 - sm(S.x, S.x + 260, ax)) * (1 - sm(S.y, S.y + 320, al)); return lerp(h, SH.uRwY.value, f);
+  }
   let W = 0, H = 0, lastQ = '';
   function render(o) {
     const now = performance.now(), t = (now - st.t0) / 1000;
@@ -299,7 +316,25 @@ export function create() {
     } else if (st.wz !== null) { const d = o.wz - st.wz; if (d > 0 && d < 2000) { st.x += fwd[0] * d / 2.2; st.z += fwd[1] * d / 2.2; } }
     st.wz = o.wz; st.last = now;
     updateTiles(st.x, st.z);
-    const gh = heightAt(st.x, st.z), alt = Math.max(gh, 0) + 3 + o.alt * 1.6;
+    // 1.83 활주로 높이를 기준으로: 지상(활주)에서는 내 발밑 땅 = 활주로, 접근 중에는 활주로 높이로 내려와 접지 — 고도가 오르면 땅 높이로 넘어감.
+    //  (예전엔 활주로를 그 자리 지도 고도에 따로 놓아 내 머리 위·땅속에 떠 보였음)
+    /* 1.83 활주로는 세상에 붙박이: 정차(hold·landed) 중엔 내 자리(진행 방향)에 놓이고, 활주가 시작되면 그 자리에 고정 — 이륙해도 같이 날아가지 않음.
+     *  접근 중엔 내 앞 활주로 거리(rwS)에 놓였다가 접지하면 고정. 높이 rwY는 놓일 때 그 자리 땅 높이, 공항 구역 땅은 그 높이로 평평하게 */
+    const ph = o.phase, raw = Math.max(heightAt(st.x, st.z), 0);
+    if (st.rwY == null) st.rwY = raw;
+    if (ph === 'hold' || ph === 'landed' || !st.rwSet) {
+      st.rwY += (raw - st.rwY) * (st.rwSet ? .05 : 1);
+      placeRunway(st.x - fwd[0] * 60, st.z - fwd[1] * 60, fwd);
+    } else if (ph === 'approach') {
+      const d = (o.rwS || 0) / 2.2, sx = st.x + fwd[0] * d, sz = st.z + fwd[1] * d;
+      if (st.lastPh !== 'approach') st.rwY = Math.max(heightAt(sx + fwd[0] * 300, sz + fwd[1] * 300), 0);
+      placeRunway(sx, sz, fwd);
+    }
+    st.lastPh = ph;
+    const gF = flatAt(st.x, st.z, raw), air = o.alt > 2;
+    let alt = gF + 3 + o.alt * 1.6; if (air) alt = Math.max(alt, raw + 12);   // 하늘에선 산보다 늘 위
+    const onRw = ['hold', 'roll', 'landed', 'rollout', 'approach'].includes(ph);
+    rwMesh.material.depthTest = lights.material.depthTest = !onRw;           // 이착륙 중엔 어떤 것에도 안 가림, 날아간 뒤엔 땅에 붙은 보통 물체
     cam.position.set(st.x, alt, st.z);
     cam.rotation.set(o.pitch * D2R, -st.hd * D2R, -o.roll * D2R);
     // 원근: 2D 계기의 피치 사다리(높이/58°, 수평선이 0.53 높이)와 맞춤
@@ -314,7 +349,7 @@ export function create() {
     su.rayleigh.value = lerp(1.6, 3.2, gold); su.turbidity.value = lerp(4, 9, gold);
     if (Math.abs(el - envEl) > 1.5 || now - envAt > 60000) { envEl = el; envAt = now; Object.assign(envSky.material.uniforms.turbidity, { value: su.turbidity.value }); envSky.material.uniforms.rayleigh.value = su.rayleigh.value;
       if (envRT) envRT.dispose(); envRT = pmrem.fromScene(envScene); scene.environment = envRT.texture; }
-    sunL.position.copy(cam.position).addScaledVector(sd, 4000); sunL.target.position.copy(cam.position); sunL.target.position.y = gh;
+    sunL.position.copy(cam.position).addScaledVector(sd, 4000); sunL.target.position.copy(cam.position); sunL.target.position.y = gF;
     sunL.color.setHSL(lerp(.12, .07, gold), lerp(.25, .85, gold), .62); sunL.intensity = lerp(2.8, 1.8, gold) * (1 - night) + night * .3;
     if (night > .5) { sunL.position.copy(cam.position).addScaledVector(new THREE.Vector3(-sd.x, .6, -sd.z).normalize(), 4000); sunL.color.set(0x8fa8e0); }
     hemi.intensity = lerp(.45, .1, night); scene.environmentIntensity = lerp(.16, .05, night);   // 하늘 환경 빛은 아주 밝아(대기 셰이더 값) 낮춰 씀 hemi.color.set(night > .5 ? 0x2a3a5a : 0xcfe4ff); hemi.groundColor.set(night > .5 ? 0x0a0d14 : 0x4a5a3a);
@@ -323,6 +358,7 @@ export function create() {
     moon.visible = night > .2; moon.position.copy(cam.position).add(new THREE.Vector3(-sd.x, Math.max(.25, -sd.y), -sd.z).normalize().multiplyScalar(40000));
     sunGlow.visible = el > -2; sunGlow.position.copy(cam.position).addScaledVector(sd, 40000); sunGlow.material.opacity = (1 - night) * lerp(.35, .8, gold);
     sky.position.copy(cam.position);
+    under.position.set(st.x, Math.min(gF, 0) - 40, st.z); under.material.color.copy(new THREE.Color(0x6f7d6a).lerp(new THREE.Color(0x05080c), night));
     const fogC = new THREE.Color().setRGB(lerp(.72, .95, gold), lerp(.80, .72, gold), lerp(.88, .62, gold)).lerp(new THREE.Color(0x0a1120), night);
     scene.fog.color.copy(fogC); scene.fog.density = lerp(.000038, .00006, gold) * (alt > 900 ? .8 : 1);
     SH.uTime.value = t; SH.uNight.value = night; SH.uWind.value.set(.012, .006); SH.uCloud.value = 1;
@@ -332,9 +368,6 @@ export function create() {
     for (const s of clouds) { const u = s.userData, wx = ((u.ox + t * 6 - st.x) % 30000 + 45000) % 30000 - 15000, wz = ((u.oz + t * 3 - st.z) % 30000 + 45000) % 30000 - 15000;
       s.position.set(st.x + wx, u.y, st.z + wz); s.material.color.copy(cl); s.material.opacity = lerp(.95, .55, night); }
     // 활주로: 지상·접근 중에는 내 앞(진행 방향)에, 이륙 뒤에는 그 자리에 남음
-    const ground = ['hold', 'roll', 'landed', 'rollout', 'approach'].includes(o.phase);
-    if (ground || !st.rwSet) { const d = (o.rwS || 0) / 2.2; rw.position.set(st.x + fwd[0] * d, 0, st.z + fwd[1] * d); rw.rotation.y = -st.hd * D2R; rw.position.y = heightAt(rw.position.x, rw.position.z); st.rwSet = true;
-    }
     rw.visible = Math.hypot(rw.position.x - st.x, rw.position.z - st.z) < 25000;
     lights.material.color.setScalar(lerp(.6, 4, night));
     bloom.strength = lerp(hq ? .12 : .08, hq ? .75 : .55, night); bloom.threshold = lerp(2.2, .42, night); bloom.radius = lerp(.4, .5, night);

@@ -19,10 +19,10 @@ run('3D map skin renders the speedometer scene in 3D', async ({newPage, origin})
   assert.equal(await p.evaluate(() => Amp3DHook.state), 'ready', 'engine ' + await p.evaluate(() => window.__3dErr || ''));
   await p.evaluate(() => { AmpSpecialSky.set('noon'); AmpFlight.step(1, 30); AmpFlight.step(5, 40); AmpFlight.step(14, 60); pfd.draw(); });
   await p.waitForFunction(() => Amp3DHook.engine.loaded > 40, null, {timeout: 30000}).catch(() => {}); await p.evaluate(() => pfd.draw());
-  const st = await p.evaluate(() => { const e = Amp3DHook.engine, L = window.__3dLast; return {loaded: e.loaded, src: e.source, rwTop: !e.runway.material.depthTest && e.runway.renderOrder >= 1000, tiles: e.tiles, inst: e.scene.children.filter(o => o.isInstancedMesh).length, pitch: L.pitch, credit: !document.querySelector('#pfdHost .p3d-credit').hidden}; });
+  const st = await p.evaluate(() => { const e = Amp3DHook.engine, L = window.__3dLast; return {loaded: e.loaded, src: e.source, rwTop: e.runway.renderOrder >= 1000 && e.runway.material.depthTest === true && (e.render(Object.assign({}, L, {phase: 'roll', alt: 0})), !e.runway.material.depthTest), tiles: e.tiles, inst: e.scene.children.filter(o => o.isInstancedMesh).length, pitch: L.pitch, credit: !document.querySelector('#pfdHost .p3d-credit').hidden}; });
   assert.ok(st.tiles >= 75, 'map tiles around me: ' + st.tiles);
   assert.ok(st.loaded > 20 && st.src === 1, 'falls back to OSM tiles: ' + JSON.stringify(st));
-  assert.ok(st.rwTop, 'runway is never hidden');
+  assert.ok(st.rwTop, 'runway never hidden while taking off/landing, normal once airborne');
   assert.ok(st.inst >= 1, 'buildings/trees raised from the map: ' + st.inst);
   assert.ok(Math.abs(st.pitch) < 8, 'horizon pitch stays sane: ' + st.pitch);
   assert.ok(st.credit, 'map attribution shown');
