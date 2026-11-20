@@ -2915,3 +2915,6 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 /* 1.80 3D 맵: 지도 출처 */
 #pfdHost .p3d-credit{position:absolute;z-index:3;right:calc(var(--pfd-tape,70px) + 8px);bottom:calc(var(--pfd-cmp,50px) + 6px);font:600 10px/1 "Noto Sans KR",sans-serif;color:#fff;opacity:.75;text-shadow:0 1px 2px #000;pointer-events:none}
 #pfdHost .p3d-credit[hidden]{display:none}
+/* 1.84 배포용 에어포스원: 라디오 없음 / 라이트판은 외부 앱 소리도 없음 */
+:root[data-noradio] #radioBtn,:root[data-noradio] #ckRail [data-f="radio"],:root[data-noradio] #wRadio,:root[data-noradio] #bSwap{display:none!important}
+:root[data-noext] #bInput,:root[data-noext] #xinPick,:root[data-noext] #wExt,:root[data-noext] #secExtSnd,:root[data-noext] #srcSeg{display:none!important}

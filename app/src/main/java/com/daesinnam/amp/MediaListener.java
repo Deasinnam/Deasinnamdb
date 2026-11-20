@@ -15,7 +15,7 @@ import android.service.notification.StatusBarNotification;
 
  */
 public class MediaListener extends NotificationListenerService {
-    private static final boolean ON = "special".equals(BuildConfig.FLAVOR_device);
+    private static final boolean ON = "special".equals(BuildConfig.FLAVOR_device) || "airdist".equals(BuildConfig.FLAVOR_device);
     /** 지금 울리는 전화(없으면 key == null) */
     static volatile String callKey = null, callName = null, callText = null;
     static volatile boolean callIncoming = false;

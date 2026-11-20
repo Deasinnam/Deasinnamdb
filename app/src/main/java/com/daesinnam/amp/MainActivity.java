@@ -1689,7 +1689,15 @@ public class MainActivity extends Activity {
         /** 1.53 빌드 종류: std·fold8(기존) / comm(커뮤니티 배포 테스트) / play(안드로이드 등록 테스트) */
         @JavascriptInterface
         public String buildKind() {
-            return BuildConfig.FLAVOR_device;
+            // 1.84 배포용 에어포스원(airdist)은 화면·기능이 스페셜과 같음
+            return "airdist".equals(BuildConfig.FLAVOR_device) ? "special" : BuildConfig.FLAVOR_device;
+        }
+
+        /** 1.84 배포판 제한: airdist면 "noradio"(인터넷 라디오 없음) + lite판이면 ",lite"(외부 앱 소리 없음, 내 음악만) */
+        @JavascriptInterface
+        public String distFlags() {
+            if (!"airdist".equals(BuildConfig.FLAVOR_device)) return "";
+            return "full".equals(BuildConfig.FLAVOR_edition) ? "noradio" : "noradio,lite";
         }
 
         @JavascriptInterface
