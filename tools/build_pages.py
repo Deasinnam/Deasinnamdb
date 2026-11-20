@@ -48,6 +48,9 @@ APPS = [
     ("#app-sseum", "/dulsseum/", "덜씀 — 다 써 보고 만든 맥 최적화 앱",
      "메모리 · 저장공간 · 배터리를 덜 쓰게 만드는 맥 전용 최적화 앱. 안 쓰는 앱과 캐시 메모리 정리, 타임머신 스냅샷 · 캐시 · 휴지통 정리, 배터리 저전력, 구형 맥 가볍게.",
      "덜씀", "UtilitiesApplication", "/media/dulsseum-mac.webp", "macOS"),
+    ("#app-localai", "/localai/", "덜누름 로컬 AI — 인터넷 없이 돌아가는 AI, 에이서 프레데터 아틀라스 8 최적화",
+     "대화 · 코딩(gpt-oss-20b), 사진 이해(Gemma 4 E4B), 그림 생성(FLUX.2 Klein 4B)을 인터넷 없이 기기 안에서. 사용료 0원, 데이터는 밖으로 나가지 않습니다. 에이서 프레데터 아틀라스 8에 맞춘 윈도우 설치 파일과 설치 방법 · 주의사항.",
+     "덜누름 로컬 AI", "UtilitiesApplication", "/media/app-localai.svg", "Windows"),
 ]
 APP_NAMES = ", ".join(a[4] for a in APPS)
 PAGES = [

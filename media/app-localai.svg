@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" font-family="'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16161a"/><stop offset="1" stop-color="#0b0b0d"/></linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2b30"/><stop offset="1" stop-color="#17181b"/></linearGradient>
+    <linearGradient id="pic" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset=".55" stop-color="#e2583e"/><stop offset="1" stop-color="#5b2a86"/></linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#bg)"/>
+  <!-- 핸드헬드 몸체 -->
+  <rect x="60" y="150" width="1080" height="470" rx="150" fill="url(#body)" stroke="#3a3b41" stroke-width="3"/>
+  <circle cx="190" cy="320" r="62" fill="#0e0f11" stroke="#3a3b41" stroke-width="3"/>
+  <circle cx="190" cy="320" r="34" fill="#232428"/>
+  <g fill="#0e0f11" stroke="#3a3b41" stroke-width="3"><rect x="160" y="440" width="60" height="22" rx="6"/><rect x="179" y="421" width="22" height="60" rx="6"/></g>
+  <circle cx="1010" cy="460" r="62" fill="#0e0f11" stroke="#3a3b41" stroke-width="3"/>
+  <circle cx="1010" cy="460" r="34" fill="#232428"/>
+  <g fill="#0e0f11" stroke="#3a3b41" stroke-width="3"><circle cx="1010" cy="268" r="17"/><circle cx="1050" cy="308" r="17"/><circle cx="970" cy="308" r="17"/><circle cx="1010" cy="348" r="17"/></g>
+  <circle cx="1010" cy="268" r="7" fill="#ff7a00"/>
+  <!-- 화면 -->
+  <rect x="290" y="185" width="620" height="400" rx="14" fill="#0a0a0b"/>
+  <rect x="302" y="197" width="596" height="376" rx="8" fill="#1d1e22"/>
+  <rect x="302" y="197" width="596" height="40" rx="8" fill="#26272c"/>
+  <circle cx="324" cy="217" r="7" fill="#ff7a00"/>
+  <text x="340" y="223" font-size="16" font-weight="700" fill="#f4f4f5">덜누름 로컬 AI</text>
+  <rect x="756" y="206" width="130" height="22" rx="11" fill="#14381f"/>
+  <circle cx="772" cy="217" r="5" fill="#4ade80"/>
+  <text x="782" y="222" font-size="12.5" font-weight="600" fill="#86efac">인터넷 없이 동작</text>
+  <!-- 대화 -->
+  <rect x="620" y="252" width="262" height="40" rx="14" fill="#ff7a00"/>
+  <text x="636" y="278" font-size="15" font-weight="600" fill="#1b0d00">노을 진 바다 고양이 그려줘</text>
+  <rect x="318" y="306" width="250" height="210" rx="14" fill="#2a2b30"/>
+  <rect x="330" y="318" width="226" height="160" rx="10" fill="url(#pic)"/>
+  <circle cx="500" cy="356" r="22" fill="#ffd28a" opacity=".9"/>
+  <path d="M330 440 Q400 420 470 440 T556 436 V478 H330 Z" fill="#2b1d4f" opacity=".85"/>
+  <path d="M392 446 l10 -18 l8 12 h18 l8 -12 l10 18 q6 22 -27 26 q-33 -4 -27 -26z" fill="#111"/>
+  <text x="330" y="502" font-size="13" fill="#a1a1aa">이 PC 안에서 그린 그림 · 약 1분</text>
+  <rect x="318" y="526" width="564" height="34" rx="17" fill="#26272c" stroke="#3a3b41"/>
+  <text x="338" y="548" font-size="13.5" fill="#71717a">무엇이든 물어보세요 · 사진을 올리면 읽어 줘요</text>
+  <rect x="590" y="306" width="292" height="112" rx="14" fill="#2a2b30"/>
+  <text x="606" y="334" font-size="14" font-weight="700" fill="#f4f4f5">대화 · 코딩 · 사진 이해</text>
+  <text x="606" y="360" font-size="13" fill="#b4b4bb">질문과 사진은 밖으로 나가지 않고</text>
+  <text x="606" y="382" font-size="13" fill="#b4b4bb">이 기기 안에서만 처리해요.</text>
+  <text x="606" y="404" font-size="12" fill="#ff9a3c">사용료 0원</text>
+  <text x="600" y="690" text-anchor="middle" font-size="22" font-weight="700" fill="#e4e4e7">에이서 프레데터 아틀라스 8 최적화</text>
+  <text x="600" y="720" text-anchor="middle" font-size="15" fill="#71717a">그림은 설명용으로 그린 예시 화면입니다</text>
+</svg>
