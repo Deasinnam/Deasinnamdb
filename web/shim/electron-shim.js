@@ -279,6 +279,14 @@
   for (const m of ["pdf", "hwp", "markdown", "html"]) {
     SEND_HANDLERS[m + ":dirty-changed"] = (d) => { dirty = !!d; };
   }
+  // 한글(HWP) 편집기 안의 "파일" 메뉴는 저장 · 다른 이름으로 저장을 이 통로로 보냅니다(데스크톱에서는 메인이 받아 저장 흐름을 시작).
+  // 받지 않으면 메뉴를 눌러도 아무 일도 없어서, 화면에 저장 요청으로 돌려줍니다. (의견: "한글 문서에서 다른 이름으로 저장이 안 돼요")
+  SEND_HANDLERS["hwp:file-command"] = (cmd) => {
+    if (cmd === "save" || cmd === "saveAs") { setTimeout(() => { if (!emit("hwp:save-request", cmd)) toast("이 화면에서는 저장할 수 없습니다"); }, 0); return; }
+    if (cmd === "open" || cmd === "importPdf") { toast("문서는 홈 화면의 '열기'에서 불러와 주세요"); return; }
+    toast("안드로이드판에서는 PDF · 인쇄 · 미리보기를 아직 지원하지 않습니다");
+  };
+  SEND_HANDLERS["hwp:abort-save"] = () => { hwpPending = null; };
 
   const unhandled = new Set();
   function logUnhandled(kind, channel) {

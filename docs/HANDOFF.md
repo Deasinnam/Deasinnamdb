@@ -164,6 +164,16 @@ tools/                      빌드·점검 스크립트 (아래)
 - 배포: 빌드가 `work-latest`와 함께 `work-v<버전>` 릴리스를 만들고, `work-latest`를 바꾸기 전에 이전 버전이 `work-v<이전 버전>`에 없으면 옮겨 둡니다(사이트에서 버전을 골라 받게).
 - 서명은 그대로 저장소 비밀값 `AMP_KEYSTORE_*` → 기존 앱 위에 덮어 설치됩니다.
 
+## 1.0.5에서 고친 것 (2026-11-20, 이음오피스 v0.13.0)
+
+| 문제 | 원인 | 고친 곳 |
+|---|---|---|
+| v0.13.0으로 올리자 워드 · 파워포인트가 열리지 않음(에뮬레이터 점검 실패) | v0.13.0 메인 코드가 `@genoffice/agent-core/skill-editors`를 불러오는데 `node/vendor/local`에는 v0.12.12 때의 하위 경로 4개만 있음 → `ERR_PACKAGE_PATH_NOT_EXPORTED` | `node/vendor/local/@genoffice/agent-core`: 원본 exports의 하위 경로 9개를 v0.13.0 소스에서 다시 변환(README에 방법) |
+| 한글(HWP) 편집기 안 "파일 → 저장 · 다른 이름으로 저장"이 아무 반응 없음 | 편집기 메뉴가 `hwp:file-command`로 보내는데 안드로이드판에 받는 곳이 없었음(데스크톱은 메인이 받음) | `web/shim/electron-shim.js`: `hwp:file-command`를 저장 요청으로 돌려줌, `hwp:abort-save` 처리 |
+
+- 1.0.1~1.0.4에서 고친 것(덮어 설치 뒤 엔진, 새 엑셀 저장, 다른 이름으로 저장 단축키, 사진 · 동영상 한국어, 열기에서 모든 파일 보이기)은 그대로 둠. 원본 패치 대상이 바뀌면 빌드가 멈추므로 빌드 통과 = 패치 적용 확인.
+- ★ 이음오피스 버전을 올릴 때: `packages/agent-core/package.json`의 exports가 늘었는지 먼저 볼 것.
+
 ## 확인된 것과 안 된 것
 
 | | 상태 |
