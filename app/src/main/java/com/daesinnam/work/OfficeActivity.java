@@ -72,11 +72,12 @@ public class OfficeActivity extends ComponentActivity {
     private static final String HOME_URL = APP_ORIGIN + "/assets/www/home/index.html";
     private static final String PREVIEW_HOST = "ieum-preview.local";
 
-    private static final String[] OPEN_TYPES = {
-            "application/pdf", "application/x-hwp", "application/haansofthwp", "application/vnd.hancom.hwp",
-            "application/hwp+zip", "application/haansofthwpx", "application/vnd.hancom.hwpx",
-            "text/markdown", "text/x-markdown", "text/html", "text/plain", "application/octet-stream",
-    };
+    /**
+     * 문서 열기에서 고를 수 있는 파일 종류. 모든 파일을 보여 주고, 형식은 문서 첫 화면이 이름(확장자)으로 가립니다.
+     * (1.0.3까지는 PDF · 한글 · 마크다운 · HTML · 텍스트만 적어 두어서, 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 ·
+     *  다이어그램 파일이 파일 선택 화면에서 회색으로 막혀 불러올 수 없었습니다.)
+     */
+    private static final String[] OPEN_TYPES = {"*/*"};
 
     private WebView web;
     private DocStore docs;
