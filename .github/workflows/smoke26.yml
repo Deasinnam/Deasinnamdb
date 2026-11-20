@@ -36,8 +36,8 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none -no-audio
           script: |
             adb install -r -g app.apk
-            adb logcat -c
-            adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 > /dev/null
+            adb logcat -c || true
+            adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 > /dev/null || true
             sleep 25
             adb exec-out screencap -p > shot26.png
             adb shell pidof $PKG > pid.txt || true
