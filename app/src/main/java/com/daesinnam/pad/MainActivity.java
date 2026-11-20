@@ -89,9 +89,9 @@ public class MainActivity extends Activity {
         root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
         root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets b = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-            v.setPadding(b.left, b.top, b.right, b.bottom);
-            return WindowInsets.CONSUMED;
+            int[] b = Compat.bars(insets);
+            v.setPadding(b[0], b[1], b[2], b[3]);
+            return Compat.consumed(insets);
         });
 
         WebSettings s = web.getSettings();
@@ -167,7 +167,7 @@ public class MainActivity extends Activity {
     }
 
     private int currentDisplayId() {
-        Display d = getDisplay();
+        Display d = Compat.display(MainActivity.this);
         return d == null ? Display.DEFAULT_DISPLAY : d.getDisplayId();
     }
 
@@ -387,7 +387,7 @@ public class MainActivity extends Activity {
         public void tap() {
             try {
                 Vibrator v = getSystemService(Vibrator.class);
-                if (v != null && v.hasVibrator()) v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+                Compat.tick(v, true);
             } catch (RuntimeException ignored) {
             }
         }
