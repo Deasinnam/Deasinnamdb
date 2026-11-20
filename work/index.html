@@ -790,6 +790,17 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
 .dl-menu span i { font-style: normal; margin-left: 6px; padding: 2px 7px; border-radius: 999px; background: #ff7a00; color: #fff; font-size: 11px; font-weight: 700; }
 .dl-menu em { font-style: normal; font-size: 12px; color: #a1a1aa; line-height: 1.45; }
 .al-get .dl-vs { display: none; }
+/* A안: 큰 버튼(이 기기용 바로 받기) + ▾(다른 기기용 · 이전 버전) */
+.dl-row { display: inline-flex; align-items: stretch; gap: 6px; }
+.dl-alt { flex: none; min-width: 44px; border-radius: 12px; border: 1px solid #c75a00; background: #ff7a00; color: #fff; font: 700 14px/1 var(--font-body); cursor: pointer; }
+.dl-alt:hover { background: #ff8c1f; }
+.amp-cta .dl-alt { border-radius: 999px; background: #fff; color: #0b0b0c; border-color: #fff; min-width: 48px; }
+.ps-group .dl-row { display: flex; } .ps-group .dl-row > a { flex: 1; min-width: 0; white-space: nowrap; }
+.dl-row > a { white-space: nowrap; }
+.is-no { opacity: .55; filter: grayscale(1); }
+.dl-mh { padding: 8px 12px 6px; font-size: 12px; color: #a1a1aa; line-height: 1.5; }
+.dl-fit { flex-basis: 100%; margin: -6px 0 0; font-size: 13px; color: #a1a1aa; }
+.dl-alt-link { margin-left: 6px; padding: 0; border: 0; background: none; color: #fdba74; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 720px) {
   .al-act { position: relative; }
   .al-dl .dl-pick { position: static; }
@@ -1631,9 +1642,9 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
-          <div><dt>최신 버전</dt><dd>1.6.4 · 2026.11.19 업데이트 — 창정리의 Shizuku 설정 방법을 그림으로 (<a href="/shizuku/">Shizuku 연결하기</a>) · 1.6.3 창정리(<a href="/releases/">바뀐 점</a>) · 이전 버전 1.5.2(2026.11.15) · 1.5.1(2026.11.13)도 내려받기에서 고를 수 있습니다</dd></div>
+          <div><dt>최신 버전</dt><dd>1.6.5 · 2026.11.20 업데이트 — 안드로이드 8 이상에서 설치 · 1.6.4: 창정리의 Shizuku 설정 방법을 그림으로 (<a href="/shizuku/">Shizuku 연결하기</a>) · 1.6.3 창정리(<a href="/releases/">바뀐 점</a>) · 이전 버전 1.5.2(2026.11.15) · 1.5.1(2026.11.13)도 내려받기에서 고를 수 있습니다</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
-          <div><dt>설치할 수 있는 기기</dt><dd><b>안드로이드 11 이상</b> 갤럭시 (갤럭시 S26 울트라 등 다른 기종도 설치할 수 있습니다. 화면 배치는 폴드 기준이라 조금 다르게 보일 수 있습니다) · 안드로이드 10 이하(안드로이드 9 등)에서는 설치되지 않습니다 — <a href="#post-fb-1119">자세히</a></dd></div>
+          <div><dt>설치할 수 있는 기기</dt><dd><b>안드로이드 8 이상</b> 갤럭시 (1.6.5부터 · 갤럭시 S26 울트라 등 다른 기종도 설치할 수 있습니다. 화면 배치는 폴드 기준이라 조금 다르게 보일 수 있습니다) · 안드로이드 8 · 9에서는 기본 홈 앱 정하기를 설정 화면에서 합니다</dd></div>
         </dl>
       </div>
       <div class="ap-media">
@@ -1735,8 +1746,8 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <a class="ap-howto-more" href="#post-game-pc">사진으로 보는 자세한 사용법 →</a>
         </div>
         <dl class="speed-req">
-          <div><dt>최신 버전</dt><dd>0.4.1 · 2026.11.19 업데이트 — Shizuku 설정 방법을 그림으로 (<a href="/shizuku/">Shizuku 연결하기</a>) · 0.4 새 버전 알림(<a href="#post-update-notice">바뀐 점</a>) · 이전 버전 0.3(2026.11.16) · 0.2(2026.11.15)도 내려받기에서 고를 수 있습니다</dd></div>
-          <div><dt>설치할 수 있는 기기</dt><dd>안드로이드 11 이상 · 설치가 안 되거나 배틀넷이 "업데이트"에서 멈추면 <a href="#post-game-fix">해결 방법</a>을 봐 주세요</dd></div>
+          <div><dt>최신 버전</dt><dd>0.4.2 · 2026.11.20 업데이트 — 안드로이드 8 이상에서 설치 · 0.4.1: Shizuku 설정 방법을 그림으로 (<a href="/shizuku/">Shizuku 연결하기</a>) · 0.4 새 버전 알림(<a href="#post-update-notice">바뀐 점</a>) · 이전 버전 0.3(2026.11.16) · 0.2(2026.11.15)도 내려받기에서 고를 수 있습니다</dd></div>
+          <div><dt>설치할 수 있는 기기</dt><dd>안드로이드 8 이상 (0.4.2부터 · 화면 녹화는 안드로이드 10 이상) · 설치가 안 되거나 배틀넷이 "업데이트"에서 멈추면 <a href="#post-game-fix">해결 방법</a>을 봐 주세요</dd></div>
           <div><dt>업데이트 기록</dt><dd>0.3 (2026.11.16) 앱 안에 PC 게임 시작 안내 · 0.2 (2026.11.15) FPS 보기 · 고급 기능으로 맞춤 설정 적용</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
         </dl>
@@ -1780,8 +1791,8 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 0.x 버전이라 화면과 기능이 계속 바뀝니다. 큰 화면에서 앱을 여는 기능은 삼성 DeX 등 외부 화면에 연결했을 때 동작하며, 앱에 따라 큰 화면에서 열리지 않을 수 있습니다. 버튼 판의 앱 이름 · 아이콘은 각 회사의 것입니다.</p>
         <dl class="speed-req">
-          <div><dt>최신 버전</dt><dd>0.2.1 · 2026.11.17 — 가죽 · 황동 디자인, 볼륨 다이얼 · 음소거, 가로 화면 버튼 크기 자동 맞춤</dd></div>
-          <div><dt>필요한 것</dt><dd>안드로이드 11 이상 · 삼성 DeX(모니터 · TV · 노트북 연결) — 연결하지 않아도 휴대폰 런처처럼 쓸 수 있습니다</dd></div>
+          <div><dt>최신 버전</dt><dd>0.2.2 · 2026.11.20 — 안드로이드 8 이상에서 설치 · 0.2.1: 가죽 · 황동 디자인, 볼륨 다이얼 · 음소거, 가로 화면 버튼 크기 자동 맞춤</dd></div>
+          <div><dt>필요한 것</dt><dd>안드로이드 8 이상 (0.2.2부터) · 삼성 DeX(모니터 · TV · 노트북 연결) — 연결하지 않아도 휴대폰 런처처럼 쓸 수 있습니다</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라 (DeX 연결)</dd></div>
         </dl>
       </div>
@@ -1868,9 +1879,9 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>새로 공개한 0.x 버전이라 화면과 기능이 계속 바뀝니다. 덜누름 TV는 설치된 앱을 열어 줄 뿐이고, 영상 · 음악은 각 서비스 앱이 재생합니다(각 서비스의 이용권이 필요합니다). DeX는 앱을 창으로 띄우기도 해서, 확실한 전체 화면은 고급 기능(Shizuku)을 연결했을 때 동작합니다. 앱 이름 · 아이콘은 각 회사의 것입니다.</p>
         <dl class="speed-req">
-          <div><dt>최신 버전</dt><dd>0.8.2 · 2026.11.19 — Shizuku 설정 방법을 그림으로 · <a href="/shizuku/">Shizuku 연결하기</a></dd></div>
+          <div><dt>최신 버전</dt><dd>0.8.3 · 2026.11.20 — 안드로이드 8 이상에서 설치 · 0.8.2: Shizuku 설정 방법을 그림으로 · <a href="/shizuku/">Shizuku 연결하기</a></dd></div>
           <div><dt>0.8.1에서 바뀐 점</dt><dd>리모컨 · 키보드로 조작, 넷플릭스 등 다른 앱에서도 리모컨 단추 그대로, 완전 전체 화면 확인</dd></div>
-          <div><dt>필요한 것</dt><dd>안드로이드 11 이상 · 삼성 DeX(모니터 · TV · 터치 모니터 연결) — 연결하지 않아도 휴대폰 · 폴드 화면에서 쓸 수 있습니다</dd></div>
+          <div><dt>필요한 것</dt><dd>안드로이드 8 이상 (0.8.3부터 · 다른 앱에서 리모컨 위 · 아래는 안드로이드 13 이상 또는 Shizuku) · 삼성 DeX(모니터 · TV · 터치 모니터 연결) — 연결하지 않아도 휴대폰 · 폴드 화면에서 쓸 수 있습니다</dd></div>
           <div><dt>권한</dt><dd>인터넷 권한 없음 · 홈 단추용 '다른 앱 위에 표시'(선택) · 리모컨 찾기용 '근처 기기'(선택) · 다른 앱에서 리모컨 · 단축키를 쓰는 접근성 기능(선택, 키만 받고 화면 내용은 읽지 않음)</dd></div>
         </dl>
       </div>
@@ -2564,9 +2575,9 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <h3>덜누름 데스크탑앱</h3>
           <ul class="fb-ans">
             <li><span class="nt-tag ok">답변</span><span class="fb-q">갤럭시 S26 울트라에서도 쓸 수 있나요?</span>
-              <p>네. 데스크탑앱은 <b>안드로이드 11 이상</b>이면 설치할 수 있고, S26 울트라도 해당됩니다. 화면 배치와 크기는 Z 폴드7 · Z 폴드8 울트라에 맞춰 다듬었기 때문에 일부 화면이 조금 다르게 보일 수 있습니다. 어색한 곳은 캡처와 함께 알려 주세요. 설치할 수 있는 기기 안내를 <a href="/desktop/">데스크탑앱 페이지</a>에도 넣었습니다.</p></li>
-            <li><span class="nt-tag plan">검토 중</span><span class="fb-q">안드로이드 9에서도 쓰고 싶어요.</span>
-              <p>지금 데스크탑앱은 안드로이드 11 이상에서만 설치됩니다. 앱 창을 옮기고 배치하는 기능이 안드로이드 11부터 생긴 기능에 기대고 있어서입니다. 안드로이드 9에서 쓸 수 있는 기능만 묶은 판을 만들 수 있는지 살펴보고 있습니다. 같은 요청을 이전에도 받았습니다.</p></li>
+              <p>네. 데스크탑앱은 <b>안드로이드 8 이상</b>이면 설치할 수 있고(1.6.5부터), S26 울트라도 해당됩니다. 화면 배치와 크기는 Z 폴드7 · Z 폴드8 울트라에 맞춰 다듬었기 때문에 일부 화면이 조금 다르게 보일 수 있습니다. 어색한 곳은 캡처와 함께 알려 주세요. 설치할 수 있는 기기 안내를 <a href="/desktop/">데스크탑앱 페이지</a>에도 넣었습니다.</p></li>
+            <li><span class="nt-tag done">반영됨</span><span class="fb-q">안드로이드 9에서도 쓰고 싶어요.</span>
+              <p>데스크탑앱 1.6.5부터 <b>안드로이드 8 이상</b>이면 설치됩니다. 새 안드로이드에만 있는 기능은 그 버전에서만 쓰고, 그 아래에서는 예전 방법으로 같은 일을 하게 바꿨습니다. 덜누름 TV · 게임 · 패드도 함께 안드로이드 8부터 설치됩니다. 사이트의 내려받기 버튼은 휴대폰에서 열면 그 기기에 맞는 파일을 바로 받습니다.</p></li>
             <li><span class="nt-tag plan">반영 예정</span><span class="fb-q">시작 메뉴 아이콘을 "덜"로 바꾸고, 안드로이드 상태 표시줄을 숨기고, 작업 표시줄 크기와 위치를 고를 수 있으면 좋겠어요.</span>
               <p>세 가지 모두 다음 데스크탑앱 업데이트에 넣겠습니다.</p></li>
             <li><span class="nt-tag plan">반영 예정</span><span class="fb-q">폴드8을 반쯤 접어 아래쪽 화면을 키보드로, 위쪽을 화면으로 쓰는 미니 노트북 모드가 있으면 좋겠어요.</span>
@@ -3867,35 +3878,38 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   var DL = {
     "app-amp":     { open: false, tag: "latest",         file: "DaesinnamAmp.apk",     base: 0 },
     "app-speed":   { open: false, tag: "",               file: "",                     base: 0 },
-    "app-pad":     { open: true,  tag: "pad-latest",     file: "DeolnureumPad.apk",    base: 0,
+    "app-pad":     { open: true,  min: 8, tag: "pad-latest",     file: "DeolnureumPad.apk",    base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 pad-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "0.2.2", date: "2026.11.20", tag: "pad-v0.2.2", file: "DeolnureumPad-0.2.2.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상)", kind: ["better"] },
                        { v: "0.2.1", date: "2026.11.19", tag: "pad-v0.2.1", file: "DeolnureumPad-0.2.1.apk", note: "첫 공개: 가죽 · 황동 디자인 버튼 판, 볼륨 다이얼 · 음소거, 가로 화면 버튼 크기 자동 맞춤", kind: ["new"] }
                      ] },
-    "app-tv":      { open: true,  tag: "tv-latest",      file: "DeolnureumTV.apk",     base: 0,
+    "app-tv":      { open: true,  min: 8, tag: "tv-latest",      file: "DeolnureumTV.apk",     base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 tv-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "0.8.3", date: "2026.11.20", tag: "tv-v0.8.3", file: "DeolnureumTV-0.8.3.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 다른 앱에서 리모컨 위 · 아래는 안드로이드 13 이상 또는 Shizuku", kind: ["better"] },
                        { v: "0.8.2", date: "2026.11.19", tag: "tv-v0.8.2", file: "DeolnureumTV-0.8.2.apk", note: "Shizuku 설정 방법을 그림으로 (설정 › 고급 기능 Shizuku · 설정 방법)", kind: ["better"], post: "shizuku", fb: "Shizuku 설정이 어렵다는 의견" },
                        { v: "0.8.1", date: "2026.11.19", tag: "tv-v0.8.1", file: "DeolnureumTV-0.8.1.apk", note: "첫 공개: 넷플릭스 등 다른 앱에서도 리모컨 단추 그대로, 앱을 연 뒤 완전 전체 화면인지 확인해 고치기, 점검 화면", kind: ["new"] },
                        { v: "0.6.1", date: "2026.11.19", tag: "tv-v0.6.1", file: "DeolnureumTV-0.6.1.apk", note: "덜누름 TV 전용 리모컨(미테르 RM1) 최적화: ＋ − 위 · 아래, • 로 볼륨 모드", kind: ["new"] },
                        { v: "0.5", date: "2026.11.18", tag: "tv-v0.5", file: "DeolnureumTV-0.5.apk", note: "블루투스 키보드 단축키 (다른 앱에서도 F12 · Alt+H로 홈)", kind: ["new"] },
                        { v: "0.4", date: "2026.11.18", tag: "tv-v0.4", file: "DeolnureumTV-0.4.apk", note: "삼성 스마트 리모컨 휴대폰에 바로 연결", kind: ["new"] }
                      ] },
-    "app-work":    { open: true, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
+    "app-work":    { open: true, min: 8, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 work-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
                        { v: "1.0.4", date: "2026.11.20", tag: "work-v1.0.4", file: "DeolnureumWork-1.0.4.apk", note: "문서 편집의 열기에서 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 · 다이어그램 파일을 고를 수 없던 문제 수정", kind: ["fix"], fix: "문서 편집 화면의 열기에서 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 · 다이어그램 파일이 회색으로 막혀 불러올 수 없던 문제" },
                        { v: "1.0.3", date: "2026.11.17", tag: "work-v1.0.3", file: "DeolnureumWork-1.0.3.apk", note: "새 엑셀 문서 저장 · 다른 이름으로 저장, 사진 · 동영상 편집 한국어 화면", kind: ["fix"], post: "work-103", fix: "새로 만든 엑셀 문서가 저장되지 않고, 사진 · 동영상 편집에서 언어를 바꿔도 바뀌지 않던 문제" },
                        { v: "1.0.2", date: "2026.11.11", tag: "work-v1.0.2", file: "DeolnureumWork-1.0.2.apk", note: "문서 · 사진 · 동영상 편집을 한 앱에", kind: ["fix"] }
                      ] },
-    "app-desktop": { open: true, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2,
+    "app-desktop": { open: true, min: 8, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2,
                      versions: [
+                       { v: "1.6.5", date: "2026.11.20", tag: "desk-v1.6.5", file: "DeolnureumDesk-1.6.5.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 안드로이드 8 · 9는 기본 홈 앱을 설정에서 정함", kind: ["better"], fb: "안드로이드 9에서도 쓰고 싶다는 의견" },
                        { v: "1.6.4", date: "2026.11.19", tag: "desk-v1.6.4", file: "DeolnureumDesk-1.6.4.apk", note: "Shizuku 설정 방법을 그림으로 (창정리 › 고급 기능 › 설정 방법)", kind: ["better"], post: "shizuku", fb: "Shizuku 설정이 어렵다는 의견" },
                        { v: "1.6.3", date: "2026.11.17", tag: "desk-v1.6.3", file: "DeolnureumDesk-1.6.3.apk", note: "창정리: 창 배치 저장 · 한 번에 펼치기, 열린 창 자동 정렬, DeX에서 창 자리 맞추기", kind: ["new", "fix"] },
                        { v: "1.5.2", date: "2026.11.15", tag: "desk-v1.5.2", file: "DeolnureumDesk-1.5.2.apk", note: "다른 앱 위젯을 기기 기본 테마로 표시 (루틴 위젯 아이콘 대응), 위젯 진단 추가", kind: ["fix"], post: "desk-widget", fix: "바탕화면에 올린 루틴 위젯의 아이콘이 보이지 않던 문제" },
                        { v: "1.5.1", date: "2026.11.13", tag: "desk-v1.5.1", file: "DeolnureumDesk-1.5.1.apk", note: "앱 띄우기 기본 방식을 전체 화면으로", kind: ["better"] }
                      ] },
-    "app-browser": { open: true, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 3,
+    "app-browser": { open: true, min: 8, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 browser-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
                        { v: "2.5", date: "2026.11.19", tag: "browser-v2.5", file: "DeolnureumBrowser-2.5.apk", note: "새 버전이 나오면 앱이 알려 줌 (설정에서 끄기 · 지금 확인)", kind: ["new"], post: "update-notice", fb: "앱 업데이트 알림 요청" },
@@ -3904,9 +3918,10 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
                        { v: "2.3", date: "2026.11.15", tag: "browser-v2.3", file: "DeolnureumBrowser-2.3.apk", note: "◀ ▶를 여러 번 눌러도 한 페이지씩만 이동 (홈으로 넘어가던 문제 해결)", kind: ["fix"], post: "browser-back", fix: "아래 ◀를 여러 번 누르면 홈으로 가 버리던 문제" },
                        { v: "2.2", date: "2026.11.14", tag: "browser-v2.2", file: "DeolnureumBrowser-2.2.apk", note: "유튜브 스튜디오 · 구글 로그인은 크롬으로 열기", kind: ["better"] }
                      ] },
-    "app-game":    { open: true,  tag: "game-latest",    file: "DeolnureumGame.apk",   base: 0,
+    "app-game":    { open: true,  min: 8, tag: "game-latest",    file: "DeolnureumGame.apk",   base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 game-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "0.4.2", date: "2026.11.20", tag: "game-v0.4.2", file: "DeolnureumGame-0.4.2.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 화면 녹화는 안드로이드 10 이상", kind: ["better"] },
                        { v: "0.4.1", date: "2026.11.19", tag: "game-v0.4.1", file: "DeolnureumGame-0.4.1.apk", note: "Shizuku 설정 방법을 그림으로 (도구 › FPS 보기 › 설정 방법)", kind: ["better"], post: "shizuku", fb: "Shizuku 설정이 어렵다는 의견" },
                        { v: "0.4", date: "2026.11.19", tag: "game-v0.4", file: "DeolnureumGame-0.4.apk", note: "새 버전이 나오면 앱이 알려 줌 (도구 탭에서 끄기 · 지금 확인)", kind: ["new"], post: "update-notice", fb: "앱 업데이트 알림 요청" },
                        { v: "0.3", date: "2026.11.16", tag: "game-v0.3", file: "DeolnureumGame-0.3.apk", note: "PC 게임 시작 안내: DroidDeck 설치 · 자식 프로세스 제한 중지 · 스팀 · 배틀넷까지 단계별로", kind: ["new"], post: "game-03" },
@@ -4005,23 +4020,43 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     fetch(CNT + "hit/" + NSK + st.key, { keepalive: true, cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { if (j && j.value != null) { st.n = j.value; render(st); } }).catch(function () {});
   }
+  /* 내려받기 A안: 버튼 하나가 이 기기의 안드로이드 버전에 맞는 파일을 바로 받습니다.
+     다른 기기용 · 이전 버전은 옆의 ▾ 메뉴에서 고르고, 어느 파일을 받든 앱 숫자(dl-<앱>) 하나에 더합니다.
+     버전 줄에 files: [{ min: 8, max: 10, file: "…-android8.apk" }, …] 를 두면 기기별 파일이 나뉩니다 (없으면 file 하나). */
+  var AV = (function () { var m = /Android (\d+)/.exec(navigator.userAgent || ""); return m ? +m[1] : 0; })();
+  function fileFor(x) {
+    if (x.files && x.files.length) {
+      var hitf = AV ? x.files.filter(function (f) { return AV >= (f.min || 0) && AV <= (f.max || 99); })[0] : null;
+      return (hitf || x.files[0]).file;
+    }
+    return x.file;
+  }
   Object.keys(DL).forEach(function (id) {
     var c = DL[id]; if (!c.open || !(c.url || (c.tag && c.file))) return;
     var url = c.url || ("https://github.com/" + REPO + "/releases/download/" + c.tag + "/" + c.file);
     var st = { key: c.key || ("dl-" + id.replace(/^app-/, "")), n: null, size: c.size || "", outs: [] };
-    var link = '<a class="%C" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (c.kind || "APK") + '</small></a>';
+    var apk = !c.url && (c.kind || "APK") === "APK";
+    var tooOld = apk && AV && c.min && AV < c.min;
+    var fit = !apk ? "" : tooOld ? "설치 불가" : AV ? "이 기기용" : (c.min ? "안드로이드 " + c.min + "+" : "APK");
+    var top0 = c.versions && c.versions[0];
+    if (top0 && apk) url = "https://github.com/" + REPO + "/releases/download/" + top0.tag + "/" + fileFor(top0);
+    var link = '<a class="%C' + (tooOld ? ' is-no' : '') + '" href="' + url + '"' + (c.url ? " download" : "") + '>내려받기 <small>' + (apk ? fit : (c.kind || "APK")) + '</small></a>';
     if (c.versions && c.versions.length) {
       var items = c.versions.map(function (x, i) {
-        var href = "https://github.com/" + REPO + "/releases/download/" + x.tag + "/" + x.file;
+        var href = "https://github.com/" + REPO + "/releases/download/" + x.tag + "/" + fileFor(x);
         return '<li><a href="' + href + '"><b>' + x.v + '</b><span>' + x.date + ' 업데이트' + (i === 0 ? '<i>최신</i>' : '') + '</span><em>' + x.note + '</em></a></li>';
       }).join("");
-      link = '<span class="dl-pick"><button type="button" class="%C" aria-haspopup="true" aria-expanded="false">내려받기 <small>' + (c.kind || "APK") + '<span class="dl-vs"> · 버전 선택</span> ▾</small></button>'
-        + '<ul class="dl-menu" hidden>' + items + '</ul></span>';
+      link = '<span class="dl-pick"><span class="dl-row">' + link + '<button type="button" class="dl-alt" aria-haspopup="true" aria-expanded="false" aria-label="다른 기기용 · 이전 버전">▾</button></span>'
+        + '<ul class="dl-menu" hidden><li class="dl-mh">다른 기기용 · 이전 버전 — 어느 것을 받아도 내려받은 수는 하나로 셉니다</li>' + items + '</ul></span>';
     }
-    /* 버튼(또는 버전 목록) 연결: 버전 목록이면 버튼은 목록을 열고, 버전을 고를 때 셉니다 */
+    /* 버튼 연결: 큰 버튼은 바로 받고 숫자 +1, ▾는 버전 목록을 열고, 목록에서 고를 때도 같은 숫자에 +1 */
     function wire(box, btnSel) {
-      var btn = box.querySelector(btnSel), menu = box.querySelector(".dl-menu");
-      if (!menu) { btn.addEventListener("click", function () { hit(st); }); return; }
+      var main = box.querySelector(btnSel), btn = box.querySelector(".dl-alt") || main, menu = box.querySelector(".dl-menu");
+      if (main && main.tagName === "A") main.addEventListener("click", function (e) {
+        if (main.classList.contains("is-no")) { e.preventDefault(); alert("이 기기는 안드로이드 " + AV + "이라 설치할 수 없습니다. 안드로이드 " + c.min + " 이상이 필요합니다."); return; }
+        hit(st);
+      });
+      if (!menu) return;
       function show(on) {
         if (on) Array.prototype.forEach.call(document.querySelectorAll(".dl-menu"), function (m) { // 다른 버전 목록은 닫기
           if (m !== menu && !m.hidden) { m.hidden = true; var b = m.parentNode.querySelector("button[aria-expanded]"); if (b) b.setAttribute("aria-expanded", "false"); }
@@ -4044,14 +4079,21 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     /* 앱센터 앱 목록 */
     var row = document.querySelector('.al-row[data-app="' + id + '"] .al-dl');
     if (row) {
-      row.innerHTML = link.replace("%C", "al-get") + upd + '<span class="al-count" aria-live="polite"></span>';
+      var fitShort = !apk ? (c.kind || "APK") : tooOld ? "설치 불가" : AV ? "이 기기용" : "APK";
+      row.innerHTML = link.split("%C").join("al-get").replace("<small>" + (apk ? fit : (c.kind || "APK")) + "</small>", "<small>" + fitShort + "</small>") + upd + '<span class="al-count" aria-live="polite"></span>';
       st.outs.push(row.querySelector(".al-count"));
       wire(row, ".al-get");
     }
     /* 앱 소개 페이지 */
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta");
     if (cta) {
-      cta.innerHTML = link.replace("%C", "amp-btn") + '<span class="dl-count" aria-live="polite"></span>' + upd + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
+      var fitNote = !apk ? "" : '<p class="dl-fit">' + (tooOld ? "이 기기는 안드로이드 " + AV + "이라 설치할 수 없습니다 · 안드로이드 " + c.min + " 이상 필요"
+        : AV ? "이 기기(안드로이드 " + AV + ")에 맞는 파일을 받습니다" + (c.min ? " · 안드로이드 " + c.min + " 이상 지원" : "")
+        : (c.min ? "안드로이드 " + c.min + " 이상 휴대폰에서 설치합니다 · 휴대폰에서 열면 그 기기에 맞는 파일을 받습니다" : "")) +
+        (c.versions && c.versions.length ? ' <button type="button" class="dl-alt-link">다른 기기용 · 이전 버전 ›</button>' : "") + '</p>';
+      cta.innerHTML = link.split("%C").join("amp-btn") + '<span class="dl-count" aria-live="polite"></span>' + upd + fitNote + (c.note ? '<p class="dl-note">' + c.note + '</p>' : '');
+      var al = cta.querySelector(".dl-alt-link"), alt = cta.querySelector(".dl-alt");
+      if (al && alt) al.addEventListener("click", function (e) { e.stopPropagation(); alt.click(); });
       st.outs.push(cta.querySelector(".dl-count"));
       wire(cta, ".amp-btn");
     }
