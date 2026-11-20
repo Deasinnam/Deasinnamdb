@@ -2918,3 +2918,39 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 /* 1.84 배포용 에어포스원: 라디오 없음 / 라이트판은 외부 앱 소리도 없음 */
 :root[data-noradio] #radioBtn,:root[data-noradio] #ckRail [data-f="radio"],:root[data-noradio] #wRadio,:root[data-noradio] #bSwap{display:none!important}
 :root[data-noext] #bInput,:root[data-noext] #xinPick,:root[data-noext] #wExt,:root[data-noext] #secExtSnd,:root[data-noext] #srcSeg{display:none!important}
+/* 1.85 스킨 하나로: 대신남 원 계열은 위 [스킨] 버튼 대신 스피드미터 고르기 */
+:root[data-skuni] #skinBtn,:root[data-skuni] #skinPick{display:none!important}
+:root[data-app="amp"] #guideBtn,:root[data-app="amp"] #sGuide{display:none!important}
+#guideBtn{display:inline-flex;align-items:center;justify-content:center}
+#guideBtn.gd-new{box-shadow:0 0 0 2px #ffcf6a,0 0 12px #ffb43a99!important;color:#ffd98a!important;animation:gdPulse 1.6s ease-in-out infinite}
+@keyframes gdPulse{50%{box-shadow:0 0 0 2px #ffcf6a,0 0 2px #ffb43a33}}
+#sGuide{display:block;width:100%;margin:4px 0 12px;padding:12px;font-size:16px;font-weight:700}
+/* 1.85 초기 세팅 방법(설명서) */
+.gd{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom));background:#000b;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.gd[hidden]{display:none}
+.gd-card{display:flex;flex-direction:column;width:min(980px,100%);max-height:100%;border:1px solid #000;border-radius:12px;background:linear-gradient(180deg,#2e352c,#191f1b);box-shadow:0 0 0 1px #6b5a35,0 18px 48px #000c;color:#efe6d0;overflow:hidden}
+.gd-hd{display:flex;align-items:center;gap:10px;padding:12px 14px 8px;border-bottom:1px solid #0008}
+.gd-hd b{font:700 20px/1.2 "Noto Serif KR",serif;letter-spacing:.06em;color:#e9d9a8}
+.gd-n{color:#a8f08f;font:700 15px "Barlow Condensed","Rajdhani",sans-serif;letter-spacing:.08em}
+.gd-x{margin-left:auto;width:44px;height:44px;border:1px solid #000;border-radius:8px;background:linear-gradient(180deg,#3a3326,#1d1913);color:#f0e2bd;font-size:26px;line-height:1;cursor:pointer}
+.gd-tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;scrollbar-width:none}
+.gd-tabs::-webkit-scrollbar{display:none}
+.gd-tabs button{flex:none;padding:7px 11px;border:1px solid #000;border-radius:16px;background:#151a16;color:#c9bf9f;font-size:13px;white-space:nowrap;cursor:pointer}
+.gd-tabs button.on{background:linear-gradient(180deg,#f3cf7a,#c98f2a);color:#1d1408;font-weight:700}
+.gd-bd{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr;gap:12px;padding:6px 14px 12px}
+.gd-m{display:flex;gap:8px;justify-content:center;align-items:flex-start}
+.gd-m img,.gd-m video{display:block;max-width:100%;max-height:min(52vh,560px);border-radius:8px;border:1px solid #000;box-shadow:0 0 0 1px #6b5a3588;background:#0b0e0b;object-fit:contain}
+.gd-m.two video{max-width:calc(50% - 4px)}
+.gd-tx h3{margin:2px 0 8px;font-size:21px;color:#ffd98a}
+.gd-tx ol{margin:0;padding-left:1.1em;list-style:disc;display:flex;flex-direction:column;gap:9px;font-size:16px;line-height:1.55;color:#ece4cf}
+.gd-tx li::marker{color:#a8f08f}
+.gd-tx b{color:#a8f08f}
+.gd-a{margin-top:14px;padding:11px 18px;font-size:16px;font-weight:700}
+.gd-ft{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid #0008}
+.gd-ft .pill{min-width:96px;padding:11px 14px;font-size:16px}
+.gd-ft .pill:disabled{opacity:.4}
+.gd-dots{flex:1;display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.gd-dots i{width:8px;height:8px;border-radius:50%;background:#4a5146}
+.gd-dots i.on{background:#ffcf6a;box-shadow:0 0 6px #ffb43a}
+@media (min-width:860px) and (min-aspect-ratio:5/4){.gd-bd{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}.gd-m img,.gd-m video{max-height:min(66vh,620px)}}
+:root[data-guide] body{overflow:hidden}

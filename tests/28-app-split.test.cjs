@@ -10,9 +10,14 @@ run('App split: AMP audio skins only, One car skins only', async ({context, orig
     await p.goto(origin); await p.waitForTimeout(700);
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('dna_skin2'))), def, kind + ': a skin from the other app falls back to the default');
     assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#skin option')].map(o => o.value)), skins, kind + ' skins');
-    await p.locator('#skinBtn').click();
-    assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#skinPickList .pill')].map(b => b.dataset.k)), skins);
-    await p.evaluate(() => document.getElementById('skinPick').hidden = true);
+    if (kind === 'amp') {
+      await p.locator('#skinBtn').click();
+      assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#skinPickList .pill')].map(b => b.dataset.k)), skins);
+      await p.evaluate(() => document.getElementById('skinPick').hidden = true);
+    } else { // 1.85 대신남 원 계열: [스킨] 버튼 없이 스피드미터 고르기에 활주로 스킨
+      assert.equal(await p.locator('#skinBtn').isVisible(), false, kind + ': no skin button');
+      assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#gStyleBar optgroup:first-child option')].map(o => o.value)), skins.map(k => 'sk:' + k));
+    }
     const vis = await p.evaluate(() => ['#driveBtn', '#revBtn', '#wGps', '#wLog'].map(s => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && !e.hidden; }));
     if (kind === 'amp') assert.deepEqual(vis, [false, false, false, false], 'AMP hides car features');
     else assert.deepEqual(vis.slice(0, 3), [true, true, true], 'One keeps car features');

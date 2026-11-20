@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-21 · v1.84 (versionCode 118)**
+마지막 갱신: **2026-11-21 · v1.85 (versionCode 119)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.84** (versionCode 118, versionName `1.84-one`) |
+| 최신 버전 | **1.85** (versionCode 119, versionName `1.85-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -126,6 +126,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-21 · 1.85 — 스킨 하나로 + 초기 세팅 방법(사용자: 스킨은 스피드미터 고르기로 통합, 위 스킨 버튼 삭제, 버튼 설명이 없으니 그림 설명서). `web/src/97-skin-unify.js`: APP==='one'일 때 `data-skuni`, #gStyleBar·#gStyle 옵션을 optgroup '활주로 스킨'(값 `sk:carnival|carnival7|carnival8`) + '계기판 디자인'(cockpit 항목 없음)으로 다시 만듦. 보이는 값 = 콕핏 PFD 중이면 `sk:<스킨>`, 아니면 계기판 값(`skuSync`, setGStyle·setSkin0 감쌈). 자동차 모드에서는 제목줄 고르기가 숨어 콕핏 컨트롤 #gStyle로 되돌아감. #skinBtn·#skinPick CSS로 숨김, 설정의 스킨 줄 숨김. `window.AmpSkinUni`. 콕핏 컨트롤의 `select.pfd-mode`(콕핏 PFD/에어포스/심플 HUD)는 PFD 표시 방식이라 그대로. `web/src/98-guide.js`(`window.AmpGuide.open(n|key)`): 도구 줄 #guideBtn(처음엔 금빛 깜빡임 `gd-new`, 처음 설치 때 토스트 한 번) + 설정 맨 위 #sGuide. 단계 9개(라이트판은 외부 앱 단계 빼고 8개), 그림 `assets/guide/g-*.jpg`(웹 화면을 Playwright로 찍어 PIL로 번호·금테; 외부 앱·알림 접근은 사용자 스크린샷 잘라 씀), 영상 `guide/v-flight|cam|3d.mp4`(사용자 주행 영상 22-40-31·22-39-17·22-38-58에서 잘라 540×600, 소리 없음, 포스터 .jpg) — fetch→blob 재생(앱 파일 응답은 구간 요청 없음). 테스트 46 추가, 28은 one/std에서 스킨 버튼 대신 고르기 확인.
 - 2026-11-21 · 1.84 — 배포용 에어포스원: flavor `airdist`(device, applicationId com.daesinnam.airforceone, 리소스는 app/src/airdist = special 복사). 네이티브 `buildKind()`는 airdist면 "special"(화면·기능 그대로), `distFlags()` = "noradio"(full) / "noradio,lite"(lite), MediaListener ON도 airdist 포함. `web/src/99-zz-dist.js`(`AmpDist`): noradio면 :root[data-noradio](CSS로 #radioBtn·레일 radio·#wRadio·#bSwap 숨김), rdPlay·openRadio·AmpRadio 무력화, ckFocus('radio')→vis, lastSrc/ckFocus/carSrc의 radio 되돌림, 모든 select의 radio 옵션 제거; lite면 :root[data-noext](#bInput·#xinPick·#wExt·#secExtSnd·#srcSeg 숨김), AmpExt.start 무력화, 차 연결 음원 ytm·spotify 빼기. 시험은 window.__dist. CI는 airdist 두 개를 workflow 산출물로만(one-v1 릴리스 목록에 없음). 테스트 45.
 - 2026-11-20 · 1.83 — 3D 맵 이착륙(사용자: 활주로가 사라지거나 하늘·땅이 엉킴, 이륙 때 활주로가 같이 날아감). 원인: 활주로를 매 프레임 2D 흐름값 rwS(활주 중 시각 가속·이륙 뒤 950/초로 줄어듦)로 카메라 앞에 다시 놓았고, 높이는 그 자리 지도 고도·카메라는 내 자리 고도라 서로 어긋남. 이제 `placeRunway`: hold·landed(및 처음)엔 내 자리(60m 뒤에서 진행 방향), roll부터 고정, approach 땐 rwS 앞에 놓고(들어올 때 접지점 고도로 rwY) rollout부터 고정. 땅 셰이더가 공항 구역(SH.uRw 중심·방향, uRwS 반폭 230·반길이 900 + 가장자리 260/320 부드럽게)을 uRwY로 평평하게, JS `flatAt`이 같은 식으로 카메라 바닥 계산. 하늘(F.alt>2)에선 카메라 ≥ 실제 땅+12m. 활주로 depthTest는 지상·접근 단계에만 끔. 지도 단계 틈 아래에 90km 바닥판(안개색). 공항 구역 건물·나무 discard(나무도 buildingMaterial(true)).
 - 2026-11-20 · 1.82 — CARTO basemaps가 API 키 없이 "API KEY REQUIRED" 그림을 돌려줘(실패가 아니라 그림이라 대체도 안 됨) 땅이 하얗게 덮였음 → TILE_URLS는 OSM 하나. `cleanTile`은 사용자 요청대로 글자(산 높이·도로 번호·지명)는 남기고 숲·풀밭 기호만 지움: 5×5 닫힘 결과가 초록 바탕(G>R+10, G>B+4)이고 원래 점이 초록 기운(g≥r+4)이면서 30 넘게 어두울 때만 닫힘 색으로. 출처 "© OpenStreetMap". 키 없는 다른 타일 서버를 쓸 땐 실제 그림이 오는지 꼭 확인.

@@ -23,7 +23,7 @@ const IconBar=(()=>{
   addIco(sl,'local');wrap(sl,'내 음악');addIco(se,'ext');wrap(se,'외부 앱');
   addIco($('#driveBtn'),'drive');wrap($('#driveBtn'),'간편 모드');
   addIco($('#addTop'),'add');wrap($('#addTop'),'음악 추가');
-  wrap($('#skinBtn'),'스킨 바꾸기');wrap($('#setBtn'),'설정');wrap($('#radioBtn'),'라디오');wrap($('#revBtn'),'후진 카메라');
+  wrap($('#skinBtn'),'스킨 바꾸기');wrap($('#guideBtn'),'초기 세팅 방법');wrap($('#setBtn'),'설정');wrap($('#radioBtn'),'라디오');wrap($('#revBtn'),'후진 카메라');
   // 화면(배치) 고르기: '화면' 글자 대신 화면 아이콘
   const lw=$('label.selw[for="layout"]');if(lw&&!lw.dataset.ib){lw.dataset.ib='1';[...lw.childNodes].forEach(n=>{if(n.nodeType===3&&n.textContent.trim()){const s=document.createElement('span');s.className='tl';s.textContent=n.textContent;lw.replaceChild(s,n)}});lw.insertAdjacentHTML('afterbegin',svg('layout'));const sel=$('#layout');if(sel&&!sel.getAttribute('aria-label'))sel.setAttribute('aria-label','화면 배치')}
   // 로고 아래 날짜 띠

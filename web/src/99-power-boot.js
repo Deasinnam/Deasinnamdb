@@ -44,7 +44,7 @@ if(!restored)(async()=>{
 $('#npAdd').onclick=()=>pickMusic(false);$('#npRadio').onclick=()=>{try{openRadio()}catch(e){}};
 function npEmptySync(){const has=(cur>=0&&list[cur])||rdPlaying||(mode==='ext'&&ext&&ext.title);$('#wVis').classList.toggle('np-empty',!has)}
 npEmptySync();setInterval(npEmptySync,1000);
-if(window.__skinNote)setTimeout(()=>{const n=(SKINS.find(x=>x[0]===window.__skinNote)||[,''])[1];toast('스킨을 정리했어요. 지금은 "'+n+'" 스킨이에요. 위 [🎨 스킨]에서 바꿀 수 있어요.')},1800);
+if(window.__skinNote)setTimeout(()=>{const n=(SKINS.find(x=>x[0]===window.__skinNote)||[,''])[1];toast('스킨을 정리했어요. 지금은 "'+n+'" 스킨이에요. '+(SKU?'스피드미터 제목줄의 고르기':'위 [🎨 스킨]')+'에서 바꿀 수 있어요.')},1800);
 
 /* 1.53 시험판: 처음 실행 안내, 설정의 시험판 정보, 안드로이드 등록용은 '앱이 꺼져 있어도 자동으로 열기'(다른 앱 위에 표시) 숨김 */
 if(PUB){$('#secPub').hidden=false;$('#secPubH').hidden=false;$('#pubName').textContent=BUILD==='play'?'대신남 원 안드로이드 테스트용':'대신남 배포용 테스트';$('#pubNotice').onclick=()=>BuildNotice.show(true);setTimeout(()=>BuildNotice.show(false),400);
