@@ -4,8 +4,9 @@ const fs = require('node:fs'), path = require('node:path');
 // 1.80 대신남 3D 맵 스킨: 기능은 에어라인과 같고(안에서는 carnival7), 스피드미터 풍경만 3D 엔진(pfd3d.js). 지도 타일·고도는 가짜 타일로
 run('3D map skin renders the speedometer scene in 3D', async ({newPage, origin}) => {
   const osm = fs.readFileSync(path.join(__dirname, 'fixtures', 'osm-tile.png')), dem = fs.readFileSync(path.join(__dirname, 'fixtures', 'dem-tile.png'));
-  const p = await newPage(() => { window.__build = 'special'; window.__3dPause = 1; localStorage.setItem('dna_skin2', JSON.stringify('carnival8')); });
+  const p = await newPage(() => { window.__build = 'special'; window.__3dPause = 1; window.addEventListener('error', e => console.log('PAGEERR', e.message)); localStorage.setItem('dna_skin2', JSON.stringify('carnival8')); });
   await p.route(/^https:\/\//, r => { const u = r.request().url();
+    if (u.includes('cartocdn.com/')) return r.abort();   // 기호 없는 지도를 못 받으면 OSM 지도로(기호를 지워서)
     if (u.includes('openstreetmap.org/')) return r.fulfill({body: osm, contentType: 'image/png', headers: {'access-control-allow-origin': '*'}});
     if (u.includes('terrarium')) return r.fulfill({body: dem, contentType: 'image/png', headers: {'access-control-allow-origin': '*'}}); return r.abort(); });
   await p.setViewportSize({width: 840, height: 900}); await p.goto(origin); await p.waitForFunction(() => window.AmpPfd && window.Amp3DHook);
@@ -18,9 +19,11 @@ run('3D map skin renders the speedometer scene in 3D', async ({newPage, origin})
   if (!gl) { assert.equal(await p.evaluate(() => Amp3DHook.state), 'failed', 'no WebGL → original scene'); await p.close(); return; }
   assert.equal(await p.evaluate(() => Amp3DHook.state), 'ready', 'engine ' + await p.evaluate(() => window.__3dErr || ''));
   await p.evaluate(() => { AmpSpecialSky.set('noon'); AmpFlight.step(1, 30); AmpFlight.step(5, 40); AmpFlight.step(14, 60); pfd.draw(); });
-  await p.waitForTimeout(2500); await p.evaluate(() => pfd.draw());
-  const st = await p.evaluate(() => { const e = Amp3DHook.engine, L = window.__3dLast; return {tiles: e.tiles, inst: e.scene.children.filter(o => o.isInstancedMesh).length, pitch: L.pitch, credit: !document.querySelector('#pfdHost .p3d-credit').hidden}; });
+  await p.waitForFunction(() => Amp3DHook.engine.loaded > 40, null, {timeout: 30000}).catch(() => {}); await p.evaluate(() => pfd.draw());
+  const st = await p.evaluate(() => { const e = Amp3DHook.engine, L = window.__3dLast; return {loaded: e.loaded, src: e.source, rwTop: !e.runway.material.depthTest && e.runway.renderOrder >= 1000, tiles: e.tiles, inst: e.scene.children.filter(o => o.isInstancedMesh).length, pitch: L.pitch, credit: !document.querySelector('#pfdHost .p3d-credit').hidden}; });
   assert.ok(st.tiles >= 75, 'map tiles around me: ' + st.tiles);
+  assert.ok(st.loaded > 20 && st.src === 1, 'falls back to OSM tiles: ' + JSON.stringify(st));
+  assert.ok(st.rwTop, 'runway is never hidden');
   assert.ok(st.inst >= 1, 'buildings/trees raised from the map: ' + st.inst);
   assert.ok(Math.abs(st.pitch) < 8, 'horizon pitch stays sane: ' + st.pitch);
   assert.ok(st.credit, 'map attribution shown');

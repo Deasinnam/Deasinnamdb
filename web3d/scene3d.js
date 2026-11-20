@@ -16,7 +16,8 @@ const R = 6378137, PI = Math.PI, D2R = PI / 180;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
 const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const mercX = lon => R * lon * D2R, mercY = lat => R * Math.log(Math.tan(PI / 4 + lat * D2R / 2));
-const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+// 1.81 땅에 지도 기호·글자가 찍히지 않게: 글자·기호 없는 지도(CARTO Voyager, OSM 자료)를 먼저, 안 되면 OSM 지도에서 기호를 지워 씀
+const TILE_URLS = ['https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'];
 const DEM_URL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LEVELS = [{ z: 15, r: 2 }, { z: 13, r: 2 }, { z: 11, r: 2 }];   // 가까이부터(5×5씩)
 const SEG = 32;
@@ -75,18 +76,18 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i
 float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=vn(p)*a;p*=2.03;a*=.5;}return s;}`;
 function groundMaterial(level, map) {
   const m = new THREE.MeshStandardMaterial({ map, roughness: .93, metalness: 0, envMapIntensity: 1 });
-  m.userData.hole = { value: new THREE.Vector4(1, 1, -1, -1) }; m.userData.osm = { value: 0 };
+  m.userData.hole = { value: new THREE.Vector4(1, 1, -1, -1) }; m.userData.osm = { value: 0 }; m.userData.bg = { value: .94 };
   m.onBeforeCompile = s => {
-    Object.assign(s.uniforms, SH, { uHole: m.userData.hole, uOsm: m.userData.osm });
+    Object.assign(s.uniforms, SH, { uHole: m.userData.hole, uOsm: m.userData.osm, uBg: m.userData.bg });
     s.vertexShader = 'varying vec3 vW;\n' + s.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvW=(modelMatrix*vec4(transformed,1.)).xyz;');
-    s.fragmentShader = 'varying vec3 vW;uniform float uTime,uNight,uCloud;uniform vec2 uWind;uniform vec4 uHole;uniform float uOsm;\n' + GLSL_NOISE + "\n" + s.fragmentShader
+    s.fragmentShader = 'varying vec3 vW;uniform float uTime,uNight,uCloud;uniform vec2 uWind;uniform vec4 uHole;uniform float uOsm,uBg;\n' + GLSL_NOISE + "\n" + s.fragmentShader
       .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif(vW.x>uHole.x&&vW.x<uHole.z&&vW.z>uHole.y&&vW.z<uHole.w)discard;\nfloat isWater=0.,glow=0.;vec3 glowC=vec3(0.);')
       .replace('#include <map_fragment>', `#ifdef USE_MAP
   vec4 tx=texture2D(map,vMapUv);vec3 sc=pow(max(tx.rgb,vec3(0.)),vec3(1./2.2));
-  isWater=1.-smoothstep(.04,.10,distance(sc,vec3(.667,.827,.875)));
+  isWater=smoothstep(.04,.09,sc.b-sc.r)*step(sc.g-.035,sc.b);   // 지도 색 이름과 상관없이: 파란 기운 = 물
   float lum=dot(sc,vec3(.3,.59,.11)),sat=max(sc.r,max(sc.g,sc.b))-min(sc.r,min(sc.g,sc.b));
-  float road=(smoothstep(.975,.995,lum)*(1.-smoothstep(.015,.04,sat))+smoothstep(.12,.3,sat)*step(sc.b,sc.g*.85)*step(sc.g*.97,sc.r))*(1.-isWater);
-  float bld=1.-smoothstep(.03,.07,distance(sc,vec3(.851,.816,.788)));
+  float road=(smoothstep(uBg+.02,uBg+.045,lum)*(1.-smoothstep(.03,.06,sat))+smoothstep(.12,.3,sat)*step(sc.b,sc.g*.85)*step(sc.g*.97,sc.r))*(1.-isWater);
+  float bld=(1.-smoothstep(.07,.1,sat))*step(uBg-.17,lum)*step(lum,uBg-.025)*(1.-isWater);   // 바탕보다 조금 어두운 무채색 = 건물
   vec3 day=tx.rgb;day=mix(vec3(dot(day,vec3(.3,.59,.11))),day,1.12);
   day=mix(day,vec3(.05,.17,.27),isWater*.7);
   float cl=smoothstep(.45,.75,fbm(vW.xz*.00035+uWind*uTime))*uCloud*(1.-uNight);
@@ -172,14 +173,15 @@ export function create() {
   const tGeo = new THREE.ConeGeometry(.5, 1, 7).translate(0, .5, 0), tMat = new THREE.MeshStandardMaterial({ color: 0x3f6a33, roughness: .9 });
   function extrude(t, img) {
     const c = canvas(256, 256), x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0); let d; try { d = x.getImageData(0, 0, 256, 256).data; } catch (e) { return; }
-    const S = tileSize(t.z) * geo.k, mpp = S / 256, B = [], T = [], step = 4, m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
+    const bg = t.bg, S = tileSize(t.z) * geo.k, mpp = S / 256, B = [], T = [], step = 4, m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
     for (let py = 2; py < 256; py += step) for (let px = 2; px < 256; px += step) {
       const k = (py * 256 + px) * 4, r = d[k], g = d[k + 1], b = d[k + 2];
       const wx = t.x0 + (px + .5) * mpp, wz = t.z0 + (py + .5) * mpp, hs = hash(px * 7.1 + py * 3.3 + t.tx * 1.7 + t.ty * 2.9);
-      if (Math.abs(r - 217) < 10 && Math.abs(g - 208) < 10 && Math.abs(b - 201) < 10) {
+      const mx = Math.max(r, g, b), mn = Math.min(r, g, b), lm = (r * .3 + g * .59 + b * .11) / 255, st = (mx - mn) / 255;
+      if (st < .08 && lm > bg - .17 && lm < bg - .025) {
         const hgt = hs < .62 ? 7 + hs * 14 : hs < .93 ? 22 + (hs - .62) * 160 : 70 + (hs - .93) * 900;
         B.push([wx, wz, mpp * step * .82, hgt, hs]);
-      } else if ((Math.abs(r - 173) < 14 && Math.abs(g - 209) < 14 && Math.abs(b - 158) < 14) || (Math.abs(r - 200) < 10 && Math.abs(g - 250) < 6 && Math.abs(b - 204) < 10)) {
+      } else if (g > r + 14 && g > b + 6) {   // 초록 = 숲·공원
         if (hs < .7) T.push([wx + (hs - .5) * mpp * 3, wz + (hash(hs * 99) - .5) * mpp * 3, 9 + hs * 14]);
       }
     }
@@ -202,12 +204,35 @@ export function create() {
     const mesh = new THREE.Mesh(g, mat); mesh.position.set(x0 + ws / 2, 0, z0 + ws / 2); mesh.receiveShadow = li === 0; levelGroups[li].add(mesh);
     t = { z, tx, ty, key, mesh, mat, x0, z0, seen: frame, dem: null }; tiles.set(key, t);
     if (z <= 15) loadImg(DEM_URL.replace('{z}', z).replace('{x}', tx).replace('{y}', ty), im => { if (!tiles.has(key)) return; try { t.dem = decodeDem(im); applyDem(t); } catch (e) {} }, () => {});
-    loadImg(TILE_URL.replace('{z}', z).replace('{x}', tx).replace('{y}', ty), im => {
-      if (!tiles.has(key)) return; fails = 0; const tex = new THREE.Texture(im); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; tex.needsUpdate = true;
-      if (mat.map) mat.map.dispose(); mat.map = tex; t.tex = tex; mat.userData.osm.value = 1; mat.needsUpdate = true;
-      if (near) { const go = () => extrude(t, im); t.dem ? go() : setTimeout(go, 900); }
-    }, () => { if (++fails > 12) net = false; });
+    const url = i => TILE_URLS[i].replace('{s}', 'abcd'[(tx + ty) & 3]).replace('{z}', z).replace('{x}', tx).replace('{y}', ty);
+    const got = (im, src) => {
+      if (!tiles.has(key)) return; fails = 0; let cv = null;
+      try { cv = cleanTile(im, src === 1); t.bg = cv.bg; } catch (e) { t.bg = .94; }
+      const tex = new THREE.Texture(cv ? cv.canvas : im); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; tex.needsUpdate = true;
+      if (mat.map) mat.map.dispose(); mat.map = tex; t.tex = tex; mat.userData.osm.value = 1; mat.userData.bg.value = t.bg; mat.needsUpdate = true;
+      if (near && cv) { const go = () => extrude(t, cv.canvas); t.dem ? go() : setTimeout(go, 900); }
+    };
+    const first = srcIdx;   // 이 요청이 쓴 지도(동시에 여러 장이 실패해도 OSM으로 한 번씩만 다시)
+    loadImg(url(first), im => got(im, first), () => { if (first === 0) { srcIdx = 1; loadImg(url(1), im => got(im, 1), () => { if (++fails > 12) net = false; }); } else if (++fails > 12) net = false; });
     return t;
+  }
+  let srcIdx = 0;   // 0 = 기호 없는 지도, 못 받으면 1 = OSM(기호 지움)
+  /* 지도 그림 다듬기: 바탕색(가장 흔한 무채색) 찾기 + OSM이면 글자·기호(주변보다 확 어둡거나 튀는 작은 점)를 주변 색으로 지움 */
+  function cleanTile(im, osm) {
+    const c = canvas(256, 256), x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
+    const id = x.getImageData(0, 0, 256, 256), d = id.data, hist = new Map();
+    for (let i = 0; i < d.length; i += 16) { const r = d[i], g = d[i + 1], b = d[i + 2]; if (Math.max(r, g, b) - Math.min(r, g, b) > 20) continue; const k = (r + g + b) / 3 >> 2; hist.set(k, (hist.get(k) || 0) + 1); }
+    let bk = 0, bn = -1; for (const [k, n] of hist) if (n > bn) { bn = n; bk = k; } const bg = (bk * 4 + 2) / 255;
+    if (osm) {   // 닫힘 연산(최댓값 → 최솟값, 반경 2): 폭 4px보다 가는 어두운 글자·나무 기호·번호는 사라지고 큰 면(건물·숲)과 밝은 길은 남음
+      const W = 256, a = new Uint8ClampedArray(d.length), pass = (src, dst, dx, dy, mx) => {
+        for (let y = 0; y < W; y++) for (let x2 = 0; x2 < W; x2++) { const o = (y * W + x2) * 4;
+          for (let ch = 0; ch < 3; ch++) { let v = src[o + ch];
+            for (let k = -2; k <= 2; k++) { const xx = Math.min(W - 1, Math.max(0, x2 + k * dx)), yy = Math.min(W - 1, Math.max(0, y + k * dy)), w = src[(yy * W + xx) * 4 + ch]; v = mx ? Math.max(v, w) : Math.min(v, w); }
+            dst[o + ch] = v; } dst[o + 3] = 255; } };
+      pass(d, a, 1, 0, true); pass(a, d, 0, 1, true); pass(d, a, 1, 0, false); pass(a, d, 0, 1, false);
+      x.putImageData(id, 0, 0);
+    }
+    return { canvas: c, bg };
   }
   let frame = 0;
   function updateTiles(cx, cz) {
@@ -232,11 +257,13 @@ export function create() {
   const rw = new THREE.Group(); scene.add(rw);
   const rwMesh = new THREE.Mesh(new THREE.PlaneGeometry(45, 1400).rotateX(-PI / 2), new THREE.MeshStandardMaterial({ map: runwayTexture(), roughness: .85, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6 }));
   rwMesh.position.set(0, .4, -700); rwMesh.receiveShadow = true; rw.add(rwMesh);
+  // 1.81 이착륙 활주로는 어떤 것(산·건물·구름)에도 가리지 않게: 깊이 검사 없이 맨 마지막에 그림
+  Object.assign(rwMesh.material, { depthTest: false, depthWrite: false, transparent: true }); rwMesh.renderOrder = 1000;
   const apron = new THREE.Mesh(new THREE.PlaneGeometry(420, 1700).rotateX(-PI / 2), new THREE.MeshStandardMaterial({ color: 0x5f7a45, roughness: 1, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
   apron.position.set(0, .2, -700); apron.receiveShadow = true; rw.add(apron);
   const lightG = new THREE.SphereGeometry(.7, 8, 6), lights = new THREE.InstancedMesh(lightG, new THREE.MeshBasicMaterial({ color: 0xffffff }), 120), m4 = new THREE.Matrix4(), cc = new THREE.Color();
   for (let i = 0; i < 60; i++) { for (const sd of [-1, 1]) { const n = i * 2 + (sd > 0 ? 1 : 0); m4.makeTranslation(sd * 24, 1, -i * 1400 / 59); lights.setMatrixAt(n, m4); lights.setColorAt(n, cc.set(i < 3 ? 0x40ff70 : i > 56 ? 0xff3030 : 0xfff2d0)); } }
-  rw.add(lights);
+  Object.assign(lights.material, { depthTest: false, depthWrite: false, transparent: true }); lights.renderOrder = 1001; rw.add(lights);
   const tower = new THREE.Group(), tm = new THREE.MeshStandardMaterial({ color: 0xd9d6cf, roughness: .6 }), glass = new THREE.MeshStandardMaterial({ color: 0x1b3346, roughness: .08, metalness: .6, emissive: 0x3a6a8a, emissiveIntensity: 0 });
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 48, 16), tm); shaft.position.y = 24; const cab = new THREE.Mesh(new THREE.CylinderGeometry(9, 7, 7, 16), glass); cab.position.y = 51;
   const roof = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 1.5, 16), tm); roof.position.y = 55.5; tower.add(shaft, cab, roof); tower.position.set(170, 0, -520);
@@ -311,6 +338,6 @@ export function create() {
     if (dbg.direct) renderer.render(scene, cam); else composer.render();
     return renderer.domElement;
   }
-  return { ok: true, render, get tiles() { return tiles.size; }, get net() { return net; }, get pending() { return pending; }, get pos() { return { x: st.x, z: st.z, hd: st.hd, lat0: geo.lat0 }; }, renderer, scene, bloom, composer };
+  return { ok: true, render, get tiles() { return tiles.size; }, get loaded() { let n = 0; for (const t of tiles.values()) if (t.tex) n++; return n; }, get source() { return srcIdx; }, runway: rwMesh, get net() { return net; }, get pending() { return pending; }, get pos() { return { x: st.x, z: st.z, hd: st.hd, lat0: geo.lat0 }; }, renderer, scene, bloom, composer };
 }
 window.Amp3D = { create };

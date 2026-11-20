@@ -28,7 +28,7 @@
       // 지금 좌표계는 수평선 가운데·기울어진 상태 → 피치·롤을 되돌려 화면에 똑바로 깔기(3D 카메라가 같은 피치·롤로 찍었음)
       c.save(); c.translate(0, -pitch * h / 58); c.rotate(roll * Math.PI / 180);
       c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.drawImage(img, -w / 2, -h * .53, w, h); c.restore();
-      if (!credit && P.els && P.els.canvasWrap) { credit = document.createElement('div'); credit.className = 'p3d-credit'; credit.textContent = '© OpenStreetMap'; P.els.canvasWrap.appendChild(credit); }
+      if (!credit && P.els && P.els.canvasWrap) { credit = document.createElement('div'); credit.className = 'p3d-credit'; credit.textContent = '© OpenStreetMap · © CARTO'; P.els.canvasWrap.appendChild(credit); }
     } catch (e) { window.__3dErr = String(e && e.message || e); state = 'failed'; return oGround.apply(this, arguments); }
   };
   // 3D는 정차 중에도 구름·물결이 움직이므로 계속 다시 그림(화면이 보일 때만)
