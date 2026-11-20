@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T00:14:09+09:00",
+ "updated": "2026-11-21T00:16:56+09:00",
  "apps": {
   "pad": {
    "version": "0.2.2",
@@ -16,9 +16,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "work": {
-   "version": "1.0.4",
-   "date": "2026.11.20",
-   "note": "문서 편집의 열기에서 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 · 다이어그램 파일을 고를 수 없던 문제 수정",
+   "version": "1.0.6",
+   "date": "2026.11.21",
+   "note": "한글(HWP) 문서 파일 메뉴의 저장 · 다른 이름으로 저장 수정, 이음오피스 v0.13.0(한글 표 안의 표 편집 · 각주 · 수식 앞 문단 추가 등 개선)",
    "page": "https://deolnureum.com/work/",
    "changes": "https://deolnureum.com/releases/"
   },
