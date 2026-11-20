@@ -447,6 +447,16 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-sub .ap-media { position: static; align-self: center; }
 .ap-sub .amp-copy { align-self: center; }
 .ap .amp-copy.ap-wide { grid-column: 1 / -1; }
+.ap-guide { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 28px; margin-top: 12px; }
+.ap-guide figure { margin: 0; display: grid; gap: 16px; align-content: start; }
+.ap-gimg { width: 100%; height: auto; border-radius: 14px; border: 1px solid #3a3a40; background: #0b0e0b; }
+.ap-guide small { font: 600 11px/1 var(--font-mono); letter-spacing: .1em; color: #93c5fd; }
+.ap-guide h3 { margin-top: 10px; font: 800 21px/1.3 var(--font-display); letter-spacing: -0.03em; color: #fff; }
+.ap-guide p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.7; color: #c4c4cb; word-break: keep-all; }
+.ap-guide p b { color: #fff; }
+.ap-gnote { align-self: center; padding: 24px; border: 1px solid #2a2a2e; border-radius: 16px; }
+.ap-gnote .amp-btn { margin-top: 16px; }
+@media (max-width: 900px) { .ap-guide { grid-template-columns: 1fr; } }
 .ap-trio { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; margin-top: 12px; }
 .ap-trio figure { margin: 0; display: grid; gap: 18px; align-content: start; }
 .ap-trio .ap-dev { width: 100%; border-radius: 20px; border-width: 6px; }
@@ -1424,11 +1434,12 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
           <li><b>02</b><span>출발하면 알아서 대기 → 이륙 → 상승 → 순항, 효과음까지</span></li>
           <li><b>03</b><span>최고·평균 속도, 거리, 시간, 고도를 남기는 주행 기록과 차계부</span></li>
           <li><b>04</b><span>진행 방향이 위로 오는 원형 지도와 나침반</span></li>
-          <li><b>05</b><span>에어라인 · 에어포스 스킨, 주간·야간 하늘 자동</span></li>
+          <li><b>05</b><span>활주로 스킨 3종(자동차 모드 · 에어라인 · 3D 맵), 주간·야간 하늘 자동</span></li>
           <li><b>06</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">11월 22일(일) 오후 4시 출시 · 이곳에 내려받기가 생깁니다</span></div>
         <div class="ap-fix"><a class="amp-btn ap-fix-btn" href="#post-install-guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>설치가 차단될 때 해결 방법 보기</a></div>
+        <div class="ap-fix"><button type="button" class="amp-btn ap-guide-btn" data-scroll="spd-guide">📖 사용 방법 · 초기 세팅 보기</button></div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="#hardware"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
         <div class="ap-howto ap-install">
           <h2>처음 설치하시나요?</h2>
@@ -1480,6 +1491,51 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         <figure>
           <div class="ap-dev" style="aspect-ratio:540/600"><video src="media/sp-oil.mp4?v=1120" poster="media/sp-oil-poster.jpg?v=1120" muted playsinline preload="none" aria-label="대신남 스피드미터 차계부: 누적 주행거리를 입력하면 엔진오일 · 오일필터 교환까지 남은 거리가 바뀌는 모습 (1.5배속)"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
           <figcaption><small>05 · MAINTENANCE</small><h3>엔진오일 교환 때를 알려 줍니다.</h3><p>누적 주행거리를 넣으면 엔진오일 · 오일필터 같은 소모품 교환까지 남은 거리를 계산합니다.</p></figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="amp-wrap ap-sub" id="spd-guide">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">사용 방법 · 초기 세팅</div>
+        <h2>설치했다면,<br>이 순서대로 맞춰 보세요.</h2>
+        <p class="ap-desc">앱 안에서도 위 도구 줄의 <b>📖 초기 세팅 방법</b> 버튼(설정 창 맨 위에도 있어요)을 누르면 같은 안내를 그림과 짧은 영상으로 볼 수 있습니다. 그림 속 번호는 설명의 번호와 같아요.</p>
+      </div>
+      <div class="ap-guide">
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-gps.jpg?v=1185" alt="위치(GPS) 켜기 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>01 · GPS</small><h3>위치(GPS) 켜기</h3><p>처음 켜면 위치 권한을 묻습니다. <b>앱 사용 중에만 허용</b>을 눌러 주세요. ① 제목줄에 <b>GPS 수신</b>이 보이면 준비 끝, ② 안 보이면 콕핏 컨트롤의 <b>GPS 켜기</b>를 누릅니다.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-skin.jpg?v=1185" alt="스킨 고르기 — 활주로 3종 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>02 · SKIN</small><h3>스킨 고르기 — 활주로 3종</h3><p>① 스피드미터 제목줄의 고르기를 누르면 맨 위에 <b>자동차 모드 · 에어라인 · 3D 맵</b>이 있습니다. ② 아래 <b>계기판 디자인</b>에서 카본·네온·아날로그 계기판도 고를 수 있어요.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-level.jpg?v=1185" alt="수평 맞춤 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>03 · LEVEL</small><h3>수평 맞춤</h3><p>휴대폰을 거치대에 고정하고, 차가 <b>평평한 곳에 멈춰 있을 때</b> ① <b>수평 맞춤</b>을 누릅니다. 거치 각도를 바꿨거나 하늘이 기울어 보이면 다시 눌러 주세요.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-sky.jpg?v=1185" alt="하늘 — 주간 · 야간 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>04 · SKY</small><h3>하늘 — 주간 · 야간</h3><p>① <b>하늘</b> 버튼에서 자동·주간·야간을 고릅니다. 자동이면 실제 해 뜨고 지는 시각에 맞춰 바뀌어요. ② 콕핏 컨트롤의 <b>주간 · 야간</b> 스위치도 같이 움직이고, 야간에는 화면 밝기를 10%로 낮춥니다.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-odo.jpg?v=1185" alt="누적 주행거리 · 엔진오일 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>05 · ODOMETER</small><h3>누적 주행거리 · 엔진오일</h3><p>① <b>누적 주행거리</b> 칸을 길게 눌러 차 계기판의 km를 넣습니다. ② 한 번 누르면 <b>엔진오일 교체까지 남은 거리</b>로 바뀌어요. 차계부에 교체 기록을 적어 두면 더 정확합니다.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-music.jpg?v=1185" alt="내 음악 넣기 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>06 · MUSIC</small><h3>내 음악 넣기</h3><p>① 위 도구 줄 맨 오른쪽 <b>음악 추가</b>로 휴대폰의 음악 파일·폴더를 고릅니다. ② 플레이어에서 재생·곡 넘김·셔플·반복을 하고, 지금 나오는 노래 제목은 계기판 아래에 뜹니다.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-ext.jpg?v=1185" alt="외부 앱 소리 (YouTube Music · Spotify) 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>07 · EXTERNAL APPS</small><h3>외부 앱 소리 (YouTube Music · Spotify)</h3><p>① <b>외부 앱</b> 버튼 → 앱을 열어 곡을 틀고, ② <b>권한 설정 › 설정 열기</b>에서 ③ <b>알림 접근 허용</b> 목록의 에어포스원을 켭니다. ④ <b>사운드 시각화</b>도 허용하면 소리에 맞춰 화면이 움직여요.</p></figcaption>
+        </figure>
+        <figure>
+          <img class="ap-gimg" src="media/guide/g-car.jpg?v=1185" alt="차에 타면 자동으로 화면 안내 그림" loading="lazy" decoding="async">
+          <figcaption><small>08 · CAR</small><h3>차에 타면 자동으로</h3><p>① <b>설정(톱니바퀴)</b>을 열고 ② <b>자동 재생할 기기</b>에서 차 블루투스를, ③ <b>차에 연결되면 틀 음원</b>을 고르면 시동을 걸자마자 음악이 이어서 나옵니다.</p></figcaption>
+        </figure>
+        <figure class="ap-gnote">
+          <figcaption><small>09 · TAKEOFF</small><h3>이륙 · 순항 · 착륙</h3><p>차가 서 있으면 활주로에서 대기하고, 출발하면 이륙, 달리는 동안 순항, 멈추면 착륙합니다. 착륙하면 <b>평균 속도와 운전 평점</b>이 잠깐 떠요. <b>시연</b> 버튼을 누르면 서 있어도 이륙부터 착륙까지 미리 볼 수 있습니다. 과속 카메라는 <b>500m 앞</b>에서 경고음과 함께 알려 줍니다.</p>
+          <button type="button" class="amp-btn" data-scroll="spd-new">위의 실제 주행 영상 보기 ↑</button></figcaption>
         </figure>
       </div>
     </div>
@@ -4686,5 +4742,6 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   });
 })();
 </script>
+<script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-scroll]");if(!b)return;var t=document.getElementById(b.getAttribute("data-scroll"));if(t){e.preventDefault();t.scrollIntoView({behavior:"smooth",block:"start"})}});</script>
 </body>
 </html>
