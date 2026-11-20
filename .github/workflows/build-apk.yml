@@ -50,6 +50,23 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: 에뮬레이터 점검 (기본 판 · 저장 · 두 번째 화면에서 앱 열기)
+        id: selftest1
+        continue-on-error: true
+        timeout-minutes: 8
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          emulator-build: 16740729
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none -no-audio
+          disable-animations: true
+          script: bash tools/emulator_selftest.sh Pad-test.apk
+
+      - name: 에뮬레이터 점검 다시 (에뮬레이터가 멈췄을 때 새 에뮬레이터로 한 번 더)
+        if: steps.selftest1.outcome == 'failure'
         timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
