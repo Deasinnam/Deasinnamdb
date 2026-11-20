@@ -108,3 +108,21 @@ jobs:
             --prerelease \
             --title "대신남 원 Ver1 (독립 설치판)" \
             --notes "기존 Daesinnam Amp·데모판과 따로 설치되는 대신남 원 Ver1입니다(패키지 com.daesinnam.one.v1). DaesinnamOne-V1_Fold8*.apk는 갤럭시 Z 폴드8 전용판(보라색, 패키지 com.daesinnam.one.v1.fold8)으로 기존 앱과 따로 설치됩니다. DaesinnamOne-V1-full.apk는 알림 접근으로 모든 앱의 곡 정보까지 지원하는 풀버전(일반판과 같은 앱이라 서로 덮어 설치). 백업과 비교 테스트용. 콕핏 아날로그 시계, PFD 활주로 이륙·착륙 장면. 빌드 번호 ${{ github.run_number }}"
+
+      # 1.84 배포용 에어포스원: 공개 릴리스(one-v1)에 넣지 않고 "초안" 릴리스로만 올림(저장소 관리자만 보임).
+      #  공개는 예약 작업이 gh release edit --draft=false 로. 이미 공개된 같은 버전은 건드리지 않음
+      - name: 배포용 에어포스원 초안 릴리스
+        if: github.ref == 'refs/heads/daesinnam-one-v1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VN=$(grep -o 'versionName "[^"]*"' app/build.gradle | head -1 | sed 's/versionName "\([0-9.]*\).*/\1/')
+          TAG="airforceone-v$VN"
+          cp app/build/outputs/apk/airdistFull/release/app-airdist-full-release.apk AirForceOne-full.apk
+          cp app/build/outputs/apk/airdistLite/release/app-airdist-lite-release.apk AirForceOne-lite.apk
+          if gh release view "$TAG" --json isDraft -q .isDraft 2>/dev/null | grep -q false; then echo "$TAG 이미 공개됨 — 그대로 둠"; exit 0; fi
+          gh release delete "$TAG" --yes || true
+          gh release create "$TAG" AirForceOne-full.apk AirForceOne-lite.apk \
+            --target "$GITHUB_SHA" --draft \
+            --title "에어포스원 $VN" \
+            --notes-file docs/airforceone-release.md
