@@ -640,6 +640,8 @@
         c.shadowBlur = 3; c.fillStyle = '#b7ffae'; c.fillText(t, x + w / 2, ty); c.restore();
       }
       try { drawWeather(c, x, w, h, sp + F.pitch + shake, sr + F.bank, !this.day); } catch (e) {}
+      // 1.80 그리기용으로 바꾼 자세 값을 되돌림(안 되돌리면 그릴 때마다 비행 기울기가 쌓여 수평선이 계속 올라가거나 뒤집힘 — 위치 수신이 끊기면 특히)
+      [d.pitchDeg, d.rollDeg, dp.pitchDeg, dp.rollDeg] = save;
     }
   };
 

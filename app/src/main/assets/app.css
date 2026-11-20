@@ -2912,3 +2912,6 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #pfdHost .pfd-trip span{font-size:clamp(17px,2.7vw,28px);font-weight:700}
 #pfdHost .pfd-trip small{font-size:clamp(12px,1.6vw,16px);font-weight:600;opacity:.85}
 #pfdHost .pfd-trip[hidden]{display:none}
+/* 1.80 3D 맵: 지도 출처 */
+#pfdHost .p3d-credit{position:absolute;z-index:3;right:calc(var(--pfd-tape,70px) + 8px);bottom:calc(var(--pfd-cmp,50px) + 6px);font:600 10px/1 "Noto Sans KR",sans-serif;color:#fff;opacity:.75;text-shadow:0 1px 2px #000;pointer-events:none}
+#pfdHost .p3d-credit[hidden]{display:none}

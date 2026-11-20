@@ -2,7 +2,7 @@ const {run, assert} = require('./lib/harness.cjs');
 
 // 1.55 앱 나누기: 대신남 AMP = 오디오 스킨 7개(차량 기능 숨김), 대신남 원 = 자동차 모드·에어라인
 run('App split: AMP audio skins only, One car skins only', async ({context, origin, errors}) => {
-  for (const [kind, skins, def] of [['amp', ['blue', 'amber', 'base', 'neon', 'ice', 'red', 'wood'], 'blue'], ['one', ['carnival', 'carnival7'], 'carnival7'], ['std', ['carnival', 'carnival7'], 'carnival7']]) {
+  for (const [kind, skins, def] of [['amp', ['blue', 'amber', 'base', 'neon', 'ice', 'red', 'wood'], 'blue'], ['one', ['carnival', 'carnival7', 'carnival8'], 'carnival7'], ['std', ['carnival', 'carnival7', 'carnival8'], 'carnival7']]) {
     const p = await context.newPage();
     p.on('pageerror', e => errors.push(kind + ': ' + e.message));
     await p.addInitScript(k => { window.__build = k; window.AndroidBridge = {buildKind: () => k}; if (sessionStorage.getItem('as') !== k) { sessionStorage.setItem('as', k); localStorage.clear(); localStorage.setItem('dna_skin2', JSON.stringify(k === 'amp' ? 'carnival7' : 'neon')); } }, kind);

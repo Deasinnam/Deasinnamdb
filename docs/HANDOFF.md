@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-20 · v1.79 (versionCode 113)**
+마지막 갱신: **2026-11-20 · v1.80 (versionCode 114)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.79** (versionCode 113, versionName `1.79-one`) |
+| 최신 버전 | **1.80** (versionCode 114, versionName `1.80-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -125,6 +125,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-20 · 1.80 — 대신남 3D 맵 스킨(`carnival8`, 00-core SKINS·CAR_SKINS·ONE_SKINS). setSkin0에서 안으로는 carnival7로 바꾸고 `:root[data-sk3d]`만 더함(그래서 모든 기능이 에어라인과 같음, 고른 값·버튼 표시는 skinPref). 엔진: `web3d/scene3d.js`(three 0.187 + Sky·EffectComposer·UnrealBloom·OutputPass) → `node tools/build-3d.cjs`(esbuild, devDeps three·esbuild)로 `assets/pfd3d.js` 한 파일(약 600KB, 커밋함). 연결: `assets/pfd-3d.js`(index.html에서 pfd-special 다음) — data-sk3d면 drawSky를 건너뛰고 drawGround에서 엔진 그림을 피치·롤을 되돌린 좌표에 drawImage(카메라는 같은 피치·롤, 수평선 0.53·h/58°로 맞춤). 지도: OSM 타일 z15/z13/z11 각 5×5(가까운 단계가 덮는 곳은 먼 단계에서 discard), 고도 AWS terrarium, 가까운 3×3 타일의 건물색(#d9d0c9)·숲색 칸을 InstancedMesh 상자·원뿔로. 위치는 GPS(1초 위치를 속도·방향으로 이어 붙임), GPS 없으면 서울 시청에서 F.wz만큼. 활주로·관제탑·격납고는 지상·접근 단계에 내 앞, 이륙 뒤엔 그 자리. 가볍게 모드: 그림자 끔·해상도 1.25배 이하·초당 30번. (2) pfd-flight P.drawHorizon이 d/dp 자세 값을 0/비행 기울기로 바꾸고 되돌리지 않아 추가 그리기마다 피치가 쌓였음 → finally에서 `save` 되돌림. 테스트 44(가짜 지도·고도 타일 tests/fixtures), 01·26·28 스킨 목록.
 - 2026-11-20 · 1.79 — 무료 공개 자료(Poly Haven·Kenney)는 작업 공간에서 내려받을 수 없어 코드로 만듦: pfd-special.js `FTEX`(256px, 8×8 값 노이즈 얼룩 + 64px 구획마다 방향·간격이 다른 이랑 + 잔 알갱이, 128 회색 바탕) → `drawFieldDetail`이 X.river 맨 앞(강·마을·바다보다 먼저)에서 `slices`로 soft-light, 고화질 4200·1.28 / 가볍게 2200·1.6. `slices` 패턴 변환에 F.lo 가로 이동 추가(바다 물결도 함께). 데스크톱 측정 draw ≈4.5ms. 사용자가 자료 파일을 올려 주면 FTEX·RTEX를 그 이미지로 바꾸면 됨.
 - 2026-11-20 · 1.78 — (1) 수평: 40-gps-speedo attPoll에서 r0(기준 오른쪽)를 화면 x축 투영 대신 `nrm([u0y,-u0x,0])`(화면 평면에서 기준 위쪽에 직각)로 — 세워 거치하면 화면 축이 90°·180° 어긋나도(폴드 세로 srot) 같은 기울기. 예전 식은 위쪽이 x축과 겹치면 0벡터가 돼 뒤집히듯 튐. 눕혀 거치(pl≤.45)는 예전 식. srot가 바뀌면 ref를 비우고 다시 잡음. (2) 운전 기록: pfd-flight `F.trip`(roll 시작~착륙: 시간·거리·1초 가속 >11 급가속/<-13 급감속(3초 간격, |a|<38만)·110km/h 넘은 초), 착륙 때 `tripEnd()`→`F.lastTrip`{avg,score=100-4·급가속-5·급감속-과속10초당1,grade,km,min}, `AmpFlight.state.trip`. `web/src/97-pfd-trip.js`가 landed일 때 `.pfd-trip` 녹색 글자(40초, 다음 출발 시 숨김). 테스트 43.
 - 2026-11-19 · 1.77 — 땅이 방향 따라 옆으로: pfd-flight.js update()에서 `F.lo -= angleDelta(prev,hd)*LO_K`(LO_K=.92/72.5*800/.79 ≈ 하늘과 같은 화면 이동, ±2400), 앞으로 달린 거리만큼 `F.lo*=exp(-moved/3000)`로 가운데 복귀. drawAirport에 `pxL=(X+LO)*f/Z`·`quadL`(들판·길·나무·drawCountry·afterCountry, 공항 잔디·활주로는 px 그대로), 반복 범위는 -LO 중심. pfd-special: edgePts 역변환에 -g.lo, 전신주·고랑·nightGround(px에 LO, 들판·가로 길·마을·외딴집·가로 불빛 범위 C0=-LO 중심). 테스트 42.
