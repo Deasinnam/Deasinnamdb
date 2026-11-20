@@ -337,11 +337,35 @@
     }
     return cv;
   })();
+  /* 1.79 들판 결 질감(코드로 만든 256px 이음매 없는 타일, 한 번만 만듦): 밭 이랑(구획마다 방향이 다름)·흙 얼룩·잔 알갱이.
+   *  128 회색 바탕이라 soft-light로 덮으면 밭 색은 그대로 두고 결만 생김. 땅에 붙어 달린 만큼 흐르고, 가까운 띠 몇 장만 그려 가벼움 */
+  const FTEX = (() => {
+    const W = 256, cv = document.createElement('canvas'); cv.width = cv.height = W; const x = cv.getContext('2d'), id = x.createImageData(W, W), d = id.data;
+    const G = 8, gv = Array.from({ length: G * G }, (_, i) => hash(i * 3.7 + 11) - .5);                       // 굵은 얼룩(8×8 격자 값을 부드럽게 이음)
+    const lo = (u, v) => { const X = u / W * G, Y = v / W * G, i = Math.floor(X), j = Math.floor(Y), fx = X - i, fy = Y - j, s = t => t * t * (3 - 2 * t), at = (a, b) => gv[((b % G + G) % G) * G + ((a % G + G) % G)];
+      const a = at(i, j) + (at(i + 1, j) - at(i, j)) * s(fx), b = at(i, j + 1) + (at(i + 1, j + 1) - at(i, j + 1)) * s(fx); return a + (b - a) * s(fy); };
+    for (let py = 0; py < W; py++) for (let px = 0; px < W; px++) {
+      const blk = hash(((px >> 6) + (py >> 6) * 4) * 7.1 + 3), dir = blk < .55 ? px : blk < .85 ? py : (px + py) >> 0, per = 10 + Math.floor(blk * 4) * 2;
+      const r = ((dir % per) + per) % per, row = r < 2 ? -22 : r === Math.floor(per / 2) ? 9 : 0;      // 이랑: 짙은 고랑 + 밝은 두둑
+      const v = 128 + lo(px, py) * 54 + row * (.55 + hash(blk * 99) * .6) + (hash(px * 13.1 + py * 71.7) - .5) * 22, k = (py * W + px) * 4;
+      d[k] = d[k + 1] = d[k + 2] = clamp(Math.round(v), 0, 255); d[k + 3] = 255;
+    }
+    x.putImageData(id, 0, 0); return cv;
+  })();
+  let fPat = null;
+  function drawFieldDetail(c, w, quality, g) {
+    if (!window.DOMMatrix) return; if (!fPat) try { fPat = c.createPattern(FTEX, 'repeat'); } catch (e) { return; }
+    if (!fPat || !fPat.setTransform) return;
+    const hq = quality !== 'balanced', zEnd = hq ? 4200 : 2200;
+    c.save(); c.globalCompositeOperation = 'soft-light'; c.fillStyle = fPat;
+    slices(c, g.Hc, g.f, g.py, g.zn, zEnd, hq ? 1.28 : 1.6, fPat, .9, F.wz || 0, (z1, z2) => { c.globalAlpha = clamp(1.1 - z1 / zEnd, .25, .85) * g.k; c.fillRect(-w * 2, g.py(z2), w * 4, g.py(z1) - g.py(z2) + 1); });
+    c.restore(); c.globalAlpha = 1;
+  }
   function slices(c, Hc, f, py, zn, zEnd, step, pat, scaleK, flow, draw) {
     let z = Math.max(zn, 2);
     while (z < zEnd) {
       const z2 = Math.min(zEnd, z * step + 3), zm = (z + z2) / 2, k = f / zm * scaleK, ky = k * Hc / zm * 1.5;
-      pat.setTransform(new DOMMatrix([k, 0, 0, ky, 0, py(zm) - ((zm + flow) * 4 % 256) * ky]));
+      pat.setTransform(new DOMMatrix([k, 0, 0, ky, (F.lo || 0) * f / zm, py(zm) - ((zm + flow) * 4 % 256) * ky]));   // 1.79 옆으로 밀린 땅(F.lo)과 함께
       draw(z, z2); z = z2;
     }
   }
@@ -486,6 +510,7 @@
   /* ---------- 강: 하늘을 비추는 물 + 잔물결 + 윤슬 ---------- */
   X.river = function (c, w, h, night, quality, g) {
     if (night) return false;                                              // 밤 강(달빛·가로등)은 1.59 그대로
+    if (g.k > .01) drawFieldDetail(c, w, quality, g);                   // 1.79 들판 결(강·마을·바다보다 먼저, 가볍게 모드에서도 띠 수를 줄여)
     const m = mood(night), { zn, zEnd, py, px, wr, k, riverX } = g;
     const edge = half => { const L = [], R = []; for (let z = Math.max(zn, 2); z < zEnd; z = z * 1.07 + 6) { const X0 = riverX(z + wr), y = py(z); L.push([px(X0 - half, z), y]); R.push([px(X0 + half, z), y]); } return [L, R]; };
     const path = half => { const [L, R] = edge(half), p = new Path2D(); if (L.length < 2) return null; p.moveTo(L[0][0], L[0][1]); for (const q of L) p.lineTo(q[0], q[1]); for (let i = R.length - 1; i >= 0; i--) p.lineTo(R[i][0], R[i][1]); p.closePath(); return p; };
