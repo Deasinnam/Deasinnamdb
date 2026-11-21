@@ -4,6 +4,8 @@
     <!-- 문서 편집 화면과 앱 안 문서 엔진(Node)이 기기 안(127.0.0.1)에서만 주고받는 데 필요합니다.
          파일을 바깥으로 보내지 않습니다. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- AI 도우미 로그인(브라우저)을 마치는 동안만 잠깐 앱을 붙잡아 두는 서비스(최대 3분)에 필요합니다 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="false"
@@ -15,6 +17,11 @@
         android:name=".WorkApp"
         android:largeHeap="true"
         android:theme="@style/AppTheme">
+
+        <service
+            android:name=".SignInKeepAlive"
+            android:exported="false"
+            android:foregroundServiceType="shortService" />
 
         <!-- 첫 화면: 문서·사진·동영상 편집 고르기 -->
         <activity

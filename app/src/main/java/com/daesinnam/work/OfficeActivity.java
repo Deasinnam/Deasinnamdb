@@ -259,6 +259,13 @@ public class OfficeActivity extends ComponentActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // AI 로그인에서 돌아왔으면 마지막 인증이 끝날 시간만 더 두고 붙잡기 서비스를 끕니다
+        SignInKeepAlive.stopSoon(this);
+    }
+
+    @Override
     protected void onDestroy() {
         closeNodeChannels();
         node.release();
@@ -384,6 +391,8 @@ public class OfficeActivity extends ComponentActivity {
                 Uri u = Uri.parse(a.optString(0));
                 String sc = u.getScheme();
                 if ("http".equals(sc) || "https".equals(sc) || "mailto".equals(sc)) {
+                    // AI 로그인이면 브라우저에 가 있는 동안 앱 인터넷이 막히지 않게 붙잡아 둡니다
+                    if (SignInKeepAlive.isSignInUrl(u.toString())) SignInKeepAlive.start(this);
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, u));
                     } catch (ActivityNotFoundException ignored) {
