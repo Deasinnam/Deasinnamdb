@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>덜누름 테이블오더</title>
+<link rel="stylesheet" href="base.css">
+<style>
+body{display:flex;flex-direction:column;min-height:100%}
+.wrap{max-width:980px;width:100%;margin:0 auto;padding:28px 22px 40px;flex:1}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.logo{width:46px;height:46px;border-radius:14px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px}
+.brand b{font-size:24px}
+h1{font-size:30px;line-height:1.3;margin:22px 0 6px;letter-spacing:-.5px}
+.lead{font-size:17px;color:var(--sub);margin:0 0 26px;line-height:1.55}
+.pick{display:flex;gap:18px;flex-wrap:wrap}
+.pick button{flex:1 1 300px;text-align:left;padding:26px;min-height:230px;display:flex;flex-direction:column;gap:10px}
+.pick .ic{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center}
+.pick .t{font-size:23px;font-weight:800}
+.pick .d{font-size:16px;color:var(--sub);line-height:1.55}
+.pick .go{margin-top:auto;font-weight:800;color:var(--accent);font-size:16px}
+.flow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:28px;padding:18px 20px;font-size:15px;color:var(--sub)}
+.flow b{color:var(--ink)}
+.step h2{font-size:22px;margin:26px 0 10px}
+.found{display:flex;flex-direction:column;gap:10px}
+.found button{display:flex;align-items:center;gap:14px;padding:18px 20px;text-align:left;border:2px solid transparent}
+.found button.sel{border-color:var(--accent);background:var(--accent-soft)}
+.found .n{font-weight:800;font-size:19px}
+.spin{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;flex:0 0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tables{display:flex;flex-wrap:wrap;gap:10px}
+.tables button{width:72px;height:64px;border-radius:14px;background:#fff;box-shadow:var(--shadow);font-size:22px;font-weight:800}
+.tables button.sel{background:var(--accent);color:#fff}
+.row{display:flex;align-items:center;gap:14px;padding:16px 18px;margin-bottom:10px}
+.row .tx{flex:1}
+.row .tx b{display:block;font-size:17px}
+.row .tx span{font-size:14px;color:var(--sub)}
+.bottom{display:flex;gap:12px;margin-top:26px}
+.lost{text-align:center;padding-top:12vh}
+.lost .spin{width:56px;height:56px;border-width:6px;margin:0 auto 26px}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="logo">덜</div><b>덜누름 테이블오더</b></div>
+
+  <!-- 1. 처음: 어떻게 쓸지 고르기 -->
+  <section id="home">
+    <h1>안 쓰는 태블릿은 테이블 주문기로,<br>폴드는 주문 받는 카운터로.</h1>
+    <p class="lead">같은 매장 와이파이에만 연결하면 됩니다. 서버 · 가입 · 월 이용료 없이, 주문은 이 매장 안에서만 오갑니다.</p>
+    <div class="pick">
+      <button class="card" id="pTable">
+        <div class="ic" style="background:var(--accent-soft)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#E8590C" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="14" rx="2.5"/><path d="M8 21h8M12 18v3"/></svg></div>
+        <div class="t">테이블 주문기로 쓰기</div>
+        <div class="d">태블릿 · 구형 폰을 테이블에 두면 손님이 메뉴를 보고 바로 주문하고, 직원을 부릅니다.</div>
+        <div class="go">카운터 찾기 →</div>
+      </button>
+      <button class="card" id="pCounter">
+        <div class="ic" style="background:var(--blue-soft)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1C7ED6" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="9" height="14" rx="2"/><rect x="13" y="5" width="9" height="14" rx="2"/><path d="M5 9h3M5 12h3M16 9h3M16 12h3"/></svg></div>
+        <div class="t">카운터로 쓰기 (사장님)</div>
+        <div class="d">폴드로 들어온 주문을 받고 처리합니다. 덱스로 모니터에 연결하면 큰 화면 · 터치로 주문판을 한눈에.</div>
+        <div class="go">주문 받기 시작 →</div>
+      </button>
+    </div>
+    <div class="flow card"><b>테이블 태블릿</b> 주문 → <b>와이파이</b> → <b>폴드 카운터</b> 알림 · 만드는 중 · 완료 → 손님 화면에 바로 표시</div>
+  </section>
+
+  <!-- 2. 테이블 주문기 설정 -->
+  <section id="setup" class="hide step">
+    <h1>테이블 주문기 설정</h1>
+    <p class="lead">먼저 사장님 폴드에서 <b>카운터로 쓰기</b>를 켜 두세요. 같은 와이파이에 있으면 아래에 저절로 나타납니다.</p>
+    <h2>1. 카운터 고르기</h2>
+    <div class="found" id="found"><div class="row card"><div class="spin"></div><div class="tx"><b>와이파이에서 카운터를 찾는 중…</b><span>폴드의 카운터 화면이 켜져 있는지 확인해 주세요</span></div></div></div>
+    <div class="field" style="margin-top:12px"><label>또는 카운터 주소 직접 넣기 (카운터 화면 위쪽에 나오는 숫자)</label>
+      <div style="display:flex;gap:10px"><input id="ipIn" inputmode="decimal" placeholder="예: 192.168.0.5" style="flex:1"><button class="btn" id="ipBtn">확인</button></div></div>
+    <h2>2. 이 기기의 테이블 번호</h2>
+    <div class="tables" id="tables"></div>
+    <h2>3. 손님용으로 잠그기</h2>
+    <div class="row card"><div class="tx"><b>키오스크 모드</b><span>홈 · 뒤로 가기를 막아 손님이 다른 앱으로 나가지 못하게 합니다</span></div><button class="toggle on" id="kiosk"></button></div>
+    <div class="field"><label>설정으로 나갈 때 쓸 비밀번호 (숫자 4자리 이상)</label><input id="pin" inputmode="numeric" maxlength="8" value="0000"></div>
+    <div class="bottom"><button class="btn ghost" id="back">처음으로</button><button class="btn pri big" id="startT" style="flex:1" disabled>이 테이블에서 주문 받기</button></div>
+  </section>
+
+  <!-- 3. 연결이 끊겼을 때 -->
+  <section id="lost" class="hide lost">
+    <div class="spin"></div>
+    <h1>카운터와 다시 연결하는 중</h1>
+    <p class="lead">사장님 폴드의 카운터 화면이 꺼졌거나 와이파이가 바뀌었을 수 있어요.<br>연결되면 저절로 주문 화면으로 돌아갑니다.</p>
+    <p class="muted" id="lostMsg"></p>
+  </section>
+</div>
+<script>
+var $=function(id){return document.getElementById(id)};
+var T=window.TO||null;
+var host="",table=1,kiosk=true,tries=0;
+function show(id){["home","setup","lost"].forEach(function(k){$(k).classList.toggle("hide",k!==id)})}
+function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},2600)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+var hosts={};
+window.onFound=function(o){
+  if(location.hash==="#lost"){ if(T) T.reconnect(o.host); return; }
+  if(hosts[o.host]) return; hosts[o.host]=o.name;
+  if(!host) host=o.host;
+  drawFound();
+};
+window.onFindFail=function(){ $("found").innerHTML='<div class="row card"><div class="tx"><b>자동으로 찾지 못했습니다</b><span>아래에 카운터 주소를 직접 넣어 주세요</span></div></div>'; };
+function drawFound(){
+  var h="";
+  for(var k in hosts) h+='<button class="card'+(k===host?" sel":"")+'" data-h="'+esc(k)+'"><div style="font-size:26px">🏪</div><div class="tx"><div class="n">'+esc(hosts[k])+'</div><div class="muted">'+esc(k)+'</div></div></button>';
+  $("found").innerHTML=h;
+  [].forEach.call($("found").querySelectorAll("button"),function(b){b.onclick=function(){host=b.getAttribute("data-h");drawFound()}});
+  $("startT").disabled=!host;
+}
+function drawTables(){
+  var h="";for(var i=1;i<=30;i++)h+='<button data-t="'+i+'"'+(i===table?' class="sel"':'')+'>'+i+'</button>';
+  $("tables").innerHTML=h;
+  [].forEach.call($("tables").querySelectorAll("button"),function(b){b.onclick=function(){table=+b.getAttribute("data-t");drawTables()}});
+}
+$("pCounter").onclick=function(){ if(T) T.useCounter(); else toast("앱 안에서만 쓸 수 있어요"); };
+$("pTable").onclick=function(){ location.hash="#setup"; route(); };
+$("back").onclick=function(){ if(T)T.stopFind(); location.hash=""; route(); };
+$("kiosk").onclick=function(){kiosk=!kiosk;this.classList.toggle("on",kiosk)};
+$("ipBtn").onclick=function(){
+  var ip=$("ipIn").value.trim(); if(!/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)){toast("주소를 숫자로 넣어 주세요 (예: 192.168.0.5)");return}
+  var shop=T?T.check(ip):""; if(!shop){toast("그 주소에서 카운터를 찾지 못했습니다");return}
+  hosts[ip]=shop; host=ip; drawFound(); toast(shop+" 연결 확인");
+};
+$("startT").onclick=function(){
+  var pin=$("pin").value.trim(); if(!/^\d{4,8}$/.test(pin)){toast("비밀번호는 숫자 4~8자리로 정해 주세요");return}
+  if(T) T.useTable(host,table,kiosk,pin);
+};
+function lostLoop(){
+  if(location.hash!=="#lost") return;
+  tries++;
+  var saved=T?T.savedHost():"";
+  if(saved && T.check(saved)){ T.reconnect(saved); return; }
+  $("lostMsg").textContent="다시 찾는 중… ("+tries+")";
+  setTimeout(lostLoop,4000);
+}
+function route(){
+  var h=location.hash;
+  if(h==="#setup"){ show("setup"); drawTables(); if(T){ if(T.table) table=T.table(); drawTables(); T.find(); } }
+  else if(h==="#lost"){ show("lost"); if(T) T.find(); tries=0; setTimeout(lostLoop,1500); }
+  else show("home");
+}
+window.onhashchange=route;
+route();
+</script>
+</body></html>
