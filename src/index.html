@@ -463,6 +463,9 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-trio small { font: 600 11px/1 var(--font-mono); letter-spacing: .1em; color: #93c5fd; }
 .ap-trio h3 { margin-top: 10px; font: 800 22px/1.25 var(--font-display); letter-spacing: -0.03em; color: #fff; }
 .ap-trio p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.65; color: #c4c4cb; word-break: keep-all; }
+.ap-trio.ap-four { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 20px; }
+.ap-trio.ap-four h3 { font-size: 19px; word-break: keep-all; }
+@media (max-width: 1100px) { .ap-trio.ap-four { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ap-trio.ap-four .ap-dev { max-width: 380px; justify-self: center; } }
 @media (max-width: 900px) { .ap-trio { grid-template-columns: 1fr; gap: 40px; } .ap-trio .ap-dev { max-width: 420px; justify-self: center; } }
 .ap-sub .ap-camwrap { position: relative; top: 0; padding-bottom: 56px; }
 .ap-camwrap .ap-cap { justify-self: start; text-align: left; padding-left: 7%; max-width: 54%; }
@@ -1467,30 +1470,24 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       <div class="amp-copy ap-wide">
         <div class="amp-eyebrow">NEW · 11월 22일(일) 오후 4시 출시</div>
         <h2>더 선명해진 그래픽으로<br>다시 이륙합니다.</h2>
-        <p class="ap-desc">하늘과 지형, 도시 불빛을 새로 그렸습니다. 3D 스킨, 게임 화면 같은 야간 주행, 실시간 음악 선곡, 더 정확해진 과속 카메라 안내, 엔진오일 교환 알림까지 담았고, 폴드가 아닌 일반 스마트폰에서도 화면에 꼭 맞게 보입니다. 아래 영상은 모두 실제 주행 화면입니다.</p>
+        <p class="ap-desc">하늘과 지형, 도시 불빛을 새로 그렸습니다. 게임 화면 같은 야간 주행, 실시간 음악 선곡, 더 정확해진 과속 카메라 안내, 엔진오일 교환 알림까지 담았고, 폴드가 아닌 일반 스마트폰에서도 화면에 꼭 맞게 보입니다. 아래 영상은 모두 실제 주행 화면입니다.</p>
       </div>
-      <div class="ap-trio">
+      <div class="ap-trio ap-four">
         <figure>
           <div class="ap-dev" style="aspect-ratio:540/600"><video src="media/sp-night.mp4?v=1120" poster="media/sp-night-poster.jpg?v=1120" muted playsinline preload="none" aria-label="대신남 스피드미터 야간 주행 화면: 도시 불빛 위로 접근해 활주로에 내려앉고 평균 속도와 운전 평점 100점이 뜨는 모습 (1.5배속)"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
           <figcaption><small>01 · NIGHT DRIVE</small><h3>게임 화면 같은 야간 주행.</h3><p>밤에는 도시 불빛 위로 착륙하듯 달립니다. 도착하면 평균 속도와 운전 평점을 알려 줍니다.</p></figcaption>
         </figure>
         <figure>
-          <div class="ap-dev" style="aspect-ratio:540/600"><video src="media/sp-3d.mp4?v=1120" poster="media/sp-3d-poster.jpg?v=1120" muted playsinline preload="none" aria-label="대신남 스피드미터 3D 스킨 화면: 밤 도시의 건물이 입체로 솟아 지나가는 모습 (2배속)"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
-          <figcaption><small>02 · 3D SKIN</small><h3>새로 더한 3D 스킨.</h3><p>건물과 지형이 입체로 솟아오른 3D 스킨으로, 실제 주변을 날아가듯 달립니다.</p></figcaption>
-        </figure>
-        <figure>
           <div class="ap-dev" style="aspect-ratio:540/600"><video src="media/sp-camera.mp4?v=1120" poster="media/sp-camera-poster.jpg?v=1120" muted playsinline preload="none" aria-label="대신남 스피드미터 과속 카메라 안내: 화면 위에 제한 속도 표지와 전방 거리가 줄어들며 표시되는 모습 (4배속)"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
-          <figcaption><small>03 · SPEED CAMERA</small><h3>한발 빠른 과속 카메라 안내.</h3><p>이전 버전보다 더 일찍, 더 정확하게 알려 줍니다. 제한 속도와 남은 거리를 화면 위에 크게 띄웁니다.</p></figcaption>
+          <figcaption><small>02 · SPEED CAMERA</small><h3>한발 빠른 과속 카메라 안내.</h3><p>이전 버전보다 더 일찍, 더 정확하게 알려 줍니다. 제한 속도와 남은 거리를 화면 위에 크게 띄웁니다.</p></figcaption>
         </figure>
-      </div>
-      <div class="ap-trio">
         <figure>
           <div class="ap-dev" style="aspect-ratio:540/600"><video src="media/sp-music.mp4?v=1120" poster="media/sp-music-poster.jpg?v=1120" muted playsinline preload="none" aria-label="대신남 스피드미터 주간 순항 화면: 구름 사이를 달리며 오른쪽 아래에 재생 중인 노래 제목이 나오는 모습 (2.5배속)"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
-          <figcaption><small>04 · MUSIC</small><h3>실시간 음악 선곡 · 노래 제목 안내.</h3><p>달리는 분위기에 맞춰 음악을 고르고, 지금 나오는 노래 제목을 계기판 아래에 띄웁니다.</p></figcaption>
+          <figcaption><small>03 · MUSIC</small><h3>실시간 음악 선곡 · 노래 제목 안내.</h3><p>달리는 분위기에 맞춰 음악을 고르고, 지금 나오는 노래 제목을 계기판 아래에 띄웁니다.</p></figcaption>
         </figure>
         <figure>
           <div class="ap-dev" style="aspect-ratio:540/600"><video src="media/sp-oil.mp4?v=1120" poster="media/sp-oil-poster.jpg?v=1120" muted playsinline preload="none" aria-label="대신남 스피드미터 차계부: 누적 주행거리를 입력하면 엔진오일 · 오일필터 교환까지 남은 거리가 바뀌는 모습 (1.5배속)"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
-          <figcaption><small>05 · MAINTENANCE</small><h3>엔진오일 교환 때를 알려 줍니다.</h3><p>누적 주행거리를 넣으면 엔진오일 · 오일필터 같은 소모품 교환까지 남은 거리를 계산합니다.</p></figcaption>
+          <figcaption><small>04 · MAINTENANCE</small><h3>엔진오일 교환 때를 알려 줍니다.</h3><p>누적 주행거리를 넣으면 엔진오일 · 오일필터 같은 소모품 교환까지 남은 거리를 계산합니다.</p></figcaption>
         </figure>
       </div>
     </div>
