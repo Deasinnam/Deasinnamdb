@@ -998,6 +998,144 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
 .fx-ov svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; grid-area: 1 / 1; }
 .fx-ov .fx-ring { opacity: .25; }
 .ap-h3 { margin: 26px 0 8px; font-size: 18px; letter-spacing: -0.02em; }
+
+/* ===== 홈 리디자인 (2026.11.21 "키 하나로") ===== */
+body[data-view="home"] { background: #f6f5f1; }
+.hm-hot { background: #e8590c; color: #fff; border-color: #111; }
+.hm-hero { padding: 64px 0 32px; }
+.hm-hero-in { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; align-items: stretch; }
+.hm-copy { display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+.hm-eye { font: 500 13px/1 var(--font-mono); letter-spacing: .08em; color: #6b6860; }
+.hm-copy h1 { font-size: clamp(40px, 5.4vw, 64px); line-height: 1.12; letter-spacing: -0.02em; }
+.hm-lead { margin: 0; font-size: 19px; line-height: 1.6; color: #4a4740; max-width: 520px; }
+.hm-act { display: flex; gap: 14px; flex-wrap: wrap; }
+.hm-trust { list-style: none; margin: 0; padding: 0; display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; color: #4a4740; }
+.hm-trust li::before { content: "✓"; color: #1d7a45; font-weight: 700; margin-right: 6px; }
+.hm-today { background: #fff; border: 1.5px solid #111; border-radius: 18px; box-shadow: 0 6px 0 #111; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+.hm-today-h { display: flex; align-items: center; justify-content: space-between; }
+.hm-today-h h2 { font-size: 18px; }
+.hm-today-h a, .hm-sec-h a { font-size: 14px; }
+.hm-launch { display: flex; gap: 14px; align-items: center; padding: 14px; border-radius: 14px; background: #111; color: #fff; text-decoration: none; }
+.hm-launch img { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; flex: none; }
+.hm-launch-t { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hm-launch-t b { font-size: 17px; }
+.hm-launch-t small { font-size: 13px; color: #c9c6bd; }
+.hm-launch-go { font-size: 26px; padding: 0 4px; }
+.hm-chip { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font: 600 12px/1 var(--font-body); white-space: nowrap; align-self: flex-start; font-style: normal; }
+.hm-c-hot { background: #e8590c; color: #fff; }
+.hm-c-fix { background: #fdebeb; color: #b42318; }
+.hm-c-new { background: #e6f0ff; color: #1f4fd1; }
+.hm-c-better { background: #ecfdf3; color: #1d7a45; }
+.hm-c-watch, .hm-c-fold { background: #fff1e6; color: #a8430a; }
+.hm-c-work { background: #eef2ff; color: #3730a3; }
+.hm-c-game { background: #ecfdf3; color: #1d7a45; }
+.hm-c-pc { background: #f1f0ec; color: #3f3d38; }
+.hm-c-tv { background: #fdebeb; color: #b42318; }
+.hm-news { list-style: none; margin: 0; padding: 0; }
+.hm-news li a { display: flex; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid #eeece6; text-decoration: none; }
+.hm-news li:last-child a { border-bottom: 0; }
+.hm-news .t { flex: 1; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-news .d { font: 12px var(--font-mono); color: #6b6860; flex: none; }
+.hm-pick { padding-top: 32px; padding-bottom: 64px; scroll-margin-top: 16px; }
+.hm-pick-h { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+.hm-pick-h h2 { font-size: 36px; letter-spacing: -0.01em; margin-bottom: 8px; }
+.hm-pick-h p { margin: 0; color: #4a4740; }
+.hm-filters { display: flex; gap: 10px; flex-wrap: wrap; }
+.hm-filters .key { padding: 10px 14px; font-size: 14px; border-radius: 10px; --travel: 3px; }
+.hm-filters .key[aria-pressed="true"] { background: #111; color: #fff; }
+.hm-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 28px; }
+.hm-card { display: flex; flex-direction: column; background: #fff; border: 1.5px solid #111; border-radius: 18px; box-shadow: 0 6px 0 #111; overflow: hidden; }
+.hm-card[hidden] { display: none; }
+.hm-card > img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-bottom: 1.5px solid #111; background: #111; }
+.hm-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.hm-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hm-ver { font: 12px var(--font-mono); color: #6b6860; }
+.hm-card h3 { font-size: 21px; }
+.hm-card h3 a { text-decoration: none; }
+.hm-card p { margin: 0; font-size: 15px; color: #4a4740; line-height: 1.5; flex: 1; }
+.hm-btns { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.hm-btns .key { padding: 11px 14px; font-size: 15px; border-radius: 10px; --travel: 3px; }
+.hm-dl { flex: 1; display: flex; }
+.hm-dl .key { flex: 1; }
+.hm-dl .key.is-no { background: #e4e4e4; color: #6b6860; }
+.hm-dark { background: #111; color: #fff; }
+.hm-dark p, .hm-dark .hm-ver { color: #c9c6bd; }
+.hm-dark h3 a { color: #fff; }
+.hm-empty { padding: 24px; border-radius: 14px; background: #fff; border: 1px dashed #c9c6bd; }
+.hm-install { background: #fff; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; padding: 56px 0 28px; }
+.hm-install-in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 48px; align-items: center; }
+.hm-install h2 { font-size: 32px; margin-bottom: 10px; }
+.hm-install p { margin: 0; color: #4a4740; line-height: 1.6; }
+.hm-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.hm-steps li { padding: 20px; border-radius: 16px; background: #f6f5f1; font-size: 14px; color: #4a4740; line-height: 1.55; }
+.hm-steps span { display: block; font: 500 28px/1 var(--font-mono); color: #e8590c; }
+.hm-steps b { display: block; margin: 10px 0 6px; font-size: 17px; color: #111; }
+.hm-install .fineprint { margin-top: 24px; }
+.hm-hw { padding-top: 64px; padding-bottom: 64px; }
+.hm-sec-h { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+.hm-sec-h h2 { font-size: 32px; }
+.hm-hw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.hm-hw-card { display: flex; flex-direction: column; background: #fff; border: 1.5px solid #111; border-radius: 18px; box-shadow: 0 6px 0 #111; overflow: hidden; text-decoration: none; }
+.hm-hw-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-bottom: 1.5px solid #111; }
+.hm-hw-card > span { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; }
+.hm-hw-card b { font-size: 18px; }
+.hm-hw-card small { font-size: 14px; color: #4a4740; }
+.hm-fb { background: #111; color: #fff; }
+.hm-fb-in { padding-top: 64px; padding-bottom: 64px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 48px; align-items: center; }
+.hm-fb h2 { font-size: 34px; line-height: 1.25; margin-bottom: 14px; }
+.hm-fb p { color: #c9c6bd; margin: 0 0 20px; }
+.hm-fb .key:not(.hm-hot) { background: #fff; color: #111; }
+.hm-fb-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.hm-fb-list a { display: flex; gap: 14px; align-items: center; padding: 15px 18px; border: 1px solid #3a3833; border-radius: 14px; color: #fff; text-decoration: none; }
+.hm-fb-list a:hover { border-color: #e8590c; }
+.hm-fb-list .q { flex: 1; font-size: 15px; }
+.hm-fb-list .q small { display: block; color: #a8a59c; font-size: 13px; margin-top: 2px; }
+@media (max-width: 900px) {
+  .hm-hero { padding-top: 36px; }
+  .hm-hero-in, .hm-install-in, .hm-fb-in { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hm-hw-grid { grid-template-columns: 1fr; }
+  .hm-hw-card { flex-direction: row; }
+  .hm-hw-card img { width: 40%; aspect-ratio: auto; border-bottom: 0; border-right: 1.5px solid #111; }
+}
+@media (max-width: 640px) {
+  .hm-steps { grid-template-columns: 1fr; }
+  .hm-pick-h h2 { font-size: 28px; }
+  .hm-filters { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding: 0 0 8px; }
+  .hm-filters .key { flex: none; }
+  /* 휴대폰: 앱 목록은 한 줄에 하나(작은 사진 + 받기) */
+  .hm-grid { grid-template-columns: 1fr; gap: 0; }
+  .hm-card { flex-direction: row; align-items: center; border: 0; border-bottom: 1px solid #e2e0d8; border-radius: 0; box-shadow: none; background: transparent; gap: 12px; padding: 12px 0; }
+  .hm-card > img { width: 64px; height: 64px; aspect-ratio: auto; border: 1.5px solid #111; border-radius: 14px; flex: none; }
+  .hm-body { padding: 0; gap: 2px; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .hm-meta { order: 3; flex: 0 0 100%; } .hm-meta .hm-chip { display: none; } .hm-meta .hm-soon { display: inline-flex; height: 20px; font-size: 11px; }
+  .hm-card h3 { font-size: 16px; flex: 1; min-width: 0; }
+  .hm-card p { order: 2; flex: 0 0 100%; font-size: 13px; }
+  .hm-btns { position: static; margin: 0; order: 1; } .hm-btns .hm-more { display: none; }
+  .hm-btns .key { padding: 9px 14px; font-size: 14px; }
+  .hm-dark { background: transparent; color: inherit; } .hm-dark h3 a { color: inherit; } .hm-dark p, .hm-dark .hm-ver { color: #4a4740; }
+  .hm-dl .key small { display: none; }
+}
+header.top nav a.nav-fb { color: #fff; background: #111; padding: 10px 16px; font-size: 14px; border-radius: 10px; --travel: 3px; text-decoration: none; margin-left: 6px; }
+header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
+/* 휴대폰 아래 메뉴 (엄지로 닿는 곳) */
+.tabbar { display: none; }
+@media (max-width: 640px) {
+  .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: #fff; border-top: 1.5px solid #111; }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: #111; text-decoration: none; }
+  .tabbar a.is-on { font-weight: 700; color: #e8590c; text-decoration: none; }
+  .tabbar svg { width: 22px; height: 22px; }
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  header.top nav a.nav-main { display: none; }
+}
+
+/* 앱 소개 페이지: 큰 받기 버튼이 화면 밖이면 아래에 받기 바 */
+.ap-stick { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; z-index: 40; width: min(560px, calc(100% - 32px)); display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 20px; background: #fff; color: #111; border: 1.5px solid #111; border-radius: 16px; box-shadow: 0 6px 0 #111; }
+.ap-stick[hidden] { display: none; }
+.ap-stick-t { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.ap-stick-t b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-stick-t small { font: 12px var(--font-mono); color: #6b6860; }
+.ap-stick .key { padding: 12px 22px; --travel: 3px; }
+@media (max-width: 640px) { .ap-stick { bottom: calc(76px + env(safe-area-inset-bottom)); } }
 </style>
 <link rel="canonical" href="https://deolnureum.com/dulsseum/">
 <meta property="og:url" content="https://deolnureum.com/dulsseum/">
@@ -1022,138 +1160,117 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       <span class="sw">SOFTWARE</span>
     </a>
     <nav aria-label="주요 메뉴">
-      <a href="/" class="hide-sm" data-view="home">홈</a>
-      <a href="/apps/" data-view="apps">앱센터</a>
-      <a href="/releases/" data-view="releases">업데이트</a>
-      <a href="/hardware/" data-view="hardware">하드웨어</a>
-      <a href="#install" class="hide-sm fb-off" data-view="home">설치 안내</a>
-      <a href="/feedback/" class="fb-on" data-view="feedback">의견<span class="hide-sm"> 보내기</span></a>
-      <a href="/updates/" data-view="updates"><span class="hide-sm">의견 </span>반영</a>
-      <a href="/about/" data-view="about">소개</a>
+      <a href="/apps/" class="nav-main" data-view="apps">앱</a>
+      <a href="/releases/" class="nav-main" data-view="releases">업데이트</a>
+      <a href="/hardware/" class="nav-main" data-view="hardware">하드웨어</a>
+      <a href="/updates/" class="nav-main" data-view="updates">의견 반영</a>
+      <a href="/feedback/" class="key nav-fb fb-on" data-view="feedback">의견 보내기</a>
     </nav>
   </div>
 </header>
 
+<nav class="tabbar" aria-label="아래 메뉴">
+  <a href="/" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>앱</a>
+  <a href="/releases/" data-view="releases"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>업데이트</a>
+  <a href="/hardware/" data-view="hardware"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/></svg>하드웨어</a>
+  <a href="/feedback/" data-view="feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>의견</a>
+</nav>
+
 <main id="top">
   <div class="view" id="view-home" hidden>
-  <section class="reel" aria-label="덜누름 소개 영상">
-    <div class="wrap">
-      <div class="reel-frame">
-        <video id="reel" src="/media/hero-reel.mp4?v=1115" poster="/media/hero-reel-poster.jpg" autoplay muted playsinline preload="auto" aria-label="덜누름 15초 소개 영상: 키를 한 번 누르고, 앱 세 개를 보여 준 뒤 덜 누르고 더 편하게라는 문구와 로고로 끝납니다"></video>
-        <button class="key reel-sound" id="reelSound" type="button" aria-pressed="false">소리 켜기</button>
-      </div>
-    </div>
-  </section>
-  <div class="wrap hero v1" id="hero">
-    <div class="hero-copy">
-      <div class="hero-eyebrow">DEOLNUREUM SOFTWARE</div>
-      <p class="statement">누를 일을 줄이는 앱을<br>개발합니다.</p>
-      <h1>덜 누르고,<br><span class="soft">더 편하게.</span></h1>
-      <p>덜누름은 누를 일을 줄이는 앱을 개발합니다. 파일은 한 번 눌러 맞는 편집기로 열리고, 차에 타면 음악이 알아서 이어집니다. 개발 중인 앱은 앱센터에서 미리 볼 수 있습니다.</p>
-      <div class="actions">
-        <a class="key dark key-appcenter" href="/apps/">앱센터 <span aria-hidden="true">→</span></a>
-        <a class="key" href="#install">설치 방법</a>
-      </div>
-      <p class="appcenter-hint">앱을 내려받으려면 <b>앱센터</b>를 누르세요.</p>
-    </div>
-  </div>
-
-  <section class="promise" aria-labelledby="promise-t">
-    <div class="wrap">
-      <div class="promise-in">
-        <div class="promise-head">
-          <div class="hero-eyebrow">OUR PROMISE</div>
-          <h2 id="promise-t">친절한 설명, 쉬운 사용.</h2>
-          <p>덜누름이 앱을 만들 때 가장 먼저 생각하는 두 가지입니다. 아직 부족한 점이 있을 수 있지만, 보내 주시는 의견으로 하나씩 채워 가겠습니다.</p>
+  <!-- 홈 (2026.11.21 리디자인 "키 하나로"): 첫 화면에서 바로 앱 고르기. 버전 · 날짜 · 오늘의 덜누름은 아래 DL 표에서 자동으로 채움 -->
+  <section class="hm-hero">
+    <div class="wrap hm-hero-in">
+      <div class="hm-copy">
+        <div class="hm-eye">DEOLNUREUM · 갤럭시 Z 폴드를 위한 앱</div>
+        <h1>누를 일은 줄이고,<br>할 일은 바로.</h1>
+        <p class="hm-lead">폴드 하나로 일하고, 보고, 놀고, 운전하는 앱. 모두 무료이고 광고가 없습니다.</p>
+        <div class="hm-act">
+          <a class="key hm-hot" href="#hm-apps">앱 고르기 <span aria-hidden="true">↓</span></a>
+          <a class="key" href="#install">처음이라면: 설치 3단계</a>
         </div>
-        <ul class="promise-list">
-          <li><b>무료로, 광고 없이</b><span>덜누름의 앱은 누구나 무료로 내려받아 쓸 수 있고, 광고를 넣지 않습니다. 쓰는 동안 화면을 가리는 일이 없습니다.</span></li>
-          <li><b>불편한 점을 알려 주세요</b><span>쓰다가 불편하거나 이상한 점이 있으면 의견을 보내 주세요. 최대한 반영하고, 어떻게 고쳤는지 의견 반영 게시판에 올립니다.</span></li>
-          <li><b>필요한 기능을 제안해 주세요</b><span>있었으면 하는 기능, 꼭 필요한 기능도 언제든 좋습니다. 작은 아이디어도 환영합니다.</span></li>
+        <ul class="hm-trust">
+          <li>무료 · 광고 없음</li>
+          <li>안드로이드 8 이상</li>
+          <li>앱이 새 버전을 알려 줌</li>
         </ul>
-        <div class="actions promise-act">
-          <a class="key dark fb-on" href="/feedback/">의견 보내기 <span aria-hidden="true">→</span></a>
-          <a class="key" href="/updates/">의견 반영 보기</a>
-        </div>
+      </div>
+      <div class="hm-today" aria-labelledby="hm-today-t">
+        <div class="hm-today-h"><h2 id="hm-today-t">오늘의 덜누름</h2><a href="/releases/">업데이트 전체 →</a></div>
+        <a class="hm-launch" id="hmLaunch" href="/speedometer/" data-at="2026-11-22T16:00:00+09:00">
+          <img src="/media/speedometer-poster.jpg" alt="" width="76" height="76">
+          <span class="hm-launch-t"><span class="hm-chip hm-c-hot" id="hmLaunchChip">11.22(일) 오후 4시 출시</span><b>대신남 스피드미터</b><small>야간 주행 · 과속 카메라 안내 · 음악 선곡</small></span>
+          <span class="hm-launch-go" aria-hidden="true">›</span>
+        </a>
+        <ul class="hm-news" id="hmNews"></ul>
       </div>
     </div>
   </section>
 
-  <div class="theme-dark">
-  <section class="takeoff" id="takeoff" aria-label="대신남 스피드미터: 이제 차 안에서 이륙하세요">
-    <video id="tkVid" src="/media/takeoff.mp4?v=1113r" poster="/media/takeoff-poster.jpg" muted loop playsinline preload="none" aria-label="맑은 낮 푸른 바다 위를 나는 A-1H 스카이레이더, 조종석에서 바라본 대신남 스피드미터 화면, 그리고 그 화면이 그대로 차 안 폴드 화면이 되어 도로를 달리는 운전석 시야로 이어집니다"></video>
-    <div class="takeoff-fade"></div>
-    <div class="takeoff-copy" id="tkCopy"><b>대신남 스피드미터!</b><h2>이제 차 안에서 이륙하세요.</h2></div>
+  <section class="wrap hm-pick" id="hm-apps" aria-labelledby="hm-pick-t">
+    <div class="hm-pick-h">
+      <div>
+        <h2 id="hm-pick-t">무엇을 하고 싶으세요?</h2>
+        <p>하고 싶은 일을 누르면 맞는 앱만 남습니다.</p>
+      </div>
+      <div class="hm-filters" role="group" aria-label="하고 싶은 일">
+        <button type="button" class="key hm-f" data-cat="" aria-pressed="true">전체 <span id="hmAll"></span></button>
+        <button type="button" class="key hm-f" data-cat="work" aria-pressed="false">일하기</button>
+        <button type="button" class="key hm-f" data-cat="watch" aria-pressed="false">보기 · 듣기</button>
+        <button type="button" class="key hm-f" data-cat="game" aria-pressed="false">게임</button>
+        <button type="button" class="key hm-f" data-cat="drive" aria-pressed="false">운전</button>
+        <button type="button" class="key hm-f" data-cat="fold" aria-pressed="false">폴드 꾸미기</button>
+      </div>
+    </div>
+    <p class="hm-empty" id="hmEmpty" hidden>찾는 앱이 없습니다. <a href="/feedback/">이런 앱이 있었으면 좋겠다고 알려 주세요</a>.</p>
+    <ul class="hm-grid" id="hmGrid">
+      <li class="hm-card" data-app="app-tv" data-cat="watch"><img src="/media/app-tv-home2.jpg" alt="덜누름 TV 홈 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-watch">보기 · 듣기</span><span class="hm-ver"></span></div><h3><a href="/tv/">덜누름 TV</a></h3><p>DeX 모니터를 스마트 TV처럼. 리모컨 하나로 넷플릭스 · 유튜브.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/tv/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-work" data-cat="work"><img src="/media/app-work-poster.jpg" alt="덜누름 워크 문서 편집 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-work">일하기</span><span class="hm-ver"></span></div><h3><a href="/work/">덜누름 워크</a></h3><p>워드 · 엑셀 · 한글 · PDF와 사진 · 동영상 편집을 폴드에서.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/work/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-game" data-cat="game"><img src="/media/app-game-poster.jpg" alt="덜누름 게임 홈 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-game">게임</span><span class="hm-ver"></span></div><h3><a href="/game/">덜누름 게임</a></h3><p>폴드를 휴대용 게임기로. 스팀 · 배틀넷 PC 게임까지.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/game/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-pad" data-cat="fold watch"><img src="/media/app-pad.jpg" alt="덜누름 패드 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-fold">폴드 꾸미기</span><span class="hm-ver"></span></div><h3><a href="/pad/">덜누름 패드</a></h3><p>DeX 옆에 둔 폴드를 앱 버튼판과 볼륨 다이얼로.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/pad/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-desktop" data-cat="fold work"><img src="/media/app-desk-poster.jpg" alt="덜누름 데스크탑앱 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-fold">폴드 꾸미기</span><span class="hm-ver"></span></div><h3><a href="/desktop/">덜누름 데스크탑앱</a></h3><p>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/desktop/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-browser" data-cat="work"><img src="/media/app-browser-poster.jpg" alt="덜누름 브라우저 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-work">일하기</span><span class="hm-ver"></span></div><h3><a href="/browser/">덜누름 브라우저</a></h3><p>PC 화면으로 여는 브라우저. 탭 · 찾기 · 방문 기록.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/browser/">자세히</a></div></div></li>
+      <li class="hm-card hm-dark" data-app="app-speed" data-cat="drive"><img src="/media/speedometer-poster.jpg" alt="대신남 스피드미터 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-hot hm-soon">11.22 오후 4시 출시</span><span class="hm-ver"></span></div><h3><a href="/speedometer/">대신남 스피드미터</a></h3><p>차가 달리면 조종석 계기판이 움직입니다.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/speedometer/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-amp" data-cat="watch drive"><img src="/media/amp-open-poster.jpg" alt="Daesinnam Amp 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-watch">보기 · 듣기</span><span class="hm-ver"></span></div><h3><a href="/amp/">Daesinnam Amp</a></h3><p>펼쳐도, 접어도 듣기 좋은 레트로 스킨 음악 플레이어.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/amp/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-localai" data-cat="work"><img src="/media/app-localai-art.jpg" alt="덜누름 로컬 AI 그림" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-pc">윈도우 PC</span><span class="hm-ver"></span></div><h3><a href="/localai/">덜누름 로컬 AI</a></h3><p>인터넷 없이 내 기기 안에서 대화 · 코딩 · 그림.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/localai/">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-sseum" data-cat="work"><img src="/media/dulsseum-mac.webp" alt="덜씀 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-pc">macOS</span><span class="hm-ver"></span></div><h3><a href="/dulsseum/">덜씀</a></h3><p>맥의 메모리 · 저장공간 · 배터리를 버튼 하나로.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="/dulsseum/">자세히</a></div></div></li>
+    </ul>
   </section>
-  <section class="amp-stage speed-home" id="speed" aria-labelledby="speed-title">
-    <div class="amp-wrap">
-      <div class="amp-copy">
-        <div class="amp-eyebrow">새 앱 · 개발 중</div>
-        <h2 id="speed-title">대신남 스피드미터</h2>
-        <p class="amp-kind">GPS 조종석 계기 · 주행 기록</p>
-        <p class="amp-lead">차가 달리면<br>조종석 계기판이 움직입니다.</p>
-        <ul class="amp-points">
-          <li><b>01</b><span>실제 속도·고도·진행 방향으로 움직이는 콕핏 PFD · HUD</span></li>
-          <li><b>02</b><span>출발하면 알아서 대기 → 이륙 → 상승 → 순항, 효과음까지</span></li>
-          <li><b>03</b><span>최고·평균 속도, 거리, 시간을 남기는 주행 기록과 차계부</span></li>
-          <li><b>04</b><span>진행 방향이 위로 오는 원형 지도와 나침반</span></li>
-          <li><b>05</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
-        </ul>
-        <div class="amp-cta">
-          <a class="amp-btn" href="/speedometer/">바로가기 →</a>
-          <a class="amp-soon as-link" href="/apps/">앱센터에서 모든 앱 보기</a>
-        </div>
-        <dl class="speed-req">
-          <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
-          <div><dt>권장 화면</dt><dd>폴드 펼친 화면 · 8인치 이상 태블릿 (일반 스마트폰도 지원)</dd></div>
-          <div><dt>필수</dt><dd>LTE(모바일 데이터) · GPS · 방향 센서</dd></div>
-        </dl>
+
+  <section class="hm-install" id="install" aria-labelledby="hm-ins-t">
+    <div class="wrap hm-install-in">
+      <div>
+        <h2 id="hm-ins-t">처음 설치, 3단계면 끝.</h2>
+        <p>플레이 스토어 밖에서 받는 앱이라 처음 한 번만 설치 허용이 필요합니다. "기기 보호를 위해 앱 차단됨" 창이 뜨면 <a href="#post-install-guide">그림으로 보는 설치 방법</a>을 봐 주세요.</p>
       </div>
-      <div class="ul" id="ul" role="img" aria-label="펼쳐진 폴더블 휴대폰 화면에서 대신남 스피드미터 주행 영상이 재생됩니다">
-        <div class="ul-spot"></div>
-        <canvas class="ul-fx" id="ulFx" aria-hidden="true"></canvas>
-        <div class="ul-rig" id="ulRig">
-          <div class="ul-ring"></div>
-          <div class="ul-shadow" id="ulShadow"></div>
-          <div class="ul-half l" id="ulL"><i class="back"></i><i class="face"></i></div>
-          <div class="ul-half r" id="ulR"><i class="back"></i><i class="face"></i></div>
-          <div class="ul-screen" id="ulScreen"><video id="ulVid" src="/media/fold-speedometer.mp4" poster="/media/fold-poster.jpg" muted loop playsinline preload="metadata"></video></div>
-          <div class="ul-sweep"></div>
-          <div class="ul-gloss" id="ulGloss"></div>
-        </div>
-        <button class="ul-again" id="ulAgain" type="button">↻ 다시 보기</button>
-      </div>
+      <ol class="hm-steps">
+        <li><span>1</span><b>받기 누르기</b>폴드의 브라우저로 이 사이트를 열고 받기를 누릅니다.</li>
+        <li><span>2</span><b>설치 허용</b>받은 파일을 열고 "출처를 알 수 없는 앱"에서 그 브라우저를 허용합니다.</li>
+        <li><span>3</span><b>설치 · 끝</b>새 버전은 앱이 알려 주고, 덮어 설치하면 기록이 그대로 남습니다.</li>
+      </ol>
+    </div>
+    <div class="wrap"><p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p></div>
+  </section>
+
+  <section class="wrap hm-hw" aria-labelledby="hm-hw-t">
+    <div class="hm-sec-h"><h2 id="hm-hw-t">함께 쓰면 좋은 기기</h2><a href="/hardware/">하드웨어 전체 →</a></div>
+    <div class="hm-hw-grid">
+      <a class="hm-hw-card" href="/hardware/"><img src="/media/tv24-photo.webp" alt="덜누름 24인치 TV" loading="lazy"><span><em class="hm-chip hm-c-tv">덜누름 TV</em><b>덜누름 24인치 TV</b><small>C타입 선 하나로 폴드를 연결하는 터치 모니터</small></span></a>
+      <a class="hm-hw-card" href="/hardware/"><img src="/media/remote-photo.webp" alt="덜누름 TV 전용 리모컨" loading="lazy"><span><em class="hm-chip hm-c-tv">덜누름 TV 전용</em><b>덜누름 TV 전용 리모컨</b><small>소파에서 고르고, 재생하고, 돌아가기</small></span></a>
+      <a class="hm-hw-card" href="/hardware/"><img src="/media/umpc-photo.webp" alt="덜누름 UMPC" loading="lazy"><span><em class="hm-chip hm-c-pc">휴대용 PC</em><b>덜누름 UMPC</b><small>손에 쥐는 윈도우 11 게임 PC</small></span></a>
     </div>
   </section>
 
-  <section class="block" id="install">
-    <div class="wrap">
-      <div class="block-head">
-        <h2>설치 안내</h2>
-        <p>앱이 공개되면 이렇게 설치합니다. 플레이 스토어 밖에서 받는 앱이라 처음 한 번은 설치 허용이 필요합니다.</p>
+  <section class="hm-fb" aria-labelledby="hm-fb-t">
+    <div class="wrap hm-fb-in">
+      <div>
+        <h2 id="hm-fb-t">불편한 점을 보내면,<br>고쳐서 알려 드립니다.</h2>
+        <p>받은 의견과 반영한 내용을 모두 공개합니다. 필요한 기능 제안도 언제든 좋습니다.</p>
+        <div class="hm-act"><a class="key hm-hot fb-on" href="/feedback/">의견 보내기</a><a class="key" href="/updates/">반영 기록 보기</a></div>
       </div>
-      <div class="steps">
-        <div class="step">
-          <div class="num">STEP 1</div>
-          <h3>APK 내려받기</h3>
-          <p>휴대폰에서 원하는 앱의 내려받기를 누릅니다. 브라우저가 파일을 받습니다.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 2</div>
-          <h3>설치 허용</h3>
-          <p>받은 파일을 열면 "출처를 알 수 없는 앱" 안내가 나옵니다. 설정에서 그 브라우저의 설치를 허용합니다.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 3</div>
-          <h3>설치와 업데이트</h3>
-          <p>설치를 누르면 끝입니다. 새 버전은 같은 방법으로 받아 덮어 설치하면 기록이 그대로 남습니다.</p>
-        </div>
-      </div>
-      <p class="fineprint"><b>"기기 보호를 위해 앱 차단됨" 창이 뜨면</b> <a href="#post-install-guide">그림으로 보는 설치 방법</a>을 봐 주세요.</p>
-      <p class="fineprint">덜누름의 앱은 같은 서명 키로 서명합니다. 서명이 다른 파일을 덮어 설치하라는 안내가 나오면 설치하지 마세요. 앱의 소스와 빌드 기록은 GitHub 저장소 Deasinnam/Deasinnamdb에서 볼 수 있습니다.</p>
+      <ul class="hm-fb-list" id="hmFb"></ul>
     </div>
   </section>
-  </div>
   </div>
 
   <div class="view" id="view-apps" hidden>
@@ -4304,6 +4421,56 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
   };
   if (window.__DL_TEST) for (var k in window.__DL_TEST) DL[k] = window.__DL_TEST[k];
 
+  /* ---------- 홈(리디자인): 카드 버전 · 오늘의 덜누름 · 의견 반영 · 하고 싶은 일 고르기 — 모두 DL 표에서 ---------- */
+  (function () {
+    var grid = document.getElementById("hmGrid"); if (!grid) return;
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function md(d) { var m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(d || ""); return m ? (+m[2]) + "." + m[3] : (d || ""); }
+    function age(d) { var m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(d || ""); if (!m) return 999; var t0 = new Date(+m[1], m[2] - 1, +m[3]); var n = new Date(); n.setHours(0, 0, 0, 0); return Math.round((n - t0) / 864e5); }
+    function when(d) { var a = age(d); return a <= 0 ? "오늘" : a === 1 ? "어제" : md(d); }
+    var cards = [].slice.call(grid.querySelectorAll(".hm-card")), names = {}, all = [];
+    cards.forEach(function (li) {
+      var id = li.getAttribute("data-app"), d = DL[id] || {}, a = li.querySelector("h3 a");
+      names[id] = a ? a.textContent : id;
+      var top = (d.versions || [])[0] || d.rel;
+      if (top && d.open) li.querySelector(".hm-ver").textContent = top.v + " · " + when(top.date);
+      (d.versions || []).forEach(function (x, i) { if (d.open) all.push({ id: id, x: x, i: i }); });
+    });
+    all.sort(function (p, q) { return (q.x.date || "").localeCompare(p.x.date || "") || p.i - q.i; });
+    var KIND = [["fix", "고침", "hm-c-fix"], ["new", "새 기능", "hm-c-new"], ["better", "개선", "hm-c-better"], ["sec", "보안", "hm-c-new"]];
+    function kindOf(x) { var k = x.kind || []; for (var j = 0; j < KIND.length; j++) if (k.indexOf(KIND[j][0]) >= 0) return KIND[j]; return ["", "업데이트", "hm-c-new"]; }
+    var news = document.getElementById("hmNews");
+    if (news) news.innerHTML = all.slice(0, 3).map(function (it) {
+      var k = kindOf(it.x), href = it.x.post ? "#post-" + it.x.post : "#" + it.id;
+      return '<li><a href="' + href + '"><span class="hm-chip ' + k[2] + '">' + k[1] + '</span><span class="t"><b>' + esc(names[it.id]) + " " + esc(it.x.v) + "</b> · " + esc(it.x.note) + '</span><span class="d">' + when(it.x.date) + "</span></a></li>";
+    }).join("");
+    var fb = document.getElementById("hmFb");
+    if (fb) fb.innerHTML = all.filter(function (it) { return it.x.fb; }).slice(0, 3).map(function (it) {
+      var href = it.x.post ? "#post-" + it.x.post : "#releases";
+      return '<li><a href="' + href + '"><span class="hm-chip hm-c-better">반영</span><span class="q">\u201c' + esc(it.x.fb) + '\u201d<small>' + esc(names[it.id]) + " " + esc(it.x.v) + "에서 반영 · " + when(it.x.date) + "</small></span></a></li>";
+    }).join("");
+    /* 출시 예정 카드: 출시 시각이 지나면 "새로 나옴", 2주 뒤 숨김 */
+    var ln = document.getElementById("hmLaunch");
+    if (ln) {
+      var at = new Date(ln.getAttribute("data-at")), now = new Date(), chip = document.getElementById("hmLaunchChip");
+      var dd = Math.ceil((new Date(at.getFullYear(), at.getMonth(), at.getDate()) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
+      var hhmm = "오후 " + ((at.getHours() + 11) % 12 + 1) + "시";
+      var txt = now >= at ? "새로 나옴" : dd <= 0 ? "오늘 " + hhmm + " 출시" : "D-" + dd + " · " + (at.getMonth() + 1) + "." + at.getDate() + " " + hhmm + " 출시";
+      if (now - at > 14 * 864e5) ln.hidden = true;
+      chip.textContent = txt;
+      var soon = grid.querySelector('.hm-card[data-app="app-speed"] .hm-soon'); if (soon) soon.textContent = txt;
+    }
+    /* 하고 싶은 일 고르기 */
+    var fs = [].slice.call(document.querySelectorAll(".hm-f")), empty = document.getElementById("hmEmpty");
+    var allN = document.getElementById("hmAll"); if (allN) allN.textContent = cards.length;
+    fs.forEach(function (b) { b.addEventListener("click", function () {
+      var cat = b.getAttribute("data-cat"), n = 0;
+      fs.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      cards.forEach(function (li) { var on = !cat || (" " + li.getAttribute("data-cat") + " ").indexOf(" " + cat + " ") >= 0; li.hidden = !on; if (on) n++; });
+      if (empty) empty.hidden = n > 0;
+    }); });
+  })();
+
   /* ---------- 업데이트 내역(/releases/): DL 표의 versions · rel 로 자동으로 그림 ----------
      새 버전을 내면 DL 표 versions 맨 위에 한 줄만 추가하세요. kind: new(새 기능) fix(버그 수정) better(개선) sec(보안),
      post: 의견 반영 글 id(post-<여기>), fix: 해결한 문제 한 줄, fb: 반영한 의견 한 줄 */
@@ -4454,6 +4621,16 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       st.outs.push(row.querySelector(".al-count"));
       wire(row, ".al-get");
     }
+    /* 홈 앱 카드: 받기 한 번 (이전 버전은 자세히 → 소개 페이지에서) */
+    var hmb = document.querySelector('.hm-card[data-app="' + id + '"] .hm-dl');
+    if (hmb) {
+      hmb.innerHTML = '<a class="key hm-hot' + (tooOld ? ' is-no' : '') + '" href="' + url + '"' + (c.url ? " download" : "") + '>' + (tooOld ? "설치 불가" : "받기") + (!apk ? ' <small>' + (c.kind || "") + '</small>' : '') + '</a>';
+      hmb.firstChild.addEventListener("click", function (e) {
+        if (tooOld) { e.preventDefault(); alert("이 기기는 안드로이드 " + AV + "이라 설치할 수 없습니다. 안드로이드 " + c.min + " 이상이 필요합니다."); return; }
+        hit(st);
+      });
+      st.outs.push(document.createElement("span"));
+    }
     /* 앱 소개 페이지 */
     var sec = document.getElementById(id), cta = sec && sec.querySelector(".amp-cta");
     if (cta) {
@@ -4466,6 +4643,20 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
       if (al && alt) al.addEventListener("click", function (e) { e.stopPropagation(); alt.click(); });
       st.outs.push(cta.querySelector(".dl-count"));
       wire(cta, ".amp-btn");
+      /* 아래로 내려도 받기가 보이게: 큰 받기 버튼이 화면에서 사라지면 아래에 받기 바 */
+      if ("IntersectionObserver" in window) {
+        var nm = (sec.querySelector("h1, h2") || {}).textContent || "";
+        var tv = c.versions && c.versions[0];
+        var bar = document.createElement("div"); bar.className = "ap-stick"; bar.hidden = true;
+        bar.innerHTML = '<span class="ap-stick-t"><b>' + nm.replace(/[<>&]/g, "") + '</b>' + (tv ? '<small>' + tv.v + ' · ' + tv.date + '</small>' : '') + '</span>' +
+          '<a class="key hm-hot' + (tooOld ? ' is-no' : '') + '" href="' + url + '"' + (c.url ? " download" : "") + '>' + (tooOld ? "설치 불가" : "받기") + '</a>';
+        sec.appendChild(bar);
+        bar.querySelector("a").addEventListener("click", function (e) {
+          if (tooOld) { e.preventDefault(); alert("이 기기는 안드로이드 " + AV + "이라 설치할 수 없습니다. 안드로이드 " + c.min + " 이상이 필요합니다."); return; }
+          hit(st);
+        });
+        new IntersectionObserver(function (en) { bar.hidden = en[0].isIntersecting || sec.hidden; }).observe(cta);
+      }
     }
     if (!st.outs.length) return;
     render(st);
@@ -4503,6 +4694,8 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     var st = { key: "nt-" + id.replace(/^app-/, ""), name: name, n: null, outs: [], btns: [] };
     var row = document.querySelector('.al-row[data-app="' + id + '"] .al-dl');
     if (row) { row.innerHTML = '<button type="button" class="ntf-btn"></button><span class="al-count ntf-count" aria-live="polite"></span>'; st.btns.push(row.querySelector("button")); st.outs.push(row.querySelector(".al-count")); }
+    var hmn = document.querySelector('.hm-card[data-app="' + id + '"] .hm-dl');
+    if (hmn) { hmn.innerHTML = '<button type="button" class="key ntf-btn"></button>'; st.btns.push(hmn.querySelector("button")); }
     var sec = document.getElementById(id);
     (sec ? [].slice.call(sec.querySelectorAll(".amp-cta")) : []).forEach(function (cta) { cta.innerHTML = '<button type="button" class="ntf-btn"></button><span class="dl-count ntf-count" aria-live="polite"></span>'; st.btns.push(cta.querySelector("button")); st.outs.push(cta.querySelector(".dl-count")); });
     if (!st.btns.length) return;
