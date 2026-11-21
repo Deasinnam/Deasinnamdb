@@ -479,20 +479,26 @@ public class MainActivity extends Activity {
 
                 // 화면 기록: 카운터 화면 → (스크립트가 찍음) → 테이블 화면
                 load(base + "/admin.html");
-                Thread.sleep(4000);
+                Thread.sleep(5000);
                 probe("admin", "JSON.stringify({key:(typeof KEY=='string'?KEY.length:-1),rev:(typeof REV=='number'?REV:-1),loaded:!!(typeof D!='undefined'&&D),orders:document.querySelectorAll('.od').length})");
+                Thread.sleep(1000);
                 st("SHOT admin");
-                Thread.sleep(8000);
+                Thread.sleep(7000);
                 load(base + "/table.html?t=3");
+                Thread.sleep(5000);
+                probe("table", "JSON.stringify({loaded:document.querySelectorAll('.item').length>0})");
+                Thread.sleep(1000);
                 st("SHOT table");
-                Thread.sleep(9000);
+                Thread.sleep(7000);
                 js("document.querySelector('[data-id=americano]') && document.querySelector('[data-id=americano]').click();" +
                    "document.querySelector('[data-id=cake]') && document.querySelector('[data-id=cake]').click();");
+                Thread.sleep(2000);
                 st("SHOT cart");
-                Thread.sleep(6000);
+                Thread.sleep(7000);
                 load("file:///android_asset/web/start.html");
+                Thread.sleep(4000);
                 st("SHOT start");
-                Thread.sleep(6000);
+                Thread.sleep(7000);
                 st("DONE");
             } catch (Throwable e) {
                 st("FAIL exception " + e);
