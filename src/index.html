@@ -1776,7 +1776,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
         </div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜누름 앱은 일반 PC를 완벽하게 대신하지는 않습니다. 기기나 파일 형식, 웹사이트 등의 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
-          <div><dt>최신 버전</dt><dd>1.0.6 · 2026.11.21 업데이트 — 한글(HWP) 문서의 저장 · 다른 이름으로 저장 수정, 문서 편집을 이음오피스 v0.13.0으로 올림(한글 표 안의 표 편집 · 각주 · 엑셀 병합 셀 인쇄 테두리 등 개선) · <a href="#releases">바뀐 점</a> · 이전 버전도 내려받기에서 고를 수 있습니다</dd></div>
+          <div><dt>최신 버전</dt><dd>1.0.7 · 2026.11.21 업데이트 — PDF 파일이 열리지 않던 문제와 AI 도우미의 ChatGPT · Claude 연결 실패 수정 · 1.0.6에서 한글(HWP) 다른 이름으로 저장 수정 · 문서 편집은 이음오피스 v0.13.0 · <a href="#releases">바뀐 점</a> · 이전 버전도 내려받기에서 고를 수 있습니다</dd></div>
           <div><dt>업데이트 기록</dt><dd>1.0.3 (2026.11.17) 새 엑셀 문서 저장 · 다른 이름으로 저장, 사진 · 동영상 편집 한국어 화면 — <a href="#post-work-103">자세히</a> · 1.0.2 (2026.11.11) 문서 · 사진 · 동영상 편집을 한 앱에</dd></div>
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>필요</dt><dd>Android 8.0 이상 · 64비트 · 무료</dd></div>
@@ -4254,6 +4254,7 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
     "app-work":    { open: true, min: 8, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 work-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "1.0.7", date: "2026.11.21", tag: "work-v1.0.7", file: "DeolnureumWork-1.0.7.apk", note: "PDF 파일이 열리지 않던 문제, AI 도우미에서 ChatGPT · Claude 로그인 뒤 연결되지 않던 문제 수정", kind: ["fix"], fix: "PDF를 열면 '파일을 열지 못했습니다'가 뜨고, ChatGPT · Claude 로그인 후 앱으로 돌아오면 연결 실패로 나오던 문제", fb: "PDF 안 열림 · AI 연결 안 됨" },
                        { v: "1.0.6", date: "2026.11.21", tag: "work-v1.0.6", file: "DeolnureumWork-1.0.6.apk", note: "한글(HWP) 문서 파일 메뉴의 저장 · 다른 이름으로 저장 수정, 이음오피스 v0.13.0(한글 표 안의 표 편집 · 각주 · 수식 앞 문단 추가 등 개선)", kind: ["fix", "better"], fix: "한글 문서에서 파일 → 다른 이름으로 저장을 눌러도 아무 반응이 없던 문제", fb: "한글(HWP) 다른 이름으로 저장 안 됨" },
                        { v: "1.0.5", date: "2026.11.20", tag: "work-v1.0.5", file: "DeolnureumWork-1.0.5.apk", note: "문서 편집을 이음오피스 v0.13.0으로 업데이트", kind: ["better"] },
                        { v: "1.0.4", date: "2026.11.20", tag: "work-v1.0.4", file: "DeolnureumWork-1.0.4.apk", note: "문서 편집의 열기에서 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 · 다이어그램 파일을 고를 수 없던 문제 수정", kind: ["fix"], fix: "문서 편집 화면의 열기에서 워드 · 엑셀 · 파워포인트 · EPUB · 마인드맵 · 다이어그램 파일이 회색으로 막혀 불러올 수 없던 문제" },
