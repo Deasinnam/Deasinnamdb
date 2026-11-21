@@ -316,7 +316,7 @@ final class NodeRuntime {
         // 앱이 꺼지면(입력 통로가 닫히면) 엔진도 스스로 끝나게 합니다
         env.put("IEUM_PARENT_WATCH", "1");
         // 시험용 빌드(자동 점검)에서만: 엔진이 켜지면 HTTPS 연결을 한 번 확인해 기록합니다
-        if (BuildConfig.DEBUG) env.put("IEUM_NETCHECK", "1");
+        if ((context.getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) env.put("IEUM_NETCHECK", "1");
         // 기기 안에서만 주고받으므로 프록시 설정이 끼어들지 않게 합니다
         for (String k : new String[]{"http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"}) env.remove(k);
         if (listener != null) listener.onState("starting", "문서 엔진 시작 중");
