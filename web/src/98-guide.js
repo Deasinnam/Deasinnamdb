@@ -49,12 +49,22 @@ const Guide=(()=>{
       '차가 서 있으면 활주로에서 대기(LINE UP)하고, 출발하면 <b>이륙</b>, 달리는 동안 <b>순항</b>, 멈추면 <b>착륙</b>해요.',
       '착륙하면 <b>평균 속도</b>와 <b>운전 평점</b>이 잠깐 보여요. 급가속·급제동·과속이 적을수록 점수가 높아요.',
       '<b>시연</b>을 누르면 서 있어도 이륙부터 착륙까지 미리 볼 수 있어요.'],
-      a:['시연 보기',()=>{const b=document.querySelector('.flt-sim');if(b){if(!b.classList.contains('on'))b.click()}else toast('스피드미터를 에어라인·3D 맵 스킨으로 바꾸면 볼 수 있어요')}]},
+      a:['시연 보기',()=>{const b=document.querySelector('.flt-sim');if(b){if(!b.classList.contains('on'))b.click()}else toast('스피드미터를 에어라인 스킨으로 바꾸면 볼 수 있어요')}]},
     {k:'cam',t:'과속 카메라 · 원형 지도',v:'guide/v-cam.mp4',l:[
       '과속 카메라가 <b>500m 앞</b>에 오면 제한 속도와 남은 거리가 경고음과 함께 떠요.',
       '왼쪽 아래 <b>원형 지도</b>는 진행 방향이 위로 오게 돌아가요. ×로 끄고, 설정 → 스피드미터에 원형 지도로 다시 켜요.',
       '<b>3D 맵</b> 스킨에서는 실제 지형 위로 날아가요.'],v2:'guide/v-3d.mp4'}];
-  const steps=()=>{const f=flags();return STEPS.filter(s=>!(s.full&&f.lite))};
+  // 1.86 배포판(대신남 스피드미터): 스킨은 에어라인 하나, 알림 접근 목록의 이름도 '대신남 스피드미터'
+  const AIRLINE_SKIN={m:'guide/g-skin-d.jpg',t:'스킨 · 계기판 디자인',l:[
+      '① 스피드미터 제목줄의 고르기를 누르면 맨 위에 <b>에어라인</b> 스킨이 있어요. 손으로 칠한 듯한 하늘과 활주로 위로 달려요.',
+      '② 아래 <b>계기판 디자인</b>에서 카본·네온·아날로그 같은 다른 계기판도 고를 수 있어요. 다시 <b>에어라인</b>을 고르면 활주로 화면으로 돌아와요.',
+      '콕핏 컨트롤의 같은 고르기도 똑같이 바뀌어요.']};
+  const steps=()=>{const f=flags(),d=window.AmpDist||{},nm=d.dsp?'대신남 스피드미터':null;
+    return STEPS.filter(s=>!(s.full&&f.lite)).map(s=>{
+      if(d.airline&&s.k==='skin')return Object.assign({},s,AIRLINE_SKIN);
+      if(d.airline&&s.k==='cam')return Object.assign({},s,{v2:null,l:s.l.filter(x=>!/3D 맵/.test(x))});
+      if(nm&&s.k==='ext')return Object.assign({},s,{m:'guide/g-ext-d.jpg',l:s.l.map(x=>x.replace('<b>대신남 원</b>','<b>'+nm+'</b>'))});
+      return s})};
   let el=null,i=0,list=[],sx=null;const BLOB={};
   function build(){if(el)return;el=document.createElement('div');el.id='guide';el.className='gd';el.hidden=true;el.setAttribute('role','dialog');el.setAttribute('aria-label','초기 세팅 방법');
     el.innerHTML='<div class="gd-card"><div class="gd-hd"><b>초기 세팅 방법</b><span class="gd-n"></span><button type="button" class="gd-x" aria-label="닫기">×</button></div>'

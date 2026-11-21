@@ -9,8 +9,8 @@ android {
         applicationId 'com.daesinnam.one.v1'
         minSdk 26
         targetSdk 36  // 1.52 구글 플레이: 2026-08-31부터 새 앱은 API 36 이상
-        versionCode 119
-        versionName "1.85-one"
+        versionCode 120
+        versionName "1.86-one"
     }
 
     buildFeatures { buildConfig true }
@@ -48,7 +48,7 @@ android {
         // 스페셜: 대신남 원과 같은 차량용 구성 + 지브리풍 고품질 PFD 풍경(하늘·구름·땅·강·바다). 기존 앱과 따로 설치되는 새 앱
         special { dimension 'device'; applicationId 'com.daesinnam.specialapp'; versionNameSuffix '-special' }
         // 1.84 배포용 에어포스원: 스페셜과 같은 구성에서 인터넷 라디오만 뺌(저작권). full = 외부 앱 소리(YouTube Music·Spotify) 가져오기, lite = 내 음악만
-        airdist { dimension 'device'; applicationId 'com.daesinnam.airforceone'; versionNameSuffix '-airforceone' }
+        airdist { dimension 'device'; applicationId 'com.daesinnam.speedometer'; versionNameSuffix '-speedometer' }
         lite { dimension 'edition' }
         full { dimension 'edition'; versionNameSuffix '-full' }
     }

@@ -1693,11 +1693,12 @@ public class MainActivity extends Activity {
             return "airdist".equals(BuildConfig.FLAVOR_device) ? "special" : BuildConfig.FLAVOR_device;
         }
 
-        /** 1.84 배포판 제한: airdist면 "noradio"(인터넷 라디오 없음) + lite판이면 ",lite"(외부 앱 소리 없음, 내 음악만) */
+        /** 1.86 airline: 스킨은 에어라인 하나(자동차 모드·3D 맵 없음), dsp: 이름 '대신남 스피드미터'(에어포스원으로 바꿔 부르지 않음)
+         *  1.84 배포판 제한: airdist면 "noradio"(인터넷 라디오 없음) + lite판이면 ",lite"(외부 앱 소리 없음, 내 음악만) */
         @JavascriptInterface
         public String distFlags() {
             if (!"airdist".equals(BuildConfig.FLAVOR_device)) return "";
-            return "full".equals(BuildConfig.FLAVOR_edition) ? "noradio" : "noradio,lite";
+            return "full".equals(BuildConfig.FLAVOR_edition) ? "noradio,airline,dsp" : "noradio,lite,airline,dsp";
         }
 
         @JavascriptInterface

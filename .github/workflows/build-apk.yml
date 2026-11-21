@@ -112,17 +112,18 @@ jobs:
       # 1.85.1 공개 배포는 풀버전만(라이트는 빌드만 하고 릴리스에 안 올림)
       # 1.84 배포용 에어포스원: 공개 릴리스(one-v1)에 넣지 않고 "초안" 릴리스로만 올림(저장소 관리자만 보임).
       #  공개는 예약 작업이 gh release edit --draft=false 로. 이미 공개된 같은 버전은 건드리지 않음
-      - name: 배포용 에어포스원 초안 릴리스
+      # 1.86 출시 이름 "대신남 스피드미터": 태그 speedometer-v<버전>, 파일 DaesinnamSpeedometer.apk(풀버전 하나)
+      - name: 배포용 대신남 스피드미터 초안 릴리스
         if: github.ref == 'refs/heads/daesinnam-one-v1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VN=$(grep -o 'versionName "[^"]*"' app/build.gradle | head -1 | sed 's/versionName "\([0-9.]*\).*/\1/')
-          TAG="airforceone-v$VN"
-          cp app/build/outputs/apk/airdistFull/release/app-airdist-full-release.apk AirForceOne-full.apk
+          TAG="speedometer-v$VN"
+          cp app/build/outputs/apk/airdistFull/release/app-airdist-full-release.apk DaesinnamSpeedometer.apk
           if gh release view "$TAG" --json isDraft -q .isDraft 2>/dev/null | grep -q false; then echo "$TAG 이미 공개됨 — 그대로 둠"; exit 0; fi
           gh release delete "$TAG" --yes || true
-          gh release create "$TAG" AirForceOne-full.apk \
+          gh release create "$TAG" DaesinnamSpeedometer.apk \
             --target "$GITHUB_SHA" --draft \
-            --title "에어포스원 $VN" \
-            --notes-file docs/airforceone-release.md
+            --title "대신남 스피드미터 $VN" \
+            --notes-file docs/speedometer-release.md

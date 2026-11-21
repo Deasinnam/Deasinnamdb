@@ -17,7 +17,8 @@
   'use strict';
   const on = document.documentElement.dataset.build === 'special' || /[?&#]special\b/.test(location.href);
   // 1.62.1 표시 이름 통일: 스페셜판 화면 글자의 '대신남…'은 모두 '에어포스원'(나중에 생기는 글자·안내도 따라 바꿈)
-  if (on) (function rename() {
+  // 1.86 배포판(대신남 스피드미터, dsp)은 이름을 바꾸지 않음
+  if (on && !/dsp/.test(window.__distFlags || '')) (function rename() {
     const RX = [[/대신남\s?원/g, '에어포스원'], [/대신남/g, '에어포스원'], [/DAESINNAM ONE/g, 'AIR FORCE ONE'], [/DAESINNAM/g, 'AIR FORCE ONE']], HIT = /대신남|DAESINNAM/;
     const fix = v => { for (const [r, t] of RX) v = v.replace(r, t); return v; };
     const node = n => { if (n.nodeValue && HIT.test(n.nodeValue)) n.nodeValue = fix(n.nodeValue); };

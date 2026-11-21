@@ -40,7 +40,9 @@ let vol=store.get('vol',80), bal=store.get('bal',0), shuffle=store.get('shuf',fa
 /* 1.52 구글 플레이 정리: 콕핏·콕핏 그레이·콕핏 스페셜·태블릿 가로모드 1·2는 고를 수 없게(예전에 고른 사람은 대신남 에어라인으로) — 내부 시험은 window.__allSkins로 그대로 */
 const RETIRED=['carnival5','carnival4','carnival6','tablet','tablet2'],ALL_SKINS=!!window.__allSkins;
 /* 1.55 앱 나누기: 대신남 AMP(build 'amp') = 오디오 스킨 7개만, 대신남 원(build 'one') = 자동차 모드·에어라인만. 기존 통합 앱은 그대로 */
-const AUDIO_SKINS=['blue','amber','base','neon','ice','red','wood'],ONE_SKINS=['carnival','carnival7','carnival8'];
+/* 1.86 배포판 플래그(네이티브 distFlags, 시험은 window.__dist): airline이면 스킨은 에어라인 하나 — 자동차 모드·3D 맵은 정식판에서 */
+const DISTF=(()=>{let s=window.__dist;if(s==null)try{s=NB&&NB.distFlags?String(NB.distFlags()):''}catch(e){s=''}return String(s||'')})();window.__distFlags=DISTF;
+const AUDIO_SKINS=['blue','amber','base','neon','ice','red','wood'],ONE_SKINS=/airline/.test(DISTF)?['carnival7']:['carnival','carnival7','carnival8'];
 const skinOk=k=>APP==='amp'?AUDIO_SKINS.includes(k):APP==='one'?ONE_SKINS.includes(k):(ALL_SKINS||!RETIRED.includes(k));
 const SKIN_DEF=APP==='amp'?'blue':'carnival7';
 if(APP==='one')store.set('ckFocus','gps'); /* 1.56: 대신남 원은 켤 때마다 스피드미터 화면(폴드7에서 가장 보기 편한 비율)으로 시작 */
