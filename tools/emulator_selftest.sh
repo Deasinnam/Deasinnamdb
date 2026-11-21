@@ -35,6 +35,11 @@ else
   echo "홈 버튼 실패 (버튼 없음)"; fail=1
 fi
 adb logcat -d -s IEUM_SELFTEST:I IeumNode:* > selftest-office${SUF}.txt
+echo "===== AI 로그인 서버 연결 (앱 안 Node의 HTTPS) ====="
+nc=$(grep -o "IEUM_NETCHECK .*" selftest-office${SUF}.txt | head -1)
+echo "${nc:-IEUM_NETCHECK 기록 없음}"
+# 인증서 문제는 실패로, 에뮬레이터에 인터넷이 없는 경우(주소 찾기 실패 등)는 경고만
+if echo "$nc" | grep -qiE "CERT|certificate|SELF_SIGNED|UNABLE_TO|issuer"; then echo "HTTPS 인증서 확인 실패"; fail=1; fi
 echo "===== 문서 편집 ====="
 grep -E "IEUM_SELFTEST" selftest-office${SUF}.txt || true
 ok=$(grep -c "IEUM_SELFTEST.* ok " selftest-office${SUF}.txt || true)

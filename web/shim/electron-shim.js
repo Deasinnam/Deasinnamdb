@@ -181,6 +181,7 @@
     internetTools: false,
   };
   let hwpPending = null; // { path, format }
+  let pdfChunkCache = null; // { path, bytes } PDF 나눠 읽기용
 
   const HANDLERS = {
     "app:get-language": () => "ko",
@@ -206,6 +207,19 @@
     // PDF
     "pdf:consume-pending": () => currentPath,
     "pdf:read-file": async (path) => (await fetchDoc(path)).arrayBuffer(),
+    // 이음오피스 v0.13.0부터 PDF 화면은 파일을 8MB씩 나눠 읽습니다(readFileChunk). 받는 곳이 없으면 PDF가 열리지 않으므로
+    // 한 번 받아 둔 내용에서 잘라 줍니다. (의견: "덜누름 워크에서 PDF 파일이 안 열려요", 1.0.5~1.0.6)
+    "pdf:read-file-chunk": async (path, start, end) => {
+      if (!pdfChunkCache || pdfChunkCache.path !== path) {
+        pdfChunkCache = { path, bytes: new Uint8Array(await (await fetchDoc(path)).arrayBuffer()) };
+      }
+      const all = pdfChunkCache.bytes;
+      const from = Math.max(0, Math.min(all.length, Number(start) || 0));
+      const to = Math.max(from, Math.min(all.length, Number(end) || 0));
+      const data = all.slice(from, to);
+      if (to >= all.length) pdfChunkCache = null; // 다 읽었으면 메모리를 비움
+      return { data, fileSize: all.length };
+    },
     "pdf:get-username": () => "",
     "pdf:is-untitled": () => false,
     "pdf:is-untitled-copy": () => false,

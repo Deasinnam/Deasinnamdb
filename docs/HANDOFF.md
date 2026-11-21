@@ -164,6 +164,13 @@ tools/                      빌드·점검 스크립트 (아래)
 - 배포: 빌드가 `work-latest`와 함께 `work-v<버전>` 릴리스를 만들고, `work-latest`를 바꾸기 전에 이전 버전이 `work-v<이전 버전>`에 없으면 옮겨 둡니다(사이트에서 버전을 골라 받게).
 - 서명은 그대로 저장소 비밀값 `AMP_KEYSTORE_*` → 기존 앱 위에 덮어 설치됩니다.
 
+## 1.0.7에서 고친 것 (2026-11-21)
+
+| 문제 | 원인 | 고친 곳 |
+|---|---|---|
+| PDF 파일이 열리지 않음 ("파일을 열지 못했습니다: Cannot destructure property 'data'…") | 이음오피스 v0.13.0부터 PDF 화면이 파일을 8MB씩 나눠 읽는 `pdf:read-file-chunk`를 씀(1.0.5부터 깨짐) | `web/shim/electron-shim.js`: `pdf:read-file-chunk` 추가(한 번 받아 잘라 줌). 헤드리스 크롬에서 1.0.6 그대로 재현 → 고친 뒤 2.3KB · 22MB PDF 열림 확인 |
+| AI 도우미에서 ChatGPT · Claude 로그인 뒤 브라우저는 "연결됨"인데 앱은 "연결하지 못했습니다" | 앱 안 Node(Termux 빌드)가 `--openssl-use-def-ca-store`로 만들어져 인증서를 Termux 폴더에서 찾음 → 앱 안에서는 모든 HTTPS 실패(토큰 교환 실패) | `NodeRuntime.java`: `--use-bundled-ca`. 시험용 빌드는 엔진이 켜질 때 HTTPS를 한 번 확인(`IEUM_NETCHECK`), 에뮬레이터 점검에서 인증서 오류면 실패 |
+
 ## 1.0.5 · 1.0.6에서 고친 것 (2026-11-20, 이음오피스 v0.13.0 — 한글 저장 메뉴는 1.0.6)
 
 | 문제 | 원인 | 고친 곳 |

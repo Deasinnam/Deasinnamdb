@@ -470,6 +470,18 @@ setInterval(() => { for (const s of sessions.values()) s.checkWatched(); }, 3000
 server.listen(PORT, "127.0.0.1", () => {
   log(`준비됨 port=${server.address().port} node=${process.version}`);
   console.log("IEUM_READY " + server.address().port);
+  if (process.env.IEUM_NETCHECK === "1") netCheck();
 });
+
+// 자동 점검(시험용 빌드)에서만: 앱 안 Node가 HTTPS(인증서 확인 포함)로 AI 로그인 서버에 닿는지 확인
+function netCheck() {
+  const url = "https://auth.openai.com/.well-known/openid-configuration";
+  fetch(url, { method: "GET", signal: AbortSignal.timeout(15000) })
+    .then((r) => console.log("IEUM_NETCHECK ok " + r.status))
+    .catch((e) => {
+      const c = e && e.cause ? (e.cause.code || e.cause.message || String(e.cause)) : String(e && e.message || e);
+      console.log("IEUM_NETCHECK fail " + c);
+    });
+}
 
 module.exports = { realExit };
