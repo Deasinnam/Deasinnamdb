@@ -4,7 +4,7 @@
 원본은 한 파일에 모든 화면이 들어 있고 # 주소(#app-speed 등)로 화면을 바꾼다.
 검색엔진은 # 뒤를 보지 않으므로, 화면마다 진짜 주소의 페이지를 만들어 준다.
   /            홈            /apps/     앱센터       /about/    소개      /feedback/  의견 보내기
-  /amp/  /speedometer/  /work/  /desktop/  /browser/  /tableorder/  /game/    앱별 소개
+  /amp/  /speedometer/  /work/  /desktop/  /browser/  /game/    앱별 소개
 페이지마다: 제목·설명·대표 주소(canonical)·공유 이미지·구조화 데이터를 넣고, 그 화면이 처음부터 보이게 한다.
 sitemap.xml 과 robots.txt 도 함께 만든다.
 
@@ -36,9 +36,6 @@ APPS = [
     ("#app-browser", "/browser/", "덜누름 브라우저 — 창으로 여는 PC형 브라우저",
      "바탕화면 위에 창으로 열고, 한 번에 전체 화면으로. 넓은 폴드 화면에서 PC 화면 그대로 웹을 보는 브라우저입니다. 탭 · 보던 탭 이어 보기 · 찾기 · 방문 기록 지원.",
      "덜누름 브라우저", "BrowserApplication", "/media/app-browser-poster.jpg"),
-    ("#app-table", "/tableorder/", "덜누름 테이블오더 — 안 쓰는 태블릿으로 만드는 테이블 주문",
-     "안 쓰는 태블릿 · 구형 폰은 테이블 주문기로, 갤럭시 Z 폴드는 덱스 큰 화면 카운터로. 같은 매장 와이파이만 있으면 서버 · 가입 · 월 이용료 없이 테이블 주문 · 직원 호출 · 주문판을 씁니다.",
-     "덜누름 테이블오더", "BusinessApplication", "/media/app-tableorder-poster.jpg"),
     ("#app-game", "/game/", "덜누름 게임 — 폴드를 휴대용 게임기처럼",
      "게임과 게임 앱(스팀 · 배틀넷 PC 게임, PC 스트리밍 등)을 휴대용 게임기 같은 화면 하나에. 게임패드 조작, 키 매핑, 게임 녹화, 기기 맞춤 최적화. 지금 내려받을 수 있습니다.",
      "덜누름 게임", "GameApplication", "/media/app-game-poster.jpg"),

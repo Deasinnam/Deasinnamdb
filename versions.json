@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T00:23:11+09:00",
+ "updated": "2026-11-22T00:40:46+09:00",
  "apps": {
   "pad": {
    "version": "0.2.2",
@@ -34,13 +34,6 @@
    "date": "2026.11.19",
    "note": "새 버전이 나오면 앱이 알려 줌 (설정에서 끄기 · 지금 확인)",
    "page": "https://deolnureum.com/browser/",
-   "changes": "https://deolnureum.com/releases/"
-  },
-  "table": {
-   "version": "0.1.2",
-   "date": "2026.11.22",
-   "note": "첫 공개: 태블릿 테이블 주문기 + 폴드 · 덱스 카운터 주문판, 직원 호출, 메뉴 · 사진 · 품절 관리",
-   "page": "https://deolnureum.com/tableorder/",
    "changes": "https://deolnureum.com/releases/"
   },
   "game": {
