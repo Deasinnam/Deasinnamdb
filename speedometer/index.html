@@ -1046,7 +1046,7 @@ body[data-view="home"] { background: #f6f5f1; }
 .hm-filters .key { padding: 10px 14px; font-size: 14px; border-radius: 10px; --travel: 3px; }
 .hm-filters .key[aria-pressed="true"] { background: #111; color: #fff; }
 .hm-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 28px; }
-.hm-card { display: flex; flex-direction: column; background: #fff; border: 1.5px solid #111; border-radius: 18px; box-shadow: 0 6px 0 #111; overflow: hidden; }
+.hm-card { cursor: pointer; display: flex; flex-direction: column; background: #fff; border: 1.5px solid #111; border-radius: 18px; box-shadow: 0 6px 0 #111; overflow: hidden; }
 .hm-card[hidden] { display: none; }
 .hm-card > img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-bottom: 1.5px solid #111; background: #111; }
 .hm-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
@@ -4423,6 +4423,12 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     function age(d) { var m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(d || ""); if (!m) return 999; var t0 = new Date(+m[1], m[2] - 1, +m[3]); var n = new Date(); n.setHours(0, 0, 0, 0); return Math.round((n - t0) / 864e5); }
     function when(d) { var a = age(d); return a <= 0 ? "오늘" : a === 1 ? "어제" : md(d); }
     var cards = [].slice.call(grid.querySelectorAll(".hm-card")), names = {}, all = [];
+    /* 사진 · 설명 · 카드 빈 곳을 눌러도 상세 페이지로 (받기 · 알림받기 · 자세히 단추는 그대로) */
+    grid.addEventListener("click", function (e) {
+      var t = e.target; if (t.closest("a, button, input, select, label, .hm-dl, .hm-btns")) return;
+      var li = t.closest(".hm-card"), a = li && li.querySelector("h3 a"); if (!a) return;
+      a.click();
+    });
     cards.forEach(function (li) {
       var id = li.getAttribute("data-app"), d = DL[id] || {}, a = li.querySelector("h3 a");
       names[id] = a ? a.textContent : id;
