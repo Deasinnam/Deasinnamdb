@@ -64,13 +64,13 @@ aside h3{margin:0;padding:18px 20px 8px;font-size:20px}
   aside{position:fixed;left:0;right:0;bottom:0;top:18%;z-index:40;border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.2);transform:translateY(105%);transition:transform .2s}
   aside.open{transform:none}
   .bar{display:flex;position:fixed;left:14px;right:14px;bottom:14px;z-index:30;align-items:center;gap:12px;padding:10px 10px 10px 20px;border-radius:20px;background:var(--ink);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  .bar .c{font-weight:800;font-size:17px;flex:1}
+  .bar .c{font-weight:800;font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar .btn{min-height:54px}
   .item{width:calc(50% - 14px)}
   nav{flex-basis:110px}
   nav button{font-size:16px;padding:14px 10px}
 }
-@media (max-width:560px){ .item .ph{padding-top:56%} nav{display:none} .shop small{display:none} header .btn span{display:none} }
+@media (max-width:560px){ .item .ph{padding-top:56%} nav{display:none} .shop small{display:none} header .btn span{display:none} header{padding:10px 12px;gap:8px} header .btn{min-height:46px;padding:0 13px} .tno{font-size:15px;padding:7px 10px} .shop{font-size:17px} .bar .c{font-size:15px} }
 @media (min-width:1300px){ .item{width:calc(25% - 14px)} aside{flex-basis:380px} }
 </style></head>
 <body>
@@ -99,6 +99,7 @@ aside h3{margin:0;padding:18px 20px 8px;font-size:20px}
 <div class="off hide" id="off">카운터와 연결이 잠시 끊겼어요 · 다시 잇는 중</div>
 <div id="modal"></div>
 <script>
+window.onerror=function(m,u,l){console.error("JS "+m+" @"+l)};
 var $=function(id){return document.getElementById(id)};
 var T=window.TO||null;
 var q=location.search.match(/[?&]t=(\d+)/);

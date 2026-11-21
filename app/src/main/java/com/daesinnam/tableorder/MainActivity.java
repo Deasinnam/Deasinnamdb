@@ -108,6 +108,12 @@ public class MainActivity extends Activity {
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override
+            public boolean onConsoleMessage(android.webkit.ConsoleMessage m) {
+                if (selftest) Log.i(SELFTEST_TAG, "CONSOLE " + m.messageLevel() + " " + m.message() + " @" + m.lineNumber());
+                return false;
+            }
+
+            @Override
             public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
                 if (fileCb != null) fileCb.onReceiveValue(null);
                 fileCb = cb;
@@ -117,6 +123,15 @@ public class MainActivity extends Activity {
             }
         });
         if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) WebView.setWebContentsDebuggingEnabled(true);
+        web.setOnApplyWindowInsetsListener((v, in) -> {
+            int t = in.getSystemWindowInsetTop(), bo = in.getSystemWindowInsetBottom(), l = in.getSystemWindowInsetLeft(), r = in.getSystemWindowInsetRight();
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets i = in.getInsets(android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout() | android.view.WindowInsets.Type.ime());
+                t = i.top; bo = i.bottom; l = i.left; r = i.right;
+            }
+            v.setPadding(l, t, r, bo);
+            return in;
+        });
         setContentView(web);
 
         selftest = getIntent().getBooleanExtra("to.selftest", false);
@@ -461,8 +476,10 @@ public class MainActivity extends Activity {
 
                 // 화면 기록: 카운터 화면 → (스크립트가 찍음) → 테이블 화면
                 load(base + "/admin.html");
+                Thread.sleep(4000);
+                probe("admin", "JSON.stringify({key:(typeof KEY=='string'?KEY.length:-1),rev:(typeof REV=='number'?REV:-1),loaded:!!(typeof D!='undefined'&&D),orders:document.querySelectorAll('.od').length})");
                 st("SHOT admin");
-                Thread.sleep(9000);
+                Thread.sleep(8000);
                 load(base + "/table.html?t=3");
                 st("SHOT table");
                 Thread.sleep(9000);
@@ -479,6 +496,10 @@ public class MainActivity extends Activity {
                 st("DONE");
             }
         }).start();
+    }
+
+    private void probe(String what, String expr) {
+        ui.post(() -> web.evaluateJavascript(expr, v -> { st("INFO probe " + what + " " + v); check(v != null && v.contains("\\\"loaded\\\":true"), what + " screen loaded"); }));
     }
 
     /** 점검용 아주 작은 JPEG(흰 점 하나) */

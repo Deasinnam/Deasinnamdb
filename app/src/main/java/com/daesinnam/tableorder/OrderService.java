@@ -54,7 +54,7 @@ public class OrderService extends Service implements OrderServer.Listener {
     }
 
     /** 사장님 화면이 /api/admin 에 쓰는 열쇠(기기마다 한 번 만들어 보관) */
-    static String key(Context c) {
+    static synchronized String key(Context c) {
         SharedPreferences p = c.getSharedPreferences("tableorder", MODE_PRIVATE);
         String k = p.getString("adminKey", null);
         if (k == null) {
