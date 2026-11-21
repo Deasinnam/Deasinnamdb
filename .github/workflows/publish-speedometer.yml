@@ -1,0 +1,30 @@
+# 1.86 출시판 '대신남 스피드미터' 공개: 커밋 메시지에 [publish-speedometer]가 있는 push가 오면
+# 가장 높은 speedometer-v* 초안 릴리스를 공개로 바꿈(DaesinnamSpeedometer.apk 하나만 남김).
+# [publish-speedometer-dryrun]이면 고를 릴리스만 보여 주고 바꾸지 않음.
+# (Claude 세션은 릴리스를 직접 고칠 수 없어서, 예약 작업이 이 표시가 든 빈 커밋을 push함)
+name: Publish Daesinnam Speedometer
+on:
+  push:
+    branches: [daesinnam-one-v1]
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: contains(github.event.head_commit.message, '[publish-speedometer')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      R: ${{ github.repository }}
+      DRY: ${{ contains(github.event.head_commit.message, '[publish-speedometer-dryrun]') }}
+    steps:
+      - name: 초안 찾기·공개
+        run: |
+          set -e
+          gh api "repos/$R/releases?per_page=100" > rel.json
+          ID=$(jq -r '[.[]|select(.draft and (.tag_name|startswith("speedometer-v")))]|sort_by(.tag_name|ltrimstr("speedometer-v")|split(".")|map(tonumber))|last|.id // empty' rel.json)
+          if [ -z "$ID" ]; then echo "speedometer 초안 없음"; jq -r '.[]|select(.tag_name|startswith("speedometer-v"))|.tag_name+" draft="+(.draft|tostring)' rel.json; exit 1; fi
+          jq -r ".[]|select(.id==$ID)|.tag_name+\" : \"+([.assets[].name]|join(\", \"))" rel.json
+          jq -e ".[]|select(.id==$ID)|.assets|map(.name)|index(\"DaesinnamSpeedometer.apk\")" rel.json >/dev/null || { echo "DaesinnamSpeedometer.apk 없음 — 공개 안 함"; exit 1; }
+          if [ "$DRY" = "true" ]; then echo "시험 실행 — 바꾸지 않음"; exit 0; fi
+          for A in $(jq -r ".[]|select(.id==$ID)|.assets[]|select(.name!=\"DaesinnamSpeedometer.apk\")|.id" rel.json); do gh api -X DELETE "repos/$R/releases/assets/$A"; echo "다른 파일 지움 $A"; done
+          gh api -X PATCH "repos/$R/releases/$ID" -F draft=false -f make_latest=false --jq '.tag_name+" 공개: "+.html_url'
