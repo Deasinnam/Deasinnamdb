@@ -123,7 +123,10 @@ public class MainActivity extends Activity {
             }
         });
         if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) WebView.setWebContentsDebuggingEnabled(true);
-        web.setOnApplyWindowInsetsListener((v, in) -> {
+        android.widget.FrameLayout root = new android.widget.FrameLayout(this);
+        root.setBackgroundColor(Color.parseColor("#F6F5F1"));
+        root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
+        root.setOnApplyWindowInsetsListener((v, in) -> {
             int t = in.getSystemWindowInsetTop(), bo = in.getSystemWindowInsetBottom(), l = in.getSystemWindowInsetLeft(), r = in.getSystemWindowInsetRight();
             if (Build.VERSION.SDK_INT >= 30) {
                 android.graphics.Insets i = in.getInsets(android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout() | android.view.WindowInsets.Type.ime());
@@ -132,7 +135,7 @@ public class MainActivity extends Activity {
             v.setPadding(l, t, r, bo);
             return in;
         });
-        setContentView(web);
+        setContentView(root);
 
         selftest = getIntent().getBooleanExtra("to.selftest", false);
         if (selftest) { runSelftest(); return; }
