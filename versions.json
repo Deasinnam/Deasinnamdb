@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T17:00:35+09:00",
+ "updated": "2026-11-21T18:19:05+09:00",
  "apps": {
   "pad": {
    "version": "0.2.2",
@@ -16,9 +16,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "work": {
-   "version": "1.0.7",
+   "version": "1.0.8",
    "date": "2026.11.21",
-   "note": "PDF 파일이 열리지 않던 문제, AI 도우미에서 ChatGPT · Claude 로그인 뒤 연결되지 않던 문제 수정",
+   "note": "AI 도우미 ChatGPT · Claude 로그인을 마치고 돌아와도 연결되지 않던 문제 추가 수정 (로그인하는 동안 'AI 연결 중' 알림)",
    "page": "https://deolnureum.com/work/",
    "changes": "https://deolnureum.com/releases/"
   },
