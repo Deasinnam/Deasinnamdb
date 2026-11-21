@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
     static final String TAG = "TableOrder";
     static final String SELFTEST_TAG = "TO_SELFTEST";
     static volatile boolean foreground;
+    private static volatile boolean selftestStarted; // 화면이 다시 만들어져도 점검은 한 번만
 
     private WebView web;
     private SharedPreferences prefs;
@@ -138,7 +139,7 @@ public class MainActivity extends Activity {
         setContentView(root);
 
         selftest = getIntent().getBooleanExtra("to.selftest", false);
-        if (selftest) { runSelftest(); return; }
+        if (selftest && !selftestStarted && b == null) { selftestStarted = true; runSelftest(); return; }
         go();
     }
 
