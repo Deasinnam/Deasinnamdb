@@ -1211,6 +1211,13 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
 .ap-rate-c { color: #a1a1aa; }
 .ap-rate em { font-style: normal; font-weight: 700; color: #fde047; }
 .ap-rate:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+/* 홈 카드 별점 */
+.hm-rate { display: flex; align-items: center; gap: 6px; margin-top: -4px; font: 700 14px/1 var(--font-body); color: #111; }
+.hm-rate .rv-st { font-size: 15px; letter-spacing: 1px; color: #d6d3cb; }
+.hm-rate .rv-st i { color: #f59e0b; }
+.hm-rate span { font-weight: 500; color: #7a766c; font-size: 13px; }
+@media (min-width: 641px) { .hm-dark .hm-rate { color: #fff; } .hm-dark .hm-rate .rv-st { color: #52525b; } .hm-dark .hm-rate .rv-st i { color: #facc15; } .hm-dark .hm-rate span { color: #a1a1aa; } }
+@media (max-width: 640px) { .hm-rate { order: 2; flex: 0 0 100%; margin: 2px 0 1px; font-size: 13px; } .hm-rate .rv-st { font-size: 13px; } .hm-rate span { font-size: 12px; } }
 </style>
 <link rel="canonical" href="https://deolnureum.com/tv/">
 <meta property="og:url" content="https://deolnureum.com/tv/">
@@ -5182,7 +5189,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         var m = mine(); m.push({ app: app, s: k, nick: nick || "익명", text: text, t: Date.now() }); saveMine(m);
         form.reset(); paint(0); msg.textContent = ""; btn.disabled = false;
         st.className = "rv-status ok"; st.textContent = "후기를 남겼습니다. 고맙습니다! 모두에게 보이기까지 몇 분 걸릴 수 있어요.";
-        draw(box, app); heads(); badges();
+        draw(box, app); heads(); badges(); homeCards();
       }, function () { btn.disabled = false; bad("보내지 못했습니다. 잠시 뒤 다시 시도해 주세요."); });
     });
   }
@@ -5253,7 +5260,21 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       });
     });
   }
-  setTimeout(function () { heads(); if (document.querySelector(".al-info")) badges(); }, 600);
+  // 홈 '무엇을 하고 싶으세요?' 카드: 앱 이름 아래 별점
+  function homeCards() {
+    load(function (src) {
+      Array.prototype.forEach.call(document.querySelectorAll(".hm-card h3"), function (h) {
+        var a = h.querySelector("a"); if (!a) return;
+        var s = summary(listFor(a.textContent.trim(), src));
+        var old = h.parentNode.querySelector(".hm-rate"); if (old) old.remove();
+        var sp = document.createElement("div"); sp.className = "hm-rate" + (s.n ? "" : " is-empty");
+        sp.setAttribute("aria-label", s.n ? "평균 별점 " + s.avg.toFixed(1) + "점, 후기 " + s.n + "개" : "아직 별점 없음");
+        sp.innerHTML = stars(s.avg) + (s.n ? "<b>" + s.avg.toFixed(1) + "</b><span>(" + s.n + ")</span>" : "<span>아직 별점 없음</span>");
+        h.parentNode.insertBefore(sp, h.nextSibling);
+      });
+    });
+  }
+  setTimeout(function () { heads(); if (document.querySelector(".al-info")) badges(); if (document.querySelector(".hm-card")) homeCards(); }, 600);
 })();
 </script>
 <script>
