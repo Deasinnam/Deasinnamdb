@@ -659,8 +659,19 @@ public class MainActivity extends Activity {
         }).start();
     }
 
+    /** 화면 확인: 느린 에뮬레이터를 위해 최대 4번(약 8초) 다시 봄 */
     private void probe(String what, String expr) {
-        ui.post(() -> web.evaluateJavascript(expr, v -> { st("INFO probe " + what + " " + v); check(v != null && v.contains("\\\"loaded\\\":true"), what + " screen loaded"); }));
+        new Thread(() -> {
+            for (int tries = 0; tries < 4; tries++) {
+                final String[] res = {null};
+                final java.util.concurrent.CountDownLatch l = new java.util.concurrent.CountDownLatch(1);
+                ui.post(() -> web.evaluateJavascript(expr, v -> { res[0] = v; l.countDown(); }));
+                try { l.await(3, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
+                boolean ok = res[0] != null && res[0].contains("\\\"loaded\\\":true");
+                if (ok || tries == 3) { st("INFO probe " + what + " " + res[0]); check(ok, what + " screen loaded"); return; }
+                try { Thread.sleep(2000); } catch (InterruptedException ignored) { }
+            }
+        }).start();
     }
 
     /** 점검용 가짜 AI 서버: OpenAI(/v1/...) · Gemini(/v1beta/...) 모양으로 PNG를 돌려줌 */
