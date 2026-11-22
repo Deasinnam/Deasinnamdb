@@ -1147,6 +1147,60 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
 .ap-stick-t small { font: 12px var(--font-mono); color: #6b6860; }
 .ap-stick .key { padding: 12px 22px; --travel: 3px; }
 @media (max-width: 640px) { .ap-stick { bottom: calc(76px + env(safe-area-inset-bottom)); } }
+/* ---------- 별점 · 사용 후기 (앱 페이지마다) ---------- */
+.rv { margin: 40px 0 0; padding: 26px 24px 22px; border: 1px solid #2f3a4a; border-radius: 18px; background: linear-gradient(180deg, rgba(250,204,21,.07), rgba(250,204,21,.015)); color: #e4e4e7; }
+.rv-head { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-end; justify-content: space-between; }
+.rv-head h2 { margin: 0; font: 800 22px/1.3 var(--font-display); color: #fff; letter-spacing: -.02em; }
+.rv-head p { margin: 4px 0 0; font-size: 13.5px; color: #a1a1aa; }
+.rv-sum { display: flex; align-items: center; gap: 12px; }
+.rv-avg { font: 900 44px/1 var(--font-display); color: #fff; letter-spacing: -.04em; }
+.rv-cnt { display: block; font-size: 13px; color: #a1a1aa; margin-top: 4px; }
+.rv-st { position: relative; display: inline-block; font-size: 18px; line-height: 1; letter-spacing: 2px; color: #3f3f46; white-space: nowrap; }
+.rv-st i { position: absolute; left: 0; top: 0; overflow: hidden; color: #facc15; font-style: normal; white-space: nowrap; }
+.rv-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 26px; margin-top: 22px; }
+@media (max-width: 860px) { .rv-body { grid-template-columns: 1fr; } }
+.rv-bars { display: grid; gap: 6px; margin-bottom: 18px; }
+.rv-bar { display: grid; grid-template-columns: 26px 1fr 30px; gap: 10px; align-items: center; font-size: 12.5px; color: #a1a1aa; font-family: var(--font-mono); }
+.rv-bar span { height: 8px; border-radius: 99px; background: #27272a; overflow: hidden; }
+.rv-bar span b { display: block; height: 100%; background: #facc15; border-radius: 99px; }
+.rv-form { display: grid; gap: 12px; padding: 18px; border-radius: 14px; background: rgba(0,0,0,.28); border: 1px solid #27272a; }
+.rv-form h3 { margin: 0; font: 700 15px/1.4 var(--font-body); color: #fff; }
+.rv-pick { display: flex; gap: 4px; border: 0; padding: 0; margin: 0; }
+.rv-pick legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.rv-pick label { cursor: pointer; font-size: 34px; line-height: 1; color: #3f3f46; transition: color .12s, transform .12s; }
+.rv-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.rv-pick label.on { color: #facc15; }
+.rv-pick label:hover { transform: scale(1.12); }
+.rv-pick input:focus-visible + span { outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px; }
+.rv-pickmsg { font-size: 13px; color: #fde68a; min-height: 18px; margin-top: -4px; }
+.rv-form input[type=text], .rv-form textarea { width: 100%; box-sizing: border-box; background: #18181b; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; padding: 11px 12px; font: 400 14.5px/1.55 var(--font-body); }
+.rv-form textarea { min-height: 96px; resize: vertical; }
+.rv-form input[type=text]:focus, .rv-form textarea:focus { outline: none; border-color: #facc15; }
+.rv-form .rv-note { margin: 0; font-size: 12.5px; line-height: 1.55; color: #8b8b94; }
+.rv-form button { justify-self: start; border: 0; cursor: pointer; background: #facc15; color: #1c1300; font: 800 14.5px/1 var(--font-body); padding: 13px 22px; border-radius: 12px; box-shadow: 0 4px 0 #a16207; }
+.rv-form button:hover { background: #fde047; }
+.rv-form button:disabled { opacity: .55; cursor: default; }
+.rv-trap { position: absolute; left: -9999px; width: 1px; height: 1px; }
+.rv-status { font-size: 13.5px; min-height: 18px; color: #a1a1aa; }
+.rv-status.ok { color: #86efac; } .rv-status.bad { color: #fca5a5; }
+.rv-done { padding: 18px; border-radius: 14px; background: rgba(34,197,94,.08); border: 1px solid #14532d; font-size: 14px; line-height: 1.6; color: #bbf7d0; }
+.rv-done button { margin-top: 8px; background: none; border: 0; color: #7dd3fc; font: 700 13px/1 var(--font-body); padding: 0; cursor: pointer; text-decoration: underline; }
+.rv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.rv-item { padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,.035); border: 1px solid #27272a; }
+.rv-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 12.5px; color: #8b8b94; }
+.rv-meta .rv-st { font-size: 14px; letter-spacing: 1px; }
+.rv-meta b { color: #e4e4e7; font-size: 13.5px; }
+.rv-mine { font-size: 11px; font-weight: 700; color: #1c1300; background: #fde68a; border-radius: 99px; padding: 2px 7px; }
+.rv-item p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.65; color: #d4d4d8; white-space: pre-wrap; word-break: break-word; }
+.rv-empty { margin: 0; padding: 22px 16px; text-align: center; font-size: 14px; color: #8b8b94; border: 1px dashed #3f3f46; border-radius: 12px; }
+.rv-more { margin-top: 12px; background: none; border: 1px solid #3f3f46; color: #e4e4e7; border-radius: 999px; padding: 10px 16px; font: 600 13px/1 var(--font-body); cursor: pointer; }
+.rv-more:hover { border-color: #71717a; }
+/* 앱센터 목록의 별점 배지 */
+.al-info b .al-rate { display: flex !important; align-items: center; gap: 6px; width: max-content; margin: 6px 0 0; font: 700 13px/1 var(--font-body); color: inherit; white-space: nowrap; }
+.al-info b .al-rate .rv-st { display: inline-block; font-size: 13px; letter-spacing: 1px; color: #52525b; }
+.al-info b .al-rate .rv-st i { display: block; }
+.al-info b .al-rate .al-rn, .al-info b .al-rate .al-rc { display: inline; color: inherit; font-size: 13px; }
+.al-info b .al-rate .al-rc { font-weight: 500; opacity: .6; }
 </style>
 <link rel="canonical" href="https://deolnureum.com/hardware/">
 <meta property="og:url" content="https://deolnureum.com/hardware/">
@@ -4519,6 +4573,12 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       vs.forEach(function (x, i) { log.push({ app: ap, x: x, prev: vs[i + 1] ? vs[i + 1].v : "" }); });
     });
     latestEl.innerHTML = cards.join("");
+    /* 사이트(덜누름 앱센터) 자체의 새 기능: 앱 버전과 별개로 맨 위에 한 줄씩 추가 */
+    var SITE_REL = [
+      { v: "별점 · 후기", date: "2026.11.22", kind: ["new"], note: "앱마다 별점 주기와 사용 후기 쓰기가 생겼습니다. 각 앱 페이지 아래에서 5점 만점에 몇 점인지 고르고 후기를 남기면, 평균 별점과 다른 분들의 후기를 함께 볼 수 있습니다. 앱센터 목록에도 평균 별점이 보입니다.", link: "#app-speed" }
+    ];
+    var SITE_AP = ["site", "덜누름 앱센터", "사이트"];
+    SITE_REL.forEach(function (x) { log.push({ app: SITE_AP, x: x, prev: "" }); });
     log.sort(function (a, b) { return a.x.date < b.x.date ? 1 : a.x.date > b.x.date ? -1 : 0; });
     var fApp = "", fFix = false;
     function drawLog() {
@@ -4529,16 +4589,16 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         if (fFix && kinds.indexOf("fix") < 0) return;
         if (x.date !== last) { html += '<h3 class="rel-day">' + esc(x.date) + "</h3>"; last = x.date; }
         var no = x.post ? postNo(x.post) : "";
-        html += '<article class="rel-item"><div class="rel-app"><b>' + esc(it.app[1]) + '</b><span class="rel-vchg">' + (it.prev ? esc(it.prev) + " → " : "") + esc(x.v) + "</span>" + (days(x.date) <= 7 && i0(it) ? '<span class="dl-new">NEW</span>' : "") + "</div>" +
+        html += '<article class="rel-item"><div class="rel-app"><b>' + esc(it.app[1]) + '</b><span class="rel-vchg">' + (it.prev ? esc(it.prev) + " → " : "") + esc(x.v) + "</span>" + (days(x.date) <= 7 && (i0(it) || it.app[0] === "site") ? '<span class="dl-new">NEW</span>' : "") + "</div>" +
           '<div class="rel-body"><div class="rel-tags">' + kinds.map(function (k) { return '<span class="rel-tag rel-k-' + k + '">' + KIND[k] + "</span>"; }).join("") + "</div>" +
           '<p class="rel-t">' + esc(x.fix || x.note) + "</p>" + (x.fix ? '<p class="rel-d">' + esc(x.note) + "</p>" : "") +
           (x.fix ? '<p class="rel-ok"><b>해결됨 · ' + esc(x.v) + "부터</b> · 이전 버전을 쓰고 있다면 " + esc(x.v) + " 이상으로 업데이트하세요</p>" : "") +
           (x.fb ? '<p class="rel-ok"><b>받은 의견 반영</b> · ' + esc(x.fb) + "</p>" : "") + "</div>" +
-          (x.post ? '<a class="rel-post" href="#post-' + x.post + '">의견 반영 ' + esc(no) + " →</a>" : '<span class="rel-post rel-none">글 없음</span>') + "</article>";
+          (x.post ? '<a class="rel-post" href="#post-' + x.post + '">의견 반영 ' + esc(no) + " →</a>" : x.link ? '<a class="rel-post" href="' + esc(x.link) + '">써 보기 →</a>' : '<span class="rel-post rel-none">글 없음</span>') + "</article>";
       });
       logEl.innerHTML = html || '<p class="rel-empty">해당하는 업데이트가 없습니다.</p>';
     }
-    var chips = [["", "전체"]].concat(APPS_REL.filter(function (ap) { return DL[ap[0]] && (DL[ap[0]].versions || []).length; }).map(function (ap) { return [ap[0], ap[2]]; }));
+    var chips = [["", "전체"], ["site", "사이트"]].concat(APPS_REL.filter(function (ap) { return DL[ap[0]] && (DL[ap[0]].versions || []).length; }).map(function (ap) { return [ap[0], ap[2]]; }));
     filEl.innerHTML = chips.map(function (c) { return '<button type="button" class="rel-chip" data-app="' + c[0] + '" aria-pressed="' + (c[0] === "" ? "true" : "false") + '">' + c[1] + "</button>"; }).join("") +
       '<button type="button" class="rel-chip rel-chip-fix" data-fix="1" aria-pressed="false">버그 수정만</button>';
     filEl.addEventListener("click", function (e) {
@@ -4971,5 +5031,183 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
 })();
 </script>
 <script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-scroll]");if(!b)return;var t=document.getElementById(b.getAttribute("data-scroll"));if(t){e.preventDefault();t.scrollIntoView({behavior:"smooth",block:"start"})}});</script>
+<script>
+/* ---------- 별점 · 사용 후기 ----------
+   보내기: 의견 보내기 구글 설문(종류 "별점 후기", 내용 "★<점수> | <닉네임> | <후기>"). 연락처 칸은 쓰지 않음.
+   읽기: 공개용 시트(RV.sheet) — 응답 시트에서 별점 후기만 골라 오는 QUERY(IMPORTRANGE). 이메일 칸은 가져오지 않음.
+   지우기: 응답 시트에서 그 줄을 지우면 몇 분 뒤 사이트에서도 사라짐. */
+(function () {
+  "use strict";
+  var RV = {
+    action: "https://docs.google.com/forms/d/e/1FAIpQLSfP-AtdrqHl2NfFRgfcLdLdFKKp_P8BJN1zgxxU6rCULaQfbQ/formResponse",
+    f: { app: "entry.46129893", kind: "entry.418131705", text: "entry.1383050537", contact: "entry.1468507028" },
+    kind: "별점 후기",
+    sheet: "1FVUKwv6yGT8oxxMKVXED3jTNR7D3OW2kj7k8oJDxqIY"
+  };
+  var LS = "dn-reviews-mine";
+  var WORDS = ["", "별로예요", "아쉬워요", "괜찮아요", "좋아요", "최고예요"];
+  var all = null, waiters = [];
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function mine() { try { return JSON.parse(localStorage.getItem(LS) || "[]"); } catch (e) { return []; } }
+  function saveMine(a) { try { localStorage.setItem(LS, JSON.stringify(a.slice(-50))); } catch (e) {} }
+  function stars(v) { var w = Math.max(0, Math.min(5, v)) / 5 * 100; return '<span class="rv-st" aria-hidden="true">★★★★★<i style="width:' + w.toFixed(1) + '%">★★★★★</i></span>'; }
+  function parse(text) {
+    var m = /^★([1-5])\s*\|\s*([^|]*?)\s*\|\s*([\s\S]*)$/.exec(String(text || "").trim());
+    return m ? { s: +m[1], nick: m[2], text: m[3] } : null;
+  }
+  function ymd(t) { var d = new Date(t); return d.getFullYear() + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + ("0" + d.getDate()).slice(-2); }
+  // 공개 시트 읽기(JSONP: 다른 주소에서도 막히지 않음)
+  function load(cb) {
+    if (all) { cb(all); return; }
+    waiters.push(cb); if (waiters.length > 1) return;
+    var name = "__dnRv" + Date.now(), sc = document.createElement("script"), done = false;
+    function finish(list) { if (done) return; done = true; all = list; try { delete window[name]; } catch (e) { window[name] = undefined; } if (sc.parentNode) sc.parentNode.removeChild(sc); var w = waiters; waiters = []; w.forEach(function (f) { f(all); }); }
+    window[name] = function (res) {
+      var out = [];
+      try {
+        (res.table.rows || []).forEach(function (r) {
+          var c = r.c || [], ts = c[0] && c[0].v, app = c[1] && c[1].v, p = parse(c[2] && c[2].v);
+          if (!app || !p) return;
+          var t = 0, m = /Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/.exec(ts || "");
+          if (m) t = new Date(+m[1], +m[2], +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+          out.push({ app: String(app).trim(), s: p.s, nick: p.nick, text: p.text, t: t });
+        });
+      } catch (e) {}
+      finish(out);
+    };
+    sc.src = "https://docs.google.com/spreadsheets/d/" + RV.sheet + "/gviz/tq?headers=1&tqx=out:json;responseHandler:" + name + "&_=" + Math.floor(Date.now() / 60000);
+    sc.onerror = function () { finish([]); };
+    setTimeout(function () { finish([]); }, 9000);
+    document.head.appendChild(sc);
+  }
+  // 이 기기에서 쓴 후기 중 아직 시트에 안 올라온 것도 함께 보여 줌
+  function listFor(app, src) {
+    var got = src.filter(function (r) { return r.app === app; });
+    var keep = [];
+    mine().forEach(function (m) {
+      if (m.app !== app) return;
+      var seen = got.some(function (r) { return r.text === m.text && r.s === m.s; });
+      if (!seen && Date.now() - m.t < 864e5 * 2) keep.push(m);
+    });
+    keep.forEach(function (m) { got.push({ app: m.app, s: m.s, nick: m.nick, text: m.text, t: m.t, mine: true }); });
+    var my = mine().map(function (m) { return m.app + "\n" + m.text; });
+    got.forEach(function (r) { if (my.indexOf(r.app + "\n" + r.text) >= 0) r.mine = true; });
+    got.sort(function (a, b) { return b.t - a.t; });
+    return got;
+  }
+  function summary(list) {
+    var n = list.length, sum = 0, by = [0, 0, 0, 0, 0, 0];
+    list.forEach(function (r) { sum += r.s; by[r.s]++; });
+    return { n: n, avg: n ? sum / n : 0, by: by };
+  }
+  // 앱 페이지마다 후기 칸 만들기
+  var boxes = [];
+  Array.prototype.forEach.call(document.querySelectorAll("section.ap[id^=app-]"), function (sec) {
+    var fb = sec.querySelector("[data-fb-app]"); if (!fb) return;
+    var app = fb.getAttribute("data-fb-app"), id = sec.id;
+    var box = document.createElement("div");
+    box.className = "rv"; box.id = id + "-reviews"; box.setAttribute("data-app", app);
+    box.innerHTML =
+      '<div class="rv-head"><div><h2>별점 · 사용 후기</h2><p>' + esc(app) + '을(를) 써 보셨다면 별점과 후기를 남겨 주세요.</p></div>' +
+      '<div class="rv-sum"><span class="rv-avg">–</span><div>' + stars(0) + '<span class="rv-cnt">후기를 불러오는 중…</span></div></div></div>' +
+      '<div class="rv-body"><div>' +
+        '<div class="rv-bars"></div>' +
+        '<form class="rv-form" novalidate><h3>별점 주기</h3>' +
+          '<fieldset class="rv-pick"><legend>5점 만점에 몇 점인가요?</legend>' +
+            [1, 2, 3, 4, 5].map(function (k) { return '<label title="' + k + '점 · ' + WORDS[k] + '"><input type="radio" name="rvStar" value="' + k + '"><span>★</span></label>'; }).join("") +
+          '</fieldset><div class="rv-pickmsg">별을 눌러 5점 만점에 몇 점인지 골라 주세요</div>' +
+          '<input type="text" name="rvNick" maxlength="20" placeholder="닉네임 (선택, 20자까지)" autocomplete="nickname">' +
+          '<textarea name="rvText" maxlength="500" placeholder="사용 후기를 적어 주세요. 좋았던 점, 아쉬운 점, 쓰는 기기(예: 폴드7)도 함께 적어 주시면 다른 분들께 도움이 됩니다."></textarea>' +
+          '<input class="rv-trap" type="text" name="rvTrap" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+          '<p class="rv-note">남긴 별점과 후기는 이 페이지에 공개됩니다. 이메일 같은 개인정보는 적지 마세요. 욕설 · 광고는 지울 수 있습니다.</p>' +
+          '<button type="submit">후기 남기기</button><div class="rv-status" role="status" aria-live="polite"></div>' +
+        '</form></div>' +
+        '<div><ul class="rv-list"></ul></div>' +
+      '</div>';
+    var nav = sec.querySelector(".ap-nav");
+    if (nav) nav.parentNode.insertBefore(box, nav);
+    else { var w = sec.querySelectorAll(".amp-wrap"); w[w.length - 1].appendChild(box); }
+    boxes.push(box);
+    wire(box, app);
+  });
+  function wire(box, app) {
+    var form = box.querySelector(".rv-form"), msg = box.querySelector(".rv-pickmsg"), st = box.querySelector(".rv-status");
+    var labels = form.querySelectorAll(".rv-pick label");
+    function paint(k) { Array.prototype.forEach.call(labels, function (l, i) { l.classList.toggle("on", i < k); }); }
+    function picked() { var r = form.querySelector("input[name=rvStar]:checked"); return r ? +r.value : 0; }
+    Array.prototype.forEach.call(labels, function (l, i) {
+      l.addEventListener("mouseenter", function () { paint(i + 1); });
+      l.addEventListener("mouseleave", function () { paint(picked()); });
+    });
+    form.addEventListener("change", function () { var k = picked(); paint(k); msg.textContent = k ? k + "점 · " + WORDS[k] : ""; });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (form.rvTrap.value) return;
+      var k = picked(), nick = form.rvNick.value.replace(/[|\r\n]/g, " ").replace(/\s+/g, " ").trim().slice(0, 20), text = form.rvText.value.trim().slice(0, 500);
+      function bad(m, el) { st.className = "rv-status bad"; st.textContent = m; if (el) el.focus(); }
+      if (!k) return bad("별점을 먼저 골라 주세요.", form.querySelector("input[name=rvStar]"));
+      if (text.length < 5) return bad("후기를 조금만 더 적어 주세요(5자 이상).", form.rvText);
+      if (/[^\s@]+@[^\s@]+\.[a-z]{2,}/i.test(text + " " + nick)) return bad("이메일 주소는 빼고 적어 주세요. 후기는 공개됩니다.", form.rvText);
+      var btn = form.querySelector("button"); btn.disabled = true; st.className = "rv-status"; st.textContent = "보내는 중…";
+      var body = new URLSearchParams();
+      body.append(RV.f.app, app); body.append(RV.f.kind, RV.kind); body.append(RV.f.text, "★" + k + " | " + (nick || "익명") + " | " + text); body.append(RV.f.contact, "");
+      fetch(RV.action, { method: "POST", mode: "no-cors", body: body }).then(function () {
+        var m = mine(); m.push({ app: app, s: k, nick: nick || "익명", text: text, t: Date.now() }); saveMine(m);
+        form.reset(); paint(0); msg.textContent = ""; btn.disabled = false;
+        st.className = "rv-status ok"; st.textContent = "후기를 남겼습니다. 고맙습니다! 모두에게 보이기까지 몇 분 걸릴 수 있어요.";
+        draw(box, app);
+      }, function () { btn.disabled = false; bad("보내지 못했습니다. 잠시 뒤 다시 시도해 주세요."); });
+    });
+  }
+  function draw(box, app) {
+    load(function (src) {
+      var list = listFor(app, src), s = summary(list);
+      box.querySelector(".rv-avg").textContent = s.n ? s.avg.toFixed(1) : "–";
+      box.querySelector(".rv-sum .rv-st").outerHTML = stars(s.avg);
+      box.querySelector(".rv-cnt").textContent = s.n ? "후기 " + s.n + "개 · 5점 만점" : "아직 후기가 없어요";
+      box.querySelector(".rv-sum").setAttribute("aria-label", s.n ? "평균 " + s.avg.toFixed(1) + "점, 후기 " + s.n + "개" : "후기 없음");
+      box.querySelector(".rv-bars").innerHTML = [5, 4, 3, 2, 1].map(function (k) {
+        var p = s.n ? s.by[k] / s.n * 100 : 0;
+        return '<div class="rv-bar"><em>' + k + '★</em><span><b style="width:' + p.toFixed(1) + '%"></b></span><small>' + s.by[k] + "</small></div>";
+      }).join("");
+      var ul = box.querySelector(".rv-list"), shown = 5;
+      function paintList() {
+        if (!list.length) { ul.innerHTML = '<li class="rv-empty">첫 후기를 남겨 주세요.</li>'; return; }
+        ul.innerHTML = list.slice(0, shown).map(function (r) {
+          return '<li class="rv-item"><div class="rv-meta">' + stars(r.s) + "<b>" + esc(r.nick || "익명") + "</b><span>" + (r.t ? ymd(r.t) : "") + "</span>" + (r.mine ? '<span class="rv-mine">내 후기</span>' : "") +
+            '</div><p>' + esc(r.text) + "</p></li>";
+        }).join("");
+        var old = box.querySelector(".rv-more"); if (old) old.remove();
+        if (list.length > shown) {
+          var b = document.createElement("button"); b.type = "button"; b.className = "rv-more"; b.textContent = "후기 더 보기 (" + (list.length - shown) + "개 더)";
+          b.addEventListener("click", function () { shown += 10; paintList(); }); ul.parentNode.appendChild(b);
+        }
+      }
+      paintList();
+    });
+  }
+  // 앱센터 목록에 평균 별점 배지
+  function badges() {
+    load(function (src) {
+      Array.prototype.forEach.call(document.querySelectorAll(".al-info b"), function (b) {
+        var a = b.querySelector("a"); if (!a) return;
+        var s = summary(listFor(a.textContent.trim(), src));
+        var old = b.querySelector(".al-rate"); if (old) old.remove();
+        if (!s.n) return;
+        var sp = document.createElement("span"); sp.className = "al-rate";
+        sp.setAttribute("aria-label", "평균 별점 " + s.avg.toFixed(1) + "점, 후기 " + s.n + "개");
+        sp.innerHTML = stars(s.avg) + '<span class="al-rn">' + s.avg.toFixed(1) + ' <span class="al-rc">(' + s.n + ")</span></span>";
+        b.appendChild(sp);
+      });
+    });
+  }
+  // 화면에 들어올 때 불러옴(처음 한 번만 시트를 읽고 모든 앱이 같이 씀)
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); draw(e.target, e.target.getAttribute("data-app")); } }); }, { rootMargin: "400px" });
+    boxes.forEach(function (b) { io.observe(b); });
+  } else boxes.forEach(function (b) { draw(b, b.getAttribute("data-app")); });
+  if (document.querySelector(".al-info")) setTimeout(badges, 1200);
+})();
+</script>
 </body>
 </html>
