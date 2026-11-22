@@ -12,9 +12,9 @@ adb install -r -g "$DEBUG_APK" || exit 1
 adb logcat -c
 adb shell am start -n "$PKG/.MainActivity" --ez to.selftest true
 shot=""
-for i in $(seq 1 120); do
+for i in $(seq 1 200); do
   sleep 1
-  for s in admin table cart start; do
+  for s in admin table cart cafe korean detail start; do
     if [ "${shot#*$s}" = "$shot" ] && adb logcat -d -s TO_SELFTEST:I | grep -q "SHOT $s"; then
       sleep 1; adb exec-out screencap -p > "tableorder-screen-$s.png"; shot="$shot $s"
     fi
@@ -27,7 +27,7 @@ sed 's/^.*TO_SELFTEST: //' selftest-result.txt | cut -c1-300
 pass=$(grep -c "TO_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "TO_SELFTEST: FAIL" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn"
-if ! grep -q "TO_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ] || [ "$pass" -lt 14 ]; then fail=1; fi
+if ! grep -q "TO_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ] || [ "$pass" -lt 21 ]; then fail=1; fi
 if adb logcat -d | grep -A3 "FATAL EXCEPTION" | grep -q "$PKG"; then echo "시험용 빌드가 꺼졌습니다"; adb logcat -d | grep -A25 "FATAL EXCEPTION" | tail -40; fail=1; fi
 
 if [ -n "$RELEASE_APK" ] && [ -f "$RELEASE_APK" ]; then

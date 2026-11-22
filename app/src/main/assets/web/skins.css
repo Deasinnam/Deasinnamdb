@@ -1,0 +1,99 @@
+/* 덜누름 테이블오더 — 스킨(디자인 토큰)
+ * 손님 화면(table.html)과 카운터의 스킨 미리보기가 함께 씁니다.
+ * 새 스킨을 더하려면: 아래에 [data-skin="이름"] 묶음 하나를 추가하고, Store.skin()과 admin.html의 SKINS 목록에 이름을 넣으면 됩니다.
+ * 토큰 이름은 바꾸지 마세요(화면이 토큰 이름으로 색 · 모양을 가져옵니다).
+ */
+
+/* ① 기본 — Premium Default : 아이보리 · 화이트 · 차콜 + 샴페인 골드 */
+[data-skin="premium"], :root {
+  --bg: #F6F3EC;            /* 바탕 */
+  --surface: #FFFFFF;       /* 카드 · 창 */
+  --surface-2: #FBF9F4;     /* 카드 안쪽 · 입력칸 */
+  --ink: #1F1E1C;           /* 본문 글자 */
+  --sub: #7C766B;           /* 보조 글자 */
+  --line: #E7E1D5;          /* 선 */
+  --accent: #B08D57;        /* 포인트(샴페인 골드) */
+  --accent-strong: #8E6F3E; /* 포인트 진하게(글자용) */
+  --accent-ink: #FFFFFF;    /* 포인트 위 글자 */
+  --accent-soft: #F3ECDF;   /* 포인트 옅게 */
+  --cta: #1F1E1C;           /* 주문하기 같은 큰 단추 */
+  --cta-ink: #F6F0E4;
+  --price: #1F1E1C;
+  --rail-bg: #1F1E1C;       /* 왼쪽 분류 줄 */
+  --rail-ink: #CFC8BA;
+  --rail-on-bg: transparent;
+  --rail-on-ink: #E2C792;
+  --rail-on-bar: #C9A86A;
+  --head-bg: #FFFFFF;       /* 위쪽 줄 */
+  --ph-bg: #EEE8DC;         /* 사진 없을 때 */
+  --ph-ink: #B9A27A;
+  --bad: #B3261E; --bad-soft: #F8E5E3;
+  --ok: #3F7D4E; --ok-soft: #E6F1E8;
+  --warn: #A86A00; --warn-soft: #FBF0DA;
+  --r: 16px; --r-s: 12px; --r-btn: 12px;
+  --shadow: 0 1px 2px rgba(31,30,28,.05), 0 8px 24px rgba(31,30,28,.06);
+  --font-head: "Noto Serif KR", "Noto Serif CJK KR", "Source Han Serif K", "Nanum Myeongjo", serif;
+  --font-body: "Pretendard", "Noto Sans KR", "Noto Sans CJK KR", system-ui, sans-serif;
+  --head-weight: 700;
+  --name-weight: 600;
+}
+
+/* ② 카페 — Cafe : 크림 · 베이지 · 커피 브라운 */
+[data-skin="cafe"] {
+  --bg: #F8F1E6;
+  --surface: #FFFDF9;
+  --surface-2: #F6EDDF;
+  --ink: #3B2A20;
+  --sub: #8A7362;
+  --line: #EADCC8;
+  --accent: #7A5238;
+  --accent-strong: #6A4630;
+  --accent-ink: #FFF8EE;
+  --accent-soft: #F1E3D0;
+  --cta: #6A4630;
+  --cta-ink: #FFF8EE;
+  --price: #6A4630;
+  --rail-bg: #FFFDF9;
+  --rail-ink: #8A7362;
+  --rail-on-bg: #F1E3D0;
+  --rail-on-ink: #5A3A26;
+  --rail-on-bar: transparent;
+  --head-bg: #FFFDF9;
+  --ph-bg: #EFE2CF;
+  --ph-ink: #B08A68;
+  --r: 22px; --r-s: 16px; --r-btn: 999px;
+  --shadow: 0 1px 2px rgba(59,42,32,.05), 0 10px 26px rgba(122,82,56,.08);
+  --font-head: "Pretendard", "Noto Sans KR", "Noto Sans CJK KR", system-ui, sans-serif;
+  --head-weight: 800;
+  --name-weight: 700;
+}
+
+/* ③ 한식 — Korean Restaurant : 따뜻한 흰색 · 짙은 나무색 · 황토 */
+[data-skin="korean"] {
+  --bg: #F7F3EC;
+  --surface: #FFFFFF;
+  --surface-2: #FAF6EF;
+  --ink: #2A211B;
+  --sub: #7D6F63;
+  --line: #E6DDD0;
+  --accent: #A9783F;
+  --accent-strong: #8A5F2E;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #F3E8D8;
+  --cta: #7C3B26;
+  --cta-ink: #FFF7EE;
+  --price: #2A211B;
+  --rail-bg: #3A2A21;
+  --rail-ink: #D8CABB;
+  --rail-on-bg: #F7F3EC;
+  --rail-on-ink: #3A2A21;
+  --rail-on-bar: transparent;
+  --head-bg: #FFFFFF;
+  --ph-bg: #EFE6D8;
+  --ph-ink: #B79A76;
+  --r: 12px; --r-s: 10px; --r-btn: 10px;
+  --shadow: 0 1px 2px rgba(42,33,27,.06), 0 6px 18px rgba(42,33,27,.07);
+  --font-head: "Noto Serif KR", "Noto Serif CJK KR", "Source Han Serif K", "Nanum Myeongjo", serif;
+  --head-weight: 700;
+  --name-weight: 700;
+}

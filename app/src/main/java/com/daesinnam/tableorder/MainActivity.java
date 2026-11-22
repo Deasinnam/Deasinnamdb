@@ -412,11 +412,21 @@ public class MainActivity extends Activity {
                 String st0 = http("GET", base + "/api/state?table=3", null, null);
                 JSONObject s0 = new JSONObject(st0);
                 check(s0.getJSONArray("items").length() >= 5, "menu for table " + s0.getJSONArray("items").length());
+                http("POST", base + "/api/admin/settings", "{\"skin\":\"premium\"}", key);
+                check("premium".equals(new JSONObject(http("GET", base + "/api/state?table=3", null, null)).optString("skin")), "default skin premium");
 
                 // 가격을 속여 보내도 카운터 메뉴 값으로 계산되는지
                 String r = http("POST", base + "/api/order", "{\"table\":3,\"items\":[{\"id\":\"americano\",\"qty\":2,\"price\":1},{\"id\":\"cake\",\"qty\":1}],\"note\":\"얼음 적게\"}", null);
                 JSONObject od = new JSONObject(r).getJSONObject("order");
                 check(od.getLong("total") == 4500 * 2 + 6500, "order total " + od.getLong("total"));
+                // 같은 주문 열쇠로 두 번 보내도 한 번만
+                String d1 = http("POST", base + "/api/order", "{\"table\":4,\"key\":\"t4-dup\",\"items\":[{\"id\":\"tea\",\"qty\":1}]}", null);
+                String d2 = http("POST", base + "/api/order", "{\"table\":4,\"key\":\"t4-dup\",\"items\":[{\"id\":\"tea\",\"qty\":1}]}", null);
+                JSONObject a0 = new JSONObject(http("GET", base + "/api/admin", null, key));
+                int t4 = 0;
+                for (int i = 0; i < a0.getJSONArray("orders").length(); i++) if (a0.getJSONArray("orders").getJSONObject(i).getInt("table") == 4) t4++;
+                check(new JSONObject(d1).getJSONObject("order").getString("id").equals(new JSONObject(d2).getJSONObject("order").getString("id")) && t4 == 1, "duplicate order blocked");
+                http("POST", base + "/api/admin/status", new JSONObject().put("id", new JSONObject(d1).getJSONObject("order").getString("id")).put("status", "canceled").toString(), key);
                 http("POST", base + "/api/order", "{\"table\":5,\"items\":[{\"id\":\"latte\",\"qty\":1},{\"id\":\"croffle\",\"qty\":2}]}", null);
                 http("POST", base + "/api/order", "{\"table\":1,\"items\":[{\"id\":\"ade\",\"qty\":3}]}", null);
                 http("POST", base + "/api/call", "{\"table\":2,\"what\":\"물 · 물티슈\"}", null);
@@ -424,7 +434,7 @@ public class MainActivity extends Activity {
                 String noKey = http("GET", base + "/api/admin", null, "wrong");
                 check(noKey != null && noKey.startsWith("ERR 403"), "admin needs key");
                 JSONObject ad = new JSONObject(http("GET", base + "/api/admin", null, key));
-                check(ad.getJSONArray("orders").length() == 3 && ad.getJSONArray("calls").length() == 1, "admin sees orders");
+                check(ad.getJSONArray("orders").length() == 4 && ad.getJSONArray("calls").length() == 1, "admin sees orders");
                 check(ad.getLong("todaySales") == 15500 + 15000 + 18000, "today sales " + ad.getLong("todaySales"));
 
                 http("POST", base + "/api/admin/status", new JSONObject().put("id", od.getString("id")).put("status", "cooking").toString(), key);
@@ -491,11 +501,31 @@ public class MainActivity extends Activity {
                 Thread.sleep(1000);
                 st("SHOT table");
                 Thread.sleep(7000);
-                js("document.querySelector('[data-id=americano]') && document.querySelector('[data-id=americano]').click();" +
-                   "document.querySelector('[data-id=cake]') && document.querySelector('[data-id=cake]').click();");
-                Thread.sleep(2000);
+                js("document.querySelector('[data-add=americano]') && document.querySelector('[data-add=americano]').click();" +
+                   "document.querySelector('[data-add=cake]') && document.querySelector('[data-add=cake]').click();");
+                Thread.sleep(3000);
+                probe("cart", "JSON.stringify({loaded:document.getElementById('barCnt').textContent==='2'})");
+                Thread.sleep(1000);
                 st("SHOT cart");
                 Thread.sleep(7000);
+                // 스킨 바꾸기: 저장되고(다시 읽어도 그대로) 손님 화면에 바로 적용되는지
+                for (String sk : new String[]{"cafe", "korean"}) {
+                    http("POST", base + "/api/admin/settings", "{\"skin\":\"" + sk + "\"}", key);
+                    Thread.sleep(2500);
+                    probe("skin-" + sk, "JSON.stringify({loaded:document.documentElement.getAttribute('data-skin')==='" + sk + "'})");
+                    Thread.sleep(1000);
+                    st("SHOT " + sk);
+                    Thread.sleep(7000);
+                }
+                check("korean".equals(new Store(getFilesDir()).tableView(0).optString("skin")), "skin saved to file");
+                check(new Store(getFilesDir()).tableView(0).getJSONArray("items").length() >= 5, "menu kept after skin change");
+                js("document.querySelector('.card[data-id=latte]') && document.querySelector('.card[data-id=latte]').click();");
+                Thread.sleep(2500);
+                probe("detail", "JSON.stringify({loaded:!!document.querySelector('.box.detail')})");
+                Thread.sleep(1000);
+                st("SHOT detail");
+                Thread.sleep(7000);
+                http("POST", base + "/api/admin/settings", "{\"skin\":\"premium\"}", key);
                 load("file:///android_asset/web/start.html");
                 Thread.sleep(4000);
                 st("SHOT start");

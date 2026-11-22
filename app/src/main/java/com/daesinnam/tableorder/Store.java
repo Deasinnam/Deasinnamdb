@@ -56,6 +56,7 @@ final class Store {
         o.put("shop", st.optString("shop"));
         o.put("tables", st.optInt("tables", 8));
         o.put("notice", st.optString("notice"));
+        o.put("skin", skin(st.optString("skin")));
         o.put("categories", s.getJSONArray("categories"));
         JSONArray items = new JSONArray();
         JSONArray all = s.getJSONArray("items");
@@ -114,6 +115,14 @@ final class Store {
             total += price * qty;
         }
         rollDay();
+        String okey = clip(req.optString("key"), 40);
+        if (!okey.isEmpty()) { // 같은 주문을 두 번 눌렀거나 다시 보낸 경우: 처음 주문을 그대로 돌려줌
+            JSONArray os = s.getJSONArray("orders");
+            for (int i = os.length() - 1; i >= 0 && i >= os.length() - 200; i--) {
+                JSONObject o = os.getJSONObject(i);
+                if (okey.equals(o.optString("key")) && o.optInt("table") == table) return o;
+            }
+        }
         JSONObject seq = s.getJSONObject("seq");
         int no = seq.optInt("no", 0) + 1;
         seq.put("no", no);
@@ -124,6 +133,7 @@ final class Store {
                 .put("items", lines)
                 .put("total", total)
                 .put("note", clip(req.optString("note"), 120))
+                .put("key", okey)
                 .put("status", "new")
                 .put("paid", false)
                 .put("time", System.currentTimeMillis())
@@ -213,6 +223,7 @@ final class Store {
         if (in.has("tables")) st.put("tables", Math.max(1, Math.min(99, in.optInt("tables", 8))));
         if (in.has("notice")) st.put("notice", clip(in.optString("notice"), 80));
         if (in.has("sound")) st.put("sound", in.optBoolean("sound", true));
+        if (in.has("skin")) st.put("skin", skin(in.optString("skin")));
         changed();
     }
 
@@ -277,9 +288,13 @@ final class Store {
             JSONObject st = s.getJSONObject("settings");
             if (!st.has("shop")) st.put("shop", "우리 가게");
             if (!st.has("tables")) st.put("tables", 8);
+            if (!st.has("skin")) st.put("skin", "premium"); // 처음 설치 · 이전 버전 모두 기본 스킨부터(메뉴 · 주문은 그대로)
         } catch (JSONException ignored) {
         }
     }
+
+    /** 스킨: premium(기본) · cafe(카페) · korean(한식). 모르는 값은 기본으로 */
+    static String skin(String v) { return "cafe".equals(v) || "korean".equals(v) ? v : "premium"; }
 
     static String today() { return new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(new Date()); }
 
@@ -291,7 +306,7 @@ final class Store {
     private static JSONObject sample() {
         try {
             JSONObject o = new JSONObject();
-            o.put("settings", new JSONObject().put("shop", "덜누름 카페").put("tables", 8).put("sound", true).put("notice", "주문 후 자리에서 기다려 주세요"));
+            o.put("settings", new JSONObject().put("shop", "덜누름 카페").put("tables", 8).put("sound", true).put("skin", "premium").put("notice", "주문 후 자리에서 기다려 주세요"));
             o.put("categories", new JSONArray()
                     .put(new JSONObject().put("id", "coffee").put("name", "커피"))
                     .put(new JSONObject().put("id", "drink").put("name", "음료"))

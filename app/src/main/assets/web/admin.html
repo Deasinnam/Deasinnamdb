@@ -2,6 +2,7 @@
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>카운터 · 덜누름 테이블오더</title>
+<link rel="stylesheet" href="skins.css">
 <link rel="stylesheet" href="base.css">
 <style>
 html,body{overflow:hidden}
@@ -84,6 +85,31 @@ html,body{overflow:hidden}
 .chip.sold.on{background:var(--bad);color:#fff}
 .chip.best.on{background:var(--accent);color:#fff}
 .savebar{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;justify-content:flex-end;padding:12px 0;background:linear-gradient(transparent,var(--bg) 30%)}
+/* 스킨 미리보기 */
+.skins{display:flex;gap:14px;flex-wrap:wrap}
+.sk{flex:1 1 200px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;border-radius:18px;border:2.5px solid var(--line);padding:10px;background:#fff;position:relative}
+.sk.on{border-color:#1D1B18}
+.sk.on .nm:after{content:"사용 중";margin-left:8px;vertical-align:2px;background:#1D1B18;color:#fff;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px}
+.sk .pv{height:150px;border-radius:12px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;font-family:var(--font-body)}
+.sk .pv .hd{height:30px;background:var(--head-bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 8px}
+.sk .pv .hd i{width:16px;height:16px;border-radius:5px;background:var(--cta)}
+.sk .pv .hd b{font-family:var(--font-head);font-size:11px;color:var(--ink);flex:1}
+.sk .pv .hd em{width:34px;height:14px;border-radius:var(--r-btn);background:var(--accent)}
+.sk .pv .bd{flex:1;display:flex}
+.sk .pv .rl{width:42px;background:var(--rail-bg);padding:6px 0}
+.sk .pv .rl s{display:block;height:7px;margin:7px 7px;border-radius:3px;background:var(--rail-ink);opacity:.5}
+.sk .pv .rl s.on{background:var(--rail-on-ink);opacity:1}
+.sk .pv .gr{flex:1;display:flex;gap:6px;padding:8px}
+.sk .pv .cd{flex:1;background:var(--surface);border-radius:calc(var(--r) * .45);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.sk .pv .cd u{display:block;height:52px;background:var(--ph-bg)}
+.sk .pv .cd p{margin:6px 6px 0;height:6px;border-radius:3px;background:var(--ink);opacity:.75;width:70%}
+.sk .pv .cd q{display:flex;align-items:center;justify-content:space-between;margin:6px}
+.sk .pv .cd q:before,.sk .pv .cd q:after{content:""}
+.sk .pv .cd q span{width:26px;height:6px;border-radius:3px;background:var(--price)}
+.sk .pv .cd q i{width:13px;height:13px;border-radius:50%;background:var(--accent)}
+.sk .pv .ct{height:22px;margin:0 8px 8px;border-radius:var(--r-btn);background:var(--cta)}
+.sk .nm{margin:12px 4px 2px;font-weight:800;font-size:17px}
+.sk .ds{margin:0 4px 4px;font-size:13px;color:var(--sub);line-height:1.5}
 /* 설정 */
 .set{max-width:760px}
 .set .card{padding:22px;margin-bottom:16px}
@@ -327,12 +353,33 @@ function photo(file,cb){
   };im.src=r.result};r.readAsDataURL(file);
 }
 
+// ----- 스킨(손님 화면 디자인) -----
+var SKINS=[
+  {id:"premium",name:"기본 · Premium",desc:"아이보리 · 차콜에 샴페인 골드. 어떤 가게에나 어울리는 고급 레스토랑 느낌"},
+  {id:"cafe",name:"카페 · Cafe",desc:"크림 · 베이지 · 커피 브라운. 둥근 카드로 음료 · 디저트 사진을 크게"},
+  {id:"korean",name:"한식 · Korean",desc:"따뜻한 흰색과 짙은 나무색. 사진을 크게, 메뉴 이름 · 가격을 가운데 또렷하게"}
+];
+function drawSkins(cur){
+  var h="";
+  SKINS.forEach(function(k){
+    h+='<button class="sk'+(k.id===cur?" on":"")+'" data-skin-pick="'+k.id+'"><div class="pv" data-skin="'+k.id+'"><div class="hd"><i></i><b>'+esc((D.settings||{}).shop||"우리 가게")+'</b><em></em></div>'+
+      '<div class="bd"><div class="rl"><s class="on"></s><s></s><s></s><s></s></div><div class="gr"><div class="cd"><u></u><p></p><q><span></span><i></i></q></div><div class="cd"><u></u><p></p><q><span></span><i></i></q></div></div></div>'+
+      '<div class="ct"></div></div><div class="nm">'+k.name+'</div><div class="ds">'+k.desc+'</div></button>';
+  });
+  $("skins").innerHTML=h;
+  [].forEach.call($("skins").querySelectorAll("[data-skin-pick]"),function(b){b.onclick=function(){
+    var id=b.getAttribute("data-skin-pick");if(id===cur)return;
+    api("POST","/api/admin/settings",{skin:id},function(st){if(st===200){toast("손님 화면을 "+b.querySelector(".nm").textContent+" 스킨으로 바꿨습니다");D.settings.skin=id;drawSkins(id)}});
+  }});
+}
+
 // ----- 설정 -----
 function drawSettings(){
   var s=D.settings||{},ip=T&&T.ip?T.ip():location.hostname,ver=T&&T.version?T.version():"";
   var h='<div class="set">'+
   '<div class="card"><h3>테이블 기기 연결</h3><div class="muted">태블릿 · 구형 폰에 덜누름 테이블오더를 깔고 <b>테이블 주문기로 쓰기</b>를 누르면 이 카운터가 저절로 나타납니다. 안 나타나면 아래 주소를 넣으세요.</div>'+
   '<div class="addr">'+esc(ip||"와이파이 연결 필요")+'</div><ol class="how"><li>모든 기기를 같은 매장 와이파이에 연결</li><li>이 폴드에서 카운터 화면을 켜 둔 채로(화면이 꺼져도 주문은 받습니다)</li><li>테이블 기기마다 테이블 번호를 고르고 시작</li></ol></div>'+
+  '<div class="card"><h3>손님 화면 스킨</h3><div class="muted" style="margin-bottom:14px">누르면 모든 테이블 화면에 바로 적용됩니다. 메뉴 · 주문은 그대로 남습니다.</div><div class="skins" id="skins"></div></div>'+
   '<div class="card"><h3>가게</h3><div class="field"><label>가게 이름 (테이블 화면 위쪽)</label><input id="sShop" value="'+esc(s.shop)+'"></div>'+
   '<div class="field"><label>테이블 수</label><input id="sTables" inputmode="numeric" value="'+(s.tables||8)+'"></div>'+
   '<div class="field"><label>손님 화면 안내 문구 (선택)</label><input id="sNotice" value="'+esc(s.notice)+'" placeholder="예: 오늘 디저트 10% 할인"></div>'+
@@ -343,6 +390,7 @@ function drawSettings(){
   '<div class="card"><h3>정리</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn bad" id="sReset">오늘 주문 · 호출 모두 지우기</button>'+(T&&T.stopCounter?'<button class="btn ghost" id="sStop">카운터 끄기 (주문 그만 받기)</button>':'')+'</div>'+
   '<p class="muted" style="margin-top:14px">덜누름 테이블오더 '+esc(ver)+' · 주문은 이 매장 와이파이 안에서만 오가며, 이 기기에만 저장됩니다.</p></div></div>';
   $("vSettings").innerHTML=h;
+  drawSkins(s.skin||"premium");
   var snd=s.sound!==false;
   $("sSound").onclick=function(){snd=!snd;this.classList.toggle("on",snd)};
   $("sSave").onclick=function(){api("POST","/api/admin/settings",{shop:$("sShop").value,tables:parseInt($("sTables").value,10)||8,notice:$("sNotice").value,sound:snd},function(st){if(st===200)toast("저장했습니다")})};
