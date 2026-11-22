@@ -28,3 +28,19 @@ jobs:
           if [ "$DRY" = "true" ]; then echo "시험 실행 — 바꾸지 않음"; exit 0; fi
           for A in $(jq -r ".[]|select(.id==$ID)|.assets[]|select(.name!=\"DaesinnamSpeedometer.apk\")|.id" rel.json); do gh api -X DELETE "repos/$R/releases/assets/$A"; echo "다른 파일 지움 $A"; done
           gh api -X PATCH "repos/$R/releases/$ID" -F draft=false -f make_latest=false --jq '.tag_name+" 공개: "+.html_url'
+
+  # [speedometer-notes]: 공개된 가장 높은 speedometer-v 릴리스의 설명을 docs/speedometer-release.md로 바꿈
+  notes:
+    if: contains(github.event.head_commit.message, '[speedometer-notes]')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      R: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 릴리스 설명 바꾸기
+        run: |
+          set -e
+          ID=$(gh api "repos/$R/releases?per_page=100" --jq '[.[]|select((.draft|not) and (.tag_name|startswith("speedometer-v")))]|sort_by(.tag_name|ltrimstr("speedometer-v")|split(".")|map(tonumber))|last|.id // empty')
+          [ -n "$ID" ] || { echo "공개된 speedometer 릴리스 없음"; exit 1; }
+          gh api -X PATCH "repos/$R/releases/$ID" -F "body=@docs/speedometer-release.md" --jq '.tag_name+" 설명 바꿈: "+.html_url'
