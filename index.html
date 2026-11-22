@@ -1319,7 +1319,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <div class="fold-cover"><video src="/media/amp-cover.mp4" poster="/media/amp-cover-poster.jpg" muted playsinline preload="metadata" aria-label="접은 폴드의 바깥 화면에서 본 Daesinnam Amp 실제 화면 영상"></video></div>
           <span class="enter">자세히 보기 →</span>
         </a>
-        <a class="slide fold" href="/speedometer/" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 11월 22일 오후 4시 출시" data-dur="20000">
+        <a class="slide fold" href="/speedometer/" data-name="대신남 스피드미터" data-kind="실제 주행 영상 · 11월 22일 출시" data-dur="20000">
           <div class="fold-copy"><small>갤럭시 Z 폴드7 · 폴드8 울트라 최적화</small><b>대신남 스피드미터</b><span>차가 달리면 조종석 계기판이 움직입니다</span></div>
           <div class="fold-dev"><video src="/media/speedometer.mp4" poster="/media/speedometer-poster.jpg" muted playsinline preload="metadata" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video></div>
           <span class="enter">자세히 보기 →</span>
@@ -1567,7 +1567,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     <div class="amp-wrap">
       <a class="ap-back" href="/apps/">← 앱센터</a>
       <div class="amp-copy">
-        <div class="amp-eyebrow">GPS 조종석 계기 · 11월 22일 오후 4시 출시</div>
+        <div class="amp-eyebrow">GPS 조종석 계기 · 11월 22일 출시</div>
         <h1 id="ap-speed-t">대신남 스피드미터</h1>
         <p class="amp-kind">이제 차 안에서 이륙하세요.</p>
         <p class="amp-lead">차가 달리면<br>조종석 계기판이 움직입니다.</p>
@@ -1616,7 +1616,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     </div>
     <div class="amp-wrap ap-sub" id="spd-new">
       <div class="amp-copy ap-wide">
-        <div class="amp-eyebrow">NEW · 11월 22일(일) 오후 4시 출시</div>
+        <div class="amp-eyebrow">NEW · 11월 22일(일) 출시</div>
         <h2>새 기능을 싣고<br>다시 이륙합니다.</h2>
         <p class="ap-desc">실시간 음악 선곡과 노래 제목 안내, 엔진오일 교환 알림을 더했고, 폴드가 아닌 일반 스마트폰에서도 화면에 꼭 맞게 보입니다. 아래 영상은 모두 실제 주행 화면입니다.</p>
       </div>
@@ -4371,7 +4371,11 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
   var REPO = "Deasinnam/Deasinnamdb";
   var DL = {
     "app-amp":     { open: false, tag: "latest",         file: "DaesinnamAmp.apk",     base: 0 },
-    "app-speed":   { open: false, tag: "",               file: "",                     base: 0 },
+    "app-speed":   { open: true,  min: 8, tag: "speedometer-v1.86", file: "DaesinnamSpeedometer.apk", base: 0,
+                     /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 speedometer-v<버전>은 빌드가 초안으로 만들고 [publish-speedometer] 커밋으로 공개) */
+                     versions: [
+                       { v: "1.86", date: "2026.11.22", tag: "speedometer-v1.86", file: "DaesinnamSpeedometer.apk", note: "첫 공개: 에어라인 스킨 활주로 이착륙, 과속 카메라 500m 경고, 착륙 평점, 초기 세팅 방법 안내", kind: ["new"] }
+                     ] },
     "app-pad":     { open: true,  min: 8, tag: "pad-latest",     file: "DeolnureumPad.apk",    base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 pad-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [

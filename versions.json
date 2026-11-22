@@ -1,6 +1,13 @@
 {
- "updated": "2026-11-22T14:24:21+09:00",
+ "updated": "2026-11-22T16:12:01+09:00",
  "apps": {
+  "speed": {
+   "version": "1.86",
+   "date": "2026.11.22",
+   "note": "첫 공개: 에어라인 스킨 활주로 이착륙, 과속 카메라 500m 경고, 착륙 평점, 초기 세팅 방법 안내",
+   "page": "https://deolnureum.com/speedometer/",
+   "changes": "https://deolnureum.com/releases/"
+  },
   "pad": {
    "version": "0.2.2",
    "date": "2026.11.20",
