@@ -368,7 +368,7 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .rel-spots { position: relative; display: grid; }
 .rel-spots .rel-spot { grid-area: 1 / 1; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .45s ease, transform .45s ease, visibility 0s .45s; }
 .rel-spots .rel-spot.on { opacity: 1; visibility: visible; transform: none; transition: opacity .45s ease, transform .45s ease; }
-.rel-spot-dots { position: absolute; right: 14px; top: 12px; display: flex; gap: 5px; z-index: 2; }
+.rel-spot-dots { position: absolute; right: 14px; bottom: 16px; display: flex; gap: 5px; z-index: 2; }
 .rel-spot-dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 4px; background: rgba(239,227,204,.35); cursor: pointer; transition: width .25s, background .25s; }
 .rel-spot-dots button::before { content: ""; position: absolute; } 
 .rel-spot-dots button.on { width: 20px; background: #e2c483; }
@@ -2885,7 +2885,16 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <p>앱마다 지금 최신 버전이 무엇인지, 무엇이 고쳐졌는지 한곳에서 확인하세요. 새 버전이 나오면 가장 먼저 여기에 올립니다.</p>
         </div>
         <div class="rel-spots" id="relSpots" aria-roledescription="carousel" aria-label="덜누름 앱 소식">
-          <a class="rel-spot on" href="#app-tv" aria-label="덜누름 TV 자세히 보기">
+          <a class="rel-spot on" href="#app-speed" aria-label="대신남 스피드미터 자세히 보기">
+            <span class="rel-spot-img"><img src="media/spd-landing-poster.jpg" alt="대신남 스피드미터 실제 화면" loading="lazy"></span>
+            <span class="rel-spot-txt">
+              <small><i>NEW APP</i> 1.86 · 11.22</small>
+              <b>대신남 스피드미터</b>
+              <span>차가 달리면 조종석 계기판이 움직입니다. 에어라인 스킨 활주로 이착륙, 과속 카메라 경고, 착륙 평점까지.</span>
+              <em>자세히 보기 · 내려받기 →</em>
+            </span>
+          </a>
+          <a class="rel-spot" href="#app-tv" aria-label="덜누름 TV 자세히 보기" tabindex="-1" aria-hidden="true">
             <span class="rel-spot-img"><img src="media/app-tv.jpg?v=1118" alt="덜누름 TV 실제 화면: 유튜브 배너와 서비스 타일" loading="lazy"></span>
             <span class="rel-spot-txt">
               <small><i>NEW APP</i> 새로 공개</small>
@@ -2939,16 +2948,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
               <em>자세히 보기 · 받으러 가기 →</em>
             </span>
           </a>
-          <a class="rel-spot" href="#app-speed" aria-label="대신남 스피드미터 자세히 보기" tabindex="-1" aria-hidden="true">
-            <span class="rel-spot-img"><img src="media/spd-landing-poster.jpg" alt="대신남 스피드미터 실제 화면" loading="lazy"></span>
-            <span class="rel-spot-txt">
-              <small><i>개발 중</i> 공개 준비 중</small>
-              <b>대신남 스피드미터</b>
-              <span>차가 달리면 조종석 계기판이 움직입니다.</span>
-              <em>자세히 보기 · 알림받기 →</em>
-            </span>
-          </a>
-          <div class="rel-spot-dots" role="tablist" aria-label="소식 고르기"><button type="button" role="tab" aria-label="덜누름 TV" class="on" aria-selected="true"></button><button type="button" role="tab" aria-label="덜누름 패드"></button><button type="button" role="tab" aria-label="덜누름 워크"></button><button type="button" role="tab" aria-label="덜누름 브라우저"></button><button type="button" role="tab" aria-label="덜누름 게임"></button><button type="button" role="tab" aria-label="덜누름 데스크탑앱"></button><button type="button" role="tab" aria-label="대신남 스피드미터"></button></div>
+          <div class="rel-spot-dots" role="tablist" aria-label="소식 고르기"><button type="button" role="tab" aria-label="대신남 스피드미터" class="on" aria-selected="true"></button><button type="button" role="tab" aria-label="덜누름 TV"></button><button type="button" role="tab" aria-label="덜누름 패드"></button><button type="button" role="tab" aria-label="덜누름 워크"></button><button type="button" role="tab" aria-label="덜누름 브라우저"></button><button type="button" role="tab" aria-label="덜누름 게임"></button><button type="button" role="tab" aria-label="덜누름 데스크탑앱"></button></div>
         </div>
       </div>
     </div>
