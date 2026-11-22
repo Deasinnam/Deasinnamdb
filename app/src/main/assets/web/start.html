@@ -58,6 +58,12 @@ h1{font-size:30px;line-height:1.3;margin:22px 0 6px;letter-spacing:-.5px}
         <div class="d">폴드로 들어온 주문을 받고 처리합니다. 덱스로 모니터에 연결하면 큰 화면 · 터치로 주문판을 한눈에.</div>
         <div class="go">주문 받기 시작 →</div>
       </button>
+      <button class="card" id="pSub">
+        <div class="ic" style="background:var(--ok-soft)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2F9E44" stroke-width="2" stroke-linecap="round"><path d="M4 11h16M6 11V7a6 6 0 0 1 12 0v4M5 11l1 9h12l1-9"/></svg></div>
+        <div class="t">주방 · 보조 계산대로 쓰기</div>
+        <div class="d">메인 카운터와 같은 주문을 이 기기에서도 봅니다. 주방 요리대 화면, 두 번째 계산대 폰으로.</div>
+        <div class="go">메인 카운터에 연결 →</div>
+      </button>
     </div>
     <div class="flow card"><b>테이블 태블릿</b> 주문 → <b>와이파이</b> → <b>폴드 카운터</b> 알림 · 만드는 중 · 완료 → 손님 화면에 바로 표시</div>
   </section>
@@ -78,6 +84,24 @@ h1{font-size:30px;line-height:1.3;margin:22px 0 6px;letter-spacing:-.5px}
     <div class="bottom"><button class="btn ghost" id="back">처음으로</button><button class="btn pri big" id="startT" style="flex:1" disabled>이 테이블에서 주문 받기</button></div>
   </section>
 
+  <!-- 2-2. 서브 기기(주방 · 보조 계산대) -->
+  <section id="sub" class="hide step">
+    <h1>주방 · 보조 계산대 연결</h1>
+    <p class="lead">메인 카운터(사장님 폴드)의 <b>설정 › 주방 · 계산대 기기 › 기기 추가</b>를 누르면 6자리 코드가 나옵니다. 같은 와이파이에서 그 코드를 넣어 주세요.</p>
+    <h2>1. 메인 카운터 고르기</h2>
+    <div class="found" id="found2"><div class="row card"><div class="spin"></div><div class="tx"><b>와이파이에서 카운터를 찾는 중…</b><span>메인 카운터 화면이 켜져 있는지 확인해 주세요</span></div></div></div>
+    <div class="field" style="margin-top:12px"><label>또는 카운터 주소 직접 넣기</label>
+      <div style="display:flex;gap:10px"><input id="ipIn2" inputmode="decimal" placeholder="예: 192.168.0.5" style="flex:1"><button class="btn" id="ipBtn2">확인</button></div></div>
+    <h2>2. 이 기기의 쓰임</h2>
+    <div class="found" id="roles">
+      <button class="card sel" data-role="kitchen"><div style="font-size:26px">🍳</div><div class="tx"><div class="n">주방 화면</div><div class="muted">요리대에서 새 주문 · 만드는 중만 크게. 가격은 숨김</div></div></button>
+      <button class="card" data-role="counter"><div style="font-size:26px">🧾</div><div class="tx"><div class="n">보조 계산대</div><div class="muted">주문판 + 테이블 결제 완료 · 직원 호출 확인</div></div></button>
+    </div>
+    <div class="field" style="margin-top:14px"><label>기기 이름 (메인 카운터 목록에 보이는 이름)</label><input id="subName" maxlength="20" value="주방"></div>
+    <div class="field"><label>연결 코드 (6자리)</label><input id="subCode" inputmode="numeric" maxlength="6" placeholder="000000" style="font-size:26px;letter-spacing:8px;font-weight:800"></div>
+    <div class="bottom"><button class="btn ghost" id="back2">처음으로</button><button class="btn pri big" id="startS" style="flex:1" disabled>연결하기</button></div>
+  </section>
+
   <!-- 3. 연결이 끊겼을 때 -->
   <section id="lost" class="hide lost">
     <div class="spin"></div>
@@ -90,7 +114,8 @@ h1{font-size:30px;line-height:1.3;margin:22px 0 6px;letter-spacing:-.5px}
 var $=function(id){return document.getElementById(id)};
 var T=window.TO||null;
 var host="",table=1,kiosk=true,tries=0;
-function show(id){["home","setup","lost"].forEach(function(k){$(k).classList.toggle("hide",k!==id)})}
+var role="kitchen";
+function show(id){["home","setup","sub","lost"].forEach(function(k){$(k).classList.toggle("hide",k!==id)})}
 function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},2600)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
@@ -101,13 +126,13 @@ window.onFound=function(o){
   if(!host) host=o.host;
   drawFound();
 };
-window.onFindFail=function(){ $("found").innerHTML='<div class="row card"><div class="tx"><b>자동으로 찾지 못했습니다</b><span>아래에 카운터 주소를 직접 넣어 주세요</span></div></div>'; };
+window.onFindFail=function(){ $("found2").innerHTML=$("found").innerHTML='<div class="row card"><div class="tx"><b>자동으로 찾지 못했습니다</b><span>아래에 카운터 주소를 직접 넣어 주세요</span></div></div>'; };
 function drawFound(){
   var h="";
   for(var k in hosts) h+='<button class="card'+(k===host?" sel":"")+'" data-h="'+esc(k)+'"><div style="font-size:26px">🏪</div><div class="tx"><div class="n">'+esc(hosts[k])+'</div><div class="muted">'+esc(k)+'</div></div></button>';
-  $("found").innerHTML=h;
-  [].forEach.call($("found").querySelectorAll("button"),function(b){b.onclick=function(){host=b.getAttribute("data-h");drawFound()}});
-  $("startT").disabled=!host;
+  $("found").innerHTML=h;$("found2").innerHTML=h;
+  [].forEach.call(document.querySelectorAll("#found button,#found2 button"),function(b){b.onclick=function(){host=b.getAttribute("data-h");drawFound()}});
+  $("startT").disabled=!host;$("startS").disabled=!host;
 }
 function drawTables(){
   var h="";for(var i=1;i<=30;i++)h+='<button data-t="'+i+'"'+(i===table?' class="sel"':'')+'>'+i+'</button>';
@@ -117,6 +142,24 @@ function drawTables(){
 $("pCounter").onclick=function(){ if(T) T.useCounter(); else toast("앱 안에서만 쓸 수 있어요"); };
 $("pTable").onclick=function(){ location.hash="#setup"; route(); };
 $("back").onclick=function(){ if(T)T.stopFind(); location.hash=""; route(); };
+$("pSub").onclick=function(){ location.hash="#sub"; route(); };
+$("back2").onclick=function(){ if(T)T.stopFind(); location.hash=""; route(); };
+[].forEach.call($("roles").querySelectorAll("button"),function(b){b.onclick=function(){
+  role=b.getAttribute("data-role");
+  [].forEach.call($("roles").querySelectorAll("button"),function(x){x.classList.toggle("sel",x===b)});
+  var n=$("subName");if(n.value==="주방"||n.value==="계산대 2")n.value=role==="kitchen"?"주방":"계산대 2";
+}});
+$("ipBtn2").onclick=function(){
+  var ip=$("ipIn2").value.trim(); if(!/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)){toast("주소를 숫자로 넣어 주세요 (예: 192.168.0.5)");return}
+  var shop=T?T.check(ip):""; if(!shop){toast("그 주소에서 카운터를 찾지 못했습니다");return}
+  hosts[ip]=shop; host=ip; drawFound(); toast(shop+" 연결 확인");
+};
+$("startS").onclick=function(){
+  var c=$("subCode").value.trim(); if(!/^\d{6}$/.test(c)){toast("메인 카운터에 나온 6자리 코드를 넣어 주세요");return}
+  if(!T){toast("앱 안에서만 쓸 수 있어요");return}
+  var b=this;b.disabled=true;b.textContent="연결하는 중…";
+  setTimeout(function(){var err=T.pair(host,c,$("subName").value,role);if(err){toast(err);b.disabled=false;b.textContent="연결하기"}},30);
+};
 $("kiosk").onclick=function(){kiosk=!kiosk;this.classList.toggle("on",kiosk)};
 $("ipBtn").onclick=function(){
   var ip=$("ipIn").value.trim(); if(!/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)){toast("주소를 숫자로 넣어 주세요 (예: 192.168.0.5)");return}
@@ -138,6 +181,7 @@ function lostLoop(){
 function route(){
   var h=location.hash;
   if(h==="#setup"){ show("setup"); drawTables(); if(T){ if(T.table) table=T.table(); drawTables(); T.find(); } }
+  else if(h==="#sub"){ show("sub"); if(T) T.find(); }
   else if(h==="#lost"){ show("lost"); if(T) T.find(); tries=0; setTimeout(lostLoop,1500); }
   else show("home");
 }

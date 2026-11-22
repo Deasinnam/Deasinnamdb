@@ -32,7 +32,7 @@ import java.security.SecureRandom;
  */
 public class OrderService extends Service implements OrderServer.Listener {
     static final String NSD_TYPE = "_deoltable._tcp.";
-    private static final String CH_RUN = "running", CH_ORDER = "orders";
+    private static final String CH_RUN = "running", CH_ORDER = "orders_bell";
     private static final int ID_RUN = 1;
 
     static volatile Store store;
@@ -87,8 +87,10 @@ public class OrderService extends Service implements OrderServer.Listener {
         NotificationManager nm = getSystemService(NotificationManager.class);
         if (Build.VERSION.SDK_INT >= 26 && nm != null) {
             nm.createNotificationChannel(new NotificationChannel(CH_RUN, "주문 받는 중", NotificationManager.IMPORTANCE_MIN));
+            try { nm.deleteNotificationChannel("orders"); } catch (Exception ignored) { } // 0.1 채널(기본 알림음) 정리
             NotificationChannel ch = new NotificationChannel(CH_ORDER, "새 주문 · 직원 호출", NotificationManager.IMPORTANCE_HIGH);
             ch.enableVibration(true);
+            ch.setSound(null, null); // 소리는 알림벨 설정으로 따로 울림
             nm.createNotificationChannel(ch);
         }
     }
@@ -105,6 +107,7 @@ public class OrderService extends Service implements OrderServer.Listener {
         if (server == null) {
             server = new OrderServer(getAssets(), store(this), imgDir(this), key(this), this);
             server.ai = new AiImage(this, imgDir(this));
+            server.devices = new Devices(this);
             try {
                 server.start();
                 running = true;
@@ -191,13 +194,39 @@ public class OrderService extends Service implements OrderServer.Listener {
         try {
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm != null) nm.notify(orderNotiId++ % 1000 + 100, build(CH_ORDER, title, text, true));
-            boolean sound = true;
-            try { sound = store(this).adminView().getJSONObject("settings").optBoolean("sound", true); } catch (Exception ignored) { }
-            if (sound && !MainActivity.foreground) {
-                ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 90);
-                tg.startTone(ToneGenerator.TONE_PROP_BEEP2, 400);
-            }
+            JSONObject st = null;
+            try { st = store(this).adminView().getJSONObject("settings"); } catch (Exception ignored) { }
+            boolean sound = st == null || st.optBoolean("sound", true);
+            if (sound && !MainActivity.foreground) ring(st); // 앱 화면이 켜져 있으면 화면이 직접 울림
         } catch (Exception ignored) {
+        }
+    }
+
+    /** 알림벨 울리기(기본 소리 또는 사장님이 올린 소리, 설정한 횟수만큼) */
+    private android.media.MediaPlayer player;
+    private void ring(JSONObject st) {
+        try {
+            if (player != null) { player.release(); player = null; }
+            String bell = st == null ? "dingdong" : st.optString("bell", "dingdong");
+            final int[] left = {st == null ? 2 : Math.max(1, Math.min(3, st.optInt("bellRepeat", 2)))};
+            android.media.MediaPlayer mp = new android.media.MediaPlayer();
+            mp.setAudioAttributes(new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+            String custom = st == null ? "" : st.optString("bellCustom");
+            File cf = custom.startsWith("/sndc/") ? new File(new File(getFilesDir(), "snd"), custom.substring(6)) : null;
+            if ("custom".equals(bell) && cf != null && cf.isFile()) mp.setDataSource(cf.getPath());
+            else {
+                String name = "custom".equals(bell) ? "dingdong" : bell;
+                android.content.res.AssetFileDescriptor fd = getAssets().openFd("web/snd/" + name + ".wav");
+                mp.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+                fd.close();
+            }
+            mp.setOnCompletionListener(m -> { if (--left[0] > 0) m.start(); else { m.release(); if (player == m) player = null; } });
+            mp.prepare();
+            mp.start();
+            player = mp;
+        } catch (Exception e) {
+            try { new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 90).startTone(ToneGenerator.TONE_PROP_BEEP2, 400); } catch (Exception ignored) { }
         }
     }
 

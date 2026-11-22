@@ -57,7 +57,8 @@ public class MainActivity extends Activity {
     static final String TAG = "TableOrder";
     static final String SELFTEST_TAG = "TO_SELFTEST";
     static volatile boolean foreground;
-    private static volatile boolean selftestStarted; // 화면이 다시 만들어져도 점검은 한 번만
+    private static volatile boolean selftestStarted;
+    private volatile String kitchenToken = ""; // 화면이 다시 만들어져도 점검은 한 번만
 
     private WebView web;
     private SharedPreferences prefs;
@@ -104,7 +105,7 @@ public class MainActivity extends Activity {
             public void onReceivedError(WebView v, WebResourceRequest r, WebResourceError e) {
                 if (!r.isForMainFrame()) return;
                 // 카운터를 못 찾음(꺼짐 · 와이파이 바뀜) → 다시 찾는 화면으로
-                if ("table".equals(mode())) load("file:///android_asset/web/start.html#lost");
+                if ("table".equals(mode()) || "sub".equals(mode())) load("file:///android_asset/web/start.html#lost");
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
@@ -151,6 +152,8 @@ public class MainActivity extends Activity {
                 requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 3);
             OrderService.start(this);
             waitServerThen(() -> load("http://127.0.0.1:" + OrderServer.PORT + "/admin.html"));
+        } else if ("sub".equals(m) && !prefs.getString("host", "").isEmpty()) { // 서브 기기: 메인 카운터의 주문판을 그대로
+            load("http://" + prefs.getString("host", "") + ":" + OrderServer.PORT + "/admin.html");
         } else if ("table".equals(m) && !prefs.getString("host", "").isEmpty()) {
             load("http://" + prefs.getString("host", "") + ":" + OrderServer.PORT + "/table.html?t=" + prefs.getInt("table", 1));
             if (prefs.getBoolean("kiosk", false)) kiosk(true);
@@ -312,7 +315,38 @@ public class MainActivity extends Activity {
         }
 
         /** 사장님 화면 열쇠: 이 기기 안의 카운터 화면에만 줌 */
-        @JavascriptInterface public String key() { return currentUrl.startsWith("http://127.0.0.1:") ? OrderService.key(MainActivity.this) : ""; }
+        @JavascriptInterface public String key() {
+            if (currentUrl.startsWith("http://127.0.0.1:")) return OrderService.key(MainActivity.this);
+            String h = prefs.getString("host", "");
+            if ("sub".equals(MainActivity.this.mode()) && !h.isEmpty() && currentUrl.startsWith("http://" + h + ":")) return prefs.getString("subToken", "");
+            return "";
+        }
+
+        /** 서브 기기로 연결(주방 · 계산대): 성공하면 "" , 실패하면 이유 */
+        @JavascriptInterface public String pair(String host, String code, String name, String role) {
+            if (!local() || host == null || !host.matches("[0-9.]{7,15}")) return "주소가 올바르지 않아요";
+            try {
+                String r = http("POST", "http://" + host + ":" + OrderServer.PORT + "/api/pair", new JSONObject().put("code", code).put("name", name).put("role", role).toString(), null);
+                if (r == null) return "카운터에 닿지 않았어요. 같은 와이파이인지 확인해 주세요";
+                if (r.startsWith("ERR")) { try { return new JSONObject(r.substring(r.indexOf('{'))).optString("error", "연결하지 못했어요"); } catch (Exception e) { return "연결하지 못했어요"; } }
+                JSONObject j = new JSONObject(r);
+                prefs.edit().putString("mode", "sub").putString("host", host).putString("subToken", j.getString("token"))
+                        .putString("subRole", j.optString("role")).putString("subName", j.optString("name")).apply();
+                ui.post(MainActivity.this::go);
+                return "";
+            } catch (Exception e) {
+                return "연결하지 못했어요";
+            }
+        }
+
+        /** 서브 기기 연결 끊고 처음 화면으로 */
+        @JavascriptInterface public void leaveSub() {
+            if (!"sub".equals(MainActivity.this.mode())) return;
+            prefs.edit().putString("mode", "").remove("subToken").apply();
+            load("file:///android_asset/web/start.html");
+        }
+
+        @JavascriptInterface public boolean isSub() { return "sub".equals(MainActivity.this.mode()); }
 
         @JavascriptInterface public String ip() { return lanIp(); }
 
@@ -363,14 +397,14 @@ public class MainActivity extends Activity {
         }
 
         /** 카운터를 오래 못 찾으면 다시 찾는 화면으로 */
-        @JavascriptInterface public void lost() { if ("table".equals(MainActivity.this.mode())) load("file:///android_asset/web/start.html#lost"); }
+        @JavascriptInterface public void lost() { if ("table".equals(MainActivity.this.mode()) || "sub".equals(MainActivity.this.mode())) load("file:///android_asset/web/start.html#lost"); }
 
         /** 저장된 카운터로 다시(연결 끊겼을 때) */
         @JavascriptInterface public String savedHost() { return prefs.getString("host", ""); }
 
         @JavascriptInterface public void reconnect(String host) {
             if (!local()) return;
-            if (host != null && host.matches("[0-9.]{7,15}")) prefs.edit().putString("host", host).putString("mode", "table").apply();
+            if (host != null && host.matches("[0-9.]{7,15}")) prefs.edit().putString("host", host).putString("mode", "sub".equals(MainActivity.this.mode()) ? "sub" : "table").apply();
             ui.post(MainActivity.this::go);
         }
 
@@ -489,6 +523,51 @@ public class MainActivity extends Activity {
                 String off = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"아메리카노 사진\"}", key);
                 check(off != null && off.startsWith("ERR 400") && off.contains("연동"), "ai off needs connect");
 
+                // 주방 · 보조 계산대(서브 기기) 연결
+                String wrong = http("POST", base + "/api/pair", "{\"code\":\"000000\",\"role\":\"kitchen\"}", null);
+                check(wrong != null && wrong.startsWith("ERR 400"), "pair needs code");
+                String code = new JSONObject(http("POST", base + "/api/admin/devices/code", "{}", key)).getString("code");
+                JSONObject kit = new JSONObject(http("POST", base + "/api/pair", new JSONObject().put("code", code).put("name", "주방").put("role", "kitchen").toString(), null));
+                String reuse = http("POST", base + "/api/pair", new JSONObject().put("code", code).put("role", "counter").toString(), null);
+                String code2 = new JSONObject(http("POST", base + "/api/admin/devices/code", "{}", key)).getString("code");
+                JSONObject cnt = new JSONObject(http("POST", base + "/api/pair", new JSONObject().put("code", code2).put("name", "계산대 2").put("role", "counter").toString(), null));
+                String kt = kit.getString("token"), ct = cnt.getString("token");
+                JSONObject kv = new JSONObject(http("GET", base + "/api/admin", null, kt));
+                check("kitchen".equals(kv.getJSONObject("me").getString("role")) && kv.getJSONArray("orders").length() == new JSONObject(http("GET", base + "/api/admin", null, key)).getJSONArray("orders").length() && reuse.startsWith("ERR 400"), "kitchen sees same orders");
+                String o5 = null;
+                for (int i = 0; i < kv.getJSONArray("orders").length(); i++) if (kv.getJSONArray("orders").getJSONObject(i).getInt("table") == 5) o5 = kv.getJSONArray("orders").getJSONObject(i).getString("id");
+                String ks = http("POST", base + "/api/admin/status", new JSONObject().put("id", o5).put("status", "cooking").toString(), kt);
+                String km = http("POST", base + "/api/admin/menu", "{\"categories\":[],\"items\":[]}", kt);
+                String kc = http("POST", base + "/api/admin/clear", "{\"table\":5}", kt);
+                check(ks != null && !ks.startsWith("ERR") && km.startsWith("ERR 403") && kc.startsWith("ERR 403"), "kitchen can cook, not edit menu or pay");
+                String cc = http("POST", base + "/api/admin/clear", "{\"table\":1}", ct);
+                String cs = http("POST", base + "/api/admin/settings", "{\"shop\":\"x\"}", ct);
+                check(cc != null && !cc.startsWith("ERR") && cs.startsWith("ERR 403"), "counter2 can pay, not change settings");
+                JSONArray devs = new JSONObject(http("GET", base + "/api/admin/devices", null, key)).getJSONArray("devices");
+                check(devs.length() >= 2 && !devs.toString().contains(kt), "device list hides tokens");
+                for (int i = 0; i < devs.length(); i++) if ("계산대 2".equals(devs.getJSONObject(i).optString("name")))
+                    http("POST", base + "/api/admin/devices/remove", new JSONObject().put("id", devs.getJSONObject(i).getString("id")).toString(), key);
+                String gone = http("GET", base + "/api/admin", null, ct);
+                check(gone != null && gone.startsWith("ERR 403"), "removed device blocked");
+
+                // 알림벨: 기본 소리 · 내 소리 올리기
+                HttpURLConnection sw = (HttpURLConnection) new URL(base + "/snd/chime.wav").openConnection();
+                check(sw.getResponseCode() == 200 && "audio/wav".equals(sw.getContentType()) && sw.getContentLength() > 10000, "bell sound served");
+                byte[] fake = new byte[4000];
+                fake[0] = 'R'; fake[1] = 'I'; fake[2] = 'F'; fake[3] = 'F';
+                HttpURLConnection up2 = (HttpURLConnection) new URL(base + "/api/admin/sound").openConnection();
+                up2.setDoOutput(true); up2.setRequestMethod("POST"); up2.setRequestProperty("X-Key", key); up2.setRequestProperty("X-Ext", "wav");
+                try (OutputStream o = up2.getOutputStream()) { o.write(fake); }
+                String sf = new JSONObject(new String(OrderServer.readAll(up2.getInputStream()), StandardCharsets.UTF_8)).getString("file");
+                http("POST", base + "/api/admin/settings", new JSONObject().put("bell", "custom").put("bellCustom", sf).put("bellRepeat", 3).toString(), key);
+                JSONObject bs = new JSONObject(http("GET", base + "/api/admin", null, kt)).getJSONObject("settings");
+                HttpURLConnection sg = (HttpURLConnection) new URL(base + sf).openConnection();
+                check("custom".equals(bs.optString("bell")) && sf.equals(bs.optString("bellCustom")) && bs.optInt("bellRepeat") == 3 && sg.getResponseCode() == 200, "custom bell saved and shared");
+                String badSnd = http("POST", base + "/api/admin/sound", "{}", kt);
+                check(badSnd != null && badSnd.startsWith("ERR 403"), "only main uploads bell");
+                http("POST", base + "/api/admin/settings", "{\"bell\":\"dingdong\",\"bellRepeat\":2}", key);
+                kitchenToken = kt;
+
                 // 와이파이 찾기(에뮬레이터에서는 안 될 수 있어 기록만)
                 final String[] found = {null};
                 ui.post(() -> {
@@ -545,6 +624,15 @@ public class MainActivity extends Activity {
                 st("SHOT detail");
                 Thread.sleep(7000);
                 http("POST", base + "/api/admin/settings", "{\"skin\":\"premium\"}", key);
+                String lan2 = lanIp();
+                if (!lan2.isEmpty() && !kitchenToken.isEmpty()) { // 주방 화면(LAN 주소로 열어 사장님 열쇠 대신 주방 열쇠를 씀)
+                    load("http://" + lan2 + ":" + OrderServer.PORT + "/admin.html#key=" + kitchenToken);
+                    Thread.sleep(5000);
+                    probe("kitchen", "JSON.stringify({loaded:document.body.classList.contains('kitchen')&&document.querySelectorAll('.od').length>0})");
+                    Thread.sleep(1000);
+                    st("SHOT kitchen");
+                    Thread.sleep(7000);
+                }
                 load("file:///android_asset/web/start.html");
                 Thread.sleep(4000);
                 st("SHOT start");

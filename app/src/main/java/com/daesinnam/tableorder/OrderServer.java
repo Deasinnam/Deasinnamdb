@@ -43,6 +43,7 @@ final class OrderServer {
     private final Listener listener;
     private final ExecutorService pool = Executors.newFixedThreadPool(48);
     volatile AiImage ai; // AI와 연동하기(없으면 꺼짐)
+    volatile Devices devices; // 서브 기기(주방 · 보조 계산대)
     private ServerSocket server;
     private volatile boolean running;
 
@@ -139,11 +140,30 @@ final class OrderServer {
                 return;
             }
             if (path.startsWith("/img/")) { image(out, path.substring(5)); return; }
+            if (path.startsWith("/sndc/")) { customSound(out, path.substring(6)); return; } // 사장님이 올린 알림벨
+            if (path.equals("/api/pair") && "POST".equals(method)) { // 서브 기기 연결(6자리 코드)
+                if (devices == null) throw new IllegalArgumentException("이 카운터는 서브 기기를 받지 않아요");
+                JSONObject b = new JSONObject(str(body));
+                JSONObject d = devices.pair(b.optString("code"), b.optString("name"), b.optString("role"));
+                json(out, new JSONObject().put("ok", true).put("token", d.getString("token")).put("role", d.getString("role")).put("name", d.getString("name"))
+                        .put("shop", store.tableView(0).optString("shop")));
+                return;
+            }
 
             // ----- 사장님(카운터) -----
             if (path.startsWith("/api/admin")) {
-                if (!key.equals(h.get("x-key"))) { send(out, 403, "application/json", bytes("{\"ok\":false,\"error\":\"열쇠가 맞지 않습니다\"}")); return; }
+                String given = h.get("x-key");
+                JSONObject dev = null; // null = 메인 카운터(모든 권한)
+                if (!key.equals(given)) {
+                    dev = devices == null ? null : devices.auth(given);
+                    if (dev == null) { send(out, 403, "application/json", bytes("{\"ok\":false,\"error\":\"열쇠가 맞지 않거나 연결이 끊긴 기기예요\"}")); return; }
+                }
                 String a = path.substring("/api/admin".length());
+                String role = dev == null ? "main" : dev.optString("role");
+                // 서브 기기가 할 수 있는 일: 주문 보기 · 상태 바꾸기 · 호출 확인(+계산대는 테이블 결제)
+                boolean allowed = dev == null || a.equals("") || a.equals("/") || a.equals("/status") || a.equals("/call-done")
+                        || (a.equals("/clear") && Devices.COUNTER.equals(role));
+                if (!allowed) { send(out, 403, "application/json", bytes("{\"ok\":false,\"error\":\"이 기기에서는 할 수 없어요. 메인 카운터에서 해 주세요\"}")); return; }
                 if (a.equals("/image") && "POST".equals(method)) { // 메뉴 사진(화면에서 줄인 JPEG)
                     if (body.length < 100 || body.length > 3 * 1024 * 1024 || (body[0] & 0xff) != 0xFF || (body[1] & 0xff) != 0xD8) throw new IllegalArgumentException("사진을 읽지 못했습니다");
                     String name = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 16) + ".jpg";
@@ -151,13 +171,37 @@ final class OrderServer {
                     json(out, new JSONObject().put("ok", true).put("img", "/img/" + name));
                     return;
                 }
+                if (a.equals("/sound") && "POST".equals(method)) { // 내 알림벨 올리기(mp3 · wav · ogg · m4a, 3MB까지)
+                    String ext = h.getOrDefault("x-ext", "").toLowerCase(Locale.ROOT);
+                    if (!ext.matches("mp3|wav|ogg|m4a|aac")) throw new IllegalArgumentException("mp3 · wav · ogg · m4a 소리 파일만 쓸 수 있어요");
+                    if (body.length < 500 || body.length > 3 * 1024 * 1024) throw new IllegalArgumentException("소리 파일이 너무 작거나 커요(3MB까지)");
+                    File dir = soundDir();
+                    File[] old = dir.listFiles();
+                    if (old != null && old.length > 8) for (File f : old) if (!f.getName().equals(store.adminView().getJSONObject("settings").optString("bellCustom").replace("/sndc/", ""))) f.delete();
+                    String name = "bell" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10) + "." + ext;
+                    try (java.io.FileOutputStream fo = new java.io.FileOutputStream(new File(dir, name))) { fo.write(body); }
+                    json(out, new JSONObject().put("ok", true).put("file", "/sndc/" + name));
+                    return;
+                }
                 if (a.equals("") || a.equals("/")) {
                     long known = parseLong(qs.get("rev"));
                     if (known > 0) store.waitChange(known, 20_000);
-                    json(out, store.adminView());
+                    JSONObject v = store.adminView();
+                    v.put("me", new JSONObject().put("role", role).put("name", dev == null ? "메인 카운터" : dev.optString("name")));
+                    if (dev != null) v.getJSONObject("settings").remove("adminPin");
+                    json(out, v);
                     return;
                 }
                 JSONObject b = body.length > 0 ? new JSONObject(str(body)) : new JSONObject();
+                if (a.startsWith("/devices")) { // 메인 전용: 서브 기기 연결 코드 · 목록 · 끊기
+                    if (devices == null) throw new IllegalArgumentException("서브 기기를 쓸 수 없어요");
+                    switch (a) {
+                        case "/devices": json(out, new JSONObject().put("ok", true).put("devices", devices.list()).put("codeActive", devices.codeActive())); return;
+                        case "/devices/code": json(out, devices.newCode().put("ok", true)); return;
+                        case "/devices/remove": devices.remove(b.optString("id")); json(out, new JSONObject().put("ok", true)); return;
+                        default: send(out, 404, "text/plain", bytes("없음")); return;
+                    }
+                }
                 if (a.startsWith("/ai")) { // AI와 연동하기: 연결 정보 · 연결 확인 · 메뉴 사진 만들기
                     if (ai == null) throw new IllegalArgumentException("이 기기에서는 AI 연동을 쓸 수 없어요");
                     switch (a) {
@@ -205,6 +249,15 @@ final class OrderServer {
         }
     }
 
+    File soundDir() { File d = new File(imgDir.getParentFile(), "snd"); if (!d.isDirectory()) d.mkdirs(); return d; }
+
+    private void customSound(OutputStream out, String name) throws IOException {
+        if (!name.matches("[A-Za-z0-9_-]{1,40}\\.(mp3|wav|ogg|m4a|aac)")) { send(out, 404, "text/plain", bytes("없음")); return; }
+        File f = new File(soundDir(), name);
+        if (!f.isFile()) { send(out, 404, "text/plain", bytes("없음")); return; }
+        try (InputStream in = new FileInputStream(f)) { send(out, 200, mime(name), readAll(in), "public, max-age=604800"); }
+    }
+
     private void image(OutputStream out, String name) throws IOException {
         if (!name.matches("[A-Za-z0-9_-]{1,40}\\.jpg")) { send(out, 404, "text/plain", bytes("없음")); return; }
         File f = new File(imgDir, name);
@@ -242,6 +295,9 @@ final class OrderServer {
         if (n.endsWith(".svg")) return "image/svg+xml";
         if (n.endsWith(".png")) return "image/png";
         if (n.endsWith(".mp3")) return "audio/mpeg";
+        if (n.endsWith(".wav")) return "audio/wav";
+        if (n.endsWith(".ogg")) return "audio/ogg";
+        if (n.endsWith(".m4a") || n.endsWith(".aac")) return "audio/mp4";
         return "application/octet-stream";
     }
 

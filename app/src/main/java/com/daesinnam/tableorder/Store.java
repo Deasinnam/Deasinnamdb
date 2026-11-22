@@ -224,6 +224,10 @@ final class Store {
         if (in.has("notice")) st.put("notice", clip(in.optString("notice"), 80));
         if (in.has("sound")) st.put("sound", in.optBoolean("sound", true));
         if (in.has("skin")) st.put("skin", skin(in.optString("skin")));
+        if (in.has("bell")) st.put("bell", bell(in.optString("bell")));
+        if (in.has("bellRepeat")) st.put("bellRepeat", Math.max(1, Math.min(3, in.optInt("bellRepeat", 2))));
+        if (in.has("bellCustom")) { String c = in.optString("bellCustom"); st.put("bellCustom", c.matches("/sndc/[A-Za-z0-9_-]{1,40}\\.(mp3|wav|ogg|m4a|aac)") ? c : ""); }
+        if (in.has("bellCustomName")) st.put("bellCustomName", clip(in.optString("bellCustomName"), 40));
         changed();
     }
 
@@ -288,12 +292,17 @@ final class Store {
             JSONObject st = s.getJSONObject("settings");
             if (!st.has("shop")) st.put("shop", "우리 가게");
             if (!st.has("tables")) st.put("tables", 8);
-            if (!st.has("skin")) st.put("skin", "premium"); // 처음 설치 · 이전 버전 모두 기본 스킨부터(메뉴 · 주문은 그대로)
+            if (!st.has("skin")) st.put("skin", "premium");
+            if (!st.has("bell")) st.put("bell", "dingdong");
+            if (!st.has("bellRepeat")) st.put("bellRepeat", 2); // 처음 설치 · 이전 버전 모두 기본 스킨부터(메뉴 · 주문은 그대로)
         } catch (JSONException ignored) {
         }
     }
 
     /** 스킨: premium(기본) · cafe(카페) · korean(한식). 모르는 값은 기본으로 */
+    /** 알림벨: dingdong(기본) · bell · chime · beep · custom(사장님이 올린 소리) */
+    static String bell(String v) { return v != null && v.matches("bell|chime|beep|custom") ? v : "dingdong"; }
+
     static String skin(String v) { return "cafe".equals(v) || "korean".equals(v) ? v : "premium"; }
 
     static String today() { return new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(new Date()); }

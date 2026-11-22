@@ -1,6 +1,7 @@
 plugins { id 'com.android.application' }
 
 android {
+    androidResources { noCompress "wav" }
     namespace 'com.daesinnam.tableorder'
     compileSdk 35
 
@@ -9,8 +10,8 @@ android {
         // 서랍 속 오래된 태블릿도 테이블 주문기로 쓰도록 안드로이드 7부터
         minSdk 24
         targetSdk 35
-        versionCode 4
-        versionName "0.2"
+        versionCode 5
+        versionName "0.3"
     }
 
     buildFeatures { buildConfig true }

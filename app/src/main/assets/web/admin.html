@@ -104,6 +104,32 @@ html,body{overflow:hidden}
 .chip.sold.on{background:var(--bad);color:#fff}
 .chip.best.on{background:var(--accent);color:#fff}
 .savebar{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;justify-content:flex-end;padding:12px 0;background:linear-gradient(transparent,var(--bg) 30%)}
+/* 서브 기기 */
+body.sub .tab[data-v=menu]{display:none}
+body.kitchen .tab[data-v=tables]{display:none}
+body.kitchen .kpi{display:none}
+body.kitchen .od .f .sum{visibility:hidden}
+body.kitchen .board .col.c-done{display:none}
+body.kitchen .seg button[data-s=done]{display:none}
+body.kitchen .od [data-a=canceled]{display:none}
+body.kitchen .od .l{font-size:24px;padding:7px 0}
+body.kitchen .od .l b{font-size:24px;min-width:42px}
+body.kitchen .od .t{font-size:34px}
+body.kitchen .od .note{font-size:20px}
+.whoami{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-weight:800;font-size:14px;white-space:nowrap}
+.devs .dv{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.devs .dv .ic{width:44px;height:44px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px}
+.devs .dv .tx{flex:1}
+.devs .dv .tx b{display:block;font-size:17px}
+.devs .dv .tx span{font-size:13px;color:var(--sub)}
+.pcode{font-size:64px;font-weight:900;letter-spacing:14px;text-align:center;margin:14px 0 6px;font-variant-numeric:tabular-nums}
+.bells{display:flex;flex-wrap:wrap;gap:10px}
+.bl{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-radius:14px;border:2px solid var(--line);background:#fff;font-weight:800}
+.bl.on{border-color:#1D1B18;background:#F4F2EE}
+.bl .pl{width:36px;height:36px;border-radius:50%;background:var(--soft);font-size:14px}
+.reps{display:flex;gap:8px;margin-top:12px;align-items:center}
+.reps button{min-height:40px;padding:0 14px;border-radius:999px;background:var(--soft);font-weight:800}
+.reps button.on{background:#1D1B18;color:#fff}
 /* 스킨 미리보기 */
 .skins{display:flex;gap:14px;flex-wrap:wrap}
 .sk{flex:1 1 200px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;border-radius:18px;border:2.5px solid var(--line);padding:10px;background:#fff;position:relative}
@@ -175,7 +201,7 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
   <div class="body">
     <div class="top">
       <div class="shop" id="shop">카운터</div>
-      <div class="ip" id="ip"></div>
+      <div class="ip" id="ip"></div><span class="whoami hide" id="who"></span>
       <div class="sp"></div>
       <div class="kpi"><div class="hide-n"><small>오늘 주문</small><b id="kCnt">0건</b></div><div><small>오늘 매출</small><b id="kSum">0원</b></div></div>
       <div class="clock" id="clock"></div>
@@ -209,13 +235,27 @@ function api(m,path,body,cb,raw,timeout){var x=new XMLHttpRequest();x.open(m,pat
 function ago(t){var m=Math.floor((Date.now()-t)/60000);return m<1?"방금":m+"분 전"}
 function modal(html){$("modal").innerHTML=html?'<div class="modal"><div class="box">'+html+'</div></div>':"";if(html){var bg=$("modal").firstChild;bg.onclick=function(e){if(e.target===bg)modal()}}}
 
-// ----- 소리 -----
-var actx=null;
+// ----- 알림벨: 새 주문 · 직원 호출 때 울림(기본 소리 4가지 + 사장님이 올린 소리) -----
+var BELLS=[{id:"dingdong",name:"딩동",src:"/snd/dingdong.wav"},{id:"bell",name:"종소리",src:"/snd/bell.wav"},{id:"chime",name:"차임",src:"/snd/chime.wav"},{id:"beep",name:"삐삐",src:"/snd/beep.wav"}];
+var bellAudio=null;
+function bellSrc(st,id){
+  id=id||st.bell||"dingdong";
+  if(id==="custom"&&st.bellCustom)return st.bellCustom;
+  for(var i=0;i<BELLS.length;i++)if(BELLS[i].id===id)return BELLS[i].src;
+  return BELLS[0].src;
+}
+function playBell(src,times){
+  try{
+    if(bellAudio){bellAudio.pause();bellAudio=null}
+    var a=new Audio(src),left=Math.max(1,times||1);bellAudio=a;
+    a.onended=function(){if(--left>0){a.currentTime=0;a.play()}};
+    var p=a.play();if(p&&p.catch)p.catch(function(){if(T&&T.beep)T.beep()});
+  }catch(e){if(T&&T.beep)T.beep()}
+}
 function ding(){
-  if(D&&D.settings&&D.settings.sound===false)return;
-  if(T&&T.beep){T.beep();return}
-  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
-    [0,0.18].forEach(function(t,i){var o=actx.createOscillator(),g=actx.createGain();o.frequency.value=i?1320:880;g.gain.setValueAtTime(.25,actx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+t+.35);o.connect(g);g.connect(actx.destination);o.start(actx.currentTime+t);o.stop(actx.currentTime+t+.4)})}catch(e){}
+  var st=(D&&D.settings)||{};
+  if(st.sound===false)return;
+  playBell(bellSrc(st),st.bellRepeat||2);
 }
 
 // ----- 불러오기(바뀌면 바로) -----
@@ -225,22 +265,37 @@ function poll(){
       var fresh=[],newCall=false;
       (j.orders||[]).forEach(function(o){if(!seen[o.id]){seen[o.id]=1;if(!firstLoad)fresh.push(o.id)}});
       (j.calls||[]).forEach(function(c){if(!seen[c.id]){seen[c.id]=1;if(!firstLoad)newCall=true}});
-      D=j;REV=j.rev;firstLoad=false;
+      D=j;REV=j.rev;firstLoad=false;pollFails=0;applyRole();
+      if(!aiTried&&ROLE==="main"){aiTried=true;aiLoad(function(){if(view==="menu"&&!menuDirty)drawMenu()})}
       if(!menuDirty)menu=null;
       draw(fresh);
       if(fresh.length||newCall){ding();if(T&&T.vibrate)T.vibrate(300)}
       setTimeout(poll,30);
     } else if(st===403){ noKey(); }
-    else setTimeout(poll,2000);
+    else { pollFails=(pollFails||0)+1; if(pollFails>6&&T&&T.isSub&&T.isSub()&&T.lost){T.lost();return} setTimeout(poll,2000); }
   },null,30000);
 }
-function noKey(){$("app").innerHTML='<div class="nokey card"><h2>열쇠가 맞지 않습니다</h2><p class="muted">이 화면은 카운터 기기(사장님 폴드)에서 열거나, 카운터 설정의 "다른 화면에서 열기" 주소로 열어 주세요.</p></div>'}
+function noKey(){
+  if(T&&T.isSub&&T.isSub()){$("app").innerHTML='<div class="nokey card"><h2>메인 카운터에서 이 기기 연결이 끊겼어요</h2><p class="muted">다시 쓰려면 메인 카운터의 설정 › 주방 · 계산대 기기에서 「기기 추가」를 눌러 새 코드로 연결해 주세요.</p><button class="btn pri big" style="margin-top:14px" onclick="TO.leaveSub()">다시 연결하기</button></div>';return}
+  $("app").innerHTML='<div class="nokey card"><h2>열쇠가 맞지 않습니다</h2><p class="muted">이 화면은 카운터 기기(사장님 폴드)에서 열거나, 주방 · 계산대 기기로 연결해 주세요.</p></div>'}
+var pollFails=0,ROLE="main",aiTried=false;
+/* 서브 기기: 주방은 주문판만(가격 숨김), 보조 계산대는 주문판 + 테이블 */
+function applyRole(){
+  var r=(D.me&&D.me.role)||"main";
+  if(r===ROLE)return;ROLE=r;
+  document.body.classList.toggle("sub",r!=="main");
+  document.body.classList.toggle("kitchen",r==="kitchen");
+  document.body.classList.toggle("counter2",r==="counter");
+  if(r==="kitchen"&&seg==="done")seg="new";
+  if(r!=="main"&&(view==="menu"))go("orders");
+}
 
 function draw(fresh){
   var s=D.settings||{};
   $("shop").textContent=s.shop||"카운터";
   var ip=T&&T.ip?T.ip():location.hostname;
   $("ip").innerHTML=ip&&ip!=="127.0.0.1"?'테이블 연결 주소 <b>'+esc(ip)+'</b>':'<b style="color:var(--bad)">와이파이에 연결해 주세요</b>';
+  if(D.me&&D.me.role!=="main"){$("who").textContent=(D.me.role==="kitchen"?"🍳 ":"🧾 ")+D.me.name;$("who").classList.remove("hide");$("ip").classList.add("hide")}
   $("kCnt").textContent=(D.todayCount||0)+"건";$("kSum").textContent=won(D.todaySales)+"원";
   var live=(D.orders||[]).filter(function(o){return !o.paid&&o.status!=="canceled"});
   var nNew=live.filter(function(o){return o.status==="new"}).length;
@@ -473,8 +528,72 @@ function drawSkins(cur){
   }});
 }
 
+// ----- 알림벨 설정 -----
+function drawBells(s){
+  var cur=s.bell||"dingdong",list=BELLS.slice();
+  if(s.bellCustom)list.push({id:"custom",name:"내 소리"+(s.bellCustomName?": "+s.bellCustomName:""),src:s.bellCustom});
+  $("bells").innerHTML=list.map(function(b){return '<div class="bl'+(b.id===cur?" on":"")+'"><button class="pk" data-bell="'+b.id+'">'+(b.id===cur?"✓ ":"")+esc(b.name)+'</button><button class="pl" data-play="'+esc(b.src)+'" aria-label="미리 듣기">▶</button></div>'}).join("");
+  [].forEach.call($("bells").querySelectorAll("[data-play]"),function(b){b.onclick=function(){playBell(b.getAttribute("data-play"),1)}});
+  [].forEach.call($("bells").querySelectorAll("[data-bell]"),function(b){b.onclick=function(){var id=b.getAttribute("data-bell");
+    api("POST","/api/admin/settings",{bell:id},function(st){if(st===200){s.bell=id;D.settings.bell=id;drawBells(s);playBell(bellSrc(s,id),1);toast("알림벨을 바꿨어요")}})}});
+  [].forEach.call(document.querySelectorAll("[data-rep]"),function(b){var n=+b.getAttribute("data-rep");b.classList.toggle("on",n===(s.bellRepeat||2));
+    b.onclick=function(){api("POST","/api/admin/settings",{bellRepeat:n},function(st){if(st===200){s.bellRepeat=n;D.settings.bellRepeat=n;drawBells(s)}})}});
+  $("bellFile").onchange=function(){
+    var f=this.files&&this.files[0];if(!f)return;
+    var ext=(f.name.split(".").pop()||"").toLowerCase();
+    if(!/^(mp3|wav|ogg|m4a|aac)$/.test(ext)){toast("mp3 · wav · ogg · m4a 파일만 쓸 수 있어요");return}
+    if(f.size>3*1024*1024){toast("3MB보다 작은 소리 파일을 골라 주세요");return}
+    toast("소리를 올리는 중…");
+    var x=new XMLHttpRequest();x.open("POST","/api/admin/sound",true);x.setRequestHeader("X-Key",KEY);x.setRequestHeader("X-Ext",ext);x.timeout=60000;
+    x.onload=function(){var j=null;try{j=JSON.parse(x.responseText)}catch(e){}
+      if(x.status===200&&j&&j.file){var nm=f.name.replace(/\.[^.]+$/,"").slice(0,30);
+        api("POST","/api/admin/settings",{bell:"custom",bellCustom:j.file,bellCustomName:nm},function(st){if(st===200){s.bell="custom";s.bellCustom=j.file;s.bellCustomName=nm;D.settings.bell="custom";D.settings.bellCustom=j.file;drawBells(s);playBell(j.file,1);toast("내 소리를 알림벨로 정했어요")}})}
+      else toast((j&&j.error)||"소리를 올리지 못했어요")};
+    x.onerror=function(){toast("소리를 올리지 못했어요")};
+    x.send(f);
+  };
+}
+
+// ----- 주방 · 계산대 기기 -----
+function since(t){var m=Math.floor((Date.now()-t)/60000);return m<1?"방금":m<60?m+"분 전":Math.floor(m/60)+"시간 전"}
+function loadDevs(cb){api("GET","/api/admin/devices",null,function(st,j){if(st!==200||!j)return;
+  var el=$("devs");if(el){el.innerHTML=j.devices.length?j.devices.map(function(d){return '<div class="dv"><div class="ic">'+(d.role==="kitchen"?"🍳":"🧾")+'</div><div class="tx"><b>'+esc(d.name)+'</b><span>'+(d.role==="kitchen"?"주방 화면":"보조 계산대")+' · 마지막 접속 '+since(d.seen)+'</span></div><button class="btn ghost" data-rm="'+d.id+'" data-nm="'+esc(d.name)+'">연결 끊기</button></div>'}).join(""):'<div class="muted" style="padding:12px 0">아직 연결된 기기가 없어요</div>';
+    [].forEach.call(el.querySelectorAll("[data-rm]"),function(b){b.onclick=function(){
+      modal('<h2>'+esc(b.getAttribute("data-nm"))+' 연결을 끊을까요?</h2><p class="muted">그 기기에서는 바로 주문을 볼 수 없게 됩니다. 다시 쓰려면 새 코드로 연결하면 돼요.</p><div style="display:flex;gap:10px;margin-top:16px"><button class="btn ghost" style="flex:1" id="mNo">취소</button><button class="btn bad" style="flex:1" id="mYes">연결 끊기</button></div>');
+      $("mNo").onclick=function(){modal()};$("mYes").onclick=function(){api("POST","/api/admin/devices/remove",{id:b.getAttribute("data-rm")},function(){modal();loadDevs();toast("연결을 끊었어요")})}}})}
+  cb&&cb(j.devices)})}
+function addDevice(){
+  api("POST","/api/admin/devices/code",{},function(st,j){
+    if(st!==200||!j)return;
+    var before=null,timer=null;
+    loadDevs(function(ds){before=ds.map(function(d){return d.id})});
+    var ip=T&&T.ip?T.ip():location.hostname;
+    modal('<h2>주방 · 계산대 기기 추가</h2><p class="muted">추가할 폰에서 덜누름 테이블오더 › <b>주방 · 보조 계산대로 쓰기</b>를 누르고 이 코드를 넣어 주세요.</p>'+
+      '<div class="pcode">'+j.code.slice(0,3)+' '+j.code.slice(3)+'</div><p class="muted" style="text-align:center;margin:0" id="pLeft"></p>'+
+      '<p class="muted" style="text-align:center;font-size:13px">카운터 주소: <b>'+esc(ip)+'</b> · 코드는 한 번만 쓸 수 있어요</p>'+
+      '<div style="display:flex;gap:10px;margin-top:16px"><button class="btn pri" style="flex:1" id="mNo">닫기</button></div>');
+    $("mNo").onclick=function(){clearInterval(timer);modal()};
+    $("pLeft").textContent="남은 시간 10분";
+    timer=setInterval(function(){
+      if(!$("pLeft")){clearInterval(timer);return}
+      var left=Math.max(0,Math.round((j.until-Date.now())/1000));
+      $("pLeft").textContent=left?"남은 시간 "+Math.floor(left/60)+"분 "+("0"+left%60).slice(-2)+"초":"시간이 지났어요. 닫고 다시 눌러 주세요";
+      loadDevs(function(ds){if(!before)return;ds.forEach(function(d){if(before.indexOf(d.id)<0){clearInterval(timer);modal();toast((d.role==="kitchen"?"🍳 ":"🧾 ")+d.name+" 연결됐어요");ding()}})});
+    },2000);
+  });
+}
+function drawSubSettings(){
+  var me=D.me||{};
+  $("vSettings").innerHTML='<div class="set"><div class="card"><h3>이 기기</h3><p style="font-size:20px;font-weight:800;margin:0 0 6px">'+(me.role==="kitchen"?"🍳 ":"🧾 ")+esc(me.name)+'</p>'+
+    '<p class="muted">'+(me.role==="kitchen"?"주방 화면 · 새 주문과 만드는 중인 주문을 크게 보여 줘요.":"보조 계산대 · 주문 처리, 테이블 결제 완료, 직원 호출 확인을 할 수 있어요.")+' 메뉴 · 가게 설정은 메인 카운터에서 바꿔요.</p>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn" id="tBell">🔔 알림벨 들어 보기</button>'+(T&&T.leaveSub?'<button class="btn bad" id="sLeave">이 기기 연결 끊기</button>':'')+'</div></div></div>';
+  $("tBell").onclick=function(){ding()};
+  if($("sLeave"))$("sLeave").onclick=function(){modal('<h2>이 기기 연결을 끊을까요?</h2><p class="muted">다시 쓰려면 메인 카운터에서 새 코드를 받아 연결해야 해요.</p><div style="display:flex;gap:10px;margin-top:16px"><button class="btn ghost" style="flex:1" id="mNo">취소</button><button class="btn bad" style="flex:1" id="mYes">연결 끊기</button></div>');$("mNo").onclick=function(){modal()};$("mYes").onclick=function(){T.leaveSub()}};
+}
+
 // ----- 설정 -----
 function drawSettings(){
+  if(ROLE!=="main"){drawSubSettings();return}
   var s=D.settings||{},ip=T&&T.ip?T.ip():location.hostname,ver=T&&T.version?T.version():"";
   var h='<div class="set">'+
   '<div class="card"><h3>테이블 기기 연결</h3><div class="muted">태블릿 · 구형 폰에 덜누름 테이블오더를 깔고 <b>테이블 주문기로 쓰기</b>를 누르면 이 카운터가 저절로 나타납니다. 안 나타나면 아래 주소를 넣으세요.</div>'+
@@ -487,12 +606,18 @@ function drawSettings(){
   '<div class="field"><label>손님 화면 안내 문구 (선택)</label><input id="sNotice" value="'+esc(s.notice)+'" placeholder="예: 오늘 디저트 10% 할인"></div>'+
   '<div class="rowt"><div class="tx"><b>새 주문 · 호출 소리</b></div><button class="toggle'+(s.sound!==false?" on":"")+'" id="sSound"></button></div>'+
   '<button class="btn pri" id="sSave" style="margin-top:10px">저장</button></div>'+
-  '<div class="card"><h3>다른 화면에서 열기 (주방 모니터 · PC)</h3><div class="muted" style="margin-bottom:10px">같은 와이파이의 다른 기기 브라우저에서 이 주소를 열면 같은 주문판이 뜹니다. 주방에 둔 태블릿을 주방 화면으로 쓰기 좋습니다. 주소에 열쇠가 들어 있으니 직원에게만 알려 주세요.</div>'+
-  '<div class="code">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></div>'+
+  '<div class="card"><h3>알림벨</h3><div class="muted" style="margin-bottom:12px">새 주문 · 직원 호출이 오면 이 카운터와 연결된 주방 · 계산대 기기에서 함께 울립니다. ▶를 눌러 미리 들어 보세요.</div><div class="bells" id="bells"></div>'+
+  '<div class="reps"><span class="muted" style="font-weight:700;margin-right:4px">울림 횟수</span><button data-rep="1">1번</button><button data-rep="2">2번</button><button data-rep="3">3번</button></div>'+
+  '<label class="btn ghost" style="margin-top:14px;position:relative;overflow:hidden">🎵 내 소리 올리기 (mp3 · wav · m4a)<input type="file" accept="audio/*" id="bellFile" style="position:absolute;inset:0;left:0;top:0;opacity:0"></label></div>'+
+  '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 보고 처리할 수 있어요. 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
+  '<div class="devs" id="devs"><div class="muted" style="padding:12px 0">불러오는 중…</div></div><button class="btn pri" id="sAddDev" style="margin-top:14px">+ 기기 추가</button>'+
+  '<details style="margin-top:16px"><summary class="muted" style="cursor:pointer">PC 브라우저로 열기 (메인과 같은 권한)</summary><div class="code" style="margin-top:8px">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></details></div>'+
   '<div class="card"><h3>정리</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn bad" id="sReset">오늘 주문 · 호출 모두 지우기</button>'+(T&&T.stopCounter?'<button class="btn ghost" id="sStop">카운터 끄기 (주문 그만 받기)</button>':'')+'</div>'+
   '<p class="muted" style="margin-top:14px">덜누름 테이블오더 '+esc(ver)+' · 주문은 이 매장 와이파이 안에서만 오가며, 이 기기에만 저장됩니다.</p></div></div>';
   $("vSettings").innerHTML=h;
   drawSkins(s.skin||"premium");
+  drawBells(s);loadDevs();
+  $("sAddDev").onclick=addDevice;
   $("sAi").onclick=function(){aiConnect()};
   var snd=s.sound!==false;
   $("sSound").onclick=function(){snd=!snd;this.classList.toggle("on",snd)};
@@ -525,6 +650,6 @@ setInterval(function(){
 },30000);
 (function(){var d=new Date();$("clock").textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)})();
 
-if(!KEY)noKey();else{poll();aiLoad(function(){if(view==="menu"&&!menuDirty)drawMenu()})}
+if(!KEY)noKey();else poll();
 </script>
 </body></html>
