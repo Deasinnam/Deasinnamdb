@@ -546,6 +546,11 @@ public class MainActivity extends Activity {
                     HttpURLConnection gi = gimg.isEmpty() ? null : (HttpURLConnection) new URL(base + gimg).openConnection();
                     check(tr != null && !tr.startsWith("ERR") && gi != null && gi.getResponseCode() == 200 && "image/jpeg".equals(gi.getContentType()), "ai " + pv + " image " + gr);
                 }
+                // 회사 오류 안내: 결제 없음 · Gemini 무료 한도 · 모델 이름
+                String e1 = AiImage.explain("https://api.openai.com/v1/images/generations", 429, "{\"error\":{\"message\":\"You exceeded your current quota, please check your plan and billing details.\",\"type\":\"insufficient_quota\",\"code\":\"insufficient_quota\"}}", null);
+                String e2 = AiImage.explain("https://generativelanguage.googleapis.com/v1beta/models/x:generateContent", 429, "{\"error\":{\"code\":429,\"message\":\"Quota exceeded for metric: generate_content_free_tier_requests, limit: 0\",\"status\":\"RESOURCE_EXHAUSTED\"}}", null);
+                String e3 = AiImage.explain("https://api.openai.com/v1/images/generations", 404, "{\"error\":{\"message\":\"The model does not exist\"}}", null);
+                check(e1.contains("Billing") && e2.contains("유료 등급") && e3.contains("모델"), "ai errors explained");
                 // Claude: 메뉴 설명 · 사진 설명 쓰기(그림은 만들지 않음)
                 http("POST", base + "/api/admin/ai", "{\"provider\":\"claude\",\"key\":\"test-secret-claude\"}", key);
                 String ct0 = http("POST", base + "/api/admin/ai/test", "{\"provider\":\"claude\"}", key);

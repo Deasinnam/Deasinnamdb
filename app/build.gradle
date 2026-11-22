@@ -10,8 +10,8 @@ android {
         // 서랍 속 오래된 태블릿도 테이블 주문기로 쓰도록 안드로이드 7부터
         minSdk 24
         targetSdk 35
-        versionCode 7
-        versionName "0.5"
+        versionCode 8
+        versionName "0.5.1"
     }
 
     buildFeatures { buildConfig true }

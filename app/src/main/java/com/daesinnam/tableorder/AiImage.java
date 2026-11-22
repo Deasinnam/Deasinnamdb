@@ -192,6 +192,35 @@ final class AiImage {
 
     private static String clip(String v, int n) { v = v == null ? "" : v.trim(); return v.length() > n ? v.substring(0, n) : v; }
 
+    /** 회사가 보낸 오류를 사장님이 알아듣게: 결제 · 한도 · 인증 · 모델 이름 */
+    static String explain(String url, int code, String body, String retryAfter) {
+        String who = url.contains("googleapis") ? "Gemini" : url.contains("anthropic") ? "Claude" : url.contains("openai") ? "ChatGPT" : "AI";
+        String msg = "", type = "", status = "";
+        try {
+            JSONObject e = new JSONObject(body).optJSONObject("error");
+            if (e != null) { msg = e.optString("message"); type = e.optString("code") + " " + e.optString("type"); status = e.optString("status"); }
+        } catch (Exception ignored) { }
+        String low = (msg + " " + type + " " + status).toLowerCase(java.util.Locale.ROOT);
+        String tip;
+        if (code == 401) tip = who + " API 열쇠가 맞지 않아요. 열쇠를 다시 복사해 넣어 주세요";
+        else if (low.contains("insufficient_quota") || low.contains("billing") || low.contains("credit balance") || low.contains("exceeded your current quota"))
+            tip = who + " 계정에 결제 수단 · 충전 금액이 없어 막혔어요. "
+                    + ("ChatGPT".equals(who) ? "platform.openai.com › Settings › Billing에서 크레딧을 충전해 주세요 (ChatGPT Plus 구독과는 따로예요)"
+                    : "Claude".equals(who) ? "console.anthropic.com › Billing에서 크레딧을 충전해 주세요 (Claude Pro 구독과는 따로예요)"
+                    : "aistudio.google.com에서 결제(유료 등급)를 켜 주세요");
+        else if ("Gemini".equals(who) && code == 429 && (low.contains("limit: 0") || low.contains("free_tier") || low.contains("free tier") || low.contains("resource_exhausted")))
+            tip = "Gemini 사진 모델은 무료 사용량이 없거나 오늘 한도를 다 썼어요. aistudio.google.com › 결제 설정(유료 등급)을 켜면 바로 쓸 수 있어요";
+        else if (low.contains("verif")) tip = who + " 이미지 모델은 회사(조직) 인증을 마쳐야 쓸 수 있어요. platform.openai.com › Settings › Organization › Verify에서 인증해 주세요";
+        else if (code == 404 || low.contains("model") && (low.contains("not found") || low.contains("does not exist") || low.contains("not supported")))
+            tip = "모델 이름을 찾지 못했어요. AI 연동 설정의 「모델」 칸을 비우면 기본 모델로 돌아가요";
+        else if (code == 429) tip = "요청이 몰렸어요. " + (retryAfter != null && retryAfter.matches("\\d+") ? retryAfter + "초쯤 " : "잠시 ") + "뒤 다시 해 보세요";
+        else if (code == 403) tip = who + " 열쇠에 이 기능 권한이 없어요 (" + code + ")";
+        else if (code == 400 && (low.contains("safety") || low.contains("policy") || low.contains("moderation"))) tip = "AI가 이 설명으로는 그림을 만들 수 없다고 해요. 설명을 조금 바꿔 주세요";
+        else tip = who + "가 처리하지 못했어요 (" + code + ")";
+        if (msg.length() > 140) msg = msg.substring(0, 140) + "…";
+        return tip + (msg.isEmpty() ? "" : "\n[" + who + " 안내] " + msg);
+    }
+
     private static JSONObject call(String method, String url, JSONObject body, String hk, String hv, String anthropicVersion) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(15000);
@@ -212,14 +241,7 @@ final class AiImage {
         byte[] buf = new byte[16384];
         for (int n; in != null && (n = in.read(buf)) > 0; ) b.write(buf, 0, n);
         String s = b.toString("UTF-8");
-        if (code == 401 || code == 403) throw new IllegalArgumentException("API 열쇠가 맞지 않거나 권한이 없어요 (" + code + ")");
-        if (code == 429) throw new IllegalStateException("요청이 많거나 사용 한도를 넘었어요. 잠시 뒤 다시 해 보세요");
-        if (code >= 400) {
-            String msg = "";
-            try { JSONObject e = new JSONObject(s).optJSONObject("error"); if (e != null) msg = e.optString("message"); } catch (Exception ignored) { }
-            if (msg.length() > 160) msg = msg.substring(0, 160);
-            throw new IllegalStateException("AI가 처리하지 못했어요 (" + code + ")" + (msg.isEmpty() ? "" : ": " + msg));
-        }
+        if (code >= 400) throw new IllegalStateException(explain(url, code, s, c.getHeaderField("Retry-After")));
         return s.trim().isEmpty() ? new JSONObject() : new JSONObject(s);
     }
 }
