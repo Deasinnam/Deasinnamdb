@@ -618,10 +618,10 @@ public class MainActivity extends Activity {
                 Store ts = new Store(sd);
                 ts.placeOrder(new JSONObject().put("table", 2).put("items", new JSONArray().put(new JSONObject().put("id", "a").put("qty", 1))));
                 JSONObject ys = ts.sales(yday.substring(0, 7), yday);
-                boolean gone = true;
+                boolean ydGone = true;
                 JSONArray tos = ts.adminView().getJSONArray("orders");
-                for (int i = 0; i < tos.length(); i++) if (yday.equals(tos.getJSONObject(i).optString("day"))) gone = false;
-                check(gone && ys.getJSONObject("daySummary").getLong("total") == 9000 && ys.getJSONObject("daySummary").getJSONObject("items").getJSONObject("아메리카노").getInt("qty") == 2
+                for (int i = 0; i < tos.length(); i++) if (yday.equals(tos.getJSONObject(i).optString("day"))) ydGone = false;
+                check(ydGone && ys.getJSONObject("daySummary").getLong("total") == 9000 && ys.getJSONObject("daySummary").getJSONObject("items").getJSONObject("아메리카노").getInt("qty") == 2
                         && !ts.adminView().has("sales"), "sales kept after day change");
 
                 // 알림벨: 기본 소리 · 내 소리 올리기
