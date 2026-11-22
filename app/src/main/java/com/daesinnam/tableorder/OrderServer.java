@@ -206,7 +206,8 @@ final class OrderServer {
                     if (ai == null) throw new IllegalArgumentException("이 기기에서는 AI 연동을 쓸 수 없어요");
                     switch (a) {
                         case "/ai": if ("POST".equals(method)) ai.save(b); json(out, ai.info().put("ok", true)); return;
-                        case "/ai/test": ai.test(); json(out, new JSONObject().put("ok", true)); return;
+                        case "/ai/test": ai.test(b.optString("provider")); json(out, new JSONObject().put("ok", true)); return;
+                        case "/ai/write": json(out, new JSONObject().put("ok", true).put("text", ai.write(b))); return;
                         case "/ai/image": json(out, new JSONObject().put("ok", true).put("img", ai.generate(b.optString("prompt")))); return;
                         default: send(out, 404, "text/plain", bytes("없음")); return;
                     }

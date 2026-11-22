@@ -506,20 +506,34 @@ public class MainActivity extends Activity {
 
                 // AI와 연동하기: 가짜 AI 서버(이 기기 안)로 OpenAI · Gemini 방식 모두 확인
                 int fport = fakeAi();
+                http("POST", base + "/api/admin/ai", new JSONObject().put("base", "http://127.0.0.1:" + fport).toString(), key);
                 for (String pv : new String[]{"openai", "gemini"}) {
-                    http("POST", base + "/api/admin/ai", new JSONObject().put("provider", pv).put("key", "test-secret-" + pv).put("base", "http://127.0.0.1:" + fport).toString(), key);
-                    String tr = http("POST", base + "/api/admin/ai/test", "{}", key);
+                    http("POST", base + "/api/admin/ai", new JSONObject().put("provider", pv).put("key", "test-secret-" + pv).put("imageProvider", pv).toString(), key);
+                    String tr = http("POST", base + "/api/admin/ai/test", new JSONObject().put("provider", pv).toString(), key);
                     String gr = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"아메리카노 사진\"}", key);
                     String gimg = gr != null && !gr.startsWith("ERR") ? new JSONObject(gr).optString("img") : "";
                     HttpURLConnection gi = gimg.isEmpty() ? null : (HttpURLConnection) new URL(base + gimg).openConnection();
                     check(tr != null && !tr.startsWith("ERR") && gi != null && gi.getResponseCode() == 200 && "image/jpeg".equals(gi.getContentType()), "ai " + pv + " image " + gr);
                 }
+                // Claude: 메뉴 설명 · 사진 설명 쓰기(그림은 만들지 않음)
+                http("POST", base + "/api/admin/ai", "{\"provider\":\"claude\",\"key\":\"test-secret-claude\"}", key);
+                String ct0 = http("POST", base + "/api/admin/ai/test", "{\"provider\":\"claude\"}", key);
+                String cw = http("POST", base + "/api/admin/ai/write", "{\"kind\":\"desc\",\"name\":\"카페라떼\",\"cat\":\"커피\"}", key);
+                String cp = http("POST", base + "/api/admin/ai/write", "{\"kind\":\"prompt\",\"name\":\"카페라떼\"}", key);
+                check(ct0 != null && !ct0.startsWith("ERR") && cw != null && new JSONObject(cw).optString("text").contains("라떼") && cp != null && !cp.startsWith("ERR"), "ai claude writes " + cw);
                 String info = http("GET", base + "/api/admin/ai", null, key);
+                JSONObject ij = new JSONObject(info);
                 String pub = http("GET", base + "/api/state?table=1", null, null) + http("GET", base + "/api/admin", null, key);
-                check(info != null && info.contains("\"connected\":true") && !info.contains("test-secret") && !pub.contains("test-secret"), "ai key kept private");
+                check(ij.getJSONObject("providers").getJSONObject("claude").getBoolean("connected") && ij.getBoolean("imageReady") && ij.getBoolean("textReady")
+                        && !info.contains("test-secret") && !pub.contains("test-secret"), "ai three providers, keys private");
                 String bad = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"x\"}", key);
                 check(bad != null && bad.startsWith("ERR 400"), "ai short prompt rejected");
-                http("POST", base + "/api/admin/ai", "{\"key\":\"\",\"base\":\"\",\"provider\":\"openai\",\"model\":\"\"}", key);
+                // Claude만 연결된 경우: 사진은 안 되고 이유를 알려 줌
+                http("POST", base + "/api/admin/ai", "{\"provider\":\"openai\",\"key\":\"\"}", key);
+                http("POST", base + "/api/admin/ai", "{\"provider\":\"gemini\",\"key\":\"\"}", key);
+                String onlyC = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"아메리카노 사진\"}", key);
+                check(onlyC != null && onlyC.startsWith("ERR 400") && onlyC.contains("Claude"), "claude-only explains no images");
+                http("POST", base + "/api/admin/ai", "{\"disconnectAll\":true,\"base\":\"\"}", key);
                 String off = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"아메리카노 사진\"}", key);
                 check(off != null && off.startsWith("ERR 400") && off.contains("연동"), "ai off needs connect");
 
@@ -667,10 +681,12 @@ public class MainActivity extends Activity {
                     String hs = head.toString();
                     for (String l : hs.split("\r\n")) if (l.toLowerCase().startsWith("content-length:")) len = Integer.parseInt(l.substring(15).trim());
                     for (int i = 0; i < len; i++) in.read();
-                    boolean auth = hs.contains("Bearer test-secret-openai") || hs.toLowerCase().contains("x-goog-api-key: test-secret-gemini");
+                    boolean auth = hs.contains("Bearer test-secret-openai") || hs.toLowerCase().contains("x-goog-api-key: test-secret-gemini")
+                            || (hs.toLowerCase().contains("x-api-key: test-secret-claude") && hs.toLowerCase().contains("anthropic-version:"));
                     String path = hs.split(" ")[1];
                     String body = !auth ? "{\"error\":{\"message\":\"bad key\"}}"
                             : path.startsWith("/v1/images") ? "{\"data\":[{\"b64_json\":\"" + png + "\"}]}"
+                            : path.startsWith("/v1/messages") ? "{\"content\":[{\"type\":\"text\",\"text\":\"부드러운 우유 거품을 올린 고소한 라떼\"}]}"
                             : path.contains(":generateContent") ? "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"ok\"},{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\"" + png + "\"}}]}}]}"
                             : "{\"data\":[],\"models\":[]}";
                     byte[] bb = body.getBytes(StandardCharsets.UTF_8);

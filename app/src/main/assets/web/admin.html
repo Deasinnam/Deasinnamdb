@@ -379,7 +379,7 @@ function drawMenu(){
   h+='<button class="btn" style="width:100%;margin-top:8px" id="cAdd">+ 분류 추가</button></div><div class="mitems">';
   var its=menu.items.filter(function(i){return i.cat===curMCat});
   var cname=(menu.categories.filter(function(c){return c.id===curMCat})[0]||{}).name||"";
-  h+='<div style="display:flex;align-items:center;gap:10px;margin:2px 0 12px"><h3 style="margin:0;flex:1">'+esc(cname)+' 메뉴 '+its.length+'개</h3><button class="btn aibig" id="aiBtn">'+(AI&&AI.connected?'✨ AI 연결됨':'✨ AI와 연동하기')+'</button><button class="btn pri" id="iAdd">+ 메뉴 추가</button></div>';
+  h+='<div style="display:flex;align-items:center;gap:10px;margin:2px 0 12px"><h3 style="margin:0;flex:1">'+esc(cname)+' 메뉴 '+its.length+'개</h3><button class="btn aibig" id="aiBtn">'+(AI&&AI.connected?'✨ AI 연결됨 · '+aiNames():'✨ AI와 연동하기')+'</button><button class="btn pri" id="iAdd">+ 메뉴 추가</button></div>';
   its.forEach(function(it){
     var i=menu.items.indexOf(it);
     h+='<div class="mi card"><div class="pcol"><div class="pic" style="'+(it.img?'background-image:url('+esc(it.img)+')':'')+'">'+(it.img?'':'사진 넣기')+'<input type="file" accept="image/*" data-pic="'+i+'"></div><button class="aib" data-ai="'+i+'">✨ AI 사진</button></div><div class="fs">'+
@@ -388,7 +388,7 @@ function drawMenu(){
       '<select class="ct" data-f="cat" data-i="'+i+'">'+menu.categories.map(function(c){return '<option value="'+esc(c.id)+'"'+(c.id===it.cat?" selected":"")+'>'+esc(c.name)+'</option>'}).join("")+'</select>'+
       '<input class="ds" data-f="desc" data-i="'+i+'" value="'+esc(it.desc||"")+'" placeholder="한 줄 설명 (선택)">'+
       '<div class="chips"><button class="chip sold'+(it.soldout?" on":"")+'" data-sold="'+i+'">품절</button><button class="chip best'+(it.best?" on":"")+'" data-tg="best" data-i="'+i+'">추천</button><button class="chip'+(it.hidden?" on":"")+'" data-tg="hidden" data-i="'+i+'">숨김</button>'+
-      '<span style="flex:1"></span><button class="chip" data-mv="'+i+'">↑ 위로</button><button class="chip" data-del="'+i+'" style="color:var(--bad)">삭제</button></div></div></div>';
+      '<span style="flex:1"></span><button class="chip" data-aidesc="'+i+'" style="color:#7048E8">✨ 설명 쓰기</button><button class="chip" data-mv="'+i+'">↑ 위로</button><button class="chip" data-del="'+i+'" style="color:var(--bad)">삭제</button></div></div></div>';
   });
   if(!its.length)h+='<div class="empty card">이 분류에 메뉴가 없습니다. "+ 메뉴 추가"를 눌러 주세요.</div>';
   h+='<div class="savebar"><span class="muted" style="margin-right:auto">품절은 누르면 바로 손님 화면에 반영됩니다</span><button class="btn ghost" id="mUndo">되돌리기</button><button class="btn pri" id="mSave"'+(menuDirty?'':' disabled')+'>메뉴 저장</button></div></div></div>';
@@ -415,41 +415,54 @@ function drawMenu(){
   $("aiBtn").onclick=function(){aiConnect()};
   [].forEach.call(V.querySelectorAll("[data-ai]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-ai");
     if(!menu.items[i].name.trim()){toast("먼저 메뉴 이름을 적어 주세요");return}
-    if(!(AI&&AI.connected)){aiConnect(function(){aiMake(i)});return}aiMake(i)}});
+    if(!(AI&&AI.imageReady)){if(AI&&aiOn("claude"))toast("Claude는 그림을 만들지 않아요. 사진은 ChatGPT나 Gemini를 연결해 주세요");aiConnect(function(){if(AI.imageReady)aiMake(i)},"openai");return}aiMake(i)}});
+  [].forEach.call(V.querySelectorAll("[data-aidesc]"),function(b){b.onclick=function(){aiDesc(+b.getAttribute("data-aidesc"),b)}});
   [].forEach.call(V.querySelectorAll("[data-pic]"),function(e){e.onchange=function(){var i=+e.getAttribute("data-pic");if(e.files&&e.files[0])photo(e.files[0],function(url){menu.items[i].img=url;dirty();drawMenu()})}});
   $("mUndo").onclick=function(){menu=null;menuDirty=false;drawMenu()};
   $("mSave").onclick=function(){
     for(var i=0;i<menu.items.length;i++)if(!menu.items[i].name.trim()){toast("이름이 빈 메뉴가 있어요");return}
     api("POST","/api/admin/menu",menu,function(st){if(st===200){menuDirty=false;menu=null;toast("메뉴를 저장했습니다. 테이블 화면에 바로 나옵니다")}})};
 }
-// ----- AI와 연동하기: 사장님의 API 열쇠로 메뉴 사진 만들기 -----
+// ----- AI와 연동하기: ChatGPT · Gemini · Claude 중 원하는 곳을 연결(여러 곳도 가능) -----
 var AI=null;
 function aiLoad(cb){api("GET","/api/admin/ai",null,function(st,j){if(st===200&&j){AI=j;cb&&cb()}})}
-var AIPROV={openai:{name:"OpenAI",sub:"GPT 이미지 · platform.openai.com 에서 API 열쇠 발급",ph:"sk-..."},gemini:{name:"Google Gemini",sub:"나노 바나나 · aistudio.google.com 에서 API 열쇠 발급",ph:"AIza..."}};
-function aiConnect(after){
+var AIPROV={
+  openai:{name:"ChatGPT",co:"OpenAI",does:"메뉴 사진 만들기",where:"platform.openai.com › API keys",ph:"sk-...",img:true},
+  gemini:{name:"Gemini",co:"Google",does:"메뉴 사진 만들기 (나노 바나나)",where:"aistudio.google.com › Get API key",ph:"AIza...",img:true},
+  claude:{name:"Claude",co:"Anthropic",does:"메뉴 설명 · 사진 설명 쓰기 (그림은 만들지 않아요)",where:"console.anthropic.com › API Keys",ph:"sk-ant-...",img:false}
+};
+function aiOn(pv){return !!(AI&&AI.providers&&AI.providers[pv]&&AI.providers[pv].connected)}
+function aiNames(){return ["openai","gemini","claude"].filter(aiOn).map(function(k){return AIPROV[k].name}).join(" · ")}
+function aiConnect(after,first){
   aiLoad(function(){
-    var prov=AI.provider||"openai";
+    var prov=first||(["openai","gemini","claude"].filter(function(k){return !aiOn(k)})[0])||"openai";
     function draw(){
-      var h='<h2>✨ AI와 연동하기</h2><p class="muted" style="margin:0 0 6px">내 AI 계정의 API 열쇠를 넣으면 메뉴 이름만으로 메뉴 사진을 만들 수 있어요. 요금은 연결한 AI 계정에 청구됩니다(사진 한 장에 보통 수십~수백 원).</p>'+
-        '<div class="prov">'+["openai","gemini"].map(function(k){return '<button data-prov="'+k+'"'+(k===prov?' class="on"':'')+'><b>'+AIPROV[k].name+'</b><span>'+AIPROV[k].sub+'</span></button>'}).join("")+'</div>'+
-        '<div class="field"><label>API 열쇠'+(AI.connected&&AI.provider===prov?' (지금 '+esc(AI.keyTail)+' 연결됨 · 바꿀 때만 넣기)':'')+'</label><input id="aiKey" type="password" autocomplete="off" placeholder="'+AIPROV[prov].ph+'"></div>'+
-        '<div class="field"><label>모델 (보통 그대로 두세요)</label><input id="aiModel" value="'+esc(AI.provider===prov?AI.model:AI.defaults[prov])+'"></div>'+
-        '<p class="muted" style="font-size:13px;margin:0">열쇠는 이 카운터 기기 안에만 저장되고, 손님 화면이나 주문 기록에는 들어가지 않아요.</p>'+
-        '<div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">'+(AI.connected?'<button class="btn bad" id="aiOff">연동 끊기</button>':'')+'<span style="flex:1"></span><button class="btn ghost" id="mNo">닫기</button><button class="btn aibig" id="aiSave">저장하고 연결 확인</button></div>';
+      var P=AI.providers[prov];
+      var h='<h2>✨ AI와 연동하기</h2><p class="muted" style="margin:0 0 6px">ChatGPT · Gemini · Claude 중 쓰는 곳의 API 열쇠를 넣어 주세요. 여러 곳을 함께 연결해도 돼요. 요금은 연결한 AI 계정에 청구됩니다.</p>'+
+        '<div class="prov">'+["openai","gemini","claude"].map(function(k){return '<button data-prov="'+k+'"'+(k===prov?' class="on"':'')+'><b>'+AIPROV[k].name+(aiOn(k)?' <span style="color:var(--ok)">● 연결됨</span>':'')+'</b><span>'+AIPROV[k].does+'</span></button>'}).join("")+'</div>'+
+        '<div class="field"><label>'+AIPROV[prov].name+' API 열쇠'+(P.connected?' (지금 '+esc(P.keyTail)+' 연결됨 · 바꿀 때만 넣기)':'')+' — 발급: '+AIPROV[prov].where+'</label><input id="aiKey" type="password" autocomplete="off" placeholder="'+AIPROV[prov].ph+'"></div>'+
+        '<div class="field"><label>모델 (보통 그대로 두세요)</label><input id="aiModel" value="'+esc(P.model)+'"></div>'+
+        (aiOn("openai")&&aiOn("gemini")?'<div class="field"><label>사진은 어디서 만들까요?</label><div class="stl" id="aiImgP">'+["openai","gemini"].map(function(k){return '<button data-ip="'+k+'"'+(AI.imageProvider===k?' class="on"':'')+'>'+AIPROV[k].name+'</button>'}).join("")+'</div></div>':'')+
+        (prov==="claude"?'<p class="muted" style="font-size:13px;margin:0 0 6px">Claude는 글을 써 주는 AI라 그림은 만들지 않아요. 메뉴 설명을 쓰고, 사진 AI에 넘길 사진 설명을 더 맛있게 다듬어 줘요. 사진까지 만들려면 ChatGPT나 Gemini도 연결해 주세요.</p>':'')+
+        '<p class="muted" style="font-size:13px;margin:0">열쇠는 이 카운터 기기 안에만 저장되고, 손님 화면 · 주문 기록 · 주방 기기에는 들어가지 않아요.</p>'+
+        '<div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">'+(P.connected?'<button class="btn bad" id="aiOff">'+AIPROV[prov].name+' 끊기</button>':'')+'<span style="flex:1"></span><button class="btn ghost" id="mNo">닫기</button><button class="btn aibig" id="aiSave">저장하고 연결 확인</button></div>';
       modal(h);
+      $("modal").querySelector(".box").style.maxWidth="720px";
       [].forEach.call(document.querySelectorAll("[data-prov]"),function(b){b.onclick=function(){prov=b.getAttribute("data-prov");draw()}});
-      $("mNo").onclick=function(){modal()};
-      if($("aiOff"))$("aiOff").onclick=function(){api("POST","/api/admin/ai",{key:""},function(st,j){if(st===200){AI=j;modal();toast("AI 연동을 끊었습니다");refreshAi()}})};
+      [].forEach.call(document.querySelectorAll("[data-ip]"),function(b){b.onclick=function(){api("POST","/api/admin/ai",{imageProvider:b.getAttribute("data-ip")},function(st,j){if(st===200){AI=j;draw();toast("사진은 "+AIPROV[j.imageProvider].name+"로 만들어요")}})}});
+      $("mNo").onclick=function(){modal();refreshAi()};
+      if($("aiOff"))$("aiOff").onclick=function(){api("POST","/api/admin/ai",{provider:prov,key:""},function(st,j){if(st===200){AI=j;draw();toast(AIPROV[prov].name+" 연결을 끊었어요");refreshAi()}})};
       $("aiSave").onclick=function(){
         var k=$("aiKey").value.trim(),body={provider:prov,model:$("aiModel").value.trim()};
-        if(k)body.key=k; else if(!(AI.connected&&AI.provider===prov)){toast("API 열쇠를 넣어 주세요");return}
+        if(k)body.key=k; else if(!P.connected){toast("API 열쇠를 넣어 주세요");return}
+        if(k&&AIPROV[prov].img&&!AI.imageReady)body.imageProvider=prov;
         var b=this;b.disabled=true;b.textContent="확인하는 중…";
         api("POST","/api/admin/ai",body,function(st,j){
           if(st!==200){b.disabled=false;b.textContent="저장하고 연결 확인";return}
           AI=j;
-          api("POST","/api/admin/ai/test",{},function(st2){
+          api("POST","/api/admin/ai/test",{provider:prov},function(st2){
             b.disabled=false;b.textContent="저장하고 연결 확인";
-            if(st2===200){modal();toast(AIPROV[prov].name+"와 연결됐어요");refreshAi();if(after)after()}
+            if(st2===200){toast(AIPROV[prov].name+"와 연결됐어요");refreshAi();if(after){modal();after()}else draw()}
           },null,30000);
         });
       };
@@ -457,7 +470,11 @@ function aiConnect(after){
     draw();
   });
 }
-function refreshAi(){if(view==="menu"&&!menuDirty){menu=null;drawMenu()}else if($("aiBtn"))$("aiBtn").textContent=AI&&AI.connected?"✨ AI 연결됨":"✨ AI와 연동하기";if(view==="settings")drawSettings()}
+function refreshAi(){
+  if($("aiBtn"))$("aiBtn").textContent=AI&&AI.connected?"✨ AI 연결됨 · "+aiNames():"✨ AI와 연동하기";
+  if(view==="menu"&&!menuDirty){menu=null;drawMenu()}
+  if(view==="settings")drawSettings();
+}
 var STYLES={
   premium:"고급 레스토랑 플레이팅, 차분한 아이보리색 배경, 부드러운 자연광, 45도 각도",
   cafe:"아늑한 카페 나무 테이블 위, 크림색 배경, 따뜻한 햇살, 감성적인 카페 사진",
@@ -465,17 +482,30 @@ var STYLES={
   top:"바로 위에서 내려다본 구도, 깔끔한 흰 배경",
   white:"순백색 배경의 메뉴판용 사진, 그림자 약하게"
 };
+function catOf(it){return (menu.categories.filter(function(c){return c.id===it.cat})[0]||{}).name||""}
 function aiPrompt(it,style){
-  var cat=(menu.categories.filter(function(c){return c.id===it.cat})[0]||{}).name||"";
+  var cat=catOf(it);
   return it.name+(it.desc?" ("+it.desc+")":"")+(cat?", "+cat+" 메뉴":"")+"의 먹음직스러운 실제 음식 사진. "+STYLES[style]+". 사실적인 고화질 사진, 음식이 화면 가운데에 크게, 글자 · 로고 · 사람 · 손 없이, 정사각형.";
+}
+/* Claude로 메뉴 한 줄 설명 쓰기 */
+function aiDesc(i,btn){
+  var it=menu.items[i];
+  if(!it.name.trim()){toast("먼저 메뉴 이름을 적어 주세요");return}
+  if(!aiOn("claude")){aiConnect(function(){aiDesc(i)},"claude");return}
+  if(btn){btn.disabled=true;btn.textContent="쓰는 중…"}
+  api("POST","/api/admin/ai/write",{kind:"desc",name:it.name,desc:it.desc,cat:catOf(it)},function(st,j){
+    if(btn){btn.disabled=false;btn.textContent="✨ 설명 쓰기"}
+    if(st===200&&j&&j.text){it.desc=j.text.slice(0,80);dirty();drawMenu();toast("Claude가 설명을 썼어요. 마음에 들면 「메뉴 저장」")}
+  },null,90000);
 }
 function aiMake(i){
   var it=menu.items[i],style=(D.settings&&D.settings.skin)||"premium",img="",busy=false;
-  var h='<h2>✨ AI로 메뉴 사진 만들기</h2><p class="muted" style="margin:0 0 14px">'+esc(it.name)+' · '+AIPROV[AI.provider].name+' ('+esc(AI.model)+')</p>'+
+  var ip=AI.imageProvider;
+  var h='<h2>✨ AI로 메뉴 사진 만들기</h2><p class="muted" style="margin:0 0 14px">'+esc(it.name)+' · '+AIPROV[ip].name+'로 만들어요 ('+esc(AI.providers[ip].model)+')</p>'+
     '<div class="aigen"><div><div class="aiprev" id="aiPrev">'+(it.img?'':'아래 「만들기」를 누르면<br>여기에 사진이 나와요')+'</div></div>'+
     '<div><label style="font-size:14px;font-weight:700;color:var(--sub)">분위기</label><div class="stl" id="aiStl">'+
     [["premium","고급 레스토랑"],["cafe","카페"],["korean","한식 상차림"],["top","위에서 찍기"],["white","흰 배경"]].map(function(x){return '<button data-st="'+x[0]+'"'+(x[0]===style?' class="on"':'')+'>'+x[1]+'</button>'}).join("")+'</div>'+
-    '<label style="font-size:14px;font-weight:700;color:var(--sub);display:block;margin-top:12px">어떤 사진을 만들까요? (고쳐 써도 돼요)</label><textarea id="aiP"></textarea>'+
+    '<div style="display:flex;align-items:center;margin-top:12px"><label style="font-size:14px;font-weight:700;color:var(--sub);flex:1">어떤 사진을 만들까요? (고쳐 써도 돼요)</label>'+(aiOn("claude")?'<button class="aib" id="aiPol">✨ Claude로 다듬기</button>':'')+'</div><textarea id="aiP"></textarea>'+
     '<p class="muted" style="font-size:13px;margin:8px 0 0">AI가 만든 사진은 실제 음식과 다를 수 있어요. 실제 메뉴와 비슷한지 꼭 확인해 주세요.</p>'+
     '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn ghost" id="mNo">닫기</button><span style="flex:1"></span><button class="btn aibig" id="aiGo">만들기</button><button class="btn pri hide" id="aiUse">이 사진 쓰기</button></div></div></div>';
   modal(h);
@@ -486,10 +516,16 @@ function aiMake(i){
   [].forEach.call(document.querySelectorAll("#aiStl button"),function(b){b.onclick=function(){if(busy)return;style=b.getAttribute("data-st");
     [].forEach.call(document.querySelectorAll("#aiStl button"),function(x){x.classList.toggle("on",x===b)});$("aiP").value=aiPrompt(it,style)}});
   $("mNo").onclick=function(){if(!busy)modal()};
+  if($("aiPol"))$("aiPol").onclick=function(){
+    if(busy)return;var pb=this;pb.disabled=true;pb.textContent="다듬는 중…";
+    api("POST","/api/admin/ai/write",{kind:"prompt",name:it.name,desc:it.desc,cat:catOf(it),style:STYLES[style]},function(st,j){
+      pb.disabled=false;pb.textContent="✨ Claude로 다듬기";if(st===200&&j&&j.text)$("aiP").value=j.text;
+    },null,90000);
+  };
   $("aiGo").onclick=function(){
     if(busy)return;busy=true;
     var go=this;go.disabled=true;go.textContent="만드는 중…";$("aiUse").classList.add("hide");
-    $("aiPrev").style.backgroundImage="";$("aiPrev").innerHTML='<div class="spin2"></div>AI가 사진을 만들고 있어요<br><span style="font-weight:500;font-size:13px">보통 10~40초 걸려요</span>';
+    $("aiPrev").style.backgroundImage="";$("aiPrev").innerHTML='<div class="spin2"></div>'+AIPROV[ip].name+'가 사진을 만들고 있어요<br><span style="font-weight:500;font-size:13px">보통 10~40초 걸려요</span>';
     api("POST","/api/admin/ai/image",{prompt:$("aiP").value},function(st,j){
       busy=false;go.disabled=false;
       if(st===200&&j&&j.img){img=j.img;$("aiPrev").innerHTML="";$("aiPrev").style.backgroundImage="url("+img+")";go.textContent="다시 만들기";$("aiUse").classList.remove("hide")}
@@ -599,8 +635,8 @@ function drawSettings(){
   '<div class="card"><h3>테이블 기기 연결</h3><div class="muted">태블릿 · 구형 폰에 덜누름 테이블오더를 깔고 <b>테이블 주문기로 쓰기</b>를 누르면 이 카운터가 저절로 나타납니다. 안 나타나면 아래 주소를 넣으세요.</div>'+
   '<div class="addr">'+esc(ip||"와이파이 연결 필요")+'</div><ol class="how"><li>모든 기기를 같은 매장 와이파이에 연결</li><li>이 폴드에서 카운터 화면을 켜 둔 채로(화면이 꺼져도 주문은 받습니다)</li><li>테이블 기기마다 테이블 번호를 고르고 시작</li></ol></div>'+
   '<div class="card"><h3>손님 화면 스킨</h3><div class="muted" style="margin-bottom:14px">누르면 모든 테이블 화면에 바로 적용됩니다. 메뉴 · 주문은 그대로 남습니다.</div><div class="skins" id="skins"></div></div>'+
-  '<div class="card"><h3>AI와 연동하기</h3><div class="muted" style="margin-bottom:12px">OpenAI · Google Gemini 계정의 API 열쇠를 연결하면, 메뉴 관리에서 「✨ AI 사진」으로 메뉴 사진을 만들 수 있어요.</div>'+
-  (AI&&AI.connected?'<span class="aichip">● '+AIPROV[AI.provider].name+' 연결됨 '+esc(AI.keyTail)+'</span> ':'')+'<button class="btn aibig" id="sAi" style="margin-left:6px">'+(AI&&AI.connected?'연동 설정':'✨ AI와 연동하기')+'</button></div>'+
+  '<div class="card"><h3>AI와 연동하기</h3><div class="muted" style="margin-bottom:12px">ChatGPT · Gemini · Claude 중 원하는 곳의 API 열쇠를 연결해요. ChatGPT · Gemini는 「✨ AI 사진」으로 메뉴 사진을, Claude는 「✨ 설명 쓰기」로 메뉴 설명과 사진 설명을 만들어 줘요.</div>'+
+  ["openai","gemini","claude"].map(function(k){return aiOn(k)?'<span class="aichip" style="margin:0 6px 8px 0">● '+AIPROV[k].name+' '+esc(AI.providers[k].keyTail)+'</span>':''}).join("")+'<button class="btn aibig" id="sAi">'+(AI&&AI.connected?'연동 설정':'✨ AI와 연동하기')+'</button></div>'+
   '<div class="card"><h3>가게</h3><div class="field"><label>가게 이름 (테이블 화면 위쪽)</label><input id="sShop" value="'+esc(s.shop)+'"></div>'+
   '<div class="field"><label>테이블 수</label><input id="sTables" inputmode="numeric" value="'+(s.tables||8)+'"></div>'+
   '<div class="field"><label>손님 화면 안내 문구 (선택)</label><input id="sNotice" value="'+esc(s.notice)+'" placeholder="예: 오늘 디저트 10% 할인"></div>'+
