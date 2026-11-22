@@ -104,6 +104,7 @@ public class OrderService extends Service implements OrderServer.Listener {
         }
         if (server == null) {
             server = new OrderServer(getAssets(), store(this), imgDir(this), key(this), this);
+            server.ai = new AiImage(this, imgDir(this));
             try {
                 server.start();
                 running = true;

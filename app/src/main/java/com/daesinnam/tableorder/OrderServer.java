@@ -42,6 +42,7 @@ final class OrderServer {
     private final String key;
     private final Listener listener;
     private final ExecutorService pool = Executors.newFixedThreadPool(48);
+    volatile AiImage ai; // AI와 연동하기(없으면 꺼짐)
     private ServerSocket server;
     private volatile boolean running;
 
@@ -157,6 +158,15 @@ final class OrderServer {
                     return;
                 }
                 JSONObject b = body.length > 0 ? new JSONObject(str(body)) : new JSONObject();
+                if (a.startsWith("/ai")) { // AI와 연동하기: 연결 정보 · 연결 확인 · 메뉴 사진 만들기
+                    if (ai == null) throw new IllegalArgumentException("이 기기에서는 AI 연동을 쓸 수 없어요");
+                    switch (a) {
+                        case "/ai": if ("POST".equals(method)) ai.save(b); json(out, ai.info().put("ok", true)); return;
+                        case "/ai/test": ai.test(); json(out, new JSONObject().put("ok", true)); return;
+                        case "/ai/image": json(out, new JSONObject().put("ok", true).put("img", ai.generate(b.optString("prompt")))); return;
+                        default: send(out, 404, "text/plain", bytes("없음")); return;
+                    }
+                }
                 switch (a) {
                     case "/status": store.setStatus(b.getString("id"), b.getString("status")); break;
                     case "/clear": store.clearTable(b.getInt("table")); break;
@@ -176,8 +186,12 @@ final class OrderServer {
             asset(out, path);
         } catch (IllegalArgumentException e) {
             send(out, 400, "application/json", bytes(new JSONObject().put("ok", false).put("error", e.getMessage()).toString()));
+        } catch (IllegalStateException e) {
+            send(out, 400, "application/json", bytes(new JSONObject().put("ok", false).put("error", e.getMessage()).toString()));
         } catch (org.json.JSONException e) {
             send(out, 400, "application/json", bytes(new JSONObject().put("ok", false).put("error", "요청 내용이 올바르지 않습니다").toString()));
+        } catch (RuntimeException e) {
+            send(out, 500, "application/json", bytes(new JSONObject().put("ok", false).put("error", "처리하지 못했어요: " + e.getClass().getSimpleName()).toString()));
         }
     }
 

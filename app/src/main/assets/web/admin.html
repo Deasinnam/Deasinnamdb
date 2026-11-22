@@ -76,6 +76,25 @@ html,body{overflow:hidden}
 .mi{display:flex;gap:14px;align-items:flex-start;padding:14px;margin-bottom:12px}
 .mi .pic{width:96px;height:96px;border-radius:14px;background:var(--soft) center/cover no-repeat;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--sub);font-weight:700;text-align:center;position:relative;overflow:hidden}
 .mi .pic input{position:absolute;inset:0;left:0;top:0;width:100%;height:100%;opacity:0}
+.mi .pcol{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.aib{height:34px;border-radius:10px;background:linear-gradient(135deg,#7048E8,#E64980);color:#fff;font-size:13px;font-weight:800;white-space:nowrap;padding:0 10px}
+.aibig{background:linear-gradient(135deg,#7048E8,#E64980);color:#fff}
+.aichip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-weight:800;font-size:14px}
+.prov{display:flex;gap:10px;margin:6px 0 14px}
+.prov button{flex:1;padding:14px;border-radius:14px;border:2px solid var(--line);text-align:left;background:#fff}
+.prov button.on{border-color:#7048E8;background:#F3F0FF}
+.prov b{display:block;font-size:17px}
+.prov span{font-size:13px;color:var(--sub)}
+.aiprev{width:100%;aspect-ratio:1/1;border-radius:16px;background:var(--soft) center/cover no-repeat;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--sub);font-weight:700;text-align:center;padding:20px}
+.aiprev .spin2{width:44px;height:44px;border:5px solid #E5DBFF;border-top-color:#7048E8;border-radius:50%;animation:sp2 1s linear infinite}
+@keyframes sp2{to{transform:rotate(360deg)}}
+.aigen{display:flex;gap:18px;align-items:flex-start}
+.aigen>div{flex:1;min-width:0}
+.aigen textarea{width:100%;min-height:120px;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:15px;line-height:1.5;resize:vertical}
+.stl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+.stl button{min-height:38px;padding:0 12px;border-radius:999px;background:var(--soft);font-weight:700;font-size:13px}
+.stl button.on{background:#1D1B18;color:#fff}
+@media (max-width:760px){.aigen{flex-direction:column}}
 .mi .fs{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:8px}
 .mi .fs input,.mi .fs select{min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:16px;background:#fff}
 .mi .fs .nm{flex:2 1 180px} .mi .fs .pr{flex:1 1 110px} .mi .fs .ds{flex:3 1 260px} .mi .fs .ct{flex:1 1 120px}
@@ -305,10 +324,10 @@ function drawMenu(){
   h+='<button class="btn" style="width:100%;margin-top:8px" id="cAdd">+ 분류 추가</button></div><div class="mitems">';
   var its=menu.items.filter(function(i){return i.cat===curMCat});
   var cname=(menu.categories.filter(function(c){return c.id===curMCat})[0]||{}).name||"";
-  h+='<div style="display:flex;align-items:center;gap:10px;margin:2px 0 12px"><h3 style="margin:0;flex:1">'+esc(cname)+' 메뉴 '+its.length+'개</h3><button class="btn pri" id="iAdd">+ 메뉴 추가</button></div>';
+  h+='<div style="display:flex;align-items:center;gap:10px;margin:2px 0 12px"><h3 style="margin:0;flex:1">'+esc(cname)+' 메뉴 '+its.length+'개</h3><button class="btn aibig" id="aiBtn">'+(AI&&AI.connected?'✨ AI 연결됨':'✨ AI와 연동하기')+'</button><button class="btn pri" id="iAdd">+ 메뉴 추가</button></div>';
   its.forEach(function(it){
     var i=menu.items.indexOf(it);
-    h+='<div class="mi card"><div class="pic" style="'+(it.img?'background-image:url('+esc(it.img)+')':'')+'">'+(it.img?'':'사진 넣기')+'<input type="file" accept="image/*" data-pic="'+i+'"></div><div class="fs">'+
+    h+='<div class="mi card"><div class="pcol"><div class="pic" style="'+(it.img?'background-image:url('+esc(it.img)+')':'')+'">'+(it.img?'':'사진 넣기')+'<input type="file" accept="image/*" data-pic="'+i+'"></div><button class="aib" data-ai="'+i+'">✨ AI 사진</button></div><div class="fs">'+
       '<input class="nm" data-f="name" data-i="'+i+'" value="'+esc(it.name)+'" placeholder="메뉴 이름">'+
       '<input class="pr" data-f="price" data-i="'+i+'" value="'+it.price+'" inputmode="numeric" placeholder="가격">'+
       '<select class="ct" data-f="cat" data-i="'+i+'">'+menu.categories.map(function(c){return '<option value="'+esc(c.id)+'"'+(c.id===it.cat?" selected":"")+'>'+esc(c.name)+'</option>'}).join("")+'</select>'+
@@ -338,12 +357,93 @@ function drawMenu(){
   [].forEach.call(V.querySelectorAll("[data-mv]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-mv"),it=menu.items[i];
     for(var j=i-1;j>=0;j--)if(menu.items[j].cat===it.cat){menu.items.splice(i,1);menu.items.splice(j,0,it);dirty();drawMenu();return}}});
   [].forEach.call(V.querySelectorAll("[data-del]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-del");menu.items.splice(i,1);dirty();drawMenu()}});
+  $("aiBtn").onclick=function(){aiConnect()};
+  [].forEach.call(V.querySelectorAll("[data-ai]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-ai");
+    if(!menu.items[i].name.trim()){toast("먼저 메뉴 이름을 적어 주세요");return}
+    if(!(AI&&AI.connected)){aiConnect(function(){aiMake(i)});return}aiMake(i)}});
   [].forEach.call(V.querySelectorAll("[data-pic]"),function(e){e.onchange=function(){var i=+e.getAttribute("data-pic");if(e.files&&e.files[0])photo(e.files[0],function(url){menu.items[i].img=url;dirty();drawMenu()})}});
   $("mUndo").onclick=function(){menu=null;menuDirty=false;drawMenu()};
   $("mSave").onclick=function(){
     for(var i=0;i<menu.items.length;i++)if(!menu.items[i].name.trim()){toast("이름이 빈 메뉴가 있어요");return}
     api("POST","/api/admin/menu",menu,function(st){if(st===200){menuDirty=false;menu=null;toast("메뉴를 저장했습니다. 테이블 화면에 바로 나옵니다")}})};
 }
+// ----- AI와 연동하기: 사장님의 API 열쇠로 메뉴 사진 만들기 -----
+var AI=null;
+function aiLoad(cb){api("GET","/api/admin/ai",null,function(st,j){if(st===200&&j){AI=j;cb&&cb()}})}
+var AIPROV={openai:{name:"OpenAI",sub:"GPT 이미지 · platform.openai.com 에서 API 열쇠 발급",ph:"sk-..."},gemini:{name:"Google Gemini",sub:"나노 바나나 · aistudio.google.com 에서 API 열쇠 발급",ph:"AIza..."}};
+function aiConnect(after){
+  aiLoad(function(){
+    var prov=AI.provider||"openai";
+    function draw(){
+      var h='<h2>✨ AI와 연동하기</h2><p class="muted" style="margin:0 0 6px">내 AI 계정의 API 열쇠를 넣으면 메뉴 이름만으로 메뉴 사진을 만들 수 있어요. 요금은 연결한 AI 계정에 청구됩니다(사진 한 장에 보통 수십~수백 원).</p>'+
+        '<div class="prov">'+["openai","gemini"].map(function(k){return '<button data-prov="'+k+'"'+(k===prov?' class="on"':'')+'><b>'+AIPROV[k].name+'</b><span>'+AIPROV[k].sub+'</span></button>'}).join("")+'</div>'+
+        '<div class="field"><label>API 열쇠'+(AI.connected&&AI.provider===prov?' (지금 '+esc(AI.keyTail)+' 연결됨 · 바꿀 때만 넣기)':'')+'</label><input id="aiKey" type="password" autocomplete="off" placeholder="'+AIPROV[prov].ph+'"></div>'+
+        '<div class="field"><label>모델 (보통 그대로 두세요)</label><input id="aiModel" value="'+esc(AI.provider===prov?AI.model:AI.defaults[prov])+'"></div>'+
+        '<p class="muted" style="font-size:13px;margin:0">열쇠는 이 카운터 기기 안에만 저장되고, 손님 화면이나 주문 기록에는 들어가지 않아요.</p>'+
+        '<div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">'+(AI.connected?'<button class="btn bad" id="aiOff">연동 끊기</button>':'')+'<span style="flex:1"></span><button class="btn ghost" id="mNo">닫기</button><button class="btn aibig" id="aiSave">저장하고 연결 확인</button></div>';
+      modal(h);
+      [].forEach.call(document.querySelectorAll("[data-prov]"),function(b){b.onclick=function(){prov=b.getAttribute("data-prov");draw()}});
+      $("mNo").onclick=function(){modal()};
+      if($("aiOff"))$("aiOff").onclick=function(){api("POST","/api/admin/ai",{key:""},function(st,j){if(st===200){AI=j;modal();toast("AI 연동을 끊었습니다");refreshAi()}})};
+      $("aiSave").onclick=function(){
+        var k=$("aiKey").value.trim(),body={provider:prov,model:$("aiModel").value.trim()};
+        if(k)body.key=k; else if(!(AI.connected&&AI.provider===prov)){toast("API 열쇠를 넣어 주세요");return}
+        var b=this;b.disabled=true;b.textContent="확인하는 중…";
+        api("POST","/api/admin/ai",body,function(st,j){
+          if(st!==200){b.disabled=false;b.textContent="저장하고 연결 확인";return}
+          AI=j;
+          api("POST","/api/admin/ai/test",{},function(st2){
+            b.disabled=false;b.textContent="저장하고 연결 확인";
+            if(st2===200){modal();toast(AIPROV[prov].name+"와 연결됐어요");refreshAi();if(after)after()}
+          },null,30000);
+        });
+      };
+    }
+    draw();
+  });
+}
+function refreshAi(){if(view==="menu"&&!menuDirty){menu=null;drawMenu()}else if($("aiBtn"))$("aiBtn").textContent=AI&&AI.connected?"✨ AI 연결됨":"✨ AI와 연동하기";if(view==="settings")drawSettings()}
+var STYLES={
+  premium:"고급 레스토랑 플레이팅, 차분한 아이보리색 배경, 부드러운 자연광, 45도 각도",
+  cafe:"아늑한 카페 나무 테이블 위, 크림색 배경, 따뜻한 햇살, 감성적인 카페 사진",
+  korean:"정갈한 한식 그릇에 담긴 모습, 나무 상 위, 따뜻한 조명, 위에서 비스듬히",
+  top:"바로 위에서 내려다본 구도, 깔끔한 흰 배경",
+  white:"순백색 배경의 메뉴판용 사진, 그림자 약하게"
+};
+function aiPrompt(it,style){
+  var cat=(menu.categories.filter(function(c){return c.id===it.cat})[0]||{}).name||"";
+  return it.name+(it.desc?" ("+it.desc+")":"")+(cat?", "+cat+" 메뉴":"")+"의 먹음직스러운 실제 음식 사진. "+STYLES[style]+". 사실적인 고화질 사진, 음식이 화면 가운데에 크게, 글자 · 로고 · 사람 · 손 없이, 정사각형.";
+}
+function aiMake(i){
+  var it=menu.items[i],style=(D.settings&&D.settings.skin)||"premium",img="",busy=false;
+  var h='<h2>✨ AI로 메뉴 사진 만들기</h2><p class="muted" style="margin:0 0 14px">'+esc(it.name)+' · '+AIPROV[AI.provider].name+' ('+esc(AI.model)+')</p>'+
+    '<div class="aigen"><div><div class="aiprev" id="aiPrev">'+(it.img?'':'아래 「만들기」를 누르면<br>여기에 사진이 나와요')+'</div></div>'+
+    '<div><label style="font-size:14px;font-weight:700;color:var(--sub)">분위기</label><div class="stl" id="aiStl">'+
+    [["premium","고급 레스토랑"],["cafe","카페"],["korean","한식 상차림"],["top","위에서 찍기"],["white","흰 배경"]].map(function(x){return '<button data-st="'+x[0]+'"'+(x[0]===style?' class="on"':'')+'>'+x[1]+'</button>'}).join("")+'</div>'+
+    '<label style="font-size:14px;font-weight:700;color:var(--sub);display:block;margin-top:12px">어떤 사진을 만들까요? (고쳐 써도 돼요)</label><textarea id="aiP"></textarea>'+
+    '<p class="muted" style="font-size:13px;margin:8px 0 0">AI가 만든 사진은 실제 음식과 다를 수 있어요. 실제 메뉴와 비슷한지 꼭 확인해 주세요.</p>'+
+    '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn ghost" id="mNo">닫기</button><span style="flex:1"></span><button class="btn aibig" id="aiGo">만들기</button><button class="btn pri hide" id="aiUse">이 사진 쓰기</button></div></div></div>';
+  modal(h);
+  $("modal").firstChild.onclick=null; // 만드는 중 바깥을 눌러 닫히지 않게
+  $("modal").querySelector(".box").style.maxWidth="900px";
+  if(it.img)$("aiPrev").style.backgroundImage="url("+it.img+")";
+  $("aiP").value=aiPrompt(it,style);
+  [].forEach.call(document.querySelectorAll("#aiStl button"),function(b){b.onclick=function(){if(busy)return;style=b.getAttribute("data-st");
+    [].forEach.call(document.querySelectorAll("#aiStl button"),function(x){x.classList.toggle("on",x===b)});$("aiP").value=aiPrompt(it,style)}});
+  $("mNo").onclick=function(){if(!busy)modal()};
+  $("aiGo").onclick=function(){
+    if(busy)return;busy=true;
+    var go=this;go.disabled=true;go.textContent="만드는 중…";$("aiUse").classList.add("hide");
+    $("aiPrev").style.backgroundImage="";$("aiPrev").innerHTML='<div class="spin2"></div>AI가 사진을 만들고 있어요<br><span style="font-weight:500;font-size:13px">보통 10~40초 걸려요</span>';
+    api("POST","/api/admin/ai/image",{prompt:$("aiP").value},function(st,j){
+      busy=false;go.disabled=false;
+      if(st===200&&j&&j.img){img=j.img;$("aiPrev").innerHTML="";$("aiPrev").style.backgroundImage="url("+img+")";go.textContent="다시 만들기";$("aiUse").classList.remove("hide")}
+      else{go.textContent="다시 해 보기";$("aiPrev").innerHTML=esc((j&&j.error)||"카운터에 닿지 않았어요");}
+    },null,180000);
+  };
+  $("aiUse").onclick=function(){menu.items[i].img=img;dirty();modal();drawMenu();toast("사진을 넣었어요. 「메뉴 저장」을 누르면 손님 화면에 나와요")};
+}
+
 /* 사진은 화면에서 800px로 줄여 올림(테이블 기기가 가볍게 받도록) */
 function photo(file,cb){
   var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){
@@ -380,6 +480,8 @@ function drawSettings(){
   '<div class="card"><h3>테이블 기기 연결</h3><div class="muted">태블릿 · 구형 폰에 덜누름 테이블오더를 깔고 <b>테이블 주문기로 쓰기</b>를 누르면 이 카운터가 저절로 나타납니다. 안 나타나면 아래 주소를 넣으세요.</div>'+
   '<div class="addr">'+esc(ip||"와이파이 연결 필요")+'</div><ol class="how"><li>모든 기기를 같은 매장 와이파이에 연결</li><li>이 폴드에서 카운터 화면을 켜 둔 채로(화면이 꺼져도 주문은 받습니다)</li><li>테이블 기기마다 테이블 번호를 고르고 시작</li></ol></div>'+
   '<div class="card"><h3>손님 화면 스킨</h3><div class="muted" style="margin-bottom:14px">누르면 모든 테이블 화면에 바로 적용됩니다. 메뉴 · 주문은 그대로 남습니다.</div><div class="skins" id="skins"></div></div>'+
+  '<div class="card"><h3>AI와 연동하기</h3><div class="muted" style="margin-bottom:12px">OpenAI · Google Gemini 계정의 API 열쇠를 연결하면, 메뉴 관리에서 「✨ AI 사진」으로 메뉴 사진을 만들 수 있어요.</div>'+
+  (AI&&AI.connected?'<span class="aichip">● '+AIPROV[AI.provider].name+' 연결됨 '+esc(AI.keyTail)+'</span> ':'')+'<button class="btn aibig" id="sAi" style="margin-left:6px">'+(AI&&AI.connected?'연동 설정':'✨ AI와 연동하기')+'</button></div>'+
   '<div class="card"><h3>가게</h3><div class="field"><label>가게 이름 (테이블 화면 위쪽)</label><input id="sShop" value="'+esc(s.shop)+'"></div>'+
   '<div class="field"><label>테이블 수</label><input id="sTables" inputmode="numeric" value="'+(s.tables||8)+'"></div>'+
   '<div class="field"><label>손님 화면 안내 문구 (선택)</label><input id="sNotice" value="'+esc(s.notice)+'" placeholder="예: 오늘 디저트 10% 할인"></div>'+
@@ -391,6 +493,7 @@ function drawSettings(){
   '<p class="muted" style="margin-top:14px">덜누름 테이블오더 '+esc(ver)+' · 주문은 이 매장 와이파이 안에서만 오가며, 이 기기에만 저장됩니다.</p></div></div>';
   $("vSettings").innerHTML=h;
   drawSkins(s.skin||"premium");
+  $("sAi").onclick=function(){aiConnect()};
   var snd=s.sound!==false;
   $("sSound").onclick=function(){snd=!snd;this.classList.toggle("on",snd)};
   $("sSave").onclick=function(){api("POST","/api/admin/settings",{shop:$("sShop").value,tables:parseInt($("sTables").value,10)||8,notice:$("sNotice").value,sound:snd},function(st){if(st===200)toast("저장했습니다")})};
@@ -422,6 +525,6 @@ setInterval(function(){
 },30000);
 (function(){var d=new Date();$("clock").textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)})();
 
-if(!KEY)noKey();else poll();
+if(!KEY)noKey();else{poll();aiLoad(function(){if(view==="menu"&&!menuDirty)drawMenu()})}
 </script>
 </body></html>

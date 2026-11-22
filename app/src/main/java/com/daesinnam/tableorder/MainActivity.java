@@ -470,6 +470,25 @@ public class MainActivity extends Activity {
                 String viaLan = lan.isEmpty() ? null : http("GET", "http://" + lan + ":" + OrderServer.PORT + "/api/ping", null, null);
                 check(viaLan != null, "reachable on LAN ip " + lan);
 
+                // AI와 연동하기: 가짜 AI 서버(이 기기 안)로 OpenAI · Gemini 방식 모두 확인
+                int fport = fakeAi();
+                for (String pv : new String[]{"openai", "gemini"}) {
+                    http("POST", base + "/api/admin/ai", new JSONObject().put("provider", pv).put("key", "test-secret-" + pv).put("base", "http://127.0.0.1:" + fport).toString(), key);
+                    String tr = http("POST", base + "/api/admin/ai/test", "{}", key);
+                    String gr = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"아메리카노 사진\"}", key);
+                    String gimg = gr != null && !gr.startsWith("ERR") ? new JSONObject(gr).optString("img") : "";
+                    HttpURLConnection gi = gimg.isEmpty() ? null : (HttpURLConnection) new URL(base + gimg).openConnection();
+                    check(tr != null && !tr.startsWith("ERR") && gi != null && gi.getResponseCode() == 200 && "image/jpeg".equals(gi.getContentType()), "ai " + pv + " image " + gr);
+                }
+                String info = http("GET", base + "/api/admin/ai", null, key);
+                String pub = http("GET", base + "/api/state?table=1", null, null) + http("GET", base + "/api/admin", null, key);
+                check(info != null && info.contains("\"connected\":true") && !info.contains("test-secret") && !pub.contains("test-secret"), "ai key kept private");
+                String bad = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"x\"}", key);
+                check(bad != null && bad.startsWith("ERR 400"), "ai short prompt rejected");
+                http("POST", base + "/api/admin/ai", "{\"key\":\"\",\"base\":\"\",\"provider\":\"openai\",\"model\":\"\"}", key);
+                String off = http("POST", base + "/api/admin/ai/image", "{\"prompt\":\"아메리카노 사진\"}", key);
+                check(off != null && off.startsWith("ERR 400") && off.contains("연동"), "ai off needs connect");
+
                 // 와이파이 찾기(에뮬레이터에서는 안 될 수 있어 기록만)
                 final String[] found = {null};
                 ui.post(() -> {
@@ -497,7 +516,7 @@ public class MainActivity extends Activity {
                 Thread.sleep(7000);
                 load(base + "/table.html?t=3");
                 Thread.sleep(5000);
-                probe("table", "JSON.stringify({loaded:document.querySelectorAll('.item').length>0})");
+                probe("table", "JSON.stringify({loaded:document.querySelectorAll('.card').length>0})");
                 Thread.sleep(1000);
                 st("SHOT table");
                 Thread.sleep(7000);
@@ -519,7 +538,7 @@ public class MainActivity extends Activity {
                 }
                 check("korean".equals(new Store(getFilesDir()).tableView(0).optString("skin")), "skin saved to file");
                 check(new Store(getFilesDir()).tableView(0).getJSONArray("items").length() >= 5, "menu kept after skin change");
-                js("document.querySelector('.card[data-id=latte]') && document.querySelector('.card[data-id=latte]').click();");
+                js("document.querySelector('.card[data-id=americano] .nm') && document.querySelector('.card[data-id=americano] .nm').click();");
                 Thread.sleep(2500);
                 probe("detail", "JSON.stringify({loaded:!!document.querySelector('.box.detail')})");
                 Thread.sleep(1000);
@@ -540,6 +559,45 @@ public class MainActivity extends Activity {
 
     private void probe(String what, String expr) {
         ui.post(() -> web.evaluateJavascript(expr, v -> { st("INFO probe " + what + " " + v); check(v != null && v.contains("\\\"loaded\\\":true"), what + " screen loaded"); }));
+    }
+
+    /** 점검용 가짜 AI 서버: OpenAI(/v1/...) · Gemini(/v1beta/...) 모양으로 PNG를 돌려줌 */
+    private int fakeAi() throws Exception {
+        final java.net.ServerSocket ss = new java.net.ServerSocket(0, 8, InetAddress.getByName("127.0.0.1"));
+        android.graphics.Bitmap bm = android.graphics.Bitmap.createBitmap(64, 64, android.graphics.Bitmap.Config.ARGB_8888);
+        bm.eraseColor(Color.rgb(200, 150, 90));
+        ByteArrayOutputStream pb = new ByteArrayOutputStream();
+        bm.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, pb);
+        final String png = android.util.Base64.encodeToString(pb.toByteArray(), android.util.Base64.NO_WRAP);
+        Thread t = new Thread(() -> {
+            while (true) {
+                try (java.net.Socket so = ss.accept()) {
+                    InputStream in = so.getInputStream();
+                    StringBuilder head = new StringBuilder();
+                    int c, len = 0;
+                    while ((c = in.read()) >= 0) { head.append((char) c); if (head.toString().endsWith("\r\n\r\n")) break; }
+                    String hs = head.toString();
+                    for (String l : hs.split("\r\n")) if (l.toLowerCase().startsWith("content-length:")) len = Integer.parseInt(l.substring(15).trim());
+                    for (int i = 0; i < len; i++) in.read();
+                    boolean auth = hs.contains("Bearer test-secret-openai") || hs.toLowerCase().contains("x-goog-api-key: test-secret-gemini");
+                    String path = hs.split(" ")[1];
+                    String body = !auth ? "{\"error\":{\"message\":\"bad key\"}}"
+                            : path.startsWith("/v1/images") ? "{\"data\":[{\"b64_json\":\"" + png + "\"}]}"
+                            : path.contains(":generateContent") ? "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"ok\"},{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\"" + png + "\"}}]}}]}"
+                            : "{\"data\":[],\"models\":[]}";
+                    byte[] bb = body.getBytes(StandardCharsets.UTF_8);
+                    OutputStream o = so.getOutputStream();
+                    o.write(("HTTP/1.1 " + (auth ? "200 OK" : "401 Unauthorized") + "\r\nContent-Type: application/json\r\nContent-Length: " + bb.length + "\r\nConnection: close\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+                    o.write(bb);
+                    o.flush();
+                } catch (Exception e) {
+                    if (ss.isClosed()) return;
+                }
+            }
+        }, "fake-ai");
+        t.setDaemon(true);
+        t.start();
+        return ss.getLocalPort();
     }
 
     /** 점검용 아주 작은 JPEG(흰 점 하나) */
