@@ -266,7 +266,7 @@ final class Store {
                 if (!link.isEmpty() && !link.matches("(?i)https?://\\S{3,300}")) throw new IllegalArgumentException("결제 링크는 https:// 로 시작하는 주소여야 해요");
                 String img = m.optString("img");
                 out.put(new JSONObject().put("id", m.optString("id").isEmpty() ? UUID.randomUUID().toString().substring(0, 8) : clip(m.optString("id"), 12))
-                        .put("type", m.optString("type").matches("kakao|naver|toss|bank|zero|other") ? m.optString("type") : "other")
+                        .put("type", m.optString("type").matches("kakao|naver|bank|zero|other") ? m.optString("type") : "other") // 토스아이디 송금은 서비스 종료
                         .put("name", clip(m.optString("name"), 16)).put("link", link).put("img", img.startsWith("/img/") ? img : "")
                         .put("bank", clip(m.optString("bank"), 16)).put("account", clip(m.optString("account"), 30)).put("holder", clip(m.optString("holder"), 16))
                         .put("on", m.optBoolean("on", true)));

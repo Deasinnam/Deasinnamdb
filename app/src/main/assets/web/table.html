@@ -415,8 +415,8 @@ function showOrders(){
 }
 $("bOrders").onclick=showOrders;
 
-/* ----- QR 결제: 사장님이 등록한 송금 QR(카카오페이 · 네이버페이 · 토스 · 제로페이) 또는 계좌 ----- */
-var PAYLOOK={kakao:["#FEE500","#191919","카카오페이","pay"],naver:["#03C75A","#fff","네이버페이","N"],toss:["#0064FF","#fff","토스","toss"],zero:["#1E4FD8","#fff","제로페이","ZERO"],bank:["#5C5C5C","#fff","계좌이체","은행"],other:["#888","#fff","QR 결제","QR"]};
+/* ----- QR 결제: 사장님이 등록한 송금 QR(카카오페이 · 네이버페이 · 제로페이) 또는 계좌 ----- */
+var PAYLOOK={kakao:["#FEE500","#191919","카카오페이","pay"],naver:["#03C75A","#fff","네이버페이","N"],zero:["#1E4FD8","#fff","제로페이","ZERO"],bank:["#5C5C5C","#fff","계좌이체","은행"],other:["#888","#fff","QR 결제","QR"]};
 function payPick(sum){
   var h='<h2>어떻게 결제할까요?</h2><p class="s">'+TABLE+'번 테이블 · 결제할 금액 <b style="color:var(--ink);font-size:18px">'+won(sum)+'</b></p><div class="pmeth">';
   (S.pay||[]).forEach(function(m,i){var L=PAYLOOK[m.type]||PAYLOOK.other;

@@ -680,13 +680,13 @@ function drawBells(s){
 // ----- QR 결제 수단 -----
 var PAYT={kakao:["#FEE500","#191919","카카오페이","pay","카카오페이 앱 › 전체 › 송금 › 「QR 송금」(사장님용은 카카오페이 QR결제 신청) 화면의 QR"],
   naver:["#03C75A","#fff","네이버페이","N","네이버페이 앱의 「QR 송금」 또는 현장결제 가맹점 QR"],
-  toss:["#0064FF","#fff","토스","toss","토스 앱 › 송금 › 토스아이디(toss.me/아이디) 주소"],
   zero:["#1E4FD8","#fff","제로페이","ZERO","가게에 붙은 제로페이 · 지역화폐 가맹점 QR"],
   bank:["#5C5C5C","#fff","계좌이체","은행","은행 · 계좌번호 · 예금주"],
   other:["#888","#fff","QR 결제","QR","그 밖의 결제 · 송금 QR"]};
 function qrSvg(text){try{var q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag({cellSize:8,margin:2,scalable:true})}catch(e){return ""}}
 function drawPays(s){
   var list=s.pay||[];
+  list.forEach(function(m){if(m.type==="toss")m.type="other"}); // 토스아이디 송금은 서비스 종료 → 그 밖의 QR로
   $("pays").innerHTML=list.length?list.map(function(m,i){var L=PAYT[m.type]||PAYT.other;
     return '<div class="pm"><span class="lg" style="background:'+L[0]+';color:'+L[1]+'">'+L[3]+'</span><div class="tx"><b>'+esc(m.name||L[2])+(m.on===false?' <span class="badge">꺼짐</span>':'')+'</b><span>'+esc(m.type==="bank"?(m.bank+" "+m.account+" · "+m.holder):(m.link||(m.img?"QR 사진":"")))+'</span></div><button class="btn ghost" data-pe="'+i+'">고치기</button></div>'}).join("")
     :'<div class="muted" style="padding:12px 0">아직 등록한 결제 수단이 없어요</div>';
@@ -702,7 +702,7 @@ function payEdit(s,idx){
         '<div class="field"><label>은행</label><input id="pBank" value="'+esc(m.bank)+'" placeholder="예: 국민은행"></div><div class="field"><label>계좌번호</label><input id="pAcc" value="'+esc(m.account)+'" inputmode="numeric"></div><div class="field"><label>예금주</label><input id="pHolder" value="'+esc(m.holder)+'"></div>'
        :'<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap"><div class="pqr" id="pPrev"></div><div style="flex:1;min-width:220px">'+
         '<button class="btn" id="pPhoto" style="width:100%">📷 QR 사진 올리기 (찍어 둔 QR · 캡처)</button><input type="file" accept="image/*" id="pFile" class="hide">'+
-        '<div class="field" style="margin-top:12px"><label>또는 링크 붙여넣기</label><input id="pLink" value="'+esc(m.link)+'" placeholder="'+(m.type==="toss"?"https://toss.me/아이디":"https://...")+'"></div>'+
+        '<div class="field" style="margin-top:12px"><label>또는 링크 붙여넣기</label><input id="pLink" value="'+esc(m.link)+'" placeholder="https://..."></div>'+
         '<div class="field"><label>받는 분 이름 (손님 화면에 「받는 분 확인」으로 보여요)</label><input id="pHolder" value="'+esc(m.holder)+'" placeholder="예: 김덜누 (덜누름 카페)"></div></div></div>')+
       '<div class="field"><label>손님 화면에 보일 이름</label><input id="pName" value="'+esc(m.name)+'" placeholder="'+L[2]+'"></div>'+
       '<div class="rowt"><div class="tx"><b>손님 화면에 보이기</b></div><button class="toggle'+(m.on!==false?" on":"")+'" id="pOn"></button></div>'+
@@ -797,10 +797,10 @@ function drawSettings(){
   '<div class="reps"><span class="muted" style="font-weight:700;margin-right:4px">울림 횟수</span><button data-rep="1">1번</button><button data-rep="2">2번</button><button data-rep="3">3번</button></div>'+
   '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px"><button class="btn ghost" id="bellPick">🎵 벨소리 직접 등록하기</button><span class="muted" style="font-size:13px">휴대폰 · 폴더에서 mp3 · wav · m4a · ogg 파일 고르기 (3MB까지)</span><input type="file" accept="audio/*" id="bellFile" class="hide"></div>'+
   '<div class="rowt" style="margin-top:10px"><div class="tx"><b>확인 안 한 주문 다시 알림</b><div class="muted" style="font-size:13px">새 주문을 1분 · 3분이 지나도 확인하지 않으면 한 번씩만 더 울려요</div></div><button class="toggle'+(s.bellRemind!==false?" on":"")+'" id="bellRemind"></button></div></div>'+
-  '<div class="card"><h3>QR 결제 (카카오페이 · 네이버페이 · 토스 · 제로페이 · 계좌)</h3><div class="muted" style="margin-bottom:6px">손님이 테이블 화면의 「결제하기」를 누르면 여기 등록한 QR과 결제 금액이 크게 나와요. 손님이 휴대폰으로 찍어 보내고 「보냈어요」를 누르면, 테이블 현황에 확인 요청이 떠요. 입금 알림을 확인한 뒤 「결제 완료」를 눌러 주세요.</div>'+
+  '<div class="card"><h3>QR 결제 (카카오페이 · 네이버페이 · 제로페이 · 계좌)</h3><div class="muted" style="margin-bottom:6px">손님이 테이블 화면의 「결제하기」를 누르면 여기 등록한 QR과 결제 금액이 크게 나와요. 손님이 휴대폰으로 찍어 보내고 「보냈어요」를 누르면, 테이블 현황에 확인 요청이 떠요. 입금 알림을 확인한 뒤 「결제 완료」를 눌러 주세요.</div>'+
   '<div id="pays"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" id="payAdd">+ 결제 수단 추가</button></div>'+
   '<div class="rowt" style="margin-top:10px"><div class="tx"><b>「카운터에서 결제」 단추도 보이기</b><div class="muted" style="font-size:13px">카드 · 현금 손님을 위해</div></div><button class="toggle'+(s.payCounter!==false?" on":"")+'" id="payCounter"></button></div>'+
-  '<p class="muted" style="font-size:12px;margin:10px 0 0">덜누름 테이블오더는 돈을 대신 받거나 결제를 확인하지 않아요. 돈은 사장님 카카오페이 · 네이버페이 · 토스 · 계좌로 바로 가고, 입금 확인은 그 앱 알림으로 해 주세요.</p></div>'+
+  '<p class="muted" style="font-size:12px;margin:10px 0 0">덜누름 테이블오더는 돈을 대신 받거나 결제를 확인하지 않아요. 돈은 사장님 카카오페이 · 네이버페이 · 계좌로 바로 가고, 입금 확인은 그 앱 알림으로 해 주세요.</p></div>'+
   '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 실시간으로 볼 수 있어요(보기 전용 · 처리와 수정은 메인에서만). 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
   '<div class="devs" id="devs"><div class="muted" style="padding:12px 0">불러오는 중…</div></div><button class="btn pri" id="sAddDev" style="margin-top:14px">+ 기기 추가</button>'+
   '<details style="margin-top:16px"><summary class="muted" style="cursor:pointer">PC 브라우저로 열기 (메인과 같은 권한)</summary><div class="code" style="margin-top:8px">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></details></div>'+
