@@ -1201,6 +1201,16 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
 .al-info b .al-rate .rv-st i { display: block; }
 .al-info b .al-rate .al-rn, .al-info b .al-rate .al-rc { display: inline; color: inherit; font-size: 13px; }
 .al-info b .al-rate .al-rc { font-weight: 500; opacity: .6; }
+.al-info b .al-rate.is-empty .rv-st { opacity: .7; }
+/* 앱 소개 페이지 받기 버튼 아래 별점 줄 */
+.ap-rate { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 14px 0 0; padding: 10px 14px; border: 1px solid #3f3f46; border-radius: 12px; background: rgba(250,204,21,.05); color: #e4e4e7; text-decoration: none; font-size: 13.5px; }
+.ap-rate:hover { border-color: #a16207; background: rgba(250,204,21,.1); }
+.ap-rate .rv-st { font-size: 17px; letter-spacing: 2px; }
+.ap-rate-n { font: 800 17px/1 var(--font-display); color: #fff; }
+.ap-rate-n:empty { display: none; }
+.ap-rate-c { color: #a1a1aa; }
+.ap-rate em { font-style: normal; font-weight: 700; color: #fde047; }
+.ap-rate:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 </style>
 <link rel="canonical" href="https://deolnureum.com/work/">
 <meta property="og:url" content="https://deolnureum.com/work/">
@@ -5166,7 +5176,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         var m = mine(); m.push({ app: app, s: k, nick: nick || "익명", text: text, t: Date.now() }); saveMine(m);
         form.reset(); paint(0); msg.textContent = ""; btn.disabled = false;
         st.className = "rv-status ok"; st.textContent = "후기를 남겼습니다. 고맙습니다! 모두에게 보이기까지 몇 분 걸릴 수 있어요.";
-        draw(box, app);
+        draw(box, app); heads(); badges();
       }, function () { btn.disabled = false; bad("보내지 못했습니다. 잠시 뒤 다시 시도해 주세요."); });
     });
   }
@@ -5204,10 +5214,9 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         var a = b.querySelector("a"); if (!a) return;
         var s = summary(listFor(a.textContent.trim(), src));
         var old = b.querySelector(".al-rate"); if (old) old.remove();
-        if (!s.n) return;
-        var sp = document.createElement("span"); sp.className = "al-rate";
-        sp.setAttribute("aria-label", "평균 별점 " + s.avg.toFixed(1) + "점, 후기 " + s.n + "개");
-        sp.innerHTML = stars(s.avg) + '<span class="al-rn">' + s.avg.toFixed(1) + ' <span class="al-rc">(' + s.n + ")</span></span>";
+        var sp = document.createElement("span"); sp.className = "al-rate" + (s.n ? "" : " is-empty");
+        sp.setAttribute("aria-label", s.n ? "평균 별점 " + s.avg.toFixed(1) + "점, 후기 " + s.n + "개" : "아직 별점 없음");
+        sp.innerHTML = stars(s.avg) + (s.n ? '<span class="al-rn">' + s.avg.toFixed(1) + ' <span class="al-rc">(' + s.n + ")</span></span>" : '<span class="al-rn al-rc">아직 별점 없음</span>');
         b.appendChild(sp);
       });
     });
@@ -5217,7 +5226,28 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); draw(e.target, e.target.getAttribute("data-app")); } }); }, { rootMargin: "400px" });
     boxes.forEach(function (b) { io.observe(b); });
   } else boxes.forEach(function (b) { draw(b, b.getAttribute("data-app")); });
-  if (document.querySelector(".al-info")) setTimeout(badges, 1200);
+  // 앱 소개 페이지: 받기 버튼 아래 평균 별점 한 줄 (누르면 아래 후기 칸으로)
+  boxes.forEach(function (box) {
+    var sec = box.closest("section"), cta = sec && sec.querySelector(".amp-cta"); if (!cta) return;
+    var r = document.createElement("a"); r.className = "ap-rate"; r.href = "#" + box.id;
+    r.innerHTML = stars(0) + '<b class="ap-rate-n">–</b><span class="ap-rate-c">별점 불러오는 중…</span><em>별점 주기 →</em>';
+    r.addEventListener("click", function (e) { e.preventDefault(); box.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    cta.parentNode.insertBefore(r, cta.nextSibling);
+  });
+  function heads() {
+    load(function (src) {
+      boxes.forEach(function (box) {
+        var sec = box.closest("section"), r = sec && sec.querySelector(".ap-rate"); if (!r) return;
+        var s = summary(listFor(box.getAttribute("data-app"), src));
+        r.querySelector(".rv-st").outerHTML = stars(s.avg);
+        r.querySelector(".ap-rate-n").textContent = s.n ? s.avg.toFixed(1) : "";
+        r.querySelector(".ap-rate-c").textContent = s.n ? "후기 " + s.n + "개" : "아직 별점이 없어요";
+        r.querySelector("em").textContent = s.n ? "후기 보기 · 별점 주기 →" : "첫 별점 남기기 →";
+        r.setAttribute("aria-label", (s.n ? "평균 별점 " + s.avg.toFixed(1) + "점, 후기 " + s.n + "개. " : "아직 별점 없음. ") + "누르면 후기 칸으로 이동");
+      });
+    });
+  }
+  setTimeout(function () { heads(); if (document.querySelector(".al-info")) badges(); }, 600);
 })();
 </script>
 <script>
