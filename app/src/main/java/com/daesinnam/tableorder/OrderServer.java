@@ -193,6 +193,7 @@ final class OrderServer {
                     return;
                 }
                 JSONObject b = body.length > 0 ? new JSONObject(str(body)) : new JSONObject();
+                if (a.equals("/sales")) { json(out, store.sales(qs.get("month"), qs.get("day"))); return; } // 일일 · 월간 매출(메인 전용)
                 if (a.startsWith("/devices")) { // 메인 전용: 서브 기기 연결 코드 · 목록 · 끊기
                     if (devices == null) throw new IllegalArgumentException("서브 기기를 쓸 수 없어요");
                     switch (a) {

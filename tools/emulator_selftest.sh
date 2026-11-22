@@ -27,7 +27,7 @@ sed 's/^.*TO_SELFTEST: //' selftest-result.txt | cut -c1-300
 pass=$(grep -c "TO_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "TO_SELFTEST: FAIL" selftest-result.txt || true)
 echo "PASS=$pass FAIL=$failn"
-if ! grep -q "TO_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ] || [ "$pass" -lt 38 ]; then fail=1; fi
+if ! grep -q "TO_SELFTEST: DONE" selftest-result.txt || [ "$failn" != 0 ] || [ "$pass" -lt 41 ]; then fail=1; fi
 if adb logcat -d | grep -A3 "FATAL EXCEPTION" | grep -q "$PKG"; then echo "시험용 빌드가 꺼졌습니다"; adb logcat -d | grep -A25 "FATAL EXCEPTION" | tail -40; fail=1; fi
 
 if [ -n "$RELEASE_APK" ] && [ -f "$RELEASE_APK" ]; then

@@ -79,6 +79,7 @@ final class Store {
     synchronized JSONObject adminView() throws JSONException {
         JSONObject o = new JSONObject(s.toString());
         o.remove("seq");
+        o.remove("sales"); // 매출 기록은 따로(/api/admin/sales) — 주문판이 가볍게
         o.put("rev", rev);
         long sum = 0;
         int cnt = 0;
@@ -227,11 +228,14 @@ final class Store {
         if (in.has("bell")) st.put("bell", bell(in.optString("bell")));
         if (in.has("bellRepeat")) st.put("bellRepeat", Math.max(1, Math.min(3, in.optInt("bellRepeat", 2))));
         if (in.has("bellCustom")) { String c = in.optString("bellCustom"); st.put("bellCustom", c.matches("/sndc/[A-Za-z0-9_-]{1,40}\\.(mp3|wav|ogg|m4a|aac)") ? c : ""); }
+        if (in.has("bellRemind")) st.put("bellRemind", in.optBoolean("bellRemind", true));
         if (in.has("bellCustomName")) st.put("bellCustomName", clip(in.optString("bellCustomName"), 40));
         changed();
     }
 
     synchronized void resetToday() throws JSONException {
+        archive(today()); // 어제까지 기록은 남기고
+        s.getJSONObject("sales").remove(today()); // 오늘 것만 지움
         s.put("orders", new JSONArray());
         s.put("calls", new JSONArray());
         s.getJSONObject("seq").put("no", 0);
@@ -260,6 +264,7 @@ final class Store {
             seq.put("day", t);
             seq.put("no", 0);
             JSONArray keep = new JSONArray(), orders = s.getJSONArray("orders");
+            archive(t); // 지난 날의 매출을 하루 요약으로 남김(주문은 지워져도 매출 기록은 유지)
             long cut = System.currentTimeMillis() - 2L * 24 * 3600 * 1000;
             for (int i = 0; i < orders.length(); i++) {
                 JSONObject od = orders.getJSONObject(i);
@@ -267,6 +272,96 @@ final class Store {
             }
             s.put("orders", keep);
         }
+    }
+
+    // ---------- 매출 ----------
+
+    /** 주문 목록에서 날짜별 요약(취소 제외): 건수 · 합계 · 메뉴별 수량/금액 · 시간대별 금액 */
+    private static JSONObject summarize(JSONArray orders, String day) throws JSONException {
+        long total = 0;
+        int count = 0;
+        long[] hours = new long[24];
+        JSONObject items = new JSONObject();
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        for (int i = 0; i < orders.length(); i++) {
+            JSONObject od = orders.getJSONObject(i);
+            if (!day.equals(od.optString("day")) || "canceled".equals(od.optString("status"))) continue;
+            count++;
+            total += od.optLong("total");
+            cal.setTimeInMillis(od.optLong("time"));
+            hours[cal.get(java.util.Calendar.HOUR_OF_DAY)] += od.optLong("total");
+            JSONArray ls = od.optJSONArray("items");
+            for (int j = 0; ls != null && j < ls.length(); j++) {
+                JSONObject l = ls.getJSONObject(j);
+                String n = l.optString("name");
+                JSONObject it = items.optJSONObject(n);
+                if (it == null) { it = new JSONObject().put("qty", 0).put("amount", 0); items.put(n, it); }
+                it.put("qty", it.optInt("qty") + l.optInt("qty"));
+                it.put("amount", it.optLong("amount") + l.optLong("price") * l.optInt("qty"));
+            }
+        }
+        JSONArray h = new JSONArray();
+        for (long v : hours) h.put(v);
+        return new JSONObject().put("count", count).put("total", total).put("items", items).put("hours", h);
+    }
+
+    /** 오늘(except)이 아닌 날들의 매출을 sales에 저장. 400일 넘은 기록은 정리 */
+    private void archive(String except) throws JSONException {
+        JSONObject sales = s.getJSONObject("sales");
+        JSONArray orders = s.getJSONArray("orders");
+        java.util.HashSet<String> days = new java.util.HashSet<>();
+        for (int i = 0; i < orders.length(); i++) days.add(orders.getJSONObject(i).optString("day"));
+        for (String d : days) if (!d.isEmpty() && !d.equals(except)) sales.put(d, summarize(orders, d));
+        String cut = new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(new Date(System.currentTimeMillis() - 400L * 24 * 3600 * 1000));
+        java.util.ArrayList<String> old = new java.util.ArrayList<>();
+        for (java.util.Iterator<String> k = sales.keys(); k.hasNext(); ) { String d = k.next(); if (d.compareTo(cut) < 0) old.add(d); }
+        for (String d : old) sales.remove(d);
+    }
+
+    /** 매출 보기: month = "2026-11". 날짜별 합계 + 그 달 메뉴 순위 + 고른 날(day)의 자세한 내용 */
+    synchronized JSONObject sales(String month, String day) throws JSONException {
+        String t = today();
+        if (month == null || !month.matches("\\d{4}-\\d{2}")) month = t.substring(0, 7);
+        if (day == null || !day.matches("\\d{4}-\\d{2}-\\d{2}")) day = t;
+        JSONObject sales = s.getJSONObject("sales"), orders = null;
+        JSONArray os = s.getJSONArray("orders");
+        java.util.HashSet<String> live = new java.util.HashSet<>(); // 아직 주문이 남아 있는 날은 주문에서 바로 계산(가장 정확)
+        for (int i = 0; i < os.length(); i++) live.add(os.getJSONObject(i).optString("day"));
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(Integer.parseInt(month.substring(0, 4)), Integer.parseInt(month.substring(5, 7)) - 1, 1);
+        int last = c.getActualMaximum(java.util.Calendar.DAY_OF_MONTH);
+        JSONArray days = new JSONArray();
+        long mTotal = 0;
+        int mCount = 0, open = 0;
+        JSONObject mItems = new JSONObject();
+        for (int d = 1; d <= last; d++) {
+            String key = month + "-" + (d < 10 ? "0" : "") + d;
+            JSONObject sm = live.contains(key) ? summarize(os, key) : sales.optJSONObject(key);
+            long tot = sm == null ? 0 : sm.optLong("total");
+            int cnt = sm == null ? 0 : sm.optInt("count");
+            days.put(new JSONObject().put("day", key).put("total", tot).put("count", cnt));
+            mTotal += tot;
+            mCount += cnt;
+            if (cnt > 0) open++;
+            JSONObject its = sm == null ? null : sm.optJSONObject("items");
+            if (its != null) for (java.util.Iterator<String> k = its.keys(); k.hasNext(); ) {
+                String n = k.next();
+                JSONObject a = its.getJSONObject(n), m = mItems.optJSONObject(n);
+                if (m == null) { m = new JSONObject().put("qty", 0).put("amount", 0); mItems.put(n, m); }
+                m.put("qty", m.optInt("qty") + a.optInt("qty")).put("amount", m.optLong("amount") + a.optLong("amount"));
+            }
+        }
+        JSONObject dsum = live.contains(day) ? summarize(os, day) : sales.optJSONObject(day);
+        if (dsum == null) dsum = summarize(new JSONArray(), day);
+        // 지난달 합계(비교용)
+        c.add(java.util.Calendar.MONTH, -1);
+        String pm = new SimpleDateFormat("yyyy-MM", Locale.KOREA).format(c.getTime());
+        long prev = 0;
+        for (java.util.Iterator<String> k = sales.keys(); k.hasNext(); ) { String d = k.next(); if (d.startsWith(pm) && !live.contains(d)) prev += sales.getJSONObject(d).optLong("total"); }
+        for (String d : live) if (d.startsWith(pm)) prev += summarize(os, d).optLong("total");
+        return new JSONObject().put("ok", true).put("today", t).put("month", month).put("days", days)
+                .put("monthTotal", mTotal).put("monthCount", mCount).put("openDays", open).put("monthItems", mItems).put("prevMonthTotal", prev)
+                .put("day", day).put("daySummary", dsum);
     }
 
     private void changed() {
@@ -288,6 +383,7 @@ final class Store {
         try {
             if (!s.has("settings")) s.put("settings", new JSONObject());
             for (String k : new String[]{"categories", "items", "orders", "calls"}) if (!s.has(k)) s.put(k, new JSONArray());
+            if (!s.has("sales")) s.put("sales", new JSONObject());
             if (!s.has("seq")) s.put("seq", new JSONObject().put("no", 0).put("day", today()));
             JSONObject st = s.getJSONObject("settings");
             if (!st.has("shop")) st.put("shop", "우리 가게");
@@ -337,6 +433,7 @@ final class Store {
             o.put("items", items);
             o.put("orders", new JSONArray());
             o.put("calls", new JSONArray());
+            o.put("sales", new JSONObject());
             o.put("seq", new JSONObject().put("no", 0).put("day", today()));
             return o;
         } catch (JSONException e) {

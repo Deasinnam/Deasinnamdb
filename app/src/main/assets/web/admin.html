@@ -104,6 +104,35 @@ html,body{overflow:hidden}
 .chip.sold.on{background:var(--bad);color:#fff}
 .chip.best.on{background:var(--accent);color:#fff}
 .savebar{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;justify-content:flex-end;padding:12px 0;background:linear-gradient(transparent,var(--bg) 30%)}
+.steps{margin:6px 0 10px}
+.st1{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.st1 .sn{width:28px;height:28px;border-radius:50%;background:#7048E8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto;margin-top:2px}
+.st1 b{font-size:16px}
+.st1 p{margin:4px 0 8px;color:var(--sub);font-size:14px;line-height:1.5}
+.bellstop{position:fixed;right:20px;bottom:20px;z-index:70;height:56px;padding:0 22px;border-radius:999px;background:#1D1B18;color:#fff;font-weight:800;font-size:17px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+/* 매출 */
+.sales{max-width:1200px}
+.sgrid{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.kp{flex:1 1 180px;padding:18px 20px}
+.kp small{display:block;color:var(--sub);font-weight:700;font-size:14px}
+.kp b{display:block;font-size:28px;margin-top:6px;letter-spacing:-.5px}
+.kp span{font-size:13px;color:var(--sub)}
+.mhead{display:flex;align-items:center;gap:10px;margin:6px 0 14px}
+.mhead h3{margin:0;font-size:22px;flex:1}
+.bars{display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px 4px 0}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;min-width:0}
+.bars .b i{display:block;width:100%;max-width:26px;background:#E8590C;border-radius:6px 6px 2px 2px;min-height:2px;opacity:.85}
+.bars .b.zero i{background:var(--line)}
+.bars .b.sel i{background:#1D1B18;opacity:1}
+.bars .b em{font-style:normal;font-size:11px;color:var(--sub);margin-top:4px}
+.bars.h .b i{background:#1C7ED6}
+.rank{width:100%;border-collapse:collapse}
+.rank td{padding:9px 6px;border-bottom:1px solid var(--line);font-size:15px}
+.rank td:last-child,.rank td:nth-child(3){text-align:right;white-space:nowrap}
+.rank td:first-child{width:28px;color:var(--sub);font-weight:800}
+.scols{display:flex;gap:16px;flex-wrap:wrap}
+.scols>.card{flex:1 1 340px;padding:20px}
+body.sub .tab[data-v=sales]{display:none}
 /* 서브 기기 */
 body.sub .tab[data-v=menu]{display:none}
 body.kitchen .tab[data-v=tables]{display:none}
@@ -196,6 +225,7 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
     <button class="tab on" data-v="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>주문<span class="dot hide" id="dNew"></span></button>
     <button class="tab" data-v="tables"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>테이블<span class="dot hide" id="dCall"></span></button>
     <button class="tab" data-v="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>메뉴</button>
+    <button class="tab" data-v="sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>매출</button>
     <button class="tab" data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button>
   </div>
   <div class="body">
@@ -213,9 +243,11 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
     </div>
     <div class="view hide" id="vTables"><div class="callbar" id="calls2"></div><div class="tgrid" id="tgrid"></div></div>
     <div class="view hide" id="vMenu"></div>
+    <div class="view hide" id="vSales"></div>
     <div class="view hide" id="vSettings"></div>
   </div>
 </div>
+<button class="bellstop hide" id="bellStop" onclick="stopBell()">🔕 벨 멈추기</button>
 <div id="modal"></div>
 <script>
 window.onerror=function(m,u,l){console.error("JS "+m+" @"+l)};
@@ -244,11 +276,14 @@ function bellSrc(st,id){
   for(var i=0;i<BELLS.length;i++)if(BELLS[i].id===id)return BELLS[i].src;
   return BELLS[0].src;
 }
+function stopBell(){if(bellAudio){try{bellAudio.onended=null;bellAudio.pause()}catch(e){}bellAudio=null}var b=$("bellStop");if(b)b.classList.add("hide")}
 function playBell(src,times){
   try{
-    if(bellAudio){bellAudio.pause();bellAudio=null}
-    var a=new Audio(src),left=Math.max(1,times||1);bellAudio=a;
-    a.onended=function(){if(--left>0){a.currentTime=0;a.play()}};
+    stopBell();
+    var a=new Audio(src),left=Math.min(3,Math.max(1,times||1));bellAudio=a;a.loop=false;
+    var sb=$("bellStop");if(sb)sb.classList.remove("hide");
+    a.onended=function(){if(bellAudio!==a)return;if(--left>0){a.currentTime=0;a.play()}else stopBell()};
+    setTimeout(function(){if(bellAudio===a)stopBell()},20000); // 길게 올린 소리도 20초면 멈춤
     var p=a.play();if(p&&p.catch)p.catch(function(){if(T&&T.beep)T.beep()});
   }catch(e){if(T&&T.beep)T.beep()}
 }
@@ -306,6 +341,7 @@ function draw(fresh){
   if(view==="tables")drawTables();
   if(view==="menu"&&!menuDirty)drawMenu();
   if(view==="settings"&&!$("vSettings").contains(document.activeElement))drawSettings();
+  if(view==="sales"&&fresh&&fresh.length)loadSales();
 }
 
 function drawCalls(){
@@ -427,9 +463,9 @@ function drawMenu(){
 var AI=null;
 function aiLoad(cb){api("GET","/api/admin/ai",null,function(st,j){if(st===200&&j){AI=j;cb&&cb()}})}
 var AIPROV={
-  openai:{name:"ChatGPT",co:"OpenAI",does:"메뉴 사진 만들기",where:"platform.openai.com › API keys",ph:"sk-...",img:true},
-  gemini:{name:"Gemini",co:"Google",does:"메뉴 사진 만들기 (나노 바나나)",where:"aistudio.google.com › Get API key",ph:"AIza...",img:true},
-  claude:{name:"Claude",co:"Anthropic",does:"메뉴 설명 · 사진 설명 쓰기 (그림은 만들지 않아요)",where:"console.anthropic.com › API Keys",ph:"sk-ant-...",img:false}
+  openai:{name:"ChatGPT",co:"OpenAI",does:"메뉴 사진 만들기",where:"platform.openai.com › API keys",url:"https://platform.openai.com/api-keys",acct:"ChatGPT(OpenAI) 계정",ph:"sk-...",img:true},
+  gemini:{name:"Gemini",co:"Google",does:"메뉴 사진 만들기 (나노 바나나)",where:"aistudio.google.com › Get API key",url:"https://aistudio.google.com/apikey",acct:"구글 계정",ph:"AIza...",img:true},
+  claude:{name:"Claude",co:"Anthropic",does:"메뉴 설명 · 사진 설명 쓰기 (그림은 만들지 않아요)",where:"console.anthropic.com › API Keys",url:"https://console.anthropic.com/settings/keys",acct:"Claude(Anthropic) 계정",ph:"sk-ant-...",img:false}
 };
 function aiOn(pv){return !!(AI&&AI.providers&&AI.providers[pv]&&AI.providers[pv].connected)}
 function aiNames(){return ["openai","gemini","claude"].filter(aiOn).map(function(k){return AIPROV[k].name}).join(" · ")}
@@ -440,7 +476,13 @@ function aiConnect(after,first){
       var P=AI.providers[prov];
       var h='<h2>✨ AI와 연동하기</h2><p class="muted" style="margin:0 0 6px">ChatGPT · Gemini · Claude 중 쓰는 곳의 API 열쇠를 넣어 주세요. 여러 곳을 함께 연결해도 돼요. 요금은 연결한 AI 계정에 청구됩니다.</p>'+
         '<div class="prov">'+["openai","gemini","claude"].map(function(k){return '<button data-prov="'+k+'"'+(k===prov?' class="on"':'')+'><b>'+AIPROV[k].name+(aiOn(k)?' <span style="color:var(--ok)">● 연결됨</span>':'')+'</b><span>'+AIPROV[k].does+'</span></button>'}).join("")+'</div>'+
-        '<div class="field"><label>'+AIPROV[prov].name+' API 열쇠'+(P.connected?' (지금 '+esc(P.keyTail)+' 연결됨 · 바꿀 때만 넣기)':'')+' — 발급: '+AIPROV[prov].where+'</label><input id="aiKey" type="password" autocomplete="off" placeholder="'+AIPROV[prov].ph+'"></div>'+
+        '<div class="steps">'+
+        '<div class="st1"><span class="sn">1</span><div><b>'+AIPROV[prov].acct+'으로 로그인하고 열쇠 받기</b><p>아래 단추를 누르면 '+AIPROV[prov].co+' 화면이 열려요. 평소 쓰는 계정으로 로그인한 뒤 「새 열쇠 만들기」를 누르고 <b>복사</b>하세요.</p>'+
+          '<button class="btn" id="aiGet">🔑 '+AIPROV[prov].name+' 열쇠 받으러 가기</button><span class="muted" style="font-size:12px;margin-left:8px">'+AIPROV[prov].where+'</span></div></div>'+
+        '<div class="st1"><span class="sn">2</span><div style="flex:1"><b>복사한 열쇠 붙여넣기</b>'+(P.connected?'<p>지금 '+esc(P.keyTail)+'로 연결돼 있어요. 바꿀 때만 넣으세요.</p>':'')+
+          '<div style="display:flex;gap:8px;margin-top:8px"><input id="aiKey" type="password" autocomplete="off" placeholder="'+AIPROV[prov].ph+'" style="flex:1;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:16px"><button class="btn" id="aiPaste">📋 붙여넣기</button></div></div></div>'+
+        '<div class="st1"><span class="sn">3</span><div><b>연결 확인</b><p>맨 아래 「저장하고 연결 확인」을 누르면 끝나요.</p></div></div></div>'+
+        '<details style="margin:4px 0 12px"><summary class="muted" style="cursor:pointer;font-size:13px">ChatGPT Plus · Claude Pro 같은 구독 계정으로 바로 로그인할 수는 없나요?</summary><p class="muted" style="font-size:13px;line-height:1.6;margin:8px 0 0">구독 요금제 로그인은 각 회사가 자기 앱(ChatGPT · Claude · Gemini 앱)과 허용한 도구에서만 쓰게 하고 있어서, 다른 앱이 구독 계정으로 대신 그림 · 글을 만들 수는 없어요. 대신 같은 계정으로 로그인해 API 열쇠를 받으면 연결돼요. 열쇠 사용료는 구독과 따로, 쓴 만큼만 나가요(메뉴 사진 한 장에 보통 수십~수백 원). 처음 가입하면 무료로 써 볼 수 있는 양을 주는 곳도 있어요.</p></details>'+
         '<div class="field"><label>모델 (보통 그대로 두세요)</label><input id="aiModel" value="'+esc(P.model)+'"></div>'+
         (aiOn("openai")&&aiOn("gemini")?'<div class="field"><label>사진은 어디서 만들까요?</label><div class="stl" id="aiImgP">'+["openai","gemini"].map(function(k){return '<button data-ip="'+k+'"'+(AI.imageProvider===k?' class="on"':'')+'>'+AIPROV[k].name+'</button>'}).join("")+'</div></div>':'')+
         (prov==="claude"?'<p class="muted" style="font-size:13px;margin:0 0 6px">Claude는 글을 써 주는 AI라 그림은 만들지 않아요. 메뉴 설명을 쓰고, 사진 AI에 넘길 사진 설명을 더 맛있게 다듬어 줘요. 사진까지 만들려면 ChatGPT나 Gemini도 연결해 주세요.</p>':'')+
@@ -451,6 +493,13 @@ function aiConnect(after,first){
       [].forEach.call(document.querySelectorAll("[data-prov]"),function(b){b.onclick=function(){prov=b.getAttribute("data-prov");draw()}});
       [].forEach.call(document.querySelectorAll("[data-ip]"),function(b){b.onclick=function(){api("POST","/api/admin/ai",{imageProvider:b.getAttribute("data-ip")},function(st,j){if(st===200){AI=j;draw();toast("사진은 "+AIPROV[j.imageProvider].name+"로 만들어요")}})}});
       $("mNo").onclick=function(){modal();refreshAi()};
+      $("aiGet").onclick=function(){if(T&&T.openUrl)T.openUrl(AIPROV[prov].url);else window.open(AIPROV[prov].url,"_blank")};
+      $("aiPaste").onclick=function(){
+        var t=T&&T.clip?T.clip():"";
+        if(t){$("aiKey").value=t;toast("붙여넣었어요")}
+        else if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(function(x){$("aiKey").value=(x||"").trim();toast(x?"붙여넣었어요":"복사한 열쇠가 없어요")},function(){toast("열쇠 칸을 길게 눌러 붙여넣어 주세요")});
+        else toast("열쇠 칸을 길게 눌러 붙여넣어 주세요");
+      };
       if($("aiOff"))$("aiOff").onclick=function(){api("POST","/api/admin/ai",{provider:prov,key:""},function(st,j){if(st===200){AI=j;draw();toast(AIPROV[prov].name+" 연결을 끊었어요");refreshAi()}})};
       $("aiSave").onclick=function(){
         var k=$("aiKey").value.trim(),body={provider:prov,model:$("aiModel").value.trim()};
@@ -574,9 +623,13 @@ function drawBells(s){
     api("POST","/api/admin/settings",{bell:id},function(st){if(st===200){s.bell=id;D.settings.bell=id;drawBells(s);playBell(bellSrc(s,id),1);toast("알림벨을 바꿨어요")}})}});
   [].forEach.call(document.querySelectorAll("[data-rep]"),function(b){var n=+b.getAttribute("data-rep");b.classList.toggle("on",n===(s.bellRepeat||2));
     b.onclick=function(){api("POST","/api/admin/settings",{bellRepeat:n},function(st){if(st===200){s.bellRepeat=n;D.settings.bellRepeat=n;drawBells(s)}})}});
+  $("bellPick").onclick=function(){$("bellFile").value="";$("bellFile").click()};
+  $("bellRemind").onclick=function(){var on=!this.classList.contains("on");var b=this;api("POST","/api/admin/settings",{bellRemind:on},function(st){if(st===200){b.classList.toggle("on",on);s.bellRemind=on;D.settings.bellRemind=on;toast(on?"다시 알림을 켰어요":"다시 알림을 껐어요")}})};
   $("bellFile").onchange=function(){
     var f=this.files&&this.files[0];if(!f)return;
-    var ext=(f.name.split(".").pop()||"").toLowerCase();
+    var ext=(f.name.indexOf(".")>0?f.name.split(".").pop():"").toLowerCase();
+    var MT={"audio/mpeg":"mp3","audio/mp3":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/wave":"wav","audio/ogg":"ogg","application/ogg":"ogg","audio/mp4":"m4a","audio/x-m4a":"m4a","audio/m4a":"m4a","audio/aac":"aac","audio/x-aac":"aac"};
+    if(!/^(mp3|wav|ogg|m4a|aac)$/.test(ext))ext=MT[(f.type||"").toLowerCase()]||ext;
     if(!/^(mp3|wav|ogg|m4a|aac)$/.test(ext)){toast("mp3 · wav · ogg · m4a 파일만 쓸 수 있어요");return}
     if(f.size>3*1024*1024){toast("3MB보다 작은 소리 파일을 골라 주세요");return}
     toast("소리를 올리는 중…");
@@ -644,7 +697,8 @@ function drawSettings(){
   '<button class="btn pri" id="sSave" style="margin-top:10px">저장</button></div>'+
   '<div class="card"><h3>알림벨</h3><div class="muted" style="margin-bottom:12px">새 주문 · 직원 호출이 오면 이 카운터와 연결된 주방 · 계산대 기기에서 함께 울립니다. ▶를 눌러 미리 들어 보세요.</div><div class="bells" id="bells"></div>'+
   '<div class="reps"><span class="muted" style="font-weight:700;margin-right:4px">울림 횟수</span><button data-rep="1">1번</button><button data-rep="2">2번</button><button data-rep="3">3번</button></div>'+
-  '<label class="btn ghost" style="margin-top:14px;position:relative;overflow:hidden">🎵 내 소리 올리기 (mp3 · wav · m4a)<input type="file" accept="audio/*" id="bellFile" style="position:absolute;inset:0;left:0;top:0;opacity:0"></label></div>'+
+  '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px"><button class="btn ghost" id="bellPick">🎵 벨소리 직접 등록하기</button><span class="muted" style="font-size:13px">휴대폰 · 폴더에서 mp3 · wav · m4a · ogg 파일 고르기 (3MB까지)</span><input type="file" accept="audio/*" id="bellFile" class="hide"></div>'+
+  '<div class="rowt" style="margin-top:10px"><div class="tx"><b>확인 안 한 주문 다시 알림</b><div class="muted" style="font-size:13px">새 주문을 1분 · 3분이 지나도 확인하지 않으면 한 번씩만 더 울려요</div></div><button class="toggle'+(s.bellRemind!==false?" on":"")+'" id="bellRemind"></button></div></div>'+
   '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 보고 처리할 수 있어요. 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
   '<div class="devs" id="devs"><div class="muted" style="padding:12px 0">불러오는 중…</div></div><button class="btn pri" id="sAddDev" style="margin-top:14px">+ 기기 추가</button>'+
   '<details style="margin-top:16px"><summary class="muted" style="cursor:pointer">PC 브라우저로 열기 (메인과 같은 권한)</summary><div class="code" style="margin-top:8px">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></details></div>'+
@@ -664,13 +718,55 @@ function drawSettings(){
     $("mNo").onclick=function(){modal()};$("mYes").onclick=function(){T.stopCounter()}};
 }
 
+// ----- 매출: 일일 · 월간 -----
+var SM=null,SDAY=null,SLOAD=false;
+function ymd(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function loadSales(month,day){
+  if(SLOAD)return;SLOAD=true;
+  api("GET","/api/admin/sales?month="+(month||SM||"")+"&day="+(day||SDAY||""),null,function(st,j){SLOAD=false;if(st===200&&j){SM=j.month;SDAY=j.day;drawSales(j)}});
+}
+function shiftMonth(m,d){var y=+m.slice(0,4),mo=+m.slice(5,7)-1+d;var t=new Date(y,mo,1);return t.getFullYear()+"-"+("0"+(t.getMonth()+1)).slice(-2)}
+function rankRows(items,n){
+  var a=[];for(var k in items)a.push([k,items[k].qty,items[k].amount]);
+  a.sort(function(x,y){return y[2]-x[2]});
+  if(!a.length)return '<tr><td></td><td class="muted">아직 판매가 없어요</td><td></td><td></td></tr>';
+  return a.slice(0,n).map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r[0])+'</td><td>'+r[1]+'개</td><td><b>'+won(r[2])+'원</b></td></tr>'}).join("");
+}
+function drawSales(j){
+  var ds=j.daySummary,dd=new Date(j.day+"T00:00:00"),W="일월화수목금토";
+  var dl=(dd.getMonth()+1)+"월 "+dd.getDate()+"일 ("+W.charAt(dd.getDay())+")"+(j.day===j.today?" · 오늘":"");
+  var avg=ds.count?Math.round(ds.total/ds.count):0;
+  var maxD=1;j.days.forEach(function(d){if(d.total>maxD)maxD=d.total});
+  var maxH=1;ds.hours.forEach(function(v){if(v>maxH)maxH=v});
+  var mAvg=j.openDays?Math.round(j.monthTotal/j.openDays):0;
+  var diff=j.prevMonthTotal?Math.round((j.monthTotal-j.prevMonthTotal)/j.prevMonthTotal*100):null;
+  var h='<div class="sales">'+
+  '<div class="mhead"><h3>일일 매출 · '+dl+'</h3>'+(j.day!==j.today?'<button class="btn ghost" id="sToday">오늘로</button>':'')+'</div>'+
+  '<div class="sgrid"><div class="card kp"><small>매출</small><b>'+won(ds.total)+'원</b></div><div class="card kp"><small>주문</small><b>'+ds.count+'건</b></div><div class="card kp"><small>주문당 평균</small><b>'+won(avg)+'원</b></div></div>'+
+  '<div class="scols"><div class="card"><h3 style="margin:0 0 4px">시간대별 매출</h3><div class="bars h">'+ds.hours.map(function(v,i){return '<div class="b'+(v?'':' zero')+'" title="'+i+'시 '+won(v)+'원"><i style="height:'+Math.round(v/maxH*100)+'%"></i><em>'+(i%3===0?i:"")+'</em></div>'}).join("")+'</div></div>'+
+  '<div class="card"><h3 style="margin:0 0 8px">이날 많이 팔린 메뉴</h3><table class="rank">'+rankRows(ds.items,8)+'</table></div></div>'+
+  '<div class="mhead" style="margin-top:26px"><button class="btn ghost" id="mPrev">◀</button><h3 style="text-align:center">'+j.month.slice(0,4)+'년 '+(+j.month.slice(5,7))+'월 월간 매출</h3><button class="btn ghost" id="mNext"'+(j.month>=j.today.slice(0,7)?' disabled':'')+'>▶</button></div>'+
+  '<div class="sgrid"><div class="card kp"><small>이달 매출</small><b>'+won(j.monthTotal)+'원</b>'+(diff!==null?'<span>지난달보다 '+(diff>=0?'▲ ':'▼ ')+Math.abs(diff)+'%</span>':'<span>지난달 기록 없음</span>')+'</div>'+
+  '<div class="card kp"><small>주문</small><b>'+j.monthCount+'건</b></div><div class="card kp"><small>영업일 평균</small><b>'+won(mAvg)+'원</b><span>주문 있던 날 '+j.openDays+'일</span></div></div>'+
+  '<div class="card" style="padding:20px;margin-bottom:16px"><h3 style="margin:0 0 4px">날짜별 매출 <span class="muted" style="font-size:13px;font-weight:600">· 막대를 누르면 그날 매출을 위에 보여 줘요</span></h3><div class="bars" id="mBars">'+
+  j.days.map(function(d){var n=+d.day.slice(8);return '<div class="b'+(d.total?'':' zero')+(d.day===j.day?' sel':'')+'" data-day="'+d.day+'" title="'+n+'일 '+won(d.total)+'원 · '+d.count+'건"><i style="height:'+Math.round(d.total/maxD*100)+'%"></i><em>'+(n===1||n%5===0?n:"")+'</em></div>'}).join("")+'</div></div>'+
+  '<div class="scols"><div class="card"><h3 style="margin:0 0 8px">이달 많이 팔린 메뉴</h3><table class="rank">'+rankRows(j.monthItems,10)+'</table></div>'+
+  '<div class="card"><h3 style="margin:0 0 8px">날짜별 표</h3><table class="rank">'+j.days.filter(function(d){return d.count}).reverse().map(function(d){var t=new Date(d.day+"T00:00:00");return '<tr data-day="'+d.day+'" style="cursor:pointer"><td></td><td>'+(t.getMonth()+1)+'/'+t.getDate()+' ('+W.charAt(t.getDay())+')</td><td>'+d.count+'건</td><td><b>'+won(d.total)+'원</b></td></tr>'}).join("")+(j.openDays?'':'<tr><td></td><td class="muted">이달 주문이 아직 없어요</td><td></td><td></td></tr>')+'</table></div></div>'+
+  '<p class="muted" style="font-size:13px;margin-top:14px">취소한 주문은 빠져요. 매출은 이 카운터 기기에 날짜별로 최대 400일 저장돼요.</p></div>';
+  $("vSales").innerHTML=h;
+  [].forEach.call($("vSales").querySelectorAll("[data-day]"),function(b){b.onclick=function(){loadSales(SM,b.getAttribute("data-day"));$("vSales").scrollTop=0}});
+  $("mPrev").onclick=function(){loadSales(shiftMonth(j.month,-1),"x")};
+  $("mNext").onclick=function(){loadSales(shiftMonth(j.month,1),"x")};
+  if($("sToday"))$("sToday").onclick=function(){SM=null;SDAY=null;loadSales("", "")};
+}
+
 // ----- 탭 -----
 function go(v){
   if(view==="menu"&&v!=="menu"&&menuDirty&&!confirmLeave())return;
   view=v;
   [].forEach.call(document.querySelectorAll(".tab"),function(b){b.classList.toggle("on",b.getAttribute("data-v")===v)});
-  ["orders","tables","menu","settings"].forEach(function(k){$("v"+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle("hide",k!==v)});
-  if(D){if(v==="orders")drawBoard([]);if(v==="tables")drawTables();if(v==="menu")drawMenu();if(v==="settings")drawSettings()}
+  ["orders","tables","menu","sales","settings"].forEach(function(k){$("v"+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle("hide",k!==v)});
+  if(D){if(v==="orders")drawBoard([]);if(v==="tables")drawTables();if(v==="menu")drawMenu();if(v==="settings")drawSettings();if(v==="sales")loadSales()}
 }
 function confirmLeave(){toast("메뉴를 저장하거나 되돌린 뒤 옮겨 주세요");return false}
 [].forEach.call(document.querySelectorAll(".tab"),function(b){b.onclick=function(){go(b.getAttribute("data-v"))}});
@@ -680,10 +776,18 @@ setInterval(function(){
   var d=new Date();$("clock")&&($("clock").textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2));
   [].forEach.call(document.querySelectorAll(".ago[data-t]"),function(e){e.textContent=ago(+e.getAttribute("data-t"))});
 },15000);
+/* 확인 안 한 새 주문 다시 알림: 주문마다 1분 · 3분 뒤 두 번까지만(계속 울리지 않게). 설정에서 끌 수 있음 */
+var reminded={};
 setInterval(function(){
-  if(!D)return;var late=(D.orders||[]).some(function(o){return !o.paid&&o.status==="new"&&Date.now()-o.time>60000});
-  if(late)ding();
-},30000);
+  if(!D||(D.settings&&D.settings.bellRemind===false))return;
+  var due=false,now=Date.now();
+  (D.orders||[]).forEach(function(o){
+    if(o.paid||o.status!=="new")return;
+    var n=reminded[o.id]||0,age=now-o.time;
+    if((n===0&&age>60000)||(n===1&&age>180000)){reminded[o.id]=n+1;due=true}
+  });
+  if(due)ding();
+},15000);
 (function(){var d=new Date();$("clock").textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)})();
 
 if(!KEY)noKey();else poll();

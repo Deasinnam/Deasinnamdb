@@ -37,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -119,8 +120,13 @@ public class MainActivity extends Activity {
             public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
                 if (fileCb != null) fileCb.onReceiveValue(null);
                 fileCb = cb;
-                Intent i = new Intent(Intent.ACTION_GET_CONTENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE);
-                try { startActivityForResult(Intent.createChooser(i, "메뉴 사진 고르기"), 7); } catch (Exception ex) { fileCb = null; return false; }
+                // 화면이 고른 종류대로: 사진(image/*) · 알림벨 소리(audio/*)
+                String acc = "";
+                try { String[] at = p.getAcceptTypes(); if (at != null && at.length > 0 && at[0] != null) acc = at[0]; } catch (Exception ignored) { }
+                boolean audio = acc.startsWith("audio") || acc.contains(".mp3") || acc.contains(".wav");
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT).setType(audio ? "audio/*" : "image/*").addCategory(Intent.CATEGORY_OPENABLE);
+                if (audio) i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"audio/*", "application/ogg"});
+                try { startActivityForResult(Intent.createChooser(i, audio ? "알림벨 소리 고르기" : "메뉴 사진 고르기"), 7); } catch (Exception ex) { fileCb = null; return false; }
                 return true;
             }
         });
@@ -346,6 +352,31 @@ public class MainActivity extends Activity {
             load("file:///android_asset/web/start.html");
         }
 
+        /** AI 열쇠 받는 곳을 브라우저로 열기(정해진 세 곳만) */
+        @JavascriptInterface public void openUrl(String url) {
+            if (url == null || !url.matches("https://(platform\\.openai\\.com|aistudio\\.google\\.com|console\\.anthropic\\.com|platform\\.claude\\.com)/.*")) return;
+            ui.post(() -> { try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) { } });
+        }
+
+        /** 복사해 둔 열쇠 붙여넣기(이 기기의 카운터 화면에서만) */
+        @JavascriptInterface public String clip() {
+            if (!currentUrl.startsWith("http://127.0.0.1:")) return "";
+            final String[] r = {""};
+            final java.util.concurrent.CountDownLatch l = new java.util.concurrent.CountDownLatch(1);
+            ui.post(() -> {
+                try {
+                    android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    if (cm != null && cm.hasPrimaryClip() && cm.getPrimaryClip().getItemCount() > 0) {
+                        CharSequence t = cm.getPrimaryClip().getItemAt(0).coerceToText(MainActivity.this);
+                        r[0] = t == null ? "" : t.toString().trim();
+                    }
+                } catch (Exception ignored) { }
+                l.countDown();
+            });
+            try { l.await(2, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
+            return r[0].length() > 300 ? "" : r[0];
+        }
+
         @JavascriptInterface public boolean isSub() { return "sub".equals(MainActivity.this.mode()); }
 
         @JavascriptInterface public String ip() { return lanIp(); }
@@ -563,6 +594,35 @@ public class MainActivity extends Activity {
                     http("POST", base + "/api/admin/devices/remove", new JSONObject().put("id", devs.getJSONObject(i).getString("id")).toString(), key);
                 String gone = http("GET", base + "/api/admin", null, ct);
                 check(gone != null && gone.startsWith("ERR 403"), "removed device blocked");
+
+                // 매출: 오늘 · 이달 합계가 주문판과 같은지, 서브 기기는 못 보게
+                JSONObject sa = new JSONObject(http("GET", base + "/api/admin/sales", null, key));
+                JSONObject adm = new JSONObject(http("GET", base + "/api/admin", null, key));
+                long hs = 0;
+                for (int i = 0; i < 24; i++) hs += sa.getJSONObject("daySummary").getJSONArray("hours").getLong(i);
+                check(sa.getJSONObject("daySummary").getLong("total") == adm.getLong("todaySales") && sa.getLong("monthTotal") >= adm.getLong("todaySales") && hs == adm.getLong("todaySales")
+                        && sa.getJSONArray("days").length() >= 28, "sales today " + sa.getJSONObject("daySummary").getLong("total") + " month " + sa.getLong("monthTotal"));
+                String subSales = http("GET", base + "/api/admin/sales", null, kt);
+                check(subSales != null && subSales.startsWith("ERR 403"), "sales main only");
+                // 날이 바뀌면 지난 주문이 지워져도 매출 기록은 남는지(따로 만든 가게 파일로)
+                File sd = new File(getCacheDir(), "salestest");
+                sd.mkdirs();
+                String yday = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.KOREA).format(new java.util.Date(System.currentTimeMillis() - 24L * 3600 * 1000));
+                JSONObject old = new JSONObject().put("settings", new JSONObject().put("shop", "t").put("tables", 8))
+                        .put("categories", new JSONArray()).put("items", new JSONArray().put(new JSONObject().put("id", "a").put("cat", "c").put("name", "아메리카노").put("price", 4500)))
+                        .put("orders", new JSONArray().put(new JSONObject().put("id", "o1").put("no", 1).put("table", 1).put("total", 9000).put("status", "done").put("paid", true)
+                                .put("time", System.currentTimeMillis() - 24L * 3600 * 1000).put("day", yday)
+                                .put("items", new JSONArray().put(new JSONObject().put("name", "아메리카노").put("price", 4500).put("qty", 2)))))
+                        .put("calls", new JSONArray()).put("seq", new JSONObject().put("day", yday).put("no", 1));
+                java.nio.file.Files.write(new File(sd, "state.json").toPath(), old.toString().getBytes(StandardCharsets.UTF_8));
+                Store ts = new Store(sd);
+                ts.placeOrder(new JSONObject().put("table", 2).put("items", new JSONArray().put(new JSONObject().put("id", "a").put("qty", 1))));
+                JSONObject ys = ts.sales(yday.substring(0, 7), yday);
+                boolean gone = true;
+                JSONArray tos = ts.adminView().getJSONArray("orders");
+                for (int i = 0; i < tos.length(); i++) if (yday.equals(tos.getJSONObject(i).optString("day"))) gone = false;
+                check(gone && ys.getJSONObject("daySummary").getLong("total") == 9000 && ys.getJSONObject("daySummary").getJSONObject("items").getJSONObject("아메리카노").getInt("qty") == 2
+                        && !ts.adminView().has("sales"), "sales kept after day change");
 
                 // 알림벨: 기본 소리 · 내 소리 올리기
                 HttpURLConnection sw = (HttpURLConnection) new URL(base + "/snd/chime.wav").openConnection();
