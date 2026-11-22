@@ -72,6 +72,12 @@ final class Store {
             if (od.optInt("table") == table && !od.optBoolean("paid") && !"canceled".equals(od.optString("status"))) mine.put(od);
         }
         o.put("orders", mine);
+        // QR 결제: 사장님이 등록한 결제 수단(켜 둔 것만) + 이 테이블의 결제 확인 요청 상태
+        JSONArray pays = new JSONArray(), all2 = st.optJSONArray("pay");
+        for (int i = 0; all2 != null && i < all2.length(); i++) if (all2.getJSONObject(i).optBoolean("on", true)) pays.put(all2.getJSONObject(i));
+        o.put("pay", pays);
+        o.put("payCounter", st.optBoolean("payCounter", true));
+        o.put("payReq", s.getJSONObject("payReq").optJSONObject(String.valueOf(table)));
         return o;
     }
 
@@ -174,7 +180,29 @@ final class Store {
             JSONObject od = orders.getJSONObject(i);
             if (od.optInt("table") == table) od.put("paid", true);
         }
+        s.getJSONObject("payReq").remove(String.valueOf(table)); // 결제 확인 요청도 끝
         changed();
+    }
+
+    /** 손님이 「보냈어요」 · 「카운터에서 결제할게요」를 누름 → 카운터에 확인 요청(금액은 카운터가 다시 계산) */
+    synchronized JSONObject payRequest(JSONObject req) throws JSONException {
+        int table = req.optInt("table", 0);
+        if (table < 1) throw new IllegalArgumentException("테이블 번호가 올바르지 않습니다");
+        long amount = 0;
+        JSONArray orders = s.getJSONArray("orders");
+        for (int i = 0; i < orders.length(); i++) {
+            JSONObject od = orders.getJSONObject(i);
+            if (od.optInt("table") == table && !od.optBoolean("paid") && !"canceled".equals(od.optString("status"))) amount += od.optLong("total");
+        }
+        if (amount <= 0) throw new IllegalArgumentException("결제할 주문이 없어요");
+        String method = clip(req.optString("method", "카운터"), 20);
+        JSONObject pr = new JSONObject().put("method", method).put("amount", amount).put("time", System.currentTimeMillis()).put("counter", req.optBoolean("counter"));
+        s.getJSONObject("payReq").put(String.valueOf(table), pr);
+        String won = String.format(Locale.KOREA, "%,d원", amount);
+        s.getJSONArray("calls").put(new JSONObject().put("id", UUID.randomUUID().toString().substring(0, 8)).put("table", table)
+                .put("what", req.optBoolean("counter") ? "💳 카운터에서 결제할게요 · " + won : "💳 " + method + "로 " + won + " 보냈어요 · 입금 확인").put("time", System.currentTimeMillis()).put("pay", true));
+        changed();
+        return pr;
     }
 
     synchronized void doneCall(String id) throws JSONException {
@@ -229,6 +257,22 @@ final class Store {
         if (in.has("bellRepeat")) st.put("bellRepeat", Math.max(1, Math.min(3, in.optInt("bellRepeat", 2))));
         if (in.has("bellCustom")) { String c = in.optString("bellCustom"); st.put("bellCustom", c.matches("/sndc/[A-Za-z0-9_-]{1,40}\\.(mp3|wav|ogg|m4a|aac)") ? c : ""); }
         if (in.has("bellRemind")) st.put("bellRemind", in.optBoolean("bellRemind", true));
+        if (in.has("payCounter")) st.put("payCounter", in.optBoolean("payCounter", true));
+        if (in.has("pay")) { // QR 결제 수단: 송금 QR 링크 · QR 사진 · 계좌
+            JSONArray src = in.optJSONArray("pay"), out = new JSONArray();
+            for (int i = 0; src != null && i < src.length() && i < 8; i++) {
+                JSONObject m = src.getJSONObject(i);
+                String link = m.optString("link").trim();
+                if (!link.isEmpty() && !link.matches("(?i)https?://\\S{3,300}")) throw new IllegalArgumentException("결제 링크는 https:// 로 시작하는 주소여야 해요");
+                String img = m.optString("img");
+                out.put(new JSONObject().put("id", m.optString("id").isEmpty() ? UUID.randomUUID().toString().substring(0, 8) : clip(m.optString("id"), 12))
+                        .put("type", m.optString("type").matches("kakao|naver|toss|bank|zero|other") ? m.optString("type") : "other")
+                        .put("name", clip(m.optString("name"), 16)).put("link", link).put("img", img.startsWith("/img/") ? img : "")
+                        .put("bank", clip(m.optString("bank"), 16)).put("account", clip(m.optString("account"), 30)).put("holder", clip(m.optString("holder"), 16))
+                        .put("on", m.optBoolean("on", true)));
+            }
+            st.put("pay", out);
+        }
         if (in.has("bellCustomName")) st.put("bellCustomName", clip(in.optString("bellCustomName"), 40));
         changed();
     }
@@ -238,6 +282,7 @@ final class Store {
         s.getJSONObject("sales").remove(today()); // 오늘 것만 지움
         s.put("orders", new JSONArray());
         s.put("calls", new JSONArray());
+        s.put("payReq", new JSONObject());
         s.getJSONObject("seq").put("no", 0);
         changed();
     }
@@ -384,6 +429,7 @@ final class Store {
             if (!s.has("settings")) s.put("settings", new JSONObject());
             for (String k : new String[]{"categories", "items", "orders", "calls"}) if (!s.has(k)) s.put(k, new JSONArray());
             if (!s.has("sales")) s.put("sales", new JSONObject());
+            if (!s.has("payReq")) s.put("payReq", new JSONObject());
             if (!s.has("seq")) s.put("seq", new JSONObject().put("no", 0).put("day", today()));
             JSONObject st = s.getJSONObject("settings");
             if (!st.has("shop")) st.put("shop", "우리 가게");
@@ -434,6 +480,7 @@ final class Store {
             o.put("orders", new JSONArray());
             o.put("calls", new JSONArray());
             o.put("sales", new JSONObject());
+            o.put("payReq", new JSONObject());
             o.put("seq", new JSONObject().put("no", 0).put("day", today()));
             return o;
         } catch (JSONException e) {

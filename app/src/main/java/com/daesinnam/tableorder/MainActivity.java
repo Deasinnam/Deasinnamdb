@@ -660,6 +660,29 @@ public class MainActivity extends Activity {
                 check(ydGone && ys.getJSONObject("daySummary").getLong("total") == 9000 && ys.getJSONObject("daySummary").getJSONObject("items").getJSONObject("아메리카노").getInt("qty") == 2
                         && !ts.adminView().has("sales"), "sales kept after day change");
 
+                // QR 결제: 결제 수단 등록 → 손님 화면에 보임 → 「보냈어요」 → 카운터 확인 → 결제 완료로 끝
+                String badPay = http("POST", base + "/api/admin/settings", "{\"pay\":[{\"type\":\"kakao\",\"link\":\"javascript:alert(1)\"}]}", key);
+                http("POST", base + "/api/admin/settings", new JSONObject().put("pay", new JSONArray()
+                        .put(new JSONObject().put("type", "kakao").put("name", "카카오페이").put("link", "https://qr.kakaopay.com/Ej7test000").put("holder", "덜누름"))
+                        .put(new JSONObject().put("type", "bank").put("bank", "국민은행").put("account", "123-45-6789").put("holder", "덜누름").put("on", true))
+                        .put(new JSONObject().put("type", "toss").put("link", "https://toss.me/test").put("on", false))).toString(), key);
+                JSONObject t3 = new JSONObject(http("GET", base + "/api/state?table=3", null, null));
+                long due3 = 0;
+                for (int i = 0; i < t3.getJSONArray("orders").length(); i++) due3 += t3.getJSONArray("orders").getJSONObject(i).getLong("total");
+                check(badPay != null && badPay.startsWith("ERR 400") && t3.getJSONArray("pay").length() == 2 && t3.optBoolean("payCounter") && !t3.has("payReq"), "pay methods shown to table");
+                String pr = http("POST", base + "/api/pay", "{\"table\":3,\"method\":\"카카오페이\"}", null);
+                JSONObject t3b = new JSONObject(http("GET", base + "/api/state?table=3", null, null));
+                JSONObject adp = new JSONObject(http("GET", base + "/api/admin", null, key));
+                boolean payCall = false;
+                for (int i = 0; i < adp.getJSONArray("calls").length(); i++) if (adp.getJSONArray("calls").getJSONObject(i).optBoolean("pay") && adp.getJSONArray("calls").getJSONObject(i).getInt("table") == 3) payCall = true;
+                check(pr != null && !pr.startsWith("ERR") && t3b.getJSONObject("payReq").getLong("amount") == due3 && due3 > 0 && payCall && adp.getJSONObject("payReq").has("3"), "pay request reaches counter " + due3);
+                String emptyPay = http("POST", base + "/api/pay", "{\"table\":8}", null);
+                http("POST", base + "/api/admin/clear", "{\"table\":3}", key);
+                JSONObject t3c = new JSONObject(http("GET", base + "/api/state?table=3", null, null));
+                check(emptyPay.startsWith("ERR 400") && !t3c.has("payReq") && t3c.getJSONArray("orders").length() == 0, "pay done clears table");
+                HttpURLConnection ql = (HttpURLConnection) new URL(base + "/lib/qrcode.js").openConnection();
+                check(ql.getResponseCode() == 200 && ql.getContentLength() > 20000, "qr library served");
+
                 // 알림벨: 기본 소리 · 내 소리 올리기
                 HttpURLConnection sw = (HttpURLConnection) new URL(base + "/snd/chime.wav").openConnection();
                 check(sw.getResponseCode() == 200 && "audio/wav".equals(sw.getContentType()) && sw.getContentLength() > 10000, "bell sound served");

@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>주문하기</title>
 <link rel="stylesheet" href="skins.css">
+<script src="lib/qrcode.js"></script>
 <style>
 /* 화면 구조는 모든 스킨이 같고, 색 · 모양은 skins.css의 토큰에서 옵니다 */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -134,6 +135,24 @@ aside .ah .clr{font-size:14px;color:var(--sub);font-weight:700;padding:8px}
 .off{position:fixed;left:0;right:0;top:0;padding:9px;text-align:center;background:var(--bad);color:#fff;font-weight:800;z-index:60}
 .spin{width:20px;height:20px;border:3px solid rgba(255,255,255,.35);border-top-color:currentColor;border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* QR 결제 */
+.paybtn{margin-top:12px;background:var(--accent);color:var(--accent-ink)}
+.pmeth{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.pmeth button{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--r-s);border:1.5px solid var(--line);background:var(--surface);text-align:left}
+.pmeth .lg{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex:0 0 auto}
+.pmeth b{display:block;font-size:18px}
+.pmeth span{font-size:13px;color:var(--sub)}
+.box.paybox{max-width:820px}
+.payv{display:flex;gap:26px;align-items:center}
+.payv .qr{flex:0 0 300px;height:300px;border-radius:18px;background:#fff;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px}
+.payv .qr svg,.payv .qr img{width:100%;height:100%;object-fit:contain}
+.payv .amt{font-size:40px;font-weight:900;letter-spacing:-1px;color:var(--price);margin:4px 0 12px}
+.payv ol{margin:0;padding-left:20px;line-height:1.75;color:var(--sub);font-size:15px}
+.payv ol b{color:var(--ink)}
+.acct{font-size:24px;font-weight:900;margin:6px 0;letter-spacing:.5px}
+.pwait{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--r-s);background:var(--warn-soft);color:var(--warn);font-weight:800;margin-top:12px}
+@media (max-width:700px){.payv{flex-direction:column}.payv .qr{flex-basis:auto;width:260px;height:260px}}
 
 /* ---------- 스킨별 배치 차이(색은 토큰, 여기는 모양만) ---------- */
 [data-skin="korean"] .card .ph{padding-top:78%}
@@ -387,10 +406,54 @@ function showOrders(){
     o.items.forEach(function(l){h+='<div class="l"><span>'+esc(l.name)+' × '+l.qty+'</span><span>'+won(l.price*l.qty)+'</span></div>'});
     h+='</div>'});
   if(!os.length)h+='<div class="empty">아직 주문이 없어요</div>';
-  h+='</div><div class="tot"><span>지금까지</span><b>'+won(sum)+'</b></div><div class="btns"><button class="cta" id="mX">닫기</button></div>';
+  h+='</div><div class="tot"><span>지금까지</span><b>'+won(sum)+'</b></div>';
+  if(S.payReq)h+='<div class="pwait">⏳ '+esc(S.payReq.counter?"카운터 결제를 기다리고 있어요":S.payReq.method+" "+won(S.payReq.amount)+" · 카운터에서 입금을 확인하고 있어요")+'</div>';
+  var canPay=sum>0&&!S.payReq&&((S.pay&&S.pay.length)||S.payCounter);
+  h+='<div class="btns">'+(canPay?'<button class="cta ghost" id="mX">닫기</button><button class="cta paybtn" id="mPay">💳 '+won(sum)+' 결제하기</button>':'<button class="cta" id="mX">닫기</button>')+'</div>';
   modal("orders",h);$("mX").onclick=function(){modal()};
+  if($("mPay"))$("mPay").onclick=function(){payPick(sum)};
 }
 $("bOrders").onclick=showOrders;
+
+/* ----- QR 결제: 사장님이 등록한 송금 QR(카카오페이 · 네이버페이 · 토스 · 제로페이) 또는 계좌 ----- */
+var PAYLOOK={kakao:["#FEE500","#191919","카카오페이","pay"],naver:["#03C75A","#fff","네이버페이","N"],toss:["#0064FF","#fff","토스","toss"],zero:["#1E4FD8","#fff","제로페이","ZERO"],bank:["#5C5C5C","#fff","계좌이체","은행"],other:["#888","#fff","QR 결제","QR"]};
+function payPick(sum){
+  var h='<h2>어떻게 결제할까요?</h2><p class="s">'+TABLE+'번 테이블 · 결제할 금액 <b style="color:var(--ink);font-size:18px">'+won(sum)+'</b></p><div class="pmeth">';
+  (S.pay||[]).forEach(function(m,i){var L=PAYLOOK[m.type]||PAYLOOK.other;
+    h+='<button data-pi="'+i+'"><span class="lg" style="background:'+L[0]+';color:'+L[1]+'">'+L[3]+'</span><div><b>'+esc(m.name||L[2])+'</b><span>'+(m.type==="bank"?"계좌로 보내기":"휴대폰으로 QR을 찍어 바로 보내기")+'</span></div></button>'});
+  if(S.payCounter)h+='<button data-pc="1"><span class="lg" style="background:var(--accent-soft);color:var(--accent-strong)">💳</span><div><b>카운터에서 결제</b><span>카드 · 현금 · 상품권은 카운터에서</span></div></button>';
+  h+='</div><div class="btns"><button class="cta ghost" id="mX">닫기</button></div>';
+  modal("pay",h);$("mX").onclick=function(){modal()};
+  [].forEach.call($("modal").querySelectorAll("[data-pi]"),function(b){b.onclick=function(){payShow(S.pay[+b.getAttribute("data-pi")],sum)}});
+  var pc=$("modal").querySelector("[data-pc]");if(pc)pc.onclick=function(){payDone({counter:true,method:"카운터"})};
+}
+function qrSvg(text){try{var q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag({cellSize:8,margin:2,scalable:true})}catch(e){return ""}}
+function payShow(m,sum){
+  var L=PAYLOOK[m.type]||PAYLOOK.other,nm=m.name||L[2];
+  var qr=m.link?qrSvg(m.link):(m.img?'<img src="'+esc(m.img)+'" alt="QR">':"");
+  var h='<h2>'+esc(nm)+'로 결제</h2><p class="s">'+TABLE+'번 테이블</p><div class="payv">'+
+    (m.type==="bank"&&!qr?'':'<div class="qr">'+(qr||'QR이 아직 없어요')+'</div>')+
+    '<div style="flex:1;min-width:0"><div class="s" style="color:var(--sub);font-weight:700">보낼 금액</div><div class="amt">'+won(sum)+'</div>'+
+    (m.type==="bank"?'<div class="s" style="color:var(--sub)">'+esc(m.bank)+'</div><div class="acct">'+esc(m.account)+'</div><div style="margin-bottom:12px">예금주 <b>'+esc(m.holder)+'</b></div>':'')+
+    '<ol>'+(m.type==="bank"?'<li>은행 앱에서 위 계좌로</li>':'<li>휴대폰 <b>카메라</b>나 <b>'+esc(L[2])+' 앱</b>으로 QR을 찍어요</li>')+
+    '<li>금액 <b>'+won(sum)+'</b>을 넣어요</li><li>받는 분이 <b>'+esc(m.holder||S.shop||"가게")+'</b>인지 확인하고 보내요</li><li>보낸 뒤 아래 <b>「보냈어요」</b>를 눌러 주세요</li></ol></div></div>'+
+    '<div class="btns"><button class="cta ghost" id="mNo">다른 방법</button><button class="cta" id="mYes">보냈어요</button></div>';
+  modal("pay",h,"paybox");
+  $("mNo").onclick=function(){payPick(sum)};
+  $("mYes").onclick=function(){payDone({method:nm})};
+}
+function payDone(o){
+  if(sending)return;sending=true;
+  o.table=TABLE;
+  xhr("POST","/api/pay",o,function(st,j){
+    sending=false;
+    if(st===200&&j&&j.ok){
+      modal("ok",'<div style="text-align:center"><div class="ok-ic" style="background:var(--accent)"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>'+
+        '<h2>'+(o.counter?"카운터에 알렸어요":"카운터에 알렸어요")+'</h2><p class="s" style="font-size:17px">'+(o.counter?"직원이 결제를 도와드릴게요.":"입금을 확인하면 결제가 끝나요.<br>잠시만 기다려 주세요.")+'</p><button class="cta" id="mOk">확인</button></div>');
+      $("mOk").onclick=function(){modal()};
+    } else toast((j&&j.error)||"카운터에 닿지 않았어요. 다시 눌러 주세요");
+  });
+}
 $("barGo").onclick=function(){ if(totals().n)$("aside").classList.add("open"); else showOrders(); };
 $("ax").onclick=closeAside;
 $("clr").onclick=function(){

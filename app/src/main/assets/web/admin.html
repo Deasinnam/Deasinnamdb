@@ -4,6 +4,7 @@
 <title>카운터 · 덜누름 테이블오더</title>
 <link rel="stylesheet" href="skins.css">
 <link rel="stylesheet" href="base.css">
+<script src="lib/qrcode.js"></script>
 <style>
 html,body{overflow:hidden}
 .app{display:flex;height:100%}
@@ -112,6 +113,13 @@ html,body{overflow:hidden}
 .subapp{margin-top:14px;padding:14px;border-radius:14px;background:#F3F0FF}
 .subapp b{font-size:15px}
 .subapp p{margin:4px 0 10px;font-size:13px;color:var(--sub);line-height:1.5}
+.payreq{background:#FFF4D6;color:#8a5a00;border-radius:12px;padding:10px 12px;font-weight:800;font-size:15px;line-height:1.5}
+.payreq span{font-weight:600;font-size:13px}
+.pm{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pm .lg{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex:0 0 auto}
+.pm .tx{flex:1;min-width:0}.pm .tx b{display:block}.pm .tx span{font-size:13px;color:var(--sub);word-break:break-all}
+.pqr{width:200px;height:200px;border:1.5px solid var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;padding:8px;color:var(--sub);font-size:13px;text-align:center}
+.pqr svg,.pqr img{width:100%;height:100%;object-fit:contain}
 .bellstop{position:fixed;right:20px;bottom:20px;z-index:70;height:56px;padding:0 22px;border-radius:999px;background:#1D1B18;color:#fff;font-weight:800;font-size:17px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 /* 매출 */
 .sales{max-width:1200px}
@@ -399,10 +407,12 @@ function drawTables(){
     var os=(D.orders||[]).filter(function(o){return o.table===t&&!o.paid&&o.status!=="canceled"});
     var sum=0,names={};os.forEach(function(o){sum+=o.total;o.items.forEach(function(l){names[l.name]=(names[l.name]||0)+l.qty})});
     var call=(D.calls||[]).filter(function(c){return c.table===t}).length;
+    var pr=(D.payReq||{})[String(t)];
     var ls=[];for(var k in names)ls.push(esc(k)+" "+names[k]);
     h+='<div class="tc card'+(os.length?" busy":"")+'"><div class="tn">'+t+'번'+(call?' <span class="badge" style="background:var(--accent);color:#fff">🔔 호출</span>':'')+(os.length?'':' <span class="badge">빈 테이블</span>')+'</div>'+
       '<div class="ls">'+(ls.join(" · ")||"주문 없음")+'</div>'+
-      (os.length?'<div class="tot">'+won(sum)+'원</div><button class="btn pri" data-t="'+t+'" data-s="'+sum+'">결제 완료 · 비우기</button>':'')+'</div>';
+      (pr?'<div class="payreq">💳 '+(pr.counter?'카운터에서 결제할게요':esc(pr.method)+'로 '+won(pr.amount)+'원 보냈어요')+'<br><span>'+(pr.counter?'카드 · 현금을 받아 주세요':'입금 알림을 확인한 뒤 결제 완료를 눌러 주세요')+'</span></div>':'')+
+      (os.length?'<div class="tot">'+won(sum)+'원</div><button class="btn pri" data-t="'+t+'" data-s="'+sum+'">'+(pr&&!pr.counter?'입금 확인 · 결제 완료':'결제 완료 · 비우기')+'</button>':'')+'</div>';
   }
   $("tgrid").innerHTML=h;
   [].forEach.call($("tgrid").querySelectorAll("[data-t]"),function(b){b.onclick=function(){
@@ -667,6 +677,70 @@ function drawBells(s){
   };
 }
 
+// ----- QR 결제 수단 -----
+var PAYT={kakao:["#FEE500","#191919","카카오페이","pay","카카오페이 앱 › 전체 › 송금 › 「QR 송금」(사장님용은 카카오페이 QR결제 신청) 화면의 QR"],
+  naver:["#03C75A","#fff","네이버페이","N","네이버페이 앱의 「QR 송금」 또는 현장결제 가맹점 QR"],
+  toss:["#0064FF","#fff","토스","toss","토스 앱 › 송금 › 토스아이디(toss.me/아이디) 주소"],
+  zero:["#1E4FD8","#fff","제로페이","ZERO","가게에 붙은 제로페이 · 지역화폐 가맹점 QR"],
+  bank:["#5C5C5C","#fff","계좌이체","은행","은행 · 계좌번호 · 예금주"],
+  other:["#888","#fff","QR 결제","QR","그 밖의 결제 · 송금 QR"]};
+function qrSvg(text){try{var q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag({cellSize:8,margin:2,scalable:true})}catch(e){return ""}}
+function drawPays(s){
+  var list=s.pay||[];
+  $("pays").innerHTML=list.length?list.map(function(m,i){var L=PAYT[m.type]||PAYT.other;
+    return '<div class="pm"><span class="lg" style="background:'+L[0]+';color:'+L[1]+'">'+L[3]+'</span><div class="tx"><b>'+esc(m.name||L[2])+(m.on===false?' <span class="badge">꺼짐</span>':'')+'</b><span>'+esc(m.type==="bank"?(m.bank+" "+m.account+" · "+m.holder):(m.link||(m.img?"QR 사진":"")))+'</span></div><button class="btn ghost" data-pe="'+i+'">고치기</button></div>'}).join("")
+    :'<div class="muted" style="padding:12px 0">아직 등록한 결제 수단이 없어요</div>';
+  [].forEach.call($("pays").querySelectorAll("[data-pe]"),function(b){b.onclick=function(){payEdit(s,+b.getAttribute("data-pe"))}});
+}
+function payEdit(s,idx){
+  var list=(s.pay||[]).slice(),m=idx>=0?JSON.parse(JSON.stringify(list[idx])):{type:"kakao",name:"",link:"",img:"",bank:"",account:"",holder:"",on:true};
+  function draw(){
+    var L=PAYT[m.type];
+    var h='<h2>'+(idx>=0?'결제 수단 고치기':'결제 수단 추가')+'</h2><div class="prov" style="flex-wrap:wrap">'+Object.keys(PAYT).map(function(k){return '<button data-pt="'+k+'" style="flex:1 1 30%"'+(k===m.type?' class="on"':'')+'><b>'+PAYT[k][2]+'</b></button>'}).join("")+'</div>'+
+      '<p class="muted" style="font-size:13px;margin:0 0 10px">어디서 받나요? '+L[4]+'</p>'+
+      (m.type==="bank"?
+        '<div class="field"><label>은행</label><input id="pBank" value="'+esc(m.bank)+'" placeholder="예: 국민은행"></div><div class="field"><label>계좌번호</label><input id="pAcc" value="'+esc(m.account)+'" inputmode="numeric"></div><div class="field"><label>예금주</label><input id="pHolder" value="'+esc(m.holder)+'"></div>'
+       :'<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap"><div class="pqr" id="pPrev"></div><div style="flex:1;min-width:220px">'+
+        '<button class="btn" id="pPhoto" style="width:100%">📷 QR 사진 올리기 (찍어 둔 QR · 캡처)</button><input type="file" accept="image/*" id="pFile" class="hide">'+
+        '<div class="field" style="margin-top:12px"><label>또는 링크 붙여넣기</label><input id="pLink" value="'+esc(m.link)+'" placeholder="'+(m.type==="toss"?"https://toss.me/아이디":"https://...")+'"></div>'+
+        '<div class="field"><label>받는 분 이름 (손님 화면에 「받는 분 확인」으로 보여요)</label><input id="pHolder" value="'+esc(m.holder)+'" placeholder="예: 김덜누 (덜누름 카페)"></div></div></div>')+
+      '<div class="field"><label>손님 화면에 보일 이름</label><input id="pName" value="'+esc(m.name)+'" placeholder="'+L[2]+'"></div>'+
+      '<div class="rowt"><div class="tx"><b>손님 화면에 보이기</b></div><button class="toggle'+(m.on!==false?" on":"")+'" id="pOn"></button></div>'+
+      '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">'+(idx>=0?'<button class="btn bad" id="pDel">삭제</button>':'')+'<span style="flex:1"></span><button class="btn ghost" id="mNo">닫기</button><button class="btn pri" id="pSave">저장</button></div>';
+    modal(h);$("modal").querySelector(".box").style.maxWidth="720px";
+    function prev(){var p=$("pPrev");if(!p)return;var l=$("pLink").value.trim();p.innerHTML=l?qrSvg(l):(m.img?'<img src="'+esc(m.img)+'">':'QR 사진을 올리거나<br>링크를 넣으면<br>여기에 보여요')}
+    prev();
+    if($("pLink"))$("pLink").oninput=function(){m.link=this.value.trim();prev()};
+    [].forEach.call(document.querySelectorAll("[data-pt]"),function(b){b.onclick=function(){keep();m.type=b.getAttribute("data-pt");draw()}});
+    $("pOn").onclick=function(){m.on=!(m.on!==false);this.classList.toggle("on",m.on)};
+    $("mNo").onclick=function(){modal()};
+    if($("pPhoto")){$("pPhoto").onclick=function(){$("pFile").value="";$("pFile").click()};
+      $("pFile").onchange=function(){var f=this.files&&this.files[0];if(!f)return;readQr(f,function(text,dataUrl){
+        if(text&&/^https?:\/\//i.test(text)){m.link=text;$("pLink").value=text;m.img="";prev();toast("QR을 읽었어요. 깨끗한 QR로 다시 만들었어요")}
+        else{toast(text?"QR 안 내용을 그대로 쓸 수 없어 사진으로 보여 줄게요":"QR을 읽지 못해 사진 그대로 보여 줄게요");
+          photo(f,function(url){m.img=url;m.link="";$("pLink").value="";prev()})}
+      })}}
+    if($("pDel"))$("pDel").onclick=function(){list.splice(idx,1);savePays(s,list)};
+    $("pSave").onclick=function(){keep();
+      if(m.type==="bank"&&!(m.bank&&m.account&&m.holder)){toast("은행 · 계좌번호 · 예금주를 모두 넣어 주세요");return}
+      if(m.type!=="bank"&&!m.link&&!m.img){toast("QR 사진을 올리거나 링크를 넣어 주세요");return}
+      if(m.link&&!/^https?:\/\/\S{3,}/i.test(m.link)){toast("링크는 https:// 로 시작해야 해요");return}
+      if(idx>=0)list[idx]=m;else list.push(m);savePays(s,list)};
+  }
+  function keep(){["pName:name","pLink:link","pBank:bank","pAcc:account","pHolder:holder"].forEach(function(x){var a=x.split(":"),e=$(a[0]);if(e)m[a[1]]=e.value.trim()})}
+  draw();
+}
+function savePays(s,list){api("POST","/api/admin/settings",{pay:list},function(st){if(st===200){modal();toast("결제 수단을 저장했어요");s.pay=list;D.settings.pay=list;api("GET","/api/admin",null,function(st2,j){if(st2===200&&j){D.settings=j.settings;drawPays(j.settings)}})}})}
+/* 사진 속 QR 읽기(jsQR, 필요할 때만 불러옴) */
+function readQr(file,cb){
+  function go(){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){
+    var sc=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+    var x=c.getContext("2d");x.drawImage(im,0,0,c.width,c.height);var d=x.getImageData(0,0,c.width,c.height);
+    var res=null;try{res=jsQR(d.data,c.width,c.height,{inversionAttempts:"attemptBoth"})}catch(e){}
+    cb(res&&res.data?res.data:"",r.result)};im.src=r.result};r.readAsDataURL(file)}
+  if(window.jsQR)go();else{var sc=document.createElement("script");sc.src="lib/jsQR.js";sc.onload=go;sc.onerror=function(){cb("",null)};document.head.appendChild(sc)}
+}
+
 // ----- 주방 · 계산대 기기 -----
 function since(t){var m=Math.floor((Date.now()-t)/60000);return m<1?"방금":m<60?m+"분 전":Math.floor(m/60)+"시간 전"}
 function loadDevs(cb){api("GET","/api/admin/devices",null,function(st,j){if(st!==200||!j)return;
@@ -723,6 +797,10 @@ function drawSettings(){
   '<div class="reps"><span class="muted" style="font-weight:700;margin-right:4px">울림 횟수</span><button data-rep="1">1번</button><button data-rep="2">2번</button><button data-rep="3">3번</button></div>'+
   '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px"><button class="btn ghost" id="bellPick">🎵 벨소리 직접 등록하기</button><span class="muted" style="font-size:13px">휴대폰 · 폴더에서 mp3 · wav · m4a · ogg 파일 고르기 (3MB까지)</span><input type="file" accept="audio/*" id="bellFile" class="hide"></div>'+
   '<div class="rowt" style="margin-top:10px"><div class="tx"><b>확인 안 한 주문 다시 알림</b><div class="muted" style="font-size:13px">새 주문을 1분 · 3분이 지나도 확인하지 않으면 한 번씩만 더 울려요</div></div><button class="toggle'+(s.bellRemind!==false?" on":"")+'" id="bellRemind"></button></div></div>'+
+  '<div class="card"><h3>QR 결제 (카카오페이 · 네이버페이 · 토스 · 제로페이 · 계좌)</h3><div class="muted" style="margin-bottom:6px">손님이 테이블 화면의 「결제하기」를 누르면 여기 등록한 QR과 결제 금액이 크게 나와요. 손님이 휴대폰으로 찍어 보내고 「보냈어요」를 누르면, 테이블 현황에 확인 요청이 떠요. 입금 알림을 확인한 뒤 「결제 완료」를 눌러 주세요.</div>'+
+  '<div id="pays"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" id="payAdd">+ 결제 수단 추가</button></div>'+
+  '<div class="rowt" style="margin-top:10px"><div class="tx"><b>「카운터에서 결제」 단추도 보이기</b><div class="muted" style="font-size:13px">카드 · 현금 손님을 위해</div></div><button class="toggle'+(s.payCounter!==false?" on":"")+'" id="payCounter"></button></div>'+
+  '<p class="muted" style="font-size:12px;margin:10px 0 0">덜누름 테이블오더는 돈을 대신 받거나 결제를 확인하지 않아요. 돈은 사장님 카카오페이 · 네이버페이 · 토스 · 계좌로 바로 가고, 입금 확인은 그 앱 알림으로 해 주세요.</p></div>'+
   '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 실시간으로 볼 수 있어요(보기 전용 · 처리와 수정은 메인에서만). 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
   '<div class="devs" id="devs"><div class="muted" style="padding:12px 0">불러오는 중…</div></div><button class="btn pri" id="sAddDev" style="margin-top:14px">+ 기기 추가</button>'+
   '<details style="margin-top:16px"><summary class="muted" style="cursor:pointer">PC 브라우저로 열기 (메인과 같은 권한)</summary><div class="code" style="margin-top:8px">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></details></div>'+
@@ -730,7 +808,9 @@ function drawSettings(){
   '<p class="muted" style="margin-top:14px">덜누름 테이블오더 '+esc(ver)+' · 주문은 이 매장 와이파이 안에서만 오가며, 이 기기에만 저장됩니다.</p></div></div>';
   $("vSettings").innerHTML=h;
   drawSkins(s.skin||"premium");
-  drawBells(s);loadDevs();
+  drawBells(s);loadDevs();drawPays(s);
+  $("payAdd").onclick=function(){payEdit(s,-1)};
+  $("payCounter").onclick=function(){var on=!this.classList.contains("on"),b=this;api("POST","/api/admin/settings",{payCounter:on},function(st){if(st===200){b.classList.toggle("on",on);s.payCounter=on;D.settings.payCounter=on}})};
   $("sAddDev").onclick=addDevice;
   $("sAi").onclick=function(){aiConnect()};
   var snd=s.sound!==false;

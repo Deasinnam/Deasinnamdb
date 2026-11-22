@@ -133,6 +133,12 @@ final class OrderServer {
                 json(out, new JSONObject().put("ok", true).put("order", od));
                 return;
             }
+            if (path.equals("/api/pay") && "POST".equals(method)) { // 손님: QR로 보냈어요 / 카운터에서 결제할게요
+                JSONObject pr = store.payRequest(new JSONObject(str(body)));
+                if (listener != null) listener.onCall(new JSONObject().put("table", new JSONObject(str(body)).optInt("table")).put("what", "결제 확인 요청 · " + pr.optString("method")));
+                json(out, new JSONObject().put("ok", true).put("payReq", pr));
+                return;
+            }
             if (path.equals("/api/call") && "POST".equals(method)) {
                 JSONObject c = store.call(new JSONObject(str(body)));
                 if (listener != null) listener.onCall(c);
