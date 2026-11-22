@@ -5091,6 +5091,12 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           if (!app || !p) return;
           var t = 0, m = /Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/.exec(ts || "");
           if (m) t = new Date(+m[1], +m[2], +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+          else {
+            // 시트가 글자로 주는 경우: "2026. 11. 22 오후 11:35:06"
+            var k = /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?\s*(오전|오후)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(String(ts || ""));
+            if (k) { var h = +k[5] % 12; if (k[4] === "오후") h += 12; else if (!k[4]) h = +k[5];
+              t = new Date(+k[1], +k[2] - 1, +k[3], h, +k[6], +(k[7] || 0)).getTime(); }
+          }
           out.push({ app: String(app).trim(), s: p.s, nick: p.nick, text: p.text, t: t });
         });
       } catch (e) {}
