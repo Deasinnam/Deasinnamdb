@@ -377,6 +377,34 @@ public class MainActivity extends Activity {
             return r[0].length() > 300 ? "" : r[0];
         }
 
+        /** 구독 중인 ChatGPT · Gemini 앱으로 사진 설명 보내기(설명은 복사도 해 둠). 결과: sent · opened · store · none */
+        @JavascriptInterface public String shareToApp(String app, String text) {
+            if (!currentUrl.startsWith("http://127.0.0.1:") || text == null) return "none";
+            final String t = text.length() > 2000 ? text.substring(0, 2000) : text;
+            final String[] pkgs = "gemini".equals(app) ? new String[]{"com.google.android.apps.bard", "com.google.android.googlequicksearchbox"} : new String[]{"com.openai.chatgpt"};
+            final String[] r = {"none"};
+            final java.util.concurrent.CountDownLatch l = new java.util.concurrent.CountDownLatch(1);
+            ui.post(() -> {
+                try {
+                    android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("메뉴 사진 설명", t));
+                } catch (Exception ignored) { }
+                PackageManager pm = getPackageManager();
+                for (String p : pkgs) {
+                    Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, t).setPackage(p);
+                    if (send.resolveActivity(pm) != null) { try { startActivity(send); r[0] = "sent"; break; } catch (Exception ignored) { } }
+                    Intent open = pm.getLaunchIntentForPackage(p);
+                    if (open != null) { try { startActivity(open); r[0] = "opened"; break; } catch (Exception ignored) { } }
+                }
+                if ("none".equals(r[0])) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkgs[0]))); r[0] = "store"; } catch (Exception ignored) { }
+                }
+                l.countDown();
+            });
+            try { l.await(3, java.util.concurrent.TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
+            return r[0];
+        }
+
         @JavascriptInterface public boolean isSub() { return "sub".equals(MainActivity.this.mode()); }
 
         @JavascriptInterface public String ip() { return lanIp(); }

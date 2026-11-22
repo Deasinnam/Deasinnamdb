@@ -109,6 +109,9 @@ html,body{overflow:hidden}
 .st1 .sn{width:28px;height:28px;border-radius:50%;background:#7048E8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto;margin-top:2px}
 .st1 b{font-size:16px}
 .st1 p{margin:4px 0 8px;color:var(--sub);font-size:14px;line-height:1.5}
+.subapp{margin-top:14px;padding:14px;border-radius:14px;background:#F3F0FF}
+.subapp b{font-size:15px}
+.subapp p{margin:4px 0 10px;font-size:13px;color:var(--sub);line-height:1.5}
 .bellstop{position:fixed;right:20px;bottom:20px;z-index:70;height:56px;padding:0 22px;border-radius:999px;background:#1D1B18;color:#fff;font-weight:800;font-size:17px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 /* 매출 */
 .sales{max-width:1200px}
@@ -457,7 +460,7 @@ function drawMenu(){
   $("aiBtn").onclick=function(){aiConnect()};
   [].forEach.call(V.querySelectorAll("[data-ai]"),function(b){b.onclick=function(){var i=+b.getAttribute("data-ai");
     if(!menu.items[i].name.trim()){toast("먼저 메뉴 이름을 적어 주세요");return}
-    if(!(AI&&AI.imageReady)){if(AI&&aiOn("claude"))toast("Claude는 그림을 만들지 않아요. 사진은 ChatGPT나 Gemini를 연결해 주세요");aiConnect(function(){if(AI.imageReady)aiMake(i)},"openai");return}aiMake(i)}});
+    if(!AI){aiLoad(function(){aiMake(i)});return}aiMake(i)}});
   [].forEach.call(V.querySelectorAll("[data-aidesc]"),function(b){b.onclick=function(){aiDesc(+b.getAttribute("data-aidesc"),b)}});
   [].forEach.call(V.querySelectorAll("[data-pic]"),function(e){e.onchange=function(){var i=+e.getAttribute("data-pic");if(e.files&&e.files[0])photo(e.files[0],function(url){menu.items[i].img=url;dirty();drawMenu()})}});
   $("mUndo").onclick=function(){menu=null;menuDirty=false;drawMenu()};
@@ -555,14 +558,16 @@ function aiDesc(i,btn){
 }
 function aiMake(i){
   var it=menu.items[i],style=(D.settings&&D.settings.skin)||"premium",img="",busy=false;
-  var ip=AI.imageProvider;
-  var h='<h2>✨ AI로 메뉴 사진 만들기</h2><p class="muted" style="margin:0 0 14px">'+esc(it.name)+' · '+AIPROV[ip].name+'로 만들어요 ('+esc(AI.providers[ip].model)+')</p>'+
+  var ip=AI.imageProvider,api1=!!ip;
+  var h='<h2>✨ AI로 메뉴 사진 만들기</h2><p class="muted" style="margin:0 0 14px">'+esc(it.name)+' · '+(api1?AIPROV[ip].name+' API로 바로 만들거나, 구독 중인 앱에서 만들어 넣을 수 있어요':'구독 중인 ChatGPT · Gemini 앱에서 만들어 넣어요 (추가 요금 없음)')+'</p>'+
     '<div class="aigen"><div><div class="aiprev" id="aiPrev">'+(it.img?'':'아래 「만들기」를 누르면<br>여기에 사진이 나와요')+'</div></div>'+
     '<div><label style="font-size:14px;font-weight:700;color:var(--sub)">분위기</label><div class="stl" id="aiStl">'+
     [["premium","고급 레스토랑"],["cafe","카페"],["korean","한식 상차림"],["top","위에서 찍기"],["white","흰 배경"]].map(function(x){return '<button data-st="'+x[0]+'"'+(x[0]===style?' class="on"':'')+'>'+x[1]+'</button>'}).join("")+'</div>'+
     '<div style="display:flex;align-items:center;margin-top:12px"><label style="font-size:14px;font-weight:700;color:var(--sub);flex:1">어떤 사진을 만들까요? (고쳐 써도 돼요)</label>'+(aiOn("claude")?'<button class="aib" id="aiPol">✨ Claude로 다듬기</button>':'')+'</div><textarea id="aiP"></textarea>'+
+    '<div class="subapp"><b>구독 중인 앱으로 만들기 · 추가 요금 없음</b><p>설명을 앱으로 보내요(복사도 돼요). 앱에서 사진이 나오면 <b>길게 눌러 저장</b>한 뒤 돌아와 「저장한 사진 넣기」를 누르세요.</p>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-app="chatgpt">ChatGPT 앱에서 만들기</button><button class="btn" data-app="gemini">Gemini 앱에서 만들기</button><button class="btn pri" id="aiPick">📷 저장한 사진 넣기</button></div><input type="file" accept="image/*" id="aiFile" class="hide"></div>'+
     '<p class="muted" style="font-size:13px;margin:8px 0 0">AI가 만든 사진은 실제 음식과 다를 수 있어요. 실제 메뉴와 비슷한지 꼭 확인해 주세요.</p>'+
-    '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn ghost" id="mNo">닫기</button><span style="flex:1"></span><button class="btn aibig" id="aiGo">만들기</button><button class="btn pri hide" id="aiUse">이 사진 쓰기</button></div></div></div>';
+    '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center"><button class="btn ghost" id="mNo">닫기</button><span style="flex:1"></span>'+(api1?'<button class="btn aibig" id="aiGo">API로 바로 만들기</button>':'<span class="muted" style="font-size:12px">API 열쇠를 연결하면 이 화면에서 바로 만들 수도 있어요</span>')+'<button class="btn pri hide" id="aiUse">이 사진 쓰기</button></div></div></div>';
   modal(h);
   $("modal").firstChild.onclick=null; // 만드는 중 바깥을 눌러 닫히지 않게
   $("modal").querySelector(".box").style.maxWidth="900px";
@@ -577,13 +582,26 @@ function aiMake(i){
       pb.disabled=false;pb.textContent="✨ Claude로 다듬기";if(st===200&&j&&j.text)$("aiP").value=j.text;
     },null,90000);
   };
-  $("aiGo").onclick=function(){
+  [].forEach.call(document.querySelectorAll(".subapp [data-app]"),function(b){b.onclick=function(){
+    var app=b.getAttribute("data-app"),nm=app==="gemini"?"Gemini":"ChatGPT";
+    var txt="아래 설명대로 메뉴판에 쓸 정사각형 음식 사진 한 장을 만들어 줘.\n\n"+$("aiP").value;
+    var r=T&&T.shareToApp?T.shareToApp(app,txt):"none";
+    if(r==="sent")toast(nm+" 앱으로 보냈어요. 사진이 나오면 저장하고 돌아오세요");
+    else if(r==="opened")toast(nm+" 앱을 열었어요. 입력 칸을 길게 눌러 붙여넣기 하세요");
+    else if(r==="store")toast(nm+" 앱이 없어서 설치 화면을 열었어요");
+    else{try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(e){}toast("설명을 복사했어요. "+nm+"에 붙여넣어 주세요")}
+  }});
+  $("aiPick").onclick=function(){$("aiFile").value="";$("aiFile").click()};
+  $("aiFile").onchange=function(){var f=this.files&&this.files[0];if(!f)return;
+    $("aiPrev").style.backgroundImage="";$("aiPrev").innerHTML='<div class="spin2"></div>사진을 넣는 중…';
+    photo(f,function(url){img=url;$("aiPrev").innerHTML="";$("aiPrev").style.backgroundImage="url("+url+")";$("aiUse").classList.remove("hide")})};
+  if($("aiGo"))$("aiGo").onclick=function(){
     if(busy)return;busy=true;
-    var go=this;go.disabled=true;go.textContent="만드는 중…";$("aiUse").classList.add("hide");
+    var go=this;go.disabled=true;go.textContent="만드는 중…";go.dataset.t="API로 다시 만들기";$("aiUse").classList.add("hide");
     $("aiPrev").style.backgroundImage="";$("aiPrev").innerHTML='<div class="spin2"></div>'+AIPROV[ip].name+'가 사진을 만들고 있어요<br><span style="font-weight:500;font-size:13px">보통 10~40초 걸려요</span>';
     api("POST","/api/admin/ai/image",{prompt:$("aiP").value},function(st,j){
       busy=false;go.disabled=false;
-      if(st===200&&j&&j.img){img=j.img;$("aiPrev").innerHTML="";$("aiPrev").style.backgroundImage="url("+img+")";go.textContent="다시 만들기";$("aiUse").classList.remove("hide")}
+      if(st===200&&j&&j.img){img=j.img;$("aiPrev").innerHTML="";$("aiPrev").style.backgroundImage="url("+img+")";go.textContent=go.dataset.t;$("aiUse").classList.remove("hide")}
       else{go.textContent="다시 해 보기";$("aiPrev").innerHTML='<div style="font-size:15px;line-height:1.6;text-align:left">'+esc((j&&j.error)||"카운터에 닿지 않았어요").replace(/\n/g,"<br><span style=\"font-weight:500;font-size:12px\">")+'</div>';}
     },null,180000);
   };
