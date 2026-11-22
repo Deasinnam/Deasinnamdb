@@ -589,10 +589,13 @@ public class MainActivity extends Activity {
                 String ks = http("POST", base + "/api/admin/status", new JSONObject().put("id", o5).put("status", "cooking").toString(), kt);
                 String km = http("POST", base + "/api/admin/menu", "{\"categories\":[],\"items\":[]}", kt);
                 String kc = http("POST", base + "/api/admin/clear", "{\"table\":5}", kt);
-                check(ks != null && !ks.startsWith("ERR") && km.startsWith("ERR 403") && kc.startsWith("ERR 403"), "kitchen can cook, not edit menu or pay");
+                String kr = http("POST", base + "/api/admin/reset", "{}", kt);
+                String kd = http("POST", base + "/api/admin/call-done", "{\"id\":\"x\"}", kt);
+                check(ks.startsWith("ERR 403") && km.startsWith("ERR 403") && kc.startsWith("ERR 403") && kr.startsWith("ERR 403") && kd.startsWith("ERR 403"), "kitchen view only");
                 String cc = http("POST", base + "/api/admin/clear", "{\"table\":1}", ct);
                 String cs = http("POST", base + "/api/admin/settings", "{\"shop\":\"x\"}", ct);
-                check(cc != null && !cc.startsWith("ERR") && cs.startsWith("ERR 403"), "counter2 can pay, not change settings");
+                String cst = http("POST", base + "/api/admin/status", new JSONObject().put("id", o5).put("status", "done").toString(), ct);
+                check(cc.startsWith("ERR 403") && cs.startsWith("ERR 403") && cst.startsWith("ERR 403") && new JSONObject(http("GET", base + "/api/admin", null, ct)).getJSONArray("orders").length() > 0, "counter2 view only");
                 JSONArray devs = new JSONObject(http("GET", base + "/api/admin/devices", null, key)).getJSONArray("devices");
                 check(devs.length() >= 2 && !devs.toString().contains(kt), "device list hides tokens");
                 for (int i = 0; i < devs.length(); i++) if ("계산대 2".equals(devs.getJSONObject(i).optString("name")))

@@ -160,10 +160,9 @@ final class OrderServer {
                 }
                 String a = path.substring("/api/admin".length());
                 String role = dev == null ? "main" : dev.optString("role");
-                // 서브 기기가 할 수 있는 일: 주문 보기 · 상태 바꾸기 · 호출 확인(+계산대는 테이블 결제)
-                boolean allowed = dev == null || a.equals("") || a.equals("/") || a.equals("/status") || a.equals("/call-done")
-                        || (a.equals("/clear") && Devices.COUNTER.equals(role));
-                if (!allowed) { send(out, 403, "application/json", bytes("{\"ok\":false,\"error\":\"이 기기에서는 할 수 없어요. 메인 카운터에서 해 주세요\"}")); return; }
+                // 서브 기기(주방 · 보조 계산대)는 주문을 실시간으로 보기만: 상태 · 결제 · 호출 확인 · 초기화 · 메뉴 · 설정 모두 메인 전용
+                boolean allowed = dev == null || ((a.equals("") || a.equals("/")) && "GET".equals(method));
+                if (!allowed) { send(out, 403, "application/json", bytes("{\"ok\":false,\"error\":\"이 기기는 주문 보기 전용이에요. 처리 · 수정은 메인 카운터에서 해 주세요\"}")); return; }
                 if (a.equals("/image") && "POST".equals(method)) { // 메뉴 사진(화면에서 줄인 JPEG)
                     if (body.length < 100 || body.length > 3 * 1024 * 1024 || (body[0] & 0xff) != 0xFF || (body[1] & 0xff) != 0xD8) throw new IllegalArgumentException("사진을 읽지 못했습니다");
                     String name = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 16) + ".jpg";

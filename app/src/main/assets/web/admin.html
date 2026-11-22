@@ -141,6 +141,11 @@ body.kitchen .od .f .sum{visibility:hidden}
 body.kitchen .board .col.c-done{display:none}
 body.kitchen .seg button[data-s=done]{display:none}
 body.kitchen .od [data-a=canceled]{display:none}
+/* 서브 기기는 보기 전용: 처리 · 결제 · 호출 확인 · 초기화 단추를 모두 숨김 */
+body.sub .od [data-a],body.sub .call button,body.sub .tc [data-t]{display:none!important}
+body.sub .od .f{min-height:0}
+.ro{display:none;margin:0 0 12px;padding:10px 14px;border-radius:12px;background:var(--blue-soft);color:var(--blue);font-weight:700;font-size:14px}
+body.sub .ro{display:block}
 body.kitchen .od .l{font-size:24px;padding:7px 0}
 body.kitchen .od .l b{font-size:24px;min-width:42px}
 body.kitchen .od .t{font-size:34px}
@@ -237,6 +242,7 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
       <div class="clock" id="clock"></div>
     </div>
     <div class="view" id="vOrders">
+      <div class="ro">👀 이 기기는 주문 보기 전용이에요. 주문 처리 · 결제 · 호출 확인은 메인 카운터에서 해요.</div>
       <div class="callbar" id="calls"></div>
       <div class="seg" id="seg"><button data-s="new" class="on">새 주문</button><button data-s="cooking">만드는 중</button><button data-s="done">나간 주문</button></div>
       <div class="board" id="board"></div>
@@ -674,7 +680,7 @@ function addDevice(){
 function drawSubSettings(){
   var me=D.me||{};
   $("vSettings").innerHTML='<div class="set"><div class="card"><h3>이 기기</h3><p style="font-size:20px;font-weight:800;margin:0 0 6px">'+(me.role==="kitchen"?"🍳 ":"🧾 ")+esc(me.name)+'</p>'+
-    '<p class="muted">'+(me.role==="kitchen"?"주방 화면 · 새 주문과 만드는 중인 주문을 크게 보여 줘요.":"보조 계산대 · 주문 처리, 테이블 결제 완료, 직원 호출 확인을 할 수 있어요.")+' 메뉴 · 가게 설정은 메인 카운터에서 바꿔요.</p>'+
+    '<p class="muted">'+(me.role==="kitchen"?"주방 화면 · 새 주문과 만드는 중인 주문을 크게 보여 줘요.":"보조 계산대 · 주문 · 테이블 현황 · 직원 호출을 실시간으로 보여 줘요.")+' 이 기기는 <b>보기 전용</b>이라 주문 처리 · 결제 · 초기화 · 메뉴 · 설정은 메인 카운터에서만 할 수 있어요.</p>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn" id="tBell">🔔 알림벨 들어 보기</button>'+(T&&T.leaveSub?'<button class="btn bad" id="sLeave">이 기기 연결 끊기</button>':'')+'</div></div></div>';
   $("tBell").onclick=function(){ding()};
   if($("sLeave"))$("sLeave").onclick=function(){modal('<h2>이 기기 연결을 끊을까요?</h2><p class="muted">다시 쓰려면 메인 카운터에서 새 코드를 받아 연결해야 해요.</p><div style="display:flex;gap:10px;margin-top:16px"><button class="btn ghost" style="flex:1" id="mNo">취소</button><button class="btn bad" style="flex:1" id="mYes">연결 끊기</button></div>');$("mNo").onclick=function(){modal()};$("mYes").onclick=function(){T.leaveSub()}};
@@ -699,7 +705,7 @@ function drawSettings(){
   '<div class="reps"><span class="muted" style="font-weight:700;margin-right:4px">울림 횟수</span><button data-rep="1">1번</button><button data-rep="2">2번</button><button data-rep="3">3번</button></div>'+
   '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px"><button class="btn ghost" id="bellPick">🎵 벨소리 직접 등록하기</button><span class="muted" style="font-size:13px">휴대폰 · 폴더에서 mp3 · wav · m4a · ogg 파일 고르기 (3MB까지)</span><input type="file" accept="audio/*" id="bellFile" class="hide"></div>'+
   '<div class="rowt" style="margin-top:10px"><div class="tx"><b>확인 안 한 주문 다시 알림</b><div class="muted" style="font-size:13px">새 주문을 1분 · 3분이 지나도 확인하지 않으면 한 번씩만 더 울려요</div></div><button class="toggle'+(s.bellRemind!==false?" on":"")+'" id="bellRemind"></button></div></div>'+
-  '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 보고 처리할 수 있어요. 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
+  '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 실시간으로 볼 수 있어요(보기 전용 · 처리와 수정은 메인에서만). 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
   '<div class="devs" id="devs"><div class="muted" style="padding:12px 0">불러오는 중…</div></div><button class="btn pri" id="sAddDev" style="margin-top:14px">+ 기기 추가</button>'+
   '<details style="margin-top:16px"><summary class="muted" style="cursor:pointer">PC 브라우저로 열기 (메인과 같은 권한)</summary><div class="code" style="margin-top:8px">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></details></div>'+
   '<div class="card"><h3>정리</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn bad" id="sReset">오늘 주문 · 호출 모두 지우기</button>'+(T&&T.stopCounter?'<button class="btn ghost" id="sStop">카운터 끄기 (주문 그만 받기)</button>':'')+'</div>'+
