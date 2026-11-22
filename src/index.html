@@ -1654,8 +1654,19 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <div><dt>필수</dt><dd>LTE(모바일 데이터) · GPS · 방향 센서</dd></div>
         </dl>
       </div>
-      <div class="ap-media">
-        <div class="ap-dev"><video src="media/speedometer.mp4" poster="media/speedometer-poster.jpg" muted playsinline preload="none" aria-label="대신남 스피드미터 실제 주행 화면 영상: 속도, 고도, 주행 기록, 원형 지도가 움직이는 콕핏 계기판"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
+      <div class="ul af" id="spdUl" role="img" aria-label="접힌 폴더블이 펼쳐지면서 안쪽 큰 화면에서 대신남 스피드미터 주행 영상이 재생됩니다">
+        <div class="ul-spot"></div>
+        <canvas class="ul-fx" id="spdUlFx" aria-hidden="true"></canvas>
+        <div class="ul-rig" id="spdUlRig">
+          <div class="ul-ring"></div>
+          <div class="ul-shadow" id="spdUlShadow"></div>
+          <div class="ul-half l" id="spdUlL"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-half r" id="spdUlR"><i class="back"></i><i class="face"></i></div>
+          <div class="ul-screen" id="spdUlScreen"><video id="spdUlVid" src="media/fold-speedometer.mp4" poster="media/fold-poster.jpg" muted loop playsinline preload="metadata"></video></div>
+          <div class="ul-sweep"></div>
+          <div class="ul-gloss" id="spdUlGloss"></div>
+        </div>
+        <button class="ul-again" id="spdUlAgain" type="button">↻ 다시 보기</button>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
       </div>
     </div>
@@ -5195,6 +5206,102 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     boxes.forEach(function (b) { io.observe(b); });
   } else boxes.forEach(function (b) { draw(b, b.getAttribute("data-app")); });
   if (document.querySelector(".al-info")) setTimeout(badges, 1200);
+})();
+</script>
+<script>
+// ---------- 스피드미터 상세: 폴더블이 펼쳐지며 앱 소개 (예전 홈 장면) ----------
+(function () {
+  "use strict";
+  var box = document.getElementById("spdUl"); if (!box) return;
+  var rig = document.getElementById("spdUlRig"), hl = document.getElementById("spdUlL"), hr = document.getElementById("spdUlR");
+  var screen = document.getElementById("spdUlScreen"), gloss = document.getElementById("spdUlGloss"), shadow = document.getElementById("spdUlShadow");
+  var vid = document.getElementById("spdUlVid"), cv = document.getElementById("spdUlFx"), cx = cv.getContext("2d");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches, T = 12;
+  [hl, hr].forEach(function (h) {
+    var face = h.querySelector(".face"); h.querySelector(".back").style.transform = "translateZ(" + (-T) + "px)";
+    for (var i = 1; i < 6; i++) { var e = document.createElement("i"); e.style.transform = "translateZ(" + (-T * i / 6) + "px)"; h.insertBefore(e, face); }
+  });
+  var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+  var easeOut = function (x) { return 1 - Math.pow(1 - x, 4); };
+  var smooth = function (x) { return x * x * (3 - 2 * x); };
+  // 기울기: 임계 감쇠 스프링 (넘치지 않고 빠르게 멈춤)
+  var tx = 0, ty = 0, rx = 0, ry = 0, vx = 0, vy = 0, K = 140, MAX = 13, lastMove = 0;
+  function aim(e) {
+    var r = rig.getBoundingClientRect();
+    ty = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.9), -1, 1) * MAX;
+    tx = -clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 0.9), -1, 1) * MAX; lastMove = performance.now();
+  }
+  var zone = box.closest("section") || box;
+  zone.addEventListener("pointermove", aim);
+  zone.addEventListener("pointerleave", function () { tx = 0; ty = 0; });
+  zone.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { tx = 0; ty = 0; } });
+  // 금빛 입자
+  var P = [], dpr = Math.min(2, window.devicePixelRatio || 1), W = 0, H = 0;
+  function size() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  window.addEventListener("resize", size);
+  function burst() {
+    if (reduce) return; size();
+    var r = rig.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    var ox = r.left + r.width / 2 - c.left, oy = r.top + r.height / 2 - c.top, n = window.innerWidth < 600 ? 100 : 160;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, sp = 220 + Math.random() * 520, flake = Math.random() < 0.55;
+      P.push({ x: ox + Math.cos(a) * r.width * 0.36, y: oy + Math.sin(a) * r.height * 0.36, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 160,
+        s: flake ? 3 + Math.random() * 5 : 1.2 + Math.random() * 2.2, flake: flake, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 14,
+        life: 0, max: 1.4 + Math.random() * 1.5, hue: 40 + Math.random() * 10, lum: 58 + Math.random() * 22 });
+    }
+  }
+  function particles(dt) {
+    if (!P.length && !W) return;
+    cx.clearRect(0, 0, W, H);
+    for (var i = P.length - 1; i >= 0; i--) {
+      var q = P[i]; q.life += dt;
+      if (q.life > q.max) { P.splice(i, 1); continue; }
+      var drag = Math.exp(-2.6 * dt); q.vx *= drag; q.vy = q.vy * drag + 520 * dt;
+      q.x += q.vx * dt; q.y += q.vy * dt; q.rot += q.vr * dt;
+      cx.save(); cx.translate(q.x, q.y); cx.globalAlpha = Math.min(1, (q.max - q.life) / 0.5);
+      if (q.flake) { cx.rotate(q.rot); var w = q.s * (0.25 + 0.75 * Math.abs(Math.cos(q.rot * 1.7)));
+        cx.fillStyle = "hsl(" + q.hue + ",78%," + (q.lum + 14 * Math.cos(q.rot * 1.7)) + "%)"; cx.fillRect(-w / 2, -q.s / 2, w, q.s); }
+      else { cx.fillStyle = "hsl(" + q.hue + ",90%,82%)"; cx.beginPath(); cx.arc(0, 0, q.s, 0, 6.283); cx.fill(); }
+      cx.restore();
+    }
+  }
+  var t0 = -1, lit = false, last = 0, visible = false, running = false;
+  function start() {
+    t0 = performance.now(); lit = false; box.classList.remove("lit"); box.classList.add("on"); P.length = 0; screen.style.opacity = 0;
+    try { vid.pause(); vid.currentTime = 0; } catch (e) {}
+    if (!running) { running = true; requestAnimationFrame(frame); }
+  }
+  function frame(now) {
+    if (!visible) { running = false; vid.pause(); return; } // 화면 밖이면 멈춰서 배터리를 아낌
+    var dt = Math.min(0.033, (now - last) / 1000 || 0.016); last = now;
+    var t = reduce ? 10 : (now - t0) / 1000;
+    var rise = easeOut(clamp((t - 0.25) / 0.9, 0, 1)), open = easeOut(clamp((t - 0.75) / 0.95, 0, 1)), fold = (1 - open) * 86;
+    hl.style.transform = "rotateY(" + fold + "deg)"; hr.style.transform = "rotateY(" + (-fold) + "deg)";
+    if (!lit && open > 0.985) { lit = true; box.classList.add("lit"); burst(); }
+    if (lit && vid.paused) { var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    screen.style.opacity = smooth(clamp((t - 1.58) / 0.35, 0, 1)); gloss.style.opacity = rise;
+    var gxT = tx, gyT = ty;
+    if (now - lastMove > 1800 && !reduce) { gyT = Math.sin(now / 1700) * 5; gxT = Math.cos(now / 2300) * 3; }
+    var c = 2 * Math.sqrt(K);
+    vx += (K * (gxT - rx) - c * vx) * dt; rx += vx * dt; vy += (K * (gyT - ry) - c * vy) * dt; ry += vy * dt;
+    rig.style.transform = "translateY(" + ((1 - rise) * 60) + "px) scale(" + (0.86 + 0.14 * rise) + ") rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg)";
+    rig.style.opacity = clamp((t - 0.25) / 0.3, 0, 1);
+    gloss.style.setProperty("--gx", (30 - ry * 3.2) + "%"); gloss.style.setProperty("--gy", (12 + rx * 3.2) + "%");
+    shadow.style.opacity = 0.9 * rise * open;
+    shadow.style.transform = "translate(" + (-ry * 1.6) + "px," + (rx * 1.2) + "px) translateZ(-60px) scaleX(" + (0.5 + 0.5 * open) + ")";
+    particles(dt);
+    requestAnimationFrame(frame);
+  }
+  document.getElementById("spdUlAgain").addEventListener("click", start);
+  // 화면에 들어올 때 처음 한 번 펼쳐짐. 이후에는 보일 때만 움직임
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (en) {
+      visible = en[0].isIntersecting;
+      if (visible) { if (t0 < 0) start(); else if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+    }, { threshold: 0.35 }).observe(box);
+  } else { visible = true; start(); }
+  // 스피드미터 페이지를 새로 열 때마다 접힌 상태에서 다시 펼침
+  document.addEventListener("routechange", function (e) { if (e.detail === "#app-speed" && visible) start(); else if (e.detail !== "#app-speed") t0 = -1; });
 })();
 </script>
 </body>
