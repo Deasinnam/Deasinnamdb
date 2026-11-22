@@ -722,7 +722,7 @@ public class MainActivity extends Activity {
                 // 화면 기록: 카운터 화면 → (스크립트가 찍음) → 테이블 화면
                 load(base + "/admin.html");
                 Thread.sleep(5000);
-                probe("admin", "JSON.stringify({key:(typeof KEY=='string'?KEY.length:-1),rev:(typeof REV=='number'?REV:-1),loaded:!!(typeof D!='undefined'&&D),orders:document.querySelectorAll('.od').length})");
+                probe("admin", "JSON.stringify({url:location.href,key:(typeof KEY=='string'?KEY.length:-1),rev:(typeof REV=='number'?REV:-1),loaded:!!(typeof D!='undefined'&&D),orders:document.querySelectorAll('.od').length,qr:typeof qrcode,errs:(window.__errs||[]).slice(0,5)})");
                 Thread.sleep(1000);
                 st("SHOT admin");
                 Thread.sleep(7000);

@@ -267,7 +267,7 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
 <button class="bellstop hide" id="bellStop" onclick="stopBell()">🔕 벨 멈추기</button>
 <div id="modal"></div>
 <script>
-window.onerror=function(m,u,l){console.error("JS "+m+" @"+l)};
+window.__errs=[];window.onerror=function(m,u,l){window.__errs.push(m+" @"+l);console.error("JS "+m+" @"+l)};
 var $=function(id){return document.getElementById(id)};
 var T=window.TO||null;
 var KEY=(T&&T.key?T.key():"")||((location.hash.match(/key=([0-9a-f]+)/)||[])[1]||"");
@@ -279,7 +279,7 @@ function won(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,
 function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.parentNode&&d.parentNode.removeChild(d)},2600)}
 function api(m,path,body,cb,raw,timeout){var x=new XMLHttpRequest();x.open(m,path,true);x.timeout=timeout||10000;x.setRequestHeader("X-Key",KEY);
   x.onload=function(){var j=null;try{j=JSON.parse(x.responseText)}catch(e){}if(x.status!==200&&j&&j.error)toast(j.error);cb&&cb(x.status,j)};
-  x.onerror=x.ontimeout=function(){console.warn("api fail "+path);cb&&cb(0,null)};
+  x.onerror=x.ontimeout=function(){console.warn("api fail "+path);window.__errs&&window.__errs.push("api "+path);cb&&cb(0,null)};
   if(raw){x.setRequestHeader("Content-Type","image/jpeg");x.send(raw)}else if(body){x.setRequestHeader("Content-Type","application/json");x.send(JSON.stringify(body))}else x.send()}
 function ago(t){var m=Math.floor((Date.now()-t)/60000);return m<1?"방금":m+"분 전"}
 function modal(html){$("modal").innerHTML=html?'<div class="modal"><div class="box">'+html+'</div></div>':"";if(html){var bg=$("modal").firstChild;bg.onclick=function(e){if(e.target===bg)modal()}}}
