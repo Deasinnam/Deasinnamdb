@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" width="760" height="500" font-family="'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans CJK KR',sans-serif">
+<rect width="760" height="500" rx="24" fill="#f5f5f4"/>
+<text x="40" y="62" font-size="15" font-weight="600" fill="#8a8a8a" letter-spacing="2">STEP 4</text>
+<text x="40" y="98" font-size="25" font-weight="700" fill="#111">한 번 더</text>
+<text x="40" y="131" font-size="25" font-weight="700" fill="#111">확인하기</text>
+<rect x="40" y="176" width="268" height="42" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="56" y="203" font-size="15" font-weight="600" fill="#111">그래도 열기 한 번 더</text>
+<path d="M174 222 v12 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="240" width="268" height="42" rx="12" fill="#fff6e6" stroke="#f5a524" stroke-width="2.5"/>
+<text x="56" y="267" font-size="15" font-weight="700" fill="#111">맥 암호 또는 Touch ID</text>
+<text x="40" y="316" font-size="14.5" fill="#4a4a4a">맥을 켤 때 쓰는 암호입니다.</text>
+<text x="40" y="340" font-size="14.5" fill="#4a4a4a">애플 계정 암호가 아니에요.</text>
+<rect x="372" y="50" width="350" height="190" rx="18" fill="#fff" stroke="#d6d3d1" stroke-width="1.5"/>
+<text x="547" y="92" font-size="14.5" font-weight="700" fill="#111" text-anchor="middle">“Deolnureum-Dulsseum.pkg”을(를)</text>
+<text x="547" y="114" font-size="14.5" font-weight="700" fill="#111" text-anchor="middle">여시겠습니까?</text>
+<text x="547" y="142" font-size="12" fill="#57534e" text-anchor="middle">한 번 열면 다음부터는 묻지 않습니다.</text>
+<rect x="392" y="176" width="150" height="32" rx="8" fill="#ececec"/><text x="467.0" y="197" font-size="14" fill="#333" text-anchor="middle">휴지통으로 이동</text>
+<rect x="552" y="176" width="150" height="32" rx="8" fill="#2f7cf6" stroke="#f5a524" stroke-width="3"/><text x="627.0" y="197" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">그래도 열기</text>
+<circle cx="680" cy="192" r="15" fill="none" stroke="#f5a524" stroke-width="3"/><circle cx="680" cy="192" r="5" fill="#f5a524"/>
+<rect x="372" y="262" width="350" height="190" rx="18" fill="#fff" stroke="#d6d3d1" stroke-width="1.5"/>
+<text x="547" y="300" font-size="14" font-weight="700" fill="#111" text-anchor="middle">시스템 설정에서 변경하려고 합니다.</text>
+<text x="547" y="322" font-size="12" fill="#57534e" text-anchor="middle">허용하려면 암호를 입력하십시오.</text>
+<rect x="402" y="340" width="290" height="34" rx="8" fill="#fff6e6" stroke="#f5a524" stroke-width="2.5"/>
+<text x="416" y="362" font-size="13" fill="#78716c">맥 로그인 암호  ●●●●●●</text>
+<rect x="552" y="396" width="140" height="32" rx="8" fill="#ececec"/><text x="622.0" y="417" font-size="14" fill="#333" text-anchor="middle">설정 변경</text>
+</svg>

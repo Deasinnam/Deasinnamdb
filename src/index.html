@@ -989,6 +989,11 @@ button.al-get { border: 1px solid #c75a00; white-space: nowrap; }
 .nt-steps b { width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--paper); font-size: 12px; display: inline-grid; place-items: center; }
 .nt-quote { margin: 0 0 8px; padding: 14px 18px; border-left: 3px solid #f5a524; background: #fff6e6; border-radius: 0 12px 12px 0; color: #1f2023; }
 .nt-quote small { display: block; margin-top: 6px; color: var(--ink-3); font-size: 13px; }
+.ap-macfigs { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 18px; margin: 26px 0 0; }
+.ap-macfigs figure { margin: 0; }
+.ap-macfigs img { display: block; width: 100%; height: auto; border-radius: 16px; }
+.ap-macfigs figcaption { margin-top: 8px; font-size: 13.5px; color: #c4c4cc; }
+#sseum-install > .ap-disc { grid-column: 1 / -1; margin-top: 22px; }
 .nt-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
 .nt-figs figure { margin: 0; }
 .nt-figs img { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); }
@@ -2503,6 +2508,18 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <li><b>05</b><span>메모리 사용률 · 압력 · 최근 2분 그래프를 한눈에</span></li>
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="/download/Deolnureum-Dulsseum.pkg" download>내려받기 <small>PKG</small></a><span class="dl-count">390KB</span><p class="dl-note">애플 서명 전이라 처음 열 때 “확인되지 않은 개발자” 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열고, 그래도 막히면 <b>시스템 설정 → 개인정보 보호 및 보안</b>에서 <b>그래도 열기</b>를 누르세요.</p></div>
+        <div class="ap-fix"><a class="amp-btn ap-fix-btn" href="#sseum-install"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>“열리지 않았습니다”가 뜰 때 그림으로 보기</a></div>
+        <div class="ap-howto ap-install">
+          <h2>맥에 처음 설치하시나요?</h2>
+          <p>애플 서명 전이라 맥이 처음 한 번 “악성 코드가 없음을 확인할 수 없습니다” 창으로 막습니다. 고장이 아니에요. 아래 순서대로 2분이면 설치됩니다.</p>
+          <ol>
+            <li><b>설치 파일을 열고 완료 누르기</b><span>“열리지 않았습니다” 창이 뜨면 휴지통으로 이동이 아니라 완료</span></li>
+            <li><b>그래도 열기</b><span>시스템 설정 › 개인정보 보호 및 보안 › 맨 아래 보안 › 그래도 열기</span></li>
+            <li><b>한 번 더 그래도 열기 · 맥 암호</b><span>맥을 켤 때 쓰는 암호 또는 Touch ID</span></li>
+            <li><b>계속 → 설치 → 닫기</b><span>메뉴 막대의 막대 세 개 아이콘을 누르면 덜씀이 열립니다</span></li>
+          </ol>
+          <a class="ap-howto-more" href="#sseum-install">그림으로 보는 설치 방법 →</a>
+        </div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜씀">이 앱에 의견 보내기</a></div>
         <p class="ap-disc" role="note"><b>꼭 확인하세요</b>덜씀은 맥의 기종과 macOS 버전 등 호환성에 따라 일부 기능이 동작하지 않거나 사용이 어려울 수 있습니다.</p>
         <dl class="speed-req">
@@ -2534,6 +2551,21 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <figcaption><small>03 · OLDER MAC</small><h3>오래된 맥도 가볍게.</h3><p>창 · Dock 애니메이션을 줄이고, 메모리가 '주의'로 오르면 1시간 넘게 안 쓴 앱을 알아서 정리합니다.</p></figcaption>
         </figure>
       </div>
+    </div>
+    <div class="amp-wrap ap-sub" id="sseum-install">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">INSTALL · 맥에 설치하기</div>
+        <h2>그림 보고 따라 하면<br>2분이면 설치.</h2>
+        <p class="ap-desc">macOS 15(세쿼이아) 이상은 설치 파일을 우클릭해 여는 방법이 막혀, 시스템 설정에서 한 번 허용해야 합니다. 한 번 허용하면 다음부터는 묻지 않습니다. macOS 14 이하는 설치 파일을 <b>Control 키를 누른 채 클릭 → 열기 → 열기</b>로도 됩니다.</p>
+      </div>
+      <div class="ap-macfigs">
+        <figure><img src="media/notice/mac-1-blocked.svg" alt="설치 파일을 열면 뜨는 창: Deolnureum-Dulsseum.pkg이(가) 열리지 않았습니다. 휴지통으로 이동이 아니라 완료를 누릅니다" width="760" height="500" loading="lazy"><figcaption>1 · “열리지 않았습니다” 창에서 완료</figcaption></figure>
+        <figure><img src="media/notice/mac-2-settings.svg" alt="왼쪽 위 사과 메뉴에서 시스템 설정을 열고 개인정보 보호 및 보안을 고릅니다" width="760" height="500" loading="lazy"><figcaption>2 · 시스템 설정 › 개인정보 보호 및 보안</figcaption></figure>
+        <figure><img src="media/notice/mac-3-openanyway.svg" alt="개인정보 보호 및 보안 오른쪽을 맨 아래 보안까지 내려 Deolnureum-Dulsseum.pkg이(가) 차단되었다는 문구 옆 그래도 열기를 누릅니다" width="760" height="500" loading="lazy"><figcaption>3 · 맨 아래 ‘보안’에서 그래도 열기</figcaption></figure>
+        <figure><img src="media/notice/mac-4-confirm.svg" alt="다시 묻는 창에서 그래도 열기를 누르고 맥 로그인 암호 또는 Touch ID로 확인합니다" width="760" height="500" loading="lazy"><figcaption>4 · 한 번 더 그래도 열기 · 맥 암호</figcaption></figure>
+        <figure><img src="media/notice/mac-5-install.svg" alt="설치 프로그램에서 계속, 설치, 맥 암호, 닫기를 누르면 메뉴 막대에 막대 세 개 아이콘이 생기고 누르면 덜씀이 열립니다" width="760" height="500" loading="lazy"><figcaption>5 · 설치 · 메뉴 막대에서 열기</figcaption></figure>
+      </div>
+      <p class="ap-disc" role="note"><b>꼭 확인하세요</b>이 방법은 덜누름 사이트(deolnureum.com)에서 받은 덜씀 설치 파일에만 써 주세요. “그래도 열기”가 보이지 않으면 설치 파일을 한 번 더 연 뒤 1시간 안에 시스템 설정을 열어 주세요.</p>
     </div>
     <div class="amp-wrap"><div class="ap-nav"><a href="#app-center">← 앱센터로</a><a href="#app-localai">다음 앱 · 덜누름 로컬 AI →</a></div></div>
   </section>
@@ -3014,6 +3046,11 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     <div class="wrap">
       <div id="ntList">
       <ul class="nt-list">
+        <li><a class="nt-row" href="#post-sseum-install">
+          <span class="nt-no">013</span>
+          <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜씀</span><span class="nt-tag">맥 설치</span><span class="nt-tag done">해결 방법 안내</span></span><h2>“악성 코드가 없음을 확인할 수 없습니다”가 뜰 때 — 덜씀 맥 설치, 그림으로 2분</h2></span>
+          <span class="nt-date">2026.11.24</span>
+        </a></li>
         <li><a class="nt-row" href="#post-install-guide">
           <span class="nt-no">012</span>
           <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 전체</span><span class="nt-tag">설치</span><span class="nt-tag done">해결 방법 안내</span></span><h2>"기기 보호를 위해 앱 차단됨"이 뜰 때 — 그림 보고 3분이면 설치됩니다</h2></span>
@@ -3076,6 +3113,45 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         </a></li>
       </ul>
       </div>
+      <article class="nt-article" id="post-sseum-install" data-post hidden>
+        <a class="nt-back" href="#updates">← 목록으로</a>
+        <header class="nt-head">
+          <div class="nt-tags"><span class="nt-tag">덜씀</span><span class="nt-tag">맥 설치</span><span class="nt-tag done">해결 방법 안내</span></div>
+          <h2>“악성 코드가 없음을 확인할 수 없습니다”가 뜰 때 — 덜씀 맥 설치, 그림으로 2분</h2>
+          <span class="nt-date">013 · 2026.11.24</span>
+        </header>
+        <div class="nt-body">
+          <h3>받은 의견</h3>
+          <p class="nt-quote">악성코드를 확인할 수 없어서 설치할 수 없다는데, 한번 방법을 찾아봐야겠어요.<small>덜씀 후기 · 2026.11.24</small></p>
+          <h3>왜 막히나요</h3>
+          <p>불편을 드려 죄송합니다. 덜씀은 아직 애플 서명(공증)을 받기 전이라, 맥이 처음 한 번 “Apple은 이 파일에 악성 코드가 없음을 확인할 수 없습니다” 창으로 설치를 막습니다. 파일에 문제가 있다는 뜻이 아니라, 애플이 아직 확인하지 않았다는 뜻입니다. macOS 15(세쿼이아)부터는 예전처럼 우클릭 → 열기로 넘어갈 수 없고, 시스템 설정에서 한 번 허용해야 합니다.</p>
+          <div class="nt-figs">
+            <figure><img src="media/notice/mac-1-blocked.svg" alt="설치 파일을 열면 뜨는 창: Deolnureum-Dulsseum.pkg이(가) 열리지 않았습니다. 휴지통으로 이동이 아니라 완료를 누릅니다" width="760" height="500" loading="lazy"><figcaption>1 · “열리지 않았습니다” 창에서 완료</figcaption></figure>
+            <figure><img src="media/notice/mac-2-settings.svg" alt="왼쪽 위 사과 메뉴에서 시스템 설정을 열고 개인정보 보호 및 보안을 고릅니다" width="760" height="500" loading="lazy"><figcaption>2 · 시스템 설정 › 개인정보 보호 및 보안</figcaption></figure>
+            <figure><img src="media/notice/mac-3-openanyway.svg" alt="개인정보 보호 및 보안 오른쪽을 맨 아래 보안까지 내려 Deolnureum-Dulsseum.pkg이(가) 차단되었다는 문구 옆 그래도 열기를 누릅니다" width="760" height="500" loading="lazy"><figcaption>3 · 맨 아래 ‘보안’에서 그래도 열기</figcaption></figure>
+            <figure><img src="media/notice/mac-4-confirm.svg" alt="다시 묻는 창에서 그래도 열기를 누르고 맥 로그인 암호 또는 Touch ID로 확인합니다" width="760" height="500" loading="lazy"><figcaption>4 · 한 번 더 그래도 열기 · 맥 암호</figcaption></figure>
+            <figure><img src="media/notice/mac-5-install.svg" alt="설치 프로그램에서 계속, 설치, 맥 암호, 닫기를 누르면 메뉴 막대에 막대 세 개 아이콘이 생기고 누르면 덜씀이 열립니다" width="760" height="500" loading="lazy"><figcaption>5 · 설치 · 메뉴 막대에서 열기</figcaption></figure>
+          </div>
+          <h3>따라 하기</h3>
+          <ol>
+            <li><b>완료 누르기</b> — 받은 <b>Deolnureum-Dulsseum.pkg</b>를 두 번 눌러 “열리지 않았습니다” 창이 뜨면 <b>완료</b>를 누릅니다. <b>휴지통으로 이동</b>은 누르지 마세요.</li>
+            <li><b>시스템 설정 열기</b> — 화면 왼쪽 위 사과 메뉴 → <b>시스템 설정</b> → 왼쪽 목록의 <b>개인정보 보호 및 보안</b>.</li>
+            <li><b>그래도 열기</b> — 오른쪽을 맨 아래 <b>보안</b>까지 내리면 “Deolnureum-Dulsseum.pkg이(가) 차단되었습니다” 문구 옆에 <b>그래도 열기</b>가 있습니다. 1번을 한 지 1시간이 지나면 보이지 않으니, 그때는 1번부터 다시 해 주세요.</li>
+            <li><b>한 번 더 확인</b> — 다시 묻는 창에서 <b>그래도 열기</b>를 누르고, 맥을 켤 때 쓰는 암호(또는 Touch ID)를 넣습니다.</li>
+            <li><b>설치</b> — 설치 프로그램에서 <b>계속 → 설치</b>를 누르고 맥 암호를 한 번 더 넣은 뒤 <b>닫기</b>. 화면 맨 위 메뉴 막대에 생긴 막대 세 개 아이콘을 누르면 덜씀이 열립니다.</li>
+          </ol>
+          <h3>macOS 14(소노마) 이하라면</h3>
+          <p>설치 파일을 <b>Control 키를 누른 채 클릭(또는 우클릭) → 열기</b>를 누르고, 다시 묻는 창에서 <b>열기</b>를 누르면 바로 설치가 시작됩니다.</p>
+          <h3>그래도 안 되면</h3>
+          <ul>
+            <li>회사 · 학교에서 관리하는 맥은 관리자 설정 때문에 “그래도 열기”가 보이지 않을 수 있습니다.</li>
+            <li>맥 기종(예: M1 맥북 에어), macOS 버전, 화면 캡처를 <a href="#feedback">의견 보내기</a>로 알려 주세요.</li>
+          </ul>
+          <p>설치 방법이 바뀌면 이 글과 <a href="#app-sseum">덜씀 페이지</a>에 이어서 알려 드리겠습니다.</p>
+          <p class="ap-disc light"><b>꼭 확인하세요</b>이 방법은 덜누름 사이트(deolnureum.com)에서 받은 파일에만 써 주세요. 다른 곳에서 받은 파일은 이렇게 열지 마세요.</p>
+        </div>
+        <a class="nt-back" href="#updates">← 목록으로</a>
+      </article>
       <article class="nt-article" id="post-install-guide" data-post hidden>
         <a class="nt-back" href="#updates">← 목록으로</a>
         <header class="nt-head">
@@ -3806,7 +3882,8 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
   var PATHS = document.documentElement.hasAttribute("data-paths"), META = window.__PAGES || {};
   var H2P = { "#top": "/", "#app-center": "/apps/", "#hardware": "/hardware/", "#about": "/about/", "#feedback": "/feedback/", "#updates": "/updates/", "#releases": "/releases/", "#app-amp": "/amp/", "#app-speed": "/speedometer/", "#app-work": "/work/", "#app-desktop": "/desktop/", "#app-browser": "/browser/", "#app-game": "/game/", "#app-pad": "/pad/", "#app-tv": "/tv/", "#app-sseum": "/dulsseum/", "#app-localai": "/localai/" }, P2H = {};
   for (var hk in H2P) P2H[H2P[hk]] = hk;
-  function viewPath(h) { if (H2P[h]) return H2P[h]; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; if (/^#post-/.test(h)) return "/updates/" + h; return "/" + (h || ""); }
+  function inApp(h) { if (!h || h.length < 2 || /^#post-/.test(h)) return null; var el = document.getElementById(h.slice(1)), ap = el && el.closest ? el.closest(".ap") : null; return ap && pages.indexOf(ap) >= 0 && ap !== el ? ap : null; }   // 앱 페이지 안의 구역(#sseum-install 등)
+  function viewPath(h) { if (H2P[h]) return H2P[h]; var inap = inApp(h); if (inap && H2P["#" + inap.id]) return H2P["#" + inap.id] + h; if (h === "#notify") return "/feedback/" + h; if (h === "#rules" || h === "#logo") return "/about/" + h; if (/^#post-/.test(h)) return "/updates/" + h; return "/" + (h || ""); }
   function logical() {
     if (!PATHS) return location.hash || "";
     var p = location.pathname.replace(/index\.html$/, ""); if (p.slice(-1) !== "/") p += "/";
@@ -3820,6 +3897,8 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     var hsh = logical();
     var page = null;
     for (var j = 0; j < pages.length; j++) if ("#" + pages[j].id === hsh) page = pages[j];
+    var inner = null;
+    if (!page) { var inap = inApp(hsh); if (inap) { page = inap; inner = document.getElementById(hsh.slice(1)); } }
     var isAbout = hsh === "#about" || hsh === "#rules";
     var isFb = hsh === "#feedback" || hsh === "#notify";
     var isHw = hsh === "#hardware";
@@ -3848,11 +3927,11 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       var on = (dv === view || (view === "app" && dv === "apps")) && (view !== "home" || /^(#top|\/)$/.test(links[i].getAttribute("href")));
       links[i].classList.toggle("is-on", on);
     }
-    var target = !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" && hsh !== "#updates" && hsh !== "#releases" && !/^#post-/.test(hsh) ? document.getElementById(hsh.slice(1)) : null;
+    var target = inner || !page && hsh && hsh !== "#top" && hsh !== "#app-center" && hsh !== "#about" && hsh !== "#feedback" && hsh !== "#hardware" && hsh !== "#updates" && hsh !== "#releases" && !/^#post-/.test(hsh) ? document.getElementById(hsh.slice(1)) : null;
     if (target) target.scrollIntoView();
     else { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } }
     if (PATHS) {   // 화면에 맞는 제목·설명·대표 주소
-      var m = META[page ? hsh : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : view === "updates" ? "#updates" : view === "releases" ? "#releases" : "#top"];
+      var m = META[page ? "#" + page.id : view === "apps" ? "#app-center" : view === "about" ? "#about" : view === "feedback" ? "#feedback" : view === "hardware" ? "#hardware" : view === "updates" ? "#updates" : view === "releases" ? "#releases" : "#top"];
       if (m) { document.title = m.t; var md = document.querySelector('meta[name="description"]'), lc = document.querySelector('link[rel="canonical"]'); if (md) md.setAttribute("content", m.d); if (lc) lc.setAttribute("href", m.u); }
     }
     var ev;
@@ -4505,7 +4584,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
                        { v: "0.2", date: "2026.11.15", tag: "game-v0.2", file: "DeolnureumGame-0.2.apk", note: "FPS 보기 · 고급 기능(Shizuku) 연결로 맞춤 설정 실제 적용", kind: ["new"] }
                      ] },
     "app-sseum":   { open: true,  url: "/download/Deolnureum-Dulsseum.pkg", size: "390KB", kind: "PKG", key: "dl-sseum",
-                     note: "애플 서명 전이라 처음 열 때 \u201c확인되지 않은 개발자\u201d 경고가 뜰 수 있습니다. 설치 파일을 <b>우클릭 → 열기</b>로 열고, 그래도 막히면 <b>시스템 설정 → 개인정보 보호 및 보안</b>에서 <b>그래도 열기</b>를 누르세요." },
+                     note: "애플 서명 전이라 처음 열 때 \u201c열리지 않았습니다\u201d 창이 뜹니다. <b>완료</b>를 누르고 <b>시스템 설정 → 개인정보 보호 및 보안 → 보안</b>에서 <b>그래도 열기</b>를 누르세요. <a href=\"#sseum-install\">그림으로 보는 설치 방법</a>" },
     "app-localai": { open: true,  url: "/download/Deolnureum-LocalAI-Atlas8.zip", size: "14KB · 설치 중 모델 약 30GB", kind: "ZIP", key: "dl-localai",
                      note: "설치 파일만 먼저 받고, AI 모델(약 30GB)은 설치하는 동안 공식 배포처에서 받습니다. 처음 실행할 때 <b>Windows의 PC 보호</b> 창이 뜨면 <b>추가 정보 → 실행</b>을 누르세요." }
   };

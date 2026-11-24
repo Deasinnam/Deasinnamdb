@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" width="760" height="500" font-family="'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans CJK KR',sans-serif">
+<rect width="760" height="500" rx="24" fill="#f5f5f4"/>
+<text x="40" y="62" font-size="15" font-weight="600" fill="#8a8a8a" letter-spacing="2">STEP 1</text>
+<text x="40" y="98" font-size="25" font-weight="700" fill="#111">이 창이 뜨면</text>
+<text x="40" y="131" font-size="25" font-weight="700" fill="#111">‘완료’ 누르기</text>
+<text x="40" y="192" font-size="14.5" fill="#4a4a4a">받은 설치 파일을 두 번 누르면</text>
+<text x="40" y="216" font-size="14.5" fill="#4a4a4a">맥이 처음 한 번 이렇게 막습니다.</text>
+<text x="40" y="240" font-size="14.5" fill="#4a4a4a">고장이 아니에요.</text>
+<text x="40" y="264" font-size="14.5" fill="#4a4a4a"></text>
+<rect x="40" y="272" width="268" height="42" rx="12" fill="#fff6e6" stroke="#f5a524" stroke-width="2.5"/>
+<text x="56" y="299" font-size="15" font-weight="700" fill="#111">완료 누르기 (휴지통 ✕)</text>
+<rect x="372" y="60" width="350" height="380" rx="18" fill="#fff" stroke="#d6d3d1" stroke-width="1.5"/>
+<rect x="525" y="100" width="44" height="34" rx="7" fill="#e7e5e4"/><path d="M535 100 v-8 a12 12 0 0 1 24 0 v8" stroke="#a8a29e" stroke-width="4" fill="none"/><circle cx="547" cy="116" r="4" fill="#a8a29e"/>
+<text x="547" y="170" font-size="15" font-weight="700" fill="#111" text-anchor="middle">“Deolnureum-Dulsseum.pkg”이(가)</text>
+<text x="547" y="192" font-size="15" font-weight="700" fill="#111" text-anchor="middle">열리지 않았습니다.</text>
+<text x="547" y="226" font-size="12.5" fill="#57534e" text-anchor="middle">Apple은 이 파일에 Mac을 손상시키거나</text>
+<text x="547" y="246" font-size="12.5" fill="#57534e" text-anchor="middle">개인정보를 위협하는 악성 코드가 없음을</text>
+<text x="547" y="266" font-size="12.5" fill="#57534e" text-anchor="middle">확인할 수 없습니다.</text>
+<rect x="392" y="316" width="310" height="32" rx="8" fill="#ececec"/><text x="547.0" y="337" font-size="14" fill="#333" text-anchor="middle">휴지통으로 이동</text>
+<line x1="402" y1="332" x2="692" y2="332" stroke="#dc2626" stroke-width="2.5"/>
+<rect x="392" y="360" width="310" height="32" rx="8" fill="#2f7cf6" stroke="#f5a524" stroke-width="3"/><text x="547.0" y="381" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">완료</text>
+<circle cx="660" cy="376" r="15" fill="none" stroke="#f5a524" stroke-width="3"/><circle cx="660" cy="376" r="5" fill="#f5a524"/>
+<text x="547" y="424" font-size="12.5" font-weight="700" fill="#dc2626" text-anchor="middle">휴지통으로 이동은 누르지 마세요</text>
+</svg>

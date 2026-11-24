@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" width="760" height="500" font-family="'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans CJK KR',sans-serif">
+<rect width="760" height="500" rx="24" fill="#f5f5f4"/>
+<text x="40" y="62" font-size="15" font-weight="600" fill="#8a8a8a" letter-spacing="2">STEP 5</text>
+<text x="40" y="98" font-size="25" font-weight="700" fill="#111">설치하고</text>
+<text x="40" y="131" font-size="25" font-weight="700" fill="#111">메뉴 막대에서 열기</text>
+<rect x="40" y="176" width="268" height="42" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="56" y="203" font-size="15" font-weight="600" fill="#111">계속 → 계속</text>
+<path d="M174 222 v12 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="240" width="268" height="42" rx="12" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="56" y="267" font-size="15" font-weight="600" fill="#111">설치 → 맥 암호</text>
+<path d="M174 286 v12 m-6 -6 l6 6 l6 -6" stroke="#8a8a8a" stroke-width="2" fill="none"/>
+<rect x="40" y="304" width="268" height="42" rx="12" fill="#fff6e6" stroke="#f5a524" stroke-width="2.5"/>
+<text x="56" y="331" font-size="15" font-weight="700" fill="#111">닫기 → 메뉴 막대 아이콘</text>
+<rect x="352" y="60" width="380" height="380" rx="14" fill="#fff" stroke="#d6d3d1" stroke-width="1.5"/>
+<circle cx="372" cy="78" r="6" fill="#ff5f57"/><circle cx="390" cy="78" r="6" fill="#febc2e"/><circle cx="408" cy="78" r="6" fill="#28c840"/>
+<text x="542.0" y="83" font-size="13" font-weight="600" fill="#57534e" text-anchor="middle">덜씀 설치</text>
+<rect x="353" y="96" width="120" height="343" fill="#f5f5f4"/>
+<circle cx="370" cy="114" r="5" fill="#a8a29e"/><text x="384" y="118" font-size="12.5" fill="#78716c" font-weight="400">소개</text>
+<circle cx="370" cy="144" r="5" fill="#a8a29e"/><text x="384" y="148" font-size="12.5" fill="#78716c" font-weight="400">대상 선택</text>
+<circle cx="370" cy="174" r="5" fill="#2f7cf6"/><text x="384" y="178" font-size="12.5" fill="#111" font-weight="700">설치 유형</text>
+<circle cx="370" cy="204" r="5" fill="#a8a29e"/><text x="384" y="208" font-size="12.5" fill="#78716c" font-weight="400">설치</text>
+<circle cx="370" cy="234" r="5" fill="#a8a29e"/><text x="384" y="238" font-size="12.5" fill="#78716c" font-weight="400">요약</text>
+<text x="490" y="128" font-size="14" font-weight="700" fill="#111">덜씀 표준 설치</text>
+<text x="490" y="152" font-size="12" fill="#57534e">응용 프로그램 폴더에 설치합니다.</text>
+<text x="490" y="172" font-size="12" fill="#57534e">크기: 1MB 미만</text>
+<rect x="490" y="386" width="100" height="32" rx="8" fill="#ececec"/><text x="540.0" y="407" font-size="14" fill="#333" text-anchor="middle">이전으로</text>
+<rect x="600" y="386" width="112" height="32" rx="8" fill="#2f7cf6" stroke="#f5a524" stroke-width="3"/><text x="656.0" y="407" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">설치</text>
+<circle cx="690" cy="402" r="15" fill="none" stroke="#f5a524" stroke-width="3"/><circle cx="690" cy="402" r="5" fill="#f5a524"/>
+<rect x="482" y="222" width="236" height="120" rx="12" fill="#0b0b0c"/>
+<text x="500" y="250" font-size="11" fill="#a1a1aa">설치가 끝나면 메뉴 막대에</text>
+<rect x="560" y="268" width="140" height="22" rx="4" fill="#27272a"/>
+<rect x="600" y="268" width="30" height="22" rx="5" fill="#f5a524"/><rect x="607" y="281" width="4" height="5" rx="1" fill="#231400"/><rect x="613" y="277" width="4" height="9" rx="1" fill="#231400"/><rect x="619" y="273" width="4" height="13" rx="1" fill="#231400"/><text x="640" y="284" font-size="12" font-weight="700" fill="#e4e4e7">70%</text>
+<text x="500" y="320" font-size="11" fill="#fde68a">막대 세 개 아이콘을 누르면 열립니다</text>
+</svg>
