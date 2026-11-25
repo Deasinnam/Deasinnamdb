@@ -1,4 +1,4 @@
-// 1.88 택시 미터기(라디오가 빠진 판 = noradio): 라디오 자리(위 도구 줄 버튼·왼쪽 레일·라디오 창)에 넣음
+// 1.88 택시 미터기 (1.89 '실물 전자식' 스킨)(라디오가 빠진 판 = noradio): 라디오 자리(위 도구 줄 버튼·왼쪽 레일·라디오 창)에 넣음
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* 요금: 서울 중형택시 신고요금(2023.2.1~, 서울시 교통 누리집 기준)
  *  주간  기본 4,800원(1.6km) · 131m당 100원 · 30초당 100원
@@ -32,18 +32,26 @@ const Taxi=(()=>{
   const bar=W.querySelector('.bar .t');if(bar)bar.innerHTML='<span class="rd-tt">Taxi Meter</span><span class="rd-t2">Taxi</span>';
   const st=W.querySelector('#rdSt');if(st)st.textContent='빈차';
   const com=W.querySelector('.rd-com');if(com)com.textContent='SEOUL';
+  /* 1.89 스킨: lcd(연두빛 LCD) · pro(실물 전자식 — 검은 액정, 하늘색 요금, 초록 도트 말, 물리 키패드). 고른 값은 store 'taxiSkin'.
+   * 두 스킨은 같은 상태(S)와 같은 단추 처리를 써서, 운행 중에 바꿔도 금액·거리·시간이 그대로 이어짐 */
+  const SKINS=[['pro','실물 전자식'],['lcd','LCD 클래식']];
+  const FN=[['gps','GPS','GPS 켜기·끄기'],['level','수평','지금 자세를 수평으로'],['sky','하늘','하늘(주간·야간) 설정'],['guide','안내','택시 미터기 설명'],['skin','스킨','미터기 스킨 바꾸기'],['rcpt','영수','이번 운행 요약']];
   const body=document.createElement('div');body.className='body tx-body';
   // 생김새: 실제 미터기처럼 검은 테 + 연두빛 LCD(말·속도·요금·할증) + 아래 색 단추(빈차·주행·할증·복합·지불) + 오른쪽 숫자 키(장식)
   body.innerHTML=`<div class="tx-panel"><div class="tx-dev">
     <div class="tx-face">
       <button type="button" class="tx-meter tx-lcd" aria-label="미터기 켜기·끄기">
         <div class="tx-l1"><span class="tx-mode">빈차</span><span class="tx-spdl"><b class="tx-spd">0.0</b> Km/h</span></div>
-        <div class="tx-l2"><div class="tx-pct"><b class="tx-surp">0%</b><small class="tx-night">주간</small></div><span class="tx-fare">0</span><span class="tx-won">원</span></div>
+        <div class="tx-cap">서울 · 중형</div><div class="tx-l2"><div class="tx-lcol"><canvas class="tx-hcv" aria-hidden="true"></canvas><div class="tx-pct"><b class="tx-surp">0%</b><small class="tx-night">주간</small></div></div><span class="tx-fare">0</span><span class="tx-won">원</span></div>
         <div class="tx-track" aria-hidden="true"><div class="tx-ground"></div><div class="tx-horse">${HORSE}</div></div>
         <div class="tx-l3"><span><b class="tx-km">0.00</b>km</span><span><b class="tx-time">00:00</b></span><span>다음 <b class="tx-next">—</b></span></div>
       </button>
       <div class="tx-keys"><button type="button" class="tx-k tx-reset">빈차</button><button type="button" class="tx-k tx-go">주행</button><button type="button" class="tx-k tx-sur">할증</button><button type="button" class="tx-k tx-mix">복합</button><button type="button" class="tx-k tx-stop">지불</button></div>
     </div>
+    <div class="tx-pad2"><div class="tx-ptitle"><b>전자택시미터</b><span>ELECTRONIC TAXIMETER</span></div>
+      <div class="tx-pkeys"><div class="tx-fn">${FN.map(f=>'<button type="button" class="tx-pk" data-fn="'+f[0]+'" title="'+f[2]+'">'+f[1]+'</button>').join('')}</div>
+      <div class="tx-num">${['1','2','3','4','5','6','7','8','9','설정/변경','0','취소'].map(k=>'<button type="button" class="tx-pk'+(k.length>1?' tx-pks':'')+'" data-fn="'+(k==='설정/변경'?'set':k==='취소'?'cancel':'n')+'">'+k+'</button>').join('')}</div></div>
+      <div class="tx-slot" aria-hidden="true"><i></i><b></b></div></div>
     <div class="tx-pad" aria-hidden="true"><div class="tx-brand">ELECTRONIC TAXIMETER</div><div class="tx-grid">${['구분','1','2','3','회송','4','5','6','시외','7','8','9','휴무','설정','0','취소'].map(k=>'<i>'+k+'</i>').join('')}</div></div>
   </div>
   <div class="tx-warn" role="note"><b>재미로만 즐겨 주세요</b> · 이 택시 미터기는 놀이용 기능이에요. 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 안 돼요. 자가용으로 돈을 받고 사람을 태우는 것은 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. 금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</div>
@@ -51,17 +59,37 @@ const Taxi=(()=>{
   </div>`;
   W.appendChild(body);
   const q=s=>body.querySelector(s);
+  const horse=TaxiHorse(q('.tx-hcv'));
+  let PV=null;   // 미리보기 값(시안 확인용, AmpTaxi._preview) — 실제 상태는 건드리지 않음
+  const ss=document.createElement('select');ss.className='sel gsbar tx-skinsel';ss.setAttribute('aria-label','택시 미터기 스킨');
+  ss.innerHTML=SKINS.map(k=>'<option value="'+k[0]+'">'+k[1]+'</option>').join('');
+  {const bb=W.querySelector('.bar'),gr=bb&&bb.querySelector('.groove');if(bb)bb.insertBefore(ss,gr?gr.nextSibling:null)}
+  function setSkin(k){if(!SKINS.some(x=>x[0]===k))k='pro';W.dataset.txskin=k;ss.value=k;store.set('taxiSkin',k);fitFare();if(k==='pro')horse.live()}
+  ss.onchange=()=>setSkin(ss.value);
+  function fitFare(){const f=q('.tx-fare');f.style.fontSize='';let i=0;while(f.scrollWidth>f.clientWidth+1&&i++<12){const cur=parseFloat(getComputedStyle(f).fontSize);f.style.fontSize=(cur*0.92)+'px'}}
+  // 키패드: 실제 앱 기능
+  body.querySelectorAll('.tx-pk').forEach(b=>b.onclick=e=>{e.stopPropagation();const f=b.dataset.fn;
+    if(f==='gps'){const g=$('#gOn');if(g)g.click()}
+    else if(f==='level'){const l=$('#pfdLevelQuick');if(l)l.click();toast('지금 자세를 수평으로 맞췄어요')}
+    else if(f==='sky'){const t=$('#pfdThemeQuick');if(t)t.click()}
+    else if(f==='guide'){try{AmpGuide.open('taxi')}catch(e){}}
+    else if(f==='skin'){const i=SKINS.findIndex(x=>x[0]===W.dataset.txskin);setSkin(SKINS[(i+1)%SKINS.length][0]);toast('미터기 스킨: '+SKINS.find(x=>x[0]===W.dataset.txskin)[1])}
+    else if(f==='rcpt'){const m=Math.floor(S.sec/60);toast(S.fare?('이번 운행 '+won(S.paid?Math.round(S.fare/100)*100:S.fare)+'원 · '+S.km.toFixed(2)+'km · '+m+'분'):'운행 기록이 없어요')}
+    else if(f==='set'){const s=$('#setBtn');if(s)s.click()}
+    else if(f==='cancel'){if(S.sur){S.sur=0;save();ui();toast('할증 끔')}}});
   const won=n=>Math.round(n).toLocaleString('ko-KR');
-  function nextLeft(){if(!S.on)return '—';const r=rate();if(S.used<BASE_M)return Math.max(0,Math.ceil(BASE_M-S.used))+'m';return Math.max(1,Math.ceil(UNIT_M-(S.eqM%UNIT_M)))+'m'}
+  function nextLeft(){if(!S.on)return '—';const r=rate();if(S.used<BASE_M)return Math.max(0,Math.ceil(BASE_M-S.used))+' m';return Math.max(1,Math.ceil(UNIT_M-(S.eqM%UNIT_M)))+' m'}
   function ui(){
     const r=rate(),fare=S.paid?Math.round(S.fare/100)*100:S.fare;
-    q('.tx-fare').textContent=S.on||S.paid?won(fare):'0';
+    const fs=PV?won(PV.fare):S.on||S.paid?won(fare):'0';if(q('.tx-fare').textContent!==fs){q('.tx-fare').textContent=fs;fitFare()}
     q('.tx-km').textContent=(S.km).toFixed(2);
     const m=Math.floor(S.sec/60),s=Math.floor(S.sec%60);q('.tx-time').textContent=(m>99?m:String(m).padStart(2,'0'))+':'+String(s).padStart(2,'0');
-    q('.tx-spd').textContent=(spdNow||0).toFixed(1);q('.tx-mode').textContent=S.paid?'지불':S.on?'주행':'빈차';q('.tx-next').textContent=nextLeft();
+    q('.tx-spd').textContent=(PV?PV.spd:(spdNow||0)).toFixed(1);q('.tx-mode').textContent=S.paid?'지불':S.on?'주행':'빈차';q('.tx-next').textContent=nextLeft();
     W.dataset.tx=S.paid?'paid':S.on?'run':'idle';
     const sp=surPct(r);q('.tx-surp').textContent=sp+'%';q('.tx-night').textContent=r.tag?r.tag.replace(' ',' '):'주간';q('.tx-sur').classList.toggle('on',S.sur===20);q('.tx-mix').classList.toggle('on',S.sur===40);
     q('.tx-go').classList.toggle('on',S.on);q('.tx-reset').classList.toggle('on',!S.on&&!S.paid);q('.tx-stop').classList.toggle('on',S.paid);
+    if(PV){q('.tx-km').textContent=PV.km.toFixed(2);q('.tx-time').textContent=PV.time;q('.tx-next').textContent=PV.next+' m';q('.tx-mode').textContent=PV.mode||'주행';W.dataset.tx='run';q('.tx-go').classList.add('on');q('.tx-reset').classList.remove('on')}
+    horse.set(PV?true:S.on,PV?PV.spd:(spdNow||0));
     if(st)st.textContent=S.paid?'지불 '+won(fare)+'원':S.on?'주행 '+won(S.fare)+'원':'빈차';
     // 말: 주행 중이면 달림(빠를수록 빨리), 멈춰 있으면 제자리 걸음, 빈차면 섬
     const v=spdNow||0,h=q('.tx-horse');
@@ -105,7 +133,9 @@ const Taxi=(()=>{
   const rl=document.querySelector('#ckRail [data-f="radio"]');if(rl){const sv=rl.querySelector('svg');if(sv)sv.innerHTML=TAXI_ICON;const sp=rl.querySelector('span');if(sp)sp.textContent='택시'}
   try{WIN_NAME.wRadio='택시 미터기'}catch(e){}
   const ren=()=>document.querySelectorAll('select option[value="radio"]').forEach(o=>{if(o.closest('#sCarSrc'))o.remove();else if(!/택시/.test(o.textContent))o.textContent='택시 미터기'});ren();setInterval(ren,2000);
+  setSkin(store.get('taxiSkin','pro'));document.addEventListener('touchstart',()=>{},{passive:true});   // 안드로이드 웹뷰에서 :active(키캡 눌림)가 보이게
   setInterval(tick,500);ui();
-  return {start,pause,pay,reset,get state(){return Object.assign({},S)},rate,_tick:tick};
+  return {start,pause,pay,reset,setSkin,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,
+    _preview(v){PV=v||null;ui()}};
 })();
-window.AmpTaxi=Taxi;
+window.AmpTaxi=Taxi;window.TaxiHorseTest=TaxiHorse;   // 시험(테스트 49)에서 말만 따로 그려 볼 때

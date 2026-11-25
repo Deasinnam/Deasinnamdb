@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-25 · v1.88 (versionCode 122)**
+마지막 갱신: **2026-11-25 · v1.89 (versionCode 123)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.88** (versionCode 122, versionName `1.88-one`) |
+| 최신 버전 | **1.89** (versionCode 123, versionName `1.89-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -127,6 +127,7 @@
 ## 7. 작업 기록 (최근이 위)
 
 - 2026-11-25 · 1.87 — 의견(스피드미터): 아무 블루투스에나 "차량 연결됨 · Amp로 재생" 알림. `CarConnect.matches(ctx, name, dev)`: 차를 지정하지 않았으면 `carLike()` — BluetoothClass가 `AUDIO_VIDEO_CAR_AUDIO`·`AUDIO_VIDEO_HANDSFREE`인 기기만(ACL 연결은 EXTRA_DEVICE, A2DP 출력 콜백은 이름으로 짝지은 기기 `bondedByName`). 권한 없거나 종류를 모르면 차가 아님. 설정 첫 항목 "차량 오디오 자동 인식 (이어폰·스피커 제외)"(web/src/80-clock-windows.js, index.html 설명). 로컬 테스트: 25-pfd-minimap은 지도 타일(네트워크) 탓에 수정 전에도 실패, 나머지 통과. 공개: 초안 확인 뒤 `[publish-speedometer]` 커밋 + 사이트 DL 표.
+- 2026-11-25 · 1.89 — 택시 미터기 '실물 전자식' 스킨(사용자: 검은 실물 미터기 사진=외형, 하늘색 7,500원 시안=배치). `#wRadio[data-txskin="pro"|"lcd"]`, store `taxiSkin`(기본 pro), 창 제목줄 `select.tx-skinsel` + 키패드 [스킨]. 같은 DOM·상태(S)를 CSS로 다르게 보여 줘서 운행 중 바꿔도 금액·거리·시간·단추가 이어짐. pro: 2fr|1fr 그리드(왼쪽 액정+운행 키캡, 오른쪽 `.tx-pad2` 키패드 — 기능키 GPS·수평·하늘·안내·스킨·영수, 숫자 1~9·0 장식, 설정/변경=설정 창, 취소=할증 끔), 620px 이하는 키패드 숨김. 시안의 상표·'확률/인환' 등 글자는 쓰지 않음(맨 위는 '서울 · 중형'). 요금은 `fitFare()`로 넘치면 글자 줄임(여섯 자리 확인), `.tx-fare` 오른쪽 정렬·'원' 기준선. 키캡: :active 눌림, `.on` 선택은 눌린 채+위 빨간 표시등. 말: `web/src/99-zz-taxh.js` `TaxiHorse(canvas)` — 말 좌표 100×66, 몸·목·머리·갈기·꼬리·가까운 다리는 밝은 마스크, 먼 다리는 어두운 마스크에 칠해 가장자리만 초록 도트(격자 가로 56~96점). 갤럽 위상차 먼뒷 0·가까운뒷 .08·먼앞 .30·가까운앞 .40, 디딤 .30 → .70~1.0 공중(네 다리 모임). 두 마디 IK(앞다리 무릎 앞, 뒷다리 뒤), 몸 오르내림·머리·꼬리는 위상 늦춤, 모두 주기 함수라 이음매 없음. 속도 보정(애니메이션만): 평균(τ0.8s), 출발=5km/h 넘게 1초, 정차=2.5km/h 밑 1초, 보폭 amp 목표 0.3+속도/75(출발 τ1.6s, 정차 τ0.55s), 주기 0.55+속도/55 Hz, 정차 시 네 발 디딤. 미리보기 `AmpTaxi._preview({fare,spd,km,time,next})`(시안 값 7,500원·32.0은 여기서만), `AmpTaxi.horse.pose(위상,보폭)`. 테스트 49.
 - 2026-11-25 · 1.88 — 재미용 안내(사용자: 실제 금전 거래는 위반이라고 명시): 미터기 아래 `.tx-warn` 상시 안내 + 처음 [주행] 때 `.tx-ack` 확인 창(store `taxiAck`), 문구에 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지). 설명서 taxi 단계 마지막 줄도 같은 안내.
 - 2026-11-25 · 1.88 — 택시 미터기(사용자: 라디오 빠진 자리에, 누르면 말이 뛰고 실제 주행 거리만큼 금액). 생김새는 사용자가 보낸 실제 미터기 사진처럼: 검은 테·연두 LCD(모드·속도·할증%·요금·말·거리/시간/다음)·색 단추(빈차 흰·주행 분홍·할증 분홍(시계외 20%)·복합 노랑(40%)·지불 초록)·오른쪽 숫자 키(장식, 좁은 화면에서 숨김). 1.87은 다른 세션이 차량 연결 수정으로 먼저 공개해서 이 버전은 1.88(speedometer-v1.88 초안, 공개는 [publish-speedometer]). `web/src/99-zz-taxi.js`(DISTF에 noradio일 때만, `window.AmpTaxi`): #wRadio 안에 `.tx-body`를 넣고 `.rd-body`는 CSS로 숨김(`data-taxi`), 창 제목 Taxi Meter·상태 #rdSt·COM→SEOUL, 위 #radioBtn·레일 radio 버튼은 택시 아이콘/글자로 되살림, openRadio=택시 창 열기, rdEnsure·rdSigRun 비움, 버튼 배치 고르기의 'radio' 항목 이름은 '택시 미터기'. 99-zz-dist에서 radio→vis 돌리기·openRadio 막기·radio 옵션 지우기는 뺌(#bSwap만 숨김). 요금(서울시 교통 누리집 신고요금): 주간 4,800원/1.6km·131m당 100원·30초당 100원, 22~23·02~04시 5,800/120, 23~02시 6,700/140, 15.72km/h 미만이면 시간을 131m/30초로 환산(기본거리부터), 지불=100원 단위 반올림. 거리=40-gps-speedo의 trip.dist 증가분(0.5초 폴링), 상태 store 'taxi'. 말은 직접 그린 SVG(다리 4개 따로 흔듦, 속도 따라 --gait), 진행 막대=다음 요금까지. 설명서 단계 'taxi'(noradio만, 그림 g-taxi.jpg). 테스트 48, 45 수정.
 - 2026-11-22 · 재배포 금지 — 사이트 스피드미터 페이지 내려받기 아래 `.ap-nodist` 안내, `docs/speedometer-release.md`에 '재배포 금지' 절. 공개된 릴리스 설명 바꾸기: 커밋 메시지에 `[speedometer-notes]` → publish-speedometer.yml의 notes job이 문서로 PATCH.
