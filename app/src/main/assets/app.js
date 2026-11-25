@@ -3747,7 +3747,8 @@ const Guide=(()=>{
       '① 버튼 줄의 <b>택시</b>를 누르면 택시 미터기가 열려요.',
       '② 분홍 <b>주행</b>을 누르면(화면을 눌러도 돼요) 기본요금부터 시작하고, 말이 달리면서 <b>GPS로 실제 달린 거리만큼</b> 요금이 올라가요. 느리게 가거나 서 있으면 30초마다 시간 요금이 붙어요.',
       '③ <b>할증</b>은 시계외 20%, <b>복합</b>은 40%예요. 밤 10시~새벽 4시 심야 할증은 시간에 맞춰 저절로 붙어요.',
-      '④ 도착하면 초록 <b>지불</b>로 낼 돈(100원 단위)을 보고, 흰 <b>빈차</b>로 처음으로 돌려요. 서울 중형택시 요금으로 계산한 재미용이에요.']},
+      '④ 도착하면 초록 <b>지불</b>로 낼 돈(100원 단위)을 보고, 흰 <b>빈차</b>로 처음으로 돌려요.',
+      '⚠ <b>재미로만</b> 즐겨 주세요. 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 자가용 유상운송(「여객자동차 운수사업법」 제81조) 위반이 될 수 있어요.']},
     {k:'fly',t:'이륙 · 순항 · 착륙',v:'guide/v-flight.mp4',l:[
       '차가 서 있으면 활주로에서 대기(LINE UP)하고, 출발하면 <b>이륙</b>, 달리는 동안 <b>순항</b>, 멈추면 <b>착륙</b>해요.',
       '착륙하면 <b>평균 속도</b>와 <b>운전 평점</b>이 잠깐 보여요. 급가속·급제동·과속이 적을수록 점수가 높아요.',
@@ -3939,7 +3940,8 @@ const Taxi=(()=>{
     </div>
     <div class="tx-pad" aria-hidden="true"><div class="tx-brand">ELECTRONIC TAXIMETER</div><div class="tx-grid">${['구분','1','2','3','회송','4','5','6','시외','7','8','9','휴무','설정','0','취소'].map(k=>'<i>'+k+'</i>').join('')}</div></div>
   </div>
-  <p class="tx-note">서울 중형택시 요금으로 계산한 재미용 미터기예요. <b>주행</b>을 누르면 말이 달리고 GPS로 실제 달린 거리만큼 오르며, 시속 15.72km보다 느리면 30초마다 시간 요금이 붙어요. <b>할증</b>은 시계외 20%, <b>복합</b>은 40%(심야는 시간 맞춰 자동).</p>
+  <div class="tx-warn" role="note"><b>재미로만 즐겨 주세요</b> · 이 택시 미터기는 놀이용 기능이에요. 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 안 돼요. 자가용으로 돈을 받고 사람을 태우는 것은 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. 금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</div>
+  <div class="tx-ack" hidden><div class="tx-ackc"><b>🐎 택시 미터기는 재미용이에요</b><p>표시되는 금액은 서울 중형택시 요금으로 계산한 <b>참고값</b>이에요. 이 금액으로 동승자에게 <b>실제 요금을 받거나 돈을 주고받으면</b> 자가용 유상운송(「여객자동차 운수사업법」 제81조) 위반이 될 수 있어요.</p><button type="button" class="pill on tx-ackok">알겠어요, 재미로만 쓸게요</button></div></div>
   </div>`;
   W.appendChild(body);
   const q=s=>body.querySelector(s);
@@ -3977,13 +3979,16 @@ const Taxi=(()=>{
       while(S.eqM>=UNIT_M*(S.n||0)+UNIT_M){S.n=(S.n||0)+1;add(Math.round(r.step*(1+(S.sur||0)/100)/10)*10)}
       save()}
     ui()}
-  function start(){if(S.paid||!S.fare){const r=rate();S={on:true,paid:false,fare:r.base,eqM:0,used:0,n:0,km:0,sec:0,t0:Date.now(),base:r.base,sur:S.sur||0}}else S.on=true;lastD=trip.dist;lastT=Date.now();save();ui();
+  function start(){if(!store.get('taxiAck',false)){q('.tx-ack').hidden=false;return}
+    start0()}
+  function start0(){if(S.paid||!S.fare){const r=rate();S={on:true,paid:false,fare:r.base,eqM:0,used:0,n:0,km:0,sec:0,t0:Date.now(),base:r.base,sur:S.sur||0}}else S.on=true;lastD=trip.dist;lastT=Date.now();save();ui();
     try{if(!gpsOn)gpsStart(true)}catch(e){}}
   function pause(){S.on=false;save();ui()}
   function pay(){if(!S.fare)return;S.on=false;S.paid=true;save();ui();toast('지불 요금 '+won(Math.round(S.fare/100)*100)+'원 · '+S.km.toFixed(2)+'km')}
   function reset(){S={on:false,paid:false,fare:0,eqM:0,used:0,n:0,km:0,sec:0,t0:0,base:0,sur:0};save();ui()}
   q('.tx-go').onclick=()=>S.on?pause():start();
   q('.tx-meter').onclick=()=>S.on?pause():start();
+  q('.tx-ackok').onclick=e=>{e.stopPropagation();store.set('taxiAck',true);q('.tx-ack').hidden=true;start0()};
   q('.tx-stop').onclick=pay;q('.tx-reset').onclick=reset;
   const setSur=v=>{S.sur=S.sur===v?0:v;save();ui();toast(S.sur?'시계외 할증 '+S.sur+'% (다음 요금부터)':'할증 끔')};q('.tx-sur').onclick=()=>setSur(20);q('.tx-mix').onclick=()=>setSur(40);
   // 라디오 자리 되살리기: 위 버튼·레일·창을 택시 미터기로
