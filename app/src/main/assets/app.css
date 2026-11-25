@@ -3245,3 +3245,34 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio[data-txskin="retro"] .dk-sl{color:#2a2620;font-family:"Noto Serif KR",serif}
 #wRadio[data-txskin="retro"] .dk-sl input,#wRadio[data-txskin="retro"] .dk-seek{-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:linear-gradient(#2a2b2c,#4a4c4e);box-shadow:inset 0 1px 3px #000,0 1px 0 #fff8}
 #wRadio[data-txskin="retro"] .dk-sl input::-webkit-slider-thumb,#wRadio[data-txskin="retro"] .dk-seek::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:30px;border-radius:3px;background:linear-gradient(90deg,#8a8d8f,#f4f4f3 45%,#c9cbcc 55%,#7a7d7f);box-shadow:0 2px 4px #000a,inset 0 0 0 1px #555}
+/* 1.93 오른쪽 '전자택시미터' 키패드 없앰: 실물 전자식은 늘 한 덩어리, 미터기가 가는 줄로 무너지지 않게 바닥 폭 */
+#wRadio[data-txskin="pro"] .tx-dev{grid-template-columns:1fr!important;max-width:100%;min-width:min(100%,260px)}
+#wRadio[data-txskin="retro"] .rt-dev{max-width:100%;min-width:min(100%,240px)}
+/* 1.93 아래 간판 '대신남 운수' — 노란 택시 간판, 칸 크기에 맞춰 글자·사진이 커지고 줄어듦(가로로 넓으면 글자|사진, 좁으면 사진 위·글자 아래) */
+.tx-88{border-radius:12px;box-shadow:0 0 0 2px #0b0b0b,0 6px 14px #000a}
+.ds{position:absolute;inset:0;display:grid;grid-template-columns:1fr auto;align-items:center;gap:3cqw;padding:5cqh 5cqw 15cqh;
+  background:radial-gradient(120% 90% at 30% 20%,#ffe15a,#ffd21f 55%,#f2bf00);color:#111}
+.ds::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(160deg,#ffffff40 0%,transparent 35%)}
+.ds-main{display:flex;flex-direction:column;align-items:center;min-width:0}
+.ds-roof{display:block;width:min(28cqw,44cqh);height:auto;margin-bottom:1cqh}
+.ds-name{display:block;white-space:nowrap;font:900 min(9.2cqw,30cqh)/1 "Noto Sans KR",sans-serif;letter-spacing:-.02em}
+.ds-photo{position:relative;width:min(34cqw,70cqh);aspect-ratio:1;padding:0;border:0;border-radius:50%;background:#f6efe2;cursor:pointer;overflow:hidden;
+  box-shadow:0 0 0 min(1.4cqw,3cqh) #111,0 0 0 min(2.4cqw,5cqh) #ffd21f,0 0 0 min(3cqw,6.2cqh) #111,0 4px 10px #0006}
+.ds-img{position:absolute;inset:0;border-radius:50%;background:center/cover no-repeat}
+.ds-def{position:absolute;inset:14%;width:72%;height:72%}
+#wRadio.tx-hasph .ds-def{display:none}
+.ds-ring{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 min(.8cqw,1.6cqh) #ffd21f,inset 0 0 0 min(1.4cqw,2.8cqh) #111,inset 0 6px 14px #0005;pointer-events:none}
+.ds-photo:active{transform:scale(.97)}
+.ds-check{position:absolute;left:4cqw;right:4cqw;bottom:4cqh;height:min(6cqh,4cqw);
+  background:repeating-linear-gradient(90deg,#111 0 min(3cqh,2cqw),transparent 0 min(6cqh,4cqw)),repeating-linear-gradient(90deg,transparent 0 min(3cqh,2cqw),#111 0 min(6cqh,4cqw));
+  background-size:100% 50%;background-position:0 0,0 100%;background-repeat:no-repeat}
+@container (max-aspect-ratio: 13/10){
+  .ds{grid-template-columns:1fr;grid-template-rows:auto auto;justify-items:center;align-content:center;gap:3cqh;padding:5cqh 5cqw 13cqh}
+  .ds-photo{grid-row:1;width:min(56cqw,46cqh)}
+  .ds-roof{width:min(44cqw,20cqh)}
+  .ds-name{font-size:min(15.5cqw,13cqh)}
+}
+/* 레트로: 바랜 법랑 간판 느낌 */
+#wRadio[data-txskin="retro"] .ds{background:radial-gradient(120% 90% at 30% 20%,#f6dd7a,#e9c23a 55%,#d3a520);color:#2a2014}
+#wRadio[data-txskin="retro"] .ds-name{font-family:"Noto Serif KR",serif;letter-spacing:.06em}
+#wRadio[data-txskin="retro"] .tx-88{box-shadow:0 0 0 3px #8e9194,0 0 0 5px #3b3d40,0 6px 14px #000a}

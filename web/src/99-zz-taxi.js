@@ -18,20 +18,12 @@ const HORSE=`<svg viewBox="0 0 140 100" class="tx-hsvg"><g class="tx-hb">
 <path class="tx-mane" d="M104 9c-6 5-10 13-16 21l5 1c5-6 8-13 15-19z"/>
 <circle class="tx-eye" cx="118" cy="13" r="1.8"/></g></svg>`;
 const TAXI_ICON='<path d="M7 4h10l1 3h1.5A2.5 2.5 0 0 1 22 9.5V17a1 1 0 0 1-1 1h-1.2a2.5 2.5 0 0 1-4.6 0H8.8a2.5 2.5 0 0 1-4.6 0H3a1 1 0 0 1-1-1V9.5A2.5 2.5 0 0 1 4.5 7H6zm1.4 1.6L7.8 7h8.4l-.6-1.4zM5 10v3h4v-3zm10 0v3h4v-3zM9.5 2h5v1.6h-5z"/>';
-// 1.91·1.92 아래 그림 '세계는 서울로 · 서울은 세계로' — 88 서울 시절 느낌으로 직접 그린 그림(해 지는 한강, 남산타워, 63빌딩).
-// 올림픽 엠블럼·오륜·마스코트(호돌이)는 상표·캐릭터라 쓰지 않음. 1.92: 하늘은 칸 전체를 채우고 도시는 아래에 붙여(slice) 어떤 비율이든 위아래 꽉 참
-const SEOUL88_CITY=`<svg class="s88-city" viewBox="0 0 600 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-<defs><linearGradient id="s88sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff5a3c"/></linearGradient><clipPath id="s88sc"><circle cx="230" cy="150" r="96"/></clipPath></defs>
-<g clip-path="url(#s88sc)"><rect x="120" y="40" width="220" height="200" fill="url(#s88sun)"/>${[0,1,2,3,4,5].map(i=>'<rect x="120" y="'+(158+i*13)+'" width="220" height="'+(2.5+i*1.3)+'" fill="#7a3a55"/>').join('')}</g>
-<path d="M0 190 Q70 162 130 172 Q190 150 250 168 L250 214 L0 214Z" fill="#2a1a33"/>
-<path d="M134 180 V118 M128 126 h12 M130 137 h8" stroke="#2a1a33" stroke-width="6" fill="none"/><circle cx="134" cy="113" r="7" fill="#2a1a33"/><path d="M134 106 v-28" stroke="#2a1a33" stroke-width="2.5"/>
-<path d="M320 214 V118 L340 72 H353 L373 118 V214Z" fill="#2a1a33"/><path d="M340 72 L353 72 L367 110 L344 110Z" fill="#d9a441" opacity=".85"/>
-<path d="M336 128 H358 M336 144 H360 M336 160 H362 M336 176 H364" stroke="#d9a441" stroke-width="1.6" opacity=".6"/>
-${[[250,176,24],[276,160,22],[298,184,20],[376,170,28],[406,186,18],[426,172,26],[454,184,30],[486,166,22],[510,180,34],[546,170,26],[574,186,26]].map(b=>'<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="40" fill="#2a1a33"/>').join('')}
-<rect y="208" width="600" height="32" fill="#16203d"/>
-${[0,1,2].map(i=>'<path d="M'+(150+i*20)+' '+(216+i*8)+' h'+(160-i*40)+'" stroke="#ffb35a" stroke-width="3" stroke-linecap="round" opacity="'+(.8-i*.2)+'"/>').join('')}
-${[0,1].map(i=>'<path d="M380 '+(220+i*10)+' q30 -7 60 0 t60 0 t60 0 t60 0" stroke="#3b4f86" stroke-width="2.4" fill="none"/>').join('')}</svg>`;
-const SEOUL88=`<div class="s88" role="img" aria-label="세계는 서울로 서울은 세계로">${SEOUL88_CITY}<div class="s88-txt"><i class="s88-st"><em></em><em></em><em></em><em></em></i><b>세계는 서울로</b><b class="s88-2">서울은 세계로</b><small>SEOUL · 1988</small></div></div>`;
+// 1.93 아래 간판 '대신남 운수'(노란 택시 간판 · TAXI 지붕등 · 체크 띠 · 둥근 기사 사진). 사진은 동그라미를 누르면 고름(기기에만 저장)
+const DSN_SIGN=`<div class="ds" role="img" aria-label="대신남 운수">
+<div class="ds-main"><svg class="ds-roof" viewBox="0 0 220 70" aria-hidden="true"><path d="M58 8 H162 L176 44 H44Z" fill="#111"/><path d="M24 46 H196 Q204 46 206 54 L208 62 H12 L14 54 Q16 46 24 46Z" fill="#111"/><text x="110" y="38" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans KR',sans-serif" font-weight="900" font-size="34" fill="#ffd21f" letter-spacing="2">TAXI</text></svg>
+<b class="ds-name">대신남 운수</b></div>
+<button type="button" class="ds-photo" aria-label="기사 사진 넣기·바꾸기"><i class="ds-img"></i><svg class="ds-def" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="#9a9a9a"/><path d="M16 86 Q18 58 50 58 Q82 58 84 86Z" fill="#9a9a9a"/></svg><em class="ds-ring"></em></button>
+<i class="ds-check" aria-hidden="true"></i></div>`;
 // 1.92 오디오(긴 바깥 화면): 원래 플레이어(#wMain)의 단추·슬라이더를 그대로 눌러 주는 리모컨 — 상태는 원래 플레이어에서 읽어 옴
 const DOCK_KEYS=[['bPrev','M5 5h3v14H5zM20 5v14L9 12z','이전 곡'],['bPlay','M7 4l13 8-13 8z','재생'],['bPause','M6 4h4v16H6zM14 4h4v16h-4z','일시정지'],['bStop','M5 5h14v14H5z','정지'],['bNext','M16 5h3v14h-3zM4 5v14l11-7z','다음 곡']];
 const Taxi=(()=>{
@@ -47,7 +39,6 @@ const Taxi=(()=>{
   /* 스킨 3가지(store 'taxiSkin'): pro 실물 전자식 · retro 레트로(은색 기계식) · lcd LCD 클래식.
    * 세 스킨이 같은 상태(S)와 같은 단추 처리를 써서, 운행 중에 바꿔도 금액·거리·시간·선택 상태가 그대로 이어짐 */
   const SKINS=[['pro','실물 전자식'],['retro','레트로'],['lcd','LCD 클래식']];
-  const FN=[['gps','GPS','GPS 켜기·끄기'],['level','수평','지금 자세를 수평으로'],['sky','하늘','하늘(주간·야간) 설정'],['guide','안내','택시 미터기 설명'],['skin','스킨','미터기 스킨 바꾸기'],['rcpt','영수','이번 운행 요약']];
   const KEYS='<button type="button" class="tx-k tx-reset">빈차</button><button type="button" class="tx-k tx-go">주행</button><button type="button" class="tx-k tx-sur">할증</button><button type="button" class="tx-k tx-mix">복합</button><button type="button" class="tx-k tx-stop">지불</button>';
   const drum=(n,cls)=>'<span class="rt-drums '+cls+'">'+Array.from({length:n},()=>'<i class="rt-dr"><b>'+'0123456789'.split('').map(d=>'<em>'+d+'</em>').join('')+'</b></i>').join('')+'</span>';
   // ---- 화면 ----
@@ -69,11 +60,6 @@ const Taxi=(()=>{
       </button>
       <div class="tx-keys">${KEYS}</div>
     </div>
-    <div class="tx-pad2"><div class="tx-ptitle"><b>전자택시미터</b><span>ELECTRONIC TAXIMETER</span></div>
-      <div class="tx-pkeys"><div class="tx-fn">${FN.map(f=>'<button type="button" class="tx-pk" data-fn="'+f[0]+'" title="'+f[2]+'">'+f[1]+'</button>').join('')}</div>
-      <div class="tx-num">${['1','2','3','4','5','6','7','8','9','설정/변경','0','취소'].map(k=>'<button type="button" class="tx-pk'+(k.length>1?' tx-pks':'')+'" data-fn="'+(k==='설정/변경'?'set':k==='취소'?'cancel':'n')+'">'+k+'</button>').join('')}</div></div>
-      <div class="tx-slot" aria-hidden="true"><i></i><b></b></div></div>
-    <div class="tx-pad" aria-hidden="true"><div class="tx-brand">ELECTRONIC TAXIMETER</div><div class="tx-grid">${['구분','1','2','3','회송','4','5','6','시외','7','8','9','휴무','설정','0','취소'].map(k=>'<i>'+k+'</i>').join('')}</div></div>
   </div>
   <div class="rt-dev" aria-label="레트로 택시 미터기">
     <div class="rt-glass">
@@ -96,7 +82,8 @@ const Taxi=(()=>{
     <div class="dk-sub"><button type="button" class="dk-tog" data-t="tShuf">셔플</button><button type="button" class="dk-tog" data-t="tRep">반복</button>
       <label class="dk-sl"><span>VOL</span><input type="range" class="dk-r" data-t="vol" min="0" max="100"></label><label class="dk-sl"><span>BAL</span><input type="range" class="dk-r" data-t="bal" min="-100" max="100"></label></div>
   </div>
-  <div class="tx-88" aria-hidden="true">${SEOUL88}</div>
+  <div class="tx-88">${DSN_SIGN}</div>
+  <input type="file" class="ds-file" accept="image/*" hidden>
   <div class="tx-warn" role="note"><b>재미로만</b> 즐기는 기능이에요 · 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. <span class="tx-wmore">금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</span></div>
   <div class="tx-ack" hidden><div class="tx-ackc"><b>🐎 택시 미터기는 재미용이에요</b><p>표시되는 금액은 서울 중형택시 요금으로 계산한 <b>참고값</b>이에요. 이 금액으로 동승자에게 <b>실제 요금을 받거나 돈을 주고받으면</b> 자가용 유상운송(「여객자동차 운수사업법」 제81조) 위반이 될 수 있어요.</p><button type="button" class="pill on tx-ackok">알겠어요, 재미로만 쓸게요</button></div></div>
   </div>`;
@@ -122,7 +109,7 @@ const Taxi=(()=>{
   // 미터기를 폭 pw·높이 H 안에 맞춤(실제 그려진 크기를 재서 --u를 고침). 최소 글자 크기가 있는 웹뷰에서도 무너지지 않게 줄이는 폭에 바닥을 둠
   function fitMeter(k,pw,H){
     let base=1000,cap=1600,lay='wide';
-    if(k==='pro'){if(pw/H<1.5)lay='tall'}
+    if(k==='pro')lay='tall'   // 1.93 오른쪽 '전자택시미터' 키패드를 없애 늘 한 덩어리
     else if(k==='retro'){if(pw/H>1.7){lay='rwide';base=1800;cap=1500}else{lay='sq';cap=980}}
     else lay=H<300?'short':'wide';
     W.dataset.txlay=lay;W.style.setProperty('--ah',Math.round(H)+'px');
@@ -157,8 +144,19 @@ const Taxi=(()=>{
       else if(res&&ah-dh<res+40){W.dataset.txdock='';res=0;dh=fitMeter(k,pw,ah)}
     }else dh=fitMeter(k,pw,ah);
     stage.style.flex='0 0 auto';stage.style.height=(dh+6)+'px';
+    {const dv=k==='retro'?q('.rt-dev'):q('.tx-dev');if(dv.offsetWidth<Math.min(pw,300)*0.5||dh<60){clearTimeout(fitT);fitT=setTimeout(fit,350)}}
     fitFare();setTimeout(dockSync,0)}finally{fitting=false}}
-  new ResizeObserver(()=>fit()).observe(panel);addEventListener('resize',()=>{fit();clearTimeout(fitT);fitT=setTimeout(fit,400)});
+  new ResizeObserver(()=>fit()).observe(panel);document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(fit,200)});addEventListener('focus',()=>setTimeout(fit,200));addEventListener('resize',()=>{fit();clearTimeout(fitT);fitT=setTimeout(fit,400)});
+  // 1.93 기사 사진: 동그라미를 누르면 사진을 고르고, 가운데를 정사각형으로 잘라 360px로 줄여 기기(localStorage)에 저장
+  const dsFile=q('.ds-file'),dsImg=q('.ds-img');
+  const showPhoto=()=>{const u=store.get('taxiPhoto','');dsImg.style.backgroundImage=u?'url("'+u+'")':'';W.classList.toggle('tx-hasph',!!u)};
+  q('.ds-photo').onclick=e=>{e.stopPropagation();dsFile.value='';dsFile.click()};
+  dsFile.onchange=()=>{const f=dsFile.files&&dsFile.files[0];if(!f)return;const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{const n=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=360;
+      c.getContext('2d').drawImage(im,(im.width-n)/2,(im.height-n)/2,n,n,0,0,360,360);
+      try{store.set('taxiPhoto',c.toDataURL('image/jpeg',0.86));showPhoto();toast('기사 사진을 넣었어요')}catch(e){toast('사진을 저장하지 못했어요')}};
+      im.onerror=()=>toast('이 사진은 열 수 없어요');im.src=rd.result};rd.readAsDataURL(f)};
+  showPhoto();
   // 오디오 리모컨: 누르면 원래 플레이어 단추를 누름, 상태는 0.5초마다 원래 플레이어에서 가져옴
   dock.querySelectorAll('[data-t]').forEach(el=>{const t=()=>document.getElementById(el.dataset.t);
     if(el.tagName==='BUTTON')el.onclick=e=>{e.stopPropagation();const o=t();if(o&&!o.disabled)o.click();setTimeout(dockSync,60)};
@@ -177,16 +175,6 @@ const Taxi=(()=>{
   function fitFare(){const f=q('.tx-fare');f.style.fontSize='';let i=0;while(f.scrollWidth>f.clientWidth+1&&i++<12){const cur=parseFloat(getComputedStyle(f).fontSize);f.style.fontSize=(cur*0.92)+'px'}}
   // 레트로 숫자 드럼: 자리마다 0~9 띠를 위아래로 굴림
   function setDrums(sel,str){const ds=qa(sel+' .rt-dr');const t=str.padStart(ds.length,'0').slice(-ds.length);ds.forEach((d,i)=>{d.firstChild.style.transform='translateY('+(-10*(+t[i]||0))+'%)'})}
-  // 키패드: 실제 앱 기능
-  each('.tx-pk',b=>b.onclick=e=>{e.stopPropagation();const f=b.dataset.fn;
-    if(f==='gps'){const g=$('#gOn');if(g)g.click()}
-    else if(f==='level'){const l=$('#pfdLevelQuick');if(l)l.click();toast('지금 자세를 수평으로 맞췄어요')}
-    else if(f==='sky'){const t=$('#pfdThemeQuick');if(t)t.click()}
-    else if(f==='guide'){try{AmpGuide.open('taxi')}catch(e){}}
-    else if(f==='skin')nextSkin();
-    else if(f==='rcpt'){const m=Math.floor(S.sec/60);toast(S.fare?('이번 운행 '+won(S.paid?Math.round(S.fare/100)*100:S.fare)+'원 · '+S.km.toFixed(2)+'km · '+m+'분'):'운행 기록이 없어요')}
-    else if(f==='set'){const s=$('#setBtn');if(s)s.click()}
-    else if(f==='cancel'){if(S.sur){S.sur=0;save();ui();toast('할증 끔')}}});
   const won=n=>Math.round(n).toLocaleString('ko-KR');
   function nextLeft(){if(!S.on)return '—';if(S.used<BASE_M)return Math.max(0,Math.ceil(BASE_M-S.used))+' m';return Math.max(1,Math.ceil(UNIT_M-(S.eqM%UNIT_M)))+' m'}
   const setT=(s,v)=>each(s,e=>{if(e.textContent!==v)e.textContent=v});
@@ -258,7 +246,7 @@ const Taxi=(()=>{
   const ren=()=>document.querySelectorAll('select option[value="radio"]').forEach(o=>{if(o.closest('#sCarSrc'))o.remove();else if(!/택시/.test(o.textContent))o.textContent='택시 미터기'});ren();setInterval(ren,2000);
   setSkin(store.get('taxiSkin','pro'));document.addEventListener('touchstart',()=>{},{passive:true});   // 안드로이드 웹뷰에서 :active(키캡 눌림)가 보이게
   setInterval(tick,500);ui();
-  return {start,pause,pay,reset,setSkin,fit,coin,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,horse2,
+  return {start,pause,pay,reset,setSkin,fit,coin,showPhoto,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,horse2,
     _preview(v){PV=v||null;ui()}};
 })();
 window.AmpTaxi=Taxi;window.TaxiHorseTest=TaxiHorse;   // 시험(테스트 49)에서 말만 따로 그려 볼 때

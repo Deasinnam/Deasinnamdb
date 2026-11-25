@@ -72,4 +72,10 @@ run('Taxi meter: retro skin, skin buttons, Fold7 fit', async ({context, origin, 
     const [dv, sg] = hgt.split('/').map(Number);
     assert.ok(dv > 150 && sg >= dv, 'all view ' + k + ' ' + hgt);
   }
+  // 1.93 '대신남 운수' 간판: 동그라미를 눌러 고른 사진이 원 안에 들어가고 저장됨
+  await p.setViewportSize({width: 411, height: 960}); await p.click('#ckRail [data-f="radio"]'); await p.waitForTimeout(400);
+  assert.equal(await p.locator('#wRadio .ds-name').textContent(), '대신남 운수');
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
+  await p.locator('#wRadio .ds-file').setInputFiles({name: 'me.png', mimeType: 'image/png', buffer: png}); await p.waitForTimeout(600);
+  assert.ok(await p.evaluate(() => /^data:image\/jpeg/.test(JSON.parse(localStorage.dna_taxiPhoto)) && /url\(/.test(document.querySelector('#wRadio .ds-img').style.backgroundImage) && document.getElementById('wRadio').classList.contains('tx-hasph')), 'photo shown in the circle');
 });

@@ -12,8 +12,7 @@ run('Taxi meter: real electronic skin', async ({context, origin, errors}) => {
   await p.goto(origin); await p.waitForTimeout(1500);
   await p.click('#ckRail [data-f="radio"]'); await p.waitForTimeout(300);
   assert.equal(await p.evaluate(() => AmpTaxi.skin), 'pro', 'default skin is the real electronic one');
-  assert.equal(await p.locator('#wRadio .tx-pad2').isVisible(), true);
-  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#wRadio .tx-fn .tx-pk')].map(b => b.textContent)), ['GPS', '수평', '하늘', '안내', '스킨', '영수']);
+  assert.equal(await p.locator('#wRadio .tx-pad2, #wRadio .tx-pad, #wRadio .tx-pk').count(), 0, '1.93: no electronic-taximeter keypads');
   assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#wRadio .tx-dev .tx-keys .tx-k')].map(b => b.textContent)), ['빈차', '주행', '할증', '복합', '지불']);
   // 운행 시작 후 스킨을 바꿔도 금액·상태 그대로
   await p.click('#wRadio .tx-go');
@@ -21,7 +20,6 @@ run('Taxi meter: real electronic skin', async ({context, origin, errors}) => {
   await p.locator('#wRadio .tx-skinsel').selectOption('lcd'); await p.waitForTimeout(200);
   assert.deepEqual(await p.evaluate(() => [AmpTaxi.state.fare, AmpTaxi.state.on, document.querySelector('#wRadio .tx-fare').textContent]), before);
   assert.equal(await p.evaluate(() => JSON.parse(localStorage.dna_taxiSkin)), 'lcd', 'saved');
-  await p.click('#wRadio .tx-pk[data-fn="skin"]', {force: true}).catch(() => p.evaluate(() => document.querySelector('#wRadio .tx-pk[data-fn="skin"]').click()));
   await p.evaluate(() => AmpTaxi.setSkin('pro')); await p.waitForTimeout(200);
   assert.equal(await p.evaluate(() => document.querySelector('#wRadio .tx-go').classList.contains('on')), true, 'selected state stays');
   await p.reload(); await p.waitForTimeout(1500); await p.click('#ckRail [data-f="radio"]'); await p.waitForTimeout(300);

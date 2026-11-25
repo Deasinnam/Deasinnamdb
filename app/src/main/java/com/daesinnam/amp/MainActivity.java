@@ -276,8 +276,11 @@ public class MainActivity extends Activity {
                 pendingChooser = callback;
                 Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("audio/*");
-                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                // 1.93: 택시 미터기 '대신남 운수' 기사 사진은 사진 한 장, 나머지(음악 파일)는 그대로
+                boolean img = false;
+                try { for (String t : params.getAcceptTypes()) if (t != null && t.startsWith("image")) img = true; } catch (Exception e) {}
+                i.setType(img ? "image/*" : "audio/*");
+                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, !img);
                 try {
                     startActivityForResult(i, REQ_FILES);
                 } catch (Exception e) {
