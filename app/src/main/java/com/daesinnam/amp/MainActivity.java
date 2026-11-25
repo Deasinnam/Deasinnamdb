@@ -2152,7 +2152,7 @@ public class MainActivity extends Activity {
             }
         }
 
-        /** name이 비어 있으면 모든 블루투스 오디오, 아니면 그 기기에서만 자동 재생 */
+        /** name이 비어 있으면 차량 오디오·핸즈프리 종류의 블루투스 기기만, 아니면 그 기기에서만 자동 재생 */
         @JavascriptInterface
         public void setCarName(final String name) {
             CarConnect.prefs(MainActivity.this).edit().putString("carName", name == null ? "" : name).apply();

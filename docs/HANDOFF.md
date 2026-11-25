@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-21 · v1.86 (versionCode 120)**
+마지막 갱신: **2026-11-25 · v1.87 (versionCode 121)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.86** (versionCode 120, versionName `1.86-one`) |
+| 최신 버전 | **1.87** (versionCode 121, versionName `1.87-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -126,6 +126,7 @@
 
 ## 7. 작업 기록 (최근이 위)
 
+- 2026-11-25 · 1.87 — 의견(스피드미터): 아무 블루투스에나 "차량 연결됨 · Amp로 재생" 알림. `CarConnect.matches(ctx, name, dev)`: 차를 지정하지 않았으면 `carLike()` — BluetoothClass가 `AUDIO_VIDEO_CAR_AUDIO`·`AUDIO_VIDEO_HANDSFREE`인 기기만(ACL 연결은 EXTRA_DEVICE, A2DP 출력 콜백은 이름으로 짝지은 기기 `bondedByName`). 권한 없거나 종류를 모르면 차가 아님. 설정 첫 항목 "차량 오디오 자동 인식 (이어폰·스피커 제외)"(web/src/80-clock-windows.js, index.html 설명). 로컬 테스트: 25-pfd-minimap은 지도 타일(네트워크) 탓에 수정 전에도 실패, 나머지 통과. 공개: 초안 확인 뒤 `[publish-speedometer]` 커밋 + 사이트 DL 표.
 - 2026-11-22 · 재배포 금지 — 사이트 스피드미터 페이지 내려받기 아래 `.ap-nodist` 안내, `docs/speedometer-release.md`에 '재배포 금지' 절. 공개된 릴리스 설명 바꾸기: 커밋 메시지에 `[speedometer-notes]` → publish-speedometer.yml의 notes job이 문서로 PATCH.
 - 2026-11-22 · 출시 — 16:01 예약 작업이 `[publish-speedometer]` 빈 커밋 → publish-speedometer 워크플로로 `speedometer-v1.86` 공개(DaesinnamSpeedometer.apk 하나). 사이트(gh-pages `src/index.html` DL 표) `app-speed` open:true, tag speedometer-v1.86, versions 첫 줄 추가, '오후 4시 출시' 문구를 '출시'로. 다음 버전 공개: 버전 올려 push → 초안 생김 → 확인 뒤 `[publish-speedometer]` 커밋, 사이트 DL 표 tag·versions에 한 줄 추가.
 - 2026-11-21 · 1.86 — 사용자: 출시 이름은 **대신남 스피드미터**, 풀버전 하나만, 자동차 모드 스킨 삭제·3D 맵은 정식판에서. airdist: applicationId `com.daesinnam.speedometer`, app_name '대신남 스피드미터', 네이티브 distFlags `noradio,airline,dsp`(lite면 `,lite` 추가). `00-core` 맨 앞에서 `DISTF`(=window.__distFlags) 계산 → `airline`이면 ONE_SKINS=['carnival7'](저장된 다른 스킨은 에어라인으로), `dsp`면 pfd-special의 '대신남→에어포스원' 바꿔 부르기 안 함(화면은 '대신남 에어라인' 등). 99-zz-dist는 DISTF 사용, AmpDist에 airline·dsp. 설명서(98-guide): airline이면 스킨 단계 문구·그림 `g-skin-d.jpg`, 과속 카메라 단계에서 3D 맵 문장·영상 뺌, dsp면 외부 앱 단계 그림 `g-ext-d.jpg`(알림 접근 줄 이름을 '대신남 스피드미터'로 고친 그림). CI: 태그 `speedometer-v$VN`, 파일 `DaesinnamSpeedometer.apk`, 노트 `docs/speedometer-release.md`. 예전 airforceone 초안(1.84·1.85)은 지움. 예약 작업은 speedometer 초안을 공개. 테스트 47 추가.

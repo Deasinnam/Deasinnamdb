@@ -5,7 +5,9 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,14 +37,49 @@ public class CarConnect extends BroadcastReceiver {
         return prefs(c).getBoolean("autoplay", false);
     }
 
-    /** 지정한 차량 이름(비어 있으면 모든 블루투스 오디오 기기) */
+    /** 지정한 차량 이름(비어 있으면 차량 오디오로 보이는 블루투스 기기를 알아서 고름) */
     static String carName(Context c) {
         return prefs(c).getString("carName", "");
     }
 
     static boolean matches(Context c, String deviceName) {
+        return matches(c, deviceName, null);
+    }
+
+    /**
+     * 이 기기에 연결됐을 때 차량 연결로 볼까.
+     * 차를 지정했으면 그 이름만. 지정하지 않았으면 블루투스 기기 종류가 차량 오디오 · 핸즈프리인 것만
+     * (이어폰 · 헤드셋 · 스피커 · 시계 등 아무 블루투스에나 "차량 연결됨"이 뜨던 문제).
+     */
+    static boolean matches(Context c, String deviceName, BluetoothDevice dev) {
         String want = carName(c);
-        return want.isEmpty() || (deviceName != null && deviceName.equals(want));
+        if (!want.isEmpty()) return deviceName != null && deviceName.equals(want);
+        return carLike(c, dev, deviceName);
+    }
+
+    /** 블루투스 기기 종류(BluetoothClass)가 차량 오디오 · 핸즈프리인가. 모르면 차가 아닌 것으로 봄 */
+    static boolean carLike(Context c, BluetoothDevice dev, String name) {
+        if (!hasBtPerm(c)) return false;
+        try {
+            if (dev == null && name != null) dev = bondedByName(c, name);
+            if (dev == null) return false;
+            BluetoothClass k = dev.getBluetoothClass();
+            if (k == null) return false;
+            int d = k.getDeviceClass();
+            return d == BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO || d == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE;
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    /** 오디오 출력 이름(A2DP)으로 짝지은 블루투스 기기 찾기 */
+    private static BluetoothDevice bondedByName(Context c, String name) {
+        BluetoothManager bm = c.getSystemService(BluetoothManager.class);
+        if (bm == null || bm.getAdapter() == null) return null;
+        for (BluetoothDevice d : bm.getAdapter().getBondedDevices()) {
+            if (name.equals(d.getName()) || (Build.VERSION.SDK_INT >= 30 && name.equals(d.getAlias()))) return d;
+        }
+        return null;
     }
 
     static boolean hasBtPerm(Context c) {
@@ -69,11 +106,12 @@ public class CarConnect extends BroadcastReceiver {
         if (!connected) return;
 
         String name = null;
+        BluetoothDevice dev = null;
         try {
-            BluetoothDevice dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if (dev != null && hasBtPerm(ctx)) name = dev.getName();
         } catch (Exception ignored) {}
-        if (!matches(ctx, name)) return;
+        if (!matches(ctx, name, dev)) return;
 
         MainActivity act = MainActivity.current.get();
         if (act != null && !act.isFinishing() && !act.isDestroyed()) {

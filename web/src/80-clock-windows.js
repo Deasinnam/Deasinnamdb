@@ -87,7 +87,7 @@ function syncSettings(){
   let c={};try{c=JSON.parse(NB.carStatus())}catch(e){}
   $('#sCarAuto').checked=!!c.autoplay;
   const sel=$('#sCarName'),names=[...new Set([...(c.connected||[]),c.carName].filter(Boolean))];
-  const want=['',...names].join('|');if(sel.dataset.k!==want){sel.dataset.k=want;sel.innerHTML='<option value="">모든 블루투스 오디오 기기</option>'+names.map(n=>`<option></option>`).join('');[...sel.options].slice(1).forEach((o,i)=>{o.value=names[i];o.textContent=names[i]+((c.connected||[]).includes(names[i])?' (지금 연결됨)':'')})}
+  const want=['',...names].join('|');if(sel.dataset.k!==want){sel.dataset.k=want;sel.innerHTML='<option value="">차량 오디오 자동 인식 (이어폰·스피커 제외)</option>'+names.map(n=>`<option></option>`).join('');[...sel.options].slice(1).forEach((o,i)=>{o.value=names[i];o.textContent=names[i]+((c.connected||[]).includes(names[i])?' (지금 연결됨)':'')})}
   sel.value=c.carName||'';
   $('#sBt').textContent=c.btPerm?'허용됨':'허용 필요';$('#sBt').classList.toggle('ok',!!c.btPerm);
   $('#sLaunch').textContent=c.autoLaunch?'허용됨':'허용하기';$('#sLaunch').classList.toggle('on',!c.autoLaunch);
