@@ -143,7 +143,6 @@ html,body{overflow:hidden}
 .rank td:first-child{width:28px;color:var(--sub);font-weight:800}
 .scols{display:flex;gap:16px;flex-wrap:wrap}
 .scols>.card{flex:1 1 340px;padding:20px}
-body.sub .tab[data-v=sales]{display:none}
 /* 서브 기기 */
 body.sub .tab[data-v=menu]{display:none}
 body.kitchen .tab[data-v=tables]{display:none}
@@ -233,6 +232,40 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
   .mi{flex-direction:column} .mi .pic{width:100%;height:140px}
   .od .f{flex-wrap:wrap} .od .f .sum{flex:1 0 100%} .od .f .btn{flex:1;padding:0 12px}
 }
+
+/* 장부: 매출 · 매입 · 이윤 */
+.bk-top{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.bk-seg{display:flex;gap:6px;background:#fff;padding:5px;border-radius:16px;box-shadow:var(--shadow);flex:1;max-width:520px}
+.bk-seg button{flex:1;min-height:46px;border-radius:12px;font-weight:800;font-size:15px;color:var(--sub)}
+.bk-seg button.on{background:var(--ink);color:#fff}
+.bk-lock{max-width:460px;margin:40px auto;padding:30px 28px;text-align:center}
+.bk-lock .bk-ic{font-size:44px}
+.bk-lock h2{margin:8px 0 8px;font-size:22px}
+.bk-lock .field{text-align:left}
+.bk-lock .btn{width:100%;min-height:52px;margin-top:6px}
+.kp-profit{background:#EBFBEE!important}.kp-profit b{color:#2B8A3E}
+.kp-profit.neg{background:#FFF5F5!important}.kp-profit.neg b{color:#C92A2A}
+.bk-addkp{display:flex;flex-direction:column;justify-content:center;gap:8px}
+.bk-addkp .btn{min-height:52px;font-size:17px}
+.bars.pb .b .pair{display:flex;align-items:flex-end;gap:2px;height:100%;width:100%;justify-content:center}
+.bars.pb .b .pair i{width:45%;max-width:12px;min-height:2px;border-radius:4px 4px 1px 1px;opacity:.9}
+.bars.pb .b .pair i.s,.lg.s{background:#E8590C}.bars.pb .b .pair i.p,.lg.p{background:#868E96}
+.bars.pb .b.zero .pair i{background:var(--line)}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 3px 0 6px;vertical-align:-1px}
+.bk-t .hd td{font-size:12px;color:var(--sub);font-weight:700}
+.bk-t td:nth-child(3),.bk-t td:nth-child(4),.bk-t td:nth-child(5){text-align:right;white-space:nowrap}
+.bk-t td.pos b{color:#2B8A3E}.bk-t td.neg b{color:#C92A2A}
+.bk-day{padding:16px 20px;margin-bottom:12px}
+.bk-dh{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.bk-dh span{font-weight:800}
+.bk-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.bk-row:last-child{border-bottom:0}
+.bk-row .tx{flex:1;min-width:0}.bk-row .tx b{display:block;font-size:16px}.bk-row .tx small{color:var(--sub);font-size:13px}
+.bk-row .amt{font-size:16px;white-space:nowrap}
+.bk-cat{flex:0 0 auto;font-size:12px;font-weight:800;padding:4px 9px;border-radius:99px;background:#F1F3F5;color:#495057}
+#pCats .chip{padding:9px 13px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:14px}
+#pCats .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media (max-width:600px){.bk-top{flex-wrap:nowrap}.bk-seg{max-width:none}.bk-seg button{font-size:14px}.bk-lockbtn{flex:0 0 auto;padding:0 12px;min-height:56px}.sgrid .kp{flex:1 1 140px}.kp-profit{flex-basis:100%!important}.bk-t td{font-size:13px;padding:8px 3px}.kp b{font-size:22px}}
 </style></head>
 <body>
 <div class="app" id="app">
@@ -241,7 +274,7 @@ ol.how{margin:8px 0 0;padding-left:20px;line-height:1.8;color:var(--sub)}
     <button class="tab on" data-v="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>주문<span class="dot hide" id="dNew"></span></button>
     <button class="tab" data-v="tables"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>테이블<span class="dot hide" id="dCall"></span></button>
     <button class="tab" data-v="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>메뉴</button>
-    <button class="tab" data-v="sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>매출</button>
+    <button class="tab" data-v="sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>장부</button>
     <button class="tab" data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button>
   </div>
   <div class="body">
@@ -277,8 +310,8 @@ var LABEL={"new":"새 주문","cooking":"만드는 중","done":"나간 주문"};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function won(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,",")}
 function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.parentNode&&d.parentNode.removeChild(d)},2600)}
-function api(m,path,body,cb,raw,timeout){var x=new XMLHttpRequest();x.open(m,path,true);x.timeout=timeout||10000;x.setRequestHeader("X-Key",KEY);
-  x.onload=function(){var j=null;try{j=JSON.parse(x.responseText)}catch(e){}if(x.status!==200&&j&&j.error)toast(j.error);cb&&cb(x.status,j)};
+function api(m,path,body,cb,raw,timeout){var x=new XMLHttpRequest();x.open(m,path,true);x.timeout=timeout||10000;x.setRequestHeader("X-Key",KEY);if(OWN)x.setRequestHeader("X-Owner",OWN);
+  x.onload=function(){var j=null;try{j=JSON.parse(x.responseText)}catch(e){}if(x.status===401&&j&&j.owner){ownLost(j);cb&&cb(x.status,j);return}if(x.status!==200&&j&&j.error)toast(j.error);cb&&cb(x.status,j)};
   x.onerror=x.ontimeout=function(){console.warn("api fail "+path);window.__errs&&window.__errs.push("api "+path);cb&&cb(0,null)};
   if(raw){x.setRequestHeader("Content-Type","image/jpeg");x.send(raw)}else if(body){x.setRequestHeader("Content-Type","application/json");x.send(JSON.stringify(body))}else x.send()}
 function ago(t){var m=Math.floor((Date.now()-t)/60000);return m<1?"방금":m+"분 전"}
@@ -358,7 +391,7 @@ function draw(fresh){
   if(view==="tables")drawTables();
   if(view==="menu"&&!menuDirty)drawMenu();
   if(view==="settings"&&!$("vSettings").contains(document.activeElement))drawSettings();
-  if(view==="sales"&&fresh&&fresh.length)loadSales();
+  if(view==="sales"&&fresh&&fresh.length&&OWN&&BK==="sales")loadSales();
 }
 
 function drawCalls(){
@@ -772,7 +805,7 @@ function addDevice(){
 function drawSubSettings(){
   var me=D.me||{};
   $("vSettings").innerHTML='<div class="set"><div class="card"><h3>이 기기</h3><p style="font-size:20px;font-weight:800;margin:0 0 6px">'+(me.role==="kitchen"?"🍳 ":"🧾 ")+esc(me.name)+'</p>'+
-    '<p class="muted">'+(me.role==="kitchen"?"주방 화면 · 새 주문과 만드는 중인 주문을 크게 보여 줘요.":"보조 계산대 · 주문 · 테이블 현황 · 직원 호출을 실시간으로 보여 줘요.")+' 이 기기는 <b>보기 전용</b>이라 주문 처리 · 결제 · 초기화 · 메뉴 · 설정은 메인 카운터에서만 할 수 있어요.</p>'+
+    '<p class="muted">'+(me.role==="kitchen"?"주방 화면 · 새 주문과 만드는 중인 주문을 크게 보여 줘요.":"보조 계산대 · 주문 · 테이블 현황 · 직원 호출을 실시간으로 보여 줘요.")+' 이 기기는 <b>보기 전용</b>이라 주문 처리 · 결제 · 초기화 · 메뉴 · 설정은 메인 카운터에서만 할 수 있어요. <b>장부</b>(매출 · 매입 · 이윤)는 관리자 비밀번호를 넣으면 이 기기에서도 보고 매입을 넣을 수 있어요.</p>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn" id="tBell">🔔 알림벨 들어 보기</button>'+(T&&T.leaveSub?'<button class="btn bad" id="sLeave">이 기기 연결 끊기</button>':'')+'</div></div></div>';
   $("tBell").onclick=function(){ding()};
   if($("sLeave"))$("sLeave").onclick=function(){modal('<h2>이 기기 연결을 끊을까요?</h2><p class="muted">다시 쓰려면 메인 카운터에서 새 코드를 받아 연결해야 해요.</p><div style="display:flex;gap:10px;margin-top:16px"><button class="btn ghost" style="flex:1" id="mNo">취소</button><button class="btn bad" style="flex:1" id="mYes">연결 끊기</button></div>');$("mNo").onclick=function(){modal()};$("mYes").onclick=function(){T.leaveSub()}};
@@ -804,11 +837,12 @@ function drawSettings(){
   '<div class="card"><h3>주방 · 계산대 기기</h3><div class="muted" style="margin-bottom:6px">메인 카운터 말고도 주방 요리대 폰, 두 번째 계산대 폰에서 같은 주문을 실시간으로 볼 수 있어요(보기 전용 · 처리와 수정은 메인에서만). 그 기기에서 덜누름 테이블오더를 열고 <b>주방 · 보조 계산대로 쓰기</b>를 누른 뒤, 여기서 「기기 추가」로 나오는 코드를 넣으면 됩니다.</div>'+
   '<div class="devs" id="devs"><div class="muted" style="padding:12px 0">불러오는 중…</div></div><button class="btn pri" id="sAddDev" style="margin-top:14px">+ 기기 추가</button>'+
   '<details style="margin-top:16px"><summary class="muted" style="cursor:pointer">PC 브라우저로 열기 (메인과 같은 권한)</summary><div class="code" style="margin-top:8px">http://'+esc(ip)+':8787/admin.html#key='+esc(KEY)+'</div></details></div>'+
+  ownerCard()+
   '<div class="card"><h3>정리</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn bad" id="sReset">오늘 주문 · 호출 모두 지우기</button>'+(T&&T.stopCounter?'<button class="btn ghost" id="sStop">카운터 끄기 (주문 그만 받기)</button>':'')+'</div>'+
   '<p class="muted" style="margin-top:14px">덜누름 테이블오더 '+esc(ver)+' · 주문은 이 매장 와이파이 안에서만 오가며, 이 기기에만 저장됩니다.</p></div></div>';
   $("vSettings").innerHTML=h;
   drawSkins(s.skin||"premium");
-  drawBells(s);loadDevs();drawPays(s);
+  drawBells(s);loadDevs();drawPays(s);ownerWire();
   $("payAdd").onclick=function(){payEdit(s,-1)};
   $("payCounter").onclick=function(){var on=!this.classList.contains("on"),b=this;api("POST","/api/admin/settings",{payCounter:on},function(st){if(st===200){b.classList.toggle("on",on);s.payCounter=on;D.settings.payCounter=on}})};
   $("sAddDev").onclick=addDevice;
@@ -857,11 +891,155 @@ function drawSales(j){
   '<div class="scols"><div class="card"><h3 style="margin:0 0 8px">이달 많이 팔린 메뉴</h3><table class="rank">'+rankRows(j.monthItems,10)+'</table></div>'+
   '<div class="card"><h3 style="margin:0 0 8px">날짜별 표</h3><table class="rank">'+j.days.filter(function(d){return d.count}).reverse().map(function(d){var t=new Date(d.day+"T00:00:00");return '<tr data-day="'+d.day+'" style="cursor:pointer"><td></td><td>'+(t.getMonth()+1)+'/'+t.getDate()+' ('+W.charAt(t.getDay())+')</td><td>'+d.count+'건</td><td><b>'+won(d.total)+'원</b></td></tr>'}).join("")+(j.openDays?'':'<tr><td></td><td class="muted">이달 주문이 아직 없어요</td><td></td><td></td></tr>')+'</table></div></div>'+
   '<p class="muted" style="font-size:13px;margin-top:14px">취소한 주문은 빠져요. 매출은 이 카운터 기기에 날짜별로 최대 400일 저장돼요.</p></div>';
-  $("vSales").innerHTML=h;
-  [].forEach.call($("vSales").querySelectorAll("[data-day]"),function(b){b.onclick=function(){loadSales(SM,b.getAttribute("data-day"));$("vSales").scrollTop=0}});
+  bkShell("sales");$("bkBody").innerHTML=h;
+  [].forEach.call($("bkBody").querySelectorAll("[data-day]"),function(b){b.onclick=function(){loadSales(SM,b.getAttribute("data-day"));$("vSales").scrollTop=0}});
   $("mPrev").onclick=function(){loadSales(shiftMonth(j.month,-1),"x")};
   $("mNext").onclick=function(){loadSales(shiftMonth(j.month,1),"x")};
   if($("sToday"))$("sToday").onclick=function(){SM=null;SDAY=null;loadSales("", "")};
+}
+
+// ----- 장부: 매출 · 매입 · 이윤 (관리자 비밀번호를 아는 사람만) -----
+var OWN="",BK="profit",BM=null,BJ=null;
+try{var _o=JSON.parse(localStorage.getItem("dnOwner")||"null");if(_o&&_o.t&&_o.until>Date.now())OWN=_o.t}catch(e){}
+function ownSave(t,h){OWN=t||"";try{if(OWN)localStorage.setItem("dnOwner",JSON.stringify({t:OWN,until:Date.now()+(h||12)*3600000}));else localStorage.removeItem("dnOwner")}catch(e){}}
+function ownLost(j){ownSave("");if(view==="sales")bkLock(j&&j.set===false)}
+var PCATS=["재료","음료 · 주류","포장재","소모품","공과금","임대료","인건비","기타"];
+function openBooks(){
+  if(!OWN){bkLock(D&&D.ownerSet===false);return}
+  if(BK==="sales")loadSales();else loadBooks();
+}
+function bkLock(notSet){
+  var main=!(D&&D.me&&D.me.role!=="main");
+  var h='<div class="bk-lock card"><div class="bk-ic">🔒</div><h2>장부는 관리자만 볼 수 있어요</h2>';
+  if(notSet&&main){
+    h+='<p class="muted">매출 · 매입 · 이윤을 보려면 먼저 <b>관리자 비밀번호</b>를 정해 주세요. 이 비밀번호를 아는 사람만 이 카운터와 연결된 사장님 휴대폰 · 계산대 기기에서 장부를 열 수 있어요.</p>'+
+      '<div class="field"><label>관리자 비밀번호 (숫자 4~8자리, 또는 글자 섞어 6자 이상)</label><input id="ow1" type="password" autocomplete="new-password"></div>'+
+      '<div class="field"><label>한 번 더</label><input id="ow2" type="password" autocomplete="new-password"></div>'+
+      '<button class="btn pri" id="owGo">비밀번호 정하고 장부 열기</button>';
+  }else if(notSet){
+    h+='<p class="muted">아직 관리자 비밀번호가 없어요. <b>메인 카운터</b>의 장부 탭이나 설정에서 관리자 비밀번호를 먼저 정해 주세요.</p>';
+  }else{
+    h+='<p class="muted">관리자 비밀번호를 넣으면 이 기기에서 12시간 동안 매출 · 매입 · 이윤을 볼 수 있어요.</p>'+
+      '<div class="field"><label>관리자 비밀번호</label><input id="ow1" type="password" autocomplete="current-password"></div>'+
+      '<button class="btn pri" id="owGo">장부 열기</button>';
+  }
+  h+='</div>';
+  $("vSales").innerHTML=h;
+  var go1=$("owGo");if(!go1)return;
+  $("ow1").focus();
+  var run=function(){
+    var a=$("ow1").value;
+    if(notSet&&main){
+      if(a!==$("ow2").value){toast("두 칸의 비밀번호가 달라요");return}
+      api("POST","/api/admin/owner",{pw:a},function(st,j){if(st===200&&j.owner){ownSave(j.owner);D.ownerSet=true;toast("관리자 비밀번호를 정했어요");openBooks()}});
+    }else{
+      ownLogin(a,function(ok){if(ok)openBooks();else{$("ow1").value="";$("ow1").focus()}});
+    }
+  };
+  go1.onclick=run;
+  [$("ow1"),$("ow2")].forEach(function(e){if(e)e.onkeydown=function(ev){if(ev.key==="Enter")run()}});
+}
+function ownLogin(pw,cb){
+  var x=new XMLHttpRequest();x.open("POST","/api/owner/login",true);x.timeout=10000;x.setRequestHeader("Content-Type","application/json");
+  x.onload=function(){var j=null;try{j=JSON.parse(x.responseText)}catch(e){}if(x.status===200&&j&&j.owner){ownSave(j.owner,j.hours);cb(true)}else{toast(j&&j.error||"확인하지 못했어요");cb(false)}};
+  x.onerror=x.ontimeout=function(){toast("카운터에 연결하지 못했어요");cb(false)};
+  x.send(JSON.stringify({pw:pw}));
+}
+function bkShell(which){
+  BK=which;
+  if(!$("bkBody")){
+    $("vSales").innerHTML='<div class="bk-top"><div class="bk-seg" id="bkSeg"><button data-k="profit">이윤 한눈에</button><button data-k="sales">매출</button><button data-k="buy">매입</button></div>'+
+      '<button class="btn ghost bk-lockbtn" id="bkLockBtn">🔒 잠그기</button></div><div id="bkBody"></div>';
+    [].forEach.call($("bkSeg").querySelectorAll("button"),function(b){b.onclick=function(){var k=b.getAttribute("data-k");if(k===BK)return;BK=k;$("bkBody").innerHTML='<div class="muted" style="padding:30px 0">불러오는 중…</div>';markSeg();if(k==="sales")loadSales(BM||SM);else loadBooks(BM)}});
+    $("bkLockBtn").onclick=function(){ownSave("");BJ=null;bkLock(false);toast("장부를 잠갔어요")};
+  }
+  markSeg();
+}
+function markSeg(){if($("bkSeg"))[].forEach.call($("bkSeg").querySelectorAll("button"),function(b){b.classList.toggle("on",b.getAttribute("data-k")===BK)})}
+var BLOAD=false;
+function loadBooks(month){
+  if(BLOAD)return;BLOAD=true;
+  api("GET","/api/admin/books?month="+(month||BM||""),null,function(st,j){BLOAD=false;if(st===200&&j){BM=j.month;BJ=j;if(BK==="buy")drawBuy(j);else drawProfit(j)}});
+}
+function pct(a,b){return b?Math.round((a-b)/Math.abs(b)*100):null}
+function cmp(a,b){var d=pct(a,b);return d===null?'<span>지난달 기록 없음</span>':'<span>지난달보다 '+(d>=0?'▲ ':'▼ ')+Math.abs(d)+'%</span>'}
+function monthHead(j,title){return '<div class="mhead"><button class="btn ghost" id="bPrev">◀</button><h3 style="text-align:center">'+j.month.slice(0,4)+'년 '+(+j.month.slice(5,7))+'월 '+title+'</h3><button class="btn ghost" id="bNext"'+(j.month>=j.today.slice(0,7)?' disabled':'')+'>▶</button></div>'}
+function monthNav(j){$("bPrev").onclick=function(){loadBooks(shiftMonth(j.month,-1))};$("bNext").onclick=function(){loadBooks(shiftMonth(j.month,1))}}
+function drawProfit(j){
+  bkShell("profit");
+  var W="일월화수목금토",rate=j.sales?Math.round(j.profit/j.sales*100):null;
+  var mx=1;j.days.forEach(function(d){mx=Math.max(mx,Math.abs(d.profit),d.sales,d.purchases)});
+  var cats=[];for(var k in j.cats)cats.push([k,j.cats[k]]);cats.sort(function(a,b){return b[1]-a[1]});
+  var rows=j.days.filter(function(d){return d.sales||d.purchases}).reverse();
+  var h='<div class="sales">'+monthHead(j,'이윤')+
+  '<div class="sgrid"><div class="card kp"><small>매출</small><b>'+won(j.sales)+'원</b>'+cmp(j.sales,j.prevSales)+'</div>'+
+  '<div class="card kp"><small>매입</small><b>'+won(j.purchases)+'원</b>'+cmp(j.purchases,j.prevPurchases)+'</div>'+
+  '<div class="card kp kp-profit'+(j.profit<0?' neg':'')+'"><small>이윤 (매출 − 매입)</small><b>'+(j.profit<0?'−':'')+won(Math.abs(j.profit))+'원</b><span>'+(rate===null?'매출이 없어요':'이윤율 '+rate+'%')+(j.prevSales||j.prevPurchases?' · 지난달 '+(j.prevProfit<0?'−':'')+won(Math.abs(j.prevProfit))+'원':'')+'</span></div></div>'+
+  '<div class="card" style="padding:20px;margin-bottom:16px"><h3 style="margin:0 0 4px">날짜별 매출 · 매입 <span class="muted" style="font-size:13px;font-weight:600">· <i class="lg s"></i>매출 <i class="lg p"></i>매입 · 막대를 누르면 그날 매출을 자세히</span></h3><div class="bars pb">'+
+  j.days.map(function(d){var n=+d.day.slice(8);return '<div class="b'+(d.sales||d.purchases?'':' zero')+'" data-day="'+d.day+'" title="'+n+'일 · 매출 '+won(d.sales)+'원 · 매입 '+won(d.purchases)+'원 · 이윤 '+won(d.profit)+'원"><span class="pair"><i class="s" style="height:'+Math.round(d.sales/mx*100)+'%"></i><i class="p" style="height:'+Math.round(d.purchases/mx*100)+'%"></i></span><em>'+(n===1||n%5===0?n:"")+'</em></div>'}).join("")+'</div></div>'+
+  '<div class="scols"><div class="card"><h3 style="margin:0 0 8px">날짜별 이윤</h3><table class="rank bk-t"><tr class="hd"><td></td><td>날짜</td><td>매출</td><td>매입</td><td>이윤</td></tr>'+
+  (rows.length?rows.map(function(d){var t=new Date(d.day+"T00:00:00");return '<tr><td></td><td>'+(t.getMonth()+1)+'/'+t.getDate()+' ('+W.charAt(t.getDay())+')</td><td>'+won(d.sales)+'</td><td>'+won(d.purchases)+'</td><td class="'+(d.profit<0?'neg':'pos')+'"><b>'+(d.profit<0?'−':'')+won(Math.abs(d.profit))+'</b></td></tr>'}).join(""):'<tr><td></td><td class="muted" colspan="4">이달 기록이 아직 없어요</td></tr>')+'</table></div>'+
+  '<div class="card"><h3 style="margin:0 0 8px">매입 분류</h3><table class="rank">'+(cats.length?cats.map(function(c){return '<tr><td></td><td>'+esc(c[0])+'</td><td>'+(j.purchases?Math.round(c[1]/j.purchases*100):0)+'%</td><td><b>'+won(c[1])+'원</b></td></tr>'}).join(""):'<tr><td></td><td class="muted">이달 매입이 아직 없어요</td><td></td><td></td></tr>')+'</table>'+
+  '<button class="btn pri" id="bAdd" style="margin-top:14px">+ 매입 넣기</button></div></div>'+
+  '<p class="muted" style="font-size:13px;margin-top:14px">이윤은 매출에서 직접 넣은 매입을 뺀 금액이에요. 세금 · 카드 수수료 같은 것은 매입으로 넣으면 함께 빠져요. 장부는 이 카운터 기기에만 저장돼요.</p></div>';
+  $("bkBody").innerHTML=h;monthNav(j);
+  [].forEach.call($("bkBody").querySelectorAll(".bars [data-day]"),function(b){b.onclick=function(){BK="sales";loadSales(j.month,b.getAttribute("data-day"))}});
+  $("bAdd").onclick=function(){buyEdit(null)};
+}
+function drawBuy(j){
+  bkShell("buy");
+  var W="일월화수목금토",by={},order=[];
+  j.list.slice().sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(b.at-a.at)}).forEach(function(p){if(!by[p.day]){by[p.day]=[];order.push(p.day)}by[p.day].push(p)});
+  var h='<div class="sales">'+monthHead(j,'매입')+
+  '<div class="sgrid"><div class="card kp"><small>이달 매입</small><b>'+won(j.purchases)+'원</b>'+cmp(j.purchases,j.prevPurchases)+'</div><div class="card kp"><small>매입 건수</small><b>'+j.list.length+'건</b></div>'+
+  '<div class="card kp bk-addkp"><button class="btn pri big" id="bAdd">+ 매입 넣기</button><span>재료 · 물품을 산 날, 금액만 넣으면 이윤이 바로 계산돼요</span></div></div>'+
+  (order.length?order.map(function(d){var t=new Date(d+"T00:00:00"),sum=0;by[d].forEach(function(p){sum+=p.amount});
+    return '<div class="card bk-day"><div class="bk-dh"><b>'+(t.getMonth()+1)+'월 '+t.getDate()+'일 ('+W.charAt(t.getDay())+')</b><span>'+won(sum)+'원</span></div>'+
+      by[d].map(function(p){return '<div class="bk-row" data-id="'+esc(p.id)+'"><span class="bk-cat">'+esc(p.cat)+'</span><div class="tx"><b>'+esc(p.item)+'</b><small>'+esc([p.vendor,p.memo].filter(Boolean).join(" · "))+'</small></div><b class="amt">'+won(p.amount)+'원</b></div>'}).join("")+'</div>'}).join("")
+   :'<div class="card" style="padding:30px;text-align:center" class="muted"><p class="muted" style="margin:0">이달 매입 기록이 없어요. 「+ 매입 넣기」로 재료 · 물품 구입을 적어 보세요.</p></div>')+
+  '<p class="muted" style="font-size:13px;margin-top:14px">항목을 누르면 고치거나 지울 수 있어요.</p></div>';
+  $("bkBody").innerHTML=h;monthNav(j);
+  $("bAdd").onclick=function(){buyEdit(null)};
+  [].forEach.call($("bkBody").querySelectorAll(".bk-row"),function(r){r.onclick=function(){var id=r.getAttribute("data-id");buyEdit(j.list.filter(function(p){return p.id===id})[0])}});
+}
+function buyEdit(p){
+  var today=ymd(new Date()),cat=p?p.cat:(localStorage.getItem("dnLastCat")||"재료");
+  modal('<h2>'+(p?'매입 고치기':'매입 넣기')+'</h2>'+
+    '<div class="field"><label>날짜</label><input id="pDay" type="date" value="'+esc(p?p.day:(BM&&BM!==today.slice(0,7)?BM+"-01":today))+'" max="'+today+'"></div>'+
+    '<div class="field"><label>분류</label><div class="chips" id="pCats">'+PCATS.map(function(c){return '<button type="button" class="chip'+(c===cat?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>'}).join("")+'</div></div>'+
+    '<div class="field"><label>무엇을 샀나요</label><input id="pItem" maxlength="40" value="'+esc(p?p.item:"")+'" placeholder="예: 원두 2kg, 우유 10팩"></div>'+
+    '<div class="field"><label>금액 (원)</label><input id="pAmt" inputmode="numeric" value="'+(p?p.amount:"")+'" placeholder="예: 58000"></div>'+
+    '<div class="field"><label>거래처 (선택)</label><input id="pVen" maxlength="30" value="'+esc(p?p.vendor:"")+'" placeholder="예: ○○식자재마트"></div>'+
+    '<div class="field"><label>메모 (선택)</label><input id="pMemo" maxlength="80" value="'+esc(p?p.memo:"")+'"></div>'+
+    '<div style="display:flex;gap:10px;margin-top:16px">'+(p?'<button class="btn bad" id="pDel">지우기</button>':'')+'<button class="btn ghost" style="flex:1" id="mNo">취소</button><button class="btn pri" style="flex:1" id="mYes">'+(p?'고치기':'넣기')+'</button></div>');
+  [].forEach.call($("pCats").querySelectorAll(".chip"),function(b){b.onclick=function(){cat=b.getAttribute("data-c");[].forEach.call($("pCats").querySelectorAll(".chip"),function(x){x.classList.toggle("on",x===b)})}});
+  $("pAmt").oninput=function(){var v=this.value.replace(/[^0-9]/g,"");this.value=v?won(+v):""};
+  if(p)$("pAmt").value=won(p.amount);
+  $("mNo").onclick=function(){modal()};
+  if(!p)$("pItem").focus();
+  $("mYes").onclick=function(){
+    var amt=+$("pAmt").value.replace(/[^0-9]/g,"");
+    if(!$("pItem").value.trim()){toast("무엇을 샀는지 적어 주세요");return}
+    if(!amt){toast("금액을 넣어 주세요");return}
+    var b={day:$("pDay").value,cat:cat,item:$("pItem").value,amount:amt,vendor:$("pVen").value,memo:$("pMemo").value};if(p)b.id=p.id;
+    api("POST","/api/admin/purchase",b,function(st){if(st===200){try{localStorage.setItem("dnLastCat",cat)}catch(e){}modal();toast(p?"고쳤어요":"매입을 넣었어요");BM=b.day.slice(0,7);if(BK==="sales")BK="buy";loadBooks(BM)}});
+  };
+  if(p)$("pDel").onclick=function(){if(!confirm("이 매입 기록을 지울까요?"))return;api("POST","/api/admin/purchase/delete",{id:p.id},function(st){if(st===200){modal();toast("지웠어요");loadBooks(BM)}})};
+}
+// 설정: 관리자 비밀번호(메인 전용)
+function ownerCard(){
+  return '<div class="card"><h3>관리자 비밀번호 (장부: 매출 · 매입 · 이윤)</h3><div class="muted" style="margin-bottom:12px">장부 탭은 이 비밀번호를 아는 사람만 열 수 있어요. 사장님 휴대폰을 「주방 · 보조 계산대로 쓰기」로 연결한 뒤 장부 탭에서 이 비밀번호를 넣으면, 휴대폰에서도 매출 · 매입 · 이윤을 볼 수 있어요. 테이블 기기의 「관리자」 버튼에서도 이 비밀번호가 통해요.</div>'+
+    (D.ownerSet?'<div class="field"><label>지금 비밀번호</label><input id="oOld" type="password" autocomplete="current-password"></div>':'')+
+    '<div class="field"><label>'+(D.ownerSet?'새 비밀번호':'관리자 비밀번호')+' (숫자 4~8자리, 또는 글자 섞어 6자 이상)</label><input id="oNew" type="password" autocomplete="new-password"></div>'+
+    '<div class="field"><label>한 번 더</label><input id="oNew2" type="password" autocomplete="new-password"></div>'+
+    '<button class="btn pri" id="oSave">'+(D.ownerSet?'비밀번호 바꾸기':'비밀번호 정하기')+'</button>'+(D.ownerSet?'<span class="muted" style="margin-left:10px;font-size:13px">바꾸면 다른 기기에서는 장부를 다시 열어야 해요</span>':'')+'</div>';
+}
+function ownerWire(){
+  if(!$("oSave"))return;
+  $("oSave").onclick=function(){
+    var n=$("oNew").value;if(n!==$("oNew2").value){toast("새 비밀번호 두 칸이 달라요");return}
+    api("POST","/api/admin/owner",{old:$("oOld")?$("oOld").value:"",pw:n},function(st,j){if(st===200&&j.owner){ownSave(j.owner);D.ownerSet=true;toast("관리자 비밀번호를 저장했어요");drawSettings()}});
+  };
 }
 
 // ----- 탭 -----
@@ -870,7 +1048,7 @@ function go(v){
   view=v;
   [].forEach.call(document.querySelectorAll(".tab"),function(b){b.classList.toggle("on",b.getAttribute("data-v")===v)});
   ["orders","tables","menu","sales","settings"].forEach(function(k){$("v"+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle("hide",k!==v)});
-  if(D){if(v==="orders")drawBoard([]);if(v==="tables")drawTables();if(v==="menu")drawMenu();if(v==="settings")drawSettings();if(v==="sales")loadSales()}
+  if(D){if(v==="orders")drawBoard([]);if(v==="tables")drawTables();if(v==="menu")drawMenu();if(v==="settings")drawSettings();if(v==="sales")openBooks()}
 }
 function confirmLeave(){toast("메뉴를 저장하거나 되돌린 뒤 옮겨 주세요");return false}
 [].forEach.call(document.querySelectorAll(".tab"),function(b){b.onclick=function(){go(b.getAttribute("data-v"))}});

@@ -44,6 +44,33 @@ final class OrderServer {
     private final ExecutorService pool = Executors.newFixedThreadPool(48);
     volatile AiImage ai; // AI와 연동하기(없으면 꺼짐)
     volatile Devices devices; // 서브 기기(주방 · 보조 계산대)
+    // 관리자 비밀번호로 연 기기(매출 · 매입 · 이윤): 열쇠 → 끝나는 시각. 12시간 뒤 다시 비밀번호
+    private final java.util.concurrent.ConcurrentHashMap<String, Long> ownerTokens = new java.util.concurrent.ConcurrentHashMap<>();
+    private volatile int ownerFails = 0;
+    private volatile long ownerLockUntil = 0;
+    static final long OWNER_TTL = 12L * 3600 * 1000;
+
+    /** 관리자 비밀번호 확인(5번 틀리면 1분 잠금). 맞으면 열쇠, 아니면 예외 */
+    String ownerLogin(String pw) {
+        long now = System.currentTimeMillis();
+        if (now < ownerLockUntil) throw new IllegalStateException("비밀번호를 여러 번 틀렸어요. " + ((ownerLockUntil - now) / 1000 + 1) + "초 뒤에 다시 해 주세요");
+        if (!store.ownerSet()) throw new IllegalArgumentException("아직 관리자 비밀번호가 없어요. 메인 카운터 설정에서 먼저 정해 주세요");
+        if (!store.ownerCheck(pw)) {
+            if (++ownerFails >= 5) { ownerFails = 0; ownerLockUntil = now + 60_000; }
+            throw new IllegalArgumentException("관리자 비밀번호가 맞지 않아요");
+        }
+        ownerFails = 0;
+        String t = java.util.UUID.randomUUID().toString().replace("-", "");
+        for (java.util.Map.Entry<String, Long> e : ownerTokens.entrySet()) if (e.getValue() < now) ownerTokens.remove(e.getKey());
+        ownerTokens.put(t, now + OWNER_TTL);
+        return t;
+    }
+
+    private boolean ownerOk(String t) {
+        if (t == null || t.isEmpty()) return false;
+        Long until = ownerTokens.get(t);
+        return until != null && until > System.currentTimeMillis();
+    }
     private ServerSocket server;
     private volatile boolean running;
 
@@ -147,6 +174,11 @@ final class OrderServer {
             }
             if (path.startsWith("/img/")) { image(out, path.substring(5)); return; }
             if (path.startsWith("/sndc/")) { customSound(out, path.substring(6)); return; } // 사장님이 올린 알림벨
+            if (path.equals("/api/owner/login") && "POST".equals(method)) { // 관리자 비밀번호 확인 → 열쇠(매출 · 매입 · 이윤)
+                String t = ownerLogin(new JSONObject(str(body)).optString("pw"));
+                json(out, new JSONObject().put("ok", true).put("owner", t).put("hours", OWNER_TTL / 3600000));
+                return;
+            }
             if (path.equals("/api/pair") && "POST".equals(method)) { // 서브 기기 연결(6자리 코드)
                 if (devices == null) throw new IllegalArgumentException("이 카운터는 서브 기기를 받지 않아요");
                 JSONObject b = new JSONObject(str(body));
@@ -167,7 +199,14 @@ final class OrderServer {
                 String a = path.substring("/api/admin".length());
                 String role = dev == null ? "main" : dev.optString("role");
                 // 서브 기기(주방 · 보조 계산대)는 주문을 실시간으로 보기만: 상태 · 결제 · 호출 확인 · 초기화 · 메뉴 · 설정 모두 메인 전용
-                boolean allowed = dev == null || ((a.equals("") || a.equals("/")) && "GET".equals(method));
+                // 장부(매출 · 매입 · 이윤)는 메인 · 서브 모두 관리자 비밀번호로 연 기기만
+                boolean books = a.equals("/sales") || a.equals("/books") || a.startsWith("/purchase");
+                if (books && !ownerOk(h.get("x-owner"))) {
+                    send(out, 401, "application/json", bytes(new JSONObject().put("ok", false).put("owner", true).put("set", store.ownerSet())
+                            .put("error", store.ownerSet() ? "관리자 비밀번호를 넣어 주세요" : "메인 카운터 설정에서 관리자 비밀번호를 먼저 정해 주세요").toString()));
+                    return;
+                }
+                boolean allowed = dev == null || books || ((a.equals("") || a.equals("/")) && "GET".equals(method));
                 if (!allowed) { send(out, 403, "application/json", bytes("{\"ok\":false,\"error\":\"이 기기는 주문 보기 전용이에요. 처리 · 수정은 메인 카운터에서 해 주세요\"}")); return; }
                 if (a.equals("/image") && "POST".equals(method)) { // 메뉴 사진(화면에서 줄인 JPEG)
                     if (body.length < 100 || body.length > 3 * 1024 * 1024 || (body[0] & 0xff) != 0xFF || (body[1] & 0xff) != 0xD8) throw new IllegalArgumentException("사진을 읽지 못했습니다");
@@ -198,7 +237,16 @@ final class OrderServer {
                     return;
                 }
                 JSONObject b = body.length > 0 ? new JSONObject(str(body)) : new JSONObject();
-                if (a.equals("/sales")) { json(out, store.sales(qs.get("month"), qs.get("day"))); return; } // 일일 · 월간 매출(메인 전용)
+                if (a.equals("/sales")) { json(out, store.sales(qs.get("month"), qs.get("day"))); return; } // 일일 · 월간 매출(관리자 비밀번호)
+                if (a.equals("/books")) { json(out, store.books(qs.get("month"))); return; } // 매출 · 매입 · 이윤(관리자 비밀번호)
+                if (a.equals("/purchase") && "POST".equals(method)) { json(out, new JSONObject().put("ok", true).put("purchase", store.purchase(b))); return; }
+                if (a.equals("/purchase/delete") && "POST".equals(method)) { store.deletePurchase(b.optString("id")); json(out, new JSONObject().put("ok", true)); return; }
+                if (a.equals("/owner") && "POST".equals(method)) { // 관리자 비밀번호 정하기 · 바꾸기(메인 전용). 바꾸면 다른 기기는 다시 넣어야 함
+                    store.ownerSetPw(b.optString("old"), b.optString("pw"));
+                    ownerTokens.clear();
+                    json(out, new JSONObject().put("ok", true).put("owner", ownerLogin(b.optString("pw"))));
+                    return;
+                }
                 if (a.startsWith("/devices")) { // 메인 전용: 서브 기기 연결 코드 · 목록 · 끊기
                     if (devices == null) throw new IllegalArgumentException("서브 기기를 쓸 수 없어요");
                     switch (a) {
@@ -288,7 +336,7 @@ final class OrderServer {
                 + "Content-Length: " + body.length + "\r\n"
                 + "Cache-Control: " + cache + "\r\n"
                 + "Access-Control-Allow-Origin: *\r\n"
-                + "Access-Control-Allow-Headers: Content-Type, X-Key\r\n"
+                + "Access-Control-Allow-Headers: Content-Type, X-Key, X-Owner\r\n"
                 + "Connection: close\r\n\r\n";
         out.write(head.getBytes(StandardCharsets.UTF_8));
         out.write(body);

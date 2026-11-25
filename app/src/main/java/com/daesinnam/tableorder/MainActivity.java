@@ -184,7 +184,11 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onResume() { super.onResume(); foreground = true; }
+    protected void onResume() {
+        super.onResume();
+        foreground = true;
+        if (relockOnResume && "table".equals(mode())) { relockOnResume = false; if (prefs.getBoolean("kiosk", false)) kiosk(true); js("window.onAdminBack && onAdminBack()"); }
+    }
 
     @Override
     protected void onPause() { super.onPause(); foreground = false; }
@@ -210,6 +214,11 @@ public class MainActivity extends Activity {
             fileCb = null;
         }
     }
+
+    // 테이블 관리자: 연 시각까지 · 틀린 횟수 · 잠금 · 밖으로 나갔다 돌아오면 다시 잠금
+    private volatile long adminUntil = 0, pinLockUntil = 0;
+    private volatile int pinFails = 0;
+    private volatile boolean relockOnResume = false;
 
     private void js(String code) { ui.post(() -> web.evaluateJavascript(code, null)); }
 
@@ -285,13 +294,16 @@ public class MainActivity extends Activity {
     }
 
     /** 아주 작은 HTTP 도우미(점검 · 연결 확인용) */
-    static String http(String method, String url, String body, String key) {
+    static String http(String method, String url, String body, String key) { return http(method, url, body, key, null); }
+
+    static String http(String method, String url, String body, String key, String owner) {
         try {
             HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
             c.setConnectTimeout(1500);
             c.setReadTimeout(4000);
             c.setRequestMethod(method);
             if (key != null) c.setRequestProperty("X-Key", key);
+            if (owner != null) c.setRequestProperty("X-Owner", owner);
             if (body != null) {
                 c.setDoOutput(true);
                 c.setRequestProperty("Content-Type", "application/json");
@@ -436,6 +448,84 @@ public class MainActivity extends Activity {
             prefs.edit().putString("mode", "table").putString("host", host).putInt("table", Math.max(1, Math.min(99, table)))
                     .putBoolean("kiosk", kiosk).putString("pin", pin == null || pin.length() < 4 ? "0000" : pin).apply();
             ui.post(MainActivity.this::go);
+        }
+
+        // ---------- 테이블 메뉴판의 「관리자」: 비밀번호로 열고 → 밖으로 나가기 · 비밀번호 바꾸기 · 키오스크 · 테이블 번호 · 설정 ----------
+
+        /** 관리자 열기. 이 테이블 비밀번호, 또는 카운터의 관리자 비밀번호. 5번 틀리면 1분 잠금. "ok" · "bad" · "wait:초" */
+        @JavascriptInterface public String unlock(String pin) {
+            if (!"table".equals(MainActivity.this.mode())) return "bad";
+            long now = System.currentTimeMillis();
+            if (now < pinLockUntil) return "wait:" + ((pinLockUntil - now) / 1000 + 1);
+            boolean ok = pin != null && !pin.isEmpty() && prefs.getString("pin", "0000").equals(pin);
+            if (!ok && pin != null && !pin.isEmpty()) { // 카운터의 관리자 비밀번호도 통함(테이블 비밀번호를 잊었을 때)
+                String host = prefs.getString("host", "");
+                if (host.matches("[0-9.]{7,15}")) {
+                    try {
+                        String r = http("POST", "http://" + host + ":" + OrderServer.PORT + "/api/owner/login", new JSONObject().put("pw", pin).toString(), null);
+                        ok = r != null && !r.startsWith("ERR") && new JSONObject(r).optBoolean("ok");
+                    } catch (Exception ignored) { }
+                }
+            }
+            if (!ok) {
+                if (++pinFails >= 5) { pinFails = 0; pinLockUntil = now + 60_000; return "wait:60"; }
+                return "bad";
+            }
+            pinFails = 0;
+            adminUntil = now + 3 * 60_000;
+            return "ok";
+        }
+
+        private boolean opened() { return "table".equals(MainActivity.this.mode()) && System.currentTimeMillis() < adminUntil; }
+
+        @JavascriptInterface public void lockAdmin() { adminUntil = 0; }
+
+        @JavascriptInterface public String tableInfo() {
+            try {
+                return new JSONObject().put("table", prefs.getInt("table", 1)).put("kiosk", prefs.getBoolean("kiosk", false))
+                        .put("defaultPin", "0000".equals(prefs.getString("pin", "0000"))).put("version", BuildConfig.VERSION_NAME).toString();
+            } catch (Exception e) { return "{}"; }
+        }
+
+        /** 밖으로 나가기: 잠금(키오스크)을 풀고 홈 화면으로. 다시 앱을 열면 메뉴판이 다시 잠김 */
+        @JavascriptInterface public boolean exitOut() {
+            if (!opened()) return false;
+            adminUntil = 0;
+            relockOnResume = prefs.getBoolean("kiosk", false);
+            kiosk(false);
+            ui.postDelayed(() -> moveTaskToBack(true), 250);
+            return true;
+        }
+
+        @JavascriptInterface public boolean setPin(String pin) {
+            if (!opened() || pin == null || !pin.matches("\\d{4,8}")) return false;
+            prefs.edit().putString("pin", pin).apply();
+            return true;
+        }
+
+        @JavascriptInterface public boolean setKiosk(boolean on) {
+            if (!opened()) return false;
+            prefs.edit().putBoolean("kiosk", on).apply();
+            kiosk(on);
+            return true;
+        }
+
+        @JavascriptInterface public boolean setTableNo(int n) {
+            if (!opened() || n < 1 || n > 99) return false;
+            prefs.edit().putInt("table", n).apply();
+            adminUntil = 0;
+            ui.post(MainActivity.this::go);
+            return true;
+        }
+
+        /** 설정 화면으로(카운터 다시 찾기 · 쓰임 바꾸기) */
+        @JavascriptInterface public boolean toSetup() {
+            if (!opened()) return false;
+            adminUntil = 0;
+            kiosk(false);
+            prefs.edit().putString("mode", "").apply();
+            load("file:///android_asset/web/start.html#setup");
+            return true;
         }
 
         /** 테이블 화면에서 설정으로 나가기(비밀번호 맞으면) */
@@ -631,15 +721,45 @@ public class MainActivity extends Activity {
                 String gone = http("GET", base + "/api/admin", null, ct);
                 check(gone != null && gone.startsWith("ERR 403"), "removed device blocked");
 
-                // 매출: 오늘 · 이달 합계가 주문판과 같은지, 서브 기기는 못 보게
-                JSONObject sa = new JSONObject(http("GET", base + "/api/admin/sales", null, key));
+                // 장부: 관리자 비밀번호 없이는 못 봄 → 정하기 → 메인 · 서브 모두 비밀번호로 열림, 틀리면 막힘
+                String noOwn = http("GET", base + "/api/admin/sales", null, key);
+                check(noOwn != null && noOwn.startsWith("ERR 401") && !new JSONObject(http("GET", base + "/api/admin", null, key)).getBoolean("ownerSet"), "books need owner pw " + (noOwn == null ? "null" : noOwn.substring(0, Math.min(40, noOwn.length()))));
+                String subSet = http("POST", base + "/api/admin/owner", new JSONObject().put("pw", "4321").toString(), kt);
+                String own = new JSONObject(http("POST", base + "/api/admin/owner", new JSONObject().put("pw", "4321").toString(), key)).getString("owner");
+                String badLogin = http("POST", base + "/api/owner/login", new JSONObject().put("pw", "1111").toString(), null);
+                String subOwn = new JSONObject(http("POST", base + "/api/owner/login", new JSONObject().put("pw", "4321").toString(), null)).getString("owner");
+                String changeBad = http("POST", base + "/api/admin/owner", new JSONObject().put("old", "0000").put("pw", "5678").toString(), key);
+                check(subSet != null && subSet.startsWith("ERR 403") && badLogin != null && badLogin.startsWith("ERR 400") && changeBad != null && changeBad.startsWith("ERR 400")
+                        && !http("GET", base + "/api/admin", null, key).contains("\"owner\":{") && !own.isEmpty() && !subOwn.isEmpty(), "owner pw set · login · sub cannot set");
+                // 매입 넣기(서브 기기 · 관리자 비밀번호) → 장부의 이윤 = 매출 − 매입
+                String td = Store.today();
+                String pAdd = http("POST", base + "/api/admin/purchase", new JSONObject().put("day", td).put("cat", "재료").put("item", "원두 1kg").put("amount", 12000).put("vendor", "○○상회").toString(), kt, subOwn);
+                String pid = new JSONObject(pAdd).getJSONObject("purchase").getString("id");
+                http("POST", base + "/api/admin/purchase", new JSONObject().put("day", td).put("cat", "포장재").put("item", "컵").put("amount", 3000).toString(), key, own);
+                String pNo = http("POST", base + "/api/admin/purchase", new JSONObject().put("day", td).put("item", "x").put("amount", 1).toString(), kt);
+                JSONObject bk = new JSONObject(http("GET", base + "/api/admin/books", null, kt, subOwn));
+                JSONObject bt = null;
+                for (int i = 0; i < bk.getJSONArray("days").length(); i++) if (td.equals(bk.getJSONArray("days").getJSONObject(i).getString("day"))) bt = bk.getJSONArray("days").getJSONObject(i);
+                check(pNo != null && pNo.startsWith("ERR 401") && bk.getLong("purchases") == 15000 && bk.getLong("profit") == bk.getLong("sales") - 15000 && bt != null && bt.getLong("purchases") == 15000
+                        && bk.getJSONObject("cats").getLong("재료") == 12000 && bk.getJSONArray("list").length() == 2, "books profit " + bk.getLong("sales") + "-" + bk.getLong("purchases") + "=" + bk.getLong("profit"));
+                http("POST", base + "/api/admin/purchase", new JSONObject().put("id", pid).put("day", td).put("cat", "재료").put("item", "원두 2kg").put("amount", 20000).toString(), key, own);
+                http("POST", base + "/api/admin/purchase/delete", new JSONObject().put("id", pid).toString(), key, own);
+                JSONObject bk2 = new JSONObject(http("GET", base + "/api/admin/books", null, key, own));
+                check(bk2.getLong("purchases") == 3000 && !new JSONObject(http("GET", base + "/api/admin", null, key)).has("purchases"), "purchase edit · delete");
+                // 비밀번호를 바꾸면 예전 열쇠는 막힘
+                String own2 = new JSONObject(http("POST", base + "/api/admin/owner", new JSONObject().put("old", "4321").put("pw", "246810").toString(), key)).getString("owner");
+                String oldTok = http("GET", base + "/api/admin/books", null, kt, subOwn);
+                check(oldTok != null && oldTok.startsWith("ERR 401") && http("GET", base + "/api/admin/books", null, key, own2).contains("\"ok\":true"), "owner pw change revokes");
+
+                // 매출: 오늘 · 이달 합계가 주문판과 같은지(관리자 비밀번호로)
+                JSONObject sa = new JSONObject(http("GET", base + "/api/admin/sales", null, key, own2));
                 JSONObject adm = new JSONObject(http("GET", base + "/api/admin", null, key));
                 long hs = 0;
                 for (int i = 0; i < 24; i++) hs += sa.getJSONObject("daySummary").getJSONArray("hours").getLong(i);
                 check(sa.getJSONObject("daySummary").getLong("total") == adm.getLong("todaySales") && sa.getLong("monthTotal") >= adm.getLong("todaySales") && hs == adm.getLong("todaySales")
                         && sa.getJSONArray("days").length() >= 28, "sales today " + sa.getJSONObject("daySummary").getLong("total") + " month " + sa.getLong("monthTotal"));
                 String subSales = http("GET", base + "/api/admin/sales", null, kt);
-                check(subSales != null && subSales.startsWith("ERR 403"), "sales main only");
+                check(subSales != null && subSales.startsWith("ERR 401"), "sales need owner pw on sub too");
                 // 날이 바뀌면 지난 주문이 지워져도 매출 기록은 남는지(따로 만든 가게 파일로)
                 File sd = new File(getCacheDir(), "salestest");
                 sd.mkdirs();

@@ -86,6 +86,9 @@ final class Store {
         JSONObject o = new JSONObject(s.toString());
         o.remove("seq");
         o.remove("sales"); // 매출 기록은 따로(/api/admin/sales) — 주문판이 가볍게
+        o.remove("purchases"); // 매입 · 관리자 비밀번호는 관리자 비밀번호를 아는 사람만(/api/admin/books)
+        o.remove("owner");
+        o.put("ownerSet", s.optJSONObject("owner") != null && !s.optJSONObject("owner").optString("hash").isEmpty());
         o.put("rev", rev);
         long sum = 0;
         int cnt = 0;
@@ -430,6 +433,7 @@ final class Store {
             for (String k : new String[]{"categories", "items", "orders", "calls"}) if (!s.has(k)) s.put(k, new JSONArray());
             if (!s.has("sales")) s.put("sales", new JSONObject());
             if (!s.has("payReq")) s.put("payReq", new JSONObject());
+            if (!s.has("purchases")) s.put("purchases", new JSONArray());
             if (!s.has("seq")) s.put("seq", new JSONObject().put("no", 0).put("day", today()));
             JSONObject st = s.getJSONObject("settings");
             if (!st.has("shop")) st.put("shop", "우리 가게");
@@ -481,10 +485,122 @@ final class Store {
             o.put("calls", new JSONArray());
             o.put("sales", new JSONObject());
             o.put("payReq", new JSONObject());
+            o.put("purchases", new JSONArray());
             o.put("seq", new JSONObject().put("no", 0).put("day", today()));
             return o;
         } catch (JSONException e) {
             return new JSONObject();
         }
     }
+    // ---------- 관리자 비밀번호(매출 · 매입 · 이윤 보기) ----------
+
+    static String hash(String salt, String pw) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest((salt + ":" + pw).getBytes(StandardCharsets.UTF_8));
+            for (int i = 0; i < 2000; i++) d = md.digest(d);
+            StringBuilder b = new StringBuilder();
+            for (byte x : d) b.append(String.format(Locale.ROOT, "%02x", x));
+            return b.toString();
+        } catch (Exception e) { throw new IllegalStateException(e); }
+    }
+
+    synchronized boolean ownerSet() {
+        JSONObject o = s.optJSONObject("owner");
+        return o != null && !o.optString("hash").isEmpty();
+    }
+
+    synchronized boolean ownerCheck(String pw) {
+        JSONObject o = s.optJSONObject("owner");
+        if (o == null || pw == null || pw.isEmpty()) return false;
+        return java.security.MessageDigest.isEqual(hash(o.optString("salt"), pw).getBytes(StandardCharsets.UTF_8), o.optString("hash").getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** 관리자 비밀번호 정하기 · 바꾸기. 이미 있으면 지금 비밀번호(old)가 맞아야 함 */
+    synchronized void ownerSetPw(String old, String pw) throws JSONException {
+        if (ownerSet() && !ownerCheck(old)) throw new IllegalArgumentException("지금 쓰는 관리자 비밀번호가 맞지 않아요");
+        if (pw == null || !pw.matches("[0-9]{4,8}|.{6,32}")) throw new IllegalArgumentException("관리자 비밀번호는 숫자 4~8자리, 또는 글자 섞어 6자 이상으로 정해 주세요");
+        String salt = java.util.UUID.randomUUID().toString().replace("-", "");
+        s.put("owner", new JSONObject().put("salt", salt).put("hash", hash(salt, pw)).put("at", System.currentTimeMillis()));
+        changed();
+    }
+
+    // ---------- 매입(재료 · 물품 구입) ----------
+
+    /** 매입 한 건 넣기 · 고치기(id가 있으면 고침) */
+    synchronized JSONObject purchase(JSONObject b) throws JSONException {
+        String day = b.optString("day");
+        if (!day.matches("\\d{4}-\\d{2}-\\d{2}")) throw new IllegalArgumentException("날짜를 골라 주세요");
+        long amount = b.optLong("amount", -1);
+        if (amount <= 0 || amount > 1_000_000_000L) throw new IllegalArgumentException("금액을 넣어 주세요");
+        String item = b.optString("item").trim();
+        if (item.isEmpty()) throw new IllegalArgumentException("무엇을 샀는지 적어 주세요");
+        JSONObject p = new JSONObject()
+                .put("day", day).put("item", cut(item, 40)).put("vendor", cut(b.optString("vendor").trim(), 30))
+                .put("cat", cut(b.optString("cat", "재료").trim().isEmpty() ? "재료" : b.optString("cat").trim(), 12))
+                .put("amount", amount).put("memo", cut(b.optString("memo").trim(), 80)).put("at", System.currentTimeMillis());
+        JSONArray a = s.getJSONArray("purchases");
+        String id = b.optString("id");
+        if (!id.isEmpty()) {
+            for (int i = 0; i < a.length(); i++) if (id.equals(a.getJSONObject(i).optString("id"))) { p.put("id", id); a.put(i, p); changed(); return p; }
+            throw new IllegalArgumentException("고칠 매입 기록을 찾지 못했어요");
+        }
+        p.put("id", "p" + Long.toString(System.currentTimeMillis(), 36) + Integer.toString((int) (Math.random() * 1296), 36));
+        a.put(p);
+        // 3년 넘은 매입 기록은 정리
+        String cutDay = new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(new Date(System.currentTimeMillis() - 3L * 366 * 24 * 3600 * 1000));
+        JSONArray keep = new JSONArray();
+        for (int i = 0; i < a.length(); i++) if (a.getJSONObject(i).optString("day").compareTo(cutDay) >= 0) keep.put(a.getJSONObject(i));
+        s.put("purchases", keep);
+        changed();
+        return p;
+    }
+
+    synchronized void deletePurchase(String id) throws JSONException {
+        JSONArray a = s.getJSONArray("purchases"), keep = new JSONArray();
+        boolean hit = false;
+        for (int i = 0; i < a.length(); i++) { if (a.getJSONObject(i).optString("id").equals(id)) hit = true; else keep.put(a.getJSONObject(i)); }
+        if (!hit) throw new IllegalArgumentException("지울 매입 기록을 찾지 못했어요");
+        s.put("purchases", keep);
+        changed();
+    }
+
+    private static String cut(String v, int n) { return v.length() > n ? v.substring(0, n) : v; }
+
+    /** 장부: 그 달의 날짜별 매출 · 매입 · 이윤, 매입 목록, 분류별 매입, 지난달 비교 */
+    synchronized JSONObject books(String month) throws JSONException {
+        JSONObject sl = sales(month, null);
+        month = sl.getString("month");
+        JSONArray all = s.getJSONArray("purchases"), list = new JSONArray();
+        java.util.HashMap<String, Long> byDay = new java.util.HashMap<>();
+        JSONObject cats = new JSONObject();
+        long pTotal = 0, prevP = 0;
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(Integer.parseInt(month.substring(0, 4)), Integer.parseInt(month.substring(5, 7)) - 2, 1);
+        String pm = new SimpleDateFormat("yyyy-MM", Locale.KOREA).format(c.getTime());
+        for (int i = 0; i < all.length(); i++) {
+            JSONObject p = all.getJSONObject(i);
+            String d = p.optString("day");
+            long a = p.optLong("amount");
+            if (d.startsWith(pm)) prevP += a;
+            if (!d.startsWith(month)) continue;
+            list.put(new JSONObject(p.toString()));
+            pTotal += a;
+            byDay.put(d, (byDay.containsKey(d) ? byDay.get(d) : 0) + a);
+            String cat = p.optString("cat", "재료");
+            cats.put(cat, cats.optLong(cat) + a);
+        }
+        JSONArray days = new JSONArray(), sd = sl.getJSONArray("days");
+        for (int i = 0; i < sd.length(); i++) {
+            JSONObject d = sd.getJSONObject(i);
+            long sale = d.optLong("total"), buy = byDay.containsKey(d.getString("day")) ? byDay.get(d.getString("day")) : 0;
+            days.put(new JSONObject().put("day", d.getString("day")).put("sales", sale).put("count", d.optInt("count")).put("purchases", buy).put("profit", sale - buy));
+        }
+        long sTotal = sl.optLong("monthTotal"), prevS = sl.optLong("prevMonthTotal");
+        return new JSONObject().put("ok", true).put("today", sl.getString("today")).put("month", month).put("days", days)
+                .put("sales", sTotal).put("purchases", pTotal).put("profit", sTotal - pTotal)
+                .put("prevSales", prevS).put("prevPurchases", prevP).put("prevProfit", prevS - prevP)
+                .put("list", list).put("cats", cats).put("count", sl.optInt("monthCount"));
+    }
+
 }
