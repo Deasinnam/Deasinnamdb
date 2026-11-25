@@ -109,7 +109,7 @@ const Taxi=(()=>{
   // 미터기를 폭 pw·높이 H 안에 맞춤(실제 그려진 크기를 재서 --u를 고침). 최소 글자 크기가 있는 웹뷰에서도 무너지지 않게 줄이는 폭에 바닥을 둠
   function fitMeter(k,pw,H){
     let base=1000,cap=1600,lay='wide';
-    if(k==='pro')lay='tall'   // 1.93 오른쪽 '전자택시미터' 키패드를 없애 늘 한 덩어리
+    if(k==='pro')lay=pw/H>2.2?'wide':'tall'   // 1.93 키패드 없이 한 덩어리 — 아주 낮고 넓은 칸(바깥 화면 가로)만 글자를 덜 키움
     else if(k==='retro'){if(pw/H>1.7){lay='rwide';base=1800;cap=1500}else{lay='sq';cap=980}}
     else lay=H<300?'short':'wide';
     W.dataset.txlay=lay;W.style.setProperty('--ah',Math.round(H)+'px');

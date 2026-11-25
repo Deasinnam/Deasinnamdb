@@ -34,12 +34,13 @@ run('Taxi meter: real electronic skin', async ({context, origin, errors}) => {
   await p.evaluate(() => AmpTaxi._preview(null));
   // 말: 정차(GPS 흔들림)엔 서 있고, 출발하면 보폭이 커지고, 멈추면 다시 섬
   const seq = await p.evaluate(() => { const h = TaxiHorseTest(document.createElement('canvas')); let T = 1000, out = {};
-    const run = (sec, v) => { for (let i = 0; i < sec * 30; i++) { h.set(true, typeof v === 'function' ? v(i / 30) : v); h._step(T); T += 1000 / 30; } return h.state; };
-    out.jitter = run(6, t => Math.abs(Math.sin(t * 7)) * 4.5); out.start = run(2, 20); out.cruise = run(10, 60); out.stop = run(6, 0);
+    const run = (sec, v, on = true) => { for (let i = 0; i < sec * 30; i++) { h.set(on, typeof v === 'function' ? v(i / 30) : v); h._step(T); T += 1000 / 30; } return h.state; };
+    out.idle = run(3, 0, false); out.start = run(2, 0); out.inplace = run(6, 0); out.cruise = run(10, 60); out.stop = run(6, 0, false);
     out.feet = [0, .06, .12, .18, .25, .31, .37, .43, .5, .56, .62, .68, .75, .81, .87, .93].map(ph => h.footDown(ph, 1).filter(Boolean).length);
     out.stand = h.footDown(.5, 0); return out; });
-  assert.equal(seq.jitter.moving, false, 'GPS jitter does not start the horse');
-  assert.ok(seq.start.moving && seq.start.amp < 0.6, 'starts with a short stride ' + JSON.stringify(seq.start));
+  assert.ok(!seq.idle.moving && seq.idle.amp === 0, 'vacant: stands');
+  assert.ok(seq.start.moving && seq.start.amp < 0.5, 'starts with a short stride ' + JSON.stringify(seq.start));
+  assert.ok(seq.inplace.moving && seq.inplace.amp > 0.45, '1.93: gallops in place while running at 0 km/h ' + JSON.stringify(seq.inplace));
   assert.ok(seq.cruise.amp > 0.9, 'full stride at speed');
   assert.ok(!seq.stop.moving && seq.stop.amp === 0, 'stands again');
   assert.ok(seq.feet.includes(0), 'airborne gathered phase exists ' + seq.feet);

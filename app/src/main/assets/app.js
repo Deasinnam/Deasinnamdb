@@ -3996,12 +3996,12 @@ function TaxiHorse(cv,opt){opt=opt||{};   // opt.style: 'dots'(실물 전자식,
   function step(t){
     const dt=st.last?Math.min(0.1,(t-st.last)/1000):0;st.last=t;
     const v=st.run?Math.max(0,st.speed||0):0;st.vs+=(v-st.vs)*(1-Math.exp(-dt/0.8));
-    if(!st.moving){if(st.vs>5){st.since+=dt;if(st.since>1){st.moving=true;st.since=0}}else st.since=0}
-    else{if(st.vs<2.5){st.since+=dt;if(st.since>1){st.moving=false;st.since=0}}else st.since=0}
-    const target=st.moving?cl(0.3+st.vs/75,0.3,1):0;
+    // 1.93: 주행 중이면 서 있어도 제자리에서 달림(보폭은 천천히 커지고, 속도가 붙으면 더 크고 빠르게). 빈차·지불이면 네 발로 섬
+    st.moving=!!st.run;
+    const target=st.moving?cl(0.55+st.vs/90,0.55,1):0;
     st.amp+=(target-st.amp)*(1-Math.exp(-dt/(target>st.amp?1.6:0.55)));   // 출발은 천천히 보폭을 키우고, 정차는 조금 빨리 네 발로
     if(st.amp<0.02&&!st.moving)st.amp=0;
-    const hz=st.amp>0?0.55+cl(st.vs,0,130)/55:0;st.phase=(st.phase+hz*dt)%1;
+    const hz=st.amp>0?0.9+cl(st.vs,0,130)/60:0;st.phase=(st.phase+hz*dt)%1;
     // 서 있을 땐 다음 출발이 먼 뒷발부터 시작되도록 위상을 공중 구간 끝으로 천천히 맞춤
     if(st.amp===0)st.phase=0.9;
     draw(st.phase,st.amp)}
@@ -4128,7 +4128,7 @@ const Taxi=(()=>{
   // 미터기를 폭 pw·높이 H 안에 맞춤(실제 그려진 크기를 재서 --u를 고침). 최소 글자 크기가 있는 웹뷰에서도 무너지지 않게 줄이는 폭에 바닥을 둠
   function fitMeter(k,pw,H){
     let base=1000,cap=1600,lay='wide';
-    if(k==='pro')lay='tall'   // 1.93 오른쪽 '전자택시미터' 키패드를 없애 늘 한 덩어리
+    if(k==='pro')lay=pw/H>2.2?'wide':'tall'   // 1.93 키패드 없이 한 덩어리 — 아주 낮고 넓은 칸(바깥 화면 가로)만 글자를 덜 키움
     else if(k==='retro'){if(pw/H>1.7){lay='rwide';base=1800;cap=1500}else{lay='sq';cap=980}}
     else lay=H<300?'short':'wide';
     W.dataset.txlay=lay;W.style.setProperty('--ah',Math.round(H)+'px');
