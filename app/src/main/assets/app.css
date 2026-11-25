@@ -2916,7 +2916,7 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #pfdHost .p3d-credit{position:absolute;z-index:3;right:calc(var(--pfd-tape,70px) + 8px);bottom:calc(var(--pfd-cmp,50px) + 6px);font:600 10px/1 "Noto Sans KR",sans-serif;color:#fff;opacity:.75;text-shadow:0 1px 2px #000;pointer-events:none}
 #pfdHost .p3d-credit[hidden]{display:none}
 /* 1.84 배포용 에어포스원: 라디오 없음 / 라이트판은 외부 앱 소리도 없음 */
-:root[data-noradio] #radioBtn,:root[data-noradio] #ckRail [data-f="radio"],:root[data-noradio] #wRadio,:root[data-noradio] #bSwap{display:none!important}
+:root[data-noradio] #bSwap,:root[data-taxi] #wRadio>.rd-body,:root[data-taxi] #wRadio .rd-link:not(#rdSt){display:none!important}
 :root[data-noext] #bInput,:root[data-noext] #xinPick,:root[data-noext] #wExt,:root[data-noext] #secExtSnd,:root[data-noext] #srcSeg{display:none!important}
 /* 1.85 스킨 하나로: 대신남 원 계열은 위 [스킨] 버튼 대신 스피드미터 고르기 */
 :root[data-skuni] #skinBtn,:root[data-skuni] #skinPick{display:none!important}
@@ -2954,3 +2954,56 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .gd-dots i.on{background:#ffcf6a;box-shadow:0 0 6px #ffb43a}
 @media (min-width:860px) and (min-aspect-ratio:5/4){.gd-bd{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}.gd-m img,.gd-m video{max-height:min(66vh,620px)}}
 :root[data-guide] body{overflow:hidden}
+/* 1.87 택시 미터기(라디오 빠진 판의 라디오 자리) — 검은 테 + 연두빛 LCD + 색 단추 + 숫자 키 */
+#wRadio .tx-body{display:flex;flex-direction:column;padding:10px;flex:1 1 auto;min-height:0}
+.tx-panel{flex:1 1 auto;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.tx-dev{display:flex;gap:10px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#26282b,#111214 60%,#0b0c0d);box-shadow:0 0 0 1px #000,inset 0 1px 0 #4a4d52,inset 0 -2px 6px #000,0 8px 20px #0008}
+.tx-face{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}
+.tx-lcd{display:flex;flex-direction:column;gap:2px;width:100%;padding:10px 14px 8px;border:3px solid #050505;border-radius:8px;text-align:left;cursor:pointer;color:#141a06;
+  background:radial-gradient(120% 90% at 30% 20%,#d9df8a,#b8c25e 55%,#9aa543);box-shadow:inset 0 2px 10px #0006,inset 0 0 0 1px #6f7a2e;font-family:"Barlow Condensed","Rajdhani",sans-serif}
+.tx-l1{display:flex;justify-content:space-between;align-items:center;font:700 clamp(15px,2.6vw,22px)/1.1 "Barlow Condensed",sans-serif}
+.tx-mode{padding:1px 8px;border-radius:4px;background:#141a06;color:#c9d16f;font:800 clamp(13px,2.2vw,18px)/1.3 "Noto Sans KR",sans-serif}
+.tx-spdl b{font-size:1.25em;font-variant-numeric:tabular-nums}
+.tx-l2{display:flex;align-items:flex-end;gap:10px}
+.tx-pct{flex:none;display:flex;flex-direction:column;line-height:1}
+.tx-pct b{font:800 clamp(18px,3vw,26px)/1 "Barlow Condensed",sans-serif}
+.tx-pct small{font:700 12px/1.3 "Noto Sans KR",sans-serif;opacity:.8}
+.tx-fare{margin-left:auto;font:800 clamp(56px,13vw,132px)/.95 "Barlow Condensed","Rajdhani",sans-serif;letter-spacing:-.01em;font-variant-numeric:tabular-nums;text-shadow:1px 1px 0 #ffffff33}
+.tx-won{font:800 clamp(18px,3vw,28px)/1 "Noto Sans KR",sans-serif;padding-bottom:.4em}
+#wRadio[data-tx="idle"] .tx-fare{opacity:.35}
+#wRadio.tx-tick .tx-fare{animation:txTick .4s ease-out}
+@keyframes txTick{0%{transform:translateY(-3px);opacity:.55}100%{}}
+.tx-track{position:relative;height:clamp(54px,14vh,170px);border-top:1px dashed #141a0655;border-bottom:1px dashed #141a0655}
+.tx-ground{position:absolute;left:0;right:0;bottom:3px;height:2px;background:repeating-linear-gradient(90deg,#141a06aa 0 12px,transparent 12px 22px)}
+#wRadio.tx-going .tx-ground{animation:txGround var(--gnd,.6s) linear infinite}
+@keyframes txGround{to{background-position:-22px 0}}
+.tx-horse{position:absolute;bottom:2px;left:8px;height:92%;aspect-ratio:1.4;width:auto;transition:left .5s linear;--gait:0s}
+.tx-hsvg{width:100%;height:100%;overflow:visible}
+.tx-hsvg path{fill:#141a06}.tx-hsvg .tx-eye{fill:#c9d16f}
+.tx-leg{transform-box:fill-box;transform-origin:50% 0}
+#wRadio.tx-going .tx-leg{animation:txLeg var(--gait) ease-in-out infinite alternate}
+#wRadio.tx-going .tx-lb2,#wRadio.tx-going .tx-lf1{animation-delay:calc(var(--gait) * -.5)}
+#wRadio.tx-going .tx-lf2,#wRadio.tx-going .tx-lb1{animation-direction:alternate-reverse}
+@keyframes txLeg{from{transform:rotate(-34deg)}to{transform:rotate(30deg)}}
+#wRadio.tx-going .tx-hb{animation:txBob calc(var(--gait) * 2) ease-in-out infinite}
+@keyframes txBob{50%{transform:translateY(-4px) rotate(-2deg)}}
+#wRadio.tx-going .tx-tail{transform-box:fill-box;transform-origin:100% 0;animation:txTail calc(var(--gait) * 2) ease-in-out infinite}
+@keyframes txTail{50%{transform:rotate(-14deg)}}
+.tx-l3{display:flex;justify-content:space-between;gap:8px;font:700 clamp(14px,2.4vw,20px)/1.3 "Barlow Condensed",sans-serif}
+.tx-l3 b{font-size:1.15em;font-variant-numeric:tabular-nums;margin-right:2px}
+.tx-keys{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tx-k{padding:12px 4px;border:1px solid #000;border-radius:5px;font:900 clamp(15px,2.6vw,20px)/1 "Noto Sans KR",sans-serif;color:#1a1a1a;cursor:pointer;box-shadow:inset 0 2px 0 #ffffff88,inset 0 -3px 0 #0003,0 2px 0 #000;transition:transform .05s,filter .15s}
+.tx-k:active{transform:translateY(2px);box-shadow:inset 0 2px 4px #0004}
+.tx-reset{background:linear-gradient(#f4f5f8,#cfd3dc)}
+.tx-go{background:linear-gradient(#f9c6dc,#e58fb5)}
+.tx-sur{background:linear-gradient(#f7b9c8,#df7f98)}
+.tx-mix{background:linear-gradient(#ffe98a,#f2c83c)}
+.tx-stop{background:linear-gradient(#bff0a6,#7fd66a)}
+.tx-k.on{filter:brightness(1.12);box-shadow:inset 0 2px 0 #fff,0 0 0 2px #000,0 0 14px #ffffffaa}
+.tx-pad{flex:0 0 auto;width:clamp(120px,22%,190px);display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:8px;background:linear-gradient(#1b1c1f,#0c0d0e);box-shadow:inset 0 0 0 1px #2d2f33}
+.tx-brand{color:#cfd3dc;font:700 10px/1.2 "Barlow Condensed",sans-serif;letter-spacing:.12em;text-align:center}
+.tx-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-content:center}
+.tx-grid i{display:flex;align-items:center;justify-content:center;aspect-ratio:1.2;border-radius:4px;background:linear-gradient(#2c2e32,#17181a);box-shadow:inset 0 1px 0 #4a4d52,0 1px 0 #000;color:#e8eaee;font:700 12px/1 "Noto Sans KR",sans-serif;font-style:normal}
+.tx-note{margin:0;color:#8b8573;font-size:12.5px;line-height:1.5}
+.tx-note b{color:#c9bf9f}
+@media (max-width:620px){.tx-pad{display:none}}

@@ -13,12 +13,14 @@ for (const flags of ['noradio', 'noradio,lite']) {
         carRadio: !!document.querySelector('#sCarSrc option[value="radio"]'), carYtm: !!document.querySelector('#sCarSrc option[value="ytm"]'),
         last: JSON.parse(localStorage.getItem('dna_lastSrc')), special: document.documentElement.dataset.cks};
     });
-    assert.deepEqual([r.railRadio, r.radioBtn, r.wRadio, r.swap, r.carRadio], [false, false, false, false, false], 'no radio anywhere ' + JSON.stringify(r));
+    // 1.87: 라디오 자리(레일·위 버튼·창)는 택시 미터기 — 라디오 화면·전환 버튼·차 연결 음원에는 라디오 없음
+    assert.deepEqual([r.railRadio, r.radioBtn, r.swap, r.carRadio], [true, true, false, false], 'radio slot is the taxi meter ' + JSON.stringify(r));
+    assert.equal(await p.evaluate(() => [getComputedStyle(document.querySelector('#wRadio .rd-body')).display, document.querySelector('#ckRail [data-f="radio"] span').textContent].join()), 'none,택시');
     assert.equal(r.input, !lite, 'external input only in full'); assert.equal(r.carYtm, !lite);
     assert.equal(r.last, 'local'); assert.equal(r.special, '1', 'same airline special skin');
-    // 라디오로 가는 길은 다른 화면으로, 라디오 재생은 아무 일도 안 함
-    await p.evaluate(() => { AmpDist.focus('radio'); AmpRadio.play({id: 'x', url: 'http://x'}); });
-    assert.notEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('dna_ckFocus') || '""')), 'radio');
+    // 라디오 재생은 아무 일도 안 함
+    await p.evaluate(() => { AmpDist.focus('radio'); AmpRadio.play({id: 'x', url: 'http://x'}); }); await p.waitForTimeout(300);
+    assert.equal(await p.locator('#wRadio .tx-meter').isVisible(), true, 'radio focus shows the taxi meter');
     assert.equal(await p.evaluate(() => window.AmpRadioT.playing), false);
     // 스피드미터·스페셜 풍경은 그대로
     await p.locator('#ckRail button[data-f="gps"]').click(); await p.waitForTimeout(400);

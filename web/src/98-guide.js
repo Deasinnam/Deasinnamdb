@@ -45,6 +45,11 @@ const Guide=(()=>{
       '② <b>자동 재생할 기기</b>에서 차 블루투스를 고르면 그 차에 연결될 때만 동작해요.',
       '③ <b>차에 연결되면 틀 음원</b>을 고르면 시동을 걸고 연결되자마자 음악이 이어서 나와요.'],
       a:['설정 열기',()=>click('#setBtn')]},
+    {k:'taxi',t:'택시 미터기',m:'guide/g-taxi.jpg',noradio:1,l:[
+      '① 버튼 줄의 <b>택시</b>를 누르면 택시 미터기가 열려요.',
+      '② 분홍 <b>주행</b>을 누르면(화면을 눌러도 돼요) 기본요금부터 시작하고, 말이 달리면서 <b>GPS로 실제 달린 거리만큼</b> 요금이 올라가요. 느리게 가거나 서 있으면 30초마다 시간 요금이 붙어요.',
+      '③ <b>할증</b>은 시계외 20%, <b>복합</b>은 40%예요. 밤 10시~새벽 4시 심야 할증은 시간에 맞춰 저절로 붙어요.',
+      '④ 도착하면 초록 <b>지불</b>로 낼 돈(100원 단위)을 보고, 흰 <b>빈차</b>로 처음으로 돌려요. 서울 중형택시 요금으로 계산한 재미용이에요.']},
     {k:'fly',t:'이륙 · 순항 · 착륙',v:'guide/v-flight.mp4',l:[
       '차가 서 있으면 활주로에서 대기(LINE UP)하고, 출발하면 <b>이륙</b>, 달리는 동안 <b>순항</b>, 멈추면 <b>착륙</b>해요.',
       '착륙하면 <b>평균 속도</b>와 <b>운전 평점</b>이 잠깐 보여요. 급가속·급제동·과속이 적을수록 점수가 높아요.',
@@ -60,7 +65,7 @@ const Guide=(()=>{
       '② 아래 <b>계기판 디자인</b>에서 카본·네온·아날로그 같은 다른 계기판도 고를 수 있어요. 다시 <b>에어라인</b>을 고르면 활주로 화면으로 돌아와요.',
       '콕핏 컨트롤의 같은 고르기도 똑같이 바뀌어요.']};
   const steps=()=>{const f=flags(),d=window.AmpDist||{},nm=d.dsp?'대신남 스피드미터':null;
-    return STEPS.filter(s=>!(s.full&&f.lite)).map(s=>{
+    return STEPS.filter(s=>!(s.full&&f.lite)&&!(s.noradio&&!f.noRadio)).map(s=>{
       if(d.airline&&s.k==='skin')return Object.assign({},s,AIRLINE_SKIN);
       if(d.airline&&s.k==='cam')return Object.assign({},s,{v2:null,l:s.l.filter(x=>!/3D 맵/.test(x))});
       if(nm&&s.k==='ext')return Object.assign({},s,{m:'guide/g-ext-d.jpg',l:s.l.map(x=>x.replace('<b>대신남 원</b>','<b>'+nm+'</b>'))});
