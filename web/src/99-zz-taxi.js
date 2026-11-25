@@ -82,7 +82,8 @@ const Taxi=(()=>{
     <div class="dk-sub"><button type="button" class="dk-tog" data-t="tShuf">셔플</button><button type="button" class="dk-tog" data-t="tRep">반복</button>
       <label class="dk-sl"><span>VOL</span><input type="range" class="dk-r" data-t="vol" min="0" max="100"></label><label class="dk-sl"><span>BAL</span><input type="range" class="dk-r" data-t="bal" min="-100" max="100"></label></div>
   </div>
-  <div class="tx-88">${DSN_SIGN}</div>
+  <div class="tx-88">${DSN_SIGN}<div class="s88i" role="img" aria-label="세계는 서울로 서울은 세계로 · SEOUL 1988"><i class="s88i-full"></i><i class="s88i-text"></i><i class="s88i-city"></i></div>
+    <button type="button" class="tx-signsw" aria-label="간판 바꾸기 — 대신남 운수 ↔ 세계는 서울로">⇄ 간판</button></div>
   <input type="file" class="ds-file" accept="image/*" hidden>
   <div class="tx-warn" role="note"><b>재미로만</b> 즐기는 기능이에요 · 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. <span class="tx-wmore">금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</span></div>
   <div class="tx-ack" hidden><div class="tx-ackc"><b>🐎 택시 미터기는 재미용이에요</b><p>표시되는 금액은 서울 중형택시 요금으로 계산한 <b>참고값</b>이에요. 이 금액으로 동승자에게 <b>실제 요금을 받거나 돈을 주고받으면</b> 자가용 유상운송(「여객자동차 운수사업법」 제81조) 위반이 될 수 있어요.</p><button type="button" class="pill on tx-ackok">알겠어요, 재미로만 쓸게요</button></div></div>
@@ -95,7 +96,7 @@ const Taxi=(()=>{
   ss.innerHTML=SKINS.map(k=>'<option value="'+k[0]+'">'+k[1]+'</option>').join('');
   {const bb=W.querySelector('.bar'),gr=bb&&bb.querySelector('.groove');if(bb)bb.insertBefore(ss,gr?gr.nextSibling:null)}
   function setSkin(k){if(!SKINS.some(x=>x[0]===k))k='pro';W.dataset.txskin=k;ss.value=k;store.set('taxiSkin',k);
-    each('.tx-sb[data-sk]',b=>b.classList.toggle('on',b.dataset.sk===k));fit();if(k==='pro')horse.live();if(k==='retro')horse2.live()}
+    each('.tx-sb[data-sk]',b=>b.classList.toggle('on',b.dataset.sk===k));try{signNow()}catch(e){}fit();if(k==='pro')horse.live();if(k==='retro')horse2.live()}
   const nextSkin=()=>{const i=SKINS.findIndex(x=>x[0]===W.dataset.txskin);setSkin(SKINS[(i+1)%SKINS.length][0]);toast('미터기 스킨: '+SKINS.find(x=>x[0]===W.dataset.txskin)[1])};
   ss.onchange=()=>setSkin(ss.value);
   each('.tx-sb[data-sk]',b=>b.onclick=()=>setSkin(b.dataset.sk));q('.tx-sbnext').onclick=nextSkin;
@@ -152,11 +153,40 @@ const Taxi=(()=>{
   const showPhoto=()=>{const u=store.get('taxiPhoto','');dsImg.style.backgroundImage=u?'url("'+u+'")':'';W.classList.toggle('tx-hasph',!!u)};
   q('.ds-photo').onclick=e=>{e.stopPropagation();dsFile.value='';dsFile.click()};
   dsFile.onchange=()=>{const f=dsFile.files&&dsFile.files[0];if(!f)return;const rd=new FileReader();
-    rd.onload=()=>{const im=new Image();im.onload=()=>{const n=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=360;
-      c.getContext('2d').drawImage(im,(im.width-n)/2,(im.height-n)/2,n,n,0,0,360,360);
-      try{store.set('taxiPhoto',c.toDataURL('image/jpeg',0.86));showPhoto();toast('기사 사진을 넣었어요')}catch(e){toast('사진을 저장하지 못했어요')}};
-      im.onerror=()=>toast('이 사진은 열 수 없어요');im.src=rd.result};rd.readAsDataURL(f)};
+    rd.onload=()=>{const im=new Image();im.onload=()=>cropEditor(im);im.onerror=()=>toast('이 사진은 열 수 없어요');im.src=rd.result};rd.readAsDataURL(f)};
+  /* 1.94 사진 위치 맞추기: 동그라미 안에 보일 곳을 끌어서 옮기고, 두 손가락(또는 막대·휠)으로 키우고 줄임 → 동그라미 부분만 360px로 저장 */
+  function cropEditor(src){
+    // 큰 사진은 먼저 1600px로 줄여 메모리를 아낌
+    let img=src;{const m=Math.max(src.width,src.height);if(m>1600){const c=document.createElement('canvas'),k=1600/m;c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);c.getContext('2d').drawImage(src,0,0,c.width,c.height);img=c}}
+    const iw=img.width,ih=img.height,ov=document.createElement('div');ov.className='tx-crop';
+    ov.innerHTML='<div class="tc-box"><b>사진 위치 맞추기</b><div class="tc-view"><canvas></canvas><i class="tc-ring"></i></div><label class="tc-zl"><span>－</span><input type="range" class="tc-zoom" min="1" max="5" step="0.01" value="1" aria-label="확대"><span>＋</span></label><small>끌어서 옮기고, 두 손가락이나 막대로 크기를 바꿔요</small><div class="tc-btns"><button type="button" class="pill tc-no">취소</button><button type="button" class="pill on tc-ok">넣기</button></div></div>';
+    document.body.appendChild(ov);
+    const view=ov.querySelector('.tc-view'),cv=ov.querySelector('canvas'),zr=ov.querySelector('.tc-zoom');
+    let V=0,z=1,ox=0,oy=0;const s0=()=>V/Math.min(iw,ih);
+    function clampO(){const sc=s0()*z,mx=Math.max(0,iw*sc/2-V/2),my=Math.max(0,ih*sc/2-V/2);ox=Math.max(-mx,Math.min(mx,ox));oy=Math.max(-my,Math.min(my,oy))}
+    function paint(ctx,size){const k=size/V,sc=s0()*z*k;ctx.fillStyle='#ddd';ctx.fillRect(0,0,size,size);ctx.drawImage(img,size/2+ox*k-iw*sc/2,size/2+oy*k-ih*sc/2,iw*sc,ih*sc)}
+    function draw(){const d=devicePixelRatio||1;V=view.clientWidth;cv.width=cv.height=Math.round(V*d);clampO();paint(cv.getContext('2d'),cv.width)}
+    const setZ=(nz,cx,cy)=>{nz=Math.max(1,Math.min(5,nz));// 손가락 사이(또는 가운데)를 기준으로 확대
+      const px=(cx==null?0:cx-V/2),py=(cy==null?0:cy-V/2);ox=px-(px-ox)*nz/z;oy=py-(py-oy)*nz/z;z=nz;zr.value=z;draw()};
+    const P=new Map();let pinch=0,pz=1;
+    view.addEventListener('pointerdown',e=>{view.setPointerCapture(e.pointerId);P.set(e.pointerId,{x:e.clientX,y:e.clientY});if(P.size===2){const [a,b]=[...P.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);pz=z}});
+    view.addEventListener('pointermove',e=>{const o=P.get(e.pointerId);if(!o)return;const r=view.getBoundingClientRect();
+      if(P.size===1){ox+=e.clientX-o.x;oy+=e.clientY-o.y;P.set(e.pointerId,{x:e.clientX,y:e.clientY});draw()}
+      else{P.set(e.pointerId,{x:e.clientX,y:e.clientY});const [a,b]=[...P.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch>0)setZ(pz*d/pinch,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top)}});
+    const up=e=>{P.delete(e.pointerId);if(P.size<2)pinch=0};view.addEventListener('pointerup',up);view.addEventListener('pointercancel',up);
+    view.addEventListener('wheel',e=>{e.preventDefault();const r=view.getBoundingClientRect();setZ(z*(e.deltaY<0?1.1:1/1.1),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+    zr.oninput=()=>setZ(+zr.value);
+    const close=()=>{ov.remove();removeEventListener('resize',draw)};addEventListener('resize',draw);
+    ov.querySelector('.tc-no').onclick=close;
+    ov.querySelector('.tc-ok').onclick=()=>{const c=document.createElement('canvas');c.width=c.height=360;paint(c.getContext('2d'),360);
+      try{store.set('taxiPhoto',c.toDataURL('image/jpeg',0.86));showPhoto();toast('기사 사진을 넣었어요')}catch(e){toast('사진을 저장하지 못했어요')}close()};
+    requestAnimationFrame(draw);
+    window.__taxiCrop=ov;}
   showPhoto();
+  // 1.94 간판: 레트로는 늘 '세계는 서울로'(사용자가 준 그림), 실물 전자식·LCD 클래식은 '대신남 운수' ↔ '세계는 서울로'를 ⇄ 간판 단추로
+  const signNow=()=>{W.dataset.txsign=W.dataset.txskin==='retro'?'s88':store.get('taxiSign','dsn')};
+  q('.tx-signsw').onclick=e=>{e.stopPropagation();store.set('taxiSign',store.get('taxiSign','dsn')==='dsn'?'s88':'dsn');signNow();toast(W.dataset.txsign==='s88'?'간판: 세계는 서울로':'간판: 대신남 운수')};
+  signNow();
   // 오디오 리모컨: 누르면 원래 플레이어 단추를 누름, 상태는 0.5초마다 원래 플레이어에서 가져옴
   dock.querySelectorAll('[data-t]').forEach(el=>{const t=()=>document.getElementById(el.dataset.t);
     if(el.tagName==='BUTTON')el.onclick=e=>{e.stopPropagation();const o=t();if(o&&!o.disabled)o.click();setTimeout(dockSync,60)};

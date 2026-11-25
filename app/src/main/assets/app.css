@@ -3276,3 +3276,30 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio[data-txskin="retro"] .ds{background:radial-gradient(120% 90% at 30% 20%,#f6dd7a,#e9c23a 55%,#d3a520);color:#2a2014}
 #wRadio[data-txskin="retro"] .ds-name{font-family:"Noto Serif KR",serif;letter-spacing:.06em}
 #wRadio[data-txskin="retro"] .tx-88{box-shadow:0 0 0 3px #8e9194,0 0 0 5px #3b3d40,0 6px 14px #000a}
+/* 1.94 간판 '세계는 서울로'(사용자가 준 1988 그림): 넓으면 한 장 그대로, 좁으면 글자 위·도시 아래로 나눠 글자가 잘리지 않게(종이색으로 이어 붙임) */
+.s88i{display:none;position:absolute;inset:0;background:#f5cf9f;box-shadow:inset 0 0 0 2px #2c3b2f}
+#wRadio[data-txsign="s88"] .ds{display:none}
+#wRadio[data-txsign="s88"] .s88i{display:block}
+.s88i i{position:absolute;background-position:center;background-size:contain;background-repeat:no-repeat}
+.s88i-full{inset:3%;background-image:url(taxi/seoul88.jpg)}
+.s88i-text,.s88i-city{display:none}
+@container (max-aspect-ratio: 13/5){
+  .s88i-full{display:none}
+  .s88i-text,.s88i-city{display:block}
+  .s88i-text{left:4%;right:4%;top:4%;height:46%;background-image:url(taxi/seoul88-text.jpg)}
+  .s88i-city{left:0;right:0;bottom:3%;height:48%;background-image:url(taxi/seoul88-city.jpg)}
+}
+#wRadio[data-txskin="retro"] .tx-88{box-shadow:0 0 0 3px #8e9194,0 0 0 5px #3b3d40,0 6px 14px #000a}
+.tx-signsw{position:absolute;z-index:3;left:8px;top:8px;padding:5px 9px;border:0;border-radius:12px;background:#111c;color:#ffe9a8;font:800 12px/1 "Noto Sans KR",sans-serif;cursor:pointer;box-shadow:0 1px 3px #0008}
+#wRadio[data-txskin="retro"] .tx-signsw{display:none}
+/* 1.94 사진 위치 맞추기 창 */
+.tx-crop{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;background:#000c}
+.tc-box{width:min(92vw,420px);display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px;border-radius:16px;background:linear-gradient(180deg,#2a2d24,#16180f);box-shadow:0 0 0 1px #7a5a12,0 12px 30px #000}
+.tc-box>b{color:#ffd98a;font:800 18px/1.2 "Noto Sans KR",sans-serif}
+.tc-box small{color:#cfc6a8;font-size:12.5px;text-align:center}
+.tc-view{position:relative;width:min(78vw,320px,60vh);aspect-ratio:1;border-radius:50%;overflow:hidden;touch-action:none;cursor:grab;background:#222}
+.tc-view canvas{display:block;width:100%;height:100%}
+.tc-ring{position:absolute;inset:0;border-radius:50%;pointer-events:none;box-shadow:inset 0 0 0 4px #ffd21f,inset 0 0 0 8px #111}
+.tc-zl{display:flex;align-items:center;gap:8px;width:100%;color:#ffe9a8;font-weight:800}
+.tc-zl input{flex:1;accent-color:#ffd21f}
+.tc-btns{display:flex;gap:10px;width:100%}.tc-btns .pill{flex:1;justify-content:center;padding:11px;font-size:15px;font-weight:800}

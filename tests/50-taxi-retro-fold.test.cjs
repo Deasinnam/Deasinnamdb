@@ -77,5 +77,16 @@ run('Taxi meter: retro skin, skin buttons, Fold7 fit', async ({context, origin, 
   assert.equal(await p.locator('#wRadio .ds-name').textContent(), '대신남 운수');
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
   await p.locator('#wRadio .ds-file').setInputFiles({name: 'me.png', mimeType: 'image/png', buffer: png}); await p.waitForTimeout(600);
+  assert.equal(await p.locator('.tx-crop .tc-view').isVisible(), true, 'crop editor opens');
+  await p.locator('.tc-zoom').fill('2'); await p.click('.tc-ok'); await p.waitForTimeout(300);
   assert.ok(await p.evaluate(() => /^data:image\/jpeg/.test(JSON.parse(localStorage.dna_taxiPhoto)) && /url\(/.test(document.querySelector('#wRadio .ds-img').style.backgroundImage) && document.getElementById('wRadio').classList.contains('tx-hasph')), 'photo shown in the circle');
+  // 1.94 레트로는 늘 '세계는 서울로' 간판, 다른 스킨은 ⇄ 간판으로 바꿈, 사진은 위치 맞추기 창을 거쳐 들어감
+  await p.evaluate(() => AmpTaxi.setSkin('retro')); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => document.getElementById('wRadio').dataset.txsign), 's88');
+  assert.equal(await p.locator('#wRadio .tx-signsw').isVisible(), false);
+  await p.evaluate(() => AmpTaxi.setSkin('pro')); await p.waitForTimeout(200);
+  const before = await p.evaluate(() => document.getElementById('wRadio').dataset.txsign);
+  await p.click('#wRadio .tx-signsw'); await p.waitForTimeout(200);
+  assert.notEqual(await p.evaluate(() => document.getElementById('wRadio').dataset.txsign), before, 'sign switch');
+  assert.ok(await p.evaluate(() => new Promise(r => { const i = new Image(); i.onload = () => r(i.width > 400); i.onerror = () => r(false); i.src = 'taxi/seoul88.jpg'; })), 'banner image loads');
 });
