@@ -26,7 +26,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
       assert.match(await pc2.locator('#toast').textContent(), /네이버 지도 켜기는 안드로이드 앱에서/, 'Web preview explains the app-only action');
       const sizes = [];
       for (const [f, ids] of [['gps',['wGps']],['cam',['wCam']],['map',['wMap']],['radio',['wRadio']],['vis',['wVis']]]) {
-        await pc2.locator(`#ckRail [data-f="${f}"]`).click();
+        await pc2.locator(`#ckRail [data-f="${f}"]`).click(); await pc2.waitForTimeout(300);   // 창 배치가 자리 잡을 때까지(부하 때 vis 창이 잠깐 아래에 있었음)
         const vis = await pc2.evaluate(() => [...document.querySelectorAll('#app>.win')].filter(w => w.offsetParent).map(w => w.id));
         assert.deepEqual(vis.sort(), ids.slice().sort(), f+' shows only its windows');
         const fit = await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return r.bottom<=innerHeight+2&&r.top>=0}, ids[0]);
@@ -34,7 +34,7 @@ run('Cockpit 2 rail, tablet skins 1 and 2, two-column portrait', async ({browser
         assert.equal(await pc2.locator(`#${ids[0]} #ckRail`).count(), 1, 'Rail inside the window');
         sizes.push(await pc2.evaluate(id => {const r=document.getElementById(id).getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]}, ids[0]));
       }
-      for (const z of sizes) assert.deepEqual(z, sizes[0], 'Every rail view has the same size as the speedometer view');
+      for (const z of sizes) assert.deepEqual(z, sizes[0], 'Every rail view has the same size as the speedometer view '+JSON.stringify(sizes));
       assert.match(await pc2.evaluate(() => document.documentElement.style.getPropertyValue('--fxTop')), /^\d+px$/, 'Focus view measures its top offset');
       // 높이 조절: 제목줄 ↕ 버튼을 눌렀을 때만, 모든 보기에 같이 적용
       await pc2.locator('#ckRail [data-f="gps"]').click();
