@@ -2954,7 +2954,7 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .gd-dots i.on{background:#ffcf6a;box-shadow:0 0 6px #ffb43a}
 @media (min-width:860px) and (min-aspect-ratio:5/4){.gd-bd{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}.gd-m img,.gd-m video{max-height:min(66vh,620px)}}
 :root[data-guide] body{overflow:hidden}
-/* 1.87 택시 미터기(라디오 빠진 판의 라디오 자리) — 검은 테 + 연두빛 LCD + 색 단추 + 숫자 키 */
+/* 1.88 택시 미터기(라디오 빠진 판의 라디오 자리) — 검은 테 + 연두빛 LCD + 색 단추 + 숫자 키 */
 #wRadio .tx-body{display:flex;flex-direction:column;padding:10px;flex:1 1 auto;min-height:0}
 .tx-panel{flex:1 1 auto;display:flex;flex-direction:column;gap:10px;justify-content:center}
 .tx-dev{display:flex;gap:10px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#26282b,#111214 60%,#0b0c0d);box-shadow:0 0 0 1px #000,inset 0 1px 0 #4a4d52,inset 0 -2px 6px #000,0 8px 20px #0008}

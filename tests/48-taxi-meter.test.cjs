@@ -1,6 +1,6 @@
 const {run, assert} = require('./lib/harness.cjs');
 
-// 1.87 택시 미터기(라디오 빠진 판): GPS로 달린 거리만큼 서울 중형택시 요금이 오름
+// 1.88 택시 미터기(라디오 빠진 판): GPS로 달린 거리만큼 서울 중형택시 요금이 오름
 run('Taxi meter counts Seoul fares from GPS distance', async ({context, origin, errors}) => {
   const p = await context.newPage();
   p.on('pageerror', e => errors.push(e.message));

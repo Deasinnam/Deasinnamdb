@@ -13,7 +13,7 @@ for (const flags of ['noradio', 'noradio,lite']) {
         carRadio: !!document.querySelector('#sCarSrc option[value="radio"]'), carYtm: !!document.querySelector('#sCarSrc option[value="ytm"]'),
         last: JSON.parse(localStorage.getItem('dna_lastSrc')), special: document.documentElement.dataset.cks};
     });
-    // 1.87: 라디오 자리(레일·위 버튼·창)는 택시 미터기 — 라디오 화면·전환 버튼·차 연결 음원에는 라디오 없음
+    // 1.88: 라디오 자리(레일·위 버튼·창)는 택시 미터기 — 라디오 화면·전환 버튼·차 연결 음원에는 라디오 없음
     assert.deepEqual([r.railRadio, r.radioBtn, r.swap, r.carRadio], [true, true, false, false], 'radio slot is the taxi meter ' + JSON.stringify(r));
     assert.equal(await p.evaluate(() => [getComputedStyle(document.querySelector('#wRadio .rd-body')).display, document.querySelector('#ckRail [data-f="radio"] span').textContent].join()), 'none,택시');
     assert.equal(r.input, !lite, 'external input only in full'); assert.equal(r.carYtm, !lite);

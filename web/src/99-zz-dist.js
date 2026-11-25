@@ -1,6 +1,6 @@
 /* 1.84 배포용 에어포스원(airdist) 제한 — 네이티브 distFlags()(시험은 window.__dist):
  *  noradio: 인터넷 라디오를 모두 뺌(저작권). 라디오 화면·버튼·레일·전환 버튼·자동 재생 음원에서 사라지고, 라디오로 가려던 곳은 다른 화면으로
- *  1.87: 라디오 자리(버튼·레일·창·포커스 'radio')는 택시 미터기(99-zz-taxi.js)가 씀
+ *  1.88: 라디오 자리(버튼·레일·창·포커스 'radio')는 택시 미터기(99-zz-taxi.js)가 씀
  *  lite: 외부 앱 소리(YouTube Music·Spotify) 가져오기도 뺌 — 내 음악만. full판은 외부 앱 그대로 */
 const DIST=DISTF;
 (function(){

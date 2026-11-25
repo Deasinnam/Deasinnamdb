@@ -3867,7 +3867,7 @@ if(APP==='one'&&isCk2()){let touched=false;const stop=()=>{touched=true};['point
 /* ===== 99-zz-dist.js ===== */
 /* 1.84 배포용 에어포스원(airdist) 제한 — 네이티브 distFlags()(시험은 window.__dist):
  *  noradio: 인터넷 라디오를 모두 뺌(저작권). 라디오 화면·버튼·레일·전환 버튼·자동 재생 음원에서 사라지고, 라디오로 가려던 곳은 다른 화면으로
- *  1.87: 라디오 자리(버튼·레일·창·포커스 'radio')는 택시 미터기(99-zz-taxi.js)가 씀
+ *  1.88: 라디오 자리(버튼·레일·창·포커스 'radio')는 택시 미터기(99-zz-taxi.js)가 씀
  *  lite: 외부 앱 소리(YouTube Music·Spotify) 가져오기도 뺌 — 내 음악만. full판은 외부 앱 그대로 */
 const DIST=DISTF;
 (function(){
@@ -3891,7 +3891,7 @@ const DIST=DISTF;
   window.AmpDist={noRadio,lite,airline:/airline/.test(DIST),dsp:/dsp/.test(DIST),flags:DIST,focus:f=>ckFocus(f)};
 })();
 /* ===== 99-zz-taxi.js ===== */
-// 1.87 택시 미터기(라디오가 빠진 판 = noradio): 라디오 자리(위 도구 줄 버튼·왼쪽 레일·라디오 창)에 넣음
+// 1.88 택시 미터기(라디오가 빠진 판 = noradio): 라디오 자리(위 도구 줄 버튼·왼쪽 레일·라디오 창)에 넣음
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* 요금: 서울 중형택시 신고요금(2023.2.1~, 서울시 교통 누리집 기준)
  *  주간  기본 4,800원(1.6km) · 131m당 100원 · 30초당 100원
