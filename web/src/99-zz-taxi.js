@@ -18,25 +18,22 @@ const HORSE=`<svg viewBox="0 0 140 100" class="tx-hsvg"><g class="tx-hb">
 <path class="tx-mane" d="M104 9c-6 5-10 13-16 21l5 1c5-6 8-13 15-19z"/>
 <circle class="tx-eye" cx="118" cy="13" r="1.8"/></g></svg>`;
 const TAXI_ICON='<path d="M7 4h10l1 3h1.5A2.5 2.5 0 0 1 22 9.5V17a1 1 0 0 1-1 1h-1.2a2.5 2.5 0 0 1-4.6 0H8.8a2.5 2.5 0 0 1-4.6 0H3a1 1 0 0 1-1-1V9.5A2.5 2.5 0 0 1 4.5 7H6zm1.4 1.6L7.8 7h8.4l-.6-1.4zM5 10v3h4v-3zm10 0v3h4v-3zM9.5 2h5v1.6h-5z"/>';
-// 1.91 아래 그림 '세계는 서울로 · 서울은 세계로' — 88 서울 시절 느낌의 직접 그린 그림(해 지는 한강, 남산타워, 63빌딩). 올림픽 엠블럼·오륜·마스코트는 상표라 쓰지 않음
-const SEOUL88=`<svg viewBox="0 0 1000 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="세계는 서울로 서울은 세계로">
-<defs><linearGradient id="s88sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2347"/><stop offset=".55" stop-color="#7a3a55"/><stop offset="1" stop-color="#f08a4b"/></linearGradient>
-<linearGradient id="s88sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff5a3c"/></linearGradient>
-<clipPath id="s88c"><rect x="0" y="0" width="1000" height="360" rx="22"/></clipPath><clipPath id="s88sc"><circle cx="300" cy="215" r="120"/></clipPath></defs>
-<g clip-path="url(#s88c)"><rect width="1000" height="360" fill="url(#s88sky)"/>
-<g clip-path="url(#s88sc)"><rect x="160" y="80" width="280" height="260" fill="url(#s88sun)"/>${[0,1,2,3,4,5].map(i=>'<rect x="160" y="'+(222+i*17)+'" width="280" height="'+(3+i*1.6)+'" fill="#7a3a55"/>').join('')}</g>
-<path d="M0 262 Q90 228 170 240 Q250 210 330 236 L330 300 L0 300Z" fill="#2a1a33"/>
-<path d="M176 250 L176 172 M168 182 h16 M170 196 h12" stroke="#2a1a33" stroke-width="7" fill="none"/><circle cx="176" cy="166" r="9" fill="#2a1a33"/><path d="M176 156 v-34" stroke="#2a1a33" stroke-width="3"/>
-<path d="M420 300 V170 L446 112 H462 L488 170 V300Z" fill="#2a1a33"/><path d="M446 112 L462 112 L480 160 L452 160Z" fill="#d9a441" opacity=".85"/>
-<path d="M440 180 H468 M440 200 H470 M440 220 H472 M440 240 H474" stroke="#d9a441" stroke-width="2" opacity=".6"/>
-${[[330,250,30],[364,230,26],[392,258,24],[492,240,34],[530,262,22],[555,246,30],[0,276,330]].map(b=>'<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="60" fill="#2a1a33"/>').join('')}
-<rect y="292" width="1000" height="68" fill="#16203d"/>
-${[0,1,2,3].map(i=>'<path d="M'+(170+i*24)+' '+(304+i*14)+' h'+(260-i*50)+'" stroke="#ffb35a" stroke-width="4" stroke-linecap="round" opacity="'+(.8-i*.15)+'"/>').join('')}
-${[0,1,2].map(i=>'<path d="M600 '+(312+i*16)+' q40 -10 80 0 t80 0 t80 0 t80 0 t80 0" stroke="#3b4f86" stroke-width="3" fill="none"/>').join('')}
-${['#e8413a','#f4a81d','#2f8fd8','#2fa35a'].map((c,i)=>'<rect x="612" y="'+(40+i*9)+'" width="'+(330-i*40)+'" height="5" rx="2" fill="'+c+'"/>').join('')}
-<text x="612" y="148" fill="#fff4d6" font-family="'Noto Sans KR',sans-serif" font-weight="900" font-size="58" letter-spacing="2">세계는 서울로</text>
-<text x="612" y="222" fill="#ffd36a" font-family="'Noto Sans KR',sans-serif" font-weight="900" font-size="58" letter-spacing="2">서울은 세계로</text>
-<text x="614" y="268" fill="#f3d9c0" font-family="'Barlow Condensed',sans-serif" font-weight="700" font-size="26" letter-spacing="9" opacity=".8">SEOUL · 1988</text></g></svg>`;
+// 1.91·1.92 아래 그림 '세계는 서울로 · 서울은 세계로' — 88 서울 시절 느낌으로 직접 그린 그림(해 지는 한강, 남산타워, 63빌딩).
+// 올림픽 엠블럼·오륜·마스코트(호돌이)는 상표·캐릭터라 쓰지 않음. 1.92: 하늘은 칸 전체를 채우고 도시는 아래에 붙여(slice) 어떤 비율이든 위아래 꽉 참
+const SEOUL88_CITY=`<svg class="s88-city" viewBox="0 0 600 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<defs><linearGradient id="s88sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff5a3c"/></linearGradient><clipPath id="s88sc"><circle cx="230" cy="150" r="96"/></clipPath></defs>
+<g clip-path="url(#s88sc)"><rect x="120" y="40" width="220" height="200" fill="url(#s88sun)"/>${[0,1,2,3,4,5].map(i=>'<rect x="120" y="'+(158+i*13)+'" width="220" height="'+(2.5+i*1.3)+'" fill="#7a3a55"/>').join('')}</g>
+<path d="M0 190 Q70 162 130 172 Q190 150 250 168 L250 214 L0 214Z" fill="#2a1a33"/>
+<path d="M134 180 V118 M128 126 h12 M130 137 h8" stroke="#2a1a33" stroke-width="6" fill="none"/><circle cx="134" cy="113" r="7" fill="#2a1a33"/><path d="M134 106 v-28" stroke="#2a1a33" stroke-width="2.5"/>
+<path d="M320 214 V118 L340 72 H353 L373 118 V214Z" fill="#2a1a33"/><path d="M340 72 L353 72 L367 110 L344 110Z" fill="#d9a441" opacity=".85"/>
+<path d="M336 128 H358 M336 144 H360 M336 160 H362 M336 176 H364" stroke="#d9a441" stroke-width="1.6" opacity=".6"/>
+${[[250,176,24],[276,160,22],[298,184,20],[376,170,28],[406,186,18],[426,172,26],[454,184,30],[486,166,22],[510,180,34],[546,170,26],[574,186,26]].map(b=>'<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="40" fill="#2a1a33"/>').join('')}
+<rect y="208" width="600" height="32" fill="#16203d"/>
+${[0,1,2].map(i=>'<path d="M'+(150+i*20)+' '+(216+i*8)+' h'+(160-i*40)+'" stroke="#ffb35a" stroke-width="3" stroke-linecap="round" opacity="'+(.8-i*.2)+'"/>').join('')}
+${[0,1].map(i=>'<path d="M380 '+(220+i*10)+' q30 -7 60 0 t60 0 t60 0 t60 0" stroke="#3b4f86" stroke-width="2.4" fill="none"/>').join('')}</svg>`;
+const SEOUL88=`<div class="s88" role="img" aria-label="세계는 서울로 서울은 세계로">${SEOUL88_CITY}<div class="s88-txt"><i class="s88-st"><em></em><em></em><em></em><em></em></i><b>세계는 서울로</b><b class="s88-2">서울은 세계로</b><small>SEOUL · 1988</small></div></div>`;
+// 1.92 오디오(긴 바깥 화면): 원래 플레이어(#wMain)의 단추·슬라이더를 그대로 눌러 주는 리모컨 — 상태는 원래 플레이어에서 읽어 옴
+const DOCK_KEYS=[['bPrev','M5 5h3v14H5zM20 5v14L9 12z','이전 곡'],['bPlay','M7 4l13 8-13 8z','재생'],['bPause','M6 4h4v16H6zM14 4h4v16h-4z','일시정지'],['bStop','M5 5h14v14H5z','정지'],['bNext','M16 5h3v14h-3zM4 5v14l11-7z','다음 곡']];
 const Taxi=(()=>{
   if(!/noradio/.test(DISTF))return null;
   const R=document.documentElement,W=$('#wRadio');if(!W)return null;
@@ -92,6 +89,13 @@ const Taxi=(()=>{
     <div class="rt-latch" aria-hidden="true"></div>
   </div>
   </div>
+  <div class="tx-dock" aria-label="오디오">
+    <div class="dk-lcd"><span class="dk-st"></span><span class="dk-title">음악</span><span class="dk-time">00:00</span></div>
+    <input type="range" class="dk-seek" min="0" max="1000" value="0" aria-label="재생 위치">
+    <div class="dk-keys">${DOCK_KEYS.map(k=>'<button type="button" class="dk-k" data-t="'+k[0]+'" aria-label="'+k[2]+'"><svg viewBox="0 0 24 24"><path d="'+k[1]+'"/></svg></button>').join('')}</div>
+    <div class="dk-sub"><button type="button" class="dk-tog" data-t="tShuf">셔플</button><button type="button" class="dk-tog" data-t="tRep">반복</button>
+      <label class="dk-sl"><span>VOL</span><input type="range" class="dk-r" data-t="vol" min="0" max="100"></label><label class="dk-sl"><span>BAL</span><input type="range" class="dk-r" data-t="bal" min="-100" max="100"></label></div>
+  </div>
   <div class="tx-88" aria-hidden="true">${SEOUL88}</div>
   <div class="tx-warn" role="note"><b>재미로만</b> 즐기는 기능이에요 · 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. <span class="tx-wmore">금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</span></div>
   <div class="tx-ack" hidden><div class="tx-ackc"><b>🐎 택시 미터기는 재미용이에요</b><p>표시되는 금액은 서울 중형택시 요금으로 계산한 <b>참고값</b>이에요. 이 금액으로 동승자에게 <b>실제 요금을 받거나 돈을 주고받으면</b> 자가용 유상운송(「여객자동차 운수사업법」 제81조) 위반이 될 수 있어요.</p><button type="button" class="pill on tx-ackok">알겠어요, 재미로만 쓸게요</button></div></div>
@@ -113,30 +117,63 @@ const Taxi=(()=>{
   const stage=q('.tx-stage'),panel=q('.tx-panel');
   /* 화면 맞춤(폴드7 안쪽·바깥 화면, 가로·세로): 미터기를 --u(설계 폭의 1칸) 단위로 그리고, 실제로 그려진 크기를 재서 칸 폭·높이에 꼭 맞게 --u를 다시 정함(어림 비율로 넘치던 문제 1.91).
    * 세로로 남는 자리가 넉넉하면 미터기 아래에 '세계는 서울로' 그림(.tx-88)을 보임 */
-  let fitting=false;
+  let fitting=false,fitT=0;
+  const dock=q('.tx-dock');
+  // 미터기를 폭 pw·높이 H 안에 맞춤(실제 그려진 크기를 재서 --u를 고침). 최소 글자 크기가 있는 웹뷰에서도 무너지지 않게 줄이는 폭에 바닥을 둠
+  function fitMeter(k,pw,H){
+    let base=1000,cap=1600,lay='wide';
+    if(k==='pro'){if(pw/H<1.5)lay='tall'}
+    else if(k==='retro'){if(pw/H>1.7){lay='rwide';base=1800;cap=1500}else{lay='sq';cap=980}}
+    else lay=H<300?'short':'wide';
+    W.dataset.txlay=lay;W.style.setProperty('--ah',Math.round(H)+'px');
+    const dev=k==='retro'?q('.rt-dev'):q('.tx-dev'),extra=u=>k==='retro'?Math.round(u*30):0;
+    const u0=Math.min(pw,cap)/base,floor=u0*0.3;let u=u0;
+    if(k==='lcd'){W.style.setProperty('--u','1px');return dev.offsetHeight}
+    for(let n=0;n<4;n++){W.style.setProperty('--u',u.toFixed(4)+'px');
+      const w=dev.offsetWidth,h=dev.offsetHeight+extra(u);if(!w||!h)break;
+      const f=Math.min(pw/w,H/h);if(Math.abs(f-1)<0.01)break;u=Math.max(floor,Math.min(u*f,cap/base))}
+    W.style.setProperty('--u',u.toFixed(4)+'px');
+    return dev.offsetHeight+extra(u)}
+  /* 화면 맞춤(1.92): 창이 화면을 꽉 채우면 — 미터기 + (길쭉한 바깥 화면이면 오디오) + '세계는 서울로' 그림이 위아래를 빈틈없이 채움.
+   * 전체 모드처럼 창이 여러 개 쌓이면 — 미터기 높이만큼만 차지(스킨 3개 모두 보임) */
   function fit(){
     if(fitting)return;fitting=true;
     try{
-    const k=W.dataset.txskin;stage.style.flex='';stage.style.height='';W.dataset.tx88='';
+    const k=W.dataset.txskin;stage.style.flex='';stage.style.height='';W.dataset.tx88='';W.dataset.txdock='';
     const pw=stage.clientWidth;if(!pw)return;
     const fill=W.getBoundingClientRect().height>=innerHeight*0.8;
-    const ah=Math.max(150,fill?stage.clientHeight:Math.min(innerHeight*0.72,900));
-    let lay='wide',base=1000,cap=1600;
-    if(k==='pro'){if(pw/ah<1.5)lay='tall'}
-    else if(k==='retro'){if(pw/ah>1.7){lay='rwide';base=1800;cap=1500}else{lay='sq';cap=980}}
-    else lay=ah<300?'short':'wide';
-    W.dataset.txlay=lay;W.style.setProperty('--ah',Math.round(ah)+'px');
-    const dev=k==='retro'?q('.rt-dev'):q('.tx-dev');
-    let u=Math.min(pw,cap)/base;
-    for(let n=0;n<3;n++){W.style.setProperty('--u',u.toFixed(4)+'px');
-      const w=dev.offsetWidth,h=dev.offsetHeight+(k==='retro'?Math.round(u*30):0);if(!w||!h)break;   // 레트로는 아래 걸쇠가 틀 밖으로 나옴
-      const f=Math.min(pw/w,ah/h);if(Math.abs(f-1)<0.01)break;u=Math.min(u*f,cap/base)}
-    if(k==='lcd'){W.style.setProperty('--u','1px')}
-    const dh=dev.offsetHeight+(k==='retro'?Math.round(u*30):0);
-    // 세로 화면: 미터기 칸은 미터기만큼, 남는 아래는 88 그림
-    if(fill&&ah-dh>Math.max(150,pw*0.2)){W.dataset.tx88='on';stage.style.flex='0 0 auto';stage.style.height=(dh+8)+'px'}
-    fitFare()}finally{fitting=false}}
-  new ResizeObserver(()=>fit()).observe(panel);addEventListener('resize',fit);
+    let ah=fill?stage.clientHeight:Math.min(innerHeight*0.6,760);
+    if(fill&&ah<200){clearTimeout(fitT);fitT=setTimeout(fit,300);ah=Math.max(ah,150)}   // 창이 펼쳐지는 중: 잠시 뒤 다시
+    let dh,res=0;
+    if(fill){
+      const long=ah>pw*1.45;
+      if(long){W.dataset.txdock='on';res=dock.offsetHeight+8}
+      const bmin=Math.max(130,ah*0.24);
+      const H1=ah-res-bmin;
+      dh=H1>=150?fitMeter(k,pw,H1):0;
+      const dev=k==='retro'?q('.rt-dev'):q('.tx-dev');
+      if(!dh||dev.offsetWidth<pw*0.55){dh=fitMeter(k,pw,ah-res)}   // 그림 자리를 주면 미터기가 너무 작아질 때는 미터기 먼저
+      if(ah-res-dh>=90)W.dataset.tx88='on';
+      else if(res&&ah-dh<res+40){W.dataset.txdock='';res=0;dh=fitMeter(k,pw,ah)}
+    }else dh=fitMeter(k,pw,ah);
+    stage.style.flex='0 0 auto';stage.style.height=(dh+6)+'px';
+    fitFare();setTimeout(dockSync,0)}finally{fitting=false}}
+  new ResizeObserver(()=>fit()).observe(panel);addEventListener('resize',()=>{fit();clearTimeout(fitT);fitT=setTimeout(fit,400)});
+  // 오디오 리모컨: 누르면 원래 플레이어 단추를 누름, 상태는 0.5초마다 원래 플레이어에서 가져옴
+  dock.querySelectorAll('[data-t]').forEach(el=>{const t=()=>document.getElementById(el.dataset.t);
+    if(el.tagName==='BUTTON')el.onclick=e=>{e.stopPropagation();const o=t();if(o&&!o.disabled)o.click();setTimeout(dockSync,60)};
+    else el.oninput=()=>{const o=t();if(!o)return;o.value=el.value;o.dispatchEvent(new Event('input'))}});
+  const dseek=q('.dk-seek');dseek.oninput=()=>{const o=$('#seek');if(o){o.value=dseek.value;o.dispatchEvent(new Event('input'))}};
+  dseek.onchange=()=>{const o=$('#seek');if(o){o.value=dseek.value;o.dispatchEvent(new Event('change'))}};
+  function dockSync(){if(W.dataset.txdock!=='on')return;
+    const tx=id=>{const e=document.getElementById(id);return e?e.textContent.trim():''};
+    q('.dk-title').textContent=tx('marqText')||'음악';q('.dk-time').textContent=tx('time')||'00:00';
+    dock.querySelectorAll('[data-t]').forEach(el=>{const o=document.getElementById(el.dataset.t);if(!o)return;
+      if(el.tagName==='BUTTON'){el.classList.toggle('hot',o.classList.contains('hot')||o.classList.contains('on'));el.disabled=!!o.disabled;if(el.dataset.t==='tRep'){const r=$('#repTxt');if(r)el.textContent=r.textContent}}
+      else if(document.activeElement!==el){el.value=o.value;el.disabled=!!o.disabled}});
+    const sk=$('#seek');if(sk&&document.activeElement!==dseek)dseek.value=sk.value;
+    const pl=$('#bPlay');q('.dk-st').className='dk-st'+(pl&&pl.classList.contains('hot')?' on':'')}
+  setInterval(dockSync,500);
   function fitFare(){const f=q('.tx-fare');f.style.fontSize='';let i=0;while(f.scrollWidth>f.clientWidth+1&&i++<12){const cur=parseFloat(getComputedStyle(f).fontSize);f.style.fontSize=(cur*0.92)+'px'}}
   // 레트로 숫자 드럼: 자리마다 0~9 띠를 위아래로 굴림
   function setDrums(sel,str){const ds=qa(sel+' .rt-dr');const t=str.padStart(ds.length,'0').slice(-ds.length);ds.forEach((d,i)=>{d.firstChild.style.transform='translateY('+(-10*(+t[i]||0))+'%)'})}

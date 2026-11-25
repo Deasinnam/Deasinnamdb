@@ -48,4 +48,28 @@ run('Taxi meter: retro skin, skin buttons, Fold7 fit', async ({context, origin, 
       assert.ok(g.devW >= g.stW * 0.35, w + 'x' + h + ' ' + k + ' not tiny ' + JSON.stringify(g));
     }
   }
+  // 1.92 길쭉한 바깥 화면: 미터기 + 오디오 + '세계는 서울로', 안쪽 세로: 세 스킨 모두 그림이 나옴
+  for (const [w, h, dockOn] of [[411, 960, true], [876, 970, false]]) {
+    await p.setViewportSize({width: w, height: h});
+    for (const k of ['pro', 'retro', 'lcd']) {
+      await p.evaluate(k => AmpTaxi.setSkin(k), k); await p.waitForTimeout(300);
+      const g = await p.evaluate(() => { const W = document.getElementById('wRadio'), v = s => { const e = W.querySelector(s); return e && e.offsetParent ? Math.round(e.getBoundingClientRect().height) : 0 };
+        return {dock: v('.tx-dock'), b88: v('.tx-88'), u: parseFloat(W.style.getPropertyValue('--u'))}; });
+      assert.ok(g.b88 >= 90 && (!!g.dock === dockOn), w + 'x' + h + ' ' + k + ' ' + JSON.stringify(g));
+    }
+  }
+  // 오디오 리모컨이 원래 플레이어 단추를 누름
+  await p.setViewportSize({width: 411, height: 960}); await p.waitForTimeout(300);
+  const sh = await p.evaluate(() => document.getElementById('tShuf').classList.contains('on'));
+  await p.click('#wRadio .dk-tog[data-t="tShuf"]'); await p.waitForTimeout(700);
+  assert.equal(await p.evaluate(() => document.getElementById('tShuf').classList.contains('on')), !sh, 'dock shuffle toggles the player');
+  assert.equal(await p.evaluate(() => document.querySelector('#wRadio .dk-tog[data-t="tShuf"]').classList.contains('hot')), !sh, 'dock mirrors state');
+  // 전체 모드(창이 여러 개): 세 스킨 모두 미터기가 보임
+  await p.setViewportSize({width: 970, height: 876}); await p.click('#ckRail [data-f="all"]'); await p.waitForTimeout(500);
+  for (const k of ['pro', 'retro', 'lcd']) {
+    await p.evaluate(k => AmpTaxi.setSkin(k), k); await p.waitForTimeout(300);
+    const hgt = await p.evaluate(() => { const W = document.getElementById('wRadio'); return Math.round(W.querySelector(AmpTaxi.skin === 'retro' ? '.rt-dev' : '.tx-dev').getBoundingClientRect().height) + '/' + Math.round(W.querySelector('.tx-stage').getBoundingClientRect().height); });
+    const [dv, sg] = hgt.split('/').map(Number);
+    assert.ok(dv > 150 && sg >= dv, 'all view ' + k + ' ' + hgt);
+  }
 });
