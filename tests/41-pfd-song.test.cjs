@@ -31,3 +31,21 @@ run('Odometer chip toggles to engine-oil distance', async ({newPage, origin}) =>
   assert.match(await p.locator('.sp-odo').textContent(), /엔진오일 교체 필요1,000km 지남/);
   await p.close();
 });
+
+// 1.95 노래 제목 위 음악 효과: 재생 중에만 보이고, 누르면 효과가 바뀜(막대 → 거울 → 파형 → 점 → 원)
+run('PFD music effect above the song title', async ({newPage, origin}) => {
+  const p = await newPage(() => { window.__build = 'special'; localStorage.setItem('dna_skin2', JSON.stringify('carnival7')); });
+  await p.setViewportSize({width: 900, height: 1000}); await p.goto(origin); await p.waitForFunction(() => window.PfdSongFx);
+  await p.locator('#ckRail button[data-f="gps"]').click(); await p.waitForTimeout(600);
+  await p.evaluate(() => { document.getElementById('npTitle').textContent = '만약에'; document.getElementById('bPlay').classList.add('hot'); PfdSong.tick(); PfdSongFx._feed(x => .5 + .4 * Math.sin(x * 9)); });
+  await p.waitForTimeout(400);
+  const fx = p.locator('#pfdHost .pfd-songfx');
+  assert.equal(await fx.isVisible(), true, 'effect shows while playing');
+  const m0 = await p.evaluate(() => PfdSongFx.mode);
+  await fx.click(); await p.waitForTimeout(300);
+  assert.notEqual(await p.evaluate(() => PfdSongFx.mode), m0, 'tap changes the effect');
+  assert.ok(await p.evaluate(() => { const c = document.querySelector('#pfdHost .pfd-songfx'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let on = 0, bg = 0; for (let i = 3; i < d.length; i += 4) { if (d[i] > 200) on++; else if (d[i] === 0) bg++; } return on > 50 && bg > (d.length / 4) * 0.2; }), 'drawn without a background');
+  await p.evaluate(() => { document.getElementById('bPlay').classList.remove('hot'); PfdSong.tick(); }); await p.waitForTimeout(300);
+  assert.equal(await fx.isVisible(), false, 'hidden when stopped');
+  await p.close();
+});

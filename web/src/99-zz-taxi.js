@@ -146,7 +146,7 @@ const Taxi=(()=>{
     }else dh=fitMeter(k,pw,ah);
     stage.style.flex='0 0 auto';stage.style.height=(dh+6)+'px';
     {const dv=k==='retro'?q('.rt-dev'):q('.tx-dev');if(dv.offsetWidth<Math.min(pw,300)*0.5||dh<60){clearTimeout(fitT);fitT=setTimeout(fit,350)}}
-    fitFare();setTimeout(dockSync,0)}finally{fitting=false}}
+    fitFare();setTimeout(dockSync,0);fitSign()}finally{fitting=false}}
   new ResizeObserver(()=>fit()).observe(panel);document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(fit,200)});addEventListener('focus',()=>setTimeout(fit,200));addEventListener('resize',()=>{fit();clearTimeout(fitT);fitT=setTimeout(fit,400)});
   // 1.93 기사 사진: 동그라미를 누르면 사진을 고르고, 가운데를 정사각형으로 잘라 360px로 줄여 기기(localStorage)에 저장
   const dsFile=q('.ds-file'),dsImg=q('.ds-img');
@@ -185,7 +185,7 @@ const Taxi=(()=>{
   showPhoto();
   // 1.94 간판: 레트로는 늘 '세계는 서울로'(사용자가 준 그림), 실물 전자식·LCD 클래식은 '대신남 운수' ↔ '세계는 서울로'를 ⇄ 간판 단추로
   const signNow=()=>{W.dataset.txsign=W.dataset.txskin==='retro'?'s88':store.get('taxiSign','dsn')};
-  q('.tx-signsw').onclick=e=>{e.stopPropagation();store.set('taxiSign',store.get('taxiSign','dsn')==='dsn'?'s88':'dsn');signNow();toast(W.dataset.txsign==='s88'?'간판: 세계는 서울로':'간판: 대신남 운수')};
+  q('.tx-signsw').onclick=e=>{e.stopPropagation();store.set('taxiSign',store.get('taxiSign','dsn')==='dsn'?'s88':'dsn');signNow();fitSign();toast(W.dataset.txsign==='s88'?'간판: 세계는 서울로':'간판: 대신남 운수')};
   signNow();
   // 오디오 리모컨: 누르면 원래 플레이어 단추를 누름, 상태는 0.5초마다 원래 플레이어에서 가져옴
   dock.querySelectorAll('[data-t]').forEach(el=>{const t=()=>document.getElementById(el.dataset.t);
@@ -202,6 +202,12 @@ const Taxi=(()=>{
     const sk=$('#seek');if(sk&&document.activeElement!==dseek)dseek.value=sk.value;
     const pl=$('#bPlay');q('.dk-st').className='dk-st'+(pl&&pl.classList.contains('hot')?' on':'')}
   setInterval(dockSync,500);
+  // 1.95 간판 글자 맞춤: 폰의 글자 크기 설정(웹뷰 글자 확대) 때문에 '대신남 운수'가 칸을 넘으면 넘지 않을 때까지 줄임
+  function fitSign(){const nm=q('.ds-name'),ds=q('.ds'),ph=q('.ds-photo');if(!nm)return;nm.style.fontSize='';if(!nm.offsetParent)return;
+    const bad=()=>{const N=nm.getBoundingClientRect(),S=ds.getBoundingClientRect(),P=ph.getBoundingClientRect(),pad=S.width*0.03;
+      const sameRow=P.top<N.bottom&&P.bottom>N.top;return N.left<S.left+pad-1||N.right>(sameRow?P.left-pad*1.5:S.right-pad)+1};
+    let i=0;while(bad()&&i++<30)nm.style.fontSize=(parseFloat(getComputedStyle(nm).fontSize)*0.93)+'px'}
+  new ResizeObserver(()=>fitSign()).observe(q('.tx-88'));
   function fitFare(){const f=q('.tx-fare');f.style.fontSize='';let i=0;while(f.scrollWidth>f.clientWidth+1&&i++<12){const cur=parseFloat(getComputedStyle(f).fontSize);f.style.fontSize=(cur*0.92)+'px'}}
   // 레트로 숫자 드럼: 자리마다 0~9 띠를 위아래로 굴림
   function setDrums(sel,str){const ds=qa(sel+' .rt-dr');const t=str.padStart(ds.length,'0').slice(-ds.length);ds.forEach((d,i)=>{d.firstChild.style.transform='translateY('+(-10*(+t[i]||0))+'%)'})}
