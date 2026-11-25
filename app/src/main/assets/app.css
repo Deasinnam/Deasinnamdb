@@ -3305,5 +3305,5 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .tc-btns{display:flex;gap:10px;width:100%}.tc-btns .pill{flex:1;justify-content:center;padding:11px;font-size:15px;font-weight:800}
 /* 1.95 PFD 노래 제목 위 음악 효과(배경 없음, 제목과 같은 녹색, 누르면 효과 바뀜) */
 #pfdHost .pfd-songfx{position:absolute;z-index:4;right:calc(var(--pfd-tape,70px) + 14px);bottom:calc(var(--pfd-cmp,50px) + 34px + clamp(26px,3.4vw,40px));width:min(30%,360px);height:clamp(54px,14%,150px);cursor:pointer;color:#6dff7a;background:none;touch-action:manipulation}
-#pfdHost .pfd-songfx[hidden]{display:none}
+#pfdHost .pfd-songfx{overflow:visible;filter:drop-shadow(0 0 2px #000) drop-shadow(0 1px 2px #000c)}
 :root[data-narrow] #pfdHost .pfd-songfx{right:calc(var(--nar-tape,67px) + 10px);bottom:calc(var(--pfd-cmp,50px) + 38px);width:44%;height:clamp(48px,12%,110px)}

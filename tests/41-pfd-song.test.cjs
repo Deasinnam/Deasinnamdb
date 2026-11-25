@@ -44,7 +44,8 @@ run('PFD music effect above the song title', async ({newPage, origin}) => {
   const m0 = await p.evaluate(() => PfdSongFx.mode);
   await fx.click(); await p.waitForTimeout(300);
   assert.notEqual(await p.evaluate(() => PfdSongFx.mode), m0, 'tap changes the effect');
-  assert.ok(await p.evaluate(() => { const c = document.querySelector('#pfdHost .pfd-songfx'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let on = 0, bg = 0; for (let i = 3; i < d.length; i += 4) { if (d[i] > 200) on++; else if (d[i] === 0) bg++; } return on > 50 && bg > (d.length / 4) * 0.2; }), 'drawn without a background');
+  assert.ok(await p.evaluate(() => { const c = document.querySelector('#pfdHost .pfd-songfx'), ps = c.querySelectorAll('path'); return c.tagName.toLowerCase() === 'svg' && (ps[0].getAttribute('d') || '').length + (ps[1].getAttribute('d') || '').length > 50 && getComputedStyle(c).backgroundColor === 'rgba(0, 0, 0, 0)'; }), 'drawn without a background');
+  assert.equal(await p.locator('#pfdHost canvas').count(), 1, 'only the PFD canvas');
   await p.evaluate(() => { document.getElementById('bPlay').classList.remove('hot'); PfdSong.tick(); }); await p.waitForTimeout(300);
   assert.equal(await fx.isVisible(), false, 'hidden when stopped');
   await p.close();
