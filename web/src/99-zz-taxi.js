@@ -203,12 +203,16 @@ const Taxi=(()=>{
     const pl=$('#bPlay');q('.dk-st').className='dk-st'+(pl&&pl.classList.contains('hot')?' on':'')}
   setInterval(dockSync,500);
   // 1.95 간판 글자 맞춤: 폰의 글자 크기 설정(웹뷰 글자 확대) 때문에 '대신남 운수'가 칸을 넘으면 넘지 않을 때까지 줄임
-  function fitSign(){const nm=q('.ds-name'),ds=q('.ds'),ph=q('.ds-photo');if(!nm)return;nm.style.fontSize='';if(!nm.offsetParent)return;
-    const bad=()=>{const N=nm.getBoundingClientRect(),S=ds.getBoundingClientRect(),P=ph.getBoundingClientRect(),pad=S.width*0.03;
-      const sameRow=P.top<N.bottom&&P.bottom>N.top;return N.left<S.left+pad-1||N.right>(sameRow?P.left-pad*1.5:S.right-pad)+1};
-    let i=0;while(bad()&&i++<30)nm.style.fontSize=(parseFloat(getComputedStyle(nm).fontSize)*0.93)+'px'}
+  /* 1.96 글자 줄이기 공통: 폰 글자 크기 설정(웹뷰 글자 확대)이 있으면 읽은 글자 크기를 그대로 다시 넣을 때 또 확대돼 오히려 커짐(1.95 간판 글자가 사라진 원인).
+   * 100px를 넣어 확대 배율 z를 먼저 재고, 넣는 값은 늘 '원래 크기 × k ÷ z'로 */
+  function shrinkFont(el,fits,min){el.style.fontSize='';if(!el.offsetParent||fits())return;
+    const cur=parseFloat(getComputedStyle(el).fontSize)||16;el.style.fontSize='100px';const z=(parseFloat(getComputedStyle(el).fontSize)||100)/100;
+    let k=1,i=0;do{k*=0.93;el.style.fontSize=(cur*k/z)+'px'}while(!fits()&&++i<30&&k>(min||0.3))}
+  function fitSign(){const nm=q('.ds-name'),ds=q('.ds'),ph=q('.ds-photo');if(!nm)return;
+    shrinkFont(nm,()=>{const N=nm.getBoundingClientRect(),S=ds.getBoundingClientRect(),P=ph.getBoundingClientRect(),pad=S.width*0.03;
+      const sameRow=P.width>0&&P.top<N.bottom&&P.bottom>N.top;return N.left>=S.left+pad-1&&N.right<=(sameRow?P.left-pad:S.right-pad)+1})}
   new ResizeObserver(()=>fitSign()).observe(q('.tx-88'));
-  function fitFare(){const f=q('.tx-fare');f.style.fontSize='';let i=0;while(f.scrollWidth>f.clientWidth+1&&i++<12){const cur=parseFloat(getComputedStyle(f).fontSize);f.style.fontSize=(cur*0.92)+'px'}}
+  function fitFare(){const f=q('.tx-fare');shrinkFont(f,()=>f.scrollWidth<=f.clientWidth+1,0.2)}
   // 레트로 숫자 드럼: 자리마다 0~9 띠를 위아래로 굴림
   function setDrums(sel,str){const ds=qa(sel+' .rt-dr');const t=str.padStart(ds.length,'0').slice(-ds.length);ds.forEach((d,i)=>{d.firstChild.style.transform='translateY('+(-10*(+t[i]||0))+'%)'})}
   const won=n=>Math.round(n).toLocaleString('ko-KR');

@@ -3250,7 +3250,7 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio[data-txskin="retro"] .rt-dev{max-width:100%;min-width:min(100%,240px)}
 /* 1.93 아래 간판 '대신남 운수' — 노란 택시 간판, 칸 크기에 맞춰 글자·사진이 커지고 줄어듦(가로로 넓으면 글자|사진, 좁으면 사진 위·글자 아래) */
 .tx-88{border-radius:12px;box-shadow:0 0 0 2px #0b0b0b,0 6px 14px #000a}
-.ds{position:absolute;inset:0;display:grid;grid-template-columns:1fr auto;align-items:center;gap:3cqw;padding:5cqh 5cqw 15cqh;
+.ds{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3cqw;padding:5cqh 5cqw 15cqh;
   background:radial-gradient(120% 90% at 30% 20%,#ffe15a,#ffd21f 55%,#f2bf00);color:#111}
 .ds::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(160deg,#ffffff40 0%,transparent 35%)}
 .ds-main{display:flex;flex-direction:column;align-items:center;min-width:0;overflow:visible}
