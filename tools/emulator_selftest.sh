@@ -90,6 +90,15 @@ done
 adb logcat -d -s DESK_SELFTEST:I Desk:* DeskConsole:* >> selftest-result.txt
 echo "===== 점검 결과 ====="
 grep DESK_SELFTEST selftest-result.txt | cut -c1-400
+echo "===== 앱 아이콘(DexActivity)으로 열기 ====="
+adb logcat -c
+adb shell am start -W -n "$PKG/.DexActivity" > dex-start.txt 2>&1; sleep 4
+adb exec-out screencap -p > desk-screen-dex-activity.png
+if adb shell dumpsys activity activities | grep -E "mResumedActivity|topResumedActivity|ResumedActivity" | grep -q "$PKG/.DexActivity" && ! adb logcat -d -b crash | grep -q "$PKG"; then dx=PASS; else dx=FAIL; fi
+echo "x DESK_SELFTEST: $dx app icon opens DexActivity (not a home activity)" >> selftest-result.txt
+echo "DexActivity: $dx"; cat dex-start.txt | head -8
+echo "===== 앱 아이콘 대상 ====="
+adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "$PKG" 2>/dev/null | tail -1
 echo "===== 홈 앱으로 고를 수 있는지 ====="
 adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.HOME 2>/dev/null | grep -c "$PKG" | sed 's/^/홈 후보 등록 수: /'
 echo "===== 띄운 앱의 창 방식 (참고) ====="

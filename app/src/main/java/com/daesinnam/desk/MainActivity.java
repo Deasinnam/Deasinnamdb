@@ -1349,7 +1349,7 @@ public class MainActivity extends ComponentActivity {
             ActivityOptions o = ActivityOptions.makeBasic();
             Bundle b = o.toBundle();
             b.putInt(KEY_WINDOWING_MODE, 1);
-            startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT), b);
+            startActivity(new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT), b);
         } catch (RuntimeException e) {
             Log.w(TAG, "전체 화면으로 다시 띄우지 못함", e);
         }

@@ -36,17 +36,32 @@
             android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <!-- 홈 앱(런처)으로 고를 수 있게 -->
+            <!-- 홈 앱(런처)으로 고를 수 있게.
+                 앱 서랍 아이콘(LAUNCHER)은 아래 DexActivity가 맡습니다: 예전 DeX(노트20 · 탭 S9 등)는 홈 앱으로 등록된 화면을
+                 "휴대전화 홈 화면에서만 실행 가능"이라며 열지 않기 때문입니다. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!-- 앱 서랍에서 여는 덜누름 데스크. 홈 앱이 아닌 일반 화면이라 DeX 안에서도 창으로 열립니다(화면 · 기능은 같음). -->
+        <activity
+            android:name=".DexActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.daesinnam.desk.dex"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- DeX에서 화면 밀도가 바뀌어도 앱을 다시 시작하지 않게 (삼성) -->
+        <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />
         <!-- 창정리 고급 기능(Shizuku) 연결 -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
