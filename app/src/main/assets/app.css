@@ -2958,7 +2958,7 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio .tx-body{display:flex;flex-direction:column;padding:10px;flex:1 1 auto;min-height:0}
 .tx-panel{flex:1 1 auto;display:flex;flex-direction:column;gap:8px;min-height:0}
 .tx-stage{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#wRadio:not([data-txskin="lcd"]) .tx-stage{align-items:center}
+#wRadio:not([data-txskin="lcd"]) .tx-stage{align-items:safe center}
 #wRadio[data-txskin="lcd"] .tx-stage{flex:1 1 auto;display:block;overflow:visible}
 .tx-dev{display:flex;gap:10px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#26282b,#111214 60%,#0b0c0d);box-shadow:0 0 0 1px #000,inset 0 1px 0 #4a4d52,inset 0 -2px 6px #000,0 8px 20px #0008}
 .tx-face{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}
@@ -3168,3 +3168,24 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio[data-txskin="lcd"][data-txlay="short"] .tx-k{flex:1;padding:2px 4px;font-size:14px}
 #wRadio[data-txskin="lcd"][data-txlay="short"] .tx-fare{font-size:calc(var(--ah)*.26)}
 #wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-flag{right:calc(var(--u)*34);top:calc(var(--u)*16)}
+/* 1.91 아래쪽 정리: 키패드 대신 '세계는 서울로' 그림, 안내는 한 줄 */
+.tx-stage{align-items:safe center}
+.tx-88{display:none;flex:1 1 0;min-height:0;align-items:center;justify-content:center;overflow:hidden}
+.tx-88 svg{display:block;width:100%;height:100%;max-width:1000px;max-height:360px;filter:drop-shadow(0 6px 14px #000a)}
+#wRadio[data-tx88="on"] .tx-88{display:flex}
+.tx-wmore{display:none}
+.tx-warn{font-size:12px;padding:6px 10px}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-dev{grid-template-columns:1fr}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-pad2{display:none}
+/* 1.91 레트로 '빈차' 원판: 빈차일 때 팔이 내려와 승차요금을 가림(실물 택시 빈차등처럼) */
+.rt-vac{position:absolute;z-index:4;left:0;right:0;top:0;height:calc(var(--u)*560);pointer-events:none;transform-origin:calc(var(--u)*900) calc(var(--u)*-40);transform:rotate(-118deg);visibility:hidden;transition:transform .45s cubic-bezier(.55,0,.8,.4),visibility 0s .45s}
+#wRadio[data-txvac="1"] .rt-vac{transform:rotate(0);visibility:visible;transition:transform .75s cubic-bezier(.3,1.5,.55,1),visibility 0s}
+.rt-arm{position:absolute;left:calc(var(--u)*488);top:calc(var(--u)*-40);width:calc(var(--u)*420);height:calc(var(--u)*26);border-radius:calc(var(--u)*13);transform-origin:right center;transform:rotate(-38deg) translateX(calc(var(--u)*-40));background:linear-gradient(#f1f2f2,#8f9294 60%,#5e6163);box-shadow:0 4px 8px #0008}
+.rt-disc{position:absolute;left:50%;top:calc(var(--u)*-6);width:calc(var(--u)*640);height:calc(var(--u)*640);margin-left:calc(var(--u)*-320);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 30%,#ff6a55,#d8281c 55%,#a3150c);box-shadow:inset 0 0 0 calc(var(--u)*16) #efe6d2,inset 0 0 0 calc(var(--u)*22) #8c1d14,inset 0 calc(var(--u)*-12) calc(var(--u)*30) #0005,0 calc(var(--u)*16) calc(var(--u)*30) #000b}
+.rt-disc::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(150deg,#ffffff55 0%,#ffffff10 30%,transparent 45%)}
+.rt-disc b{color:#fff6e4;font:900 calc(var(--u)*200)/1 "Noto Sans KR",sans-serif;letter-spacing:.04em;text-shadow:0 calc(var(--u)*5) 0 #7a120a}
+.rt-disc small{margin-top:calc(var(--u)*16);color:#ffe0c8;font:700 calc(var(--u)*34)/1 "Barlow Condensed",sans-serif;letter-spacing:.4em}
+#wRadio[data-txlay="rwide"] .rt-vac{height:100%;width:52.8%;transform-origin:calc(var(--u)*900) calc(var(--u)*-40)}
+#wRadio[data-txlay="rwide"] .rt-disc{width:calc(var(--u)*560);height:calc(var(--u)*560);margin-left:calc(var(--u)*-280);top:calc(var(--u)*-50)}
+#wRadio[data-txlay="rwide"] .rt-disc b{font-size:calc(var(--u)*170)}

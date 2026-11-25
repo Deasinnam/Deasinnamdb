@@ -25,6 +25,14 @@ run('Taxi meter: retro skin, skin buttons, Fold7 fit', async ({context, origin, 
   assert.equal(await drums(), String(fare).padStart(6, '0'), 'fare on the drums');
   await p.click('#wRadio .rt-keys .tx-stop'); await p.waitForTimeout(200);
   assert.equal(await p.evaluate(() => AmpTaxi.state.paid), true, 'retro pay key works');
+  // 1.91 빈차 단추 → 동그란 빈차판이 승차요금을 가림, 주행하면 걷힘
+  await p.click('#wRadio .rt-keys .tx-reset'); await p.waitForTimeout(900);
+  assert.equal(await p.evaluate(() => [document.getElementById('wRadio').dataset.txvac, getComputedStyle(document.querySelector('#wRadio .rt-vac')).visibility].join()), '1,visible', 'vacant disc covers');
+  // 1.91 레트로에서 요금이 오르면 동전 소리
+  await p.evaluate(() => AmpTaxi.coin());
+  await p.click('#wRadio .rt-keys .tx-go'); await p.waitForTimeout(900);
+  assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('#wRadio .rt-vac')).visibility), 'hidden', 'disc swings away when running');
+  await p.click('#wRadio .rt-keys .tx-reset'); await p.waitForTimeout(200);
   await p.click('#wRadio .tx-sbnext'); await p.waitForTimeout(200);
   assert.equal(await p.evaluate(() => AmpTaxi.skin), 'lcd', '⇄ cycles');
   // 폴드7 네 가지 화면 × 세 스킨: 미터기가 창 안에 다 들어감
