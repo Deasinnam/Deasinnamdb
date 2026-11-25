@@ -89,6 +89,7 @@ jobs:
 
       - name: Releases에 대신남 원 Ver1 APK 올리기
         if: github.ref == 'refs/heads/daesinnam-one-v1'
+        continue-on-error: true   # 1.94: GitHub 릴리스 API가 500을 내도 아래 '대신남 스피드미터 초안'은 만들어지게
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
