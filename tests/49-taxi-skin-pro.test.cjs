@@ -14,7 +14,7 @@ run('Taxi meter: real electronic skin', async ({context, origin, errors}) => {
   assert.equal(await p.evaluate(() => AmpTaxi.skin), 'pro', 'default skin is the real electronic one');
   assert.equal(await p.locator('#wRadio .tx-pad2').isVisible(), true);
   assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#wRadio .tx-fn .tx-pk')].map(b => b.textContent)), ['GPS', '수평', '하늘', '안내', '스킨', '영수']);
-  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#wRadio .tx-keys .tx-k')].map(b => b.textContent)), ['빈차', '주행', '할증', '복합', '지불']);
+  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#wRadio .tx-dev .tx-keys .tx-k')].map(b => b.textContent)), ['빈차', '주행', '할증', '복합', '지불']);
   // 운행 시작 후 스킨을 바꿔도 금액·상태 그대로
   await p.click('#wRadio .tx-go');
   const before = await p.evaluate(() => [AmpTaxi.state.fare, AmpTaxi.state.on, document.querySelector('#wRadio .tx-fare').textContent]);

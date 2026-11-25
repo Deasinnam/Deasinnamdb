@@ -1,0 +1,43 @@
+const {run, assert} = require('./lib/harness.cjs');
+
+// 1.90 택시 미터기: 스킨 단추 줄, '레트로' 스킨(숫자 드럼·같은 상태), 폴드7 안쪽·바깥 화면(가로·세로)에서 넘치지 않음
+run('Taxi meter: retro skin, skin buttons, Fold7 fit', async ({context, origin, errors}) => {
+  const p = await context.newPage();
+  p.on('pageerror', e => errors.push(e.message));
+  await p.addInitScript(() => {
+    window.__build = 'special'; window.__dist = 'noradio,airline,dsp';
+    if (!sessionStorage.getItem('x')) { sessionStorage.setItem('x', 1); localStorage.clear(); localStorage.setItem('dna_taxiAck', 'true'); }
+  });
+  await p.setViewportSize({width: 876, height: 970});
+  await p.goto(origin); await p.waitForTimeout(1500);
+  await p.click('#ckRail [data-f="radio"]'); await p.waitForTimeout(300);
+  assert.deepEqual(await p.evaluate(() => [...document.querySelectorAll('#wRadio .tx-sb[data-sk]')].map(b => b.textContent)), ['실물 전자식', '레트로', 'LCD 클래식']);
+  // 운행 시작 → 레트로로 바꿔도 이어짐, 레트로 단추로 지불
+  await p.click('#wRadio .tx-dev .tx-go');
+  const fare = await p.evaluate(() => AmpTaxi.state.fare);
+  await p.click('#wRadio .tx-sb[data-sk="retro"]'); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => [AmpTaxi.skin, JSON.parse(localStorage.dna_taxiSkin)].join()), 'retro,retro');
+  assert.equal(await p.locator('#wRadio .rt-dev').isVisible(), true);
+  assert.equal(await p.locator('#wRadio .tx-dev').isVisible(), false);
+  assert.equal(await p.evaluate(() => document.querySelector('#wRadio .rt-keys .tx-go').classList.contains('on')), true, 'run key stays down');
+  const drums = () => p.evaluate(() => [...document.querySelectorAll('#wRadio .rt-big .rt-dr b')].map(b => Math.round(-parseFloat(b.style.transform.replace('translateY(', '')) / 10)).join(''));
+  await p.waitForTimeout(700);
+  assert.equal(await drums(), String(fare).padStart(6, '0'), 'fare on the drums');
+  await p.click('#wRadio .rt-keys .tx-stop'); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => AmpTaxi.state.paid), true, 'retro pay key works');
+  await p.click('#wRadio .tx-sbnext'); await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => AmpTaxi.skin), 'lcd', '⇄ cycles');
+  // 폴드7 네 가지 화면 × 세 스킨: 미터기가 창 안에 다 들어감
+  for (const [w, h] of [[876, 970], [970, 876], [411, 960], [960, 411]]) {
+    await p.setViewportSize({width: w, height: h});
+    for (const k of ['pro', 'retro', 'lcd']) {
+      await p.evaluate(k => { AmpTaxi.setSkin(k); AmpTaxi._preview({fare: 123456, spd: 32, km: 12.3, time: '15:46', next: 87}) }, k); await p.waitForTimeout(250);
+      const g = await p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(), W = r('#wRadio'), st = r('#wRadio .tx-stage');
+        const d = AmpTaxi.skin === 'retro' ? r('#wRadio .rt-dev') : r('#wRadio .tx-dev'), keys = [...document.querySelectorAll(AmpTaxi.skin === 'retro' ? '#wRadio .rt-keys .tx-k' : '#wRadio .tx-dev .tx-keys .tx-k')].map(b => b.getBoundingClientRect());
+        const f = document.querySelector('#wRadio .tx-fare');
+        return {devW: d.width, stW: st.width, top: d.top, bottom: d.bottom, stTop: st.top, stBottom: st.bottom + 30, winR: W.right, devR: d.right, keyB: Math.max(...keys.map(b => b.bottom)), clip: AmpTaxi.skin !== 'retro' && f.scrollWidth > f.clientWidth + 1}; });
+      assert.ok(g.devR <= g.winR + 1 && g.keyB <= g.stBottom && !g.clip, w + 'x' + h + ' ' + k + ' ' + JSON.stringify(g));
+      assert.ok(g.devW >= g.stW * 0.35, w + 'x' + h + ' ' + k + ' not tiny ' + JSON.stringify(g));
+    }
+  }
+});

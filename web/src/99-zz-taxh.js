@@ -5,7 +5,7 @@
  * 갤럽(가로질러 달리기) 발 순서: 먼 뒷발 → 가까운 뒷발 → 먼 앞발 → 가까운 앞발 → 네 발이 몸 아래로 모이는 공중 구간 → 다시 먼 뒷발.
  * 모든 움직임이 위상(0~1)의 주기 함수라 마지막 자세에서 첫 자세로 넘어갈 때 튀지 않음.
  * 속도는 애니메이션용으로만 부드럽게 보정(요금 계산과 무관): 평균 내고, 출발은 시속 5km 넘게 1초, 정차는 시속 2.5km 밑으로 1초 있어야 바뀜. */
-function TaxiHorse(cv){
+function TaxiHorse(cv,opt){opt=opt||{};   // opt.style: 'dots'(실물 전자식, 초록 도트 윤곽) · 'fill'(레트로, 크림색 실루엣)
   const G=62;                                   // 바닥선(말 좌표, 가로 0~100 · 세로 0~66)
   const LEGS=[                                   // 뿌리(어깨·엉덩이), 마디 길이, 무릎 굽는 방향, 위상 차, 가까운 다리 여부
     {k:'hf',root:[31,31],a:15,b:15,bend:-1,off:0.00,near:false,reach:11,lift:9, x0:3},   // 먼 뒷다리(먼저 착지)
@@ -70,8 +70,19 @@ function TaxiHorse(cv){
     const W=Math.max(40,Math.round(r.width*dpr)),H=Math.max(30,Math.round(r.height*dpr));
     if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     gw=cl(Math.round(r.width/1.7),56,96);gh=Math.round(gw*0.66);mk.width=mf.width=gw;mk.height=mf.height=gh}
+  function drawFill(ph,amp){
+    const r=cv.getBoundingClientRect(),dpr=Math.min(3,window.devicePixelRatio||1),W=Math.max(40,Math.round(r.width*dpr)),H=Math.max(30,Math.round(r.height*dpr));
+    if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+    const s=Math.min(W/100,H/68),ox=(W-100*s)/2,oy=H-66*s,p=pose(ph,amp);
+    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);ctx.setTransform(s,0,0,s,ox,oy);
+    // 땅에 스치는 흙 자국(달릴 때만, 말 아래 고정)
+    if(amp>0.05){ctx.strokeStyle=opt.near||'#efe3c2';ctx.globalAlpha=0.55*amp;ctx.lineWidth=0.9;ctx.lineCap='round';
+      for(let k=0;k<5;k++){const x=18+k*15+((ph*30+k*7)%6),w=4+((k*5)%4);ctx.beginPath();ctx.moveTo(x,G+2+(k%2));ctx.lineTo(x+w,G+2+(k%2));ctx.stroke()}ctx.globalAlpha=1}
+    ctx.fillStyle=ctx.strokeStyle=opt.far||'#b7ab8c';p.legs.filter(l=>!l.L.near).forEach(l=>limb(ctx,l,l.L.bend>0?4.4:6,2.8,2.2));
+    ctx.fillStyle=ctx.strokeStyle=opt.near||'#efe3c2';body(ctx,p);p.legs.filter(l=>l.L.near).forEach(l=>limb(ctx,l,l.L.bend>0?4.8:6.6,3,2.4));
+    ctx.fillStyle=opt.eye||'#23352c';const nb=[70,24];ctx.setTransform(1,0,0,1,0,0)}
   function draw(ph,amp){
-    if(!cv.isConnected)return;sizeGrid();
+    if(!cv.isConnected)return;if(opt.style==='fill')return drawFill(ph,amp);sizeGrid();
     const s=gw/100,cn=mk.getContext('2d'),cfr=mf.getContext('2d'),p=pose(ph,amp);
     for(const c of [cn,cfr]){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,gw,gh);c.setTransform(s,0,0,s,0,0);c.fillStyle=c.strokeStyle='#fff'}
     p.legs.filter(l=>!l.L.near).forEach(l=>limb(cfr,l,l.L.bend>0?4.4:6,2.8,2.2));

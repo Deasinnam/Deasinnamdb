@@ -3899,7 +3899,7 @@ const DIST=DISTF;
  * 갤럽(가로질러 달리기) 발 순서: 먼 뒷발 → 가까운 뒷발 → 먼 앞발 → 가까운 앞발 → 네 발이 몸 아래로 모이는 공중 구간 → 다시 먼 뒷발.
  * 모든 움직임이 위상(0~1)의 주기 함수라 마지막 자세에서 첫 자세로 넘어갈 때 튀지 않음.
  * 속도는 애니메이션용으로만 부드럽게 보정(요금 계산과 무관): 평균 내고, 출발은 시속 5km 넘게 1초, 정차는 시속 2.5km 밑으로 1초 있어야 바뀜. */
-function TaxiHorse(cv){
+function TaxiHorse(cv,opt){opt=opt||{};   // opt.style: 'dots'(실물 전자식, 초록 도트 윤곽) · 'fill'(레트로, 크림색 실루엣)
   const G=62;                                   // 바닥선(말 좌표, 가로 0~100 · 세로 0~66)
   const LEGS=[                                   // 뿌리(어깨·엉덩이), 마디 길이, 무릎 굽는 방향, 위상 차, 가까운 다리 여부
     {k:'hf',root:[31,31],a:15,b:15,bend:-1,off:0.00,near:false,reach:11,lift:9, x0:3},   // 먼 뒷다리(먼저 착지)
@@ -3964,8 +3964,19 @@ function TaxiHorse(cv){
     const W=Math.max(40,Math.round(r.width*dpr)),H=Math.max(30,Math.round(r.height*dpr));
     if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
     gw=cl(Math.round(r.width/1.7),56,96);gh=Math.round(gw*0.66);mk.width=mf.width=gw;mk.height=mf.height=gh}
+  function drawFill(ph,amp){
+    const r=cv.getBoundingClientRect(),dpr=Math.min(3,window.devicePixelRatio||1),W=Math.max(40,Math.round(r.width*dpr)),H=Math.max(30,Math.round(r.height*dpr));
+    if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+    const s=Math.min(W/100,H/68),ox=(W-100*s)/2,oy=H-66*s,p=pose(ph,amp);
+    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);ctx.setTransform(s,0,0,s,ox,oy);
+    // 땅에 스치는 흙 자국(달릴 때만, 말 아래 고정)
+    if(amp>0.05){ctx.strokeStyle=opt.near||'#efe3c2';ctx.globalAlpha=0.55*amp;ctx.lineWidth=0.9;ctx.lineCap='round';
+      for(let k=0;k<5;k++){const x=18+k*15+((ph*30+k*7)%6),w=4+((k*5)%4);ctx.beginPath();ctx.moveTo(x,G+2+(k%2));ctx.lineTo(x+w,G+2+(k%2));ctx.stroke()}ctx.globalAlpha=1}
+    ctx.fillStyle=ctx.strokeStyle=opt.far||'#b7ab8c';p.legs.filter(l=>!l.L.near).forEach(l=>limb(ctx,l,l.L.bend>0?4.4:6,2.8,2.2));
+    ctx.fillStyle=ctx.strokeStyle=opt.near||'#efe3c2';body(ctx,p);p.legs.filter(l=>l.L.near).forEach(l=>limb(ctx,l,l.L.bend>0?4.8:6.6,3,2.4));
+    ctx.fillStyle=opt.eye||'#23352c';const nb=[70,24];ctx.setTransform(1,0,0,1,0,0)}
   function draw(ph,amp){
-    if(!cv.isConnected)return;sizeGrid();
+    if(!cv.isConnected)return;if(opt.style==='fill')return drawFill(ph,amp);sizeGrid();
     const s=gw/100,cn=mk.getContext('2d'),cfr=mf.getContext('2d'),p=pose(ph,amp);
     for(const c of [cn,cfr]){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,gw,gh);c.setTransform(s,0,0,s,0,0);c.fillStyle=c.strokeStyle='#fff'}
     p.legs.filter(l=>!l.L.near).forEach(l=>limb(cfr,l,l.L.bend>0?4.4:6,2.8,2.2));
@@ -4006,7 +4017,7 @@ function TaxiHorse(cv){
     _step:step,
     footDown:(ph,amp)=>pose(ph,amp).legs.map(l=>foot(l.L,ph,amp).down)}}
 /* ===== 99-zz-taxi.js ===== */
-// 1.88 택시 미터기 (1.89 '실물 전자식' 스킨)(라디오가 빠진 판 = noradio): 라디오 자리(위 도구 줄 버튼·왼쪽 레일·라디오 창)에 넣음
+// 1.88 택시 미터기 (1.89 '실물 전자식' 스킨, 1.90 '레트로' 스킨·스킨 단추·폴드7 맞춤)(라디오가 빠진 판 = noradio): 라디오 자리(위 도구 줄 버튼·왼쪽 레일·라디오 창)에 넣음
 // 이 파일들은 tools/build-web.cjs가 순서대로 이어 붙여 하나의 함수 범위(app.js)로 만듭니다.
 /* 요금: 서울 중형택시 신고요금(2023.2.1~, 서울시 교통 누리집 기준)
  *  주간  기본 4,800원(1.6km) · 131m당 100원 · 30초당 100원
@@ -4032,29 +4043,34 @@ const Taxi=(()=>{
   R.setAttribute('data-taxi','');
   const UNIT_M=131,UNIT_S=30,BASE_M=1600,SLOW=15.72;
   const rate=d=>{const h=(d||new Date()).getHours();return h===23||h<2?{base:6700,step:140,tag:'심야 40%'}:h===22||(h>=2&&h<4)?{base:5800,step:120,tag:'심야 20%'}:{base:4800,step:100,tag:''}};
-  // 상태: on(주행 중) · paid(지불 화면) · fare · eqM(기본거리 이후 쌓인 환산 거리) · km · sec
+  // 상태: on(주행 중) · paid(지불 화면) · fare · eqM(기본거리 이후 쌓인 환산 거리) · km · sec · sur(할증 %)
   let S=Object.assign({on:false,paid:false,fare:0,eqM:0,used:0,km:0,sec:0,t0:0,base:0},store.get('taxi',{}));
-  let lastD=null,lastT=0,tickAnim=0;
+  let lastD=null,lastT=0;
   const save=()=>store.set('taxi',S);
+  /* 스킨 3가지(store 'taxiSkin'): pro 실물 전자식 · retro 레트로(은색 기계식) · lcd LCD 클래식.
+   * 세 스킨이 같은 상태(S)와 같은 단추 처리를 써서, 운행 중에 바꿔도 금액·거리·시간·선택 상태가 그대로 이어짐 */
+  const SKINS=[['pro','실물 전자식'],['retro','레트로'],['lcd','LCD 클래식']];
+  const FN=[['gps','GPS','GPS 켜기·끄기'],['level','수평','지금 자세를 수평으로'],['sky','하늘','하늘(주간·야간) 설정'],['guide','안내','택시 미터기 설명'],['skin','스킨','미터기 스킨 바꾸기'],['rcpt','영수','이번 운행 요약']];
+  const KEYS='<button type="button" class="tx-k tx-reset">빈차</button><button type="button" class="tx-k tx-go">주행</button><button type="button" class="tx-k tx-sur">할증</button><button type="button" class="tx-k tx-mix">복합</button><button type="button" class="tx-k tx-stop">지불</button>';
+  const drum=(n,cls)=>'<span class="rt-drums '+cls+'">'+Array.from({length:n},()=>'<i class="rt-dr"><b>'+'0123456789'.split('').map(d=>'<em>'+d+'</em>').join('')+'</b></i>').join('')+'</span>';
   // ---- 화면 ----
   const bar=W.querySelector('.bar .t');if(bar)bar.innerHTML='<span class="rd-tt">Taxi Meter</span><span class="rd-t2">Taxi</span>';
   const st=W.querySelector('#rdSt');if(st)st.textContent='빈차';
   const com=W.querySelector('.rd-com');if(com)com.textContent='SEOUL';
-  /* 1.89 스킨: lcd(연두빛 LCD) · pro(실물 전자식 — 검은 액정, 하늘색 요금, 초록 도트 말, 물리 키패드). 고른 값은 store 'taxiSkin'.
-   * 두 스킨은 같은 상태(S)와 같은 단추 처리를 써서, 운행 중에 바꿔도 금액·거리·시간이 그대로 이어짐 */
-  const SKINS=[['pro','실물 전자식'],['lcd','LCD 클래식']];
-  const FN=[['gps','GPS','GPS 켜기·끄기'],['level','수평','지금 자세를 수평으로'],['sky','하늘','하늘(주간·야간) 설정'],['guide','안내','택시 미터기 설명'],['skin','스킨','미터기 스킨 바꾸기'],['rcpt','영수','이번 운행 요약']];
   const body=document.createElement('div');body.className='body tx-body';
-  // 생김새: 실제 미터기처럼 검은 테 + 연두빛 LCD(말·속도·요금·할증) + 아래 색 단추(빈차·주행·할증·복합·지불) + 오른쪽 숫자 키(장식)
-  body.innerHTML=`<div class="tx-panel"><div class="tx-dev">
+  body.innerHTML=`<div class="tx-panel">
+  <div class="tx-skinbar" role="group" aria-label="미터기 스킨"><span>스킨</span>${SKINS.map(k=>'<button type="button" class="tx-sb" data-sk="'+k[0]+'">'+k[1]+'</button>').join('')}<button type="button" class="tx-sb tx-sbnext" aria-label="다음 스킨">⇄</button></div>
+  <div class="tx-stage">
+  <div class="tx-dev">
     <div class="tx-face">
       <button type="button" class="tx-meter tx-lcd" aria-label="미터기 켜기·끄기">
+        <div class="tx-cap">서울 · 중형</div>
         <div class="tx-l1"><span class="tx-mode">빈차</span><span class="tx-spdl"><b class="tx-spd">0.0</b> Km/h</span></div>
-        <div class="tx-cap">서울 · 중형</div><div class="tx-l2"><div class="tx-lcol"><canvas class="tx-hcv" aria-hidden="true"></canvas><div class="tx-pct"><b class="tx-surp">0%</b><small class="tx-night">주간</small></div></div><span class="tx-fare">0</span><span class="tx-won">원</span></div>
+        <div class="tx-l2"><div class="tx-lcol"><canvas class="tx-hcv" aria-hidden="true"></canvas><div class="tx-pct"><b class="tx-surp">0%</b><small class="tx-night">주간</small></div></div><span class="tx-fare">0</span><span class="tx-won">원</span></div>
         <div class="tx-track" aria-hidden="true"><div class="tx-ground"></div><div class="tx-horse">${HORSE}</div></div>
         <div class="tx-l3"><span><b class="tx-km">0.00</b>km</span><span><b class="tx-time">00:00</b></span><span>다음 <b class="tx-next">—</b></span></div>
       </button>
-      <div class="tx-keys"><button type="button" class="tx-k tx-reset">빈차</button><button type="button" class="tx-k tx-go">주행</button><button type="button" class="tx-k tx-sur">할증</button><button type="button" class="tx-k tx-mix">복합</button><button type="button" class="tx-k tx-stop">지불</button></div>
+      <div class="tx-keys">${KEYS}</div>
     </div>
     <div class="tx-pad2"><div class="tx-ptitle"><b>전자택시미터</b><span>ELECTRONIC TAXIMETER</span></div>
       <div class="tx-pkeys"><div class="tx-fn">${FN.map(f=>'<button type="button" class="tx-pk" data-fn="'+f[0]+'" title="'+f[2]+'">'+f[1]+'</button>').join('')}</div>
@@ -4062,49 +4078,88 @@ const Taxi=(()=>{
       <div class="tx-slot" aria-hidden="true"><i></i><b></b></div></div>
     <div class="tx-pad" aria-hidden="true"><div class="tx-brand">ELECTRONIC TAXIMETER</div><div class="tx-grid">${['구분','1','2','3','회송','4','5','6','시외','7','8','9','휴무','설정','0','취소'].map(k=>'<i>'+k+'</i>').join('')}</div></div>
   </div>
-  <div class="tx-warn" role="note"><b>재미로만 즐겨 주세요</b> · 이 택시 미터기는 놀이용 기능이에요. 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 안 돼요. 자가용으로 돈을 받고 사람을 태우는 것은 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. 금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</div>
+  <div class="rt-dev" aria-label="레트로 택시 미터기">
+    <div class="rt-glass">
+      <i class="rt-screw s1"></i><i class="rt-screw s2"></i><i class="rt-screw s3"></i><i class="rt-screw s4"></i>
+      <div class="rt-top"><span class="rt-flag tx-mode">빈차</span><h4>승 차 요 금</h4>
+        <button type="button" class="rt-fare tx-meter" aria-label="미터기 켜기·끄기">${drum(6,'rt-big')}<span class="rt-won">원</span></button></div>
+      <div class="rt-low"><div class="rt-meter"><small>거 리 <em>km</em></small>${drum(3,'rt-sm rt-km')}</div>
+        <canvas class="rt-hcv" aria-hidden="true"></canvas>
+        <div class="rt-meter"><small>시 간 <em>분</em></small>${drum(3,'rt-sm rt-min')}</div>
+        <div class="rt-keys">${KEYS}</div></div>
+    </div>
+    <div class="rt-latch" aria-hidden="true"></div>
+  </div>
+  </div>
+  <div class="tx-warn" role="note"><b>재미로만</b> 즐기는 기능이에요 · 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. <span class="tx-wmore">금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</span></div>
   <div class="tx-ack" hidden><div class="tx-ackc"><b>🐎 택시 미터기는 재미용이에요</b><p>표시되는 금액은 서울 중형택시 요금으로 계산한 <b>참고값</b>이에요. 이 금액으로 동승자에게 <b>실제 요금을 받거나 돈을 주고받으면</b> 자가용 유상운송(「여객자동차 운수사업법」 제81조) 위반이 될 수 있어요.</p><button type="button" class="pill on tx-ackok">알겠어요, 재미로만 쓸게요</button></div></div>
   </div>`;
   W.appendChild(body);
-  const q=s=>body.querySelector(s);
-  const horse=TaxiHorse(q('.tx-hcv'));
+  const q=s=>body.querySelector(s),qa=s=>body.querySelectorAll(s),each=(s,f)=>qa(s).forEach(f);
+  const horse=TaxiHorse(q('.tx-hcv')),horse2=TaxiHorse(q('.rt-hcv'),{style:'fill',near:'#efe4c4',far:'#a99d7e'});
   let PV=null;   // 미리보기 값(시안 확인용, AmpTaxi._preview) — 실제 상태는 건드리지 않음
   const ss=document.createElement('select');ss.className='sel gsbar tx-skinsel';ss.setAttribute('aria-label','택시 미터기 스킨');
   ss.innerHTML=SKINS.map(k=>'<option value="'+k[0]+'">'+k[1]+'</option>').join('');
   {const bb=W.querySelector('.bar'),gr=bb&&bb.querySelector('.groove');if(bb)bb.insertBefore(ss,gr?gr.nextSibling:null)}
-  function setSkin(k){if(!SKINS.some(x=>x[0]===k))k='pro';W.dataset.txskin=k;ss.value=k;store.set('taxiSkin',k);fitFare();if(k==='pro')horse.live()}
+  function setSkin(k){if(!SKINS.some(x=>x[0]===k))k='pro';W.dataset.txskin=k;ss.value=k;store.set('taxiSkin',k);
+    each('.tx-sb[data-sk]',b=>b.classList.toggle('on',b.dataset.sk===k));fit();if(k==='pro')horse.live();if(k==='retro')horse2.live()}
+  const nextSkin=()=>{const i=SKINS.findIndex(x=>x[0]===W.dataset.txskin);setSkin(SKINS[(i+1)%SKINS.length][0]);toast('미터기 스킨: '+SKINS.find(x=>x[0]===W.dataset.txskin)[1])};
   ss.onchange=()=>setSkin(ss.value);
+  each('.tx-sb[data-sk]',b=>b.onclick=()=>setSkin(b.dataset.sk));q('.tx-sbnext').onclick=nextSkin;
+  /* 화면 맞춤(폴드7 안쪽·바깥 화면, 가로·세로): 미터기를 '설계 폭 1000' 단위(--u)로 그리고, 쓸 수 있는 칸의 폭과 높이에 맞춰 --u를 정함.
+   * 실물 전자식: 넓으면 액정|키패드 가로 배치(가로:세로 2.55), 좁거나 세로면 위아래 배치(1.12). 레트로: 거의 정사각(0.92) */
+  const stage=q('.tx-stage');
+  function fit(){
+    const k=W.dataset.txskin,pw=stage.clientWidth;if(!pw)return;
+    const fill=W.getBoundingClientRect().height>=innerHeight*0.8;
+    const ah=Math.max(150,fill?stage.clientHeight:Math.min(innerHeight*0.72,900));
+    let lay='wide',asp=2.55,base=1000;
+    if(k==='pro'){if(pw/ah<1.5){lay='tall';asp=1.12}}
+    else if(k==='retro'){if(pw/ah>1.7){lay='rwide';asp=3.3;base=1800}else{lay='sq';asp=0.92}}
+    else{asp=pw/ah;lay=ah<300?'short':'wide'}
+    const dw=Math.min(pw,ah*asp,k==='retro'?(base===1800?1500:980):1600);
+    W.style.setProperty('--u',(dw/base).toFixed(4)+'px');W.style.setProperty('--ah',Math.round(ah)+'px');W.dataset.txlay=lay;
+    fitFare()}
+  new ResizeObserver(()=>fit()).observe(stage);addEventListener('resize',fit);
   function fitFare(){const f=q('.tx-fare');f.style.fontSize='';let i=0;while(f.scrollWidth>f.clientWidth+1&&i++<12){const cur=parseFloat(getComputedStyle(f).fontSize);f.style.fontSize=(cur*0.92)+'px'}}
+  // 레트로 숫자 드럼: 자리마다 0~9 띠를 위아래로 굴림
+  function setDrums(sel,str){const ds=qa(sel+' .rt-dr');const t=str.padStart(ds.length,'0').slice(-ds.length);ds.forEach((d,i)=>{d.firstChild.style.transform='translateY('+(-10*(+t[i]||0))+'%)'})}
   // 키패드: 실제 앱 기능
-  body.querySelectorAll('.tx-pk').forEach(b=>b.onclick=e=>{e.stopPropagation();const f=b.dataset.fn;
+  each('.tx-pk',b=>b.onclick=e=>{e.stopPropagation();const f=b.dataset.fn;
     if(f==='gps'){const g=$('#gOn');if(g)g.click()}
     else if(f==='level'){const l=$('#pfdLevelQuick');if(l)l.click();toast('지금 자세를 수평으로 맞췄어요')}
     else if(f==='sky'){const t=$('#pfdThemeQuick');if(t)t.click()}
     else if(f==='guide'){try{AmpGuide.open('taxi')}catch(e){}}
-    else if(f==='skin'){const i=SKINS.findIndex(x=>x[0]===W.dataset.txskin);setSkin(SKINS[(i+1)%SKINS.length][0]);toast('미터기 스킨: '+SKINS.find(x=>x[0]===W.dataset.txskin)[1])}
+    else if(f==='skin')nextSkin();
     else if(f==='rcpt'){const m=Math.floor(S.sec/60);toast(S.fare?('이번 운행 '+won(S.paid?Math.round(S.fare/100)*100:S.fare)+'원 · '+S.km.toFixed(2)+'km · '+m+'분'):'운행 기록이 없어요')}
     else if(f==='set'){const s=$('#setBtn');if(s)s.click()}
     else if(f==='cancel'){if(S.sur){S.sur=0;save();ui();toast('할증 끔')}}});
   const won=n=>Math.round(n).toLocaleString('ko-KR');
-  function nextLeft(){if(!S.on)return '—';const r=rate();if(S.used<BASE_M)return Math.max(0,Math.ceil(BASE_M-S.used))+' m';return Math.max(1,Math.ceil(UNIT_M-(S.eqM%UNIT_M)))+' m'}
+  function nextLeft(){if(!S.on)return '—';if(S.used<BASE_M)return Math.max(0,Math.ceil(BASE_M-S.used))+' m';return Math.max(1,Math.ceil(UNIT_M-(S.eqM%UNIT_M)))+' m'}
+  const setT=(s,v)=>each(s,e=>{if(e.textContent!==v)e.textContent=v});
+  const tog=(s,c,v)=>each(s,e=>e.classList.toggle(c,v));
   function ui(){
     const r=rate(),fare=S.paid?Math.round(S.fare/100)*100:S.fare;
-    const fs=PV?won(PV.fare):S.on||S.paid?won(fare):'0';if(q('.tx-fare').textContent!==fs){q('.tx-fare').textContent=fs;fitFare()}
-    q('.tx-km').textContent=(S.km).toFixed(2);
-    const m=Math.floor(S.sec/60),s=Math.floor(S.sec%60);q('.tx-time').textContent=(m>99?m:String(m).padStart(2,'0'))+':'+String(s).padStart(2,'0');
-    q('.tx-spd').textContent=(PV?PV.spd:(spdNow||0)).toFixed(1);q('.tx-mode').textContent=S.paid?'지불':S.on?'주행':'빈차';q('.tx-next').textContent=nextLeft();
-    W.dataset.tx=S.paid?'paid':S.on?'run':'idle';
-    const sp=surPct(r);q('.tx-surp').textContent=sp+'%';q('.tx-night').textContent=r.tag?r.tag.replace(' ',' '):'주간';q('.tx-sur').classList.toggle('on',S.sur===20);q('.tx-mix').classList.toggle('on',S.sur===40);
-    q('.tx-go').classList.toggle('on',S.on);q('.tx-reset').classList.toggle('on',!S.on&&!S.paid);q('.tx-stop').classList.toggle('on',S.paid);
-    if(PV){q('.tx-km').textContent=PV.km.toFixed(2);q('.tx-time').textContent=PV.time;q('.tx-next').textContent=PV.next+' m';q('.tx-mode').textContent=PV.mode||'주행';W.dataset.tx='run';q('.tx-go').classList.add('on');q('.tx-reset').classList.remove('on')}
-    horse.set(PV?true:S.on,PV?PV.spd:(spdNow||0));
+    const fv=PV?PV.fare:S.on||S.paid?fare:0,fs=fv?won(fv):'0';
+    if(q('.tx-fare').textContent!==fs){q('.tx-fare').textContent=fs;fitFare()}
+    setDrums('.rt-big',String(Math.round(fv)));
+    const km=PV?PV.km:S.km,sec=PV?(PV.min||0)*60:S.sec;
+    setT('.tx-km',km.toFixed(2));
+    setDrums('.rt-km',String(Math.round(Math.min(99.9,km)*10)));setDrums('.rt-min',String(Math.min(999,Math.floor(sec/60))));
+    const m=Math.floor(S.sec/60),s=Math.floor(S.sec%60);setT('.tx-time',PV?PV.time:(m>99?m:String(m).padStart(2,'0'))+':'+String(s).padStart(2,'0'));
+    setT('.tx-spd',(PV?PV.spd:(spdNow||0)).toFixed(1));
+    const mode=PV?(PV.mode||'주행'):S.paid?'지불':S.on?'주행':'빈차';setT('.tx-mode',mode);setT('.tx-next',PV?PV.next+' m':nextLeft());
+    W.dataset.tx=PV?'run':S.paid?'paid':S.on?'run':'idle';
+    const sp=surPct(r);setT('.tx-surp',sp+'%');setT('.tx-night',r.tag||'주간');tog('.tx-sur','on',S.sur===20);tog('.tx-mix','on',S.sur===40);
+    const on=PV?true:S.on;tog('.tx-go','on',on);tog('.tx-reset','on',!on&&!S.paid);tog('.tx-stop','on',!PV&&S.paid);
+    horse.set(on,PV?PV.spd:(spdNow||0));horse2.set(on,PV?PV.spd:(spdNow||0));
     if(st)st.textContent=S.paid?'지불 '+won(fare)+'원':S.on?'주행 '+won(S.fare)+'원':'빈차';
-    // 말: 주행 중이면 달림(빠를수록 빨리), 멈춰 있으면 제자리 걸음, 빈차면 섬
+    // LCD 클래식의 말(svg): 주행 중이면 달림, 진행 막대 = 다음 요금까지
     const v=spdNow||0,h=q('.tx-horse');
     h.style.setProperty('--gait',(S.on?(v>3?Math.max(.28,.9-v/160):1.4):0)+'s');
     W.style.setProperty('--gnd',(v>3?Math.max(.12,1.2-v/90):.9)+'s');W.classList.toggle('tx-going',S.on);W.classList.toggle('tx-fast',S.on&&v>3);
     const prog=S.on?(S.used<BASE_M?S.used/BASE_M:(S.eqM%UNIT_M)/UNIT_M):S.paid?1:0;
-    h.style.left='calc((100% - '+(h.offsetWidth+16)+'px) * '+prog.toFixed(3)+' + 8px)';
+    if(h.offsetWidth)h.style.left='calc((100% - '+(h.offsetWidth+16)+'px) * '+prog.toFixed(3)+' + 8px)';
   }
   function surPct(r){const nt=/40/.test(r.tag)?40:/20/.test(r.tag)?20:0;return Math.min(60,nt+(S.sur||0))}
   function add(n){S.fare+=n;W.classList.remove('tx-tick');void W.offsetWidth;W.classList.add('tx-tick')}
@@ -4128,11 +4183,13 @@ const Taxi=(()=>{
   function pause(){S.on=false;save();ui()}
   function pay(){if(!S.fare)return;S.on=false;S.paid=true;save();ui();toast('지불 요금 '+won(Math.round(S.fare/100)*100)+'원 · '+S.km.toFixed(2)+'km')}
   function reset(){S={on:false,paid:false,fare:0,eqM:0,used:0,n:0,km:0,sec:0,t0:0,base:0,sur:0};save();ui()}
-  q('.tx-go').onclick=()=>S.on?pause():start();
-  q('.tx-meter').onclick=()=>S.on?pause():start();
+  const toggle=()=>S.on?pause():start();
+  each('.tx-go',b=>b.onclick=e=>{e.stopPropagation();toggle()});
+  each('.tx-meter',b=>b.onclick=toggle);
   q('.tx-ackok').onclick=e=>{e.stopPropagation();store.set('taxiAck',true);q('.tx-ack').hidden=true;start0()};
-  q('.tx-stop').onclick=pay;q('.tx-reset').onclick=reset;
-  const setSur=v=>{S.sur=S.sur===v?0:v;save();ui();toast(S.sur?'시계외 할증 '+S.sur+'% (다음 요금부터)':'할증 끔')};q('.tx-sur').onclick=()=>setSur(20);q('.tx-mix').onclick=()=>setSur(40);
+  each('.tx-stop',b=>b.onclick=e=>{e.stopPropagation();pay()});each('.tx-reset',b=>b.onclick=e=>{e.stopPropagation();reset()});
+  const setSur=v=>{S.sur=S.sur===v?0:v;save();ui();toast(S.sur?'시계외 할증 '+S.sur+'% (다음 요금부터)':'할증 끔')};
+  each('.tx-sur',b=>b.onclick=e=>{e.stopPropagation();setSur(20)});each('.tx-mix',b=>b.onclick=e=>{e.stopPropagation();setSur(40)});
   // 라디오 자리 되살리기: 위 버튼·레일·창을 택시 미터기로
   try{openRadio=function(){W.classList.remove('collapsed');if(isCk2())ckFocus('radio');else W.scrollIntoView({block:'start',behavior:'smooth'})}}catch(e){}
   try{rdEnsure=function(){};rdSigRun=function(){}}catch(e){}
@@ -4143,7 +4200,7 @@ const Taxi=(()=>{
   const ren=()=>document.querySelectorAll('select option[value="radio"]').forEach(o=>{if(o.closest('#sCarSrc'))o.remove();else if(!/택시/.test(o.textContent))o.textContent='택시 미터기'});ren();setInterval(ren,2000);
   setSkin(store.get('taxiSkin','pro'));document.addEventListener('touchstart',()=>{},{passive:true});   // 안드로이드 웹뷰에서 :active(키캡 눌림)가 보이게
   setInterval(tick,500);ui();
-  return {start,pause,pay,reset,setSkin,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,
+  return {start,pause,pay,reset,setSkin,fit,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,horse2,
     _preview(v){PV=v||null;ui()}};
 })();
 window.AmpTaxi=Taxi;window.TaxiHorseTest=TaxiHorse;   // 시험(테스트 49)에서 말만 따로 그려 볼 때

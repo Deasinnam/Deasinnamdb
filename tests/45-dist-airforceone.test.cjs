@@ -20,7 +20,7 @@ for (const flags of ['noradio', 'noradio,lite']) {
     assert.equal(r.last, 'local'); assert.equal(r.special, '1', 'same airline special skin');
     // 라디오 재생은 아무 일도 안 함
     await p.evaluate(() => { AmpDist.focus('radio'); AmpRadio.play({id: 'x', url: 'http://x'}); }); await p.waitForTimeout(300);
-    assert.equal(await p.locator('#wRadio .tx-meter').isVisible(), true, 'radio focus shows the taxi meter');
+    assert.equal(await p.locator('#wRadio .tx-lcd').isVisible(), true, 'radio focus shows the taxi meter');
     assert.equal(await p.evaluate(() => window.AmpRadioT.playing), false);
     // 스피드미터·스페셜 풍경은 그대로
     await p.locator('#ckRail button[data-f="gps"]').click(); await p.waitForTimeout(400);

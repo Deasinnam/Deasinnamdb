@@ -2956,7 +2956,10 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 :root[data-guide] body{overflow:hidden}
 /* 1.88 택시 미터기(라디오 빠진 판의 라디오 자리) — 검은 테 + 연두빛 LCD + 색 단추 + 숫자 키 */
 #wRadio .tx-body{display:flex;flex-direction:column;padding:10px;flex:1 1 auto;min-height:0}
-.tx-panel{flex:1 1 auto;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.tx-panel{flex:1 1 auto;display:flex;flex-direction:column;gap:8px;min-height:0}
+.tx-stage{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#wRadio:not([data-txskin="lcd"]) .tx-stage{align-items:center}
+#wRadio[data-txskin="lcd"] .tx-stage{flex:1 1 auto;display:block;overflow:visible}
 .tx-dev{display:flex;gap:10px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#26282b,#111214 60%,#0b0c0d);box-shadow:0 0 0 1px #000,inset 0 1px 0 #4a4d52,inset 0 -2px 6px #000,0 8px 20px #0008}
 .tx-face{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}
 .tx-lcd{display:flex;flex-direction:column;gap:2px;width:100%;padding:10px 14px 8px;border:3px solid #050505;border-radius:8px;text-align:left;cursor:pointer;color:#141a06;
@@ -3004,7 +3007,8 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .tx-brand{color:#cfd3dc;font:700 10px/1.2 "Barlow Condensed",sans-serif;letter-spacing:.12em;text-align:center}
 .tx-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-content:center}
 .tx-grid i{display:flex;align-items:center;justify-content:center;aspect-ratio:1.2;border-radius:4px;background:linear-gradient(#2c2e32,#17181a);box-shadow:inset 0 1px 0 #4a4d52,0 1px 0 #000;color:#e8eaee;font:700 12px/1 "Noto Sans KR",sans-serif;font-style:normal}
-.tx-warn{padding:10px 12px;border:1px solid #7a5a12;border-radius:8px;background:#221a08;color:#e9dcb8;font-size:13px;line-height:1.55;word-break:keep-all}
+.tx-warn{flex:none;padding:7px 11px;border:1px solid #7a5a12;border-radius:8px;background:#221a08;color:#e9dcb8;font-size:12.5px;line-height:1.5;word-break:keep-all}
+@media (max-height:620px){.tx-wmore{display:none}}
 .tx-warn b{color:#ffcf6a}
 #wRadio{position:relative}
 .tx-ack{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:16px;background:#000b}
@@ -3015,37 +3019,51 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 .tx-ackc p b{color:#ffcf6a}
 .tx-ackok{width:100%;padding:12px;font-size:16px;font-weight:800;justify-content:center}
 @media (max-width:620px){.tx-pad{display:none}}
-/* 1.89 택시 미터기 '실물 전자식' 스킨(data-txskin="pro"): 무광 검은 케이스, 살짝 들어간 검은 액정, 하늘색 요금, 초록 속도·도트 말, 오른쪽 1/3 물리 키패드 */
+/* 1.90 스킨 단추 줄(실물 전자식 · 레트로 · LCD 클래식 · ⇄) */
+.tx-skinbar{flex:none;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tx-skinbar::-webkit-scrollbar{display:none}
+.tx-skinbar>span{flex:none;color:#a69c80;font:700 12px/1 "Noto Sans KR",sans-serif;letter-spacing:.1em;margin-right:2px}
+.tx-sb{flex:none;padding:8px 13px;border:1px solid #000;border-radius:16px;background:#151a16;color:#c9bf9f;font:700 13.5px/1 "Noto Sans KR",sans-serif;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff12}
+.tx-sb.on{background:linear-gradient(180deg,#f3cf7a,#c98f2a);color:#1d1408}
+.tx-sbnext{margin-left:auto;padding:8px 14px;font-size:15px}
 .tx-skinsel{max-width:150px;margin:0 6px}
-.tx-hcv,.tx-cap,.tx-pad2{display:none}
+/* 스킨별로 보일 것 */
+.tx-hcv,.tx-cap,.tx-pad2,.rt-dev{display:none}
+#wRadio[data-txskin="retro"] .tx-dev{display:none}
+#wRadio[data-txskin="retro"] .rt-dev{display:block}
 #wRadio[data-txskin="pro"] .tx-track,#wRadio[data-txskin="pro"] .tx-pad,#wRadio[data-txskin="pro"] .tx-night{display:none}
-#wRadio[data-txskin="pro"] .tx-dev{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;padding:14px;border-radius:18px;
+
+/* 1.89·1.90 '실물 전자식'(data-txskin="pro") — 크기는 모두 --u(미터기 설계 폭 1000의 1칸)로, 화면 폭·높이에 맞춰 JS가 정함(폴드7 안쪽·바깥, 가로·세로)
+ * 넓으면 액정+운행 단추 | 키패드(2:1), 좁으면 위아래(액정 글자는 1.45배) */
+#wRadio[data-txskin="pro"]{--lf:1}
+#wRadio[data-txskin="pro"][data-txlay="tall"]{--lf:1.42}
+#wRadio[data-txskin="pro"] .tx-dev{flex:none;width:calc(var(--u)*1000);display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:calc(var(--u)*14);padding:calc(var(--u)*16);border-radius:calc(var(--u)*24);
   background:radial-gradient(140% 120% at 30% 0%,#2a2b2e 0%,#17181a 45%,#0e0f10 100%);
   box-shadow:0 0 0 1px #000,inset 0 1px 0 #3c3e42,inset 0 -3px 8px #000,0 10px 26px #000a}
-/* 액정: 케이스보다 살짝 들어간 테두리 */
-#wRadio[data-txskin="pro"] .tx-lcd{position:relative;gap:0;padding:clamp(8px,1.6vw,14px) clamp(10px,2vw,18px) clamp(6px,1.2vw,10px);border:0;border-radius:10px;
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-dev{grid-template-columns:1fr;gap:calc(var(--u)*18)}
+#wRadio[data-txskin="pro"] .tx-face{gap:calc(var(--u)*12)}
+#wRadio[data-txskin="pro"] .tx-lcd{position:relative;gap:0;padding:calc(var(--u)*14) calc(var(--u)*20) calc(var(--u)*10);border:0;border-radius:calc(var(--u)*12);
   background:radial-gradient(120% 140% at 70% 30%,#0b1014 0%,#050708 70%);color:#dfe8f0;
-  box-shadow:0 0 0 2px #050505,0 0 0 5px #1d1e20,0 0 0 6px #000,inset 0 3px 10px #000,inset 0 0 0 1px #20262b;font-family:"Barlow","Noto Sans KR",sans-serif}
-#wRadio[data-txskin="pro"] .tx-lcd::after{content:"";position:absolute;inset:0;border-radius:10px;pointer-events:none;background:linear-gradient(160deg,#ffffff0d 0%,transparent 35%)}
-#wRadio[data-txskin="pro"] .tx-cap{display:block;text-align:center;color:#e8d9a8;font:800 clamp(12px,1.9vw,17px)/1.2 "Noto Sans KR",sans-serif;letter-spacing:.2em;opacity:.85}
-#wRadio[data-txskin="pro"] .tx-l1{margin-top:2px}
-#wRadio[data-txskin="pro"] .tx-mode{background:transparent;color:#c7d2ff;border:2px solid #6f7dff;border-radius:6px;padding:1px 10px;font-size:clamp(14px,2.4vw,22px)}
-#wRadio[data-txskin="pro"] .tx-spdl{color:#43f06b;font:800 clamp(20px,3.6vw,38px)/1 "Barlow Condensed","Rajdhani",sans-serif;text-shadow:0 0 10px #22ff5a55}
+  box-shadow:0 0 0 calc(var(--u)*2.5) #050505,0 0 0 calc(var(--u)*6) #1d1e20,0 0 0 calc(var(--u)*7) #000,inset 0 3px 10px #000,inset 0 0 0 1px #20262b}
+#wRadio[data-txskin="pro"] .tx-lcd::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(160deg,#ffffff0d 0%,transparent 35%)}
+#wRadio[data-txskin="pro"] .tx-cap{display:block;text-align:center;color:#e8d9a8;font:800 calc(var(--u)*15*var(--lf))/1.2 "Noto Sans KR",sans-serif;letter-spacing:.2em;opacity:.85}
+#wRadio[data-txskin="pro"] .tx-l1{margin-top:calc(var(--u)*2)}
+#wRadio[data-txskin="pro"] .tx-mode{background:transparent;color:#c7d2ff;border:calc(var(--u)*2.5) solid #6f7dff;border-radius:calc(var(--u)*7);padding:calc(var(--u)*1) calc(var(--u)*11);font:800 calc(var(--u)*20*var(--lf))/1.3 "Noto Sans KR",sans-serif}
+#wRadio[data-txskin="pro"] .tx-spdl{color:#43f06b;font:800 calc(var(--u)*36*var(--lf))/1 "Barlow Condensed","Rajdhani",sans-serif;text-shadow:0 0 10px #22ff5a55}
 #wRadio[data-txskin="pro"] .tx-spdl b{font-size:1em}
-#wRadio[data-txskin="pro"] .tx-l2{align-items:flex-end;gap:clamp(6px,1.4vw,14px);min-height:0}
+#wRadio[data-txskin="pro"] .tx-l2{align-items:flex-end;gap:calc(var(--u)*12);min-height:0}
 #wRadio[data-txskin="pro"] .tx-lcol{flex:0 0 31%;min-width:0;display:flex;flex-direction:column;align-items:center}
 #wRadio[data-txskin="pro"] .tx-hcv{display:block;width:100%;aspect-ratio:1.5;height:auto}
 #wRadio[data-txskin="pro"] .tx-pct{align-items:center}
-#wRadio[data-txskin="pro"] .tx-pct b{color:#c7d2ff;font:800 clamp(18px,3.4vw,34px)/1 "Barlow Condensed",sans-serif}
+#wRadio[data-txskin="pro"] .tx-pct b{color:#c7d2ff;font:800 calc(var(--u)*30*var(--lf))/1 "Barlow Condensed",sans-serif}
 #wRadio[data-txskin="pro"] .tx-fare{flex:1 1 auto;min-width:0;margin-left:0;text-align:right;white-space:nowrap;overflow:hidden;padding-bottom:.12em;color:#8fe3ff;
-  font:800 clamp(58px,12.5vw,150px)/1 "Barlow Condensed","Rajdhani",sans-serif;letter-spacing:-.015em;text-shadow:0 0 14px #45c8ff66,0 0 2px #bdf0ff}
-#wRadio[data-txskin="pro"] .tx-won{flex:none;color:#e9eef5;font:800 clamp(16px,2.8vw,30px)/1 "Noto Sans KR",sans-serif;padding-bottom:.32em}
+  font:800 calc(var(--u)*128*var(--lf))/1 "Barlow Condensed","Rajdhani",sans-serif;letter-spacing:-.015em;text-shadow:0 0 14px #45c8ff66,0 0 2px #bdf0ff}
+#wRadio[data-txskin="pro"] .tx-won{flex:none;color:#e9eef5;font:800 calc(var(--u)*26*var(--lf))/1 "Noto Sans KR",sans-serif;padding-bottom:.32em}
 #wRadio[data-txskin="pro"][data-tx="idle"] .tx-fare{opacity:.45}
-#wRadio[data-txskin="pro"] .tx-l3{margin-top:clamp(4px,1vw,10px);padding-top:clamp(4px,.9vw,9px);border-top:1px solid #9aa4b055;color:#e9eef5;font:700 clamp(15px,2.6vw,26px)/1.2 "Barlow Condensed","Rajdhani",sans-serif}
+#wRadio[data-txskin="pro"] .tx-l3{margin-top:calc(var(--u)*8);padding-top:calc(var(--u)*8);border-top:1px solid #9aa4b055;color:#e9eef5;font:700 calc(var(--u)*24*var(--lf))/1.2 "Barlow Condensed","Rajdhani",sans-serif}
 #wRadio[data-txskin="pro"] .tx-l3 b{font-size:1em}
-/* 운행 버튼 키캡 */
-#wRadio[data-txskin="pro"] .tx-keys{gap:clamp(5px,1vw,9px);padding:6px;border-radius:9px;background:#0b0c0d;box-shadow:inset 0 2px 6px #000,0 1px 0 #2a2c30}
-#wRadio[data-txskin="pro"] .tx-k{position:relative;padding:clamp(10px,1.8vw,16px) 2px;border:0;border-radius:7px;color:#141414;font:900 clamp(15px,2.4vw,24px)/1 "Noto Sans KR",sans-serif;
+#wRadio[data-txskin="pro"] .tx-keys{gap:calc(var(--u)*9);padding:calc(var(--u)*7);border-radius:calc(var(--u)*10);background:#0b0c0d;box-shadow:inset 0 2px 6px #000,0 1px 0 #2a2c30}
+#wRadio[data-txskin="pro"] .tx-k{position:relative;padding:calc(var(--u)*15*var(--lf)) 2px;border:0;border-radius:calc(var(--u)*8);color:#141414;font:900 calc(var(--u)*22*var(--lf))/1 "Noto Sans KR",sans-serif;
   box-shadow:inset 0 1px 0 #ffffffcc,inset 0 -4px 0 #0000002e,0 3px 0 #000,0 4px 6px #0008;transition:transform .06s,box-shadow .06s,filter .15s}
 #wRadio[data-txskin="pro"] .tx-reset{background:linear-gradient(#ffffff,#e4e6ea)}
 #wRadio[data-txskin="pro"] .tx-go{background:linear-gradient(#efe4ff,#d4c0fb)}
@@ -3053,23 +3071,100 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio[data-txskin="pro"] .tx-mix{background:linear-gradient(#fff3a0,#f8db4a)}
 #wRadio[data-txskin="pro"] .tx-stop{background:linear-gradient(#d8ffb4,#9ee86d)}
 #wRadio[data-txskin="pro"] .tx-k:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff66,inset 0 3px 6px #0004,0 0 0 #000}
-/* 선택된 상태: 눌린 채로 걸린 키 + 위쪽 표시등 */
 #wRadio[data-txskin="pro"] .tx-k.on{transform:translateY(2px);filter:saturate(1.15) brightness(.97);box-shadow:inset 0 2px 5px #0005,inset 0 -2px 0 #0002,0 1px 0 #000,0 0 0 2px #fff,0 0 12px #ffffffaa}
-#wRadio[data-txskin="pro"] .tx-k.on::before{content:"";position:absolute;top:5px;left:50%;width:34%;height:4px;margin-left:-17%;border-radius:2px;background:#ff4a3a;box-shadow:0 0 8px #ff4a3a}
-/* 오른쪽 물리 키패드 */
-#wRadio[data-txskin="pro"] .tx-pad2{display:flex;flex-direction:column;gap:clamp(6px,1.2vw,12px);padding:clamp(8px,1.4vw,14px);border-radius:12px;
+#wRadio[data-txskin="pro"] .tx-k.on::before{content:"";position:absolute;top:calc(var(--u)*5);left:33%;width:34%;height:calc(var(--u)*4.5);border-radius:2px;background:#ff4a3a;box-shadow:0 0 8px #ff4a3a}
+#wRadio[data-txskin="pro"] .tx-pad2{display:flex;flex-direction:column;gap:calc(var(--u)*12);padding:calc(var(--u)*14);border-radius:calc(var(--u)*14);
   background:linear-gradient(180deg,#1b1c1e,#111213);box-shadow:inset 0 1px 0 #34363a,inset 0 0 0 1px #000,0 0 0 1px #000}
-.tx-ptitle{display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:8px;border-bottom:3px double #c9cdd4aa}
-.tx-ptitle b{color:#eef0f3;font:800 clamp(13px,2vw,21px)/1.2 "Noto Sans KR",sans-serif;letter-spacing:.18em}
-.tx-ptitle span{color:#d7dae0;font:600 clamp(8px,1.15vw,12.5px)/1.2 "Noto Serif KR",serif;letter-spacing:.06em}
-.tx-pkeys{flex:1;display:grid;grid-template-columns:2fr 3fr;gap:clamp(5px,1vw,9px);padding:clamp(5px,.9vw,8px);border-radius:10px;background:#0c0d0e;box-shadow:inset 0 2px 6px #000}
-.tx-fn,.tx-num{display:grid;gap:clamp(4px,.8vw,7px);align-content:center}
+.tx-ptitle{display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:calc(var(--u)*9);border-bottom:3px double #c9cdd4aa}
+.tx-ptitle b{color:#eef0f3;font:800 calc(var(--u)*20)/1.2 "Noto Sans KR",sans-serif;letter-spacing:.18em}
+.tx-ptitle span{color:#d7dae0;font:600 calc(var(--u)*11.5)/1.2 "Noto Serif KR",serif;letter-spacing:.06em}
+.tx-pkeys{flex:1;display:grid;grid-template-columns:2fr 3fr;gap:calc(var(--u)*10);padding:calc(var(--u)*9);border-radius:calc(var(--u)*11);background:#0c0d0e;box-shadow:inset 0 2px 6px #000}
+.tx-fn,.tx-num{display:grid;gap:calc(var(--u)*7);align-content:center}
 .tx-fn{grid-template-columns:1fr 1fr}.tx-num{grid-template-columns:repeat(3,1fr)}
-.tx-pk{aspect-ratio:1.15;min-width:0;border:0;border-radius:7px;color:#eef0f3;font:800 clamp(11px,1.7vw,19px)/1 "Noto Sans KR",sans-serif;cursor:pointer;
+.tx-pk{aspect-ratio:1.15;min-width:0;padding:0;border:0;border-radius:calc(var(--u)*8);color:#eef0f3;font:800 calc(var(--u)*17)/1 "Noto Sans KR",sans-serif;cursor:pointer;white-space:nowrap;
   background:linear-gradient(180deg,#36383c,#232427 60%,#1b1c1e);box-shadow:inset 0 1px 0 #6a6d73,inset 0 -2px 0 #0007,0 2px 0 #000,0 3px 5px #0009;transition:transform .06s,box-shadow .06s}
-.tx-pk.tx-pks{font-size:clamp(8px,1.05vw,12px);letter-spacing:-.04em}
+.tx-pk.tx-pks{font-size:calc(var(--u)*10.5);letter-spacing:-.04em}
 .tx-pk:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #6a6d7355,inset 0 2px 5px #000a,0 0 0 #000}
 .tx-slot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 4px}
-.tx-slot i{flex:0 0 52%;height:clamp(14px,2.4vw,26px);border-radius:5px;background:#0a0b0c;box-shadow:inset 0 2px 4px #000,0 1px 0 #2c2e31}
-.tx-slot b{width:22%;height:10px;background:repeating-linear-gradient(180deg,#3a3c40 0 2px,transparent 2px 5px)}
-@media (max-width:620px){#wRadio[data-txskin="pro"] .tx-dev{grid-template-columns:1fr}#wRadio[data-txskin="pro"] .tx-pad2{display:none}}
+.tx-slot i{flex:0 0 52%;height:calc(var(--u)*24);border-radius:calc(var(--u)*6);background:#0a0b0c;box-shadow:inset 0 2px 4px #000,0 1px 0 #2c2e31}
+.tx-slot b{width:22%;height:calc(var(--u)*10);background:repeating-linear-gradient(180deg,#3a3c40 0 2px,transparent 2px 5px)}
+/* 세로(좁은 화면): 키패드를 아래 가로로 — 제목은 왼쪽 세로 띠, 기능키 3×2 + 숫자 4×3 */
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-pad2{flex-direction:row;align-items:stretch;gap:calc(var(--u)*14)}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-ptitle{justify-content:center;padding:0 calc(var(--u)*14) 0 0;border-bottom:0;border-right:3px double #c9cdd4aa}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-ptitle b{writing-mode:vertical-rl;font-size:calc(var(--u)*24)}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-ptitle span{display:none}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-pkeys{flex:1;grid-template-columns:1fr 1.5fr}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-pk{aspect-ratio:1.6;font-size:calc(var(--u)*22)}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-pk.tx-pks{font-size:calc(var(--u)*14)}
+#wRadio[data-txskin="pro"][data-txlay="tall"] .tx-slot{display:none}
+
+/* 1.90 '레트로'(data-txskin="retro") — 은색 알루미늄 틀·나사, 크림색 위판 '승차요금' + 숫자 드럼, 짙은 초록 아래판(거리·시간 드럼, 크림색 달리는 말), 크림색 단추 5개 */
+#wRadio[data-txskin="retro"] .rt-dev{flex:none;position:relative;width:calc(var(--u)*1000);padding:calc(var(--u)*46) calc(var(--u)*46) calc(var(--u)*64);border-radius:calc(var(--u)*120);
+  background:radial-gradient(120% 90% at 30% 15%,#e3e5e7 0%,#b9bcbf 38%,#8e9194 70%,#6d7073 100%);
+  box-shadow:inset 0 calc(var(--u)*4) calc(var(--u)*6) #ffffffb0,inset 0 calc(var(--u)*-8) calc(var(--u)*14) #0006,0 calc(var(--u)*14) calc(var(--u)*30) #000c,0 0 0 1px #3b3d40}
+#wRadio[data-txskin="retro"] .rt-dev::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.35;mix-blend-mode:multiply;
+  background:repeating-radial-gradient(circle at 37% 41%,#0000 0 1px,#0002 1px 2px),repeating-linear-gradient(90deg,#fff1 0 1px,#0001 1px 3px)}
+.rt-glass{position:relative;overflow:hidden;border-radius:calc(var(--u)*60);background:#e8dec3;box-shadow:inset 0 0 0 calc(var(--u)*6) #6e7073,inset 0 0 0 calc(var(--u)*9) #2f3133,inset 0 calc(var(--u)*10) calc(var(--u)*20) #0007}
+.rt-glass::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(155deg,#ffffff38 0%,#ffffff10 22%,transparent 40%),radial-gradient(70% 40% at 20% 8%,#ffffff22,transparent 70%)}
+.rt-screw{position:absolute;z-index:3;width:calc(var(--u)*34);height:calc(var(--u)*34);border-radius:50%;background:radial-gradient(circle at 35% 30%,#f2f2ee,#9a9c9b 60%,#5b5d5d);box-shadow:0 1px 2px #0008,inset 0 -1px 2px #0006}
+.rt-screw::after{content:"";position:absolute;left:18%;right:18%;top:46%;height:12%;background:#4b4c4b;border-radius:2px;transform:rotate(-28deg)}
+.rt-screw.s1{left:calc(var(--u)*40);top:calc(var(--u)*50)}.rt-screw.s2{right:calc(var(--u)*40);top:calc(var(--u)*50)}
+.rt-screw.s3{left:calc(var(--u)*14);top:calc(var(--u)*640)}.rt-screw.s4{right:calc(var(--u)*14);top:calc(var(--u)*640)}
+.rt-top{position:relative;padding:calc(var(--u)*40) calc(var(--u)*80) calc(var(--u)*44);text-align:center;
+  background:radial-gradient(60% 50% at 70% 40%,#0000000a,transparent),radial-gradient(40% 30% at 20% 70%,#7a5a2014,transparent),#e8dec3}
+.rt-top h4{margin:calc(var(--u)*34) 0 calc(var(--u)*22);color:#2a2620;font:800 calc(var(--u)*92)/1 "Noto Sans KR",sans-serif;letter-spacing:.06em}
+.rt-flag{position:absolute;right:calc(var(--u)*96);top:calc(var(--u)*26);padding:calc(var(--u)*8) calc(var(--u)*36);border-radius:calc(var(--u)*8);color:#f3e7cf;font:700 calc(var(--u)*40)/1.2 "Noto Sans KR",sans-serif;letter-spacing:.2em;
+  background:linear-gradient(#a5281d,#7c170f);box-shadow:inset 0 0 0 calc(var(--u)*5) #bdb7a9,inset 0 0 0 calc(var(--u)*7) #4a4640,0 2px 3px #0006}
+#wRadio[data-txskin="retro"][data-tx="idle"] .rt-flag{background:linear-gradient(#2f6b45,#1f4d31)}
+#wRadio[data-txskin="retro"][data-tx="paid"] .rt-flag{background:linear-gradient(#a8781e,#7a5512)}
+.rt-fare{display:inline-flex;align-items:flex-end;gap:calc(var(--u)*16);padding:0;border:0;background:none;cursor:pointer}
+.rt-drums{display:inline-flex;gap:calc(var(--u)*4);padding:calc(var(--u)*10);border-radius:calc(var(--u)*14);background:linear-gradient(#5d5f61,#2e2f30);box-shadow:inset 0 0 0 calc(var(--u)*4) #9b9e9f,inset 0 calc(var(--u)*4) calc(var(--u)*8) #000a}
+.rt-dr{position:relative;display:block;overflow:hidden;font-style:normal;border-radius:calc(var(--u)*6);
+  background:linear-gradient(180deg,#050505 0%,#2a2a28 18%,#3a3936 50%,#2a2a28 82%,#050505 100%);box-shadow:inset 0 0 0 1px #000}
+.rt-dr b{display:flex;flex-direction:column;transition:transform .55s cubic-bezier(.3,1.25,.5,1)}
+.rt-dr em{display:block;text-align:center;font-style:normal;color:#ece3cb;text-shadow:0 1px 0 #000}
+.rt-dr::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#000c 0%,#0000 26%,#0000 74%,#000c 100%)}
+.rt-big .rt-dr{width:calc(var(--u)*104);height:calc(var(--u)*150)}
+.rt-big .rt-dr em{height:calc(var(--u)*150);font:600 calc(var(--u)*124)/calc(var(--u)*150) "Noto Serif KR",Georgia,serif}
+.rt-won{color:#2a2620;font:700 calc(var(--u)*56)/1 "Noto Sans KR",sans-serif;padding-bottom:calc(var(--u)*6)}
+.rt-low{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;align-items:center;gap:calc(var(--u)*18) calc(var(--u)*24);padding:calc(var(--u)*40) calc(var(--u)*60) calc(var(--u)*46);
+  background:radial-gradient(80% 60% at 50% 40%,#2a4136,#1d2f26 80%),#203329;box-shadow:inset 0 calc(var(--u)*6) calc(var(--u)*10) #0007}
+.rt-meter{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*12)}
+.rt-meter small{color:#d8ccaa;font:600 calc(var(--u)*34)/1 "Noto Sans KR",sans-serif;letter-spacing:.3em}
+.rt-meter small em{font-style:normal;font-size:.6em;letter-spacing:0;opacity:.75}
+.rt-sm{gap:calc(var(--u)*2);padding:calc(var(--u)*7)}
+.rt-sm .rt-dr{width:calc(var(--u)*54);height:calc(var(--u)*80)}
+.rt-sm .rt-dr em{height:calc(var(--u)*80);font:600 calc(var(--u)*62)/calc(var(--u)*80) "Noto Serif KR",Georgia,serif}
+.rt-km .rt-dr:nth-child(2){margin-right:calc(var(--u)*10)}
+.rt-km .rt-dr:nth-child(2)::before{content:"";position:absolute;z-index:2;right:calc(var(--u)*-1);bottom:calc(var(--u)*14);width:calc(var(--u)*9);height:calc(var(--u)*9);border-radius:50%;background:#ece3cb}
+.rt-hcv{display:block;width:100%;height:calc(var(--u)*190)}
+.rt-keys{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:calc(var(--u)*22);padding:calc(var(--u)*16);border-radius:calc(var(--u)*14);background:#14211b;box-shadow:inset 0 calc(var(--u)*4) calc(var(--u)*8) #000a}
+#wRadio[data-txskin="retro"] .tx-k{position:relative;padding:calc(var(--u)*26) 0;border:0;border-radius:calc(var(--u)*12);color:#2a2620;font:600 calc(var(--u)*40)/1 "Noto Sans KR",sans-serif;letter-spacing:.12em;
+  background:linear-gradient(180deg,#f8f0dc,#e2d6b7 70%,#cbbd9a);box-shadow:inset 0 calc(var(--u)*3) 0 #fffaf0,inset 0 calc(var(--u)*-5) 0 #0002,0 calc(var(--u)*6) 0 #3a3a30,0 calc(var(--u)*8) calc(var(--u)*10) #000a;transition:transform .06s,box-shadow .06s}
+#wRadio[data-txskin="retro"] .tx-k:active{transform:translateY(calc(var(--u)*5));box-shadow:inset 0 calc(var(--u)*3) calc(var(--u)*6) #0003,0 calc(var(--u)*1) 0 #3a3a30}
+#wRadio[data-txskin="retro"] .tx-k.on{transform:translateY(calc(var(--u)*4));background:linear-gradient(180deg,#efe1bd,#d8c697);box-shadow:inset 0 calc(var(--u)*3) calc(var(--u)*6) #0003,0 calc(var(--u)*2) 0 #3a3a30,0 0 0 calc(var(--u)*3) #b3261b}
+.rt-latch{position:absolute;left:50%;bottom:calc(var(--u)*-26);width:calc(var(--u)*300);height:calc(var(--u)*56);margin-left:calc(var(--u)*-150);border-radius:calc(var(--u)*14);
+  background:linear-gradient(180deg,#d7d9da,#9a9d9f 55%,#6f7274);box-shadow:inset 0 2px 2px #fff8,0 4px 8px #000a,0 0 0 1px #3b3d40}
+/* 1.90 LCD 클래식: 높이가 낮은 화면(바깥 화면 가로 등)에서는 글자·말 트랙을 높이에 맞춰 줄임 */
+#wRadio[data-txskin="lcd"] .tx-fare{font-size:min(clamp(56px,13vw,132px),calc(var(--ah,999px)*.3))}
+#wRadio[data-txskin="lcd"] .tx-track{height:min(clamp(54px,14vh,170px),calc(var(--ah,999px)*.17))}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-pad{display:none}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-lcd{padding-top:6px;padding-bottom:4px}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-k{padding:8px 4px}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-face{gap:6px}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-dev{padding:8px}
+/* 1.90 레트로 가로 배치(낮고 넓은 화면): 위판 | 아래판을 나란히 */
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-dev{width:calc(var(--u)*1800);padding:calc(var(--u)*40) calc(var(--u)*50) calc(var(--u)*56)}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-glass{display:grid;grid-template-columns:1.12fr 1fr}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-top{display:flex;flex-direction:column;justify-content:center;padding:calc(var(--u)*30) calc(var(--u)*60)}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-top h4{margin-top:calc(var(--u)*50)}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-low{padding:calc(var(--u)*30) calc(var(--u)*40)}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-keys{gap:calc(var(--u)*12);padding:calc(var(--u)*12)}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .tx-k{font-size:calc(var(--u)*34);letter-spacing:.04em}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-screw.s3,#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-screw.s4{top:auto;bottom:calc(var(--u)*40)}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-face{flex-direction:row}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-lcd{flex:1 1 auto;min-width:0}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-keys{flex:0 0 clamp(84px,14vw,130px);display:flex;flex-direction:column;gap:4px}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-k{flex:1;padding:2px 4px;font-size:14px}
+#wRadio[data-txskin="lcd"][data-txlay="short"] .tx-fare{font-size:calc(var(--ah)*.26)}
+#wRadio[data-txskin="retro"][data-txlay="rwide"] .rt-flag{right:calc(var(--u)*34);top:calc(var(--u)*16)}
