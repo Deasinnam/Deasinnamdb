@@ -1139,6 +1139,10 @@ body[data-view="home"] { background: #f6f5f1; }
 .hm-sp-note svg, .hm-sp .key svg { width: 18px; height: 18px; flex: none; }
 .hm-sp-act { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
 .hm-sp .key { display: inline-flex; gap: 8px; align-items: center; }
+.hm-sp .key-sp { background: linear-gradient(135deg, #ff7a00, #ffc21a); color: #111; border-color: #c75a00; box-shadow: 0 var(--travel) 0 #c75a00; }
+.hm-sp .key-sp:hover { box-shadow: 0 calc(var(--travel) - 1px) 0 #c75a00; }
+.hm-sp .key-sp:active { box-shadow: 0 1px 0 #c75a00; }
+.hm-sp .key-sp:focus-visible { outline-color: #ff7a00; }
 .hm-sp-act small { color: var(--ink-3); font-size: 13px; }
 @media (max-width: 640px) { .hm-sp-card { padding: 24px 20px; } .hm-sp h2 { font-size: 22px; } }
 @media (max-width: 900px) {
@@ -1423,7 +1427,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         <h2 id="hm-sp-t">덜누름은 무료로, 광고 없이 계속 만들어집니다.</h2>
         <p class="hm-sp-lead">앱 제작 후원은 유튜브 채널 멤버십으로 해 주시면 지속 개발에 큰 도움이 됩니다.</p>
         <p class="hm-sp-note"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>멤버십 소식으로 새 앱 개발 소식과 업데이트 소식을 가장 먼저 받아 보실 수 있습니다.</p>
-        <div class="hm-sp-act"><a class="key" href="https://www.youtube.com/channel/UCCUfsf35PukA4gEsU2hTtQg/join" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg>유튜브 멤버십으로 후원하기</a><small>후원하지 않아도 모든 앱은 지금처럼 무료입니다.</small></div>
+        <div class="hm-sp-act"><a class="key key-sp" href="https://www.youtube.com/channel/UCCUfsf35PukA4gEsU2hTtQg/join" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg>유튜브 멤버십으로 후원하기</a><small>후원하지 않아도 모든 앱은 지금처럼 무료입니다.</small></div>
       </div>
     </div>
   </section>
