@@ -30,6 +30,13 @@
         <td><a href="./licenses/film/LICENSE-MIT.txt">MIT</a> 또는 <a href="./licenses/film/LICENSE-APACHE.txt">Apache-2.0</a> · <a href="./licenses/film/NOTICE.txt">NOTICE</a></td></tr>
       <tr><td>한글 글꼴 (사진·동영상 편집)</td><td><a href="https://github.com/notofonts/noto-cjk">Noto Sans CJK KR</a> (한글 부분만 추린 것)</td>
         <td>Adobe · Google</td><td><a href="./licenses/fonts/OFL-NotoSansCJK.txt">SIL Open Font License 1.1</a></td></tr>
+      <tr><td>문서 편집 글꼴 (워드 · 엑셀 · 파워포인트 · 한글)</td>
+        <td>나눔고딕 · 나눔명조 · 나눔고딕코딩 · 나눔손글씨 펜/붓, Noto Sans/Serif KR, Pretendard, 고운바탕 · 고운돋움, D2Coding, 스포카 한 산스,
+          Gothic A1, IBM Plex Sans KR, 함렡, 송명, 주아, 개구쟁이, 감자꽃마을, 하이멜로디, 해바라기, 동글, 대한민국독도, 연성, 구기, 스타일리쉬, 서툰이야기, 싱글데이, 귀여운 폰트, 오르빗,
+          Carlito · Caladea · Arimo · Tinos · Cousine, RHWP 공개 바탕 · 옛한글, Noto Sans Math · Symbols 2
+          (<a href="./licenses/fonts/dnr/README.md">출처와 목록</a>)</td>
+        <td>NAVER · Adobe · Google · Orioncactus · 류양희 · 각 글꼴 저작자</td>
+        <td><a href="./licenses/fonts/dnr/README.md">SIL Open Font License 1.1</a> (글꼴마다 전문: <a href="./licenses/fonts/dnr/NanumGothic-OFL.txt">예시</a>)</td></tr>
       <tr><td>문서 엔진 실행</td><td><a href="https://nodejs.org">Node.js</a> ({{NODE_VER}}, Termux 안드로이드 빌드)</td>
         <td>Node.js contributors</td><td><a href="./licenses/node/LICENSE.txt">MIT 외 (포함 구성요소 고지)</a></td></tr>
     </table>
@@ -42,6 +49,9 @@
       <li>문서 편집(IeumOffice): Electron 대신 앱 안의 Node.js에서 데스크톱 메인 코드를 돌리는 호스트를 더했고,
         편집기 화면이 쓰는 자체 프로토콜 주소·CSP를 앱 주소로 바꿨으며, 엑셀 엔진(xlsx-sidecar)을 안드로이드용으로 컴파일했습니다.
         편집기 안에 표시되는 제품 이름을 바꿨습니다.
+        안드로이드에는 PC 글꼴이 없어, 무료 글꼴(SIL OFL)을 함께 넣고 글꼴 목록에 더했으며,
+        문서에 쓰인 상용 글꼴 이름(맑은 고딕 제외: 바탕 · 굴림 · 궁서 · Calibri · Arial 등)은 비슷한 무료 글꼴로 화면에 보여 줍니다(파일에는 원래 이름이 남음).
+        한글 편집기에는 원작(rhwp)의 무료 글꼴 파일을 넣어 원작의 대체 규칙대로 그리게 했습니다.
         새 엑셀 문서를 빈 통합 문서 파일로 열어 저장·다른 이름으로 저장이 되게 했고(엑셀 메인 코드에 빈 문서 만드는 함수를 붙임),
         워드·엑셀 메뉴의 "다른 이름으로 저장" 단축키 표기를 알아보게 했습니다.</li>
       <li>사진 편집(PhotoCraft): 공식 웹 빌드를 그대로 쓰고, 로딩 문구를 바꿨습니다.

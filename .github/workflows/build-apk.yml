@@ -66,6 +66,7 @@ jobs:
           node --check web/home/home.js
           node --check node/host.js
           python3 tools/build_web.py "$IEUM_RES"
+          python3 tools/dnr_fonts.py
           python3 tools/build_node.py "$IEUM_RES"
 
       - name: 안드로이드용 Node.js 받기 (Termux)
@@ -187,6 +188,9 @@ jobs:
           ./gradlew --no-daemon assembleDebug -PworkAbis=arm64-v8a,x86_64
           cp app/build/outputs/apk/debug/app-debug.apk Work-test.apk
           ls -la Work-test.apk
+          # 문서 편집 무료 글꼴(tools/dnr_fonts.py)이 들어갔는지
+          N=$(unzip -l Work-test.apk | grep -c 'assets/www/fonts/dnr/.*\.\(woff2\|ttf\)$' || true)
+          echo "문서 편집 글꼴 $N개"; [ "$N" -ge 74 ] || { echo "글꼴이 빠졌습니다"; exit 1; }
 
       - name: 에뮬레이터 KVM 켜기
         run: |
@@ -295,7 +299,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
           gh release delete work-latest --yes --cleanup-tag || true
           gh release create work-latest DeolnureumWork.apk DaesinnamWork.apk --target "$GITHUB_SHA" \
             --title "덜누름 워크 (최신 빌드)" --notes "$NOTES"

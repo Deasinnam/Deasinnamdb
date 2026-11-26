@@ -807,6 +807,15 @@ public class OfficeActivity extends ComponentActivity {
     private WebResourceResponse serveAsset(@NonNull String path) {
         if (path.contains("..")) return notFound();
         AssetManager am = getAssets();
+        // 한글(HWP) 편집기(rhwp-studio)는 글꼴을 자기 옆 fonts/<파일>에서 찾음 → 함께 넣은 무료 글꼴(www/fonts/dnr, tools/dnr_fonts.py)로 이어 줌
+        if (path.startsWith("www/modules/hwp/") && path.contains("/fonts/")) {
+            String name = path.substring(path.lastIndexOf('/') + 1);
+            try {
+                am.open(path).close();
+            } catch (Exception missing) {
+                if (name.matches("[A-Za-z0-9._-]+\\.(woff2|ttf|otf)")) path = "www/fonts/dnr/" + name;
+            }
+        }
         try {
             InputStream in = am.open(path, AssetManager.ACCESS_STREAMING);
             String mime = mimeOf(path);

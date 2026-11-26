@@ -128,6 +128,9 @@ def main() -> None:
     shutil.copy(a.node_license, lic / "node/LICENSE.txt")
     (lic / "fonts").mkdir()
     shutil.copy(KOREAN_FONT_DIR / "OFL.txt", lic / "fonts/OFL-NotoSansCJK.txt")
+    # 문서 편집 글꼴(tools/fonts/dnr, 모두 SIL OFL 1.1)의 저작권 표시 · 라이선스 전문
+    shutil.copytree(ROOT / "tools/fonts/dnr/licenses", lic / "fonts/dnr")
+    shutil.copy(ROOT / "tools/fonts/dnr/README.md", lic / "fonts/dnr/README.md")
 
     about = WORK / "about.html"
     replace_all(about, [
