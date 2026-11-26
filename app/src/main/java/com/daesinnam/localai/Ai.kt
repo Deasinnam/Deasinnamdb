@@ -149,7 +149,7 @@ class Ai(private val ctx: Context) {
             if (text.isBlank() || o.optBoolean("error")) continue
             val role = if (o.optString("role") == "user") Role.USER else Role.MODEL
             val note = if (role == Role.USER && (o.optJSONArray("images")?.length() ?: 0) > 0) "[사진을 함께 보냄] " else ""
-            out.add(Message(role, Contents.of(Content.Text(note + text)), emptyList(), emptyMap()))
+            out.add(if (role == Role.USER) Message.user(Contents.of(Content.Text(note + text))) else Message.model(text))
         }
         // 첫 메시지는 사용자 차례여야 함
         while (out.isNotEmpty() && out.first().role != Role.USER) out.removeAt(0)
@@ -168,6 +168,7 @@ class Ai(private val ctx: Context) {
     }
 
     /** chat: 지금까지 기록(이번 질문 제외). 답을 조각조각 listener로 */
+    @OptIn(ExperimentalApi::class)
     fun send(chat: JSONObject, text: String, images: List<String>, l: Listener) {
         job?.cancel()
         job = scope.launch {
@@ -181,7 +182,7 @@ class Ai(private val ctx: Context) {
                     var c = conv
                     if (c == null || convKey != key || !c.isAlive) {
                         c?.close(); c = newConv(e, chat, 24); conv = c; convKey = key
-                    } else if (c.tokenCount > m.ctx * 0.7) { // 대화가 길어지면 최근 내용만 남기고 새로 이어 감
+                    } else if (runCatching { c.getTokenCount() }.getOrDefault(0) > m.ctx * 0.7) { // 대화가 길어지면 최근 내용만 남기고 새로 이어 감
                         c.close(); c = newConv(e, chat, 8); conv = c
                     }
                 }
