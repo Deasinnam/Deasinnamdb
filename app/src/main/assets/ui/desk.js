@@ -30,7 +30,8 @@
       const names = ["갤러리", "계산기 앱", "날씨", "메시지", "브라우저", "설정", "시계", "연락처", "음악", "전화", "지도", "카메라", "캘린더", "파일", "Play 스토어", "YouTube"];
       return Promise.resolve(names.map((label, i) => ({ pkg: "demo.app" + i, cls: "Main", label, glyph: label[0], color: i % 4 })));
     }
-    if (method === "status") return Promise.resolve({ battery: 82, charging: false, net: "wifi", freeform: true, isDefault: false, wallpaper: 0, version: "미리보기" });
+    if (method === "status") return Promise.resolve({ battery: 82, charging: false, net: "wifi", freeform: true, isDefault: false, wallpaper: 0, version: "미리보기", dnrAi: true });
+    if (method === "dnrAsk") { console.log("dnrAsk", args); return Promise.resolve(true); }
     if (method === "quick") return Promise.resolve({ vol: 7, volMax: 15, bright: 180, canWrite: true, airplane: false, saver: false, hasTorch: true, torch: false });
     if (method === "launch") return Promise.resolve({ ok: true, mode: args[2], freeform: true });
     if (method === "widgetProviders") return Promise.resolve([
@@ -75,6 +76,8 @@
   // 선 그림 아이콘 (직접 그린 것)
   const IC = {
     search: ["M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z", "M20 20l-4.8-4.8"],
+    mic: ["M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z", "M5 11a7 7 0 0 0 14 0", "M12 18v3"],
+    spark: ["M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z", "M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"],
     right: "M4 2l4 4-4 4", left: "M8 2L4 6l4 4", up: "M2 8l4-4 4 4", down: "M2 4l4 4 4-4",
     widgets: ["M4 4h7v7H4z", "M13 4h7v7h-7z", "M4 13h7v7H4z", "M16.5 13v7", "M13 16.5h7"],
     gear: ["M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", "M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"],
@@ -348,7 +351,7 @@
     const r = await call("status");
     if (my < statusShown) return;
     statusShown = my;
-    if (r && !r.error) { status = r; renderTray(); $("splitblock").hidden = !status.split; }
+    if (r && !r.error) { status = r; renderTray(); $("splitblock").hidden = !status.split; $("search-mic").hidden = !status.dnrAi; $("search").placeholder = status.dnrAi ? "앱, 설정 검색 · DNR AI에게 묻기" : "앱, 설정, 도구 검색"; }
     refreshQuick();
   }
 
@@ -400,6 +403,10 @@
         act(pinned ? "작업 표시줄에서 고정 해제" : "작업 표시줄에 고정", pinned ? IC.unpin : IC.pin, () => togglePin(app.key)),
         ext ? act("앱 정보", IC.info, () => { closePanels(); call("appInfo", app.pkg); }) : null));
   }
+  function dnrAsk(q, voice) {
+    closePanels();
+    call("dnrAsk", q || "", !!voice).then((ok) => { if (!ok) toast("Chat DNR Ai를 열지 못했습니다"); });
+  }
   function renderStart() {
     const body = $("start-body");
     const q = $("search").value.trim().toLowerCase();
@@ -408,7 +415,14 @@
     if (q) {
       const hit = all.filter((a) => a.label.toLowerCase().includes(q))
         .sort((a, b) => (b.label.toLowerCase().startsWith(q) - a.label.toLowerCase().startsWith(q)) || a.label.localeCompare(b.label, "ko"));
-      if (!hit.length) return body.append(h("div", { class: "empty", text: "'" + $("search").value.trim() + "'에 맞는 결과가 없습니다." }));
+      // DNR AI(기기 안 AI)에게 묻기: 앱이 없거나 질문처럼 보이면 맨 위, 아니면 앱 결과 아래
+      const aiRow = status.dnrAi ? h("button", { class: "litem ai-ask", title: "DNR AI에게 묻기 (인터넷 없이 기기 안에서)", onclick: () => dnrAsk($("search").value.trim(), false) },
+        h("span", { class: "ico ai" }, svg(IC.spark)), h("span", null, h("b", { text: "DNR AI에게 묻기" }), h("small", { text: "“" + $("search").value.trim() + "”" }))) : null;
+      if (!hit.length) {
+        if (aiRow) { aiRow.classList.add("best"); return body.append(h("div", { class: "sres" }, h("div", null, h("h4", { text: "맞는 앱이 없어요 · DNR AI에게 물어볼까요?" }), aiRow), h("div", { class: "ai-hint", text: "DNR AI는 인터넷 없이 이 기기 안에서 답해요. Enter를 누르거나 위 항목을 누르세요." }))); }
+        return body.append(h("div", { class: "empty", text: "'" + $("search").value.trim() + "'에 맞는 결과가 없습니다." }));
+      }
+      const asks = /[?？]$|(알려|뭐|어떻게|왜|언제|얼마|추천|써\s?줘|해\s?줘|정리|번역|요약)/.test($("search").value.trim());
       const first = hit[0];
       const best = h("button", { class: "litem best" }, iconOf(first), h("span", null, h("b", { text: first.label }), h("small", { text: kindOf(first) })));
       bindItem(best, first.key, "start");
@@ -424,6 +438,7 @@
         left.append(h("h4", { text: "앱" }), list);
       }
       best.addEventListener("pointerenter", () => { detail.textContent = ""; detail.append(detailOf(first)); });
+      if (aiRow) { if (asks) left.prepend(h("h4", { text: "DNR AI" }), aiRow); else left.append(h("h4", { text: "DNR AI" }), aiRow); }
       body.append(h("div", { class: "sres" }, left, detail));
       return;
     }
@@ -1573,6 +1588,8 @@
   $("tray-clock").addEventListener("click", toggleCal);
   $("peek").addEventListener("click", () => { closePanels(); showDesktop(); });
   $("search-icon").append(svg(IC.search)); $("wsearch-icon").append(svg(IC.search));
+  $("search-mic").append(svg(IC.mic));
+  $("search-mic").addEventListener("click", () => dnrAsk("", true));
   $("tb-search").querySelector(".sico").append(svg(IC.search));
   $("tb-taskview").append(svg(IC.taskview));
   $("tb-widgets-ico").append(svg(IC.widgets));
@@ -1724,6 +1741,14 @@
       $("search").value = "계산"; renderStart();
       const found = $("start-body").querySelectorAll(".litem").length;
       log((found >= 1 ? "PASS" : "FAIL") + " search '계산' found=" + found);
+      // DNR AI에게 묻기: Chat DNR Ai가 있을 때만 검색 결과에 나옴(에뮬레이터엔 없음 → 잠깐 있는 것처럼)
+      const hadAi = status.dnrAi;
+      status.dnrAi = false; $("search").value = "회의 내용 요약해 줘"; renderStart();
+      const noAi = !$("start-body").querySelector(".ai-ask");
+      status.dnrAi = true; renderStart();
+      const aiTop = $("start-body").querySelector(".ai-ask");
+      status.dnrAi = hadAi;
+      log((noAi && aiTop ? "PASS" : "FAIL") + " dnr ai ask row (installed=" + !!hadAi + ")");
       closePanels();
       const w = openBuiltin("in:calc");
       const body = w.el.querySelector(".win-body");

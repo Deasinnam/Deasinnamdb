@@ -462,6 +462,8 @@ public class MainActivity extends ComponentActivity {
                 return shizukuConnect();
             case "arrangeDiag":
                 return lastArrange;
+            case "dnrAsk": // 시작 메뉴 검색창에서 DNR AI(Chat DNR Ai, 기기 안 AI)에게 묻기 · 말로 묻기
+                return dnrAsk(a.optString(0, ""), a.optBoolean(1, false));
             case "appInfo":
                 startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.getString(0), null))
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -1363,6 +1365,31 @@ public class MainActivity extends ComponentActivity {
     }
 
     // ---------- 상태·설정 ----------
+    // ---------- DNR AI 통로: Chat DNR Ai의 떠 있는 질문 창(com.daesinnam.ai.action.ASK) ----------
+    private static final String DNR_AI_PKG = "com.daesinnam.localai";
+    private static final String DNR_AI_ASK = "com.daesinnam.ai.action.ASK";
+
+    private boolean dnrAiInstalled() {
+        try {
+            return getPackageManager().resolveActivity(new Intent(DNR_AI_ASK).setPackage(DNR_AI_PKG), 0) != null;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    private boolean dnrAsk(String q, boolean voice) {
+        if (!dnrAiInstalled()) return false;
+        Intent i = new Intent(DNR_AI_ASK).setPackage(DNR_AI_PKG).putExtra("title", "DNR AI").putExtra("from", getPackageName());
+        if (!q.trim().isEmpty()) i.putExtra("task", q.trim());
+        if (voice) i.putExtra("voice", true);
+        try {
+            startActivity(i);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     private JSONObject status() throws JSONException {
         JSONObject r = new JSONObject();
         Intent b = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -1389,6 +1416,7 @@ public class MainActivity extends ComponentActivity {
         r.put("dex", dexOn());
         r.put("split", inSplit());
         r.put("isDefault", isDefaultHome());
+        r.put("dnrAi", dnrAiInstalled());
         File wp = wallpaperFile();
         r.put("wallpaper", wp.exists() ? wp.lastModified() : 0); // 내 사진 배경이 있으면 바뀐 시각(화면이 새 사진을 다시 읽게)
         r.put("version", BuildConfig.VERSION_NAME);

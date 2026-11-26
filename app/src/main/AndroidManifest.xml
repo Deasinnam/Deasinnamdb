@@ -19,6 +19,8 @@
         <intent>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
         </intent>
+        <!-- 검색창의 "DNR AI에게 묻기": Chat DNR Ai(기기 안 AI) 질문 창 -->
+        <package android:name="com.daesinnam.localai" />
     </queries>
 
     <application

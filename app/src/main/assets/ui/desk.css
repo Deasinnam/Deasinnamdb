@@ -520,3 +520,15 @@ body.light #ctx button.danger { color: var(--danger); }
 .win-arrange .ar-diag { min-height: 300px; width: 100%; background: rgba(0,0,0,.28); color: var(--ar-cream); border: 1px solid var(--ar-line); border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.55; }
 .win-arrange .ar-tile { margin: 2px 0 2px; }
 .win-arrange .ar-sub { font-size: 12.5px !important; margin: 2px 0 12px !important; text-align: center; }
+
+/* DNR AI(기기 안 AI)에게 묻기 — 시작 메뉴 검색 */
+.start-search .smic { position: absolute; right: 38px; top: 34px; width: 32px; height: 32px; border-radius: 16px; display: grid; place-items: center; color: var(--ink-2); }
+.start-search .smic:hover { background: var(--panel-2); color: var(--ink); }
+.start-search .smic svg { width: 16px; height: 16px; }
+#search { padding-right: 44px; }
+.litem.ai-ask { height: auto; min-height: 44px; padding: 6px 12px; }
+.litem.ai-ask .ico.ai { display: grid; place-items: center; background: linear-gradient(135deg, #E8590C, #FF9A3C); color: #fff; }
+.litem.ai-ask .ico.ai svg { width: 15px; height: 15px; }
+.litem.ai-ask > span:not(.ico) { display: flex; flex-direction: column; }
+.litem.ai-ask small { color: var(--ink-2); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.ai-hint { align-self: start; padding: 16px; border-radius: var(--r-item); background: var(--panel-2); color: var(--ink-2); font-size: 13px; line-height: 1.6; }
