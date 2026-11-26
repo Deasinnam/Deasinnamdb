@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T13:24:28+09:00",
+ "updated": "2026-11-26T16:42:38+09:00",
  "apps": {
   "speed": {
    "version": "1.98",
@@ -23,9 +23,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "work": {
-   "version": "1.0.8",
-   "date": "2026.11.21",
-   "note": "AI 도우미 ChatGPT · Claude 로그인을 마치고 돌아와도 연결되지 않던 문제 추가 수정 (로그인하는 동안 'AI 연결 중' 알림)",
+   "version": "1.0.9",
+   "date": "2026.11.26",
+   "note": "문서 편집에 무료 글꼴 30여 종 추가 (나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 · 개구쟁이 등, 모두 SIL OFL 무료 글꼴), 워드 · 한글 문서의 바탕 · 굴림 · 궁서 · Calibri 등은 비슷한 무료 글꼴로 표시",
    "page": "https://deolnureum.com/work/",
    "changes": "https://deolnureum.com/releases/"
   },
