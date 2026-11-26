@@ -4776,9 +4776,9 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       names[id] = a ? a.textContent : id;
       var top = (d.versions || [])[0] || d.rel;
       if (top && d.open) li.querySelector(".hm-ver").textContent = top.v + " · " + when(top.date);
-      /* 최근 7일 안에 새 버전이 나온 앱: 빨간 "New Ver." (출시 예정 · 새로 나옴 표시가 있는 카드는 제외) */
+      /* 최근 7일 안에 새 버전이 나온 앱: 빨간 "새 버전" (출시 예정 · 새로 나옴 표시가 있는 카드는 제외) */
       if (top && d.open && (d.versions || []).length > 1 && age(top.date) <= 7 && !li.querySelector(".hm-soon")) {
-        var nv = document.createElement("span"); nv.className = "hm-newver"; nv.textContent = "New Ver."; nv.title = top.v + " 업데이트 · " + when(top.date);
+        var nv = document.createElement("span"); nv.className = "hm-newver"; nv.textContent = "새 버전"; nv.title = top.v + " 업데이트 · " + when(top.date);
         var vEl = li.querySelector(".hm-ver"); vEl.parentNode.insertBefore(nv, vEl);
       }
       (d.versions || []).forEach(function (x, i) { if (d.open) all.push({ id: id, x: x, i: i }); });
