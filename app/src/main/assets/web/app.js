@@ -1,4 +1,4 @@
-/* 덜누름 로컬 AI — 화면. 앱(Kotlin)과는 window.LA(부르기) · LAe(알림 받기)로 이야기함 */
+/* Chat DNR Ai(구 덜누름 로컬 AI) — 화면. 앱(Kotlin)과는 window.LA(부르기) · LAe(알림 받기)로 이야기함 */
 (function(){
 "use strict";
 var $=function(id){return document.getElementById(id)};
@@ -126,7 +126,7 @@ function drawChat(){
   }
   wireMsgs();scrollEnd(true);
 }
-var AV='<div class="av"><svg viewBox="0 0 108 108"><path fill="#fff" d="M34,36h40a8,8 0,0 1,8 8v20a8,8 0,0 1,-8 8H52l-11,9v-9h-7a8,8 0,0 1,-8 -8V44a8,8 0,0 1,8 -8z"/></svg></div>';
+var AV='<div class="av"><svg viewBox="0 0 364 365"><use href="#dnr"/></svg></div>';
 function msgHtml(m,i){
   if(m.role==="user"){
     var im=(m.images||[]).map(function(p){return '<img src="file://'+esc(p)+'" alt="보낸 사진">'}).join("");
@@ -257,7 +257,7 @@ function drawSettings(){
   $("think").checked=!!st.thinking;$("mtp").checked=st.mtp!==false;
   [].forEach.call($("backend").querySelectorAll("button"),function(b){b.classList.toggle("on",b.getAttribute("data-v")===st.backend)});
   $("sys").value=st.system||"";
-  $("about").textContent="덜누름 로컬 AI "+S.version+" · 갤럭시 Z 폴드8 울트라 기준";
+  $("about").textContent="Chat DNR Ai "+S.version+" · 갤럭시 Z 폴드8 울트라 기준 · 만든 곳 DNR(덜누름)";
 }
 function tLabel(v){v=+v;return v<=0.3?"정확하게":v<=0.9?"균형":"창의적으로"}
 $("sdStop").onclick=function(){LA.stopDownload()};

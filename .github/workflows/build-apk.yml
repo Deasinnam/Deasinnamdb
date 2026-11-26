@@ -1,4 +1,4 @@
-name: Build 덜누름 로컬 AI APK
+name: Build Chat DNR Ai APK
 
 on:
   push:
@@ -58,8 +58,8 @@ jobs:
         run: |
           if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease; fi
           rm -f "$RUNNER_TEMP/release.p12"
-          cp app/build/outputs/apk/$VARIANT/*.apk DeolnureumLocalAI.apk
-          ls -la DeolnureumLocalAI.apk LocalAI-test.apk
+          cp app/build/outputs/apk/$VARIANT/*.apk ChatDNRAi.apk
+          ls -la ChatDNRAi.apk LocalAI-test.apk
 
       - name: 점검용 모델 내려받기 (Gemma 4 E2B · 공개 저장소)
         run: |
@@ -94,7 +94,7 @@ jobs:
         run: |
           gh release delete localai-ci --yes --cleanup-tag || true
           gh release create localai-ci $(ls localai-screen-*.png selftest-result.txt logcat-tail.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
-            --title "덜누름 로컬 AI 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
+            --title "Chat DNR Ai 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: Releases에 APK 올리기
         if: github.ref == 'refs/heads/deolnureum-localai'
@@ -102,8 +102,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete localai-android-latest --yes --cleanup-tag || true
-          gh release create localai-android-latest DeolnureumLocalAI.apk --target "$GITHUB_SHA" --prerelease \
-            --title "덜누름 로컬 AI 안드로이드 (최신 빌드)" --notes "갤럭시 Z 폴드8 울트라 기준. 빌드 ${{ github.run_number }} ($VARIANT)"
+          gh release create localai-android-latest ChatDNRAi.apk --target "$GITHUB_SHA" --prerelease \
+            --title "Chat DNR Ai 안드로이드 (최신 빌드)" --notes "갤럭시 Z 폴드8 울트라 기준. 빌드 ${{ github.run_number }} ($VARIANT)"
 
       - name: 버전별 릴리스 남기기
         if: env.VARIANT == 'release' && github.ref == 'refs/heads/deolnureum-localai'
@@ -114,7 +114,7 @@ jobs:
           if gh release view "localai-android-v$VER" >/dev/null 2>&1; then
             echo "localai-android-v$VER 이미 있음 → 그대로 둠"
           else
-            cp DeolnureumLocalAI.apk "DeolnureumLocalAI-$VER.apk"
-            gh release create "localai-android-v$VER" "DeolnureumLocalAI-$VER.apk" --target "$GITHUB_SHA" --latest=false --prerelease \
-              --title "덜누름 로컬 AI 안드로이드 $VER" --notes "$(date -u +%Y-%m-%d -d '+9 hours') · 빌드 ${{ github.run_number }}"
+            cp ChatDNRAi.apk "ChatDNRAi-$VER.apk"
+            gh release create "localai-android-v$VER" "ChatDNRAi-$VER.apk" --target "$GITHUB_SHA" --latest=false --prerelease \
+              --title "Chat DNR Ai 안드로이드 $VER" --notes "$(date -u +%Y-%m-%d -d '+9 hours') · 빌드 ${{ github.run_number }}"
           fi

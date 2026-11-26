@@ -93,7 +93,7 @@ class DownloadService : Service() {
         val c = (URL(m.url).openConnection() as HttpURLConnection).apply {
             instanceFollowRedirects = true
             connectTimeout = 20_000; readTimeout = 60_000
-            setRequestProperty("User-Agent", "DeolnureumLocalAI/${BuildConfig.VERSION_NAME} (Android)")
+            setRequestProperty("User-Agent", "ChatDNRAi/${BuildConfig.VERSION_NAME} (Android)")
             if (have > 0) setRequestProperty("Range", "bytes=$have-")
         }
         val code = c.responseCode

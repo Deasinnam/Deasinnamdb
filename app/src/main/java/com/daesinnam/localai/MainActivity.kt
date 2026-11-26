@@ -273,7 +273,7 @@ class MainActivity : Activity() {
         @JavascriptInterface fun setSettings(json: String) { app.ai.setSettings(JSONObject(json)) }
 
         @JavascriptInterface fun copy(text: String) {
-            getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("덜누름 로컬 AI", text))
+            getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("Chat DNR Ai", text))
         }
         @JavascriptInterface fun share(text: String) {
             ui.post { startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "답 공유하기")) }
