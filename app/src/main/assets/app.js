@@ -4084,6 +4084,19 @@ const HORSE=`<svg viewBox="0 0 140 100" class="tx-hsvg"><g class="tx-hb">
 <path class="tx-mane" d="M104 9c-6 5-10 13-16 21l5 1c5-6 8-13 15-19z"/>
 <circle class="tx-eye" cx="118" cy="13" r="1.8"/></g></svg>`;
 const TAXI_ICON='<path d="M7 4h10l1 3h1.5A2.5 2.5 0 0 1 22 9.5V17a1 1 0 0 1-1 1h-1.2a2.5 2.5 0 0 1-4.6 0H8.8a2.5 2.5 0 0 1-4.6 0H3a1 1 0 0 1-1-1V9.5A2.5 2.5 0 0 1 4.5 7H6zm1.4 1.6L7.8 7h8.4l-.6-1.4zM5 10v3h4v-3zm10 0v3h4v-3zM9.5 2h5v1.6h-5z"/>';
+// 1.98 '세계는 서울로' 간판: 처음 직접 그린 그림(1.92, 해 지는 하늘 · 남산타워 · 63빌딩 · 한강)으로 되돌림 — 사용자 지시. 칸 크기에 맞춰 넓으면 글자 오른쪽, 좁으면 글자 위
+const SEOUL88_CITY=`<svg class="s88-city" viewBox="0 0 600 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<defs><linearGradient id="s88sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff5a3c"/></linearGradient><clipPath id="s88sc"><circle cx="230" cy="150" r="96"/></clipPath></defs>
+<g clip-path="url(#s88sc)"><rect x="120" y="40" width="220" height="200" fill="url(#s88sun)"/>${[0,1,2,3,4,5].map(i=>'<rect x="120" y="'+(158+i*13)+'" width="220" height="'+(2.5+i*1.3)+'" fill="#7a3a55"/>').join('')}</g>
+<path d="M0 190 Q70 162 130 172 Q190 150 250 168 L250 214 L0 214Z" fill="#2a1a33"/>
+<path d="M134 180 V118 M128 126 h12 M130 137 h8" stroke="#2a1a33" stroke-width="6" fill="none"/><circle cx="134" cy="113" r="7" fill="#2a1a33"/><path d="M134 106 v-28" stroke="#2a1a33" stroke-width="2.5"/>
+<path d="M320 214 V118 L340 72 H353 L373 118 V214Z" fill="#2a1a33"/><path d="M340 72 L353 72 L367 110 L344 110Z" fill="#d9a441" opacity=".85"/>
+<path d="M336 128 H358 M336 144 H360 M336 160 H362 M336 176 H364" stroke="#d9a441" stroke-width="1.6" opacity=".6"/>
+${[[250,176,24],[276,160,22],[298,184,20],[376,170,28],[406,186,18],[426,172,26],[454,184,30],[486,166,22],[510,180,34],[546,170,26],[574,186,26]].map(b=>'<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="40" fill="#2a1a33"/>').join('')}
+<rect y="208" width="600" height="32" fill="#16203d"/>
+${[0,1,2].map(i=>'<path d="M'+(150+i*20)+' '+(216+i*8)+' h'+(160-i*40)+'" stroke="#ffb35a" stroke-width="3" stroke-linecap="round" opacity="'+(.8-i*.2)+'"/>').join('')}
+${[0,1].map(i=>'<path d="M380 '+(220+i*10)+' q30 -7 60 0 t60 0 t60 0 t60 0" stroke="#3b4f86" stroke-width="2.4" fill="none"/>').join('')}</svg>`;
+const SEOUL88=`<div class="s88" role="img" aria-label="세계는 서울로 서울은 세계로">${SEOUL88_CITY}<div class="s88-txt"><i class="s88-st"><em></em><em></em><em></em><em></em></i><b>세계는 서울로</b><b class="s88-2">서울은 세계로</b><small>SEOUL · 1988</small></div></div>`;
 // 1.93 아래 간판 '대신남 운수'(노란 택시 간판 · TAXI 지붕등 · 체크 띠 · 둥근 기사 사진). 사진은 동그라미를 누르면 고름(기기에만 저장)
 const DSN_SIGN=`<div class="ds" role="img" aria-label="대신남 운수">
 <div class="ds-main"><svg class="ds-roof" viewBox="0 0 220 70" aria-hidden="true"><path d="M58 8 H162 L176 44 H44Z" fill="#111"/><path d="M24 46 H196 Q204 46 206 54 L208 62 H12 L14 54 Q16 46 24 46Z" fill="#111"/><text x="110" y="38" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans KR',sans-serif" font-weight="900" font-size="34" fill="#ffd21f" letter-spacing="2">TAXI</text></svg>
@@ -4148,7 +4161,7 @@ const Taxi=(()=>{
     <div class="dk-sub"><button type="button" class="dk-tog" data-t="tShuf">셔플</button><button type="button" class="dk-tog" data-t="tRep">반복</button>
       <label class="dk-sl"><span>VOL</span><input type="range" class="dk-r" data-t="vol" min="0" max="100"></label><label class="dk-sl"><span>BAL</span><input type="range" class="dk-r" data-t="bal" min="-100" max="100"></label></div>
   </div>
-  <div class="tx-88">${DSN_SIGN}<div class="s88i" role="img" aria-label="세계는 서울로 서울은 세계로 · SEOUL 1988"><i class="s88i-full"></i><i class="s88i-text"></i><i class="s88i-city"></i></div>
+  <div class="tx-88">${DSN_SIGN}<div class="s88i">${SEOUL88}</div>
     <button type="button" class="tx-signsw" aria-label="간판 바꾸기 — 대신남 운수 ↔ 세계는 서울로">⇄ 간판</button></div>
   <input type="file" class="ds-file" accept="image/*" hidden>
   <div class="tx-warn" role="note"><b>재미로만</b> 즐기는 기능이에요 · 표시된 금액으로 실제 요금을 받거나 돈을 주고받으면 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반이에요. <span class="tx-wmore">금액은 서울 중형택시 요금으로 계산한 참고값이라 실제 택시 요금과 다를 수 있어요.</span></div>

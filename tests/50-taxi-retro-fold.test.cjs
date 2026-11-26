@@ -88,5 +88,5 @@ run('Taxi meter: retro skin, skin buttons, Fold7 fit', async ({context, origin, 
   const before = await p.evaluate(() => document.getElementById('wRadio').dataset.txsign);
   await p.click('#wRadio .tx-signsw'); await p.waitForTimeout(200);
   assert.notEqual(await p.evaluate(() => document.getElementById('wRadio').dataset.txsign), before, 'sign switch');
-  assert.ok(await p.evaluate(() => new Promise(r => { const i = new Image(); i.onload = () => r(i.width > 400); i.onerror = () => r(false); i.src = 'taxi/seoul88.jpg'; })), 'banner image loads');
+  assert.ok(await p.evaluate(() => { const b = document.querySelector('#wRadio .s88i .s88').getBoundingClientRect(); return b.width > 0 && Math.abs(b.width / b.height - 1136 / 284) < 0.05; }), 's88 banner keeps 4:1');
 });

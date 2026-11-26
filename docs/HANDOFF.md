@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-26 · v1.97 (versionCode 131)**
+마지막 갱신: **2026-11-26 · v1.98 (versionCode 132)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.97** (versionCode 131, versionName `1.97-one`) |
+| 최신 버전 | **1.98** (versionCode 132, versionName `1.98-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -127,6 +127,7 @@
 ## 7. 작업 기록 (최근이 위)
 
 - 2026-11-25 · 1.87 — 의견(스피드미터): 아무 블루투스에나 "차량 연결됨 · Amp로 재생" 알림. `CarConnect.matches(ctx, name, dev)`: 차를 지정하지 않았으면 `carLike()` — BluetoothClass가 `AUDIO_VIDEO_CAR_AUDIO`·`AUDIO_VIDEO_HANDSFREE`인 기기만(ACL 연결은 EXTRA_DEVICE, A2DP 출력 콜백은 이름으로 짝지은 기기 `bondedByName`). 권한 없거나 종류를 모르면 차가 아님. 설정 첫 항목 "차량 오디오 자동 인식 (이어폰·스피커 제외)"(web/src/80-clock-windows.js, index.html 설명). 로컬 테스트: 25-pfd-minimap은 지도 타일(네트워크) 탓에 수정 전에도 실패, 나머지 통과. 공개: 초안 확인 뒤 `[publish-speedometer]` 커밋 + 사이트 DL 표.
+- 2026-11-26 · 1.98 — 사용자: '세계는 서울로' 간판은 처음 직접 그린 그림(1.92 HTML/SVG `SEOUL88`)으로, 비율은 1.94~1.97 그림 띠와 같게. `SEOUL88_CITY`·`SEOUL88`을 99-zz-taxi에 되살려 `.s88i` 안에 넣고, `.s88i .s88`는 늘 1136:284(4:1)·`width:min(94cqw,376cqh)`·자기 자신이 container(그래서 늘 글자 오른쪽 배치), 둘레는 짙은 남색. `assets/taxi/seoul88*.jpg` 지움(1.97 밤하늘 그림 안 씀). 1.97은 공개하지 않음.
 - 2026-11-26 · 1.97 — 레트로 하단 배너('세계는 서울로') 디자인 변경: 원본 띠(사용자 그림)에서 도시 윤곽 위 하늘(왼쪽 0~660px)을 짙은 남색→보랏빛 남색 밤하늘 + 별 170개(시드 1988)로 바꾸고 오른쪽 글자 쪽으로 90px 부드럽게 섞음, 남산타워 틈은 밤하늘색, 물 위 물빛은 금빛 불빛. `assets/taxi/seoul88*.jpg` 다시 만듦. 사이트 영상·포스터·화면(sp-taxi*)도 새 배너로 덮어 다시 올림. 공개 설명·사이트에는 '레트로 하단 배너 디자인 변경'이라고만 씀(사용자 지시). 공개: 사용자 지시로 옛 공개 버전(1.86·1.87·1.96)은 모두 내리고 1.97만 — publish-speedometer.yml `takedown` 작업(`[speedometer-takedown]`, publish 다음에 실행)이 가장 새 공개판 말고 speedometer-v 릴리스·태그를 모두 지움. 사이트 DL 표 versions도 1.97 한 줄만.
 - 2026-11-26 · 1.96 공개 · 사이트 — 사용자: 덜누름 사이트 상세 페이지에 업데이트 추가·파일 올리기, 홈에 크게 알리기. `[publish-speedometer]` 빈 커밋으로 `speedometer-v1.96` 공개(1.88~1.95 초안은 그대로). gh-pages `src/index.html`: 홈 첫 화면 아래 `.hm-big` 카드(영상 `media/sp-taxi.mp4` — 사용자 촬영본에서 휴대폰 사진 갤러리가 보이는 13.2~18.7초를 잘라 냄, 720px H.264), '오늘의 덜누름' 카드 1.96, /speedometer/ `#spd-taxi` 섹션(영상 · `sp-taxi-pro/s88/lcd.jpg`·`sp-musicfx.jpg` · 6줄 설명 · 재미로만 안내) + 위쪽 '🚕 1.96 새 기능' 버튼(data-scroll), 소개 07줄, DL 표 tag·versions 1.96. `python3 tools/build_pages.py` 후 커밋.
 - 2026-11-26 · 1.96 — 바깥 화면에서 '대신남 운수' 글자와 사진이 통째로 사라짐(사용자 사진). 원인 추정: 폰 글자 크기 설정(웹뷰 글자 확대)이 있으면 getComputedStyle 글자 크기에 확대가 들어 있고, 그 값×0.93을 다시 넣으면 또 확대돼 커짐 → 1.95 `fitSign` 반복이 글자를 계속 키워 간판 밖으로 밀어냄(사진도 밀려남). 공통 `shrinkFont(el,fits,min)`: 100px를 넣어 배율 z를 먼저 재고 '원래×k÷z'로만 넣음, k 바닥 0.3(요금 0.2). `fitFare`도 같은 방식. 간판 격자 `minmax(0,1fr) auto`. 브라우저에선 글자 확대를 그대로 흉내 낼 수 없어 폰 확인 필요. 초안만, 출시 안 함.

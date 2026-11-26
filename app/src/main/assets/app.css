@@ -3277,18 +3277,11 @@ html.fxlock,html.fxlock body{overscroll-behavior-y:none}
 #wRadio[data-txskin="retro"] .ds-name{font-family:"Noto Serif KR",serif;letter-spacing:.06em}
 #wRadio[data-txskin="retro"] .tx-88{box-shadow:0 0 0 3px #8e9194,0 0 0 5px #3b3d40,0 6px 14px #000a}
 /* 1.94 간판 '세계는 서울로'(사용자가 준 1988 그림): 넓으면 한 장 그대로, 좁으면 글자 위·도시 아래로 나눠 글자가 잘리지 않게(종이색으로 이어 붙임) */
-.s88i{display:none;position:absolute;inset:0;background:#f5cf9f;box-shadow:inset 0 0 0 2px #2c3b2f}
+.s88i{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:radial-gradient(120% 140% at 50% 50%,#2a2650,#141b3c)}
+/* 1.98 '세계는 서울로' 그림은 늘 가로:세로 1136:284(4:1) — 1.94~1.97 그림 띠와 같은 비율, 칸에 맞춰 크기만 바뀜 */
+.s88i .s88{position:relative;inset:auto;width:min(94cqw,376cqh);aspect-ratio:1136/284;container-type:size;border-radius:6px;overflow:hidden}
 #wRadio[data-txsign="s88"] .ds{display:none}
-#wRadio[data-txsign="s88"] .s88i{display:block}
-.s88i i{position:absolute;background-position:center;background-size:contain;background-repeat:no-repeat}
-.s88i-full{inset:3%;background-image:url(taxi/seoul88.jpg)}
-.s88i-text,.s88i-city{display:none}
-@container (max-aspect-ratio: 13/5){
-  .s88i-full{display:none}
-  .s88i-text,.s88i-city{display:block}
-  .s88i-text{left:4%;right:4%;top:4%;height:46%;background-image:url(taxi/seoul88-text.jpg)}
-  .s88i-city{left:0;right:0;bottom:3%;height:48%;background-image:url(taxi/seoul88-city.jpg)}
-}
+#wRadio[data-txsign="s88"] .s88i{display:flex}
 #wRadio[data-txskin="retro"] .tx-88{box-shadow:0 0 0 3px #8e9194,0 0 0 5px #3b3d40,0 6px 14px #000a}
 .tx-signsw{position:absolute;z-index:3;left:8px;top:8px;padding:5px 9px;border:0;border-radius:12px;background:#111c;color:#ffe9a8;font:800 12px/1 "Noto Sans KR",sans-serif;cursor:pointer;box-shadow:0 1px 3px #0008}
 #wRadio[data-txskin="retro"] .tx-signsw{display:none}
