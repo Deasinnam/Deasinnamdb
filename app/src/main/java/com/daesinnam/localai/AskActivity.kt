@@ -27,7 +27,7 @@ import org.json.JSONObject
  *                 .setPackage("com.daesinnam.localai")
  *                 .putExtra("text", 보낼 글(선택)) .putExtra("task", "summary"|"easy"|"fix"|"en"|"ko"|"table"|"continue" 또는 직접 쓴 지시)
  *                 .putExtra("title", 창 제목) .putExtra("insertLabel", "문서에 넣기") .putExtra("voice", true=바로 말로 묻기))
- * 돌려받기:   RESULT_OK + "result"(마크다운 답) · "plain"(읽기 쉬운 글) · "chat"(대화 id)
+ * 돌려받기:   RESULT_OK + "result"(마크다운 답) · "plain"(읽기 쉬운 글) · "html"(제목 · 목록 · 표가 살아 있는 HTML) · "chat"(대화 id)
  *
  * 사람이 보는 창에서 사람이 누를 때만 결과가 돌아가므로 다른 앱이 몰래 AI를 쓰거나 대화를 읽을 수 없음.
  * 질문과 답은 Chat DNR Ai 대화 목록에도 남아 앱에서 이어서 물어볼 수 있음. 모두 기기 안에서만.
@@ -112,10 +112,10 @@ class AskActivity : Activity() {
         }
         @JavascriptInterface fun stop() { app.ai.stop() }
 
-        @JavascriptInterface fun finish(result: String) {
+        @JavascriptInterface fun finish(result: String, html: String) {
             ui.post {
                 setResult(RESULT_OK, Intent().putExtra("result", result).putExtra("plain", DnrVoice.speakable(result).ifBlank { result })
-                    .putExtra("chat", chatId ?: ""))
+                    .putExtra("html", html).putExtra("chat", chatId ?: ""))
                 this@AskActivity.finish()
             }
         }

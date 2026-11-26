@@ -81,7 +81,8 @@ $("askClose").onclick=function(){LA.close()};
 $("dim").onclick=function(){if(!BUSY&&!ANSWER)LA.close()};
 $("goApp1").onclick=function(){LA.openApp()};
 $("aApp").onclick=function(){LA.openApp()};
-$("aIns").onclick=function(){if(ANSWER){LA.stopSpeak();LA.finish(ANSWER)}};
+function cleanHtml(md){var d=document.createElement("div");d.innerHTML=mdRender(md);[].forEach.call(d.querySelectorAll(".ph,button"),function(x){x.remove()});return d.innerHTML}
+$("aIns").onclick=function(){if(ANSWER){LA.stopSpeak();LA.finish(ANSWER,cleanHtml(ANSWER))}};
 $("aCopy").onclick=function(){LA.copy(ANSWER);toast("복사했어요")};
 $("aRetry").onclick=function(){if(LAST&&!BUSY)go(LAST[0],LAST[1])};
 function mark(){$("aSpeak").classList.toggle("speaking",SPEAKING)}

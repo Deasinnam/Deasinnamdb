@@ -59,4 +59,6 @@ public final class DnrAi {
 
     public static String result(Intent data) { return data == null ? null : data.getStringExtra("result"); }
     public static String plain(Intent data) { return data == null ? null : data.getStringExtra("plain"); }
+    /** 제목 · 목록 · 표가 살아 있는 HTML(문서 편집기에 붙여 넣기용) */
+    public static String html(Intent data) { return data == null ? null : data.getStringExtra("html"); }
 }

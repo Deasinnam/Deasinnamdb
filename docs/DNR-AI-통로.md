@@ -14,7 +14,7 @@
   | `title` | 창 제목 |
   | `insertLabel` | 결과를 돌려받는 단추 이름(예: 문서에 넣기). 없으면 보기만 |
   | `voice` | true면 열리자마자 말로 묻기 |
-- 돌려받는 값(RESULT_OK): `result` 마크다운 답, `plain` 기호를 뺀 글, `chat` Chat DNR Ai 대화 id
+- 돌려받는 값(RESULT_OK): `result` 마크다운 답, `plain` 기호를 뺀 글, `html` 제목·목록·표가 살아 있는 HTML, `chat` Chat DNR Ai 대화 id
 - 부르는 앱 매니페스트: `<queries><package android:name="com.daesinnam.localai" /></queries>`
 - 복사해 쓰는 도우미: `client/DnrAi.java`
 
