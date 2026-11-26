@@ -30,6 +30,26 @@ jobs:
           gh api -X PATCH "repos/$R/releases/$ID" -F draft=false -f make_latest=false --jq '.tag_name+" 공개: "+.html_url'
 
   # [speedometer-notes]: 공개된 가장 높은 speedometer-v 릴리스의 설명을 docs/speedometer-release.md로 바꿈
+  # 옛 버전 내리기: 커밋 메시지에 [speedometer-takedown] — 공개(publish) 다음에, 가장 새 공개판 하나만 남기고 speedometer-v 릴리스(초안 포함)와 태그를 모두 지움
+  takedown:
+    needs: publish
+    if: contains(github.event.head_commit.message, '[speedometer-takedown]')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      R: ${{ github.repository }}
+    steps:
+      - name: 가장 새 공개판만 남기기
+        run: |
+          set -e
+          gh api "repos/$R/releases?per_page=100" > rel.json
+          KEEP=$(jq -r '[.[]|select((.draft|not) and (.tag_name|startswith("speedometer-v")))]|sort_by(.tag_name|ltrimstr("speedometer-v")|split(".")|map(tonumber))|last|.tag_name // empty' rel.json)
+          [ -n "$KEEP" ] || { echo "공개판 없음"; exit 1; }
+          echo "남김: $KEEP"
+          for T in $(jq -r --arg k "$KEEP" '.[]|select((.tag_name|startswith("speedometer-v")) and .tag_name!=$k)|.tag_name' rel.json); do
+            gh release delete "$T" -R "$R" --yes --cleanup-tag && echo "지움 $T"
+          done
+
   notes:
     if: contains(github.event.head_commit.message, '[speedometer-notes]')
     runs-on: ubuntu-latest
