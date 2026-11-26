@@ -111,7 +111,7 @@ if [ -n "$VOICE" ]; then
     sleep 10
     CH=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null)
     if echo "$CH" | grep -qi '"role":"user","text":"[^"]*\(france\|capital\)'; then
-      if echo "$CH" | tr 'A-Z' 'a-z' | grep -q 'paris'; then OK=1; break; fi
+      if echo "$CH" | tr 'A-Z' 'a-z' | grep -q 'paris\|파리'; then OK=1; break; fi
     fi
   done
   sleep 3; shot 6-real-voice
