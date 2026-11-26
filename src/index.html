@@ -1031,6 +1031,29 @@ body[data-view="home"] { background: #f6f5f1; }
 .hm-today-h { display: flex; align-items: center; justify-content: space-between; }
 .hm-today-h h2 { font-size: 18px; }
 .hm-today-h a, .hm-sec-h a { font-size: 14px; }
+.hm-big { margin-top: 8px; }
+.hm-big-card { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px; align-items: center; padding: 28px; border-radius: 24px; background: radial-gradient(120% 120% at 0% 0%, #2c2410 0%, #121212 55%); color: #fff; box-shadow: 0 18px 40px #0003; }
+.hm-big-vid { position: relative; border-radius: 18px; overflow: hidden; border: 6px solid #1d1d1d; box-shadow: 0 0 0 1px #3a3424; aspect-ratio: 720 / 800; background: #000; }
+.hm-big-vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hm-big-tx h2 { margin: 12px 0 10px; font: 800 clamp(26px, 3.4vw, 40px)/1.18 var(--font-display); letter-spacing: -0.03em; word-break: keep-all; }
+.hm-big-tx h2 em { font-style: normal; color: #ffd21f; }
+.hm-big-tx p { margin: 0 0 14px; color: #d8d4c8; font-size: 15.5px; line-height: 1.65; word-break: keep-all; }
+.hm-big-tx ul { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 8px; }
+.hm-big-tx li { display: flex; gap: 10px; font-size: 15px; line-height: 1.5; color: #f1eee6; word-break: keep-all; }
+.hm-big-tx li b { flex: none; color: #ffd21f; font: 700 13px/1.6 var(--font-mono); }
+.hm-big-act { display: flex; flex-wrap: wrap; gap: 10px; }
+.hm-big-act a { display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 20px; border-radius: 12px; font-weight: 800; text-decoration: none; }
+.hm-big-act .go { background: #ffd21f; color: #111; }
+.hm-big-act .more { background: #ffffff14; color: #fff; box-shadow: inset 0 0 0 1px #ffffff33; }
+.hm-big-note { margin: 14px 0 0; font-size: 12.5px; color: #a9a497; word-break: keep-all; }
+@media (max-width: 760px) { .hm-big-card { grid-template-columns: 1fr; padding: 18px; gap: 20px; } }
+.spd-taxi-vid { grid-column: 1 / -1; max-width: 520px; width: 100%; margin: 8px auto 0; }
+.spd-taxi-vid .ap-dev { width: 100%; border-radius: 20px; border-width: 6px; }
+.spd-taxi-vid figcaption { margin-top: 10px; text-align: center; font-size: 13px; color: #a9a9b2; }
+.spd-taxi-pts { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 28px; max-width: 900px; margin: 8px auto 0; padding: 0; list-style: none; }
+.spd-taxi-pts li { display: flex; gap: 10px; color: #e4e4ea; font-size: 15px; line-height: 1.6; word-break: keep-all; }
+.spd-taxi-pts li b { flex: none; color: #ffd21f; font: 700 12px/1.9 var(--font-mono); }
+@media (max-width: 760px) { .spd-taxi-pts { grid-template-columns: 1fr; } }
 .hm-launch { display: flex; gap: 14px; align-items: center; padding: 14px; border-radius: 14px; background: #111; color: #fff; text-decoration: none; }
 .hm-launch img { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; flex: none; }
 .hm-launch-t { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -1275,12 +1298,32 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       </div>
       <div class="hm-today" aria-labelledby="hm-today-t">
         <div class="hm-today-h"><h2 id="hm-today-t">오늘의 덜누름</h2><a href="#releases">업데이트 전체 →</a></div>
-        <a class="hm-launch" id="hmLaunch" href="#app-speed" data-at="2026-11-22T16:00:00+09:00">
-          <img src="media/speedometer-poster.jpg" alt="" width="76" height="76">
-          <span class="hm-launch-t"><span class="hm-chip hm-c-hot" id="hmLaunchChip">11.22(일) 오후 4시 출시</span><b>대신남 스피드미터</b><small>음악 선곡 · 엔진오일 교환 알림</small></span>
+        <a class="hm-launch" id="hmLaunch" href="#app-speed" data-at="2026-11-26T10:00:00+09:00">
+          <img src="media/sp-taxi-poster.jpg" alt="" width="76" height="76">
+          <span class="hm-launch-t"><span class="hm-chip hm-c-hot" id="hmLaunchChip">11.22(일) 오후 4시 출시</span><b>대신남 스피드미터 1.96</b><small>택시 미터기 · 노래 제목 위 음악 효과</small></span>
           <span class="hm-launch-go" aria-hidden="true">›</span>
         </a>
         <ul class="hm-news" id="hmNews"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2026.11.26 대신남 스피드미터 1.96 업데이트를 크게 알림 -->
+  <section class="wrap hm-big" aria-labelledby="hm-big-t">
+    <div class="hm-big-card">
+      <div class="hm-big-vid"><video src="media/sp-taxi.mp4" poster="media/sp-taxi-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="대신남 스피드미터 택시 미터기 실제 화면: 레트로 빈차판, 실물 전자식, 기사 사진 넣기, 노래 제목 위 음악 효과"></video></div>
+      <div class="hm-big-tx">
+        <span class="hm-chip hm-c-hot">NEW · 대신남 스피드미터 1.96 업데이트</span>
+        <h2 id="hm-big-t">스피드미터에<br><em>택시 미터기</em>가 들어왔어요.</h2>
+        <p>달린 거리만큼 서울 택시 요금이 올라가고, 주행을 누르면 말이 달립니다. 노래가 나오면 계기판 위에서 음악이 춤춥니다.</p>
+        <ul>
+          <li><b>01</b><span>실물 전자식 · 레트로 · LCD 클래식, 세 가지 미터기 스킨</span></li>
+          <li><b>02</b><span>레트로는 빈차판이 내려오고, 요금이 오를 때 동전 소리</span></li>
+          <li><b>03</b><span>'대신남 운수' 간판에 내 사진 · '세계는 서울로' 1988 간판</span></li>
+          <li><b>04</b><span>스피드미터 노래 제목 위 음악 효과, 누를 때마다 다섯 가지로</span></li>
+        </ul>
+        <div class="hm-big-act"><a class="go" href="#app-speed">1.96 내려받기 ›</a><a class="more" href="#app-speed">새 기능 자세히 보기</a></div>
+        <p class="hm-big-note">택시 미터기는 재미로만 즐기는 기능이에요. 표시된 금액으로 실제 요금을 받으면 「여객자동차 운수사업법」 위반입니다.</p>
       </div>
     </div>
   </section>
@@ -1646,6 +1689,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <li><b>04</b><span>진행 방향이 위로 오는 원형 지도와 나침반</span></li>
           <li><b>05</b><span>에어라인 스킨과 계기판 디자인, 주간·야간 하늘 자동</span></li>
           <li><b>06</b><span>T맵 · 네이버지도 · 블랙박스 바로가기</span></li>
+          <li><b>07</b><span>NEW 1.96 · 재미로 즐기는 택시 미터기와 노래 제목 위 음악 효과</span></li>
         </ul>
         <div class="amp-cta"><span class="amp-soon">11월 22일(일) 오후 4시 출시 · 이곳에 내려받기가 생깁니다</span></div>
         <p class="ap-nodist"><b>재배포 금지</b> · 대신남 스피드미터 앱 파일(APK)을 다른 사이트·카페·커뮤니티·메신저 등에 다시 올리거나 나눠 주는 것은 허용하지 않습니다. 알려 주실 때는 이 페이지 주소(deolnureum.com/speedometer)를 공유해 주세요.</p>
@@ -1659,6 +1703,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <a class="amp-btn ap-recruit-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdZeMaXkkBNaWR5qtM2shmM7GHEkBTcieaETPe437CIjz-zrw/viewform" target="_blank" rel="noopener">✈ 선발 요원 신청하기</a>
         </div>
         <div class="ap-fix"><a class="amp-btn ap-fix-btn" href="#post-install-guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>설치가 차단될 때 해결 방법 보기</a></div>
+        <div class="ap-fix"><button type="button" class="amp-btn ap-guide-btn" data-scroll="spd-taxi">🚕 1.96 새 기능 · 택시 미터기 보기</button></div>
         <div class="ap-fix"><button type="button" class="amp-btn ap-guide-btn" data-scroll="spd-guide">📖 사용 방법 · 초기 세팅 보기</button></div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="대신남 스피드미터">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="#hardware"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a><a class="amp-link" href="#notify" data-fb-app="대신남 스피드미터">공개되면 알림 받기</a></div>
         <div class="ap-howto ap-install">
@@ -1693,6 +1738,44 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         <button class="ul-again" id="spdUlAgain" type="button">↻ 다시 보기</button>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
       </div>
+    </div>
+    <div class="amp-wrap ap-sub" id="spd-taxi">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">NEW · 1.96 · 11월 26일 업데이트</div>
+        <h2>주행을 누르면<br>택시 미터기가 달립니다.</h2>
+        <p class="ap-desc">라디오가 있던 자리(위쪽 줄의 🚕 택시)에 택시 미터기가 들어왔습니다. 실제로 달린 GPS 거리와 시간으로 서울 중형택시 요금이 올라가고, 심야·시계외 할증도 계산합니다. 아래 영상과 사진은 모두 갤럭시 Z 폴드7에서 찍은 실제 화면입니다.</p>
+      </div>
+      <figure class="spd-taxi-vid">
+        <div class="ap-dev" style="aspect-ratio:720/800"><video src="media/sp-taxi.mp4" poster="media/sp-taxi-poster.jpg" muted loop playsinline controls preload="metadata" aria-label="택시 미터기 실제 화면: 레트로 스킨에서 빈차를 누르면 빈차판이 내려와 승차요금을 가리고, 실물 전자식으로 바꿔 기사 사진을 넣고, 스피드미터에서 노래 제목 위 음악 효과를 바꾸는 모습"></video></div>
+        <figcaption>레트로 빈차판 → 간판 바꾸기 → 기사 사진 넣기 → 노래 제목 위 음악 효과</figcaption>
+      </figure>
+      <ul class="spd-taxi-pts">
+        <li><b>01</b><span><b style="color:#fff;font:inherit">스킨 세 가지</b> — 실물 전자식 · 레트로(기계식 숫자 드럼) · LCD 클래식. 미터기 위 단추로 바로 바꾸고, 운행 중에 바꿔도 요금이 이어집니다.</span></li>
+        <li><b>02</b><span><b style="color:#fff;font:inherit">달리는 말</b> — 주행을 누르면 말이 제자리에서 달리고, 속도가 붙으면 보폭이 커집니다. 빈차·지불이면 네 발로 섭니다.</span></li>
+        <li><b>03</b><span><b style="color:#fff;font:inherit">레트로 빈차판 · 동전 소리</b> — 빈차를 누르면 동그란 빈차판이 내려와 승차요금을 가리고, 요금이 오를 때마다 동전 소리가 납니다.</span></li>
+        <li><b>04</b><span><b style="color:#fff;font:inherit">대신남 운수 간판 · 내 사진</b> — 동그라미를 눌러 사진을 고르고, 끌어서 옮기고 확대·축소해 원하는 부분을 넣습니다. 사진은 폰에만 저장됩니다.</span></li>
+        <li><b>05</b><span><b style="color:#fff;font:inherit">세계는 서울로 · 1988</b> — 레트로는 '세계는 서울로 · 서울은 세계로' 간판, 다른 스킨은 ⇄ 간판 단추로 두 간판을 바꿉니다.</span></li>
+        <li><b>06</b><span><b style="color:#fff;font:inherit">음악 효과 · 폴드7 맞춤</b> — 스피드미터 노래 제목 위에 같은 색 음악 효과(막대 · 거울 · 파형 · 점 · 원). 폴드7 바깥 화면에서는 미터기 아래에 음악 조작부가 함께 나옵니다.</span></li>
+      </ul>
+      <div class="ap-trio ap-four">
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:900/999"><img src="media/sp-taxi-pro.jpg" alt="실물 전자식 스킨: 하늘색 요금 6,700원, 초록 도트로 달리는 말, 아래 노란 대신남 운수 간판과 기사 사진" loading="lazy"></div>
+          <figcaption><small>01 · 실물 전자식</small><h3>검은 액정 미터기.</h3><p>하늘색 요금, 초록 속도, 도트로 달리는 말.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:900/999"><img src="media/sp-taxi-s88.jpg" alt="실물 전자식 스킨에 세계는 서울로 서울은 세계로 1988 간판을 단 화면" loading="lazy"></div>
+          <figcaption><small>02 · 간판 바꾸기</small><h3>세계는 서울로.</h3><p>⇄ 간판 단추로 1988 간판과 대신남 운수를 바꿉니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:900/999"><img src="media/sp-taxi-lcd.jpg" alt="LCD 클래식 스킨: 연두색 액정에 요금 6,700원과 달리는 말" loading="lazy"></div>
+          <figcaption><small>03 · LCD 클래식</small><h3>연두빛 액정.</h3><p>예전 전자식 미터기의 숫자와 말 그림.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:900/999"><img src="media/sp-musicfx.jpg" alt="스피드미터 에어라인 화면 오른쪽 아래, 노래 제목 Flower 위에 초록 막대 음악 효과" loading="lazy"></div>
+          <figcaption><small>04 · 음악 효과</small><h3>노래 제목 위에서.</h3><p>제목과 같은 초록, 배경 없이. 누를 때마다 바뀝니다.</p></figcaption>
+        </figure>
+      </div>
+      <p class="ap-disc" role="note" style="grid-column:1/-1"><b>재미로만</b>택시 미터기는 재미로 즐기는 기능입니다. 표시된 금액은 서울 중형택시 요금으로 계산한 참고값이며, 이 금액으로 실제 요금을 받거나 돈을 주고받으면 「여객자동차 운수사업법」 제81조(자가용 자동차의 유상운송 금지) 위반입니다.</p>
     </div>
     <div class="amp-wrap ap-sub" id="spd-new">
       <div class="amp-copy ap-wide">
@@ -4567,9 +4650,10 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
   var REPO = "Deasinnam/Deasinnamdb";
   var DL = {
     "app-amp":     { open: false, tag: "latest",         file: "DaesinnamAmp.apk",     base: 0 },
-    "app-speed":   { open: true,  min: 8, tag: "speedometer-v1.87", file: "DaesinnamSpeedometer.apk", base: 0,
+    "app-speed":   { open: true,  min: 8, tag: "speedometer-v1.96", file: "DaesinnamSpeedometer.apk", base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 speedometer-v<버전>은 빌드가 초안으로 만들고 [publish-speedometer] 커밋으로 공개) */
                      versions: [
+                       { v: "1.96", date: "2026.11.26", tag: "speedometer-v1.96", file: "DaesinnamSpeedometer.apk", note: "택시 미터기(실물 전자식 · 레트로 · LCD 클래식, 달리는 말, 빈차판 · 동전 소리), 대신남 운수 간판과 기사 사진 · 세계는 서울로 간판, 노래 제목 위 음악 효과, 폴드7 화면 맞춤", kind: ["new"] },
                        { v: "1.87", date: "2026.11.25", tag: "speedometer-v1.87", file: "DaesinnamSpeedometer.apk", note: "차량 연결: 차량 오디오 · 핸즈프리 블루투스만 차로 인식 (이어폰 · 스피커에는 알림 안 뜸)", kind: ["fix"], post: "desk-dex", fix: "아무 블루투스에나 \"차량 연결됨\" 알림이 뜨던 문제" },
                        { v: "1.86", date: "2026.11.22", tag: "speedometer-v1.86", file: "DaesinnamSpeedometer.apk", note: "첫 공개: 에어라인 스킨 활주로 이착륙, 과속 카메라 500m 경고, 착륙 평점, 초기 세팅 방법 안내", kind: ["new"] }
                      ] },
