@@ -32,17 +32,19 @@ for i in $(seq 1 180); do
   if adb logcat -d -s LA_SELFTEST:I | grep -q "DONE"; then break; fi
 done
 adb logcat -d -s LA_SELFTEST:I | grep -o 'LA_SELFTEST: .*' | sed 's/^LA_SELFTEST: //' | tee -a $OUT
-adb logcat -d | grep -iE 'litert|LocalAI|AndroidRuntime' | tail -40 > logcat-tail.txt
+timeout 30 adb logcat -d | grep -iE 'litert|LocalAI|AndroidRuntime' | tail -60 > logcat-tail.txt
 # 2) 실제 화면에서 질문(CPU로 고정 — 에뮬레이터는 GPU가 없음)
 adb shell am force-stop $PKG
-adb shell "run-as $PKG sh -c 'mkdir -p shared_prefs && echo \"<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?><map><string name=\\\"backend\\\">cpu</string><boolean name=\\\"mtp\\\" value=\\\"false\\\" /></map>\" > shared_prefs/localai.xml'"
-adb shell am start -n $PKG/.MainActivity --es ask "인터넷 없이 폰 안에서 AI가 돌아가면 좋은 점 3가지를 짧게 알려 줘" >/dev/null
-sleep 20; shot 3-real-loading
-for i in $(seq 1 40); do sleep 10; if adb logcat -d | grep -q "send failed"; then break; fi; done 2>/dev/null &
-sleep 150; shot 4-real-answer
-wait 2>/dev/null
-CHATS=$(adb shell run-as $PKG sh -c 'cat files/chats/*.json' 2>/dev/null)
-if echo "$CHATS" | grep -q '"role":"model"'; then log "PASS ui chat answered $(echo "$CHATS" | grep -o '"role":"model","text":"[^"]\{0,60\}' | head -1)"; else log "FAIL ui chat no answer"; fi
+adb shell am start -n $PKG/.MainActivity --ez cpu true --es ask "\"인터넷 없이 폰 안에서 AI가 돌아가면 좋은 점 3가지를 짧게 알려 줘\"" >/dev/null
+sleep 25; shot 3-real-loading
+OK=0
+for i in $(seq 1 36); do
+  sleep 10
+  if timeout 20 adb shell "run-as $PKG cat files/chats/*.json" 2>/dev/null | grep -q '"role":"model"'; then OK=1; break; fi
+done
+sleep 3; shot 4-real-answer
+CH=$(timeout 20 adb shell "run-as $PKG cat files/chats/*.json" 2>/dev/null)
+if [ $OK = 1 ] && ! echo "$CH" | grep -q '"error"'; then log "PASS ui chat answered: $(echo "$CH" | grep -o '"role":"model","text":"[^"]\{0,80\}' | head -1 | cut -c25-)"; else log "FAIL ui chat ($(echo "$CH" | grep -o '"error":"[^"]*' | head -1))"; fi
 # 3) 사진 붙여 화면 질문 — 공유하기로 사진 넣기
 adb shell am force-stop $PKG
 adb shell am start -n $PKG/.MainActivity --es demo stream >/dev/null; sleep 5; shot 5-demo-stream

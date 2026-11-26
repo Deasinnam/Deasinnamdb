@@ -93,6 +93,8 @@ class MainActivity : Activity() {
         }
         handleShare(intent)
         intent.getStringExtra("selftest")?.let { runSelftest(it) }
+        // 자동 점검(시험용 빌드만): 에뮬레이터에는 GPU가 없어 CPU로 고정
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("cpu", false)) app.ai.setSettings(JSONObject().put("backend", "cpu").put("mtp", false))
     }
 
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); handleShare(intent) }
