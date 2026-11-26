@@ -82,7 +82,7 @@ body[data-view="home"] .foot-brand svg, body[data-view="apps"] .foot-brand svg, 
 .mk-dnr { letter-spacing: .12em; font-size: .9em; }
 .ai-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px 16px; }
 .ai-card { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
-.ai-card img { width: 96px; height: 96px; border-radius: 22px; }
+.ai-card img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 0 0 1px var(--line); }
 .ai-card b { display: block; font-size: 15px; }
 .ai-card span { display: block; color: var(--ink-3); font-size: 13px; margin-top: 2px; }
 .ai-card code { font-size: 12px; }
@@ -4002,8 +4002,8 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         <h2>앱 아이콘</h2>
         <p>모든 덜누름 앱 아이콘은 같은 규칙으로 만듭니다. 로고 아래에 앱 이름을 영문 한 단어로 쓰고, 앱마다 바탕색을 다르게 해 홈 화면에서 바로 찾을 수 있게 했습니다.</p>
       </div>
-      <div class="ai-grid"><figure class="ai-card"><img src="/media/icons/work.png" alt="덜누름 워크 아이콘: Work" width="96" height="96" loading="lazy"><figcaption><b>덜누름 워크</b><span>Work · <code>#2f6bff</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/desk.png" alt="덜누름 데스크탑앱 아이콘: Desk" width="96" height="96" loading="lazy"><figcaption><b>덜누름 데스크탑앱</b><span>Desk · <code>#0f9d8a</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/web.png" alt="덜누름 브라우저 아이콘: Web" width="96" height="96" loading="lazy"><figcaption><b>덜누름 브라우저</b><span>Web · <code>#ff7a00</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/game.png" alt="덜누름 게임 아이콘: Game" width="96" height="96" loading="lazy"><figcaption><b>덜누름 게임</b><span>Game · <code>#7b3ff2</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/pad.png" alt="덜누름 패드 아이콘: Pad" width="96" height="96" loading="lazy"><figcaption><b>덜누름 패드</b><span>Pad · <code>#2fae4f</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/tv.png" alt="덜누름 TV 아이콘: TV" width="96" height="96" loading="lazy"><figcaption><b>덜누름 TV</b><span>TV · <code>#e5383b</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/ai.png" alt="덜누름 로컬 AI 아이콘: AI" width="96" height="96" loading="lazy"><figcaption><b>덜누름 로컬 AI</b><span>AI · <code>#111111</code></span></figcaption></figure></div>
-      <p class="logo-note">로고는 흰색, 이름은 첫 글자만 대문자(약어는 대문자 그대로)로 씁니다. 바탕에는 그림을 넣지 않습니다.</p>
+      <div class="ai-grid"><figure class="ai-card"><img src="/media/icons/work.png" alt="덜누름 워크 아이콘: Work" width="96" height="96" loading="lazy"><figcaption><b>덜누름 워크</b><span>Work · <code>#2f6bff</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/desk.png" alt="덜누름 데스크탑앱 아이콘: Desk" width="96" height="96" loading="lazy"><figcaption><b>덜누름 데스크탑앱</b><span>Desk · <code>#0f9d8a</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/web.png" alt="덜누름 브라우저 아이콘: Web" width="96" height="96" loading="lazy"><figcaption><b>덜누름 브라우저</b><span>Web · <code>#ff7a00</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/game.png" alt="덜누름 게임 아이콘: Game" width="96" height="96" loading="lazy"><figcaption><b>덜누름 게임</b><span>Game · <code>#7b3ff2</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/pad.png" alt="덜누름 패드 아이콘: Pad" width="96" height="96" loading="lazy"><figcaption><b>덜누름 패드</b><span>Pad · <code>#2fae4f</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/tv.png" alt="덜누름 TV 아이콘: TV" width="96" height="96" loading="lazy"><figcaption><b>덜누름 TV</b><span>TV · <code>#e5383b</code></span></figcaption></figure><figure class="ai-card"><img src="/media/icons/ai.png" alt="덜누름 로컬 AI 아이콘: AI" width="96" height="96" loading="lazy"><figcaption><b>덜누름 로컬 AI</b><span>AI · <code>#ffffff</code> · 검정 로고</span></figcaption></figure></div>
+      <p class="logo-note">로고와 이름은 흰색(로컬 AI만 흰 바탕에 검정), 이름은 첫 글자만 대문자(약어는 대문자 그대로)로 씁니다. 바탕에는 그림을 넣지 않습니다.</p>
     </div>
   </section>
 
@@ -4740,12 +4740,14 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     "app-pad":     { open: true,  min: 8, tag: "pad-latest",     file: "DeolnureumPad.apk",    base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 pad-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "0.2.3", date: "2026.11.27", tag: "pad-v0.2.3", file: "DeolnureumPad-0.2.3.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
                        { v: "0.2.2", date: "2026.11.20", tag: "pad-v0.2.2", file: "DeolnureumPad-0.2.2.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상)", kind: ["better"] },
                        { v: "0.2.1", date: "2026.11.19", tag: "pad-v0.2.1", file: "DeolnureumPad-0.2.1.apk", note: "첫 공개: 가죽 · 황동 디자인 버튼 판, 볼륨 다이얼 · 음소거, 가로 화면 버튼 크기 자동 맞춤", kind: ["new"] }
                      ] },
     "app-tv":      { open: true,  min: 8, tag: "tv-latest",      file: "DeolnureumTV.apk",     base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 tv-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "0.8.4", date: "2026.11.27", tag: "tv-v0.8.4", file: "DeolnureumTV-0.8.4.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
                        { v: "0.8.3", date: "2026.11.20", tag: "tv-v0.8.3", file: "DeolnureumTV-0.8.3.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 다른 앱에서 리모컨 위 · 아래는 안드로이드 13 이상 또는 Shizuku", kind: ["better"] },
                        { v: "0.8.2", date: "2026.11.19", tag: "tv-v0.8.2", file: "DeolnureumTV-0.8.2.apk", note: "Shizuku 설정 방법을 그림으로 (설정 › 고급 기능 Shizuku · 설정 방법)", kind: ["better"], post: "shizuku", fb: "Shizuku 설정이 어렵다는 의견" },
                        { v: "0.8.1", date: "2026.11.19", tag: "tv-v0.8.1", file: "DeolnureumTV-0.8.1.apk", note: "첫 공개: 넷플릭스 등 다른 앱에서도 리모컨 단추 그대로, 앱을 연 뒤 완전 전체 화면인지 확인해 고치기, 점검 화면", kind: ["new"] },
@@ -4767,6 +4769,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
                      ] },
     "app-desktop": { open: true, min: 8, tag: "desk-latest",    file: "DeolnureumDesk.apk",   base: 2,
                      versions: [
+                       { v: "1.6.7", date: "2026.11.27", tag: "desk-v1.6.7", file: "DeolnureumDesk-1.6.7.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
                        { v: "1.6.6", date: "2026.11.25", tag: "desk-v1.6.6", file: "DeolnureumDesk-1.6.6.apk", note: "노트20 · 탭 S9 등 예전 DeX에서도 앱 아이콘으로 열기, 시작 단추를 집 모양 아이콘으로", kind: ["fix", "better"], post: "desk-dex", fix: "예전 DeX에서 \"휴대전화 홈 화면에서만 실행 가능\"이라며 열리지 않던 문제", fb: "시작 단추를 집 모양으로 바꿔 달라는 의견" },
                        { v: "1.6.5", date: "2026.11.20", tag: "desk-v1.6.5", file: "DeolnureumDesk-1.6.5.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 안드로이드 8 · 9는 기본 홈 앱을 설정에서 정함", kind: ["better"], fb: "안드로이드 9에서도 쓰고 싶다는 의견" },
                        { v: "1.6.4", date: "2026.11.19", tag: "desk-v1.6.4", file: "DeolnureumDesk-1.6.4.apk", note: "Shizuku 설정 방법을 그림으로 (창정리 › 고급 기능 › 설정 방법)", kind: ["better"], post: "shizuku", fb: "Shizuku 설정이 어렵다는 의견" },
@@ -4777,6 +4780,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     "app-browser": { open: true, min: 8, tag: "browser-latest", file: "DeolnureumBrowser.apk", base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 browser-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "2.5.1", date: "2026.11.27", tag: "browser-v2.5.1", file: "DeolnureumBrowser-2.5.1.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
                        { v: "2.5", date: "2026.11.19", tag: "browser-v2.5", file: "DeolnureumBrowser-2.5.apk", note: "새 버전이 나오면 앱이 알려 줌 (설정에서 끄기 · 지금 확인)", kind: ["new"], post: "update-notice", fb: "앱 업데이트 알림 요청" },
                        { v: "2.4.1", date: "2026.11.18", tag: "browser-v2.4.1", file: "DeolnureumBrowser-2.4.1.apk", note: "즐겨찾기 맨 앞에 덜누름 사이트", kind: ["better"] },
                        { v: "2.4", date: "2026.11.16", tag: "browser-v2.4", file: "DeolnureumBrowser-2.4.apk", note: "탭 · 보던 탭 이어 보기 · 페이지에서 찾기 · 방문 기록 · 크롬에서 열기, 설치 파일 경고 · 화면 보호", kind: ["new", "sec"], post: "browser-tabs", fb: "브라우저 탭 기능 요청" },
@@ -4786,6 +4790,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     "app-game":    { open: true,  min: 8, tag: "game-latest",    file: "DeolnureumGame.apk",   base: 0,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 game-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "0.4.3", date: "2026.11.27", tag: "game-v0.4.3", file: "DeolnureumGame-0.4.3.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
                        { v: "0.4.2", date: "2026.11.20", tag: "game-v0.4.2", file: "DeolnureumGame-0.4.2.apk", note: "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 화면 녹화는 안드로이드 10 이상", kind: ["better"] },
                        { v: "0.4.1", date: "2026.11.19", tag: "game-v0.4.1", file: "DeolnureumGame-0.4.1.apk", note: "Shizuku 설정 방법을 그림으로 (도구 › FPS 보기 › 설정 방법)", kind: ["better"], post: "shizuku", fb: "Shizuku 설정이 어렵다는 의견" },
                        { v: "0.4", date: "2026.11.19", tag: "game-v0.4", file: "DeolnureumGame-0.4.apk", note: "새 버전이 나오면 앱이 알려 줌 (도구 탭에서 끄기 · 지금 확인)", kind: ["new"], post: "update-notice", fb: "앱 업데이트 알림 요청" },

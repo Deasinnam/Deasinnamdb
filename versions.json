@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T01:46:02+09:00",
+ "updated": "2026-11-27T01:54:39+09:00",
  "apps": {
   "speed": {
    "version": "1.98",
@@ -9,16 +9,16 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "pad": {
-   "version": "0.2.2",
-   "date": "2026.11.20",
-   "note": "안드로이드 8 이상에서 설치 (이전에는 11 이상)",
+   "version": "0.2.3",
+   "date": "2026.11.27",
+   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
    "page": "https://deolnureum.com/pad/",
    "changes": "https://deolnureum.com/releases/"
   },
   "tv": {
-   "version": "0.8.3",
-   "date": "2026.11.20",
-   "note": "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 다른 앱에서 리모컨 위 · 아래는 안드로이드 13 이상 또는 Shizuku",
+   "version": "0.8.4",
+   "date": "2026.11.27",
+   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
    "page": "https://deolnureum.com/tv/",
    "changes": "https://deolnureum.com/releases/"
   },
@@ -30,23 +30,23 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "desktop": {
-   "version": "1.6.6",
-   "date": "2026.11.25",
-   "note": "노트20 · 탭 S9 등 예전 DeX에서도 앱 아이콘으로 열기, 시작 단추를 집 모양 아이콘으로",
+   "version": "1.6.7",
+   "date": "2026.11.27",
+   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
    "page": "https://deolnureum.com/desktop/",
    "changes": "https://deolnureum.com/releases/"
   },
   "browser": {
-   "version": "2.5",
-   "date": "2026.11.19",
-   "note": "새 버전이 나오면 앱이 알려 줌 (설정에서 끄기 · 지금 확인)",
+   "version": "2.5.1",
+   "date": "2026.11.27",
+   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
    "page": "https://deolnureum.com/browser/",
    "changes": "https://deolnureum.com/releases/"
   },
   "game": {
-   "version": "0.4.2",
-   "date": "2026.11.20",
-   "note": "안드로이드 8 이상에서 설치 (이전에는 11 이상) · 화면 녹화는 안드로이드 10 이상",
+   "version": "0.4.3",
+   "date": "2026.11.27",
+   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
    "page": "https://deolnureum.com/game/",
    "changes": "https://deolnureum.com/releases/"
   }
