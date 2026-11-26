@@ -40,10 +40,10 @@ sleep 25; shot 3-real-loading
 OK=0
 for i in $(seq 1 36); do
   sleep 10
-  if timeout 20 adb shell "run-as $PKG cat files/chats/*.json" 2>/dev/null | grep -q '"role":"model"'; then OK=1; break; fi
+  if timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -q '"role":"model"'; then OK=1; break; fi
 done
 sleep 3; shot 4-real-answer
-CH=$(timeout 20 adb shell "run-as $PKG cat files/chats/*.json" 2>/dev/null)
+CH=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null)
 if [ $OK = 1 ] && ! echo "$CH" | grep -q '"error"'; then log "PASS ui chat answered: $(echo "$CH" | grep -o '"role":"model","text":"[^"]\{0,80\}' | head -1 | cut -c25-)"; else log "FAIL ui chat ($(echo "$CH" | grep -o '"error":"[^"]*' | head -1))"; fi
 # 3) 사진 붙여 화면 질문 — 공유하기로 사진 넣기
 adb shell am force-stop $PKG
