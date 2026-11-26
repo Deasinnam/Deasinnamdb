@@ -12,8 +12,8 @@ android {
         // LiteRT-LM(GPU · 멀티모달)이 안드로이드 12 이상에서 안정적 → 폴드8 울트라(안드로이드 17) 기준
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") } // x86_64는 에뮬레이터 자동 점검용
     }
 
