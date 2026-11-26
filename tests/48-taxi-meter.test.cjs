@@ -31,7 +31,7 @@ run('Taxi meter counts Seoul fares from GPS distance', async ({context, origin, 
   await p.waitForTimeout(300);
   await p.evaluate(() => AmpTaxi.pause());
   const st = await p.evaluate(() => AmpTaxi.state);
-  assert.ok(st.km > 2.05 && st.km < 2.2, 'distance ' + st.km);
+  assert.ok(st.km > 2.0 && st.km < 2.2, 'distance ' + st.km);   // 0.5초 폴링 한 번이 늦으면 마지막 조각이 아직 안 들어올 수 있음
   assert.equal(st.fare, 4800 + 100 * Math.floor((st.km * 1000 - 1600) / 131), 'fare follows distance ' + JSON.stringify(st));
   const f0 = st.fare;
   await p.evaluate(() => { G.speed = 0; });
@@ -42,4 +42,10 @@ run('Taxi meter counts Seoul fares from GPS distance', async ({context, origin, 
   await p.click('#wRadio .tx-reset');
   assert.equal(await p.locator('#wRadio .tx-fare').textContent(), '0');
   assert.deepEqual(await p.evaluate(() => [AmpTaxi.rate(new Date(2026, 0, 1, 23, 30)).base, AmpTaxi.rate(new Date(2026, 0, 1, 22, 10)).step, AmpTaxi.rate(new Date(2026, 0, 1, 9)).base]), [6700, 120, 4800]);
+  // 1.99 시외 할증: 서울 밖 위치가 3번 이어지면 20% 할증, 서울로 돌아오면 끝
+  const o = await p.evaluate(() => { AmpTaxi.reset(); AmpTaxi.start(); const out = {lon: 126.705, lat: 37.456, fix: true}, inn = {lon: 126.978, lat: 37.5665, fix: true};
+    AmpTaxi._checkOut(out); AmpTaxi._checkOut(out); const a = AmpTaxi.state.out; AmpTaxi._checkOut(out); const b = AmpTaxi.state.out;
+    const mode = document.querySelector('#wRadio .tx-mode').textContent;
+    for (let i = 0; i < 3; i++) AmpTaxi._checkOut(inn); return {a: !!a, b: !!b, back: !!AmpTaxi.state.out, mode, seoul: AmpTaxi.inSeoul(127.0276, 37.4979), suwon: AmpTaxi.inSeoul(127.028, 37.263)}; });
+  assert.deepEqual(o, {a: false, b: true, back: false, mode: o.mode, seoul: true, suwon: false}, JSON.stringify(o));
 });

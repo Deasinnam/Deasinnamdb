@@ -2,7 +2,7 @@
 
 > **새 대화에서는 이 문서를 먼저 읽고 이어서 작업합니다.** 작업을 하나 끝낼 때마다 이 문서를 고쳐서(맨 아래 "작업 기록"에 한 줄 + 바뀐 부분) 같이 커밋합니다.
 
-마지막 갱신: **2026-11-26 · v1.98 (versionCode 132)**
+마지막 갱신: **2026-11-26 · v1.99 (versionCode 133)**
 
 ---
 
@@ -11,7 +11,7 @@
 | 항목 | 내용 |
 |---|---|
 | 저장소 | `Deasinnam/Deasinnamdb` (**공개**), 브랜치 **`daesinnam-one-v1`** |
-| 최신 버전 | **1.98** (versionCode 132, versionName `1.98-one`) |
+| 최신 버전 | **1.99** (versionCode 133, versionName `1.99-one`) |
 | 릴리스 태그 | `one-v1` (CI가 매번 지우고 다시 올림) |
 | 빌드 | GitHub Actions `.github/workflows/build-apk.yml` → 화면 테스트(Playwright) → 서명(키는 GitHub Secrets, 저장소에 없음) → 릴리스 `one-v1` |
 | 웹 미리보기 | 아티팩트 "대신남 원 Ver1" — https://claude.ai/artifact/VmcAkcQKBRp8ZsXLA3hZDx |
@@ -127,6 +127,7 @@
 ## 7. 작업 기록 (최근이 위)
 
 - 2026-11-25 · 1.87 — 의견(스피드미터): 아무 블루투스에나 "차량 연결됨 · Amp로 재생" 알림. `CarConnect.matches(ctx, name, dev)`: 차를 지정하지 않았으면 `carLike()` — BluetoothClass가 `AUDIO_VIDEO_CAR_AUDIO`·`AUDIO_VIDEO_HANDSFREE`인 기기만(ACL 연결은 EXTRA_DEVICE, A2DP 출력 콜백은 이름으로 짝지은 기기 `bondedByName`). 권한 없거나 종류를 모르면 차가 아님. 설정 첫 항목 "차량 오디오 자동 인식 (이어폰·스피커 제외)"(web/src/80-clock-windows.js, index.html 설명). 로컬 테스트: 25-pfd-minimap은 지도 타일(네트워크) 탓에 수정 전에도 실패, 나머지 통과. 공개: 초안 확인 뒤 `[publish-speedometer]` 커밋 + 사이트 DL 표.
+- 2026-11-26 · 1.99 — 사용자: 시외 할증 기능 추가. 99-zz-taxi `SEOUL`(서울 경계를 33점 다각형으로 어림, 경계 근처는 몇 km 틀릴 수 있음)·`inSeoul(lon,lat)`, `checkOut()`이 tick마다 `gs.lat/lon`(fix일 때)으로 서울 안·밖을 보고 같은 쪽이 3번 이어지면 `S.out` 바꿈(토스트), `surNow()=max(S.sur, S.out?20:0)`로 요금·% 표시, 모드 글자 '시외', 할증 키 불. `store 'taxiAutoOut'`(기본 켬). 설명서 ③ 줄. 테스트 48에 시외 확인. 아직 공개 안 함.
 - 2026-11-26 · 1.98 공개 — `[publish-speedometer] [speedometer-takedown]`으로 1.98만 공개, 1.87·1.96 공개판과 1.88~1.97 초안은 릴리스·태그 모두 지움. 사이트: DL 표 versions 1.98 한 줄만, 홈 큰 카드·오늘의 덜누름·상세 섹션 1.98, 영상·화면 3장(sp-taxi.mp4·sp-taxi-poster·sp-taxi-s88·sp-taxi-lcd)은 옛 그림 띠 자리를 1.98 배너(4:1 렌더)로 덮음, 둘레 종이색은 남색. 공개 문구는 '레트로 하단 배너 디자인 변경'만.
 - 2026-11-26 · 1.98 — 사용자: '세계는 서울로' 간판은 처음 직접 그린 그림(1.92 HTML/SVG `SEOUL88`)으로, 비율은 1.94~1.97 그림 띠와 같게. `SEOUL88_CITY`·`SEOUL88`을 99-zz-taxi에 되살려 `.s88i` 안에 넣고, `.s88i .s88`는 늘 1136:284(4:1)·`width:min(94cqw,376cqh)`·자기 자신이 container(그래서 늘 글자 오른쪽 배치), 둘레는 짙은 남색. `assets/taxi/seoul88*.jpg` 지움(1.97 밤하늘 그림 안 씀). 1.97은 공개하지 않음.
 - 2026-11-26 · 1.97 — 레트로 하단 배너('세계는 서울로') 디자인 변경: 원본 띠(사용자 그림)에서 도시 윤곽 위 하늘(왼쪽 0~660px)을 짙은 남색→보랏빛 남색 밤하늘 + 별 170개(시드 1988)로 바꾸고 오른쪽 글자 쪽으로 90px 부드럽게 섞음, 남산타워 틈은 밤하늘색, 물 위 물빛은 금빛 불빛. `assets/taxi/seoul88*.jpg` 다시 만듦. 사이트 영상·포스터·화면(sp-taxi*)도 새 배너로 덮어 다시 올림. 공개 설명·사이트에는 '레트로 하단 배너 디자인 변경'이라고만 씀(사용자 지시). 공개: 사용자 지시로 옛 공개 버전(1.86·1.87·1.96)은 모두 내리고 1.97만 — publish-speedometer.yml `takedown` 작업(`[speedometer-takedown]`, publish 다음에 실행)이 가장 새 공개판 말고 speedometer-v 릴리스·태그를 모두 지움. 사이트 DL 표 versions도 1.97 한 줄만.

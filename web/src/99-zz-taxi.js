@@ -242,9 +242,9 @@ const Taxi=(()=>{
     setDrums('.rt-km',String(Math.round(Math.min(99.9,km)*10)));setDrums('.rt-min',String(Math.min(999,Math.floor(sec/60))));
     const m=Math.floor(S.sec/60),s=Math.floor(S.sec%60);setT('.tx-time',PV?PV.time:(m>99?m:String(m).padStart(2,'0'))+':'+String(s).padStart(2,'0'));
     setT('.tx-spd',(PV?PV.spd:(spdNow||0)).toFixed(1));
-    const mode=PV?(PV.mode||'주행'):S.paid?'지불':S.on?'주행':'빈차';setT('.tx-mode',mode);setT('.tx-next',PV?PV.next+' m':nextLeft());
+    const mode=PV?(PV.mode||'주행'):S.paid?'지불':S.on?(S.out?'시외':'주행'):'빈차';setT('.tx-mode',mode);setT('.tx-next',PV?PV.next+' m':nextLeft());
     W.dataset.tx=PV?'run':S.paid?'paid':S.on?'run':'idle';W.dataset.txvac=!PV&&!S.on&&!S.paid&&!S.fare?'1':'';
-    const sp=surPct(r);setT('.tx-surp',sp+'%');setT('.tx-night',r.tag||'주간');tog('.tx-sur','on',S.sur===20);tog('.tx-mix','on',S.sur===40);
+    const sp=surPct(r);setT('.tx-surp',sp+'%');setT('.tx-night',r.tag||'주간');tog('.tx-sur','on',S.sur===20||(!!S.out&&S.sur!==40));tog('.tx-mix','on',S.sur===40);
     const on=PV?true:S.on;tog('.tx-go','on',on);tog('.tx-reset','on',!on&&!S.paid);tog('.tx-stop','on',!PV&&S.paid);
     horse.set(on,PV?PV.spd:(spdNow||0));horse2.set(on,PV?PV.spd:(spdNow||0));
     if(st)st.textContent=S.paid?'지불 '+won(fare)+'원':S.on?'주행 '+won(S.fare)+'원':'빈차';
@@ -260,9 +260,20 @@ const Taxi=(()=>{
     [[0,1],[0.085,.55]].forEach(([d,v])=>{const t=t0+d;[[2637,.5],[3951,.32],[5274,.18],[6890,.1]].forEach(([f,g])=>{const o=a.createOscillator();o.type='sine';o.frequency.setValueAtTime(f*(1+d*.04),t);
       const e=fxEnv(a,t,g*v*.35,.002,d?.25:.42);o.connect(e).connect(a.destination);o.start(t);o.stop(t+.5)})});
     const nz=fxNoise(a,.03),ng=fxEnv(a,t0,.12,.001,.03);nz.connect(ng).connect(a.destination);nz.start(t0)}catch(e){}}
-  function surPct(r){const nt=/40/.test(r.tag)?40:/20/.test(r.tag)?20:0;return Math.min(60,nt+(S.sur||0))}
+  /* 1.99 시외 할증: GPS가 서울 밖(대략의 서울 경계 다각형)이면 주행 중 요금에 20% 할증을 저절로 붙임 — 경계는 어림이라 몇 km 차이 날 수 있음(재미용).
+   *  흔들림 막기: 연속 3번(약 1.5초) 같은 쪽이어야 바뀜. 손으로 누르는 할증(20)·복합(40)과는 큰 쪽만 적용 */
+  const SEOUL=[[126.880,37.660],[126.930,37.690],[126.995,37.700],[127.040,37.715],[127.090,37.690],[127.115,37.640],[127.100,37.600],[127.115,37.580],[127.150,37.560],[127.180,37.565],[127.185,37.545],[127.160,37.520],[127.145,37.490],[127.140,37.465],[127.100,37.460],[127.075,37.440],[127.040,37.430],[127.010,37.430],[126.960,37.440],[126.925,37.445],[126.900,37.465],[126.890,37.430],[126.870,37.450],[126.870,37.480],[126.830,37.485],[126.810,37.505],[126.800,37.530],[126.795,37.560],[126.765,37.580],[126.795,37.600],[126.830,37.590],[126.860,37.605],[126.870,37.640]];
+  const inSeoul=(lon,lat)=>{let c=false;for(let i=0,j=SEOUL.length-1;i<SEOUL.length;j=i++){const[xi,yi]=SEOUL[i],[xj,yj]=SEOUL[j];if((yi>lat)!==(yj>lat)&&lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)c=!c}return c};
+  let outRun=0;
+  function checkOut(pos){if(!S.on||S.paid||!store.get('taxiAutoOut',true))return;let g=pos||null;if(!g)try{g=gs}catch(e){}
+    if(!g||!g.fix||!isFinite(g.lat)||!isFinite(g.lon))return;
+    const out=!inSeoul(g.lon,g.lat);if(out===!!S.out){outRun=0;return}
+    if(++outRun<3)return;outRun=0;S.out=out;save();toast(out?'서울 밖이에요 · 시외 할증 20% (다음 요금부터)':'서울 안으로 들어왔어요 · 시외 할증 끝')}
+  const surNow=()=>Math.max(S.sur||0,S.out?20:0);
+  function surPct(r){const nt=/40/.test(r.tag)?40:/20/.test(r.tag)?20:0;return Math.min(60,nt+surNow())}
   function add(n){S.fare+=n;if(W.dataset.txskin==='retro')coin();W.classList.remove('tx-tick');void W.offsetWidth;W.classList.add('tx-tick')}
   function tick(){
+    checkOut();
     const now=Date.now(),d=trip.dist;
     if(lastD==null||d<lastD)lastD=d;
     const dd=Math.max(0,Math.min(200,d-lastD)),dt=lastT?Math.min(5,(now-lastT)/1000):0;lastD=d;lastT=now;
@@ -272,7 +283,7 @@ const Taxi=(()=>{
       // 느리면 시간을 거리로 환산(30초=131m), 빠르면 거리만
       const eq=slow?dt*UNIT_M/UNIT_S:dd;
       if(S.used<BASE_M){S.used+=eq;if(S.used>BASE_M){S.eqM+=S.used-BASE_M;S.used=BASE_M}}else S.eqM+=eq;
-      while(S.eqM>=UNIT_M*(S.n||0)+UNIT_M){S.n=(S.n||0)+1;add(Math.round(r.step*(1+(S.sur||0)/100)/10)*10)}
+      while(S.eqM>=UNIT_M*(S.n||0)+UNIT_M){S.n=(S.n||0)+1;add(Math.round(r.step*(1+surNow()/100)/10)*10)}
       save()}
     ui()}
   function start(){if(!store.get('taxiAck',false)){q('.tx-ack').hidden=false;return}
@@ -299,7 +310,7 @@ const Taxi=(()=>{
   const ren=()=>document.querySelectorAll('select option[value="radio"]').forEach(o=>{if(o.closest('#sCarSrc'))o.remove();else if(!/택시/.test(o.textContent))o.textContent='택시 미터기'});ren();setInterval(ren,2000);
   setSkin(store.get('taxiSkin','pro'));document.addEventListener('touchstart',()=>{},{passive:true});   // 안드로이드 웹뷰에서 :active(키캡 눌림)가 보이게
   setInterval(tick,500);ui();
-  return {start,pause,pay,reset,setSkin,fit,coin,showPhoto,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,horse2,
+  return {start,pause,pay,reset,setSkin,fit,coin,showPhoto,inSeoul,_checkOut:checkOut,get skin(){return W.dataset.txskin},get state(){return Object.assign({},S)},rate,_tick:tick,horse,horse2,
     _preview(v){PV=v||null;ui()}};
 })();
 window.AmpTaxi=Taxi;window.TaxiHorseTest=TaxiHorse;   // 시험(테스트 49)에서 말만 따로 그려 볼 때
