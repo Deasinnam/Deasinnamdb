@@ -544,7 +544,16 @@ public class MainActivity extends ComponentActivity {
         Collator col = Collator.getInstance(Locale.KOREAN);
         rows.sort((x, y) -> col.compare(x[2], y[2]));
         JSONArray out = new JSONArray();
-        for (String[] r : rows) out.put(new JSONObject().put("pkg", r[0]).put("cls", r[1]).put("label", r[2]));
+        Map<String, Long> ver = new HashMap<>();
+        for (String[] r : rows) {
+            // 아이콘 주소에 앱 업데이트 시각을 붙여, 앱이 새 아이콘으로 업데이트되면 화면에 남은 예전 아이콘(캐시)을 쓰지 않게
+            Long v = ver.get(r[0]);
+            if (v == null) {
+                try { v = pm.getPackageInfo(r[0], 0).lastUpdateTime; } catch (Exception e) { v = 0L; }
+                ver.put(r[0], v);
+            }
+            out.put(new JSONObject().put("pkg", r[0]).put("cls", r[1]).put("label", r[2]).put("v", v));
+        }
         return out;
     }
 

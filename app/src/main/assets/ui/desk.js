@@ -139,7 +139,7 @@
     { key: "in:calc", label: "계산기", glyph: "계", color: 1 },
     { key: "in:cal", label: "달력", glyph: "달", color: 2 },
     { key: "in:settings", label: "데스크 설정", glyph: "설", color: 3 },
-    { key: "in:arrange", label: "창정리", glyph: "창", color: 2 },
+    { key: "in:arrange", label: "창정리", glyph: "창", color: 2, logo: "창정리" }, // 덜누름 앱 아이콘처럼: 막대 셋 로고 + 이름
   ];
   const HIDDEN = [{ key: "in:wlog", label: "위젯 자리 기록", glyph: "기", color: 3 }]; // 목록에는 안 나오는 내부 창
   let apps = [];                 // 설치된 앱 {key, pkg, cls, label}
@@ -148,8 +148,14 @@
   const recent = [];             // 이번에 켠 뒤 연 바깥 앱 (작업 표시줄에 점으로 표시)
 
   function iconOf(app, extra) {
+    if (app.logo) {
+      const t = h("span", { class: "ico tile logo c" + app.color + (extra ? " " + extra : "") });
+      t.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="11" y="18" width="7" height="11" rx="3.5"/><rect x="20.5" y="13" width="7" height="16" rx="3.5"/><rect x="30" y="7" width="7" height="22" rx="3.5"/>' +
+        '<text x="24" y="42" text-anchor="middle">' + app.logo + "</text></svg>";
+      return t;
+    }
     if (app.glyph) return h("span", { class: "ico tile c" + app.color + (extra ? " " + extra : ""), text: app.glyph });
-    return h("img", { class: "ico" + (extra ? " " + extra : ""), src: "/appicon/" + app.pkg + "/" + app.cls, alt: "", draggable: "false", loading: "lazy" });
+    return h("img", { class: "ico" + (extra ? " " + extra : ""), src: "/appicon/" + app.pkg + "/" + app.cls + (app.v ? "?v=" + app.v : ""), alt: "", draggable: "false", loading: "lazy" });
   }
 
   async function loadApps() {
