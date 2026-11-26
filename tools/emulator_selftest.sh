@@ -29,10 +29,21 @@ fi
 adb shell ls -la $DIR | tee -a $OUT
 # DNR 음성 엔진 시험용 음성: 영어(espeak-ng) → 16kHz 모노 WAV
 VOICE=""
-if command -v espeak-ng >/dev/null && command -v ffmpeg >/dev/null; then
-  espeak-ng -v en-us -s 135 -w /tmp/v22.wav "What is the capital of France? Answer in one word." && ffmpeg -loglevel error -y -i /tmp/v22.wav -ar 16000 -ac 1 /tmp/voice.wav && VOICE=/tmp/voice.wav
+if command -v espeak-ng >/dev/null; then
+  espeak-ng -v en-us -s 135 -w /tmp/v22.wav "What is the capital of France? Answer in one word." && python3 - <<'PY' && VOICE=/tmp/voice.wav
+import wave, array
+r = wave.open("/tmp/v22.wav"); n = r.getnframes(); sr = r.getframerate(); ch = r.getnchannels()
+a = array.array("h", r.readframes(n)); r.close()
+if ch > 1: a = array.array("h", a[::ch])
+m = int(len(a) * 16000 / sr); out = array.array("h", [0]) * m
+for i in range(m):
+    x = i * sr / 16000; j = int(x); f = x - j
+    v = a[j] * (1 - f) + (a[j + 1] if j + 1 < len(a) else a[j]) * f
+    out[i] = int(max(-32768, min(32767, v)))
+w = wave.open("/tmp/voice.wav", "wb"); w.setnchannels(1); w.setsampwidth(2); w.setframerate(16000); w.writeframes(out.tobytes()); w.close()
+PY
 fi
-if [ -n "$VOICE" ]; then adb push $VOICE /sdcard/Android/data/$PKG/files/selftest-voice.wav >/dev/null 2>&1 || log "INFO voice push failed"; else log "INFO no espeak-ng/ffmpeg → voice test skipped"; fi
+if [ -n "$VOICE" ]; then adb push $VOICE /sdcard/Android/data/$PKG/files/selftest-voice.wav >/dev/null 2>&1 || log "INFO voice push failed"; else log "INFO no espeak-ng → voice test skipped"; fi
 # 1) 엔진 직접 점검(CPU): 글 · 이어 묻기 · 사진 · 음성
 adb logcat -c
 adb shell am start -S -n $PKG/.MainActivity --es selftest $DIR/gemma-4-E2B-it.litertlm >/dev/null
@@ -106,16 +117,16 @@ if [ -n "$VOICE" ]; then
   sleep 3; shot 6-real-voice
   if [ $OK = 1 ]; then log "PASS ui voice ask: $(echo "$CH" | grep -io '"role":"user","text":"[^"]*\(france\|capital\)[^"]\{0,40\}' | tail -1 | cut -c25-)"; else log "FAIL ui voice ask ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
 fi
-# 2-e) DNR AI 통로: 다른 앱처럼 글을 보내 '요약' → 답이 오는지
+# 2-e) DNR AI 통로: 다른 앱처럼 글을 보내 '요약' → 답이 오는지(답 수가 늘었는지로 확인)
+N0=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -o '"role":"model","text":"[^"]' | wc -l)
 adb shell am force-stop $PKG
 adb shell am start -n $PKG/.AskActivity -a com.daesinnam.ai.action.ASK --es title "\"워크 문서\"" --es insertLabel "\"문서에 넣기\"" --es task summary \
   --es text "\"덜누름 워크는 폴드에서 워드, 엑셀, 한글, PDF 문서를 열고 고치는 앱입니다. 사진과 동영상 편집도 함께 들어 있습니다. 1.0.9에서는 무료 글꼴 30여 종을 넣어 문서가 원래 모양에 더 가깝게 보입니다.\"" >/dev/null
 OK=0
 for i in $(seq 1 40); do
   sleep 10
-  if timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -q '"title":"요약"\|"title":"[^"]*요약'; then
-    if timeout 20 adb shell "run-as $PKG sh -c 'grep -l 요약 files/chats/*.json | xargs cat'" 2>/dev/null | grep -q '"role":"model","text":"[^"]'; then OK=1; break; fi
-  fi
+  N1=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -o '"role":"model","text":"[^"]' | wc -l)
+  if [ "$N1" -gt "$N0" ]; then OK=1; break; fi
 done
 sleep 3; shot 7-real-ask-channel
 if [ $OK = 1 ]; then log "PASS ask channel summary"; else log "FAIL ask channel"; fi
