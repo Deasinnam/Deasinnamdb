@@ -2,7 +2,7 @@ name: Build 덜누름 워크 APK
 
 on:
   push:
-    branches: [daesinnam-work]
+    branches: [daesinnam-work, 'preview-work-*']
   workflow_dispatch:
 
 permissions:
@@ -240,9 +240,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete work-ci --yes --cleanup-tag || true
-          gh release create work-ci $(ls work-screen-*.png web-screen-*.png selftest-*.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
-            --title "덜누름 워크 자동 점검 기록" --notes "빌드 ${{ github.run_number }} · 안드로이드 16 점검: ${{ steps.api36.outcome }}"
+          # 미리보기 가지(preview-work-*)는 work-preview-ci에 따로 — 사이트 · 공개 기록은 건드리지 않음
+          CI=work-ci; case "$GITHUB_REF_NAME" in preview-*) CI=work-preview-ci;; esac
+          gh release delete $CI --yes --cleanup-tag || true
+          gh release create $CI $(ls work-screen-*.png web-screen-*.png selftest-*.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+            --title "덜누름 워크 자동 점검 기록 ($GITHUB_REF_NAME)" --notes "빌드 ${{ github.run_number }} · 안드로이드 16 점검: ${{ steps.api36.outcome }}"
 
       - name: 서명 키 준비 (있으면)
         env:
@@ -273,6 +275,7 @@ jobs:
       # 이전 버전도 계속 받을 수 있게: work-latest를 바꾸기 전에, 그 버전이 work-v<버전>으로 남아 있지 않으면 옮겨 둠
       # (1.0.2까지는 설명에 버전이 없어 1.0.2로 봄)
       - name: 이전 버전 보존 (work-v<버전>)
+        if: ${{ !startsWith(github.ref_name, 'preview-') }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -300,6 +303,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. Chat DNR Ai가 있으면 편집 화면의 AI 단추로 요약 · 번역 · 다듬기(기기 안). 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+          # 미리보기: 사이트가 받는 work-latest · work-v<버전>은 그대로 두고 work-preview-v<버전>(사전 공개)에만
+          case "$GITHUB_REF_NAME" in preview-*)
+            cp DeolnureumWork.apk "DeolnureumWork-$APP_VERSION-preview.apk"
+            gh release delete "work-preview-v$APP_VERSION" --yes --cleanup-tag || true
+            gh release create "work-preview-v$APP_VERSION" "DeolnureumWork-$APP_VERSION-preview.apk" --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title "덜누름 워크 $APP_VERSION 미리보기 (사이트 공개 전)" --notes "미리보기 · 사이트 공개 전. $NOTES"
+            exit 0;;
+          esac
           gh release delete work-latest --yes --cleanup-tag || true
           gh release create work-latest DeolnureumWork.apk DaesinnamWork.apk --target "$GITHUB_SHA" \
             --title "덜누름 워크 (최신 빌드)" --notes "$NOTES"
