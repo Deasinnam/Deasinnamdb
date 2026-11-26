@@ -11,6 +11,8 @@
 
     <queries>
         <intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent>
+        <!-- 문서를 덜누름 워크(DNR Work)로 넘기기 -->
+        <package android:name="com.daesinnam.work" />
     </queries>
 
     <application

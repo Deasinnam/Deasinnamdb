@@ -93,6 +93,11 @@ class MainActivity : Activity() {
         }
         handleShare(intent)
         intent.getStringExtra("selftest")?.let { runSelftest(it) }
+        intent.getStringExtra("selftestimg")?.let { p ->
+            val out = File(getExternalFilesDir(null), "selftest-img.txt").apply { delete() }
+            app.ai.selftestImage(p) { line -> synchronized(out) { out.appendText(line + "\n") } }
+        }
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("imgsmall", false)) app.ai.setSettings(JSONObject().put("imgSize", 256))
         // 자동 점검(시험용 빌드만): 에뮬레이터에는 GPU가 없어 CPU로 고정
         if (BuildConfig.DEBUG && intent.getBooleanExtra("cpu", false)) app.ai.setSettings(JSONObject().put("backend", "cpu").put("mtp", false))
     }
@@ -106,7 +111,7 @@ class MainActivity : Activity() {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         // 오래 뒤로 가 있거나 메모리가 부족하면 AI를 내려 둠(다시 열면 몇 초 만에 다시 올림)
-        if (level >= TRIM_MEMORY_BACKGROUND && !app.ai.busy()) CoroutineScope(Dispatchers.Default).launch { app.ai.unload() }
+        if (level >= TRIM_MEMORY_BACKGROUND && !app.ai.busy()) CoroutineScope(Dispatchers.Default).launch { app.ai.unload(); app.ai.freeImage() }
     }
 
     private fun emit(type: String, data: Any) {
@@ -251,7 +256,75 @@ class MainActivity : Activity() {
             return "ok"
         }
 
-        @JavascriptInterface fun stop() { app.ai.stop() }
+        @JavascriptInterface fun stop() { app.ai.stopDraw() }
+
+        /** 그림 그리기: 대화 맥락 + 요청 → 기기 안 그림 */
+        @JavascriptInterface fun draw(chatId: String, text: String): String {
+            if (app.ai.busy()) return "busy"
+            if (!ImageGen.available) return "noengine"
+            if (!app.models.ready(app.models.imageModel)) return "nomodel"
+            val chat = app.chats.get(chatId) ?: return "nochat"
+            val before = JSONObject(chat.toString())
+            chat.getJSONArray("messages").put(JSONObject().put("role", "user").put("text", text).put("draw", true).put("at", System.currentTimeMillis()))
+            if (chat.getJSONArray("messages").length() == 1 || chat.optString("title") == "새 대화")
+                chat.put("title", "🎨 " + text.replace(Regex("\\s+"), " ").trim().take(26))
+            app.chats.save(chat)
+            val size = app.ai.settings().optInt("imgSize", 512)
+            app.ai.draw(before, text, size, object : Ai.DrawListener {
+                override fun onStage(stage: String, step: Int, steps: Int) {
+                    emit("drawstage", JSONObject().put("chat", chatId).put("stage", stage).put("step", step).put("steps", steps))
+                }
+                override fun onDone(path: String, prompt: String, ms: Long) {
+                    val c = app.chats.get(chatId) ?: return
+                    c.getJSONArray("messages").put(JSONObject().put("role", "model").put("text", "").put("image", path)
+                        .put("prompt", prompt).put("ms", ms).put("model", app.models.imageModel.name).put("at", System.currentTimeMillis()))
+                    app.chats.save(c)
+                    emit("done", JSONObject().put("chat", chatId).put("image", path).put("ms", ms))
+                }
+                override fun onError(msg: String) {
+                    val c = app.chats.get(chatId) ?: return
+                    c.getJSONArray("messages").put(JSONObject().put("role", "model").put("text", "").put("error", msg).put("at", System.currentTimeMillis()))
+                    app.chats.save(c)
+                    emit("error", JSONObject().put("chat", chatId).put("error", msg))
+                }
+            })
+            return "ok"
+        }
+
+        /** 그린 그림을 갤러리(사진/Chat DNR Ai)에 저장 */
+        @JavascriptInterface fun saveImage(path: String): String = runCatching {
+            val f = File(path); require(f.parentFile == app.chats.imgDir)
+            val cv = android.content.ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, "ChatDNRAi_" + System.currentTimeMillis() + ".png")
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/Chat DNR Ai")
+            }
+            val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv)!!
+            contentResolver.openOutputStream(uri)!!.use { o -> f.inputStream().use { it.copyTo(o) } }
+            "ok"
+        }.getOrElse { "fail" }
+
+        @JavascriptInterface fun shareImage(path: String) {
+            val f = File(path).takeIf { it.parentFile == app.chats.imgDir } ?: return
+            val uri = FileProvider.getUriForFile(this@MainActivity, "$packageName.files", f)
+            ui.post { startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "그림 공유하기")) }
+        }
+
+        // ---------- 덜누름 워크(DNR Work)로 문서 만들기 ----------
+        @JavascriptInterface fun workInfo(): String = JSONObject().put("installed", Docs.workInstalled(this@MainActivity))
+            .put("allowed", app.ai.settings().optBoolean("work")).toString()
+
+        /** kind: docx | xlsx | md. 허용(설정)한 뒤에만. 결과: ok | consent | nowork | fail:메시지 */
+        @JavascriptInterface fun toWork(text: String, title: String, kind: String): String {
+            if (!app.ai.settings().optBoolean("work")) return "consent"
+            if (!Docs.workInstalled(this@MainActivity)) return "nowork"
+            return runCatching {
+                val uri = Docs.save(this@MainActivity, text, title, kind)
+                Docs.openInWork(this@MainActivity, uri, Docs.mime(kind)); "ok"
+            }.getOrElse { "fail:" + (it.message ?: "문서를 만들지 못했어요") }
+        }
+        @JavascriptInterface fun hasTable(text: String): Boolean = Docs.hasTable(text)
 
         @JavascriptInterface fun pickImages() {
             val i = Intent(MediaStore.ACTION_PICK_IMAGES).putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, 4).setType("image/*")

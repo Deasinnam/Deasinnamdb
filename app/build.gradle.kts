@@ -12,12 +12,17 @@ android {
         // LiteRT-LM(GPU · 멀티모달)이 안드로이드 12 이상에서 안정적 → 폴드8 울트라(안드로이드 17) 기준
         minSdk = 31
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.2.0"
+        versionCode = 4
+        versionName = "0.3.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") } // x86_64는 에뮬레이터 자동 점검용
+        externalNativeBuild { cmake { arguments += listOf("-DANDROID_STL=c++_shared", "-DCMAKE_BUILD_TYPE=Release"); cppFlags += "-std=c++17" } }
     }
 
     buildFeatures { buildConfig = true }
+
+    // 그림 엔진(stable-diffusion.cpp)을 폰용으로 직접 빌드 — 소스는 CI가 고정 커밋으로 받아 옴(app/src/main/cpp/sdcpp)
+    ndkVersion = "28.2.13676358"
+    externalNativeBuild { cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.22.1" } }
 
     // 서명 키는 저장소에 두지 않습니다. CI가 GitHub 비밀값에서 꺼내 씁니다 (다른 덜누름 앱과 같은 키).
     val keystore = System.getenv("AMP_KEYSTORE_FILE")

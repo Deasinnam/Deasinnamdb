@@ -71,6 +71,7 @@
       <div id="atts" class="atts"></div>
       <div class="cbox">
         <button id="attBtn" class="ibtn att" aria-label="사진 넣기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button id="drawBtn" class="ibtn att draw" aria-label="그림 그리기 모드" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2a2 2 0 0 0-1.5 3.3A1.6 1.6 0 0 1 12 22z"/><circle cx="7.5" cy="10.5" r="1.2"/><circle cx="11.5" cy="7" r="1.2"/><circle cx="16" cy="9" r="1.2"/></svg></button>
         <textarea id="inp" rows="1" placeholder="무엇이든 물어보세요" enterkeyhint="send"></textarea>
         <button id="sendBtn" class="send" aria-label="보내기"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       </div>
@@ -85,6 +86,26 @@
     <button class="row" id="aGal"><span>🖼</span>갤러리에서 고르기 <small>최대 4장</small></button>
     <button class="row" id="aCam"><span>📷</span>사진 찍기</button>
     <button class="row ghost" id="aNo">닫기</button>
+  </div>
+</div>
+
+<!-- 문서로 만들기(DNR 워크) -->
+<div id="docSheet" class="sheet hide">
+  <div class="sheet-in small">
+    <div class="doc-h"><b>DNR 워크에서 문서로 열기</b><span>이 답을 문서 파일로 만들어 DNR 워크로 넘겨요. 파일은 이 폰의 문서/Chat DNR Ai 폴더에 저장돼요.</span></div>
+    <button class="row" data-kind="docx"><span>📄</span>Word 문서로 <small>.docx</small></button>
+    <button class="row" data-kind="xlsx" id="docX"><span>📊</span>Excel 표로 <small>.xlsx</small></button>
+    <button class="row" data-kind="md"><span>📝</span>메모(마크다운)로 <small>.md</small></button>
+    <button class="row ghost" id="docNo">닫기</button>
+  </div>
+</div>
+<div id="workAsk" class="sheet hide">
+  <div class="sheet-in small">
+    <div class="doc-h"><b>DNR 워크 연동을 허용할까요?</b>
+      <span>허용하면 Chat DNR Ai가 대화 내용으로 문서 파일(.docx · .xlsx · .md)을 만들어 <b>DNR 워크(덜누름 워크)</b>에서 바로 열어요. 이어서 워크에서 고치고 저장할 수 있어요.</span>
+      <span>· 파일은 이 폰의 <b>문서/Chat DNR Ai</b> 폴더에만 저장돼요<br>· 워크에는 그 파일 하나만 읽고 쓸 권한을 줘요<br>· 인터넷으로 보내지 않아요 · 설정에서 언제든 끌 수 있어요</span></div>
+    <button class="btn pri big" id="workYes">허용하고 문서 만들기</button>
+    <button class="row ghost" id="workNo">허용 안 함</button>
   </div>
 </div>
 
@@ -121,13 +142,24 @@
         <textarea id="sys" rows="3" placeholder="예: 나는 카페를 운영해. 답은 짧게, 표로 정리해 줘."></textarea>
       </div>
 
+      <h3>그림 그리기</h3>
+      <p class="muted" id="imgInfo">"고양이 그려줘"처럼 말하거나 입력창의 🎨를 누르면 폰 안에서 그림을 그려요. 그림 모델은 위 목록에서 받아요.</p>
+      <div class="field">
+        <label>그림 크기</label>
+        <div class="seg" id="imgSize"><button data-v="384">작게 · 빠름</button><button data-v="512">보통 512</button><button data-v="640">크게 · 느림</button></div>
+      </div>
+
+      <h3>DNR 워크(덜누름 워크) 연동</h3>
+      <label class="tgl"><span><b>문서 만들기 허용</b><small>답 · 대화로 Word · Excel 문서를 만들어 DNR 워크에서 열어요. 파일은 문서/Chat DNR Ai 폴더에만</small></span><input type="checkbox" id="work"><i></i></label>
+      <p class="muted" id="workState"></p>
+
       <h3>대화 기록</h3>
       <p class="muted">대화는 이 기기 안에만 저장돼요. 앱을 지우면 함께 지워져요.</p>
       <button class="btn bad" id="delAll">대화 모두 지우기</button>
 
       <h3>정보</h3>
       <p class="muted" id="about"></p>
-      <p class="muted">AI 모델: Google Gemma 4 (Apache 2.0) · 실행: Google LiteRT-LM (Apache 2.0)<br>
+      <p class="muted">AI 모델: Google Gemma 4 (Apache 2.0) · 실행: Google LiteRT-LM (Apache 2.0)<br>그림: DreamShaper 7 + LCM (CreativeML OpenRAIL-M) · 실행: stable-diffusion.cpp (MIT)<br>
         <a href="#" data-url="https://ai.google.dev/gemma/docs/core/model_card_4">Gemma 4 모델 설명</a> · <a href="#" data-url="https://deolnureum.com/">DNR 앱센터</a></p>
     </div>
   </div>

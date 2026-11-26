@@ -1,0 +1,4 @@
+app/src/main/cpp/sdcpp/
+local.properties
+.cxx/
+build/

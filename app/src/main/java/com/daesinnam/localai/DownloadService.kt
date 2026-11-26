@@ -66,7 +66,7 @@ class DownloadService : Service() {
                 fetch(m, part)
                 if (!part.renameTo(models.file(m))) throw IOException("파일을 옮기지 못했어요")
                 state.value = Progress(m.id, models.file(m).length(), models.file(m).length(), 0, done = true)
-                if (models.activeId == null || !models.ready(models.byId(models.activeId)!!)) models.activeId = m.id
+                if (m.kind == "chat" && (models.activeId == null || !models.ready(models.byId(models.activeId)!!))) models.activeId = m.id
                 stopAll(null)
                 return
             } catch (e: kotlinx.coroutines.CancellationException) {

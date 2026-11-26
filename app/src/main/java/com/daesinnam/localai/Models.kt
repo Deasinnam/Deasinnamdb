@@ -24,6 +24,7 @@ class Models(private val ctx: Context) {
         val bytes: Long,       // 내려받을 크기(대략, 진행률 표시용 — 실제 크기는 서버가 알려 줌)
         val minRamGb: Int,
         val ctx: Int,          // 대화 길이(토큰)
+        val kind: String = "chat", // chat: 대화 모델 · image: 그림 모델
     )
 
     val list = listOf(
@@ -41,7 +42,17 @@ class Models(private val ctx: Context) {
             "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",
             2_590_000_000L, 6, 8192,
         ),
+        // 그림: DreamShaper 7 + LCM(빠른 몇 단계 생성)을 stable-diffusion.cpp용 한 파일(GGUF)로. CreativeML OpenRAIL-M
+        Model(
+            "dreamshaper7-lcm", "DreamShaper 7 LCM", "그림 그리기",
+            "\"고양이 그려줘\"처럼 말하면 폰 안에서 그림을 그려요(512×512)",
+            "dreamshaper-7-lcm-f16.gguf",
+            "https://huggingface.co/darkmaniac7/TokForge-DreamShaper-LCM-GGUF/resolve/main/dreamshaper-7-lcm-f16.gguf",
+            2_130_000_000L, 8, 0, kind = "image",
+        ),
     )
+    val chatModels get() = list.filter { it.kind == "chat" }
+    val imageModel get() = list.first { it.kind == "image" }
 
     fun byId(id: String?) = list.firstOrNull { it.id == id }
 
@@ -52,8 +63,8 @@ class Models(private val ctx: Context) {
 
     private val prefs get() = ctx.getSharedPreferences("localai", Context.MODE_PRIVATE)
     var activeId: String?
-        get() = prefs.getString("model", null)?.takeIf { byId(it)?.let(::ready) == true }
-            ?: list.firstOrNull { ready(it) }?.id
+        get() = prefs.getString("model", null)?.takeIf { id -> byId(id)?.let { it.kind == "chat" && ready(it) } == true }
+            ?: chatModels.firstOrNull { ready(it) }?.id
         set(v) { prefs.edit().putString("model", v).apply() }
 
     fun delete(m: Model) { file(m).delete(); part(m).delete() }
@@ -71,11 +82,12 @@ class Models(private val ctx: Context) {
         for (m in list) {
             a.put(JSONObject()
                 .put("id", m.id).put("name", m.name).put("badge", m.badge).put("desc", m.desc)
-                .put("bytes", m.bytes).put("minRam", m.minRamGb)
+                .put("bytes", m.bytes).put("minRam", m.minRamGb).put("kind", m.kind)
                 .put("ready", ready(m)).put("partial", part(m).length())
                 .put("downloading", dl != null && dl.id == m.id && !dl.done))
         }
         val o = JSONObject().put("models", a).put("active", activeId ?: JSONObject.NULL)
+            .put("imageReady", ImageGen.available && ready(imageModel)).put("imageEngine", ImageGen.available)
             .put("free", freeBytes()).put("ram", Math.round(ramGb() * 10) / 10.0)
         if (dl != null) o.put("dl", dl.json())
         return o

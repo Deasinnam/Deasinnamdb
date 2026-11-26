@@ -60,6 +60,8 @@ class Ai(private val ctx: Context) {
         .put("backend", prefs.getString("backend", "auto"))
         .put("system", prefs.getString("system", "") ?: "")
         .put("mtp", prefs.getBoolean("mtp", true))
+        .put("work", prefs.getBoolean("work", false))
+        .put("imgSize", prefs.getInt("imgSize", 512))
     fun setSettings(o: JSONObject) {
         val e = prefs.edit()
         if (o.has("temperature")) e.putFloat("temperature", o.getDouble("temperature").toFloat().coerceIn(0f, 1.5f))
@@ -67,6 +69,8 @@ class Ai(private val ctx: Context) {
         if (o.has("backend")) e.putString("backend", o.getString("backend"))
         if (o.has("system")) e.putString("system", o.getString("system").take(2000))
         if (o.has("mtp")) e.putBoolean("mtp", o.getBoolean("mtp"))
+        if (o.has("work")) e.putBoolean("work", o.getBoolean("work"))
+        if (o.has("imgSize")) e.putInt("imgSize", o.getInt("imgSize").coerceIn(256, 768))
         e.apply()
         // 처리 장치 · 빠른 생성(MTP)은 엔진을 다시 올려야 적용
         if (o.has("backend") || o.has("mtp")) scope.launch { unload() }
@@ -78,7 +82,10 @@ class Ai(private val ctx: Context) {
         val base = "너는 'Chat DNR Ai'야. DNR(덜누름)이 만들었어. 인터넷 없이 사용자의 휴대폰(갤럭시 폴드) 안에서만 돌아가는 도우미야. " +
             "사용자가 쓰는 언어로 답하고, 한국어로 물으면 자연스러운 한국어 존댓말로 답해. " +
             "핵심부터 간결하게, 필요하면 목록 · 표 · 코드 블록(마크다운)을 써. " +
-            "모르는 것이나 최신 정보(오늘 날씨 · 뉴스 · 가격 등)는 인터넷에 연결되어 있지 않아 확인할 수 없다고 솔직히 말해."
+            "모르는 것이나 최신 정보(오늘 날씨 · 뉴스 · 가격 등)는 인터넷에 연결되어 있지 않아 확인할 수 없다고 솔직히 말해. " +
+            "문서 · 보고서 · 회의록 · 표를 만들어 달라고 하면 맨 위에 '# 제목'을 두고 소제목(##) · 목록 · 표(마크다운)로 바로 문서처럼 써. " +
+            "앱이 그 답을 Word · Excel 파일로 바꿔 DNR 워크(덜누름 워크)에서 열어 줄 수 있어. " +
+            "그림은 사용자가 '…그려 줘'라고 하거나 입력창의 🎨를 누르면 앱이 기기 안에서 그려 줘. 네가 직접 그림을 그렸다고 말하지는 마."
         return if (user.isEmpty()) base else "$base\n\n사용자가 정한 지시: $user"
     }
 
@@ -237,7 +244,103 @@ class Ai(private val ctx: Context) {
 
     fun preload() { scope.launch { runCatching { ensureEngine() } } }
 
+
+    // ---------- 그림 그리기: Gemma가 영어 그림 설명을 쓰고 → 그림 엔진이 폰 CPU로 그림 ----------
+
+    interface DrawListener {
+        fun onStage(stage: String, step: Int, steps: Int)
+        fun onDone(path: String, prompt: String, ms: Long)
+        fun onError(msg: String)
+    }
+
+    private fun cleanPrompt(s: String): String = s.replace(Regex("(?s)```.*?```"), " ").lines()
+        .map { it.trim().trim('"', '\'', '`', '*') }.filter { it.isNotEmpty() && !it.endsWith(":") }
+        .firstOrNull { it.length > 8 } ?: s.trim()
+
+    /** userText: "고양이 그려줘" 같은 요청. chat: 앞선 대화(무엇을 그릴지 맥락) */
+    fun draw(chat: JSONObject, userText: String, size: Int, l: DrawListener) {
+        job?.cancel()
+        job = scope.launch {
+            val t0 = System.currentTimeMillis()
+            try {
+                if (!ImageGen.available) throw IllegalStateException("이 기기에서 그림 엔진을 불러오지 못했어요")
+                val im = App.app.models.imageModel
+                if (!App.app.models.ready(im)) throw IllegalStateException("그림 모델을 먼저 내려받아 주세요 (설정 › AI 모델)")
+                // 1) 무엇을 그릴지: 대화 맥락을 보고 영어 그림 설명 한 줄
+                l.onStage("prompt", 0, 0)
+                var prompt = ""
+                runCatching {
+                    val e = ensureEngine()
+                    val cfg = ConversationConfig(
+                        systemInstruction = Contents.of(Content.Text(
+                            "You turn the user's drawing request (often Korean) into ONE English prompt for Stable Diffusion 1.5. " +
+                            "Use the conversation for context. Describe subject, setting, style, lighting, camera in comma-separated phrases, " +
+                            "max 60 words. Output ONLY the prompt line, no quotes, no explanation.")),
+                        initialMessages = history(chat, 6),
+                        samplerConfig = SamplerConfig(40, 0.9, 0.4, 0),
+                    )
+                    lock.withLock {
+                        // 엔진 하나에 대화는 하나씩: 지금 대화를 닫고(다음 질문 때 기록으로 다시 만듦) 그림 설명용 대화를 잠깐 엶
+                        runCatching { conv?.close() }; conv = null; convKey = null
+                        e.createConversation(cfg).use { c ->
+                            c.sendMessageAsync(userText).collect { m -> prompt += split(m).first }
+                        }
+                    }
+                }.onFailure { Log.w(TAG, "prompt writer failed", it) }
+                prompt = cleanPrompt(prompt).take(400)
+                if (prompt.length < 4 || Regex("[가-힣]").containsMatchIn(prompt)) prompt = userText // 영어 설명을 못 쓰면 그대로
+                // 2) 그림 엔진 준비(처음 한 번 몇 초)
+                l.onStage("load", 0, 0)
+                if (!ImageGen.nLoad(App.app.models.file(im).absolutePath, 0)) throw IllegalStateException("그림 모델을 열지 못했어요. 지우고 다시 받아 주세요")
+                // 3) 그리기
+                ImageGen.listener = { s, n -> l.onStage("draw", s, n) }
+                val seed = (System.nanoTime() and 0x7fffffff)
+                val neg = "lowres, blurry, worst quality, low quality, deformed, bad anatomy, extra fingers, watermark, text, signature"
+                val rgb = ImageGen.nGenerate("$prompt, high quality, detailed", neg, size, size, 6, 1.5f, seed)
+                    ?: throw IllegalStateException(if (job?.isCancelled == true) "그리기를 멈췄어요" else "그림을 만들지 못했어요")
+                val bm = ImageGen.toBitmap(rgb, size, size)
+                val out = File(App.app.chats.imgDir, "g" + java.util.UUID.randomUUID().toString().take(10) + ".png")
+                out.outputStream().use { bm.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                l.onDone(out.absolutePath, prompt, System.currentTimeMillis() - t0)
+            } catch (c: kotlinx.coroutines.CancellationException) {
+                l.onError("그리기를 멈췄어요")
+            } catch (t: Throwable) {
+                Log.w(TAG, "draw failed", t)
+                l.onError(t.message ?: "그림을 만들지 못했어요")
+            } finally { ImageGen.listener = null }
+        }
+    }
+
+    fun stopDraw() { runCatching { ImageGen.nCancel() }; stop() }
+
+    fun freeImage() { if (ImageGen.available) runCatching { ImageGen.nFree() } }
+
     // ---------- 자동 점검(에뮬레이터 CI): 진짜 모델로 글 · 사진 질문 ----------
+    fun selftestImage(path: String, out: (String) -> Unit) {
+        scope.launch {
+            fun log(s: String) { Log.i("LA_SELFTEST", s); out(s) }
+            try {
+                val t0 = System.currentTimeMillis()
+                if (!ImageGen.available) { log("FAIL image engine native missing"); return@launch }
+                log((if (ImageGen.nLoad(path, 0)) "PASS" else "FAIL") + " image model load ${System.currentTimeMillis() - t0}ms")
+                var last = 0
+                ImageGen.listener = { s, _ -> last = s }
+                val t1 = System.currentTimeMillis()
+                val rgb = ImageGen.nGenerate("a red apple on a wooden table, studio lighting, photo", "blurry", 256, 256, 4, 1.5f, 42)
+                if (rgb == null) { log("FAIL image generate null"); return@launch }
+                // 그림이 비어 있지 않은지(밝기 분산) · 빨간 기운이 있는지
+                var sum = 0.0; var sq = 0.0; var red = 0L; val n = 256 * 256
+                for (i in 0 until n) { val r = rgb[i * 3].toInt() and 255; val g = rgb[i * 3 + 1].toInt() and 255; val b = rgb[i * 3 + 2].toInt() and 255
+                    val y = (r + g + b) / 3.0; sum += y; sq += y * y; if (r > g + 40 && r > b + 40) red++ }
+                val varc = sq / n - (sum / n) * (sum / n)
+                File(ctx.getExternalFilesDir(null), "selftest-image.png").outputStream().use { ImageGen.toBitmap(rgb, 256, 256).compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                log((if (varc > 200 && red > n / 50) "PASS" else "FAIL") + " image 256px 4steps ${System.currentTimeMillis() - t1}ms var=${varc.toInt()} red=${red * 100 / n}% progress=$last")
+                ImageGen.nFree()
+            } catch (t: Throwable) { log("FAIL image exception ${t.message}") }
+            finally { ImageGen.listener = null; log("IMGDONE") }
+        }
+    }
+
     fun selftest(path: String, img: File, out: (String) -> Unit) {
         scope.launch {
             fun log(s: String) { Log.i("LA_SELFTEST", s); out(s) }

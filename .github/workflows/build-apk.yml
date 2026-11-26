@@ -28,8 +28,14 @@ jobs:
         run: |
           SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
           yes | "$SDKM" --licenses > /dev/null || true
-          "$SDKM" "platforms;android-36" "build-tools;36.0.0" "platform-tools" > /dev/null
+          "$SDKM" "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;28.2.13676358" "cmake;3.22.1" > /dev/null
           echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: 그림 엔진 소스 (stable-diffusion.cpp 고정 커밋 5d78740 · MIT)
+        run: |
+          git clone --filter=blob:none https://github.com/leejet/stable-diffusion.cpp app/src/main/cpp/sdcpp
+          cd app/src/main/cpp/sdcpp && git checkout -q 5d78740 && git submodule update --init ggml
+          git log -1 --format='%h %cd %s' 
 
       - name: 시험용 APK
         run: |
@@ -61,11 +67,13 @@ jobs:
           cp app/build/outputs/apk/$VARIANT/*.apk ChatDNRAi.apk
           ls -la ChatDNRAi.apk LocalAI-test.apk
 
-      - name: 점검용 모델 내려받기 (Gemma 4 E2B · 공개 저장소)
+      - name: 점검용 모델 내려받기 (Gemma 4 E2B · 그림 DreamShaper 7 LCM · 공개 저장소)
         run: |
+          curl -fL --retry 5 -o "$RUNNER_TEMP/img.gguf" \
+            https://huggingface.co/darkmaniac7/TokForge-DreamShaper-LCM-GGUF/resolve/main/dreamshaper-7-lcm-f16.gguf
           curl -fL --retry 5 -o "$RUNNER_TEMP/e2b.litertlm" \
             https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
-          ls -la "$RUNNER_TEMP/e2b.litertlm"
+          ls -la "$RUNNER_TEMP/e2b.litertlm" "$RUNNER_TEMP/img.gguf"
 
       - name: 에뮬레이터 KVM 켜기
         run: |
@@ -74,7 +82,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: 에뮬레이터 점검 (진짜 모델로 글 · 사진 질문, 화면)
-        timeout-minutes: 60
+        timeout-minutes: 80
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
@@ -85,7 +93,7 @@ jobs:
           cores: 4
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none -no-snapshot
           disable-animations: true
-          script: bash tools/emulator_selftest.sh LocalAI-test.apk ${{ runner.temp }}/e2b.litertlm
+          script: bash tools/emulator_selftest.sh LocalAI-test.apk ${{ runner.temp }}/e2b.litertlm ${{ runner.temp }}/img.gguf
 
       - name: 점검 기록 올리기 (localai-ci 릴리스)
         if: always()
@@ -93,7 +101,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete localai-ci --yes --cleanup-tag || true
-          gh release create localai-ci $(ls localai-screen-*.png selftest-result.txt logcat-tail.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+          gh release create localai-ci $(ls localai-screen-*.png selftest-result.txt logcat-tail.txt selftest-image.png logcat-img.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
             --title "Chat DNR Ai 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: Releases에 APK 올리기
