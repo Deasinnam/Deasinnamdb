@@ -1,0 +1,21 @@
+name: localai probe2
+on:
+  push:
+    branches: [deolnureum-localai-probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
+      - name: dump
+        run: |
+          set +e
+          A=$(cd probe && gradle -q dump | head -1); mkdir u; unzip -q "$A" -d u
+          for c in 'Message$Companion' 'Content$Text' 'Content$ImageFile' 'Contents$Companion' 'Backend$GPU' 'Backend$CPU' 'Conversation'; do echo "=== $c"; javap -cp u/classes.jar "com.google.ai.edge.litertlm.$c" | grep -v 'third_party\|\$default\|DefaultConstructorMarker'; done
+          javap -p -cp u/classes.jar com.google.ai.edge.litertlm.Conversation | grep -i token
