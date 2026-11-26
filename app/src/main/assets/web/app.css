@@ -225,8 +225,6 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 }
 
 /* 그림 */
-.att.draw{background:var(--card2)}
-.att.draw.on{background:var(--acc);color:#fff}
 .gen{display:block;width:min(100%,460px);aspect-ratio:1;border-radius:16px;border:1px solid var(--line);background:var(--card)}
 .gen-prog{width:min(100%,460px);aspect-ratio:1;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,#1b1e24,#23272f);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--sub);font-size:14.5px;position:relative;overflow:hidden}
 .gen-prog::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);animation:shimmer 1.6s infinite}
@@ -240,3 +238,33 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .doc-card{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);font-size:14px}
 .doc-card b{flex:1 0 100%;font-size:14.5px}
 .doc-card .btn{min-height:38px;padding:0 14px;font-size:14px}
+
+/* + 메뉴 · 선택한 도구 칩 */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips:not(:empty){margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 6px 5px 12px;border-radius:99px;background:var(--accs);color:var(--acc2);font-weight:800;font-size:13.5px;border:1px solid rgba(232,89,12,.35)}
+.chip.soft{background:var(--card);color:var(--sub);border-color:var(--line)}
+.chip button{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:inherit}
+.chip button svg{width:13px;height:13px}
+.pill{cursor:pointer}
+.pill::after{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);margin-left:2px;opacity:.7}
+.sheet-in.plus{overflow-y:auto}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 4px 6px}
+.ptile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:92px;border-radius:16px;background:var(--card);font-weight:800;font-size:15px}
+.ptile span{font-size:28px;line-height:1}.ptile small{color:var(--mute);font-weight:500;font-size:12px}
+.ptile:active{background:var(--card2)}
+.psec{margin:12px 8px 2px;font-size:12.5px;font-weight:800;color:var(--mute)}
+.row.tool{padding:12px 14px}
+.row.tool b{flex:1;display:block;font-size:16px}.row.tool b small{display:block;margin:0;color:var(--sub);font-weight:500;font-size:13px}
+.row.tool .ck,.mrow .ck{flex:0 0 22px;height:22px;border-radius:50%;border:2px solid var(--mute);position:relative}
+.row.tool.on{background:var(--accs)}
+.row.tool.on .ck,.mrow.on .ck{border-color:var(--acc);background:var(--acc)}
+.row.tool.on .ck::after,.mrow.on .ck::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.ptgl{margin:2px 14px;border-bottom:0}
+.pmodels{display:flex;flex-direction:column;gap:2px}
+.mrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:14px;text-align:left}
+.mrow:active{background:var(--card)}
+.mrow.on{background:var(--accs)}
+.mrow b{flex:1;font-size:15.5px}.mrow b small{display:block;color:var(--sub);font-weight:500;font-size:12.5px}
+.mrow .get{font-size:12.5px;font-weight:800;color:var(--acc2);white-space:nowrap}
+.mrow.more{color:var(--sub);font-weight:700;font-size:14px;justify-content:center}

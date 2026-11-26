@@ -5,7 +5,7 @@ var $=function(id){return document.getElementById(id)};
 var DEMO=(location.search.match(/demo=([a-z]+)/)||[])[1];
 if(!window.LA||DEMO)window.LA=mockLA(DEMO||"chat");
 
-var S=null,CUR=null,ATT=[],BUSY=false,LIVE=null,DL=null,SEL=null,DRAW=false,DOC=null;
+var S=null,CUR=null,ATT=[],BUSY=false,LIVE=null,DL=null,SEL=null,TOOL="",PENDOC=null,DOC=null;
 var DRAWRE=/(그려|그림\s*(을|좀)?\s*(그|만들|생성)|이미지\s*(를|좀)?\s*(만들|생성)|일러스트|\bdraw\b|generate an image)/i;
 var DOCRE=/(문서|워드|엑셀|보고서|회의록|기획서|계획서|제안서|견적서|표로|시트).{0,12}(만들|작성|써|정리|뽑아)/;
 function chatModels(){return S.models.filter(function(m){return (m.kind||"chat")==="chat"})}
@@ -79,7 +79,7 @@ $("suGo").onclick=function(){
 // ---------- 대화 화면 ----------
 function showMain(){
   $("setup").classList.add("hide");$("main").classList.remove("hide");
-  drawList();drawPill();
+  drawList();drawPill();drawChips();
   var list=J(LA.chats())||[];
   if(!CUR){if(list.length&&list[0].count===0)openChat(list[0].id);else newChat()}
   LA.preload();
@@ -125,7 +125,7 @@ function drawChat(){
   $("thread").innerHTML=msgs.map(msgHtml).join("");
   if(!msgs.length){
     $("sugs").innerHTML=SUGS.map(function(s,i){return '<button class="sug" data-i="'+i+'"><b>'+s[0]+'</b><span>'+esc(s[1])+'</span></button>'}).join("");
-    [].forEach.call($("sugs").querySelectorAll(".sug"),function(b){b.onclick=function(){var s=SUGS[+b.getAttribute("data-i")];if(s[2]==="photo"){$("attMenu").classList.remove("hide");return}if(s[2]==="draw")setDraw(true);$("inp").value=s[1];autoH();$("inp").focus()}});
+    [].forEach.call($("sugs").querySelectorAll(".sug"),function(b){b.onclick=function(){var s=SUGS[+b.getAttribute("data-i")];if(s[2]==="photo"){openPlus();return}setTool(s[2]==="draw"?"draw":"");$("inp").value=s[1];autoH();$("inp").focus()}});
   }
   wireMsgs();scrollEnd(true);
 }
@@ -211,6 +211,8 @@ function onFinish(d){
   if(CUR&&d.chat===CUR.id){CUR=J(LA.chat(CUR.id));LIVE=null;drawChat()}
   BUSY=false;setSend();drawList();
   if(d.error)toast(d.error);
+  if(PENDOC&&PENDOC===d.chat&&!d.error&&CUR&&CUR.id===d.chat){var li=CUR.messages.length-1;if(li>=0&&CUR.messages[li].text)openDoc(li)}
+  PENDOC=null;
 }
 function setSend(){
   var b=$("sendBtn");b.classList.toggle("stop",BUSY);
@@ -221,10 +223,64 @@ function setSend(){
 $("sendBtn").onclick=function(){if(BUSY){LA.stop();return}go($("inp").value,ATT.slice())};
 function go(text,images){
   var t=(text||"").trim();
-  if(t&&!images.length&&(DRAW||DRAWRE.test(t)))doDraw(t);else send(text,images);
+  // 그림: + 메뉴에서 '그림 그리기'를 골랐거나, 대화하기에서 "…그려 줘"라고 쓴 경우(사진이 없을 때)
+  if(t&&!images.length&&(TOOL==="draw"||(!TOOL&&DRAWRE.test(t)))){doDraw(t);return}
+  if(TOOL==="draw"&&!t){toast("무엇을 그릴지 적어 주세요");return}
+  var doc=TOOL==="doc";
+  send(text,images);
+  if(doc&&BUSY){PENDOC=CUR.id;setTool("")}
 }
-function setDraw(on){DRAW=on;$("drawBtn").classList.toggle("on",on);$("drawBtn").setAttribute("aria-pressed",on?"true":"false");$("inp").placeholder=on?"무엇을 그릴까요? 예: 비 오는 밤 네온 거리의 고양이":(ATT.length?"사진에 대해 물어보세요 (비우면 설명해 줘요)":"무엇이든 물어보세요");$("inp").focus()}
-$("drawBtn").onclick=function(){if(ATT.length&&!DRAW){toast("사진을 넣은 채로는 그림을 그릴 수 없어요");return}setDraw(!DRAW)};
+// ---------- 할 일(도구) · 칩 ----------
+var PH={"":"무엇이든 물어보세요",draw:"무엇을 그릴까요? 예: 비 오는 밤 네온 거리의 고양이",doc:"어떤 문서를 만들까요? 예: 다음 주 팀 회의록 양식"};
+function setTool(t){
+  if(t==="draw"&&ATT.length){toast("사진을 빼야 그림을 그릴 수 있어요");return false}
+  TOOL=t||"";drawChips();return true;
+}
+function drawChips(){
+  var st=(S&&S.settings)||{},h="";
+  var X='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  if(TOOL==="draw")h+='<span class="chip">🎨 그림 그리기<button data-x="tool" aria-label="그림 그리기 끄기">'+X+'</button></span>';
+  if(TOOL==="doc")h+='<span class="chip">📄 문서 만들기 · DNR 워크<button data-x="tool" aria-label="문서 만들기 끄기">'+X+'</button></span>';
+  if(st.thinking&&TOOL!=="draw")h+='<span class="chip soft">💡 깊게 생각하기<button data-x="think" aria-label="깊게 생각하기 끄기">'+X+'</button></span>';
+  $("chips").innerHTML=h;
+  [].forEach.call($("chips").querySelectorAll("[data-x]"),function(b){b.onclick=function(){
+    if(b.getAttribute("data-x")==="tool")setTool("");else{LA.setSettings(JSON.stringify({thinking:false}));state();drawChips()}
+    $("inp").focus();
+  }});
+  $("inp").placeholder=TOOL?PH[TOOL]:(ATT.length?"사진에 대해 물어보세요 (비우면 설명해 줘요)":PH[""]);
+}
+function openPlus(){
+  if(BUSY){toast("답을 다 만든 뒤에 고를 수 있어요");return}
+  state();
+  [].forEach.call($("attMenu").querySelectorAll(".row.tool"),function(b){b.classList.toggle("on",b.getAttribute("data-tool")===TOOL)});
+  $("tDrawSub").textContent=S.imageEngine===false?"이 기기에서는 쓸 수 없어요":S.imageReady?"폰 안에서 그림을 만들어요":"처음 한 번 그림 모델("+gb((S.models.filter(function(m){return m.kind==="image"})[0]||{bytes:0}).bytes)+"GB)을 받아요";
+  $("pThink").checked=!!(S.settings||{}).thinking;
+  var h=chatModels().map(function(m){
+    var on=S.active===m.id,busy=DL&&DL.id===m.id&&dlActive();
+    return '<button class="mrow'+(on?" on":"")+'" data-m="'+m.id+'"><b>'+esc(m.name)+'<small>'+esc(m.badge)+(m.ready?"":" · "+gb(m.bytes)+"GB")+'</small></b>'+
+      (m.ready?'<i class="ck"></i>':'<span class="get">'+(busy?"받는 중 "+Math.floor(DL.got/(DL.total||m.bytes)*100)+"%":"내려받기")+'</span>')+'</button>';
+  }).join("")+'<button class="mrow more" id="pMore">모델 관리 · 설정 열기</button>';
+  $("pModels").innerHTML=h;
+  [].forEach.call($("pModels").querySelectorAll("[data-m]"),function(b){b.onclick=function(){
+    var id=b.getAttribute("data-m"),m=S.models.filter(function(x){return x.id===id})[0];
+    if(m.ready){if(S.active!==id){LA.useModel(id);setTimeout(function(){state();drawPill()},200);toast(m.name+"(으)로 바꿨어요")}closePlus();return}
+    if(DL&&DL.id===id&&dlActive()){toast("받는 중이에요");return}
+    if(dlActive()){toast("다른 모델을 받는 중이에요");return}
+    if(S.free<m.bytes-m.partial+2e8){toast("저장 공간이 모자라요");return}
+    if(!confirm(m.name+"("+gb(m.bytes)+"GB)을 내려받을까요? 와이파이를 권해요. 다 받으면 바로 고를 수 있어요."))return;
+    LA.download(id);DL={id:id,got:m.partial,total:0,speed:0};toast("받기 시작했어요. 설정에서 진행을 볼 수 있어요");closePlus();
+  }});
+  $("pMore").onclick=function(){closePlus();openSettings()};
+  $("attMenu").classList.remove("hide");
+}
+function closePlus(){$("attMenu").classList.add("hide")}
+[].forEach.call($("attMenu").querySelectorAll(".row.tool"),function(b){b.onclick=function(){
+  var t=b.getAttribute("data-tool");
+  if(t==="draw"&&S.imageEngine===false){toast("이 기기에서는 그림 엔진을 쓸 수 없어요");return}
+  if(setTool(t)){closePlus();$("inp").focus()}
+}});
+$("pThink").onchange=function(){LA.setSettings(JSON.stringify({thinking:this.checked}));state();drawChips()};
+$("aiPill").onclick=openPlus;
 function doDraw(text){
   if(BUSY)return;
   state();
@@ -238,7 +294,7 @@ function doDraw(text){
   var r=LA.draw(CUR.id,text);
   if(r!=="ok"){toast(r==="busy"?"답을 만드는 중이에요":"그리지 못했어요");return}
   CUR=J(LA.chat(CUR.id));
-  $("inp").value="";autoH();
+  $("inp").value="";autoH();setTool(""); // 그림은 한 번만 — 다음엔 다시 대화하기
   BUSY=true;setSend();drawChat();drawList();
   LIVE=document.createElement("div");LIVE.className="m ai";
   LIVE.innerHTML=AV+'<div class="body"><div class="gen-prog"><span class="gp-t">무엇을 그릴지 정리하는 중…</span><div class="bar"><i style="width:4%"></i></div></div></div>';
@@ -259,15 +315,16 @@ $("inp").addEventListener("keydown",function(e){
 function autoH(){var t=$("inp");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,180)+"px"}
 
 // 사진
-$("attBtn").onclick=function(){if(ATT.length>=4){toast("사진은 한 번에 4장까지예요");return}$("attMenu").classList.remove("hide")};
-$("aNo").onclick=function(){$("attMenu").classList.add("hide")};
-$("attMenu").onclick=function(e){if(e.target===this)this.classList.add("hide")};
-$("aGal").onclick=function(){$("attMenu").classList.add("hide");LA.pickImages()};
-$("aCam").onclick=function(){$("attMenu").classList.add("hide");LA.camera()};
+$("attBtn").onclick=openPlus;
+$("aNo").onclick=closePlus;
+$("attMenu").onclick=function(e){if(e.target===this)closePlus()};
+function photoOk(){if(ATT.length>=4){toast("사진은 한 번에 4장까지예요");return false}if(TOOL==="draw"){setTool("");toast("사진을 넣으려고 그림 그리기를 껐어요")}return true}
+$("aGal").onclick=function(){closePlus();if(photoOk())LA.pickImages()};
+$("aCam").onclick=function(){closePlus();if(photoOk())LA.camera()};
 function drawAtts(){
   $("atts").innerHTML=ATT.map(function(p,i){return '<div class="att-i"><img src="file://'+esc(p)+'"><button data-i="'+i+'" aria-label="빼기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'}).join("");
   [].forEach.call($("atts").querySelectorAll("button"),function(b){b.onclick=function(){var i=+b.getAttribute("data-i");LA.dropImage(ATT[i]);ATT.splice(i,1);drawAtts();setSend()}});
-  $("inp").placeholder=ATT.length?"사진에 대해 물어보세요 (비우면 설명해 줘요)":"무엇이든 물어보세요";
+  drawChips();
 }
 
 // AI 상태 표시
@@ -339,7 +396,7 @@ function tLabel(v){v=+v;return v<=0.3?"정확하게":v<=0.9?"균형":"창의적�
 $("sdStop").onclick=function(){LA.stopDownload()};
 $("temp").oninput=function(){$("tVal").textContent=tLabel(this.value)};
 $("temp").onchange=function(){LA.setSettings(JSON.stringify({temperature:+this.value}));state()};
-$("think").onchange=function(){LA.setSettings(JSON.stringify({thinking:this.checked}));state()};
+$("think").onchange=function(){LA.setSettings(JSON.stringify({thinking:this.checked}));state();drawChips()};
 $("mtp").onchange=function(){LA.setSettings(JSON.stringify({mtp:this.checked}));state()};
 [].forEach.call($("backend").querySelectorAll("button"),function(b){b.onclick=function(){if(BUSY){toast("답을 다 만든 뒤에 바꿀 수 있어요");return}LA.setSettings(JSON.stringify({backend:b.getAttribute("data-v")}));state();drawSettings();toast("다음 질문부터 적용돼요")}});
 [].forEach.call($("imgSize").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({imgSize:+b.getAttribute("data-v")}));state();drawSettings()}});
@@ -370,7 +427,7 @@ window.LAe=function(type,d){
 window.onBack=function(){
   if(!$("docSheet").classList.contains("hide")){$("docSheet").classList.add("hide");return true}
   if(!$("workAsk").classList.contains("hide")){$("workAsk").classList.add("hide");return true}
-  if(!$("attMenu").classList.contains("hide")){$("attMenu").classList.add("hide");return true}
+  if(!$("attMenu").classList.contains("hide")){closePlus();return true}
   if(!$("setSheet").classList.contains("hide")){$("setSheet").classList.add("hide");return true}
   if($("main").classList.contains("drawer")){closeDrawer();return true}
   return false;
@@ -400,6 +457,8 @@ function mockLA(mode){
     [].forEach.call(document.querySelectorAll('img[src="file://__demogen__"]'),function(i){i.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1a4a"/><stop offset=".55" stop-color="#f28c38"/><stop offset="1" stop-color="#ffd27a"/></linearGradient></defs><rect width="512" height="512" fill="url(#s)"/><circle cx="256" cy="300" r="70" fill="#ffe2a0"/><rect y="330" width="512" height="182" fill="#1d3b5a"/><rect y="380" width="512" height="40" fill="#3a3530"/><path d="M300 380c-6-40 10-62 28-70l6-22 12 18c14 0 22 6 26 14l16-12-2 24c10 20 6 40-6 48z" fill="#111"/></svg>')});
     if(mode==="drawing"){CUR=J(LA.chat("c1"));drawChat();LIVE=document.createElement("div");LIVE.className="m ai";LIVE.innerHTML=AV+'<div class="body"><div class="gen-prog"><span class="gp-t"></span><div class="bar"><i></i></div></div></div>';$("thread").appendChild(LIVE);BUSY=true;setSend();onDrawStage({chat:"c1",stage:"draw",step:4,steps:6});scrollEnd(true)}
     if(mode==="work"){$("workAsk").classList.remove("hide")}
+    if(mode==="plus"){newChat();openPlus()}
+    if(mode==="tool"){newChat();setTool("draw");$("inp").value="비 오는 밤 네온 거리의 고양이";autoH();setSend()}
     [].forEach.call(document.querySelectorAll('img[src="file://__demo__"]'),function(i){i.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="#f4f1ea"/><g fill="#999"><rect x="25" y="20" width="100" height="8"/><rect x="25" y="40" width="70" height="6"/><rect x="25" y="55" width="90" height="6"/><rect x="25" y="70" width="60" height="6"/><rect x="25" y="100" width="100" height="10"/></g></svg>')});
   },60);
   return {

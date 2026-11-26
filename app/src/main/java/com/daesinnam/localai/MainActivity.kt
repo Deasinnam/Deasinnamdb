@@ -102,7 +102,11 @@ class MainActivity : Activity() {
         if (BuildConfig.DEBUG && intent.getBooleanExtra("cpu", false)) app.ai.setSettings(JSONObject().put("backend", "cpu").put("mtp", false))
     }
 
-    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); handleShare(intent) }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent); setIntent(intent); handleShare(intent)
+        // 자동 점검(시험용 빌드만): 지금 대화에 이어서 질문(그림 뒤 대화가 되는지)
+        if (BuildConfig.DEBUG) intent.getStringExtra("ask")?.let { q -> if (pageReady) ui.postDelayed({ emit("ask", JSONObject().put("text", q)) }, 1500) }
+    }
 
     override fun onResume() { super.onResume(); if (pageReady) emit("resume", JSONObject().put("online", online())) }
 

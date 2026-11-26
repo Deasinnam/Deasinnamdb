@@ -82,7 +82,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: 에뮬레이터 점검 (진짜 모델로 글 · 사진 질문, 화면)
-        timeout-minutes: 80
+        timeout-minutes: 100
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36

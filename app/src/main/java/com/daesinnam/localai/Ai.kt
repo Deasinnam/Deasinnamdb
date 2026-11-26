@@ -148,19 +148,25 @@ class Ai(private val ctx: Context) {
     /** 대화 기록(JSON)을 모델에 다시 넣을 메시지로. 너무 길면 최근 것만 */
     private fun history(chat: JSONObject, keep: Int): List<Message> {
         val msgs = chat.optJSONArray("messages") ?: JSONArray()
-        val out = ArrayList<Message>()
+        // (역할, 글) 목록 — 그림 답은 "그림을 그려 보여줌"으로 바꿔 넣고, 같은 역할이 이어지면 합침(그림 뒤 질문이 막히던 문제)
+        val turns = ArrayList<Pair<Boolean, String>>()
         val from = maxOf(0, msgs.length() - keep)
         for (i in from until msgs.length()) {
             val o = msgs.getJSONObject(i)
-            val text = o.optString("text")
-            if (text.isBlank() || o.optBoolean("error")) continue
-            val role = if (o.optString("role") == "user") Role.USER else Role.MODEL
-            val note = if (role == Role.USER && (o.optJSONArray("images")?.length() ?: 0) > 0) "[사진을 함께 보냄] " else ""
-            out.add(if (role == Role.USER) Message.user(Contents.of(Content.Text(note + text))) else Message.model(text))
+            val user = o.optString("role") == "user"
+            var text = o.optString("text")
+            if (!user && o.optString("image").isNotEmpty())
+                text = "(요청한 그림을 기기 안에서 그려 보여 주었어요" + o.optString("prompt").let { if (it.isNotBlank()) ": $it" else "" } + ")"
+            if (!user && o.has("error") && text.isBlank()) continue
+            if (text.isBlank() && !(user && (o.optJSONArray("images")?.length() ?: 0) > 0)) continue
+            if (user && (o.optJSONArray("images")?.length() ?: 0) > 0) text = "[사진을 함께 보냄] " + text
+            if (user && o.optBoolean("draw")) text = "[그림 요청] " + text
+            if (turns.isNotEmpty() && turns.last().first == user) turns[turns.size - 1] = user to (turns.last().second + "\n\n" + text)
+            else turns.add(user to text)
         }
-        // 첫 메시지는 사용자 차례여야 함
-        while (out.isNotEmpty() && out.first().role != Role.USER) out.removeAt(0)
-        return out
+        while (turns.isNotEmpty() && !turns.first().first) turns.removeAt(0) // 첫 메시지는 사용자 차례
+        if (turns.isNotEmpty() && turns.last().first) turns.removeAt(turns.size - 1) // 답 없는 질문은 빼고(이번 질문과 겹치지 않게)
+        return turns.map { (u, t) -> if (u) Message.user(Contents.of(Content.Text(t))) else Message.model(t) }
     }
 
     private fun newConv(e: Engine, chat: JSONObject, keep: Int): Conversation {
@@ -182,6 +188,7 @@ class Ai(private val ctx: Context) {
             var acc = ""; var thought = ""
             val t0 = System.currentTimeMillis()
             try {
+                if (imgLoaded) { freeImage() } // 그림 엔진(약 2GB)을 내려 두고 대화 — 폰 메모리 아끼기
                 val e = ensureEngine()
                 val m = App.app.models.byId(App.app.models.activeId)!!
                 val key = chat.getString("id") + "|" + engineKey
@@ -291,6 +298,7 @@ class Ai(private val ctx: Context) {
                 if (prompt.length < 4 || Regex("[가-힣]").containsMatchIn(prompt)) prompt = userText // 영어 설명을 못 쓰면 그대로
                 // 2) 그림 엔진 준비(처음 한 번 몇 초)
                 l.onStage("load", 0, 0)
+                imgLoaded = true
                 if (!ImageGen.nLoad(App.app.models.file(im).absolutePath, 0)) throw IllegalStateException("그림 모델을 열지 못했어요. 지우고 다시 받아 주세요")
                 // 3) 그리기
                 ImageGen.listener = { s, n -> l.onStage("draw", s, n) }
@@ -313,7 +321,8 @@ class Ai(private val ctx: Context) {
 
     fun stopDraw() { runCatching { ImageGen.nCancel() }; stop() }
 
-    fun freeImage() { if (ImageGen.available) runCatching { ImageGen.nFree() } }
+    @Volatile private var imgLoaded = false
+    fun freeImage() { if (ImageGen.available) runCatching { ImageGen.nFree() }; imgLoaded = false }
 
     // ---------- 자동 점검(에뮬레이터 CI): 진짜 모델로 글 · 사진 질문 ----------
     fun selftestImage(path: String, out: (String) -> Unit) {

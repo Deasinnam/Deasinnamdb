@@ -14,7 +14,7 @@ adb shell wm size 1904x1716; adb shell wm density 360
 adb shell am start -n $PKG/.MainActivity >/dev/null; sleep 6
 shot 1-setup
 # 데모 화면(가짜 데이터)
-for d in chat settings dl; do adb shell am start -S -n $PKG/.MainActivity --es demo $d >/dev/null; sleep 5; shot "2-demo-$d"; done
+for d in chat settings dl plus tool; do adb shell am start -S -n $PKG/.MainActivity --es demo $d >/dev/null; sleep 5; shot "2-demo-$d"; done
 adb shell am force-stop $PKG
 # 모델 넣기: 앱 전용 폴더(내려받기와 같은 자리)
 DIR=/sdcard/Android/data/$PKG/files/models
@@ -67,6 +67,20 @@ if [ -n "$IMG" ]; then
   sleep 3; shot 4b-real-draw
   CH=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null)
   if [ $OK = 1 ]; then log "PASS ui draw: $(echo "$CH" | grep -o '"prompt":"[^"]\{0,90\}' | head -1)"; else log "FAIL ui draw ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
+  # 2-c) 그림 다음에 같은 대화에서 다시 질문 → 답이 와야 함(그림 뒤 질문이 막히던 문제)
+  if [ $OK = 1 ]; then
+    N0=$(echo "$CH" | grep -o '"role":"model","text":"[^"]' | wc -l)
+    adb shell am start -n $PKG/.MainActivity --es ask "\"이 고양이에게 어울리는 이름 세 개만 지어 줘\"" >/dev/null
+    OK2=0
+    for i in $(seq 1 40); do
+      sleep 10
+      N1=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -o '"role":"model","text":"[^"]' | wc -l)
+      if [ "$N1" -gt "$N0" ]; then OK2=1; break; fi
+    done
+    sleep 3; shot 4c-chat-after-draw
+    CH=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null)
+    if [ $OK2 = 1 ]; then log "PASS ui chat after draw: $(echo "$CH" | grep -o '"role":"model","text":"[^"]\{0,60\}' | tail -1 | cut -c25-)"; else log "FAIL ui chat after draw ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
+  fi
 fi
 # 3) 사진 붙여 화면 질문 — 공유하기로 사진 넣기
 adb shell am force-stop $PKG
