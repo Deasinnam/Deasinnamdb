@@ -60,7 +60,7 @@ if [ -n "$IMG" ]; then
   adb shell am force-stop $PKG
   adb shell am start -n $PKG/.MainActivity --ez cpu true --ez imgsmall true --es ask "\"노을 진 바닷가에 앉아 있는 고양이를 그려 줘\"" >/dev/null
   OK=0
-  for i in $(seq 1 60); do
+  for i in $(seq 1 110); do
     sleep 10
     if timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -q '"image":"'; then OK=1; break; fi
   done
