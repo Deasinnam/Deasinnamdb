@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 덜누름 앱들과 같은 남색 바탕 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient android:startColor="#3B3FA8" android:endColor="#151A44" android:angle="315" />
-</shape>
