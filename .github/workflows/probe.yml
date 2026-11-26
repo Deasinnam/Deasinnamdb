@@ -16,6 +16,7 @@ jobs:
         with: { gradle-version: '8.9' }
       - name: dump api
         run: |
+          set +e
           cd probe && gradle -q dump | tee ../arts.txt
           cd ..; mkdir x; for f in $(awk '{print $3}' arts.txt); do cp "$f" x/; done; ls -la x
           cd x; for a in *.aar; do mkdir -p "u_$a"; unzip -q -o "$a" -d "u_$a"; done
