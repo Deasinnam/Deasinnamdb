@@ -105,6 +105,11 @@ public class OfficeActivity extends ComponentActivity {
                 onPicked(result.getResultCode() == RESULT_OK ? uri : null);
             });
 
+    // DNR AI(Chat DNR Ai) 창에서 돌아온 결과를 문서에 넣기
+    private final ActivityResultLauncher<Intent> dnrAi =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    r -> DnrAiLink.onResult(this, web, r.getResultCode(), r.getData()));
+
     private final ActivityResultLauncher<Intent> fileChooser =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (fileChooserCallback == null) return;
@@ -128,6 +133,7 @@ public class OfficeActivity extends ComponentActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
         HomeButton.attach(this, root, "office");
+        DnrAiLink.attach(this, root, web, dnrAi);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
                     | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());

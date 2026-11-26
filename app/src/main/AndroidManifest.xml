@@ -7,6 +7,11 @@
     <!-- AI 도우미 로그인(브라우저)을 마치는 동안만 잠깐 앱을 붙잡아 두는 서비스(최대 3분)에 필요합니다 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- DNR AI(Chat DNR Ai, 기기 안 AI)가 설치되어 있는지 보고 편집 화면에 AI 단추를 보여 줌 -->
+    <queries>
+        <package android:name="com.daesinnam.localai" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:extractNativeLibs="true"

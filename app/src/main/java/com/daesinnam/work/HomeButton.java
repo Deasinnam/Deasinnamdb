@@ -24,15 +24,24 @@ import android.widget.TextView;
 final class HomeButton {
     private HomeButton() {}
 
-    @SuppressLint("ClickableViewAccessibility")
     static void attach(Activity activity, FrameLayout root, String key) {
+        floating(activity, root, "home_button", key, "홈", "덜누름 워크 첫 화면으로", 0x66FFFFFF, 0.6f, v -> goHome(activity));
+    }
+
+    /**
+     * 끌어 옮길 수 있는 둥근 떠 있는 단추(홈 · AI 단추가 함께 씀). 옮긴 자리는 prefsName/key로 기억.
+     * ring: 테두리 색, defaultY: 처음 높이(화면 높이 비율, 오른쪽 가장자리)
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    static TextView floating(Activity activity, FrameLayout root, String prefsName, String key, String label, String desc,
+                             int ring, float defaultY, android.view.View.OnClickListener onClick) {
         float dp = activity.getResources().getDisplayMetrics().density;
         int size = Math.round(46 * dp);
         int margin = Math.round(10 * dp);
-        SharedPreferences prefs = activity.getSharedPreferences("home_button", Activity.MODE_PRIVATE);
+        SharedPreferences prefs = activity.getSharedPreferences(prefsName, Activity.MODE_PRIVATE);
 
         TextView b = new TextView(activity);
-        b.setText("홈");
+        b.setText(label);
         b.setTextColor(Color.WHITE);
         b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         b.setTypeface(Typeface.DEFAULT_BOLD);
@@ -40,10 +49,10 @@ final class HomeButton {
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.OVAL);
         bg.setColor(0xD9111111);
-        bg.setStroke(Math.round(1.5f * dp), 0x66FFFFFF);
+        bg.setStroke(Math.round(1.5f * dp), ring);
         b.setBackground(bg);
         b.setElevation(8 * dp);
-        b.setContentDescription("덜누름 워크 첫 화면으로");
+        b.setContentDescription(desc);
         b.setFocusable(true);
 
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(size, size);
@@ -55,7 +64,7 @@ final class HomeButton {
             int w = root.getWidth() - root.getPaddingLeft() - root.getPaddingRight();
             int h = root.getHeight() - root.getPaddingTop() - root.getPaddingBottom();
             boolean right = prefs.getBoolean(key + ".right", true);
-            float yRatio = prefs.getFloat(key + ".y", 0.6f);
+            float yRatio = prefs.getFloat(key + ".y", defaultY);
             b.setX(root.getPaddingLeft() + (right ? w - size - margin : margin));
             b.setY(root.getPaddingTop() + clamp(yRatio * h - size / 2f, margin, h - size - margin));
         });
@@ -104,7 +113,8 @@ final class HomeButton {
                     return false;
             }
         });
-        b.setOnClickListener(v -> goHome(activity));
+        b.setOnClickListener(onClick);
+        return b;
     }
 
     /** 첫 화면을 앞으로 (편집기는 닫지 않음) */

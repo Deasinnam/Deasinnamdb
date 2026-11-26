@@ -164,6 +164,14 @@ tools/                      빌드·점검 스크립트 (아래)
 - 배포: 빌드가 `work-latest`와 함께 `work-v<버전>` 릴리스를 만들고, `work-latest`를 바꾸기 전에 이전 버전이 `work-v<이전 버전>`에 없으면 옮겨 둡니다(사이트에서 버전을 골라 받게).
 - 서명은 그대로 저장소 비밀값 `AMP_KEYSTORE_*` → 기존 앱 위에 덮어 설치됩니다.
 
+## 1.1.0 (2026-11-26) — DNR AI(Chat DNR Ai) 양방향 연결 · 사이트 공개 전
+
+- 편집 화면(OfficeActivity)에 떠 있는 **AI** 단추(홈 단추처럼 끌어 옮김, `HomeButton.floating`). Chat DNR Ai(`com.daesinnam.localai`)가 설치되어 있을 때만 보임(매니페스트 `<queries>`).
+- 누르면 `assets/work/dnr-ai.js`가 선택한 글(없으면 편집 영역 글 · 최대 2만 자)과 넣을 자리(선택 범위/커서)를 기억 → `com.daesinnam.ai.action.ASK` 창(Chat DNR Ai)으로 보냄.
+- 창에서 요약 · 맞춤법 · 쉽게 · 영어/한국어 · 표 · 이어 쓰기 또는 직접 요청 → "선택 부분 바꾸기/커서 자리에 넣기"를 누르면 결과(HTML+글)를 **붙여 넣기 이벤트**로 넣음 → TipTap(워드)이 제목 · 목록 · 표를 제 구조로 받음. 입력칸은 setRangeText. 못 넣으면(엑셀 · 한글처럼 그림으로 그리는 편집기) 클립보드에 복사 + 안내.
+- 통로 규약: Chat DNR Ai 가지 `docs/DNR-AI-통로.md`, 도우미 `client/DnrAi.java`.
+- 시험: TipTap 실제 편집기에 capture · insert(선택 바꾸기 · 커서 넣기 · textarea) 확인. 에뮬레이터에는 Chat DNR Ai가 없어 단추는 안 보임(정상).
+
 ## 1.0.9에서 고친 것 (2026-11-26) — 문서 편집 글꼴
 
 | 문제 | 원인 | 고친 곳 |

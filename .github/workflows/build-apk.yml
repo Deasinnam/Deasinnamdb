@@ -299,7 +299,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. Chat DNR Ai가 있으면 편집 화면의 AI 단추로 요약 · 번역 · 다듬기(기기 안). 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
           gh release delete work-latest --yes --cleanup-tag || true
           gh release create work-latest DeolnureumWork.apk DaesinnamWork.apk --target "$GITHUB_SHA" \
             --title "덜누름 워크 (최신 빌드)" --notes "$NOTES"
