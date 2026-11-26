@@ -4758,6 +4758,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     "app-work":    { open: true, min: 8, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 work-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
+                       { v: "1.0.10", date: "2026.11.27", tag: "work-v1.0.10", file: "DeolnureumWork-1.0.10.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
                        { v: "1.0.9", date: "2026.11.26", tag: "work-v1.0.9", file: "DeolnureumWork-1.0.9.apk", note: "문서 편집에 무료 글꼴 30여 종 추가 (나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 · 개구쟁이 등, 모두 SIL OFL 무료 글꼴), 워드 · 한글 문서의 바탕 · 굴림 · 궁서 · Calibri 등은 비슷한 무료 글꼴로 표시", kind: ["new", "better"], fb: "덜누름 워크에 글꼴(폰트)이 부족해요" },
                        { v: "1.0.8", date: "2026.11.21", tag: "work-v1.0.8", file: "DeolnureumWork-1.0.8.apk", note: "AI 도우미 ChatGPT · Claude 로그인을 마치고 돌아와도 연결되지 않던 문제 추가 수정 (로그인하는 동안 'AI 연결 중' 알림)", kind: ["fix"], fix: "브라우저에서 로그인을 마치고 돌아와도 '연결하지 못했습니다'가 뜨던 문제", fb: "ChatGPT · Claude 연결됐다는데 앱에서는 연결 안 됨" },
                        { v: "1.0.7", date: "2026.11.21", tag: "work-v1.0.7", file: "DeolnureumWork-1.0.7.apk", note: "PDF 파일이 열리지 않던 문제, AI 도우미에서 ChatGPT · Claude 로그인 뒤 연결되지 않던 문제 수정", kind: ["fix"], fix: "PDF를 열면 '파일을 열지 못했습니다'가 뜨고, ChatGPT · Claude 로그인 후 앱으로 돌아오면 연결 실패로 나오던 문제", fb: "PDF 안 열림 · AI 연결 안 됨" },

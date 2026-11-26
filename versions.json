@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T01:54:39+09:00",
+ "updated": "2026-11-27T02:15:28+09:00",
  "apps": {
   "speed": {
    "version": "1.98",
@@ -23,9 +23,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "work": {
-   "version": "1.0.9",
-   "date": "2026.11.26",
-   "note": "문서 편집에 무료 글꼴 30여 종 추가 (나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 · 개구쟁이 등, 모두 SIL OFL 무료 글꼴), 워드 · 한글 문서의 바탕 · 굴림 · 궁서 · Calibri 등은 비슷한 무료 글꼴로 표시",
+   "version": "1.0.10",
+   "date": "2026.11.27",
+   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
    "page": "https://deolnureum.com/work/",
    "changes": "https://deolnureum.com/releases/"
   },
