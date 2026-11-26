@@ -45,6 +45,7 @@ class MainActivity : Activity() {
     private var pendingShare: JSONObject? = null
     private var pageReady = false
     private val app get() = App.app
+    private val voice by lazy { DnrVoice(this) { t, d -> emit(t, d) } }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +79,9 @@ class MainActivity : Activity() {
                 pageReady = true; pendingShare?.let { emit("shared", it); pendingShare = null }
                 // 자동 점검(CI): 실제 화면에서 질문 보내 보기
                 intent.getStringExtra("ask")?.let { q -> ui.postDelayed({ emit("ask", JSONObject().put("text", q)) }, 2500) }
+                intent.getStringExtra("openChat")?.let { id -> ui.postDelayed({ emit("open", JSONObject().put("id", id)) }, 400) }
+                // 자동 점검(시험용 빌드만): 녹음 대신 음성 파일로 "말로 묻기" 전체 흐름
+                if (BuildConfig.DEBUG) intent.getStringExtra("stt")?.let { p -> ui.postDelayed({ emit("voiceask", JSONObject()); voice.transcribeFile(File(p)) }, 3000) }
             }
         }
         web.addJavascriptInterface(Bridge(), "LA")
@@ -106,11 +110,19 @@ class MainActivity : Activity() {
         super.onNewIntent(intent); setIntent(intent); handleShare(intent)
         // 자동 점검(시험용 빌드만): 지금 대화에 이어서 질문(그림 뒤 대화가 되는지)
         if (BuildConfig.DEBUG) intent.getStringExtra("ask")?.let { q -> if (pageReady) ui.postDelayed({ emit("ask", JSONObject().put("text", q)) }, 1500) }
+        intent.getStringExtra("openChat")?.let { id -> if (pageReady) emit("open", JSONObject().put("id", id)) }
     }
 
     override fun onResume() { super.onResume(); if (pageReady) emit("resume", JSONObject().put("online", online())) }
 
-    override fun onDestroy() { scope.cancel(); super.onDestroy() }
+    override fun onDestroy() { scope.cancel(); voice.release(); super.onDestroy() }
+
+    override fun onRequestPermissionsResult(req: Int, perms: Array<out String>, res: IntArray) {
+        super.onRequestPermissionsResult(req, perms, res)
+        if (req == REQ_MIC) emit("mic", JSONObject().put("granted", res.firstOrNull() == android.content.pm.PackageManager.PERMISSION_GRANTED))
+    }
+
+    override fun onPause() { super.onPause(); voice.cancelListen() }
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
@@ -222,45 +234,22 @@ class MainActivity : Activity() {
 
         /** 질문 보내기: 기록에 넣고, 답을 조각조각 화면으로 */
         @JavascriptInterface fun send(chatId: String, text: String, imagesJson: String): String {
-            if (app.ai.busy()) return "busy"
-            val chat = app.chats.get(chatId) ?: return "nochat"
             val imgs = JSONArray(imagesJson.ifBlank { "[]" })
-            val images = (0 until imgs.length()).map { imgs.getString(it) }.filter { File(it).exists() }
-            val before = JSONObject(chat.toString()) // 이번 질문을 넣기 전 기록 → 모델 문맥
-            val msgs = chat.getJSONArray("messages")
-            msgs.put(JSONObject().put("role", "user").put("text", text).put("images", JSONArray(images)).put("at", System.currentTimeMillis()))
-            if (msgs.length() == 1 || chat.optString("title") == "새 대화")
-                chat.put("title", text.replace(Regex("\\s+"), " ").trim().take(28).ifEmpty { "사진 질문" })
-            app.chats.save(chat)
-            val modelName = app.models.byId(app.models.activeId)?.name ?: ""
-            var lastPush = 0L
-            app.ai.send(before, text, images, object : Ai.Listener {
-                override fun onDelta(text: String, thought: String) {
-                    val now = System.currentTimeMillis()
-                    if (now - lastPush < 40) return
-                    lastPush = now
-                    emit("delta", JSONObject().put("chat", chatId).put("text", text).put("thought", thought))
-                }
-                override fun onDone(text: String, thought: String, ms: Long) {
-                    save(text, thought, ms, null)
-                    emit("done", JSONObject().put("chat", chatId).put("text", text).put("thought", thought).put("ms", ms).put("model", modelName))
-                }
-                override fun onError(msg: String, partial: String) {
-                    save(partial, "", 0, msg)
-                    emit("error", JSONObject().put("chat", chatId).put("text", partial).put("error", msg))
-                }
-                private fun save(t: String, th: String, ms: Long, err: String?) {
-                    val c = app.chats.get(chatId) ?: return
-                    val o = JSONObject().put("role", "model").put("text", t).put("ms", ms).put("model", modelName).put("at", System.currentTimeMillis())
-                    if (th.isNotBlank()) o.put("thought", th)
-                    if (err != null) o.put("error", err)
-                    c.getJSONArray("messages").put(o); app.chats.save(c)
-                }
-            })
-            return "ok"
+            return Runner.send(chatId, text, (0 until imgs.length()).map { imgs.getString(it) }, { t, d -> emit(t, d) })
         }
 
         @JavascriptInterface fun stop() { app.ai.stopDraw() }
+
+        // ---------- DNR 음성 엔진 ----------
+        @JavascriptInterface fun micOk(): Boolean = checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        @JavascriptInterface fun askMic() { ui.post { requestPermissions(arrayOf(android.Manifest.permission.RECORD_AUDIO), REQ_MIC) } }
+        @JavascriptInterface fun listen(): String { if (!micOk()) return "nomic"; if (app.ai.busy()) return "busy"; ui.post { voice.listen() }; return "ok" }
+        @JavascriptInterface fun stopListen() { ui.post { voice.stopListen() } }
+        @JavascriptInterface fun cancelListen() { ui.post { voice.cancelListen() } }
+        @JavascriptInterface fun speak(text: String, id: String) { ui.post { voice.speak(text, id) } }
+        @JavascriptInterface fun stopSpeak() { ui.post { voice.stopSpeak() } }
+        @JavascriptInterface fun ttsInfo(): String = voice.ttsInfo().toString()
+        @JavascriptInterface fun ttsSettings() { runCatching { startActivity(Intent("com.android.settings.TTS_SETTINGS").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
 
         /** 그림 그리기: 대화 맥락 + 요청 → 기기 안 그림 */
         @JavascriptInterface fun draw(chatId: String, text: String): String {
@@ -361,5 +350,5 @@ class MainActivity : Activity() {
         @JavascriptInterface fun wifiSettings() { ui.post { runCatching { startActivity(Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)) } } }
     }
 
-    companion object { const val REQ_PICK = 11; const val REQ_CAM = 12 }
+    companion object { const val REQ_PICK = 11; const val REQ_CAM = 12; const val REQ_MIC = 13 }
 }

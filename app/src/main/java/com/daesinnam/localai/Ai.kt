@@ -62,6 +62,11 @@ class Ai(private val ctx: Context) {
         .put("mtp", prefs.getBoolean("mtp", true))
         .put("work", prefs.getBoolean("work", false))
         .put("imgSize", prefs.getInt("imgSize", 512))
+        .put("stt", prefs.getString("stt", "auto"))
+        .put("sttDnrOk", prefs.getBoolean("sttDnrOk", true))
+        .put("ttsRate", prefs.getFloat("ttsRate", 1.0f).toDouble())
+        .put("voiceRead", prefs.getBoolean("voiceRead", true))
+        .put("audio", audioOk)
     fun setSettings(o: JSONObject) {
         val e = prefs.edit()
         if (o.has("temperature")) e.putFloat("temperature", o.getDouble("temperature").toFloat().coerceIn(0f, 1.5f))
@@ -71,6 +76,9 @@ class Ai(private val ctx: Context) {
         if (o.has("mtp")) e.putBoolean("mtp", o.getBoolean("mtp"))
         if (o.has("work")) e.putBoolean("work", o.getBoolean("work"))
         if (o.has("imgSize")) e.putInt("imgSize", o.getInt("imgSize").coerceIn(256, 768))
+        if (o.has("stt")) { e.putString("stt", o.getString("stt")); e.putBoolean("sttDnrOk", true) }
+        if (o.has("ttsRate")) e.putFloat("ttsRate", o.getDouble("ttsRate").toFloat().coerceIn(0.5f, 2f))
+        if (o.has("voiceRead")) e.putBoolean("voiceRead", o.getBoolean("voiceRead"))
         e.apply()
         // 처리 장치 · 빠른 생성(MTP)은 엔진을 다시 올려야 적용
         if (o.has("backend") || o.has("mtp")) scope.launch { unload() }
@@ -107,8 +115,7 @@ class Ai(private val ctx: Context) {
             val t0 = System.currentTimeMillis()
             try {
                 ExperimentalFlags.enableSpeculativeDecoding = mtp
-                val e = Engine(config(path, b, m.ctx))
-                e.initialize()
+                val e = build(path, b, m.ctx)
                 engine = e; engineKey = key
                 status.value = Status("ready", m.name, b, loadMs = System.currentTimeMillis() - t0)
                 return@withLock e
@@ -116,7 +123,7 @@ class Ai(private val ctx: Context) {
                 Log.w(TAG, "engine $b failed", t); last = t
                 if (mtp) runCatching { // 빠른 생성(MTP) 없이 한 번 더
                     ExperimentalFlags.enableSpeculativeDecoding = false
-                    val e = Engine(config(path, b, m.ctx)); e.initialize()
+                    val e = build(path, b, m.ctx)
                     engine = e; engineKey = key
                     status.value = Status("ready", m.name, b, loadMs = System.currentTimeMillis() - t0)
                     return@withLock e
@@ -128,13 +135,25 @@ class Ai(private val ctx: Context) {
         throw IllegalStateException(msg)
     }
 
-    private fun config(path: String, b: String, maxTokens: Int) = EngineConfig(
+    private fun config(path: String, b: String, maxTokens: Int, audio: Boolean = true) = EngineConfig(
         modelPath = path,
         backend = if (b == "GPU") Backend.GPU() else Backend.CPU(),
         visionBackend = if (b == "GPU") Backend.GPU() else Backend.CPU(),
+        audioBackend = if (audio) Backend.CPU() else null, // DNR 음성 엔진: 소리 → 글 (필요할 때만 올라감)
         maxNumTokens = maxTokens,
         cacheDir = ctx.cacheDir.path,
     )
+
+    /** 엔진 만들기: 소리 입력까지 켜서 해 보고, 안 되면 소리 없이 */
+    private fun build(path: String, b: String, ctxTokens: Int): Engine {
+        try {
+            val e = Engine(config(path, b, ctxTokens, true)); e.initialize(); audioOk = true; return e
+        } catch (t: Throwable) {
+            Log.w(TAG, "engine $b with audio failed, retry without", t)
+            val e = Engine(config(path, b, ctxTokens, false)); e.initialize(); audioOk = false; return e
+        }
+    }
+    @Volatile var audioOk = true; private set
 
     private fun friendly(t: Throwable?): String {
         val s = (t?.message ?: t?.javaClass?.simpleName ?: "").lowercase()
@@ -319,6 +338,35 @@ class Ai(private val ctx: Context) {
         }
     }
 
+    class NoAudioException(msg: String) : Exception(msg)
+
+    /** DNR 음성 엔진: 16kHz 모노 WAV를 기기 안 Gemma 4로 받아 적기(말한 언어 그대로) */
+    suspend fun transcribe(wav: File): String {
+        if (imgLoaded) freeImage()
+        val e = ensureEngine()
+        if (!audioOk) throw NoAudioException("이 모델은 소리 입력을 지원하지 않아요")
+        return lock.withLock {
+            runCatching { conv?.close() }; conv = null; convKey = null // 엔진 하나에 대화 하나: 지금 대화는 다음 질문 때 기록으로 다시 만듦
+            val cfg = ConversationConfig(
+                systemInstruction = Contents.of(Content.Text(
+                    "You are a speech-to-text engine. Write down exactly what the speaker says, in the language spoken " +
+                    "(Korean speech → Korean text in Hangul). Add natural punctuation. Output only the transcript, nothing else.")),
+                samplerConfig = SamplerConfig(1, 1.0, 0.1, 0),
+            )
+            try {
+                var out = ""
+                e.createConversation(cfg).use { c ->
+                    c.sendMessageAsync(Contents.of(Content.AudioFile(wav.absolutePath), Content.Text("Transcribe this audio."))).collect { m -> out += split(m).first }
+                }
+                out.trim().trim('"', '“', '”').replace(Regex("^(Transcript|받아 적기|전사)\\s*[:：]\\s*", RegexOption.IGNORE_CASE), "").trim()
+            } catch (t: Throwable) {
+                val s = (t.message ?: "").lowercase()
+                if ("audio" in s && ("not" in s || "unsupported" in s || "missing" in s || "no " in s)) throw NoAudioException(t.message ?: "audio")
+                throw t
+            }
+        }
+    }
+
     fun stopDraw() { runCatching { ImageGen.nCancel() }; stop() }
 
     @Volatile private var imgLoaded = false
@@ -355,9 +403,14 @@ class Ai(private val ctx: Context) {
             fun log(s: String) { Log.i("LA_SELFTEST", s); out(s) }
             try {
                 val t0 = System.currentTimeMillis()
-                val e = Engine(EngineConfig(modelPath = path, backend = Backend.CPU(), visionBackend = Backend.CPU(), maxNumTokens = 2048, cacheDir = ctx.cacheDir.path))
-                e.initialize()
-                log("PASS engine load cpu ${System.currentTimeMillis() - t0}ms")
+                var withAudio = true
+                val e = try {
+                    Engine(EngineConfig(modelPath = path, backend = Backend.CPU(), visionBackend = Backend.CPU(), audioBackend = Backend.CPU(), maxNumTokens = 2048, cacheDir = ctx.cacheDir.path)).also { it.initialize() }
+                } catch (t: Throwable) {
+                    withAudio = false; log("INFO engine with audio failed: ${t.message?.take(160)}")
+                    Engine(EngineConfig(modelPath = path, backend = Backend.CPU(), visionBackend = Backend.CPU(), maxNumTokens = 2048, cacheDir = ctx.cacheDir.path)).also { it.initialize() }
+                }
+                log("PASS engine load cpu audio=$withAudio ${System.currentTimeMillis() - t0}ms")
                 e.createConversation(ConversationConfig(systemInstruction = Contents.of(Content.Text("짧게 답해.")))).use { c ->
                     var acc = ""; var chunks = 0
                     val t1 = System.currentTimeMillis()
@@ -374,6 +427,20 @@ class Ai(private val ctx: Context) {
                         .collect { m -> acc += split(m).first }
                     val a = acc.lowercase()
                     log((if ("7" in a && "red" in a) "PASS" else "FAIL") + " vision '${acc.trim().replace('\n', ' ').take(80)}' ${System.currentTimeMillis() - t2}ms")
+                }
+                // DNR 음성 엔진: CI가 넣어 둔 영어 음성(espeak-ng)을 받아 적기
+                val wav = File(ctx.getExternalFilesDir(null), "selftest-voice.wav")
+                if (wav.exists()) {
+                    if (!withAudio) log("FAIL voice: engine without audio")
+                    else runCatching {
+                        var acc = ""
+                        val t3 = System.currentTimeMillis()
+                        e.createConversation(ConversationConfig(systemInstruction = Contents.of(Content.Text("You are a speech-to-text engine. Output only the transcript.")))).use { c ->
+                            c.sendMessageAsync(Contents.of(Content.AudioFile(wav.absolutePath), Content.Text("Transcribe this audio."))).collect { m -> acc += split(m).first }
+                        }
+                        val a = acc.lowercase()
+                        log((if ("france" in a || "capital" in a) "PASS" else "FAIL") + " voice stt '${acc.trim().replace('\n', ' ').take(100)}' ${System.currentTimeMillis() - t3}ms")
+                    }.onFailure { log("FAIL voice stt exception ${it.message?.take(200)}") }
                 }
                 e.close()
                 log("DONE")

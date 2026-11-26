@@ -8,11 +8,16 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- DNR 음성 엔진: 말로 묻기(녹음은 기기 안에서 받아 적고 지움) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <queries>
         <intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent>
         <!-- 문서를 덜누름 워크(DNR Work)로 넘기기 -->
         <package android:name="com.daesinnam.work" />
+        <!-- DNR 음성 엔진: 휴대폰의 읽기 음성(TTS) · 기기 안 음성 인식 -->
+        <intent><action android:name="android.intent.action.TTS_SERVICE" /></intent>
+        <intent><action android:name="android.speech.RecognitionService" /></intent>
     </queries>
 
     <application
@@ -46,6 +51,22 @@
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <!-- DNR AI 통로: 다른 덜누름 앱(워크 · 데스크탑앱 …)이 부르는 떠 있는 질문 창.
+             사람이 보고 누를 때만 결과가 돌아감 · 기기 안에서만 -->
+        <activity
+            android:name=".AskActivity"
+            android:exported="true"
+            android:theme="@style/Theme.LocalAI.Ask"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode|density"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.daesinnam.ai.action.ASK" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 

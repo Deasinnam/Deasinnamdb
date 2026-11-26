@@ -75,6 +75,9 @@ jobs:
             https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
           ls -la "$RUNNER_TEMP/e2b.litertlm" "$RUNNER_TEMP/img.gguf"
 
+      - name: 음성 점검 도구 (espeak-ng)
+        run: sudo apt-get install -y -qq espeak-ng >/dev/null || echo "espeak-ng 설치 실패 → 음성 점검 건너뜀"
+
       - name: 에뮬레이터 KVM 켜기
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -82,7 +85,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: 에뮬레이터 점검 (진짜 모델로 글 · 사진 질문, 화면)
-        timeout-minutes: 100
+        timeout-minutes: 130
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36

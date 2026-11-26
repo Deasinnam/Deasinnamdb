@@ -14,7 +14,10 @@ adb shell wm size 1904x1716; adb shell wm density 360
 adb shell am start -n $PKG/.MainActivity >/dev/null; sleep 6
 shot 1-setup
 # 데모 화면(가짜 데이터)
-for d in chat settings dl plus tool; do adb shell am start -S -n $PKG/.MainActivity --es demo $d >/dev/null; sleep 5; shot "2-demo-$d"; done
+for d in chat settings dl plus tool voice; do adb shell am start -S -n $PKG/.MainActivity --es demo $d >/dev/null; sleep 5; shot "2-demo-$d"; done
+# DNR AI 통로(다른 앱에서 부르는 질문 창) 데모
+adb shell am force-stop $PKG
+for d in text answer desk; do adb shell am start -S -n $PKG/.AskActivity --es demo $d >/dev/null; sleep 5; shot "2-ask-$d"; done
 adb shell am force-stop $PKG
 # 모델 넣기: 앱 전용 폴더(내려받기와 같은 자리)
 DIR=/sdcard/Android/data/$PKG/files/models
@@ -24,7 +27,13 @@ if ! adb push "$MODEL" $DIR/gemma-4-E2B-it.litertlm >/dev/null 2>&1; then
   adb push "$MODEL" /data/local/tmp/m.litertlm >/dev/null && adb shell run-as $PKG sh -c "mkdir -p files/m && cp /data/local/tmp/m.litertlm files/m/"
 fi
 adb shell ls -la $DIR | tee -a $OUT
-# 1) 엔진 직접 점검(CPU): 글 · 이어 묻기 · 사진
+# DNR 음성 엔진 시험용 음성: 영어(espeak-ng) → 16kHz 모노 WAV
+VOICE=""
+if command -v espeak-ng >/dev/null && command -v ffmpeg >/dev/null; then
+  espeak-ng -v en-us -s 135 -w /tmp/v22.wav "What is the capital of France? Answer in one word." && ffmpeg -loglevel error -y -i /tmp/v22.wav -ar 16000 -ac 1 /tmp/voice.wav && VOICE=/tmp/voice.wav
+fi
+if [ -n "$VOICE" ]; then adb push $VOICE /sdcard/Android/data/$PKG/files/selftest-voice.wav >/dev/null 2>&1 || log "INFO voice push failed"; else log "INFO no espeak-ng/ffmpeg → voice test skipped"; fi
+# 1) 엔진 직접 점검(CPU): 글 · 이어 묻기 · 사진 · 음성
 adb logcat -c
 adb shell am start -S -n $PKG/.MainActivity --es selftest $DIR/gemma-4-E2B-it.litertlm >/dev/null
 for i in $(seq 1 180); do
@@ -82,6 +91,34 @@ if [ -n "$IMG" ]; then
     if [ $OK2 = 1 ]; then log "PASS ui chat after draw: $(echo "$CH" | grep -o '"role":"model","text":"[^"]\{0,60\}' | tail -1 | cut -c25-)"; else log "FAIL ui chat after draw ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
   fi
 fi
+# 2-d) DNR 음성 엔진: 녹음 대신 음성 파일로 "말로 묻기" — 받아 적기 → 질문 → 답
+if [ -n "$VOICE" ]; then
+  adb shell am force-stop $PKG
+  adb shell am start -n $PKG/.MainActivity --ez cpu true --es stt /sdcard/Android/data/$PKG/files/selftest-voice.wav >/dev/null
+  OK=0
+  for i in $(seq 1 50); do
+    sleep 10
+    CH=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null)
+    if echo "$CH" | grep -qi '"role":"user","text":"[^"]*\(france\|capital\)'; then
+      if echo "$CH" | tr 'A-Z' 'a-z' | grep -q 'paris'; then OK=1; break; fi
+    fi
+  done
+  sleep 3; shot 6-real-voice
+  if [ $OK = 1 ]; then log "PASS ui voice ask: $(echo "$CH" | grep -io '"role":"user","text":"[^"]*\(france\|capital\)[^"]\{0,40\}' | tail -1 | cut -c25-)"; else log "FAIL ui voice ask ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
+fi
+# 2-e) DNR AI 통로: 다른 앱처럼 글을 보내 '요약' → 답이 오는지
+adb shell am force-stop $PKG
+adb shell am start -n $PKG/.AskActivity -a com.daesinnam.ai.action.ASK --es title "\"워크 문서\"" --es insertLabel "\"문서에 넣기\"" --es task summary \
+  --es text "\"덜누름 워크는 폴드에서 워드, 엑셀, 한글, PDF 문서를 열고 고치는 앱입니다. 사진과 동영상 편집도 함께 들어 있습니다. 1.0.9에서는 무료 글꼴 30여 종을 넣어 문서가 원래 모양에 더 가깝게 보입니다.\"" >/dev/null
+OK=0
+for i in $(seq 1 40); do
+  sleep 10
+  if timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -q '"title":"요약"\|"title":"[^"]*요약'; then
+    if timeout 20 adb shell "run-as $PKG sh -c 'grep -l 요약 files/chats/*.json | xargs cat'" 2>/dev/null | grep -q '"role":"model","text":"[^"]'; then OK=1; break; fi
+  fi
+done
+sleep 3; shot 7-real-ask-channel
+if [ $OK = 1 ]; then log "PASS ask channel summary"; else log "FAIL ask channel"; fi
 # 3) 사진 붙여 화면 질문 — 공유하기로 사진 넣기
 adb shell am force-stop $PKG
 adb shell am start -n $PKG/.MainActivity --es demo stream >/dev/null; sleep 5; shot 5-demo-stream

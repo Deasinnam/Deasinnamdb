@@ -5,6 +5,12 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+    <style name="Theme.LocalAI.Ask" parent="Theme.LocalAI">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
     <color name="bg">#0E0F12</color>
     <color name="accent">#E8590C</color>
     <color name="brand">#1F2023</color>

@@ -153,6 +153,7 @@ function msgHtml(m,i){
     (m.error?'<div class="err">'+esc(m.error)+'</div>':"")+docCard+
     '<div class="acts"><button data-copy-msg="'+i+'" aria-label="복사"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'+
     '<button data-share-msg="'+i+'" aria-label="공유"><svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>'+
+    (m.text?'<button data-speak="'+i+'" aria-label="소리로 읽기"'+(SPEAKING===CUR.id+":"+i?' class="speaking"':'')+'><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></button>':"")+
     (m.text?'<button data-doc="'+i+'" aria-label="DNR 워크에서 문서로"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></button>':"")+
     (i===(CUR.messages.length-1)?'<button data-retry aria-label="다시 답하기"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></button>':"")+
     '<span class="meta">'+meta+'</span></div></div></div>';
@@ -164,6 +165,11 @@ function wireMsgs(){
   [].forEach.call(t.querySelectorAll("[data-retry]"),function(b){b.onclick=retry});
   [].forEach.call(t.querySelectorAll("[data-save-img]"),function(b){b.onclick=function(){toast(LA.saveImage(CUR.messages[+b.getAttribute("data-save-img")].image)==="ok"?"갤러리(사진/Chat DNR Ai)에 저장했어요":"저장하지 못했어요")}});
   [].forEach.call(t.querySelectorAll("[data-share-img]"),function(b){b.onclick=function(){LA.shareImage(CUR.messages[+b.getAttribute("data-share-img")].image)}});
+  [].forEach.call(t.querySelectorAll("[data-speak]"),function(b){b.onclick=function(){
+    var i=+b.getAttribute("data-speak"),id=CUR.id+":"+i;
+    if(SPEAKING===id){LA.stopSpeak();SPEAKING=null;markSpeak();return}
+    SPEAKING=id;markSpeak();LA.speak(CUR.messages[i].text||"",id);
+  }});
   [].forEach.call(t.querySelectorAll("[data-doc]"),function(b){b.onclick=function(){openDoc(+b.getAttribute("data-doc"))}});
   [].forEach.call(t.querySelectorAll("[data-doc-kind]"),function(b){b.onclick=function(){DOC=docOf(+b.getAttribute("data-i"));makeDoc(b.getAttribute("data-doc-kind"))}});
 }
@@ -213,6 +219,8 @@ function onFinish(d){
   if(d.error)toast(d.error);
   if(PENDOC&&PENDOC===d.chat&&!d.error&&CUR&&CUR.id===d.chat){var li=CUR.messages.length-1;if(li>=0&&CUR.messages[li].text)openDoc(li)}
   PENDOC=null;
+  if(VOICEQ){VOICEQ=false;var st=(S&&S.settings)||{};
+    if(st.voiceRead!==false&&!d.error&&d.text&&CUR&&CUR.id===d.chat){var li2=CUR.messages.length-1;SPEAKING=CUR.id+":"+li2;markSpeak();LA.speak(d.text,SPEAKING)}}
 }
 function setSend(){
   var b=$("sendBtn");b.classList.toggle("stop",BUSY);
@@ -229,6 +237,37 @@ function go(text,images){
   var doc=TOOL==="doc";
   send(text,images);
   if(doc&&BUSY){PENDOC=CUR.id;setTool("")}
+}
+// ---------- DNR 음성 엔진: 말로 묻고 답을 소리로 ----------
+var VOICE=false,VOICEQ=false,SPEAKING=null;
+function markSpeak(){[].forEach.call(document.querySelectorAll("[data-speak]"),function(b){b.classList.toggle("speaking",!!CUR&&SPEAKING===CUR.id+":"+b.getAttribute("data-speak"))})}
+function vShow(title,text,think){var p=$("voicePanel");p.classList.remove("hide");p.classList.toggle("think",!!think);$("vTitle").textContent=title;$("vText").textContent=text||"";$("micBtn").classList.add("on")}
+function vHide(){VOICE=false;$("voicePanel").classList.add("hide");$("micBtn").classList.remove("on");[].forEach.call($("vBars").children,function(i){i.style.height=""})}
+function startVoice(){
+  if(BUSY){toast("답을 다 만든 뒤에 말해 주세요");return}
+  if(!S||!S.active){toast("먼저 AI 모델을 내려받아 주세요");openSettings();return}
+  if(!LA.micOk()){LA.askMic();return}
+  if(SPEAKING){LA.stopSpeak();SPEAKING=null;markSpeak()}
+  var r=LA.listen();
+  if(r!=="ok"){toast(r==="busy"?"답을 만드는 중이에요":"마이크를 쓸 수 없어요");return}
+  VOICE=true;vShow("듣고 있어요","말이 끝나면 저절로 멈춰요")
+}
+$("micBtn").onclick=function(){if(VOICE){LA.stopListen();return}startVoice()};
+$("vDone").onclick=function(){LA.stopListen()};
+$("vCancel").onclick=function(){LA.cancelListen();vHide()};
+function onVoice(d){
+  if(d.state==="listening"){VOICE=true;vShow("듣고 있어요",d.engine==="system"?"휴대폰 내장 인식으로 듣는 중":"말이 끝나면 저절로 멈춰요")}
+  else if(d.state==="level"){var lv=d.level||0,bars=$("vBars").children;for(var k=0;k<bars.length;k++){var f=[.6,.85,1,.85,.6][k];bars[k].style.height=(6+Math.round(26*Math.min(1,lv*f*2.2)))+"px"}}
+  else if(d.state==="partial"){$("vText").textContent=d.text}
+  else if(d.state==="thinking"){VOICE=true;vShow("받아 적는 중","기기 안 AI가 듣고 있어요",true)}
+  else if(d.state==="done"){vHide();var t=(d.text||"").trim();if(!t)return;
+    if(TOOL==="draw"||DRAWRE.test(t)){go(t,[]);return}
+    VOICEQ=true;$("inp").value=t;autoH();go(t,ATT.slice())}
+  else if(d.state==="error"){vHide();if(d.error)toast(d.error);if(d.noAudio)state()}
+}
+function onSpeak(d){
+  if(d.state==="start"){SPEAKING=d.id;markSpeak()}
+  else{if(SPEAKING===d.id||!d.id){SPEAKING=null;markSpeak()}if(d.state==="error"&&d.error)toast(d.error)}
 }
 // ---------- 할 일(도구) · 칩 ----------
 var PH={"":"무엇이든 물어보세요",draw:"무엇을 그릴까요? 예: 비 오는 밤 네온 거리의 고양이",doc:"어떤 문서를 만들까요? 예: 다음 주 팀 회의록 양식"};
@@ -390,6 +429,11 @@ function drawSettings(){
   $("work").checked=!!st.work;
   var wi=J(LA.workInfo())||{};$("workState").textContent=wi.installed?"DNR 워크가 설치되어 있어요":"DNR 워크가 설치되어 있지 않아요 · deolnureum.com에서 받을 수 있어요";
   $("imgInfo").textContent=S.imageEngine===false?"이 기기에서는 그림 엔진을 불러오지 못했어요":S.imageReady?"\"고양이 그려줘\"처럼 말하거나 입력창의 🎨를 누르면 폰 안에서 그림을 그려요":"그림을 그리려면 위 목록에서 🎨 그림 모델을 먼저 내려받아 주세요";
+  $("voiceRead").checked=st.voiceRead!==false;
+  [].forEach.call($("stt").querySelectorAll("button"),function(b){b.classList.toggle("on",b.getAttribute("data-v")===(st.stt||"auto"))});
+  $("sttInfo").textContent=(st.stt||"auto")==="system"?"휴대폰에 들어 있는 기기 안 음성 인식을 써요(삼성 · 구글)":(st.sttDnrOk===false||st.audio===false)?"지금 AI 모델이 소리를 받지 못해 휴대폰 내장 인식으로 받아 적어요":"기기 안 AI 모델(Gemma 4)이 직접 받아 적어요. 안 되면 휴대폰 내장 인식으로 바꿔요";
+  [].forEach.call($("ttsRate").querySelectorAll("button"),function(b){b.classList.toggle("on",Math.abs(+b.getAttribute("data-v")-(st.ttsRate||1))<0.01)});
+  var ti=J(LA.ttsInfo())||{};$("ttsState").textContent=ti.ready?(ti.korean?"한국어 읽기 음성 준비됨":"한국어 읽기 음성이 없어요. 아래에서 받아 주세요"):"읽기는 처음 🔊를 누를 때 준비돼요";
   $("about").textContent="Chat DNR Ai "+S.version+" · 갤럭시 Z 폴드8 울트라 기준 · 만든 곳 DNR(덜누름)";
 }
 function tLabel(v){v=+v;return v<=0.3?"정확하게":v<=0.9?"균형":"창의적으로"}
@@ -401,6 +445,10 @@ $("mtp").onchange=function(){LA.setSettings(JSON.stringify({mtp:this.checked}));
 [].forEach.call($("backend").querySelectorAll("button"),function(b){b.onclick=function(){if(BUSY){toast("답을 다 만든 뒤에 바꿀 수 있어요");return}LA.setSettings(JSON.stringify({backend:b.getAttribute("data-v")}));state();drawSettings();toast("다음 질문부터 적용돼요")}});
 [].forEach.call($("imgSize").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({imgSize:+b.getAttribute("data-v")}));state();drawSettings()}});
 $("work").onchange=function(){LA.setSettings(JSON.stringify({work:this.checked}));state();toast(this.checked?"DNR 워크 연동을 허용했어요":"DNR 워크 연동을 껐어요")};
+$("voiceRead").onchange=function(){LA.setSettings(JSON.stringify({voiceRead:this.checked}));state()};
+[].forEach.call($("stt").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({stt:b.getAttribute("data-v")}));state();drawSettings()}});
+[].forEach.call($("ttsRate").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({ttsRate:+b.getAttribute("data-v")}));state();drawSettings();LA.speak("이 속도로 읽어 드릴게요.","rate")}});
+$("ttsSet").onclick=function(){LA.ttsSettings()};
 $("sys").onchange=function(){LA.setSettings(JSON.stringify({system:this.value}));state();toast("저장했어요. 새 질문부터 적용돼요")};
 $("delAll").onclick=function(){if(BUSY)return;if(!confirm("모든 대화를 지울까요? 되돌릴 수 없어요."))return;LA.deleteAllChats();CUR=null;newChat();toast("모두 지웠어요")};
 
@@ -421,10 +469,16 @@ window.LAe=function(type,d){
   else if(type==="picked"){(d.images||[]).forEach(function(p){if(ATT.length<4)ATT.push(p)});drawAtts();setSend();$("inp").focus()}
   else if(type==="shared"){if($("main").classList.contains("hide"))return;if(BUSY)return;newChat();(d.images||[]).forEach(function(p){ATT.push(p)});$("inp").value=d.text||"";autoH();drawAtts();setSend()}
   else if(type==="toast")toast(d.text);
+  else if(type==="voice")onVoice(d);
+  else if(type==="voiceask"){VOICE=true;vShow("받아 적는 중","기기 안 AI가 듣고 있어요",true)}
+  else if(type==="speak")onSpeak(d);
+  else if(type==="mic"){if(d.granted)startVoice();else toast("말로 물으려면 마이크 권한이 필요해요")}
+  else if(type==="open"){if(!$("main").classList.contains("hide")&&!BUSY)openChat(d.id)}
   else if(type==="ask"){if(!$("main").classList.contains("hide")&&!BUSY){$("inp").value=d.text;autoH();setSend();go(d.text,[])}}
   else if(type==="resume"){if(S){S.online=d.online;if(!$("setup").classList.contains("hide"))drawSetup()}}
 };
 window.onBack=function(){
+  if(VOICE){LA.cancelListen();vHide();return true}
   if(!$("docSheet").classList.contains("hide")){$("docSheet").classList.add("hide");return true}
   if(!$("workAsk").classList.contains("hide")){$("workAsk").classList.add("hide");return true}
   if(!$("attMenu").classList.contains("hide")){closePlus();return true}
@@ -448,7 +502,7 @@ function mockLA(mode){
     {role:"model",ms:9100,text:"영수증에서 읽은 내용이에요.\n\n- **날짜**: 2026년 11월 24일 (월)\n- **합계**: 58,400원\n\n| 품목 | 금액 |\n|---|---|\n| 원두 2kg | 46,000원 |\n| 우유 | 12,400원 |\n| **합계** | **58,400원** |"}]};
   var chats=mode==="empty"?[]:[{id:"c1",title:chat.title,updated:now,count:4},{id:"c2",title:"거래처에 납품 연기 메일",updated:now-3600e3,count:2},{id:"c3",title:"폴드 펼침 감지 코틀린 코드",updated:now-864e5,count:6},{id:"c4",title:"일본 출장 일정 영어 번역",updated:now-4*864e5,count:4},{id:"c5",title:"유튜브 영상 주제 아이디어",updated:now-20*864e5,count:2}];
   var empty={id:"c0",title:"새 대화",updated:now,messages:[]};
-  var st={temperature:0.8,thinking:false,backend:"auto",system:"",mtp:true};
+  var st={temperature:0.8,thinking:false,backend:"auto",system:"",mtp:true,stt:"auto",ttsRate:1,voiceRead:true,audio:true};
   setTimeout(function(){
     if(mode==="dl")LAe("dl",{id:"gemma4-e4b",got:1.52e9,total:3.66e9,speed:31e6,done:false,error:null});
     if(mode==="settings")openSettings();
@@ -458,6 +512,7 @@ function mockLA(mode){
     if(mode==="drawing"){CUR=J(LA.chat("c1"));drawChat();LIVE=document.createElement("div");LIVE.className="m ai";LIVE.innerHTML=AV+'<div class="body"><div class="gen-prog"><span class="gp-t"></span><div class="bar"><i></i></div></div></div>';$("thread").appendChild(LIVE);BUSY=true;setSend();onDrawStage({chat:"c1",stage:"draw",step:4,steps:6});scrollEnd(true)}
     if(mode==="work"){$("workAsk").classList.remove("hide")}
     if(mode==="plus"){newChat();openPlus()}
+    if(mode==="voice"){CUR=J(LA.chat("c1"));drawChat();startVoice()}
     if(mode==="tool"){newChat();setTool("draw");$("inp").value="비 오는 밤 네온 거리의 고양이";autoH();setSend()}
     [].forEach.call(document.querySelectorAll('img[src="file://__demo__"]'),function(i){i.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="#f4f1ea"/><g fill="#999"><rect x="25" y="20" width="100" height="8"/><rect x="25" y="40" width="70" height="6"/><rect x="25" y="55" width="90" height="6"/><rect x="25" y="70" width="60" height="6"/><rect x="25" y="100" width="100" height="10"/></g></svg>')});
   },60);
@@ -468,6 +523,8 @@ function mockLA(mode){
     newChat:function(){return JSON.stringify(empty)},
     deleteChat:function(){},deleteAllChats:function(){},renameChat:function(){},
     send:function(){return "ok"},stop:function(){},preload:function(){},
+    micOk:function(){return true},askMic:function(){},listen:function(){setTimeout(function(){LAe("voice",{state:"listening",engine:"dnr"});var n=0,iv=setInterval(function(){LAe("voice",{state:"level",level:Math.random()});if(++n>12){clearInterval(iv)}},90)},50);return "ok"},
+    stopListen:function(){},cancelListen:function(){},speak:function(t,id){setTimeout(function(){LAe("speak",{state:"start",id:id})},30)},stopSpeak:function(){},ttsInfo:function(){return JSON.stringify({ready:true,korean:true})},ttsSettings:function(){},
     download:function(){},stopDownload:function(){},deleteModel:function(){},useModel:function(){},
     pickImages:function(){},camera:function(){},dropImage:function(){},
     settings:function(){return JSON.stringify(st)},setSettings:function(){},

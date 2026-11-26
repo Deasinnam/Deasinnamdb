@@ -70,9 +70,16 @@
     <footer class="composer">
       <div id="atts" class="atts"></div>
       <div id="chips" class="chips"></div>
+      <div id="voicePanel" class="vpanel hide" role="status" aria-live="polite">
+        <div class="vbars" id="vBars"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="vtxt"><b id="vTitle">듣고 있어요</b><span id="vText">말이 끝나면 저절로 멈춰요</span></div>
+        <button class="btn pri" id="vDone">다 말했어요</button>
+        <button class="ibtn" id="vCancel" aria-label="그만 듣기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
       <div class="cbox">
         <button id="attBtn" class="ibtn att" aria-label="사진 · 그림 · 문서 · 모델 고르기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
         <textarea id="inp" rows="1" placeholder="무엇이든 물어보세요" enterkeyhint="send"></textarea>
+        <button id="micBtn" class="ibtn mic" aria-label="말로 묻기 (DNR 음성 엔진)"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
         <button id="sendBtn" class="send" aria-label="보내기"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       </div>
       <p class="cfoot">✈ 기기 안에서만 처리 · AI의 답은 틀릴 수 있어요</p>
@@ -158,6 +165,21 @@
         <div class="seg" id="imgSize"><button data-v="384">작게 · 빠름</button><button data-v="512">보통 512</button><button data-v="640">크게 · 느림</button></div>
       </div>
 
+      <h3>DNR 음성 엔진</h3>
+      <p class="muted">입력창의 🎤를 누르고 말하면 기기 안 AI가 받아 적어 묻고, 답을 소리로 읽어 줘요. 인터넷을 쓰지 않아요.</p>
+      <label class="tgl"><span><b>말로 물으면 답도 읽어 주기</b><small>답 아래 🔊로 언제든 다시 들을 수 있어요</small></span><input type="checkbox" id="voiceRead"><i></i></label>
+      <div class="field">
+        <label>받아 적는 방법</label>
+        <div class="seg" id="stt"><button data-v="auto">자동</button><button data-v="dnr">DNR(AI 모델)</button><button data-v="system">휴대폰 내장</button></div>
+        <p class="muted" id="sttInfo"></p>
+      </div>
+      <div class="field">
+        <label>읽는 속도</label>
+        <div class="seg" id="ttsRate"><button data-v="0.8">천천히</button><button data-v="1">보통</button><button data-v="1.25">빠르게</button><button data-v="1.5">아주 빠르게</button></div>
+        <p class="muted" id="ttsState"></p>
+        <button class="btn" id="ttsSet">읽어 주는 목소리 설정</button>
+      </div>
+
       <h3>DNR 워크(덜누름 워크) 연동</h3>
       <label class="tgl"><span><b>문서 만들기 허용</b><small>답 · 대화로 Word · Excel 문서를 만들어 DNR 워크에서 열어요. 파일은 문서/Chat DNR Ai 폴더에만</small></span><input type="checkbox" id="work"><i></i></label>
       <p class="muted" id="workState"></p>
@@ -168,7 +190,7 @@
 
       <h3>정보</h3>
       <p class="muted" id="about"></p>
-      <p class="muted">AI 모델: Google Gemma 4 (Apache 2.0) · 실행: Google LiteRT-LM (Apache 2.0)<br>그림: DreamShaper 7 + LCM (CreativeML OpenRAIL-M) · 실행: stable-diffusion.cpp (MIT)<br>
+      <p class="muted">AI 모델: Google Gemma 4 (Apache 2.0) · 실행: Google LiteRT-LM (Apache 2.0)<br>음성: DNR 음성 엔진(받아 적기 Gemma 4 · 읽기 휴대폰 TTS)<br>그림: DreamShaper 7 + LCM (CreativeML OpenRAIL-M) · 실행: stable-diffusion.cpp (MIT)<br>
         <a href="#" data-url="https://ai.google.dev/gemma/docs/core/model_card_4">Gemma 4 모델 설명</a> · <a href="#" data-url="https://deolnureum.com/">DNR 앱센터</a></p>
     </div>
   </div>
