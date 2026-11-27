@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T02:15:28+09:00",
+ "updated": "2026-11-27T17:01:55+09:00",
  "apps": {
   "speed": {
    "version": "1.98",
@@ -23,9 +23,9 @@
    "changes": "https://deolnureum.com/releases/"
   },
   "work": {
-   "version": "1.0.10",
+   "version": "1.0.11",
    "date": "2026.11.27",
-   "note": "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)",
+   "note": "사진 정리 · 보정(LightCraft 기반: 보관함 · 별점 · 앨범 · RAW 현상 · 한꺼번에 내보내기)과 녹음 · 음성 편집(SoundCraft 기반: 휴대폰 마이크 녹음 → 새 트랙, 자르기 · 믹서 · 효과) 추가, 휴대폰 세로 화면 맞춤(사진 · 동영상 · 사진 정리 · 녹음), 사진 · 동영상 편집기 최신판으로 다시 빌드, 앱 크기 줄이기(미리 압축 파일 빼기)",
    "page": "https://deolnureum.com/work/",
    "changes": "https://deolnureum.com/releases/"
   },
