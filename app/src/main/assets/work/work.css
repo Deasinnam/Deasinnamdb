@@ -14,6 +14,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 24px; }
 .open small { opacity: .85; }
 .cards { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
 @media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 640px) and (max-width: 979px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .cards { grid-template-columns: repeat(5, 1fr); } }
 .card { text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 18px; padding: 18px; position: relative; overflow: hidden; min-height: 150px; }
 .card:active { transform: scale(.99); }
 .card h2 { margin: 10px 0 6px; font-size: 19px; }
@@ -23,9 +25,11 @@ main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 24px; }
 .doc .mark { background: #e0f2fe; color: #0369a1; }
 .photo .mark { background: #fce7f3; color: #be185d; }
 .film .mark { background: #ffedd5; color: #c2410c; }
+.light .mark { background: #dcfce7; color: #15803d; }
+.sound .mark { background: #ede9fe; color: #6d28d9; }
 .card > * { position: relative; z-index: 1; }
 .card::after { content: ""; position: absolute; right: -36px; top: -36px; width: 96px; height: 96px; border-radius: 50%; opacity: .45; z-index: 0; pointer-events: none; }
-.doc::after { background: #bae6fd; } .photo::after { background: #fbcfe8; } .film::after { background: #fed7aa; }
+.doc::after { background: #bae6fd; } .photo::after { background: #fbcfe8; } .film::after { background: #fed7aa; } .light::after { background: #bbf7d0; } .sound::after { background: #ddd6fe; }
 .tips { margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
 .tips h3 { margin: 0 0 6px; font-size: 15px; }
 .tips ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; }

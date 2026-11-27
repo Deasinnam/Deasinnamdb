@@ -28,6 +28,14 @@
       <tr><td>동영상 편집</td><td><a href="https://github.com/storytold/filmcraft">FilmCraft</a> ({{FILM_VER}})</td>
         <td>ArtCraft 팀 (storytold)</td>
         <td><a href="./licenses/film/LICENSE-MIT.txt">MIT</a> 또는 <a href="./licenses/film/LICENSE-APACHE.txt">Apache-2.0</a> · <a href="./licenses/film/NOTICE.txt">NOTICE</a></td></tr>
+      <tr><td>사진 정리 · 보정</td><td><a href="https://github.com/storytold/lightcraft">LightCraft</a> ({{LIGHT_VER}})</td>
+        <td>ArtCraft 팀 (storytold)</td>
+        <td><a href="./licenses/light/LICENSE-MIT.txt">MIT</a> 또는 <a href="./licenses/light/LICENSE-APACHE.txt">Apache-2.0</a> · <a href="./licenses/light/NOTICE.txt">NOTICE</a> ·
+          <a href="./licenses/light/FONTS-OFL.txt">포함된 글꼴(SIL OFL 1.1)</a></td></tr>
+      <tr><td>녹음 · 음성 편집</td><td><a href="https://github.com/storytold/soundcraft">SoundCraft</a> ({{SOUND_VER}})</td>
+        <td>ArtCraft 팀 (storytold)</td>
+        <td><a href="./licenses/sound/LICENSE-MIT.txt">MIT</a> 또는 <a href="./licenses/sound/LICENSE-APACHE.txt">Apache-2.0</a> · <a href="./licenses/sound/NOTICE.txt">NOTICE</a> ·
+          <a href="./licenses/sound/ATTRIBUTION.md">ATTRIBUTION</a></td></tr>
       <tr><td>한글 글꼴 (사진·동영상 편집)</td><td><a href="https://github.com/notofonts/noto-cjk">Noto Sans CJK KR</a> (한글 부분만 추린 것)</td>
         <td>Adobe · Google</td><td><a href="./licenses/fonts/OFL-NotoSansCJK.txt">SIL Open Font License 1.1</a></td></tr>
       <tr><td>문서 편집 글꼴 (워드 · 엑셀 · 파워포인트 · 한글)</td>
@@ -60,11 +68,18 @@
         (웹에서는 스레드 풀 없이 인코딩). 로딩 문구를 바꿨습니다.
         웹에서는 시스템 글꼴이 없어 한국어 화면으로 바뀌지 않던 부분을 고쳐, 함께 넣은 한글 글꼴을 쓰게 했습니다.
         웹판이 화면 언어를 기억하지 못해, 고른 언어를 앱이 기억했다가 다시 적용합니다.</li>
+      <li>사진 정리 · 보정(LightCraft): 공식 웹 빌드를 쓰고, 로딩 문구를 바꿨습니다. 한국어 사용자에게 필요 없는 중국어 전용 글꼴 파일(약 16MB)은 빼서 앱 크기를 줄였습니다
+        (중국어 글자만 네모로 나올 수 있음, 한글은 그대로 나옴).</li>
+      <li>녹음 · 음성 편집(SoundCraft): 공식 웹 빌드를 쓰고, 로딩 문구를 바꿨습니다.
+        웹판은 마이크 녹음을 지원하지 않아(cpal 웹 입력 없음), 앱이 안드로이드에서 직접 녹음해 새 트랙으로 넣는 "녹음" 단추를 더했습니다.
+        WebGPU로 시작하지 못하면 WebGL2로 다시 시작합니다.</li>
+      <li>사진 · 동영상 · 사진 정리 · 녹음 편집 공통: 휴대폰처럼 좁은 화면에서는 편집기가 보는 화면 폭을 넓히고 그만큼 줄여 보여 주어(PC 화면 기준으로 만든 메뉴 · 패널이 화면 밖으로 밀리지 않게) 휴대폰에서도 쓸 수 있게 했습니다.
+        웹 빌드에 함께 든 미리 압축한 파일(.gz · .br)은 앱에서 쓰지 않아 뺐습니다.</li>
     </ul>
 
     <h2>상표</h2>
     <p class="muted">덜누름 워크는 pblsketch, Mainfunc, Inc., ArtCraft 팀(storytold)과 관련이 없으며 그들의 후원이나 보증을 받지 않았습니다.
-      "IeumOffice", "이음오피스", "GenOffice", "PhotoCraft", "FilmCraft", "ArtCraft"는 각 소유자의 이름이며, 위 표에서는 출처를 밝히려는 목적으로만 씁니다.
+      "IeumOffice", "이음오피스", "GenOffice", "PhotoCraft", "FilmCraft", "LightCraft", "SoundCraft", "ArtCraft"는 각 소유자의 이름이며, 위 표에서는 출처를 밝히려는 목적으로만 씁니다.
       편집기 안의 일부 메뉴·안내 문구에는 원작 이름이 그대로 남아 있을 수 있습니다.
       Microsoft, Word, Excel, PowerPoint, 한글, HWP, Adobe, Photoshop 등은 각 회사의 상표이며, 여는 파일 형식을 설명하는 데만 씁니다.</p>
   </div>

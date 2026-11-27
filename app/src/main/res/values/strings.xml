@@ -4,4 +4,6 @@
     <string name="office_name">덜누름 워크 문서</string>
     <string name="photo_name">덜누름 워크 사진</string>
     <string name="film_name">덜누름 워크 동영상</string>
+    <string name="light_name">덜누름 워크 사진 정리</string>
+    <string name="sound_name">덜누름 워크 녹음</string>
 </resources>

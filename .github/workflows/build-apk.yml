@@ -13,6 +13,8 @@ env:
   IEUM_UPSTREAM: pblsketch/ieumoffice
   PHOTO_UPSTREAM: storytold/photocraft
   FILM_UPSTREAM: storytold/filmcraft
+  LIGHT_UPSTREAM: storytold/lightcraft
+  SOUND_UPSTREAM: storytold/soundcraft
 
 jobs:
   build:
@@ -111,6 +113,23 @@ jobs:
           echo "PHOTO_SITE=$SITE" >> "$GITHUB_ENV"
           echo "PhotoCraft $TAG → $SITE"
 
+      # ===================== 사진 정리 · 녹음 편집 (LightCraft · SoundCraft 공식 웹 빌드) =====================
+      - name: 사진 정리 · 녹음 편집 웹 빌드 받기 (최신 릴리스)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for app in light sound; do
+            UP=$([ $app = light ] && echo "$LIGHT_UPSTREAM" || echo "$SOUND_UPSTREAM"); NAME=${UP#*/}
+            TAG=$(gh release view -R "$UP" --json tagName -q .tagName)
+            mkdir -p "$RUNNER_TEMP/$app" && cd "$RUNNER_TEMP/$app"
+            gh release download "$TAG" -R "$UP" --pattern "$NAME-web-*.zip"
+            unzip -q "$NAME"-web-*.zip
+            SITE=$(dirname "$(find . -name index.html -path "*$NAME-web*" | head -1)"); SITE=$(cd "$SITE" && pwd)
+            U=$(echo "$app" | tr a-z A-Z)
+            echo "${U}_TAG=$TAG" >> "$GITHUB_ENV"; echo "${U}_SITE=$SITE" >> "$GITHUB_ENV"
+            echo "$NAME $TAG → $SITE"; du -sh "$SITE"
+          done
+
       # ===================== 동영상 편집 (FilmCraft, 소스에서 빌드) =====================
       - name: 동영상 편집 최신 릴리스 확인
         env:
@@ -166,12 +185,13 @@ jobs:
           ls -la target/web/dist
 
       # ===================== 합치기 · 크롬 점검 =====================
-      - name: 사진·동영상 에셋 넣기, 이름 바꾸기, 라이선스·정보 화면
+      - name: 사진·동영상·사진 정리·녹음 에셋 넣기, 이름 바꾸기, 라이선스·정보 화면
         run: |
           python3 tools/work_assets.py --photo "$PHOTO_SITE" --film upstream-film/target/web/dist \
             --office-res "$IEUM_RES" --photo-src "$PHOTO_SITE" --film-src upstream-film \
+            --light "$LIGHT_SITE" --sound "$SOUND_SITE" --sound-src "$SOUND_SITE" \
             --node-license "$RUNNER_TEMP/node-LICENSE.txt" \
-            --versions "office=$IEUM_VERSION,photo=$PHOTO_TAG,film=$FILM_TAG,node=$NODE_VER" --build "${{ github.run_number }}" --app-version "$APP_VERSION"
+            --versions "office=$IEUM_VERSION,photo=$PHOTO_TAG,film=$FILM_TAG,light=$LIGHT_TAG,sound=$SOUND_TAG,node=$NODE_VER" --build "${{ github.run_number }}" --app-version "$APP_VERSION"
           du -sh app/src/main/assets/* app/src/main/jniLibs/* | sort -h
 
       - name: 크롬에서 동영상 편집 점검 (시작·가져오기·열기·MP4 내보내기·저장)
@@ -198,7 +218,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: 에뮬레이터에서 자동 점검 (첫 화면 · 문서 6종 · 사진 · 동영상)
+      - name: 에뮬레이터에서 자동 점검 (첫 화면 · 문서 6종 · 사진 · 동영상 · 사진 정리 · 녹음)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -299,7 +319,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) 편집을 한 앱에. 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) · 사진 정리($LIGHT_TAG 기반) · 녹음($SOUND_TAG 기반, 안드로이드 녹음 추가) 편집을 한 앱에. 휴대폰 화면 맞춤. 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
           gh release delete work-latest --yes --cleanup-tag || true
           gh release create work-latest DeolnureumWork.apk DaesinnamWork.apk --target "$GITHUB_SHA" \
             --title "덜누름 워크 (최신 빌드)" --notes "$NOTES"

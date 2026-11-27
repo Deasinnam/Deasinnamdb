@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""덜누름 워크: 사진·동영상 편집기 웹 빌드를 에셋에 넣고, 보이는 이름을 바꾸고, 라이선스·정보 화면을 채웁니다.
+"""덜누름 워크: 사진·동영상·사진 정리·녹음 편집기 웹 빌드를 에셋에 넣고, 보이는 이름을 바꾸고, 라이선스·정보 화면을 채웁니다.
 
 사용법:
   python3 tools/work_assets.py --photo <PhotoCraft 웹 빌드 폴더> --film <FilmCraft 웹 빌드 폴더> \
       --office-res <IeumOffice resources> --photo-src <PhotoCraft 라이선스 폴더> --film-src <FilmCraft 소스> \
-      --node-license <Node LICENSE 파일> --versions office=v0.12.12,photo=v0.22.0,film=v0.19.0,node=22.x --build 12
+      --light <LightCraft 웹 빌드 폴더> --sound <SoundCraft 웹 빌드 폴더> --sound-src <같은 폴더> \
+      --node-license <Node LICENSE 파일> --versions office=v0.12.12,photo=v0.22.0,film=v0.19.0,light=v0.21.1,sound=v0.20.1,node=22.x --build 12
 
 원본이 바뀌어 고칠 문구를 못 찾으면 멈추며 알려 줍니다.
 """
@@ -19,11 +20,12 @@ WORK = ASSETS / "work"
 ICON = WORK / "icon.png"
 
 
-def copy_site(src: pathlib.Path, name: str) -> pathlib.Path:
+def copy_site(src: pathlib.Path, name: str, drop=()) -> pathlib.Path:
     dst = ASSETS / name
     if dst.exists():
         shutil.rmtree(dst)
-    shutil.copytree(src, dst)
+    # 미리 압축한 파일(.gz · .br)은 웹 서버용이라 앱(WebView 에셋)에서는 쓰지 않음 → 빼서 앱 크기를 줄임
+    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("*.gz", "*.br", *drop))
     for junk in ["_headers", ".htaccess", "HOSTING.md"]:
         (dst / junk).unlink(missing_ok=True)
     return dst
@@ -73,6 +75,9 @@ def main() -> None:
     ap.add_argument("--office-res", required=True)
     ap.add_argument("--photo-src", required=True, help="LICENSE-MIT.txt 등이 있는 폴더")
     ap.add_argument("--film-src", required=True)
+    ap.add_argument("--light", required=True, help="LightCraft 공식 웹 빌드 폴더")
+    ap.add_argument("--sound", required=True, help="SoundCraft 공식 웹 빌드 폴더")
+    ap.add_argument("--sound-src", required=True, help="라이선스 파일이 있는 폴더 (공식 웹 빌드 폴더)")
     ap.add_argument("--node-license", required=True)
     ap.add_argument("--versions", required=True)
     ap.add_argument("--build", default="dev")
@@ -105,6 +110,25 @@ def main() -> None:
         shutil.copy(ICON, fav)
     (film / "favicon.png.attribution").unlink(missing_ok=True)
 
+    # ---------- 사진 정리 · 보정 (LightCraft) ----------
+    # 중국어 전용 글꼴(lightcraft_zh_hans.otf, 약 16MB)은 뺌: 없으면 웹판이 빈 글꼴로 시작하고 중국어 글자만 네모가 됨(한글은 내장 글꼴로 나옴)
+    light = copy_site(pathlib.Path(a.light), "light", drop=("lightcraft_zh_hans.otf", "README.md"))
+    replace_all(light / "index.html", [
+        ("<title>LightCraft</title>", "<title>덜누름 워크 사진 정리</title>", True),
+        ("Loading LightCraft…", "사진 정리를 준비하는 중…", True),
+        ('"LightCraft failed to load: "', '"사진 정리를 시작하지 못했습니다: "', False),
+    ], "사진 정리 index.html")
+
+    # ---------- 녹음 · 음성 편집 (SoundCraft) ----------
+    sound = copy_site(pathlib.Path(a.sound), "sound", drop=("README.md",))
+    replace_all(sound / "index.html", [
+        ("<title>SoundCraft</title>", "<title>덜누름 워크 녹음</title>", True),
+        ("Loading SoundCraft&hellip;", "녹음 편집을 준비하는 중&hellip;", True),
+    ], "녹음 index.html")
+    for fav in sound.glob("*.png"):
+        shutil.copy(ICON, fav)
+    # 웹판 오류 문구(wasm 안)는 그대로 — egui-bridge.js가 "failed to start"를 보고 WebGL2로 다시 시도
+
     # ---------- 라이선스 ----------
     lic = WORK / "licenses"
     if lic.exists():
@@ -113,6 +137,8 @@ def main() -> None:
         ("office", pathlib.Path(a.office_res), ["LICENSE.txt", "NOTICE.txt", "THIRD-PARTY-NOTICES.txt", "LICENSE-UNICODE.txt"]),
         ("photo", pathlib.Path(a.photo_src), ["LICENSE-MIT.txt", "LICENSE-APACHE.txt", "NOTICE.txt", "ATTRIBUTION.md"]),
         ("film", pathlib.Path(a.film_src), ["LICENSE-MIT.txt", "LICENSE-APACHE.txt", "NOTICE.txt", "ATTRIBUTION.md"]),
+        ("light", pathlib.Path(a.light), ["LICENSE-MIT.txt", "LICENSE-APACHE.txt", "NOTICE.txt"]),
+        ("sound", pathlib.Path(a.sound_src), ["LICENSE-MIT.txt", "LICENSE-APACHE.txt", "NOTICE.txt", "ATTRIBUTION.md"]),
     ]:
         d = lic / sub
         d.mkdir(parents=True)
@@ -124,6 +150,16 @@ def main() -> None:
                     sys.exit(f"{sub}: 라이선스 파일이 없습니다: {n} ({src})")
                 continue
             shutil.copy(f, d / n)
+    # 사진 정리 웹 빌드에 든 글꼴들의 OFL 전문을 한 파일로 (정보 화면에서 링크)
+    ofl = sorted(pathlib.Path(a.light).glob("OFL-*.txt"))
+    (lic / "light/FONTS-OFL.txt").write_text(
+        "".join(f"===== {f.name[4:-4]} =====\n\n{f.read_text(encoding='utf-8', errors='replace')}\n\n" for f in ofl)
+        or "(글꼴 라이선스 파일이 없습니다)\n", encoding="utf-8")
+    for f in light.glob("OFL-*.txt"):
+        f.unlink()
+    for site in (light, sound):  # 라이선스는 정보 화면(work/licenses)에 모아 둠
+        for n in ["LICENSE-MIT", "LICENSE-APACHE", "NOTICE", "ATTRIBUTION.md"]:
+            (site / n).unlink(missing_ok=True)
     (lic / "node").mkdir()
     shutil.copy(a.node_license, lic / "node/LICENSE.txt")
     (lic / "fonts").mkdir()
@@ -137,6 +173,7 @@ def main() -> None:
         ("{{APP_VERSION}}", a.app_version, True), ("{{BUILD}}", a.build, True),
         ("{{OFFICE_VER}}", ver.get("office", "?"), True), ("{{PHOTO_VER}}", ver.get("photo", "?"), True),
         ("{{FILM_VER}}", ver.get("film", "?"), True), ("{{NODE_VER}}", ver.get("node", "?"), True),
+        ("{{LIGHT_VER}}", ver.get("light", "?"), True), ("{{SOUND_VER}}", ver.get("sound", "?"), True),
     ], "about.html")
     # 문제 진단 화면에 보이는 빌드 번호
     (WORK.parent / "build.txt").write_text(f"{a.build} ({ver.get('office', '?')}, node {ver.get('node', '?')})\n", encoding="utf-8")

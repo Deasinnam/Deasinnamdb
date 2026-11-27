@@ -115,6 +115,8 @@ public class HomeActivity extends ComponentActivity {
                 case "office": startActivity(new Intent(this, OfficeActivity.class)); break;
                 case "photo": startActivity(new Intent(this, PhotoActivity.class)); break;
                 case "film": startActivity(new Intent(this, FilmActivity.class)); break;
+                case "light": startActivity(new Intent(this, LightActivity.class)); break;
+                case "sound": startActivity(new Intent(this, SoundActivity.class)); break;
                 case "open": pick.launch(new String[]{"*/*"}); break;
                 default: break;
             }
@@ -144,11 +146,18 @@ public class HomeActivity extends ComponentActivity {
         }
     }
 
+    private static final java.util.Set<String> RAW = new java.util.HashSet<>(java.util.Arrays.asList(
+            "dng", "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2", "raf", "rw2", "rwl", "orf", "pef", "srw", "3fr", "iiq", "x3f", "erf", "mrw", "kdc", "dcr"));
+
     static Class<?> editorFor(String mime, String name) {
         String m = mime == null ? "" : mime.toLowerCase(Locale.ROOT);
         String n = name == null ? "" : name.toLowerCase(Locale.ROOT);
         String ext = n.contains(".") ? n.substring(n.lastIndexOf('.') + 1) : "";
-        if (m.startsWith("video/") || m.startsWith("audio/") || ext.equals("fcproj") || ext.equals("mxf")) return FilmActivity.class;
+        // 녹음 편집: 소리 파일 · SoundCraft 세션 (동영상 편집도 소리를 다루지만, 소리만 고르면 녹음 편집이 알맞음)
+        if (m.startsWith("audio/") || ext.equals("scraftz") || ext.equals("scraft") || ext.equals("mid") || ext.equals("midi")) return SoundActivity.class;
+        // 사진 정리: 카메라 RAW (보관함 · 현상)
+        if (RAW.contains(ext) || m.equals("image/x-adobe-dng")) return LightActivity.class;
+        if (m.startsWith("video/") || ext.equals("fcproj") || ext.equals("mxf")) return FilmActivity.class;
         if (m.startsWith("image/") || ext.equals("psd") || ext.equals("pcproj")) return PhotoActivity.class;
         if (m.isEmpty() || m.equals("application/octet-stream")) {
             String guess = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);

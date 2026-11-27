@@ -147,6 +147,7 @@ public abstract class CraftActivity extends ComponentActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
         HomeButton.attach(this, root, assetDir());
+        onEditorViews(root);
         // 편집·내보내기 중에 화면이 꺼지면 WebView가 멈추므로 앱을 보는 동안은 켜 둠
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
@@ -166,6 +167,9 @@ public abstract class CraftActivity extends ComponentActivity {
         s.setBuiltInZoomControls(false);
         s.setTextZoom(100);
         s.setMediaPlaybackRequiresUserGesture(false);
+        // 휴대폰 화면 맞춤(craft-common.js): 편집기가 보는 화면 폭을 넓히고 그만큼 줄여 보여 주려면 viewport 설정을 따라야 함
+        s.setUseWideViewPort(true);
+        s.setLoadWithOverviewMode(true);
 
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", this::serveAsset)
@@ -363,6 +367,8 @@ public abstract class CraftActivity extends ComponentActivity {
             case "opened":
                 if (selftest) Log.i(SELFTEST_TAG, "opened " + m);
                 if (!m.optString("error").isEmpty()) toast(m.optString("name") + " 열기 실패: " + m.optString("error"));
+                else if ("light".equals(m.optString("kind"))) toast(m.optString("name") + " 을(를) 사진 보관함에 넣었습니다");
+                else if ("sound".equals(m.optString("kind"))) toast(m.optString("name") + " 을(를) 녹음 편집에 넣었습니다");
                 else toast(m.optString("name") + ("project".equals(m.optString("kind")) ? " 프로젝트를 열었습니다" : " 을(를) 프로젝트 창에 가져왔습니다"));
                 break;
             case "log":
@@ -406,6 +412,29 @@ public abstract class CraftActivity extends ComponentActivity {
     }
 
     // ---------- 앱 → 웹: 다른 앱에서 연 파일 ----------
+
+    /** 편집 화면 위에 덧붙일 것 (녹음 단추 등) — 편집기마다 필요하면 덮어씀 */
+    protected void onEditorViews(FrameLayout root) {
+    }
+
+    /** 이 기기에서 만든 파일(녹음 등)을 편집기에 넣음 */
+    protected void openInEditor(Uri uri) {
+        if (pageProxy != null) sendFileToPage(uri);
+        else pendingOpen.add(uri);
+    }
+
+    /** 빌드 서버 자동 점검으로 열렸는지 */
+    protected final boolean isSelftest() {
+        return selftest;
+    }
+
+    protected final String selftestTag() {
+        return SELFTEST_TAG;
+    }
+
+    protected final void toastFromEditor(String text) {
+        toast(text);
+    }
 
     private void sendFileToPage(Uri uri) {
         JavaScriptReplyProxy proxy = pageProxy;
@@ -452,12 +481,19 @@ public abstract class CraftActivity extends ComponentActivity {
 
     // ---------- 도우미 ----------
 
+    /** 공통 스크립트(휴대폰 화면 맞춤) + 편집기별 연결 스크립트 */
     private String bridgeScript() {
-        try (InputStream in = getAssets().open(bridgeAsset())) {
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            copy(in, bo);
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        for (String name : new String[]{"craft-common.js", bridgeAsset()}) {
+            try (InputStream in = getAssets().open(name)) {
+                copy(in, bo);
+                bo.write('\n');
+            } catch (IOException ignored) {
+            }
+        }
+        try {
             return bo.toString("UTF-8");
-        } catch (IOException e) {
+        } catch (java.io.UnsupportedEncodingException e) {
             return "";
         }
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 덜누름 워크 에뮬레이터 자동 점검: 첫 화면 → 문서 편집 6종 → 사진 편집 → 동영상 편집.
+# 덜누름 워크 에뮬레이터 자동 점검: 첫 화면 → 문서 편집 6종 → 사진 편집 → 동영상 편집 → 사진 정리 → 녹음 편집.
 # 결과는 selftest-*.txt, 화면은 work-screen-*.png 로 남깁니다.
 set -u
 APK="$1"
@@ -164,6 +164,39 @@ elif grep -q "FILM_SELFTEST: load wasmLoaded=true gpuLimit=true" selftest-film.t
 else
   echo "동영상 편집 실패"; fail=1; tail -30 selftest-film.txt
 fi
+
+# ---------- 사진 정리 · 녹음 편집 (LightCraft · SoundCraft 웹 빌드) ----------
+# 통과 조건: 편집기 시작 + 저장 경로(앱으로 파일 넘기기). 휴대폰 화면 맞춤 배율(scale)과 화면을 기록.
+for ed in light sound; do
+  ACT=$([ $ed = light ] && echo LightActivity || echo SoundActivity)
+  T=$(echo $ed | tr a-z A-Z)_SELFTEST
+  LABEL=$([ $ed = light ] && echo "사진 정리" || echo "녹음 편집")
+  adb logcat -c
+  adb shell am start -n "$PKG/.$ACT" --ez $ed.selftest true
+  for i in $(seq 1 50); do
+    sleep 5
+    [ "$i" = 6 ] && adb exec-out screencap -p > work-screen-$ed.png
+    # 녹음 편집은 앱 녹음 점검(시작 45초 뒤 2초 녹음)까지 기다림
+    if adb logcat -d -s $T:I | grep -q "DONE"; then
+      if [ $ed = light ] || adb logcat -d -s $T:I | grep -qE "rec (name|skipped)" || [ "$i" -ge 16 ]; then break; fi
+    fi
+  done
+  sleep 6
+  adb exec-out screencap -p > work-screen-$ed-end.png
+  adb logcat -d -s $T:I Work-$ed:* Work-${ed}Console:* Work-sound:* > selftest-$ed.txt
+  echo "===== $LABEL ====="
+  grep "$T" selftest-$ed.txt | cut -c1-400 || true
+  if grep -qE "$T: page .*started=true" selftest-$ed.txt && grep -q "$T: save ok" selftest-$ed.txt; then
+    echo "$LABEL 통과"
+  else
+    echo "$LABEL 실패"; fail=1; tail -30 selftest-$ed.txt
+  fi
+  if [ $ed = sound ]; then
+    # 안드로이드 녹음 → 편집기 넣기 (에뮬레이터는 마이크가 없을 수 있어 기록만)
+    r=$(grep -o "rec name=.*" selftest-$ed.txt | head -1); echo "앱 녹음: ${r:-기록 없음 (에뮬레이터 마이크 없음일 수 있음)}"
+  fi
+  adb shell am force-stop "$PKG"
+done
 
 adb logcat -d > selftest-full${SUF}.txt
 if [ "$fail" = 0 ]; then echo "자동 점검 통과"; exit 0; fi

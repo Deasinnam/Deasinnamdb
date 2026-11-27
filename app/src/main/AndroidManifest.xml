@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- AI 도우미 로그인(브라우저)을 마치는 동안만 잠깐 앱을 붙잡아 두는 서비스(최대 3분)에 필요합니다 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- 녹음 편집의 "녹음" 단추를 눌렀을 때만 씁니다. 녹음 파일은 기기 안 편집기로만 넘어갑니다 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <application
         android:allowBackup="false"
@@ -148,6 +151,68 @@
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+        </activity>
+        <!-- 사진 정리 · 보정 (보관함 · RAW 현상): 따로 된 프로세스 -->
+        <activity
+            android:name=".LightActivity"
+            android:taskAffinity="com.daesinnam.work.light"
+            android:label="@string/light_name"
+            android:process=":light"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:hardwareAccelerated="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|touchscreen|uiMode|colorMode|density|fontScale|fontWeightAdjustment|grammaticalGender|locale|layoutDirection"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:mimeType="image/x-adobe-dng" />
+                <data android:mimeType="image/x-canon-cr2" />
+                <data android:mimeType="image/x-canon-cr3" />
+                <data android:mimeType="image/x-nikon-nef" />
+                <data android:mimeType="image/x-sony-arw" />
+                <data android:mimeType="image/x-fuji-raf" />
+                <data android:mimeType="image/x-panasonic-rw2" />
+                <data android:mimeType="image/x-olympus-orf" />
+                <data android:mimeType="image/heic" />
+                <data android:mimeType="image/heif" />
+            </intent-filter>
+            <!-- 갤러리에서 사진 여러 장 공유 → 보관함으로 -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+
+        <!-- 녹음 · 음성 편집: 따로 된 프로세스 -->
+        <activity
+            android:name=".SoundActivity"
+            android:taskAffinity="com.daesinnam.work.sound"
+            android:label="@string/sound_name"
+            android:process=":sound"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:hardwareAccelerated="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|touchscreen|uiMode|colorMode|density|fontScale|fontWeightAdjustment|grammaticalGender|locale|layoutDirection"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/zip" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="audio/*" />
             </intent-filter>
         </activity>
