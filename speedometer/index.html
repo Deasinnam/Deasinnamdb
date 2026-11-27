@@ -1065,6 +1065,44 @@ body[data-view="home"] { background: #f6f5f1; }
 .hm-big-act .more { background: #ffffff14; color: #fff; box-shadow: inset 0 0 0 1px #ffffff33; }
 .hm-big-note { margin: 14px 0 0; font-size: 12.5px; color: #a9a497; word-break: keep-all; }
 @media (max-width: 760px) { .hm-big-card { grid-template-columns: 1fr; padding: 18px; gap: 20px; } }
+/* 메인 업데이트 소식: 옆으로 넘겨 보기 */
+.hm-big { position: relative; }
+.hm-big-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; gap: 16px; scrollbar-width: none; overscroll-behavior-x: contain; border-radius: 24px; }
+.hm-big-track::-webkit-scrollbar { display: none; }
+.hm-big-track > .hm-big-card { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; box-shadow: none; }
+.hm-big-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.hm-big-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+.hm-big-dots button { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line, #ddd); background: transparent; color: inherit; font: 600 13.5px/1 inherit; cursor: pointer; }
+.hm-big-dots button i { width: 8px; height: 8px; border-radius: 50%; background: #bbb; font-style: normal; }
+.hm-big-dots button[aria-current="true"] { background: #111; color: #fff; border-color: #111; }
+.hm-big-dots button[aria-current="true"] i { background: #ffd21f; }
+.hm-big-nav { display: flex; gap: 8px; }
+.hm-big-nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line, #ddd); background: #fff; color: #111; font-size: 20px; cursor: pointer; }
+.hm-big-nav button:disabled { opacity: .35; cursor: default; }
+@media (max-width: 760px) { .hm-big-dots button span { display: none; } .hm-big-dots button { padding: 0 12px; } }
+.hm-big-card.is-work { background: radial-gradient(120% 120% at 0% 0%, #241a46 0%, #111018 58%); }
+.hm-big-card.is-work .hm-big-tx h2 em, .hm-big-card.is-work .hm-big-tx li b { color: #c4b5fd; }
+.hm-big-card.is-work .hm-big-act .go { background: #a78bfa; color: #111; }
+.hm-big-card.is-all { background: radial-gradient(120% 120% at 0% 0%, #10283a 0%, #0f1114 58%); }
+.hm-big-card.is-all .hm-big-tx h2 em, .hm-big-card.is-all .hm-big-tx li b { color: #7dd3fc; }
+.hm-big-card.is-all .hm-big-act .go { background: #7dd3fc; color: #111; }
+.hm-big-shots { position: relative; border-radius: 18px; overflow: hidden; border: 6px solid #1d1d1d; box-shadow: 0 0 0 1px #3a3450; aspect-ratio: 1400 / 1152; background: #000; }
+.hm-big-shots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; }
+.hm-big-shots img.on { opacity: 1; }
+.hm-big-shots .tag { position: absolute; left: 12px; bottom: 12px; z-index: 2; padding: 6px 12px; border-radius: 999px; background: #000c; color: #fff; font: 700 13px/1 inherit; }
+.hm-big-icons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; padding: 34px 28px; border-radius: 18px; background: linear-gradient(160deg, #18324a, #0d1620); border: 1px solid #ffffff1f; }
+.hm-big-icons img { width: 100%; height: auto; border-radius: 22%; box-shadow: 0 8px 20px #0006; }
+.hm-big-icons .a8 { grid-column: 1 / -1; text-align: center; color: #e6f4ff; font: 800 clamp(22px, 3vw, 30px)/1.2 var(--font-display); letter-spacing: -0.02em; margin-top: 6px; }
+.hm-big-icons .a8 small { display: block; margin-top: 6px; font: 600 13px/1.4 inherit; color: #9cc4e0; letter-spacing: 0; }
+/* 덜누름 워크 1.0.11 새 기능 */
+.wk-pts { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 28px; max-width: 900px; margin: 8px auto 0; padding: 0; list-style: none; }
+.wk-pts li { display: flex; gap: 10px; color: #e4e4ea; font-size: 15px; line-height: 1.6; word-break: keep-all; }
+.wk-pts li b { flex: none; color: #c4b5fd; font: 700 12px/1.9 var(--font-mono); }
+.wk-pts li span b { color: #fff; font: inherit; }
+@media (max-width: 760px) { .wk-pts { grid-template-columns: 1fr; } }
+#work-new .ap-trio small { color: #c4b5fd; }
+.nt-figs.two-wide figure img { border-radius: 14px; }
+
 .spd-taxi-vid { grid-column: 1 / -1; max-width: 520px; width: 100%; margin: 8px auto 0; }
 .spd-taxi-vid .ap-dev { width: 100%; border-radius: 20px; border-width: 6px; }
 .spd-taxi-vid figcaption { margin-top: 10px; text-align: center; font-size: 13px; color: #a9a9b2; }
@@ -1355,13 +1393,36 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     </div>
   </section>
 
-  <!-- 2026.11.26 대신남 스피드미터 1.98 업데이트를 크게 알림 -->
-  <section class="wrap hm-big" aria-labelledby="hm-big-t">
-    <div class="hm-big-card">
+  <!-- 대표 업데이트 소식: 옆으로 넘겨 보기 (새 소식은 hm-big-track 맨 앞에 카드 하나, 점 단추도 하나 추가) -->
+  <section class="wrap hm-big" aria-roledescription="회전 소식" aria-label="대표 업데이트 소식">
+    <div class="hm-big-track" id="hmBigTrack" tabindex="0">
+    <div class="hm-big-card is-work" id="hmBig-work" role="group" aria-roledescription="소식" aria-label="덜누름 워크 1.0.11">
+      <div class="hm-big-shots" data-rotate>
+        <img class="on" src="/media/work-1011-sound-track.webp" alt="녹음 · 음성 편집: 빨간 녹음 단추로 녹음한 '녹음 2026-11-27 17.07.34'가 새 트랙과 클립으로 들어간 화면" loading="lazy" data-tag="녹음 · 음성 편집">
+        <img src="/media/work-1011-light.webp" alt="사진 정리 · 보정: 별이 뜬 호수 사진의 노출 +0.30, 하이라이트 +10을 올린 화면" loading="lazy" data-tag="사진 정리 · 보정">
+        <img src="/media/work-1011-home.webp" alt="덜누름 워크 첫 화면: 문서 · 사진 · 동영상 · 사진 정리 · 보정 · 녹음 · 음성 편집 카드" loading="lazy" data-tag="문서 · 사진 · 동영상 · 녹음을 한 앱에서">
+        <span class="tag">녹음 · 음성 편집</span>
+      </div>
+      <div class="hm-big-tx">
+        <span class="hm-chip hm-c-hot">NEW · 덜누름 워크 1.0.11 업데이트</span>
+        <h2>폴드에서 <em>사진 보정</em>과<br><em>녹음 편집</em>까지.</h2>
+        <p>사진 보관함과 RAW 현상, 휴대폰 마이크 녹음과 여러 트랙 편집이 덜누름 워크에 들어왔어요. 문서 편집에는 무료 글꼴 30여 종도 더했습니다.</p>
+        <ul>
+          <li><b>01</b><span>사진 정리 · 보정 — 노출 · 대비 · 하이라이트, 별점 · 앨범, RAW 현상</span></li>
+          <li><b>02</b><span>● 녹음 단추로 휴대폰 마이크 녹음, 멈추면 바로 새 트랙으로</span></li>
+          <li><b>03</b><span>자르기 · 여러 트랙 · 믹서 · 효과, WAV · MP3로 내보내기</span></li>
+          <li><b>04</b><span>문서 편집 무료 글꼴 30여 종 — 나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 등</span></li>
+          <li><b>05</b><span>휴대폰 세로 화면에서도 편집기가 화면에 맞게</span></li>
+        </ul>
+        <div class="hm-big-act"><a class="go" href="/work/">1.0.11 내려받기 ›</a><a class="more" href="#post-work-1011">새 기능 자세히 보기</a></div>
+        <p class="hm-big-note">갤럭시 Z 폴드7 펼친 화면에서 찍은 실제 화면이에요.</p>
+      </div>
+    </div>
+    <div class="hm-big-card is-taxi" id="hmBig-taxi" role="group" aria-roledescription="소식" aria-label="대신남 스피드미터 1.98">
       <div class="hm-big-vid"><video src="/media/sp-taxi.mp4?v=1126c" poster="/media/sp-taxi-poster.jpg?v=1126c" autoplay muted loop playsinline preload="metadata" aria-label="대신남 스피드미터 택시 미터기 실제 화면: 레트로 빈차판, 실물 전자식, 기사 사진 넣기, 노래 제목 위 음악 효과"></video></div>
       <div class="hm-big-tx">
         <span class="hm-chip hm-c-hot">NEW · 대신남 스피드미터 1.98 업데이트</span>
-        <h2 id="hm-big-t">스피드미터에<br><em>택시 미터기</em>가 들어왔어요.</h2>
+        <h2>스피드미터에<br><em>택시 미터기</em>가 들어왔어요.</h2>
         <p>달린 거리만큼 서울 택시 요금이 올라가고, 주행을 누르면 말이 달립니다. 노래가 나오면 계기판 위에서 음악이 춤춥니다.</p>
         <ul>
           <li><b>01</b><span>실물 전자식 · 레트로 · LCD 클래식, 세 가지 미터기 스킨</span></li>
@@ -1373,7 +1434,62 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         <p class="hm-big-note">택시 미터기는 재미로만 즐기는 기능이에요. 표시된 금액으로 실제 요금을 받으면 「여객자동차 운수사업법」 위반입니다.</p>
       </div>
     </div>
+    <div class="hm-big-card is-all" id="hmBig-all" role="group" aria-roledescription="소식" aria-label="안드로이드 8 지원과 새 아이콘">
+      <div class="hm-big-icons"><img src="/media/icons/work.png" alt="덜누름 워크" width="96" height="96" loading="lazy"><img src="/media/icons/desk.png" alt="덜누름 데스크탑앱" width="96" height="96" loading="lazy"><img src="/media/icons/game.png" alt="덜누름 게임" width="96" height="96" loading="lazy"><img src="/media/icons/tv.png" alt="덜누름 TV" width="96" height="96" loading="lazy"><img src="/media/icons/pad.png" alt="덜누름 패드" width="96" height="96" loading="lazy"><img src="/media/icons/web.png" alt="덜누름 브라우저" width="96" height="96" loading="lazy"><img src="/media/icons/ai.png" alt="덜누름 로컬 AI" width="96" height="96" loading="lazy"><span class="a8">Android 8+<small>안드로이드 8.0 이상에서 설치</small></span></div>
+      <div class="hm-big-tx">
+        <span class="hm-chip hm-c-hot">개선 · 11월 20일 ~ 27일</span>
+        <h2>더 많은 폰에서,<br><em>새 얼굴</em>로.</h2>
+        <p>덜누름 앱을 안드로이드 8부터 설치할 수 있게 낮추고, 앱 아이콘을 덜누름 로고 하나로 맞췄어요. 사이트 내려받기 단추는 지금 쓰는 기기에 맞는 파일을 바로 받습니다.</p>
+        <ul>
+          <li><b>01</b><span>데스크탑앱 · 게임 · 패드 · TV도 안드로이드 8 이상에서 설치</span></li>
+          <li><b>02</b><span>내려받기 단추 하나가 내 기기에 맞는 파일을, ▾에서 이전 버전도</span></li>
+          <li><b>03</b><span>앱 아이콘을 덜누름 막대 로고 + 앱 이름으로 통일</span></li>
+          <li><b>04</b><span>앱마다 바탕색이 달라 홈 화면에서 한눈에</span></li>
+        </ul>
+        <div class="hm-big-act"><a class="go" href="#hm-apps">앱 고르기 ›</a><a class="more" href="/releases/">업데이트 내역 보기</a></div>
+      </div>
+    </div>
+    </div>
+    <div class="hm-big-bar">
+      <div class="hm-big-dots" role="tablist" aria-label="소식 고르기">
+        <button type="button" role="tab" data-go="0" aria-current="true"><i></i><span>덜누름 워크 1.0.11</span></button>
+        <button type="button" role="tab" data-go="1"><i></i><span>스피드미터 1.98</span></button>
+        <button type="button" role="tab" data-go="2"><i></i><span>안드로이드 8 · 새 아이콘</span></button>
+      </div>
+      <div class="hm-big-nav"><button type="button" data-step="-1" aria-label="이전 소식">‹</button><button type="button" data-step="1" aria-label="다음 소식">›</button></div>
+    </div>
   </section>
+<script>
+(function () {
+  var t = document.getElementById("hmBigTrack"); if (!t) return;
+  var cards = [].slice.call(t.children), dots = [].slice.call(document.querySelectorAll(".hm-big-dots [data-go]"));
+  var prev = document.querySelector('.hm-big-nav [data-step="-1"]'), next = document.querySelector('.hm-big-nav [data-step="1"]');
+  var cur = 0, timer = null, paused = false;
+  function idx() { return Math.max(0, Math.min(cards.length - 1, Math.round(t.scrollLeft / Math.max(1, t.clientWidth + 16)))); }
+  function go(i, smooth) { i = (i + cards.length) % cards.length; t.scrollTo({ left: cards[i].offsetLeft - t.offsetLeft, behavior: smooth === false ? "auto" : "smooth" }); }
+  function mark() {
+    var i = idx(); if (i === cur && dots[i].getAttribute("aria-current") === "true") return; cur = i;
+    dots.forEach(function (d, k) { d.setAttribute("aria-current", k === i ? "true" : "false"); });
+    cards.forEach(function (c, k) { var v = c.querySelector("video"); if (v) { if (k === i) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause(); } });
+  }
+  t.addEventListener("scroll", function () { clearTimeout(t._m); t._m = setTimeout(mark, 60); }, { passive: true });
+  dots.forEach(function (d) { d.addEventListener("click", function () { go(+d.getAttribute("data-go")); restart(); }); });
+  prev.addEventListener("click", function () { go(cur - 1); restart(); });
+  next.addEventListener("click", function () { go(cur + 1); restart(); });
+  t.addEventListener("keydown", function (e) { if (e.key === "ArrowRight") { go(cur + 1); restart(); } else if (e.key === "ArrowLeft") { go(cur - 1); restart(); } });
+  // 저절로 넘어가기: 9초마다, 손가락 · 마우스가 올라와 있거나 화면에 안 보이면 멈춤
+  function restart() { clearInterval(timer); if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return; timer = setInterval(function () { if (!paused && !document.hidden) go(cur + 1); }, 9000); }
+  ["pointerenter", "touchstart", "focusin"].forEach(function (e) { t.parentNode.addEventListener(e, function () { paused = true; }, { passive: true }); });
+  ["pointerleave", "focusout"].forEach(function (e) { t.parentNode.addEventListener(e, function () { paused = false; }); });
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { paused = !es[0].isIntersecting; }).observe(t);
+  restart(); mark();
+  // 덜누름 워크 카드: 실제 화면 세 장을 번갈아
+  [].forEach.call(document.querySelectorAll("[data-rotate]"), function (box) {
+    var imgs = box.querySelectorAll("img"), tag = box.querySelector(".tag"), k = 0;
+    setInterval(function () { if (document.hidden) return; imgs[k].classList.remove("on"); k = (k + 1) % imgs.length; imgs[k].classList.add("on"); if (tag) tag.textContent = imgs[k].getAttribute("data-tag"); }, 3600);
+  });
+})();
+</script>
 
   <section class="wrap hm-pick" id="hm-apps" aria-labelledby="hm-pick-t">
     <div class="hm-pick-h">
@@ -2120,9 +2236,11 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <li><b>05</b><span>사진 · 동영상 편집도 한국어 화면으로 (1.0.3부터)</span></li>
           <li><b>06</b><span>사진 정리 · RAW 보정, 휴대폰 마이크 녹음 · 음성 편집 (1.0.11부터)</span></li>
           <li><b>07</b><span>휴대폰 세로 화면에서도 사진 · 동영상 · 녹음 편집기가 화면에 맞게 (1.0.11부터)</span></li>
+          <li><b>08</b><span>문서 편집 무료 글꼴 30여 종 · 나눔 · 손글씨 · 제목 글꼴 (1.0.9부터)</span></li>
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fix"><a class="amp-btn ap-fix-btn" href="#post-install-guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>설치가 차단될 때 해결 방법 보기</a></div>
+        <div class="ap-fix"><button type="button" class="amp-btn ap-guide-btn" data-scroll="work-new">🎙 1.0.11 새 기능 · 사진 보정 · 녹음 편집 보기</button></div>
         <div class="ap-fb"><a class="amp-btn" href="/feedback/" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="/hardware/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
         <div class="ap-howto ap-install">
           <h2>처음 설치하시나요?</h2>
@@ -2147,6 +2265,42 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         <div class="ap-dev"><video src="/media/app-work.mp4?v=1115" poster="/media/app-work-poster.jpg?v=1115" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 오피스 작업 화면과 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
       </div>
+    </div>
+    <div class="amp-wrap ap-sub" id="work-new">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">NEW · 1.0.11 · 11월 27일 업데이트</div>
+        <h2>사진은 보정하고,<br>목소리는 바로 녹음합니다.</h2>
+        <p class="ap-desc">덜누름 워크에 <b>사진 정리 · 보정</b>과 <b>녹음 · 음성 편집</b>이 들어왔습니다. 아트크래프트의 LightCraft · SoundCraft를 바탕으로, 휴대폰 녹음과 화면 맞춤 같은 안드로이드 쪽은 덜누름이 다듬었습니다. 아래 사진은 모두 갤럭시 Z 폴드7 펼친 화면에서 찍은 실제 화면입니다.</p>
+      </div>
+      <ul class="wk-pts">
+        <li><b>01</b><span><b>사진 보관함</b> — 갤러리에서 사진을 여러 장 공유하면 보관함으로 들어옵니다. 별점 · 깃발 · 색 라벨 · 앨범으로 정리합니다.</span></li>
+        <li><b>02</b><span><b>보정 · RAW 현상</b> — 노출 · 대비 · 하이라이트 · 그림자, 곡선과 색 보정. 원본은 그대로 두고 언제든 되돌립니다.</span></li>
+        <li><b>03</b><span><b>● 녹음 단추</b> — 녹음 편집 화면 오른쪽의 빨간 단추로 휴대폰 마이크 녹음. 한 번 더 누르면 새 트랙으로 바로 들어갑니다.</span></li>
+        <li><b>04</b><span><b>여러 트랙 편집</b> — 자르기 · 옮기기 · 믹서 · 효과 · 자동화. WAV · MP3로 내보내 안드로이드에 저장합니다.</span></li>
+        <li><b>05</b><span><b>무료 글꼴 30여 종 (1.0.9)</b> — 나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 · 개구쟁이 등. 바탕 · 굴림 · Calibri 문서도 비슷한 글꼴로 보입니다.</span></li>
+        <li><b>06</b><span><b>휴대폰 화면 맞춤</b> — 세로 화면에서도 사진 · 동영상 · 사진 정리 · 녹음 편집기가 화면에 맞게 줄어듭니다. 펼친 화면 · DeX는 그대로.</span></li>
+      </ul>
+      <div class="ap-trio ap-pair" style="max-width:none">
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/1152"><img src="/media/work-1011-light.webp" alt="사진 정리 · 보정: 별이 뜬 호수 사진, 오른쪽에 히스토그램과 노출 +0.30 · 하이라이트 +10 조절 막대, 아래 필름 띠" loading="lazy"></div>
+          <figcaption><small>01 · 사진 정리 · 보정</small><h3>밀어서 밝기, 원본은 그대로.</h3><p>노출 · 대비 · 하이라이트를 오른쪽 막대로. 아래 필름 띠에서 다음 사진으로.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/1152"><img src="/media/work-1011-sound-track.webp" alt="녹음 · 음성 편집: 트랙 목록과 클립 목록에 '녹음 2026-11-27 17.07.34'가 추가되고 아래에 Imported 녹음 표시" loading="lazy"></div>
+          <figcaption><small>02 · 녹음 · 음성 편집</small><h3>● 녹음, 그리고 바로 트랙.</h3><p>녹음을 멈추면 날짜 · 시간 이름으로 새 트랙과 클립이 생깁니다.</p></figcaption>
+        </figure>
+      </div>
+      <div class="ap-trio ap-pair" style="max-width:none">
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/1152"><img src="/media/work-1011-home.webp" alt="덜누름 워크 첫 화면: 파일 열기와 문서 편집 · 사진 편집 · 동영상 편집 · 사진 정리 · 보정 · 녹음 · 음성 편집 카드" loading="lazy"></div>
+          <figcaption><small>03 · 첫 화면</small><h3>다섯 가지 편집을 한 앱에서.</h3><p>파일 열기 한 번이면 소리는 녹음 편집, RAW 사진은 사진 정리로 알아서 열립니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/1152"><img src="/media/work-1011-sound.webp" alt="녹음 편집 화면 오른쪽에 떠 있는 빨간 녹음 단추와 홈 단추" loading="lazy"></div>
+          <figcaption><small>04 · 녹음 단추</small><h3>손가락으로 옮겨 둡니다.</h3><p>빨간 녹음 단추와 홈 단추는 메뉴를 가리지 않게 끌어 옮길 수 있습니다.</p></figcaption>
+        </figure>
+      </div>
+      <p class="ap-disc" role="note" style="grid-column:1/-1"><b>알아 두세요</b>사진 정리 · 녹음 편집기의 메뉴는 영어입니다(원작에 한국어 화면이 아직 없음). 녹음 편집기는 그래픽 성능이 낮은 일부 오래된 기기에서는 열리지 않을 수 있고, 이때는 이유를 한국어로 안내합니다. 사진 정리를 처음 열 때 환영 창이 떠 있으면 공유한 사진이 들어가지 않으니, 창을 닫고 다시 공유해 주세요.</p>
     </div>
     <div class="amp-wrap ap-after">
       <div class="ap-rec is-list" aria-labelledby="ap-work-rec">
@@ -3189,6 +3343,11 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     <div class="wrap">
       <div id="ntList">
       <ul class="nt-list">
+        <li><a class="nt-row" href="#post-work-1011">
+          <span class="nt-no">015</span>
+          <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 워크</span><span class="nt-tag">새 기능</span><span class="nt-tag done">업데이트 1.0.9 ~ 1.0.11</span></span><h2>사진 보정 · 녹음 편집이 들어오고, 무료 글꼴 30여 종이 생겼습니다</h2></span>
+          <span class="nt-date">2026.11.27</span>
+        </a></li>
         <li><a class="nt-row" href="#post-desk-dex">
           <span class="nt-no">014</span>
           <span class="nt-tt"><span class="nt-tags"><span class="nt-tag">덜누름 데스크탑앱 · 대신남 스피드미터</span><span class="nt-tag">버그 수정</span><span class="nt-tag done">업데이트 1.6.6 · 1.87</span></span><h2>노트20 · 탭 S9에서도 DeX로 열리는 데스크탑앱, 집 모양 시작 단추, 이어폰에 "차량 연결됨"이 뜨던 문제</h2></span>
@@ -3544,6 +3703,71 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           </ol>
           <p>모두 해도 안 되면 기종, DroidDeck 버전, 멈춘 화면 캡처를 의견 보내기로 보내 주세요. 확인해서 이 글에 방법을 더하겠습니다.</p>
           <p class="ap-disc light"><b>꼭 확인하세요</b>DroidDeck과 배틀넷은 덜누름이 만든 앱이 아닙니다. 덜누름 게임은 설치와 설정을 쉽게 안내할 뿐이며, 배틀넷 자체의 오류는 블리자드 상황에 따라 해결이 늦어질 수 있습니다.</p>
+        </div>
+        <a class="nt-back" href="/updates/">← 목록으로</a>
+      </article>
+      <article class="nt-article" id="post-work-1011" data-post hidden>
+        <a class="nt-back" href="/updates/">← 목록으로</a>
+        <header class="nt-head">
+          <div class="nt-tags"><span class="nt-tag">덜누름 워크</span><span class="nt-tag">새 기능</span><span class="nt-tag done">업데이트 1.0.9 ~ 1.0.11</span></div>
+          <h2>사진 보정 · 녹음 편집이 들어오고, 무료 글꼴 30여 종이 생겼습니다</h2>
+          <span class="nt-date">015 · 2026.11.27</span>
+        </header>
+        <div class="nt-body">
+          <p>덜누름 워크가 문서 · 사진 · 동영상에 이어 <b>사진 정리 · 보정</b>과 <b>녹음 · 음성 편집</b>까지 한 앱에서 하게 됐습니다. 지난주에 더한 <b>무료 글꼴 30여 종</b>과 새 아이콘 소식도 함께 정리했습니다. 사진은 모두 갤럭시 Z 폴드7 펼친 화면에서 찍은 실제 화면입니다.</p>
+          <figure class="nt-fig wide"><img src="/media/work-1011-home.webp" alt="덜누름 워크 1.0.11 첫 화면: 문서 편집 · 사진 편집 · 동영상 편집 · 사진 정리 · 보정 · 녹음 · 음성 편집 카드" loading="lazy"><figcaption>1.0.11 첫 화면 — 카드 두 개(사진 정리 · 보정, 녹음 · 음성 편집)가 늘었습니다.</figcaption></figure>
+
+          <h3>1. 사진 정리 · 보정 (1.0.11)</h3>
+          <p>사진 편집이 한 장을 그리고 꾸미는 곳이라면, 사진 정리 · 보정은 <b>여러 장을 모아 고르고 밝기 · 색을 맞추는 곳</b>입니다.</p>
+          <ul>
+            <li><b>보관함:</b> 갤러리에서 사진 여러 장을 <b>공유 → 덜누름 워크 사진 정리</b>로 보내면 보관함에 들어옵니다. 별점 · 깃발 · 색 라벨 · 앨범으로 정리합니다.</li>
+            <li><b>보정:</b> 오른쪽 <b>Light</b>에서 노출(Exposure) · 대비 · 하이라이트 · 그림자를 막대로 조절합니다. <b>Auto</b> 한 번으로 자동 보정, <b>Reset</b>으로 처음 상태로 돌아갑니다. 원본 파일은 바뀌지 않습니다.</li>
+            <li><b>RAW 현상:</b> DNG · CR2 · NEF · ARW 등 카메라 RAW 파일도 엽니다. 파일 열기로 RAW를 고르면 사진 정리로 바로 열립니다.</li>
+            <li><b>내보내기:</b> 고른 사진을 JPEG · PNG 등으로 한꺼번에 내보내고, 저장할 위치를 안드로이드에서 고릅니다.</li>
+          </ul>
+          <div class="nt-figs">
+            <figure><img src="/media/work-1011-light-before.webp" alt="보정 전: 노을 호수 사진과 조절 막대가 모두 0" loading="lazy"><figcaption>보정 전 — 막대가 모두 0</figcaption></figure>
+            <figure><img src="/media/work-1011-light.webp" alt="보정: 별이 뜬 호수 사진의 노출 +0.30, 하이라이트 +10" loading="lazy"><figcaption>노출 +0.30 · 하이라이트 +10 — 원본은 그대로 남습니다</figcaption></figure>
+          </div>
+
+          <h3>2. 녹음 · 음성 편집 (1.0.11)</h3>
+          <p>녹음 편집 화면 오른쪽에 <b>빨간 ● 녹음 단추</b>가 있습니다. 누르면 휴대폰 마이크로 녹음을 시작하고(처음 한 번 마이크 권한을 묻습니다), 시간이 흐르는 <b>■ 멈춤</b>을 한 번 더 누르면 녹음이 <b>새 트랙</b>으로 바로 들어갑니다. 트랙 이름은 녹음한 날짜와 시간입니다.</p>
+          <div class="nt-figs">
+            <figure><img src="/media/work-1011-sound.webp" alt="녹음 편집 화면 오른쪽의 빨간 녹음 단추" loading="lazy"><figcaption>● 녹음 단추 — 끌어서 옮길 수 있습니다</figcaption></figure>
+            <figure><img src="/media/work-1011-sound-track.webp" alt="녹음한 '녹음 2026-11-27 17.07.34'가 트랙과 클립 목록에 들어간 화면" loading="lazy"><figcaption>멈추면 '녹음 2026-11-27 17.07.34' 트랙이 생깁니다</figcaption></figure>
+          </div>
+          <ul>
+            <li><b>편집:</b> 클립 자르기 · 옮기기, 여러 트랙 겹치기, 믹서와 효과(EQ · 리버브 등), 볼륨 자동화.</li>
+            <li><b>저장:</b> <b>File → Save Session</b>으로 작업을 저장하고, <b>File → Export</b>로 WAV · MP3 등으로 내보냅니다. 저장할 위치는 안드로이드에서 고릅니다.</li>
+            <li><b>다른 앱의 소리 파일:</b> 파일 열기나 공유로 MP3 · WAV · M4A를 보내면 새 트랙으로 들어옵니다.</li>
+            <li>처음 열면 견본 곡(Midnight Groove)이 들어 있습니다. 새로 시작하려면 <b>File → New Session</b>을 누르세요.</li>
+          </ul>
+          <p class="ap-disc light"><b>왜 앱 단추로 녹음하나요</b>녹음 편집기(SoundCraft)의 웹판은 아직 마이크를 쓰지 못합니다. 그래서 덜누름 워크가 안드로이드에서 직접 녹음(48kHz · 16비트)해 편집기에 넣어 줍니다. 편집기 안의 트랙 녹음 단추(빨간 동그라미)는 휴대폰에서는 동작하지 않으니, 화면 오른쪽의 큰 <b>● 녹음</b> 단추를 써 주세요. 다른 앱으로 나가면 녹음은 그때까지 저장되어 트랙으로 들어갑니다.</p>
+
+          <h3>3. 무료 글꼴 30여 종 (1.0.9)</h3>
+          <p>"글꼴이 부족하다"는 의견을 반영해 문서 편집(워드 · 엑셀 · 파워포인트 · 한글)에 <b>무료 글꼴 30여 종</b>을 넣었습니다. 모두 상업적으로도 쓸 수 있는 SIL 오픈 폰트 라이선스 글꼴이라 문서에 마음껏 쓰셔도 됩니다.</p>
+          <ul>
+            <li><b>본문:</b> 나눔고딕 · 나눔명조 · Noto Sans/Serif KR · Pretendard · 고운바탕 · 고운돋움 · IBM Plex Sans KR · 스포카 한 산스 등</li>
+            <li><b>손글씨 · 제목:</b> 나눔손글씨 펜 · 붓 · 주아 · 개구쟁이 · 감자꽃마을 · 하이멜로디 · 동글 · 서툰이야기 등</li>
+            <li><b>코딩 · 영문:</b> D2Coding · 나눔고딕코딩, 그리고 Calibri · Arial · Times 자리를 대신하는 Carlito · Arimo · Tinos 등</li>
+            <li><b>PC에서 만든 문서:</b> 바탕 · 굴림 · 궁서 · Calibri처럼 휴대폰에 없는 글꼴로 쓴 문서는 비슷한 무료 글꼴로 보여 줍니다. 파일에는 원래 글꼴 이름이 그대로 남아, PC에서 다시 열면 원래 글꼴로 보입니다.</li>
+          </ul>
+
+          <h3>4. 함께 바뀐 것</h3>
+          <ul>
+            <li><b>휴대폰 화면 맞춤 (1.0.11):</b> 사진 · 동영상 · 사진 정리 · 녹음 편집기는 PC 화면 크기로 만들어져 휴대폰 세로 화면에서는 메뉴가 화면 밖으로 밀렸습니다. 이제 좁은 화면에서는 편집기 전체를 화면에 맞게 줄여 보여 줍니다. 펼친 화면 · DeX에서는 그대로입니다.</li>
+            <li><b>최신 편집기 (1.0.11):</b> 사진 편집 · 동영상 편집을 원작 최신판(PhotoCraft 0.23.1 · FilmCraft 0.20.1)으로 다시 빌드했습니다.</li>
+            <li><b>새 아이콘 (1.0.10):</b> 앱 아이콘을 덜누름 막대 로고 + 'Work'로 바꿨습니다.</li>
+            <li><b>안드로이드 8부터 (11.20):</b> 덜누름 워크는 안드로이드 8.0 이상에서 설치됩니다.</li>
+          </ul>
+
+          <h3>업데이트 방법</h3>
+          <ol>
+            <li>앱센터의 <a href="/work/">덜누름 워크</a> 페이지에서 <b>내려받기</b>를 누르면 1.0.11을 받습니다. 이전 버전이 필요하면 옆의 <b>▾</b>에서 고르세요.</li>
+            <li>받은 파일을 열어 설치하면 지금 앱 위에 덮어 설치됩니다. 문서 · 사진 · 동영상 작업과 최근 문서는 그대로 남습니다.</li>
+            <li>녹음을 처음 할 때 <b>마이크 권한</b>을 물으면 <b>앱 사용 중에만 허용</b>을 눌러 주세요.</li>
+          </ol>
+          <p class="ap-disc light"><b>알아 두세요</b>사진 정리 · 녹음 편집기의 메뉴는 영어입니다(원작에 한국어 화면이 아직 없음). 앱 크기가 약 250MB로 커졌습니다. 사진 정리를 처음 열 때 환영 창이 떠 있으면 공유한 사진이 들어가지 않으니 창을 닫고 다시 공유해 주세요. 쓰다가 막히는 곳이 있으면 의견 보내기로 알려 주세요.</p>
         </div>
         <a class="nt-back" href="/updates/">← 목록으로</a>
       </article>
@@ -4760,9 +4984,9 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     "app-work":    { open: true, min: 8, tag: "work-latest",    file: "DaesinnamWork.apk",    base: 3,
                      /* 버전별 내려받기: 새 버전을 내면 맨 위에 한 줄 추가 (릴리스 work-v<버전>은 빌드가 자동으로 만듦) */
                      versions: [
-                       { v: "1.0.11", date: "2026.11.27", tag: "work-v1.0.11", file: "DeolnureumWork-1.0.11.apk", note: "사진 정리 · 보정(LightCraft 기반: 보관함 · 별점 · 앨범 · RAW 현상 · 한꺼번에 내보내기)과 녹음 · 음성 편집(SoundCraft 기반: 휴대폰 마이크 녹음 → 새 트랙, 자르기 · 믹서 · 효과) 추가, 휴대폰 세로 화면 맞춤(사진 · 동영상 · 사진 정리 · 녹음), 사진 · 동영상 편집기 최신판으로 다시 빌드, 앱 크기 줄이기(미리 압축 파일 빼기)", kind: ["new", "better"] },
+                       { v: "1.0.11", date: "2026.11.27", tag: "work-v1.0.11", file: "DeolnureumWork-1.0.11.apk", note: "사진 정리 · 보정(LightCraft 기반: 보관함 · 별점 · 앨범 · RAW 현상 · 한꺼번에 내보내기)과 녹음 · 음성 편집(SoundCraft 기반: 휴대폰 마이크 녹음 → 새 트랙, 자르기 · 믹서 · 효과) 추가, 휴대폰 세로 화면 맞춤(사진 · 동영상 · 사진 정리 · 녹음), 사진 · 동영상 편집기 최신판으로 다시 빌드, 앱 크기 줄이기(미리 압축 파일 빼기)", kind: ["new", "better"], post: "work-1011" },
                        { v: "1.0.10", date: "2026.11.27", tag: "work-v1.0.10", file: "DeolnureumWork-1.0.10.apk", note: "앱 아이콘을 덜누름 로고로 통일 ('덜' 글자 대신 막대 셋 로고 + 앱 이름, 앱마다 바탕색)", kind: ["better"] },
-                       { v: "1.0.9", date: "2026.11.26", tag: "work-v1.0.9", file: "DeolnureumWork-1.0.9.apk", note: "문서 편집에 무료 글꼴 30여 종 추가 (나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 · 개구쟁이 등, 모두 SIL OFL 무료 글꼴), 워드 · 한글 문서의 바탕 · 굴림 · 궁서 · Calibri 등은 비슷한 무료 글꼴로 표시", kind: ["new", "better"], fb: "덜누름 워크에 글꼴(폰트)이 부족해요" },
+                       { v: "1.0.9", date: "2026.11.26", tag: "work-v1.0.9", file: "DeolnureumWork-1.0.9.apk", note: "문서 편집에 무료 글꼴 30여 종 추가 (나눔고딕 · 나눔명조 · 나눔손글씨 · 주아 · 개구쟁이 등, 모두 SIL OFL 무료 글꼴), 워드 · 한글 문서의 바탕 · 굴림 · 궁서 · Calibri 등은 비슷한 무료 글꼴로 표시", kind: ["new", "better"], fb: "덜누름 워크에 글꼴(폰트)이 부족해요", post: "work-1011" },
                        { v: "1.0.8", date: "2026.11.21", tag: "work-v1.0.8", file: "DeolnureumWork-1.0.8.apk", note: "AI 도우미 ChatGPT · Claude 로그인을 마치고 돌아와도 연결되지 않던 문제 추가 수정 (로그인하는 동안 'AI 연결 중' 알림)", kind: ["fix"], fix: "브라우저에서 로그인을 마치고 돌아와도 '연결하지 못했습니다'가 뜨던 문제", fb: "ChatGPT · Claude 연결됐다는데 앱에서는 연결 안 됨" },
                        { v: "1.0.7", date: "2026.11.21", tag: "work-v1.0.7", file: "DeolnureumWork-1.0.7.apk", note: "PDF 파일이 열리지 않던 문제, AI 도우미에서 ChatGPT · Claude 로그인 뒤 연결되지 않던 문제 수정", kind: ["fix"], fix: "PDF를 열면 '파일을 열지 못했습니다'가 뜨고, ChatGPT · Claude 로그인 후 앱으로 돌아오면 연결 실패로 나오던 문제", fb: "PDF 안 열림 · AI 연결 안 됨" },
                        { v: "1.0.6", date: "2026.11.21", tag: "work-v1.0.6", file: "DeolnureumWork-1.0.6.apk", note: "한글(HWP) 문서 파일 메뉴의 저장 · 다른 이름으로 저장 수정, 이음오피스 v0.13.0(한글 표 안의 표 편집 · 각주 · 수식 앞 문단 추가 등 개선)", kind: ["fix", "better"], fix: "한글 문서에서 파일 → 다른 이름으로 저장을 눌러도 아무 반응이 없던 문제", fb: "한글(HWP) 다른 이름으로 저장 안 됨" },
