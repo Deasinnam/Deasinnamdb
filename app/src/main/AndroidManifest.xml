@@ -56,6 +56,31 @@
 
         <!-- DNR AI 통로: 다른 덜누름 앱(워크 · 데스크탑앱 …)이 부르는 떠 있는 질문 창.
              사람이 보고 누를 때만 결과가 돌아감 · 기기 안에서만 -->
+        <!-- 자비스: DNR AI 음성 모드 — 홈 화면에 따로 아이콘. 기본 디지털 어시스턴트(측면 버튼)로도 부를 수 있음 -->
+        <activity
+            android:name=".JarvisActivity"
+            android:exported="true"
+            android:label="자비스"
+            android:icon="@mipmap/ic_jarvis"
+            android:roundIcon="@mipmap/ic_jarvis"
+            android:theme="@style/Theme.LocalAI"
+            android:taskAffinity="com.daesinnam.localai.jarvis"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode|density">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VOICE_COMMAND" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".AskActivity"
             android:exported="true"

@@ -18,6 +18,10 @@ for d in chat settings dl plus tool voice; do adb shell am start -S -n $PKG/.Mai
 # DNR AI 통로(다른 앱에서 부르는 질문 창) 데모
 adb shell am force-stop $PKG
 for d in text answer desk; do adb shell am start -S -n $PKG/.AskActivity --es demo $d >/dev/null; sleep 5; shot "2-ask-$d"; done
+for d in idle listen answer nomodel; do adb shell am start -S -n $PKG/.JarvisActivity --es demo $d >/dev/null; sleep 5; shot "2-jarvis-$d"; done
+# 자비스: 홈 화면 아이콘 + 기본 어시스턴트(측면 버튼)로 고를 수 있는지
+if adb shell cmd package query-activities -a android.intent.action.ASSIST 2>/dev/null | grep -q "$PKG/.JarvisActivity\|JarvisActivity"; then log "PASS jarvis assist entry"; else log "FAIL jarvis assist entry"; fi
+if adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.LAUNCHER 2>/dev/null | grep -q "JarvisActivity"; then log "PASS jarvis launcher icon"; else log "FAIL jarvis launcher icon"; fi
 adb shell am force-stop $PKG
 # 모델 넣기: 앱 전용 폴더(내려받기와 같은 자리)
 DIR=/sdcard/Android/data/$PKG/files/models
@@ -116,6 +120,19 @@ if [ -n "$VOICE" ]; then
   done
   sleep 3; shot 6-real-voice
   if [ $OK = 1 ]; then log "PASS ui voice ask: $(echo "$CH" | grep -io '"role":"user","text":"[^"]*\(france\|capital\)[^"]\{0,40\}' | tail -1 | cut -c25-)"; else log "FAIL ui voice ask ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
+fi
+# 2-d2) 자비스: 음성 파일로 묻기 → "voice" 대화로 저장되고 답이 오는지
+if [ -n "$VOICE" ]; then
+  adb shell am force-stop $PKG
+  adb shell am start -n $PKG/.JarvisActivity --es stt /sdcard/Android/data/$PKG/files/selftest-voice.wav >/dev/null
+  OK=0
+  for i in $(seq 1 50); do
+    sleep 10
+    CH=$(timeout 20 adb shell "run-as $PKG sh -c 'for f in files/chats/*.json; do grep -q voice..true \$f && cat \$f; done'" 2>/dev/null)
+    if echo "$CH" | tr 'A-Z' 'a-z' | grep -q '"role":"model","text":"[^"]*\(paris\|파리\)'; then OK=1; break; fi
+  done
+  sleep 2; shot 6b-real-jarvis
+  if [ $OK = 1 ]; then log "PASS jarvis voice ask"; else log "FAIL jarvis voice ask ($(echo "$CH" | grep -o '"error":"[^"]*' | tail -1))"; fi
 fi
 # 2-e) DNR AI 통로: 다른 앱처럼 글을 보내 '요약' → 답이 오는지(답 수가 늘었는지로 확인)
 N0=$(timeout 20 adb shell "run-as $PKG sh -c 'cat files/chats/*.json'" 2>/dev/null | grep -o '"role":"model","text":"[^"]' | wc -l)

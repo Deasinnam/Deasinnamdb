@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>자비스</title>
+<link rel="stylesheet" href="jarvis.css">
+</head><body>
+<div class="grid" aria-hidden="true"></div>
+<header class="top">
+  <span class="tag">DNR · 자비스</span>
+  <span class="pill" id="pill"><i></i><b id="pillT">OFFLINE · 기기 안</b></span>
+  <button class="ib" id="setBtn" aria-label="자비스 설정"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <button class="ib" id="closeBtn" aria-label="자비스 닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</header>
+
+<main class="stage" id="stage">
+  <div class="hud" id="hud">
+    <svg class="rings" viewBox="0 0 390 390" aria-hidden="true">
+      <circle cx="195" cy="195" r="176" class="l1"/>
+      <circle cx="195" cy="195" r="160" class="l2"/>
+      <g class="r1"><circle cx="195" cy="195" r="140" class="a1"/></g>
+      <g class="r2"><circle cx="195" cy="195" r="118" class="a2"/></g>
+      <circle cx="195" cy="195" r="98" class="tick" id="lvRing"/>
+      <circle cx="195" cy="195" r="80" class="core"/>
+      <path d="M195 8v14M195 368v14M8 195h14M368 195h14" class="cross"/>
+      <text x="38" y="62" class="t1">SYS 01</text>
+      <text x="292" y="344" class="t2" id="hudTag">WAKE · ON</text>
+    </svg>
+    <div class="center">
+      <div class="logo" id="logo"><svg viewBox="0 0 64 54" aria-hidden="true"><rect x="4" y="26" width="14" height="24" rx="7"/><rect x="25" y="14" width="14" height="36" rx="7"/><rect x="46" y="2" width="14" height="48" rx="7"/></svg><span>JARVIS</span></div>
+      <div class="wave" id="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </div>
+  <div class="head">
+    <h1 id="title">자비스</h1>
+    <p id="sub">“자비스 온”이라고 부르면 들을게요</p>
+  </div>
+  <div class="cards" id="cards">
+    <div class="card you hide" id="you"><span class="lbl">YOU</span><span id="youT"></span></div>
+    <div class="card ans hide" id="ans"><div class="lbl">ANSWER</div><div class="md" id="ansMd"></div></div>
+    <div class="acts hide" id="acts">
+      <button class="chip" id="aCopy">복사</button>
+      <button class="chip" id="aApp">앱에서 이어서</button>
+      <button class="chip hot" id="aStopRead">읽기 멈춤</button>
+    </div>
+    <div class="stats" id="stats">
+      <div class="st"><small>MODEL</small><b id="stModel">-</b></div>
+      <div class="st"><small>VOICE</small><b>한국어</b></div>
+      <div class="st warm"><small>NET</small><b>사용 안 함</b></div>
+    </div>
+    <div class="note hide" id="noModel"><b>AI 모델이 아직 없어요</b><span>Chat DNR Ai에서 AI 모델을 한 번 내려받으면 자비스를 쓸 수 있어요.</span><button class="cta" id="goApp">Chat DNR Ai 열기</button></div>
+  </div>
+</main>
+
+<footer class="foot">
+  <button class="mic" id="mic" aria-label="자비스 온 · 말하기"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+  <span class="hint" id="hint">누르거나 “자비스 온” · 끝낼 땐 “자비스 오프”</span>
+</footer>
+
+<div class="sheet hide" id="sheet">
+  <div class="sheet-in" role="dialog" aria-labelledby="shT">
+    <h2 id="shT">자비스 설정</h2>
+    <label class="tg"><span><b>“자비스 온”으로 부르기</b><small>이 화면이 켜져 있을 때만 들어요. 화면을 끄거나 다른 앱으로 가면 마이크도 꺼져요</small></span><input type="checkbox" id="sWake"><i></i></label>
+    <label class="tg"><span><b>답을 소리로 읽기</b><small>읽은 뒤 다시 들어요(이어서 대화)</small></span><input type="checkbox" id="sRead"><i></i></label>
+    <div class="row"><span>읽는 속도</span><div class="seg" id="sRate"><button data-v="0.8">천천히</button><button data-v="1">보통</button><button data-v="1.25">빠르게</button></div></div>
+    <button class="wide" id="sAssist">측면 버튼으로 부르기 설정<small>기본 디지털 어시스턴트 앱을 ‘자비스’로 고르세요</small></button>
+    <button class="wide ghost" id="sClose">닫기</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="md.js"></script>
+<script src="jarvis.js"></script>
+</body></html>

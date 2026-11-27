@@ -75,6 +75,35 @@ class DnrVoice(private val ctx: Context, private val emit: (String, JSONObject) 
         rec = r; r.start()
     }
 
+    // ---------- 자비스 부르기("자비스 온") 대기 ----------
+    /**
+     * 화면이 켜져 있는 동안만: 짧은 말소리가 들리면 기기 안 AI로 받아 적어 화면(JS)에 넘김 → JS가 "자비스"가 있는지 봄.
+     * wake {state: armed | heard(text) | idle(조용함 → 다시 대기) | off(이 모델은 소리를 못 받음)}
+     */
+    fun wake() {
+        if (rec != null || sys != null) return
+        if (!prefs.getBoolean("sttDnrOk", true) || prefs.getString("stt", "auto") == "system") {
+            emit("wake", JSONObject().put("state", "off")); return
+        }
+        val out = File(ctx.cacheDir, "voice").apply { mkdirs() }.resolve("wake.wav")
+        emit("wake", JSONObject().put("state", "armed"))
+        val r = Recorder(out, onLevel = { lv -> emit("wake", JSONObject().put("state", "level").put("level", lv.toDouble())) },
+            waitMs = 45000, maxMs = 6000, silenceMs = 700) { file, _ ->
+            rec = null
+            if (file == null) { emit("wake", JSONObject().put("state", "idle")); return@Recorder }
+            CoroutineScope(Dispatchers.Default).launch {
+                val text = runCatching { App.app.ai.transcribe(file) }.getOrElse { t ->
+                    if (t is Ai.NoAudioException) { prefs.edit().putBoolean("sttDnrOk", false).apply(); emit("wake", JSONObject().put("state", "off")); return@launch }
+                    ""
+                }
+                emit("wake", JSONObject().put("state", "heard").put("text", text))
+            }
+        }
+        rec = r; r.start()
+    }
+
+    fun stopWake() { rec?.cancel(); rec = null }
+
     /** 녹음된 파일(16kHz 모노 WAV)을 받아 적기 — 자동 점검에서도 씀 */
     fun transcribeFile(file: File, engine: String = "dnr") {
         emit("voice", JSONObject().put("state", "thinking").put("engine", engine))
@@ -215,7 +244,9 @@ class DnrVoice(private val ctx: Context, private val emit: (String, JSONObject) 
     }
 
     /** 16kHz 모노 녹음. 말이 시작된 뒤 1.2초 조용하면 끝, 최대 30초, 8초 안에 말이 없으면 취소 */
-    private class Recorder(private val out: File, private val onLevel: (Float) -> Unit, private val onEnd: (File?, String?) -> Unit) {
+    private class Recorder(private val out: File, private val onLevel: (Float) -> Unit,
+                           private val waitMs: Int = 8000, private val maxMs: Int = 30000, private val silenceMs: Int = 1200,
+                           private val onEnd: (File?, String?) -> Unit) {
         @Volatile private var stop = false
         @Volatile private var cancelled = false
         private val main = Handler(Looper.getMainLooper())
@@ -248,9 +279,9 @@ class DnrVoice(private val ctx: Context, private val emit: (String, JSONObject) 
                     if (rms > th) { speech = true; silentMs = 0 } else if (speech) silentMs += 20
                     val now = System.currentTimeMillis()
                     if (now - lastLevel > 80) { lastLevel = now; val lv = (rms / 6000.0).coerceIn(0.0, 1.0).toFloat(); main.post { onLevel(lv) } }
-                    if (speech && silentMs >= 1200) break
-                    if (!speech && totalMs >= 8000) { cancelled = true; break }
-                    if (totalMs >= 30000) break
+                    if (speech && silentMs >= silenceMs) break
+                    if (!speech && totalMs >= waitMs) { cancelled = true; break }
+                    if (totalMs >= maxMs) break
                 }
             } finally { runCatching { ar.stop() }; ar.release() }
             if (cancelled) { main.post { onEnd(null, null) }; return@Thread }
