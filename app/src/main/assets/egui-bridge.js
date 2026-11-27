@@ -153,6 +153,20 @@
         location.replace(location.pathname + "?" + params.toString().replace(/=(&|$)/g, "$1") + location.hash);
         return;
       }
+      if (CFG.failed.test(text) && el && !el.dataset.dnExplained) {
+        // WebGL2로도 못 뜸: 원인을 한국어로 알려 줌 (원래 오류 문구는 아래에 작게 남김)
+        el.dataset.dnExplained = "1";
+        const limit = /max_texture_dimension_2d/.test(text);
+        const box = document.createElement("div");
+        box.style.cssText = "max-width:520px;margin:0 20px 14px;padding:14px 16px;border-radius:12px;background:#2b2d31;color:#eee;font:15px/1.6 system-ui,sans-serif;text-align:left";
+        box.textContent = limit
+          ? "이 기기의 그래픽 성능(큰 그림 크기 한도)으로는 녹음 편집기를 띄울 수 없습니다. 최근 갤럭시 기기나 DeX에서는 열립니다. 녹음 파일은 다른 기기의 덜누름 워크에서 열 수 있습니다."
+          : "녹음 편집기를 시작하지 못했습니다. 앱을 닫았다가 다시 열어 보세요. 계속되면 Android System WebView를 업데이트해 주세요.";
+        el.style.pointerEvents = "auto";
+        el.insertBefore(box, el.firstChild);
+        post({ t: "log", m: "시작 실패 (WebGL2): " + text.slice(0, 300) });
+        return;
+      }
       if (Date.now() - t0 < 120000) setTimeout(tick, 500);
     };
     setTimeout(tick, 500);
