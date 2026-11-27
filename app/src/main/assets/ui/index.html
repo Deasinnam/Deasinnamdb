@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>덜누름 벤치</title>
+<link rel="stylesheet" href="bench.css">
+</head>
+<body>
+<main id="app">
+
+  <!-- 1 · 시작 -->
+  <section class="screen" id="home">
+    <header class="brand">
+      <img src="icons/bench.png" alt="" width="44" height="44">
+      <div><strong>덜누름 벤치</strong><span>이 폰, PC처럼 어디까지 될까?</span></div>
+      <span class="ver" id="ver"></span>
+    </header>
+
+    <section class="card">
+      <div class="row-between"><span class="muted">측정할 기기</span><span class="dim small">자동 인식</span></div>
+      <strong class="dev-name" id="devName">—</strong>
+      <div class="spec" id="devSpec"></div>
+    </section>
+
+    <section>
+      <div class="row-between"><h2>설치된 덜누름 앱</h2><span class="muted small" id="appCount"></span></div>
+      <div class="apps" id="apps"></div>
+      <p class="note">v0.1은 각 덜누름 앱이 하는 작업(문서 · 사진 · 영상 · 오디오 · 창 · 웹 · 게임 · 계기판)을 벤치 안에서 똑같이 돌려 잽니다. 앱마다 직접 재는 "벤치 모드"는 다음 버전에서 붙입니다.</p>
+    </section>
+
+    <section>
+      <h2>측정 방식</h2>
+      <div class="modes">
+        <label class="mode"><input type="radio" name="mode" value="full" checked><span><strong>전체 측정 · 약 12분</strong><em>9개 분야 + 10분 연속 부하(발열 · 배터리)</em></span></label>
+        <label class="mode"><input type="radio" name="mode" value="quick"><span><strong>빠른 측정 · 약 2분</strong><em>9개 분야만, 연속 부하는 빼고</em></span></label>
+      </div>
+    </section>
+
+    <div class="cond" id="cond"></div>
+    <div class="bottom">
+      <button class="btn primary" id="startBtn" type="button">측정 시작</button>
+      <button class="btn ghost" id="historyBtn" type="button" hidden>지난 결과 보기</button>
+    </div>
+  </section>
+
+  <!-- 2 · 측정 중 -->
+  <section class="screen" id="run" hidden>
+    <header class="row-between">
+      <span class="muted" id="runMode">측정 중</span>
+      <span class="mono accent" id="runCount">0 / 9</span>
+    </header>
+    <div class="bar"><div id="runBar"></div></div>
+    <section class="card live">
+      <div class="live-head">
+        <img id="runIcon" src="icons/bench.png" alt="" width="40" height="40">
+        <div><span class="muted small" id="runCat">—</span><strong id="runStep">준비 중</strong></div>
+      </div>
+      <div id="stage" aria-hidden="true"></div>
+      <svg id="graph" viewBox="0 0 320 70" preserveAspectRatio="none" aria-hidden="true"><polyline id="graphLine" points="" /></svg>
+      <div class="stats">
+        <div><span>지금</span><strong id="statNow">—</strong></div>
+        <div><span>배터리 온도</span><strong id="statTemp">—</strong></div>
+        <div><span>배터리</span><strong id="statBat">—</strong></div>
+      </div>
+    </section>
+    <ol class="steps" id="steps"></ol>
+    <div class="bottom">
+      <button class="btn ghost" id="stopBtn" type="button">그만두기</button>
+    </div>
+  </section>
+
+  <!-- 3 · 총점 -->
+  <section class="screen" id="result" hidden>
+    <header class="row-between">
+      <span class="muted" id="resDev">—</span>
+      <span class="pill" id="resMode">—</span>
+    </header>
+    <div class="total">
+      <span class="muted">덜누름 실사용 총점</span>
+      <div><strong class="mono" id="resTotal">0</strong><span class="mono dim">/ 10,000</span></div>
+      <div class="grade"><b id="resGrade">-</b><span id="resVerdict">—</span></div>
+      <p class="muted small" id="resSummary"></p>
+      <p class="warn" id="resWarn" hidden></p>
+    </div>
+    <svg id="radar" viewBox="0 0 320 228" role="img" aria-label="분야별 점수 그래프"></svg>
+    <div class="cats" id="resCats"></div>
+    <p class="muted small center" id="resSustain"></p>
+    <div class="bottom two">
+      <button class="btn ghost" id="shareBtn" type="button">결과 공유</button>
+      <button class="btn primary" id="detailBtn" type="button">어디까지 되나 보기</button>
+    </div>
+    <button class="btn link" id="homeBtn" type="button">처음으로</button>
+  </section>
+
+  <!-- 4 · 어디까지 되나 -->
+  <section class="screen" id="detail" hidden>
+    <header class="back-head">
+      <button class="icon-btn" type="button" data-back aria-label="총점으로 돌아가기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><strong>이 폰으로 어디까지 되나</strong><span class="muted small">실제 작업을 돌려 잰 결과</span></div>
+    </header>
+    <div class="legend"><span><b class="ok">✓</b> 충분</span><span><b class="mid">△</b> 되지만 느림</span><span><b class="no">✕</b> 어려움</span></div>
+    <div id="detailList"></div>
+    <p class="note">기준은 "PC에서 하던 일을 기다림 없이 할 수 있나"입니다. v0.1의 점수 기준값은 임시이며, 여러 기기에서 모은 결과로 다듬을 예정입니다. "추정"이라고 적힌 항목은 기기 정보로 어림한 값입니다.</p>
+  </section>
+
+  <!-- 지난 결과 -->
+  <section class="screen" id="history" hidden>
+    <header class="back-head">
+      <button class="icon-btn" type="button" data-back aria-label="처음으로 돌아가기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><strong>지난 결과</strong><span class="muted small">이 기기에만 저장됩니다</span></div>
+    </header>
+    <ol class="hist" id="histList"></ol>
+  </section>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</main>
+<script src="bench.js"></script>
+</body>
+</html>
