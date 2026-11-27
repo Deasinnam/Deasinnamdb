@@ -238,6 +238,16 @@ class MainActivity : Activity() {
             return Runner.send(chatId, text, (0 until imgs.length()).map { imgs.getString(it) }, { t, d -> emit(t, d) })
         }
 
+        /** 인터넷 검색을 함께 써서 묻기(사용자 네이버 키) */
+        @JavascriptInterface fun sendWeb(chatId: String, text: String, imagesJson: String): String {
+            val imgs = JSONArray(imagesJson.ifBlank { "[]" })
+            if (!WebSearch.configured(app)) return "nokey"
+            return Runner.send(chatId, text, (0 until imgs.length()).map { imgs.getString(it) }, { t, d -> emit(t, d) }, web = true)
+        }
+        /** 검색 키 확인 후 저장: ok | 오류 문장 (실제로 한 번 검색해 봄) */
+        @JavascriptInterface fun webKey(id: String, secret: String): String = WebSearch.saveKey(app, id, secret)
+        @JavascriptInterface fun webClear() { WebSearch.clear(app); app.ai.setSettings(JSONObject().put("webOn", false)) }
+
         @JavascriptInterface fun stop() { app.ai.stopDraw() }
 
         // ---------- DNR 음성 엔진 ----------

@@ -82,7 +82,7 @@
         <button id="micBtn" class="ibtn mic" aria-label="말로 묻기 (DNR 음성 엔진)"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
         <button id="sendBtn" class="send" aria-label="보내기"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       </div>
-      <p class="cfoot">✈ 기기 안에서만 처리 · AI의 답은 틀릴 수 있어요</p>
+      <p class="cfoot" id="cfoot">✈ 기기 안에서만 처리 · AI의 답은 틀릴 수 있어요</p>
     </footer>
   </div>
 </section>
@@ -99,6 +99,7 @@
     <button class="row tool" id="tDraw" data-tool="draw"><span>🎨</span><b>그림 그리기<small id="tDrawSub">폰 안에서 그림을 만들어요</small></b><i class="ck"></i></button>
     <button class="row tool" id="tDoc" data-tool="doc"><span>📄</span><b>문서 만들기<small>답을 DNR 워크에서 Word · Excel로 열어요</small></b><i class="ck"></i></button>
     <label class="tgl ptgl"><span><b>💡 깊게 생각하고 답하기</b><small>어려운 문제 · 계산 · 코딩. 답이 늦어져요</small></span><input type="checkbox" id="pThink"><i></i></label>
+    <label class="tgl ptgl"><span><b>🌐 인터넷 검색 함께 쓰기</b><small id="pWebSub">오늘 소식 · 날씨 · 가격처럼 최신 정보가 필요할 때</small></span><input type="checkbox" id="pWeb"><i></i></label>
     <div class="psec">AI 모델</div>
     <div id="pModels" class="pmodels"></div>
     <button class="row ghost" id="aNo">닫기</button>
@@ -180,6 +181,12 @@
         <button class="btn" id="ttsSet">읽어 주는 목소리 설정</button>
       </div>
 
+      <h3>인터넷 검색 (선택)</h3>
+      <p class="muted">켜면 질문할 때 <b>검색어만</b> 네이버로 보내고, 찾은 결과를 기기 안 AI가 읽고 답해요. 내 검색 키로 이 폰에서 네이버로 바로 검색하고, 덜누름 서버는 거치지 않아요. 키는 이 폰에만 저장돼요.</p>
+      <p class="muted" id="webState"></p>
+      <button class="btn" id="webKeyBtn">검색 키 넣기</button> <button class="btn bad hide" id="webDel">키 지우기</button>
+      <label class="tgl"><span><b>필요해 보이면 인터넷 검색 권하기</b><small>최신 정보가 필요한 질문이면 답 아래에 "인터넷에서 찾아볼까요?"를 보여 줘요. 저절로 검색하지는 않아요</small></span><input type="checkbox" id="webSuggest"><i></i></label>
+
       <h3>DNR 워크(덜누름 워크) 연동</h3>
       <label class="tgl"><span><b>문서 만들기 허용</b><small>답 · 대화로 Word · Excel 문서를 만들어 DNR 워크에서 열어요. 파일은 문서/Chat DNR Ai 폴더에만</small></span><input type="checkbox" id="work"><i></i></label>
       <p class="muted" id="workState"></p>
@@ -193,6 +200,28 @@
       <p class="muted">AI 모델: Google Gemma 4 (Apache 2.0) · 실행: Google LiteRT-LM (Apache 2.0)<br>음성: DNR 음성 엔진(받아 적기 Gemma 4 · 읽기 휴대폰 TTS)<br>그림: DreamShaper 7 + LCM (CreativeML OpenRAIL-M) · 실행: stable-diffusion.cpp (MIT)<br>
         <a href="#" data-url="https://ai.google.dev/gemma/docs/core/model_card_4">Gemma 4 모델 설명</a> · <a href="#" data-url="https://deolnureum.com/">DNR 앱센터</a></p>
     </div>
+  </div>
+</div>
+
+<!-- 인터넷 검색 키 넣기 -->
+<div id="keySheet" class="sheet hide">
+  <div class="sheet-in small">
+    <div class="doc-h"><b>네이버 검색 키 넣기</b>
+      <span>한 번만 하면 돼요. 키는 무료로 받을 수 있고(네이버 하루 25,000번), 이 폰에만 저장돼요.</span>
+      <ol class="steps">
+        <li><b>네이버 클라우드 플랫폼</b>에 네이버 아이디로 로그인하고 콘솔에서 <b>NAVER API HUB</b>를 열어요</li>
+        <li><b>Subscription</b>에서 <b>검색</b> API를 구독(이용 신청)해요</li>
+        <li><b>Application</b>을 하나 등록하고 검색 API를 연결해요</li>
+        <li><b>인증 정보</b>에서 Client ID와 Client Secret을 복사해 아래에 붙여 넣어요</li>
+      </ol>
+      <span class="muted">예전 네이버 개발자 센터에서 받은 키도 쓸 수 있어요(2027년 6월 30일까지).</span>
+    </div>
+    <button class="row" id="keyGuide"><span>🔗</span>NAVER API HUB 열기 <small>브라우저</small></button>
+    <input class="kin" id="kId" placeholder="Client ID" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input class="kin" id="kSec" placeholder="Client Secret" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <p class="muted" id="kMsg"></p>
+    <button class="btn pri big" id="kSave">확인하고 저장</button>
+    <button class="row ghost" id="kNo">닫기</button>
   </div>
 </div>
 

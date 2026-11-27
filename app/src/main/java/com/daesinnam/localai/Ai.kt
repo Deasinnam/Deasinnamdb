@@ -67,6 +67,10 @@ class Ai(private val ctx: Context) {
         .put("ttsRate", prefs.getFloat("ttsRate", 1.0f).toDouble())
         .put("voiceRead", prefs.getBoolean("voiceRead", true))
         .put("jarvisWake", prefs.getBoolean("jarvisWake", true))
+        .put("webKey", WebSearch.configured(ctx))
+        .put("webKind", WebSearch.kind(ctx))
+        .put("webOn", prefs.getBoolean("webOn", false))
+        .put("webSuggest", prefs.getBoolean("webSuggest", true))
         .put("audio", audioOk)
     fun setSettings(o: JSONObject) {
         val e = prefs.edit()
@@ -81,6 +85,8 @@ class Ai(private val ctx: Context) {
         if (o.has("ttsRate")) e.putFloat("ttsRate", o.getDouble("ttsRate").toFloat().coerceIn(0.5f, 2f))
         if (o.has("voiceRead")) e.putBoolean("voiceRead", o.getBoolean("voiceRead"))
         if (o.has("jarvisWake")) e.putBoolean("jarvisWake", o.getBoolean("jarvisWake"))
+        if (o.has("webOn")) e.putBoolean("webOn", o.getBoolean("webOn"))
+        if (o.has("webSuggest")) e.putBoolean("webSuggest", o.getBoolean("webSuggest"))
         e.apply()
         // 처리 장치 · 빠른 생성(MTP)은 엔진을 다시 올려야 적용
         if (o.has("backend") || o.has("mtp")) scope.launch { unload() }

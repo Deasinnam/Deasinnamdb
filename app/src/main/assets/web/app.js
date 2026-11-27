@@ -147,10 +147,15 @@ function msgHtml(m,i){
   var prevU=null;for(var k=i-1;k>=0;k--)if(CUR.messages[k].role==="user"){prevU=CUR.messages[k];break}
   var docCard=(i===CUR.messages.length-1&&m.text&&!m.error&&prevU&&DOCRE.test(prevU.text||""))?
     '<div class="doc-card"><b>📄 이 답을 DNR 워크에서 문서로 열까요?</b><button class="btn pri" data-doc-kind="docx" data-i="'+i+'">Word 문서</button>'+(/\n\s*\|/.test("\n"+m.text)?'<button class="btn" data-doc-kind="xlsx" data-i="'+i+'">Excel 표</button>':"")+'</div>':"";
-  return '<div class="m ai">'+AV+'<div class="body">'+
+  var wst=(S&&S.settings)||{};
+  var webTag=m.web?'<div class="webtag">🌐 인터넷 검색 '+((m.sources||[]).length)+'곳 + 기기 안 AI</div>':m.webFail?'<div class="webtag fail">🌐 검색 못 함('+esc(m.webFail)+') · 기기 안에서만 답했어요</div>':"";
+  var srcs=m.web&&(m.sources||[]).length?'<div class="srcs"><b>출처</b>'+m.sources.map(function(x,k){return '<a href="#" data-url="'+esc(x.u)+'"><i>['+(k+1)+']</i><span>'+esc(x.t)+'</span><small>'+esc(x.s||"")+(x.d?" · "+esc(x.d):"")+'</small></a>'}).join("")+'</div>':"";
+  var webCard=(i===CUR.messages.length-1&&!m.web&&!m.webFail&&m.text&&prevU&&!prevU.draw&&wst.webSuggest!==false&&(NEEDWEB.test(prevU.text||"")||NOWEB.test(m.text)))?
+    '<div class="web-card"><b>🌐 최신 정보가 필요해 보여요. 인터넷에서 찾아볼까요?</b><button class="btn" data-web-retry>인터넷에서 찾기</button></div>':"";
+  return '<div class="m ai">'+AV+'<div class="body">'+webTag+
     (m.thought?'<details class="think"><summary>생각한 과정</summary><div>'+esc(m.thought)+'</div></details>':"")+
     '<div class="md">'+mdRender(m.text||"")+'</div>'+
-    (m.error?'<div class="err">'+esc(m.error)+'</div>':"")+docCard+
+    srcs+(m.error?'<div class="err">'+esc(m.error)+'</div>':"")+docCard+webCard+
     '<div class="acts"><button data-copy-msg="'+i+'" aria-label="복사"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'+
     '<button data-share-msg="'+i+'" aria-label="공유"><svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>'+
     (m.text?'<button data-speak="'+i+'" aria-label="소리로 읽기"'+(SPEAKING===CUR.id+":"+i?' class="speaking"':'')+'><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></button>':"")+
@@ -163,6 +168,7 @@ function wireMsgs(){
   [].forEach.call(t.querySelectorAll("[data-copy-msg]"),function(b){b.onclick=function(){LA.copy(CUR.messages[+b.getAttribute("data-copy-msg")].text||"");toast("복사했어요")}});
   [].forEach.call(t.querySelectorAll("[data-share-msg]"),function(b){b.onclick=function(){LA.share(CUR.messages[+b.getAttribute("data-share-msg")].text||"")}});
   [].forEach.call(t.querySelectorAll("[data-retry]"),function(b){b.onclick=retry});
+  [].forEach.call(t.querySelectorAll("[data-web-retry]"),function(b){b.onclick=webRetry});
   [].forEach.call(t.querySelectorAll("[data-save-img]"),function(b){b.onclick=function(){toast(LA.saveImage(CUR.messages[+b.getAttribute("data-save-img")].image)==="ok"?"갤러리(사진/Chat DNR Ai)에 저장했어요":"저장하지 못했어요")}});
   [].forEach.call(t.querySelectorAll("[data-share-img]"),function(b){b.onclick=function(){LA.shareImage(CUR.messages[+b.getAttribute("data-share-img")].image)}});
   [].forEach.call(t.querySelectorAll("[data-speak]"),function(b){b.onclick=function(){
@@ -180,12 +186,14 @@ document.addEventListener("click",function(e){
 function scrollEnd(force){var m=$("msgs");if(force||m.scrollHeight-m.scrollTop-m.clientHeight<160)m.scrollTop=m.scrollHeight}
 
 // ---------- 보내기 · 받기 ----------
-function send(text,images){
+function send(text,images,web){
   if(BUSY)return;
   if(!S.active){toast("먼저 AI 모델을 내려받아 주세요");openSettings();return}
   text=(text||"").trim();images=images||[];
   if(!text&&!images.length)return;
-  var r=LA.send(CUR.id,text,JSON.stringify(images));
+  if(web===undefined)web=!!(S.settings||{}).webOn;
+  var r=web?LA.sendWeb(CUR.id,text,JSON.stringify(images)):LA.send(CUR.id,text,JSON.stringify(images));
+  if(r==="nokey"){openKey();return}
   if(r!=="ok"){toast(r==="busy"?"답을 만드는 중이에요":"보내지 못했어요");return}
   CUR=J(LA.chat(CUR.id));
   $("inp").value="";autoH();ATT=[];drawAtts();
@@ -195,13 +203,38 @@ function send(text,images){
   LIVE.innerHTML=AV+'<div class="body"><div class="think hide"></div><div class="md"><span class="typing"><i></i><i></i><i></i></span></div></div>';
   $("thread").appendChild(LIVE);scrollEnd(true);
 }
+// 인터넷 검색: 최신 정보가 필요해 보이는 질문 / 모른다고 한 답
+var NEEDWEB=/오늘|지금|현재|최신|최근|요즘|뉴스|소식|날씨|기온|미세먼지|주가|시세|환율|가격|금리|순위|결과|일정|개봉|출시|발표|올해|이번\s*(주|달)|어제|내일|20\d\d년|누가\s*이겼|인터넷|검색/;
+var NOWEB=/인터넷에\s*연결되어\s*있지\s*않|실시간\s*정보|최신\s*정보(를|는)?\s*(확인|알\s*수)|확인할\s*수\s*없/;
+function webRetry(){
+  if(BUSY||!CUR)return;
+  var st=S.settings||{};if(!st.webKey){openKey();return}
+  var ms=CUR.messages,last=null;
+  for(var i=ms.length-1;i>=0;i--)if(ms[i].role==="user"){last=ms[i];break}
+  if(last)send(last.text,(last.images||[]).filter(Boolean),true);
+}
+function openKey(){
+  $("kId").value="";$("kSec").value="";$("kMsg").textContent=(S.settings||{}).webKey?"새 키를 넣으면 지금 키를 바꿔요":"";
+  $("keySheet").classList.remove("hide");
+}
+$("keyGuide").onclick=function(){LA.openUrl("https://www.ncloud.com/product/applicationService/apiHub")};
+$("kNo").onclick=function(){$("keySheet").classList.add("hide")};
+$("keySheet").onclick=function(e){if(e.target===this)this.classList.add("hide")};
+$("kSave").onclick=function(){
+  var b=this;$("kMsg").textContent="네이버에 한 번 검색해서 키를 확인하는 중…";b.disabled=true;
+  setTimeout(function(){
+    var r=LA.webKey($("kId").value,$("kSec").value);b.disabled=false;
+    if(r==="ok"){$("keySheet").classList.add("hide");LA.setSettings(JSON.stringify({webOn:true}));state();drawChips();if(!$("setSheet").classList.contains("hide"))drawSettings();toast("검색 키를 저장했어요. 🌐 인터넷 검색을 켰어요")}
+    else $("kMsg").textContent=r;
+  },30);
+};
 function retry(){
   if(BUSY||!CUR)return;
   var ms=CUR.messages,last=null;
   for(var i=ms.length-1;i>=0;i--)if(ms[i].role==="user"){last=ms[i];break}
   if(!last)return;
   if(last.draw){doDraw(last.text);return}
-  send(last.text,(last.images||[]).filter(Boolean));
+  send(last.text,(last.images||[]).filter(Boolean),!!last.web);
 }
 var pendingDelta=null,raf=0;
 function onDelta(d){
@@ -212,6 +245,14 @@ function onDelta(d){
     if(x.thought){var th=LIVE.querySelector(".think");th.classList.remove("hide");th.innerHTML='<b>생각하는 중…</b><div>'+esc(x.thought.slice(-600))+'</div>'}
     scrollEnd(false);
   });
+}
+function onWebSearch(d){
+  if(!LIVE||!CUR||d.chat!==CUR.id)return;
+  var md=LIVE.querySelector(".md");
+  if(d.state==="searching")md.innerHTML='<div class="webtag">🌐 인터넷에서 찾는 중 · '+esc(d.query||"")+'</div><span class="typing"><i></i><i></i><i></i></span>';
+  else if(d.state==="found")md.innerHTML='<div class="webtag">🌐 '+d.count+'곳에서 찾았어요 · 기기 안 AI가 읽는 중</div><span class="typing"><i></i><i></i><i></i></span>';
+  else md.innerHTML='<div class="webtag fail">🌐 '+esc(d.error||"검색하지 못했어요")+' · 기기 안에서 답할게요</div><span class="typing"><i></i><i></i><i></i></span>';
+  scrollEnd(false);
 }
 function onFinish(d){
   if(CUR&&d.chat===CUR.id){CUR=J(LA.chat(CUR.id));LIVE=null;drawChat()}
@@ -280,10 +321,13 @@ function drawChips(){
   var X='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   if(TOOL==="draw")h+='<span class="chip">🎨 그림 그리기<button data-x="tool" aria-label="그림 그리기 끄기">'+X+'</button></span>';
   if(TOOL==="doc")h+='<span class="chip">📄 문서 만들기 · DNR 워크<button data-x="tool" aria-label="문서 만들기 끄기">'+X+'</button></span>';
+  if(st.webOn&&TOOL!=="draw")h+='<span class="chip web">🌐 인터넷 검색 함께<button data-x="web" aria-label="인터넷 검색 끄기">'+X+'</button></span>';
   if(st.thinking&&TOOL!=="draw")h+='<span class="chip soft">💡 깊게 생각하기<button data-x="think" aria-label="깊게 생각하기 끄기">'+X+'</button></span>';
   $("chips").innerHTML=h;
+  $("cfoot").textContent=st.webOn&&TOOL!=="draw"?"🌐 검색어만 네이버로 보내고 답은 기기 안에서 만들어요 · AI의 답은 틀릴 수 있어요":"✈ 기기 안에서만 처리 · AI의 답은 틀릴 수 있어요";
   [].forEach.call($("chips").querySelectorAll("[data-x]"),function(b){b.onclick=function(){
-    if(b.getAttribute("data-x")==="tool")setTool("");else{LA.setSettings(JSON.stringify({thinking:false}));state();drawChips()}
+    var x=b.getAttribute("data-x");
+    if(x==="tool")setTool("");else if(x==="web"){LA.setSettings(JSON.stringify({webOn:false}));state();drawChips()}else{LA.setSettings(JSON.stringify({thinking:false}));state();drawChips()}
     $("inp").focus();
   }});
   $("inp").placeholder=TOOL?PH[TOOL]:(ATT.length?"사진에 대해 물어보세요 (비우면 설명해 줘요)":PH[""]);
@@ -294,6 +338,8 @@ function openPlus(){
   [].forEach.call($("attMenu").querySelectorAll(".row.tool"),function(b){b.classList.toggle("on",b.getAttribute("data-tool")===TOOL)});
   $("tDrawSub").textContent=S.imageEngine===false?"이 기기에서는 쓸 수 없어요":S.imageReady?"폰 안에서 그림을 만들어요":"처음 한 번 그림 모델("+gb((S.models.filter(function(m){return m.kind==="image"})[0]||{bytes:0}).bytes)+"GB)을 받아요";
   $("pThink").checked=!!(S.settings||{}).thinking;
+  $("pWeb").checked=!!(S.settings||{}).webOn;
+  $("pWebSub").textContent=(S.settings||{}).webKey?"검색어만 네이버로 보내고, 답은 기기 안 AI가 만들어요":"처음 한 번 네이버 검색 키를 넣어야 해요";
   var h=chatModels().map(function(m){
     var on=S.active===m.id,busy=DL&&DL.id===m.id&&dlActive();
     return '<button class="mrow'+(on?" on":"")+'" data-m="'+m.id+'"><b>'+esc(m.name)+'<small>'+esc(m.badge)+(m.ready?"":" · "+gb(m.bytes)+"GB")+'</small></b>'+
@@ -318,6 +364,11 @@ function closePlus(){$("attMenu").classList.add("hide")}
   if(t==="draw"&&S.imageEngine===false){toast("이 기기에서는 그림 엔진을 쓸 수 없어요");return}
   if(setTool(t)){closePlus();$("inp").focus()}
 }});
+$("pWeb").onchange=function(){
+  if(this.checked&&!(S.settings||{}).webKey){this.checked=false;closePlus();openKey();return}
+  LA.setSettings(JSON.stringify({webOn:this.checked}));state();drawChips();
+  if(this.checked&&S.online===false)toast("지금 인터넷 연결이 없어요. 연결되면 검색해요");
+};
 $("pThink").onchange=function(){LA.setSettings(JSON.stringify({thinking:this.checked}));state();drawChips()};
 $("aiPill").onclick=openPlus;
 function doDraw(text){
@@ -427,6 +478,9 @@ function drawSettings(){
   $("sys").value=st.system||"";
   [].forEach.call($("imgSize").querySelectorAll("button"),function(b){b.classList.toggle("on",+b.getAttribute("data-v")===(st.imgSize||512))});
   $("work").checked=!!st.work;
+  $("webState").textContent=st.webKey?("검색 키 있음 · "+(st.webKind==="dev"?"네이버 개발자 센터 키":"NAVER API HUB 키")+" · "+(st.webOn?"지금 켜져 있어요(입력창 🌐)":"지금은 꺼져 있어요(+ 메뉴에서 켜기)")):"검색 키가 없어요. 넣기 전까지는 기기 안에서만 답해요";
+  $("webKeyBtn").textContent=st.webKey?"검색 키 바꾸기":"검색 키 넣기";$("webDel").classList.toggle("hide",!st.webKey);
+  $("webSuggest").checked=st.webSuggest!==false;
   var wi=J(LA.workInfo())||{};$("workState").textContent=wi.installed?"DNR 워크가 설치되어 있어요":"DNR 워크가 설치되어 있지 않아요 · deolnureum.com에서 받을 수 있어요";
   $("imgInfo").textContent=S.imageEngine===false?"이 기기에서는 그림 엔진을 불러오지 못했어요":S.imageReady?"\"고양이 그려줘\"처럼 말하거나 입력창의 🎨를 누르면 폰 안에서 그림을 그려요":"그림을 그리려면 위 목록에서 🎨 그림 모델을 먼저 내려받아 주세요";
   $("voiceRead").checked=st.voiceRead!==false;
@@ -445,6 +499,9 @@ $("mtp").onchange=function(){LA.setSettings(JSON.stringify({mtp:this.checked}));
 [].forEach.call($("backend").querySelectorAll("button"),function(b){b.onclick=function(){if(BUSY){toast("답을 다 만든 뒤에 바꿀 수 있어요");return}LA.setSettings(JSON.stringify({backend:b.getAttribute("data-v")}));state();drawSettings();toast("다음 질문부터 적용돼요")}});
 [].forEach.call($("imgSize").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({imgSize:+b.getAttribute("data-v")}));state();drawSettings()}});
 $("work").onchange=function(){LA.setSettings(JSON.stringify({work:this.checked}));state();toast(this.checked?"DNR 워크 연동을 허용했어요":"DNR 워크 연동을 껐어요")};
+$("webKeyBtn").onclick=openKey;
+$("webDel").onclick=function(){if(!confirm("검색 키를 지울까요? 인터넷 검색도 꺼져요."))return;LA.webClear();state();drawSettings();drawChips();toast("검색 키를 지웠어요")};
+$("webSuggest").onchange=function(){LA.setSettings(JSON.stringify({webSuggest:this.checked}));state()};
 $("voiceRead").onchange=function(){LA.setSettings(JSON.stringify({voiceRead:this.checked}));state()};
 [].forEach.call($("stt").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({stt:b.getAttribute("data-v")}));state();drawSettings()}});
 [].forEach.call($("ttsRate").querySelectorAll("button"),function(b){b.onclick=function(){LA.setSettings(JSON.stringify({ttsRate:+b.getAttribute("data-v")}));state();drawSettings();LA.speak("이 속도로 읽어 드릴게요.","rate")}});
@@ -470,6 +527,7 @@ window.LAe=function(type,d){
   else if(type==="shared"){if($("main").classList.contains("hide"))return;if(BUSY)return;newChat();(d.images||[]).forEach(function(p){ATT.push(p)});$("inp").value=d.text||"";autoH();drawAtts();setSend()}
   else if(type==="toast")toast(d.text);
   else if(type==="voice")onVoice(d);
+  else if(type==="websearch")onWebSearch(d);
   else if(type==="voiceask"){VOICE=true;vShow("받아 적는 중","기기 안 AI가 듣고 있어요",true)}
   else if(type==="speak")onSpeak(d);
   else if(type==="mic"){if(d.granted)startVoice();else toast("말로 물으려면 마이크 권한이 필요해요")}
@@ -482,6 +540,7 @@ window.onBack=function(){
   if(!$("docSheet").classList.contains("hide")){$("docSheet").classList.add("hide");return true}
   if(!$("workAsk").classList.contains("hide")){$("workAsk").classList.add("hide");return true}
   if(!$("attMenu").classList.contains("hide")){closePlus();return true}
+  if(!$("keySheet").classList.contains("hide")){$("keySheet").classList.add("hide");return true}
   if(!$("setSheet").classList.contains("hide")){$("setSheet").classList.add("hide");return true}
   if($("main").classList.contains("drawer")){closeDrawer();return true}
   return false;
@@ -502,7 +561,14 @@ function mockLA(mode){
     {role:"model",ms:9100,text:"영수증에서 읽은 내용이에요.\n\n- **날짜**: 2026년 11월 24일 (월)\n- **합계**: 58,400원\n\n| 품목 | 금액 |\n|---|---|\n| 원두 2kg | 46,000원 |\n| 우유 | 12,400원 |\n| **합계** | **58,400원** |"}]};
   var chats=mode==="empty"?[]:[{id:"c1",title:chat.title,updated:now,count:4},{id:"c2",title:"거래처에 납품 연기 메일",updated:now-3600e3,count:2},{id:"c3",title:"폴드 펼침 감지 코틀린 코드",updated:now-864e5,count:6},{id:"c4",title:"일본 출장 일정 영어 번역",updated:now-4*864e5,count:4},{id:"c5",title:"유튜브 영상 주제 아이디어",updated:now-20*864e5,count:2}];
   var empty={id:"c0",title:"새 대화",updated:now,messages:[]};
-  var st={temperature:0.8,thinking:false,backend:"auto",system:"",mtp:true,stt:"auto",ttsRate:1,voiceRead:true,audio:true};
+  var st={temperature:0.8,thinking:false,backend:"auto",system:"",mtp:true,stt:"auto",ttsRate:1,voiceRead:true,audio:true,webKey:mode==="web"||mode==="websuggest",webKind:"hub",webOn:mode==="web",webSuggest:true};
+  if(mode==="web")chat={id:"c1",title:"이번 주말 서울 날씨",updated:now,messages:[
+    {role:"user",text:"이번 주말 서울 날씨 어때?",web:true},
+    {role:"model",ms:8200,web:true,text:"이번 주말 서울은 **토요일 맑고 낮 최고 9도**, **일요일은 오후부터 비** 소식이 있어요 [1][2].\n\n- 토요일: 맑음 · 아침 영하 1도, 낮 9도 [1]\n- 일요일: 흐리고 오후 비 · 낮 7도 [2]\n- 미세먼지는 토요일 '보통'이에요 [3]\n\n일요일 외출하신다면 우산을 챙기세요.",
+     sources:[{t:"주말 날씨 토요일 맑고 일요일 오후 전국 비",u:"https://news.example.com/1",s:"news.example.com",d:"2026-11-27"},{t:"[날씨] 일요일 오후부터 비…기온 뚝",u:"https://news.example.com/2",s:"news.example.com",d:"2026-11-28"},{t:"서울 주간 미세먼지 예보",u:"https://air.example.com",s:"air.example.com",d:""}]}]};
+  if(mode==="websuggest")chat={id:"c1",title:"오늘 환율",updated:now,messages:[
+    {role:"user",text:"오늘 원달러 환율 얼마야?"},
+    {role:"model",ms:3100,text:"죄송해요. 저는 인터넷에 연결되어 있지 않아 오늘 환율은 확인할 수 없어요. 은행 앱이나 포털에서 확인해 주세요."}]};
   setTimeout(function(){
     if(mode==="dl")LAe("dl",{id:"gemma4-e4b",got:1.52e9,total:3.66e9,speed:31e6,done:false,error:null});
     if(mode==="settings")openSettings();
@@ -512,6 +578,8 @@ function mockLA(mode){
     if(mode==="drawing"){CUR=J(LA.chat("c1"));drawChat();LIVE=document.createElement("div");LIVE.className="m ai";LIVE.innerHTML=AV+'<div class="body"><div class="gen-prog"><span class="gp-t"></span><div class="bar"><i></i></div></div></div>';$("thread").appendChild(LIVE);BUSY=true;setSend();onDrawStage({chat:"c1",stage:"draw",step:4,steps:6});scrollEnd(true)}
     if(mode==="work"){$("workAsk").classList.remove("hide")}
     if(mode==="plus"){newChat();openPlus()}
+    if(mode==="key"){newChat();openKey()}
+    if(mode==="websearch"){CUR=J(LA.chat("c1"));drawChat();LIVE=document.createElement("div");LIVE.className="m ai";LIVE.innerHTML=AV+'<div class="body"><div class="think hide"></div><div class="md"></div></div>';$("thread").appendChild(LIVE);BUSY=true;setSend();onWebSearch({chat:"c1",state:"searching",query:"이번 주말 서울 날씨"})}
     if(mode==="voice"){CUR=J(LA.chat("c1"));drawChat();startVoice()}
     if(mode==="tool"){newChat();setTool("draw");$("inp").value="비 오는 밤 네온 거리의 고양이";autoH();setSend()}
     [].forEach.call(document.querySelectorAll('img[src="file://__demo__"]'),function(i){i.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="#f4f1ea"/><g fill="#999"><rect x="25" y="20" width="100" height="8"/><rect x="25" y="40" width="70" height="6"/><rect x="25" y="55" width="90" height="6"/><rect x="25" y="70" width="60" height="6"/><rect x="25" y="100" width="100" height="10"/></g></svg>')});
@@ -522,12 +590,12 @@ function mockLA(mode){
     chat:function(id){return JSON.stringify(id==="c1"&&mode!=="empty"?chat:empty)},
     newChat:function(){return JSON.stringify(empty)},
     deleteChat:function(){},deleteAllChats:function(){},renameChat:function(){},
-    send:function(){return "ok"},stop:function(){},preload:function(){},
+    send:function(){return "ok"},sendWeb:function(){return st.webKey?"ok":"nokey"},webKey:function(){return "ok"},webClear:function(){st.webKey=false;st.webOn=false},stop:function(){},preload:function(){},
     micOk:function(){return true},askMic:function(){},listen:function(){setTimeout(function(){LAe("voice",{state:"listening",engine:"dnr"});var n=0,iv=setInterval(function(){LAe("voice",{state:"level",level:Math.random()});if(++n>12){clearInterval(iv)}},90)},50);return "ok"},
     stopListen:function(){},cancelListen:function(){},speak:function(t,id){setTimeout(function(){LAe("speak",{state:"start",id:id})},30)},stopSpeak:function(){},ttsInfo:function(){return JSON.stringify({ready:true,korean:true})},ttsSettings:function(){},
     download:function(){},stopDownload:function(){},deleteModel:function(){},useModel:function(){},
     pickImages:function(){},camera:function(){},dropImage:function(){},
-    settings:function(){return JSON.stringify(st)},setSettings:function(){},
+    settings:function(){return JSON.stringify(st)},setSettings:function(j){var o=JSON.parse(j);for(var k in o)st[k]=o[k]},
     copy:function(){},share:function(){},openUrl:function(){},wifiSettings:function(){},
     draw:function(){return "ok"},saveImage:function(){return "ok"},shareImage:function(){},workInfo:function(){return '{"installed":true,"allowed":false}'},
     toWork:function(){return mode==="doc"?"ok":"consent"},hasTable:function(t){return /\n\s*\|/.test("\n"+t)}
@@ -535,5 +603,5 @@ function mockLA(mode){
 }
 
 boot();
-if(DEMO==="chat"||DEMO==="stream"||DEMO==="settings"||DEMO==="drawing"||DEMO==="work"){var first=J(LA.chats());if(first&&first[0]){openChat(first[0].id)}}
+if(DEMO==="chat"||DEMO==="stream"||DEMO==="settings"||DEMO==="drawing"||DEMO==="work"||DEMO==="web"||DEMO==="websuggest"){var first=J(LA.chats());if(first&&first[0]){openChat(first[0].id)}}
 })();

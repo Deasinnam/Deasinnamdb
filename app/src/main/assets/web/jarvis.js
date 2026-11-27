@@ -13,6 +13,7 @@ var WAKE=false;         // "자비스 온" 대기 중
 var LAST="", ANS_ID=0, SPK=null, toastT=0;
 var RE_ON=/자비스|쟈비스|자비즈|jarvis/i;
 var RE_OFF=/(자비스|쟈비스|jarvis)?\s*(오프|꺼\s*줘|꺼|종료|그만|잘\s*자|off)\s*[.!?。]*$/i;
+var RE_WEB=/(인터넷|웹|네이버)\s*(에서|으로|로)?\s*(좀\s*)?(찾아|검색|알아)|검색해\s*(줘|봐)/;
 var RE_ONLY_ON=/^\s*(헤이\s*)?(자비스|쟈비스|자비즈|jarvis)\s*(온|on|야|아)?\s*[.!?,。]*\s*$/i;
 
 function prefWake(){return ST.jarvisWake!==false}
@@ -46,6 +47,7 @@ function drawInfo(){
   INFO=JSON.parse(LA.info());ST=INFO.settings||{};
   $("stModel").textContent=INFO.model?INFO.model.replace(/^Gemma 4 /,"Gemma "):"없음";
   $("noModel").classList.toggle("hide",!!INFO.ready);
+  $("stNet").textContent=ST.webKey?"필요할 때만":"사용 안 함";
   $("stats").classList.toggle("hide",!INFO.ready);
 }
 
@@ -117,7 +119,9 @@ function ask(text){
   $("ans").classList.remove("hide");$("ansMd").innerHTML='<span class="cursor"></span>';
   $("acts").classList.add("hide");
   set("think");
-  var r=LA.run(text);
+  var web=RE_WEB.test(text);
+  var r=web?LA.runWeb(text):LA.run(text);
+  if(r==="nokey"){r=LA.run(text);toast("검색 키가 없어 기기 안에서 답할게요 · Chat DNR Ai 설정에서 넣을 수 있어요")}
   if(r==="nomodel"){set("idle");drawInfo();return}
   if(r==="busy"){set("idle");toast("아직 답을 만드는 중이에요")}
 }
@@ -185,6 +189,7 @@ window.LAe=function(type,d){
   if(type==="voice")onVoice(d);
   else if(type==="wake")onWake(d);
   else if(type==="delta")onDelta(d);
+  else if(type==="websearch"){if(d.state==="searching"){$("sub").textContent="인터넷에서 찾는 중이에요 · 네이버";$("pillT").textContent="NET · 검색 중"}else if(d.state==="found"){$("sub").textContent=d.count+"곳에서 찾았어요. 기기 안 AI가 읽는 중";$("pillT").textContent="THINKING · 기기 안"}else{$("sub").textContent="검색하지 못해 기기 안에서 답할게요"}}
   else if(type==="done"||type==="error")onDone(d);
   else if(type==="speak")onSpeak(d);
   else if(type==="voiceask"){SESSION=true;disarm();set("think");$("sub").textContent="받아 적는 중이에요"}
@@ -211,7 +216,7 @@ function mockLA(mode){
   if(mode==="answer")setTimeout(function(){SESSION=true;ask("프랑스의 수도가 어디야?");e("done",{text:ans},120);},80);
   return{
     info:function(){return JSON.stringify({ready:mode!=="nomodel",model:"Gemma 4 E4B",settings:st,debug:true})},
-    run:function(){return "ok"},endChat:function(){},stop:function(){},busy:function(){return false},
+    run:function(){return "ok"},runWeb:function(){return "ok"},endChat:function(){},stop:function(){},busy:function(){return false},
     micOk:function(){return true},askMic:function(){},
     listen:function(){e("voice",{state:"listening"});return "ok"},stopListen:function(){},cancelListen:function(){},
     wake:function(){e("wake",{state:"armed"});return "ok"},stopWake:function(){},

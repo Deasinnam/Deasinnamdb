@@ -106,15 +106,18 @@ class JarvisActivity : Activity() {
                 .put("debug", BuildConfig.DEBUG)
                 .toString()
         }
-        @JavascriptInterface fun run(prompt: String): String {
+        @JavascriptInterface fun run(prompt: String): String = ask(prompt, false)
+        /** "인터넷에서 찾아줘" — 사용자 네이버 키로 검색해 답 */
+        @JavascriptInterface fun runWeb(prompt: String): String = if (!WebSearch.configured(app)) "nokey" else ask(prompt, true)
+        private fun ask(prompt: String, web: Boolean): String {
             if (app.models.activeId == null) return "nomodel"
             val id = chatId ?: app.chats.create().also { it.put("voice", true); app.chats.save(it) }.getString("id").also { chatId = it }
-            return Runner.send(id, prompt, emptyList(), { t, d -> emit(t, d) }, titleHint = "자비스 · " + prompt)
+            return Runner.send(id, prompt, emptyList(), { t, d -> emit(t, d) }, titleHint = "자비스 · " + prompt, web = web)
         }
         /** 대화를 마침(자비스 오프) — 다음에 부르면 새 대화 */
         @JavascriptInterface fun endChat() { chatId = null }
         @JavascriptInterface fun stop() { app.ai.stop() }
-        @JavascriptInterface fun busy(): Boolean = app.ai.busy()
+        @JavascriptInterface fun busy(): Boolean = Runner.busy()
 
         @JavascriptInterface fun micOk(): Boolean = checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED
         @JavascriptInterface fun askMic() { ui.post { requestPermissions(arrayOf(android.Manifest.permission.RECORD_AUDIO), REQ_MIC) } }

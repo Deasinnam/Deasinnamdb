@@ -223,6 +223,7 @@ class DnrVoice(private val ctx: Context, private val emit: (String, JSONObject) 
             s = s.replace(Regex("`([^`]*)`"), "$1")
             s = s.replace(Regex("!\\[[^\\]]*]\\([^)]*\\)"), " ")
             s = s.replace(Regex("\\[([^\\]]+)]\\([^)]*\\)"), "$1")
+            s = s.replace(Regex("\\s?\\[\\d{1,2}](\\[\\d{1,2}])*"), "") // 출처 번호 [1][2]는 읽지 않음
             s = s.lines().filterNot { Regex("^\\s*\\|?\\s*:?-{2,}").containsMatchIn(it) }.joinToString("\n") { line ->
                 if (line.trim().startsWith("|")) line.trim().trim('|').split("|").joinToString(", ") { it.trim() } + "." else line
             }

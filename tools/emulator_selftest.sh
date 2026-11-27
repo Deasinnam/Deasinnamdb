@@ -19,6 +19,7 @@ for d in chat settings dl plus tool voice; do adb shell am start -S -n $PKG/.Mai
 adb shell am force-stop $PKG
 for d in text answer desk; do adb shell am start -S -n $PKG/.AskActivity --es demo $d >/dev/null; sleep 5; shot "2-ask-$d"; done
 for d in idle listen answer nomodel; do adb shell am start -S -n $PKG/.JarvisActivity --es demo $d >/dev/null; sleep 5; shot "2-jarvis-$d"; done
+for d in web websuggest websearch key; do adb shell am start -S -n $PKG/.MainActivity --es demo $d >/dev/null; sleep 5; shot "2-demo-$d"; done
 # 자비스: 홈 화면 아이콘 + 기본 어시스턴트(측면 버튼)로 고를 수 있는지
 if adb shell cmd package query-activities -a android.intent.action.ASSIST 2>/dev/null | grep -q "$PKG/.JarvisActivity\|JarvisActivity"; then log "PASS jarvis assist entry"; else log "FAIL jarvis assist entry"; fi
 if adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.LAUNCHER 2>/dev/null | grep -q "JarvisActivity"; then log "PASS jarvis launcher icon"; else log "FAIL jarvis launcher icon"; fi
