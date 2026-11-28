@@ -486,6 +486,14 @@ footer b { color: var(--ink); font-family: var(--font-display); }
 .ap-fig h3 { margin-top: 10px; font: 800 22px/1.25 var(--font-display); letter-spacing: -0.03em; color: #fff; }
 .ap-fig p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.65; color: #c4c4cb; word-break: keep-all; }
 #app-table .ap-sub > .ap-nav { grid-column: 1 / -1; }
+.tz-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0 26px; }
+.tz { padding: 20px 18px; border-radius: 18px; background: linear-gradient(160deg, #2a2016, #15110d); border: 1px solid #4a3a24; }
+.tz b { display: block; font: 900 52px/1 var(--font-display); letter-spacing: -0.04em; color: #f0c58a; }
+.tz b small { font-size: 20px; margin-left: 4px; letter-spacing: 0; }
+.tz span { display: block; margin-top: 10px; font-size: 14.5px; line-height: 1.45; color: #e4ddd0; word-break: keep-all; }
+.tz.is-go { background: linear-gradient(160deg, #e0a25e, #b8783a); border-color: #e0a25e; }
+.tz.is-go b, .tz.is-go span { color: #1b130a; }
+@media (max-width: 760px) { .tz-grid { grid-template-columns: 1fr 1fr; } .tz b { font-size: 40px; } }
 .ap-trio.ap-lp { grid-template-columns: 1fr 1fr; max-width: none; align-items: start; }
 .ap-trio.ap-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 820px; }
 .ap-trio.ap-pair h3 { word-break: keep-all; }
@@ -1399,7 +1407,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
   <!-- 대표 업데이트 소식: 옆으로 넘겨 보기 (새 소식은 hm-big-track 맨 앞에 카드 하나, 점 단추도 하나 추가) -->
   <section class="wrap hm-big" aria-roledescription="회전 소식" aria-label="대표 업데이트 소식">
     <div class="hm-big-track" id="hmBigTrack" tabindex="0">
-    <div class="hm-big-card is-table" id="hmBig-table" role="group" aria-roledescription="소식" aria-label="중소상인을 위한 덜누름 키오스크(덜누름 테이블) 개발">
+    <div class="hm-big-card is-table" id="hmBig-table" role="group" aria-roledescription="소식" aria-label="관리비 0원 · 중소상인을 위한 덜누름 키오스크(덜누름 테이블) 개발">
       <div class="hm-big-shots is-land" data-rotate>
         <img class="on" src="media/app-table-menu.jpg?v=1128" alt="덜누름 테이블 손님 화면: 왼쪽 분류와 디저트 메뉴 사진 카드" loading="lazy" data-tag="테이블 주문기 · 손님 화면">
         <img src="media/app-table-history.jpg?v=1128" alt="손님 주문 내역: 주문마다 나왔어요 표시와 지금까지 23,000원" loading="lazy" data-tag="주문 내역 · 나왔어요">
@@ -1408,13 +1416,13 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       </div>
       <div class="hm-big-tx">
         <span class="hm-chip hm-c-hot">개발 중 · 중소상인을 위한 덜누름 키오스크</span>
-        <h2>작은 가게에도<br><em>테이블 주문</em>을.</h2>
-        <p>중소상인을 위한 덜누름 키오스크, <b>덜누름 테이블</b>을 만들고 있어요. 안 쓰는 태블릿은 테이블 주문기로, 폴드는 주문 받는 카운터로. 매장 와이파이 하나면 되고 서버 · 가입 · 월 이용료가 없습니다.</p>
+        <h2>관리비 <em>0원</em>,<br>태블릿만 있으면 바로.</h2>
+        <p>중소상인을 위한 덜누름 키오스크, <b>덜누름 테이블</b>을 만들고 있어요. 월 관리비도, 기기 임대료도, 주문 수수료도 없습니다. 쓰던 태블릿에 앱을 설치하고 매장 와이파이에 연결하면 바로 테이블 주문을 받아요.</p>
         <ul>
-          <li><b>01</b><span>테이블에서 메뉴 보고 주문 · 직원 호출, 카운터에 소리로 알림</span></li>
-          <li><b>02</b><span>주문용 · 관리자용 · 계산대 전용 · 주방 화면, 기기마다 나눠 쓰기</span></li>
-          <li><b>03</b><span>메뉴 사진은 AI로 — 구독 중인 ChatGPT · Gemini 앱으로 추가 요금 없이</span></li>
-          <li><b>04</b><span>결제는 카운터에서 받기를 권장, QR · 계좌이체 안내도 함께</span></li>
+          <li><b>01</b><span>관리비 0원 — 월 이용료 · 임대료 · 주문 수수료 · 가입 · 서버 없음</span></li>
+          <li><b>02</b><span>태블릿만 있으면 바로 — 설치하고 같은 와이파이에 두면 카운터와 저절로 연결</span></li>
+          <li><b>03</b><span>테이블에서 주문 · 직원 호출, 카운터 · 주방에 소리로 알림</span></li>
+          <li><b>04</b><span>메뉴 사진은 AI로, 결제는 카운터에서 받기를 권장</span></li>
         </ul>
         <div class="hm-big-act"><a class="go" href="#app-table">자세히 보기 ›</a><button type="button" class="ntf-btn hm-ntf" data-ntf="app-table">알림받기</button><a class="more" href="#feedback" data-fb-app="덜누름 테이블">사장님 의견 보내기</a></div>
         <p class="hm-big-note">개발 중이라 아직 내려받을 수 없어요. 매장 이름과 메뉴는 예시이고, 메뉴 사진은 AI로 만들었어요.</p>
@@ -1476,7 +1484,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     </div>
     <div class="hm-big-bar">
       <div class="hm-big-dots" role="tablist" aria-label="소식 고르기">
-        <button type="button" role="tab" data-go="0" aria-current="true"><i></i><span>덜누름 테이블 · 개발 중</span></button>
+        <button type="button" role="tab" data-go="0" aria-current="true"><i></i><span>덜누름 테이블 · 관리비 0원</span></button>
         <button type="button" role="tab" data-go="1"><i></i><span>덜누름 워크 1.0.11</span></button>
         <button type="button" role="tab" data-go="2"><i></i><span>스피드미터 1.98</span></button>
         <button type="button" role="tab" data-go="3"><i></i><span>안드로이드 8 · 새 아이콘</span></button>
@@ -1541,7 +1549,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       <li class="hm-card" data-app="app-pad" data-cat="fold watch"><img src="media/app-pad.jpg" alt="덜누름 패드 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-fold">폴드 꾸미기</span><span class="hm-ver"></span></div><h3><a href="#app-pad">덜누름 패드</a></h3><p>DeX 옆에 둔 폴드를 앱 버튼판과 볼륨 다이얼로.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-pad">자세히</a></div></div></li>
       <li class="hm-card" data-app="app-desktop" data-cat="fold work"><img src="media/app-desk-poster.jpg" alt="덜누름 데스크탑앱 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-fold">폴드 꾸미기</span><span class="hm-ver"></span></div><h3><a href="#app-desktop">덜누름 데스크탑앱</a></h3><p>펼친 폴드를 PC 바탕화면처럼. 시작 메뉴 · 위젯 · 창.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-desktop">자세히</a></div></div></li>
       <li class="hm-card" data-app="app-browser" data-cat="work"><img src="media/app-browser-poster.jpg" alt="덜누름 브라우저 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-work">일하기</span><span class="hm-ver"></span></div><h3><a href="#app-browser">덜누름 브라우저</a></h3><p>PC 화면으로 여는 브라우저. 탭 · 찾기 · 방문 기록.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-browser">자세히</a></div></div></li>
-      <li class="hm-card" data-app="app-table" data-cat="work"><img src="media/app-table-menu.jpg?v=1128" alt="덜누름 테이블 손님 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-work">가게 운영</span><span class="hm-ver"></span></div><h3><a href="#app-table">덜누름 테이블</a></h3><p>중소상인을 위한 키오스크. 태블릿으로 테이블 주문 · 직원 호출.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-table">자세히</a></div></div></li>
+      <li class="hm-card" data-app="app-table" data-cat="work"><img src="media/app-table-menu.jpg?v=1128" alt="덜누름 테이블 손님 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-work">가게 운영</span><span class="hm-ver"></span></div><h3><a href="#app-table">덜누름 테이블</a></h3><p>관리비 0원 키오스크. 태블릿만 있으면 바로 테이블 주문.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-table">자세히</a></div></div></li>
       <li class="hm-card" data-app="app-localai" data-cat="work"><img src="media/app-localai-art.jpg" alt="덜누름 로컬 AI 그림" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-pc">윈도우 PC</span><span class="hm-ver"></span></div><h3><a href="#app-localai">덜누름 로컬 AI</a></h3><p>인터넷 없이 내 기기 안에서 대화 · 코딩 · 그림.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-localai">자세히</a></div></div></li>
       <li class="hm-card" data-app="app-sseum" data-cat="work"><img src="media/dulsseum-mac.webp" alt="덜씀 화면" loading="lazy"><div class="hm-body"><div class="hm-meta"><span class="hm-chip hm-c-pc">macOS</span><span class="hm-ver"></span></div><h3><a href="#app-sseum">덜씀</a></h3><p>맥의 메모리 · 저장공간 · 배터리를 버튼 하나로.</p><div class="hm-btns"><span class="hm-dl"></span><a class="key hm-more" href="#app-sseum">자세히</a></div></div></li>
     </ul>
@@ -1740,7 +1748,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         </li>
         <li class="al-row" data-app="app-table">
           <a class="al-thumb" href="#app-table" tabindex="-1" aria-hidden="true"><img src="media/app-table-menu.jpg?v=1128" alt="" loading="lazy"></a>
-          <div class="al-info"><small>매장 테이블 주문</small><b><a href="#app-table"><img class="al-ic" src="media/icons/table.png" alt="" width="28" height="28">덜누름 테이블</a></b><span>안 쓰는 태블릿을 테이블 주문기로, 폴드를 카운터로. AI 메뉴 사진 · 직원 호출 · 장부</span><em>안드로이드 · 태블릿 · 폴드 · DeX</em></div>
+          <div class="al-info"><small>매장 테이블 주문</small><b><a href="#app-table"><img class="al-ic" src="media/icons/table.png" alt="" width="28" height="28">덜누름 테이블</a></b><span>관리비 0원, 태블릿만 있으면 바로. 테이블 주문 · 직원 호출 · AI 메뉴 사진 · 장부</span><em>안드로이드 · 태블릿 · 폴드 · DeX</em></div>
           <div class="al-act"><span class="al-dl"><span class="al-soon">개발 중</span></span><a class="al-more" href="#app-table">자세히 보기</a></div>
         </li>
         </ul>
@@ -3022,10 +3030,11 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
       <div class="amp-copy">
         <div class="amp-eyebrow">매장 테이블 주문</div>
         <h1 id="ap-table-t"><img class="ap-ic" src="media/icons/table.png" alt="" width="56" height="56">덜누름 테이블</h1>
-        <p class="amp-kind">안 쓰는 태블릿은 테이블 주문기로, 폴드는 주문 받는 카운터로</p>
-        <p class="amp-lead">테이블에 태블릿 하나,<br>주문은 카운터로.</p>
+        <p class="amp-kind">중소상인을 위한 덜누름 키오스크 · 안 쓰는 태블릿은 테이블 주문기로, 폴드는 카운터로</p>
+        <p class="amp-lead">관리비 0원,<br>태블릿만 있으면 바로.</p>
         <p class="ap-desc">매장 와이파이에 연결한 태블릿 · 휴대폰을 테이블마다 두면 손님이 메뉴를 보고 바로 주문하고, 직원을 부릅니다. 주문은 사장님 폴드(카운터)에 소리와 함께 뜨고, 만드는 중 · 나왔어요가 손님 화면에 바로 보입니다. 서버 · 가입 · 월 이용료 없이, 주문은 매장 안에서만 오갑니다.</p>
         <ul class="amp-points">
+          <li><b>00</b><span><b>관리비 0원</b>: 월 이용료 · 기기 임대료 · 주문 수수료 · 가입 · 서버 없이, 태블릿만 있으면 바로</span></li>
           <li><b>01</b><span>기기를 나눠서: 테이블 주문기(손님용) · 카운터(관리자용) · 보조 계산대(계산대 전용) · 주방 화면</span></li>
           <li><b>02</b><span>사진 메뉴판: 분류 · 추천 · 품절, 메뉴를 누르면 크게 보고 담기, 주문 내역 · 직원 호출(물 · 물티슈 · 수저 · 앞접시 · 계산)</span></li>
           <li><b>03</b><span>AI 메뉴 사진: 구독 중인 ChatGPT · Gemini 앱으로 음식 사진을 만들어 바로 넣기(추가 요금 없음)</span></li>
@@ -3042,12 +3051,34 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
         <dl class="speed-req">
           <div><dt>개발 버전</dt><dd>0.8 · 2026.11.25 — 메뉴판 「관리자」 버튼(비밀번호 패드), 장부(매출 · 매입 · 이윤)</dd></div>
           <div><dt>필요한 것</dt><dd>같은 매장 와이파이 · 테이블용 태블릿 또는 휴대폰(안드로이드 7 이상) · 카운터용 폴드 또는 태블릿 (DeX로 모니터에 연결하면 큰 주문판)</dd></div>
-          <div><dt>이용료</dt><dd>없음 · 서버 · 가입 없이 매장 안 와이파이로만 주문이 오갑니다</dd></div>
+          <div><dt>관리비</dt><dd>0원 · 월 이용료 · 기기 임대료 · 주문 수수료 없음, 서버 · 가입 없이 매장 안 와이파이로만 주문이 오갑니다</dd></div>
         </dl>
       </div>
       <div class="ap-media">
         <div class="ap-dev" style="aspect-ratio:1600/1003"><img src="media/app-table-menu.jpg?v=1128" alt="덜누름 테이블 손님 화면(가로): 왼쪽 분류 목록과 디저트 메뉴 사진 카드, 아래 '메뉴를 골라 주세요' 막대" loading="lazy" style="object-fit:cover"></div>
         <p class="ap-cap">테이블에 둔 태블릿의 손님 화면 · 메뉴 사진은 AI로 만든 예시</p>
+      </div>
+    </div>
+
+    <div class="amp-wrap ap-sub ap-zero">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">ZERO · 관리비 0원</div>
+        <h2>달마다 나가는 돈 없이,<br>태블릿만 있으면 바로.</h2>
+        <p class="ap-desc">테이블 주문기를 들이면 보통 기기 임대료나 월 관리비가 따라옵니다. 덜누름 테이블은 덜누름 서버를 거치지 않고 매장 와이파이 안에서만 주문이 오가서, 달마다 내는 돈이 없습니다. 쓰던 태블릿 · 휴대폰과 매장 와이파이만 있으면 됩니다.</p>
+        <div class="tz-grid">
+          <div class="tz"><b>0<small>원</small></b><span>월 관리비 · 이용료</span></div>
+          <div class="tz"><b>0<small>원</small></b><span>기기 임대료 · 주문 수수료</span></div>
+          <div class="tz"><b>0<small>개</small></b><span>가입할 계정 · 빌릴 서버</span></div>
+          <div class="tz is-go"><b>3<small>단계</small></b><span>설치 → 카운터 켜기 → 주문 받기</span></div>
+        </div>
+        <div class="ap-howto">
+          <ol>
+            <li><b>태블릿에 설치</b><span>테이블에 둘 태블릿(쓰던 휴대폰도 됩니다)과 카운터로 쓸 폴드 · 태블릿에 덜누름 테이블을 설치합니다</span></li>
+            <li><b>카운터 켜기</b><span>카운터 기기에서 "카운터로 쓰기"를 누르면 예시 메뉴가 들어 있어 바로 시작할 수 있습니다. 메뉴 · 가격은 나중에 바꿔도 됩니다</span></li>
+            <li><b>테이블 연결하고 주문 받기</b><span>테이블 태블릿에서 "테이블 주문기로 쓰기" → 같은 와이파이의 카운터를 저절로 찾아 연결 → 테이블 번호를 정하면 끝</span></li>
+          </ol>
+        </div>
+        <p class="ap-cap">카드 단말기 수수료 · 인터넷 요금처럼 매장이 원래 내던 비용은 그대로입니다. 메뉴 사진을 API 열쇠로 바로 만들면 그 AI 회사 요금이 따로 나옵니다(구독 중인 ChatGPT · Gemini 앱으로 만들면 추가 요금 없음).</p>
       </div>
     </div>
 
