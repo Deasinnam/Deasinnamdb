@@ -108,11 +108,20 @@ echo "===== 앱이 꺼진 까닭 (exit-info) ====="
 adb shell dumpsys activity exit-info "$PKG" | grep -E "ApplicationExitInfo|reason=|description=|timestamp=|pid=" | head -40 | tee exit-info.txt
 echo "===== crash ====="; cat crash-1.txt | head -40
 echo "===== 2부: 가상 모니터 ====="
-adb shell settings put global overlay_display_devices 1280x720/160
-sleep 5
-adb shell dumpsys display | grep -E "mDisplayId=|mBaseDisplayInfo|DisplayDeviceInfo\{" | head -12 > pc-displays.txt
+# 모니터 대신: 에뮬레이터 다중 디스플레이(보통 외부 화면처럼 접근성 · 입력이 됨).
+# 안 되면 안드로이드 개발용 가상 화면(overlay display) — 이 화면은 안드로이드가 접근성에서 빼 두어 터치패드 점검은 건너뜀
+adb emu multidisplay add 1 1280 720 160 0 2>&1 | head -3
+sleep 6
+MONTYPE=multidisplay
 MON=$(adb shell dumpsys display | grep -oE "mDisplayId=[0-9]+" | cut -d= -f2 | sort -un | grep -v "^0$" | head -1 | tr -d '\r')
-echo "가상 모니터 번호: ${MON:-없음}"; cat pc-displays.txt
+if [ -z "$MON" ]; then
+  MONTYPE=overlay
+  adb shell settings put global overlay_display_devices 1280x720/160
+  sleep 5
+  MON=$(adb shell dumpsys display | grep -oE "mDisplayId=[0-9]+" | cut -d= -f2 | sort -un | grep -v "^0$" | head -1 | tr -d '\r')
+fi
+adb shell dumpsys display | grep -E "mDisplayId=|DisplayDeviceInfo\{|type [A-Z]+" | head -12 > pc-displays.txt
+echo "가상 모니터: ${MONTYPE} 번호 ${MON:-없음}"; cat pc-displays.txt
 # 터치패드(접근성) 켜기 — 실제 기기에서는 사용자가 접근성 설정에서 켭니다
 adb shell settings put secure enabled_accessibility_services "$PKG/$PKG.PointerService"
 adb shell settings put secure accessibility_enabled 1
@@ -129,7 +138,7 @@ for i in $(seq 1 60); do
     adb shell dumpsys activity activities > pc-activities.txt
   fi
   if [ ! -f pc-screen-pad.png ] && echo "$L" | grep -q "SHOT-PAD"; then adb exec-out screencap -p > pc-screen-pad.png; fi
-  if [ "$typed" = 0 ] && echo "$L" | grep -q "TYPE-READY"; then
+  if [ "$typed" = 0 ] && echo "$L" | grep -q "INPUT-READY"; then
     typed=1; adb shell am start --display "${MON:-2}" -n "$PKG/.TestInputActivity" | head -3
   fi
   if [ ! -f pc-screen-type.png ] && echo "$L" | grep -q "SHOT-TYPE"; then adb exec-out screencap -p > pc-screen-type.png; fi
@@ -145,11 +154,15 @@ pcres "monitor found" 'grep -q "STATUS connected true" selftest-pc.txt'
 pcres "desktop opened on monitor" 'grep -q "DESKTOP-ON true" selftest-pc.txt && grep -q "com.daesinnam.pc/.MainActivity" pc-monitor-tasks.txt'
 pcres "app launched from monitor desktop lands on monitor" 'grep -q "com.android.settings/" pc-monitor-tasks.txt'
 pcres "pointer moved" 'grep -E "POS from .* to [0-9]+,[0-9]+" selftest-pc.txt | grep -qv "to 0,0,"'
-pcres "click on monitor" 'grep -q "GESTURE done click" selftest-pc.txt'
-pcres "drag on monitor" 'grep -q "GESTURE done drag-end" selftest-pc.txt'
-pcres "phone keyboard text into monitor input" 'grep -q "INPUT-NOW \[안녕 PC!\]" selftest-pc.txt'
+if [ "$MONTYPE" = overlay ]; then
+  echo "터치패드 점검 건너뜀: 개발용 가상 화면은 안드로이드가 접근성에서 빼 둠 (실제 모니터는 해당 없음)"
+else
+  pcres "click lands on monitor app" 'grep -q "GESTURE done click" selftest-pc.txt && grep -qE "TOUCH ACTION_DOWN 30[0-9],20[0-9] display ${MON}" selftest-pc.txt'
+  pcres "drag on monitor" 'grep -q "GESTURE done drag-end" selftest-pc.txt'
+  pcres "phone keyboard text into monitor input" 'grep -q "INPUT-NOW \[안녕 PC!\] display ${MON}" selftest-pc.txt'
+fi
 grep -iE "FATAL|AndroidRuntime" -A5 <(adb logcat -d -b crash) | head -20
-adb shell settings put global overlay_display_devices '""' >/dev/null 2>&1 || true
+[ "$MONTYPE" = overlay ] && adb shell settings put global overlay_display_devices '""' >/dev/null 2>&1 || true
 echo "x DESK_SELFTEST: ${sq:-FAIL} real window placed in top-left quarter (${spkg:-})" >> selftest-result.txt
 pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)

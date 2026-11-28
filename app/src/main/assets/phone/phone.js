@@ -258,6 +258,9 @@
       await wait(6000); // 모니터 바탕화면이 설정 앱을 창으로 띄우는 동안
       log("SHOT-MONITOR");
       await wait(2500);
+      // 스크립트가 모니터에 점검 입력 칸 화면을 띄워 줌 → 거기에 누르기 · 끌기 · 넘기기 · 글자 넣기
+      log("INPUT-READY");
+      await wait(4000);
       const pr = openPad();
       log(`PAD ${pr}`);
       await wait(1200);
@@ -269,20 +272,18 @@
       const p1 = parse(A.position(), []);
       log(`POS from ${p0.join(",")} to ${p1.join(",")}`);
       A.click();
-      await wait(800);
-      A.scroll(0, -300);
+      await wait(1000);
+      A.scroll(0, -200);
       await wait(800);
       A.dragStart();
-      await wait(200);
-      for (let i = 0; i < 6; i++) { A.move(25, 10); await wait(80); }
+      await wait(300);
+      for (let i = 0; i < 6; i++) { A.move(25, 10); await wait(120); }
       A.dragEnd();
-      await wait(800);
+      await wait(1000);
       log("SHOT-PAD");
       await wait(2500);
-      // 글자 넣기: 스크립트가 모니터에 입력 칸 화면을 띄워 줌
-      log("TYPE-READY");
       let tr = "none";
-      for (let i = 0; i < 12 && tr !== "ok"; i++) { await wait(1000); tr = A.type("text", "안녕 PC"); }
+      for (let i = 0; i < 8 && tr !== "ok"; i++) { tr = A.type("text", "안녕 PC"); if (tr !== "ok") await wait(1000); }
       log(`TYPE text ${tr}`);
       log(`TYPE backspace ${A.type("backspace", "")}`);
       log(`TYPE text2 ${A.type("text", "!")}`);

@@ -5,9 +5,10 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.EditText;
 
-/** 시험용 빌드에만: 자동 점검이 모니터에 띄우는 입력 칸 (폰 키보드 → 모니터 입력 확인) */
+/** 시험용 빌드에만: 자동 점검이 모니터에 띄우는 입력 칸 (터치패드 누르기·끌기가 닿는지, 폰 키보드 → 모니터 입력 확인) */
 public class TestInputActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
@@ -22,5 +23,14 @@ public class TestInputActivity extends Activity {
         });
         setContentView(e);
         e.requestFocus();
+        Log.i("PC_SELFTEST", "INPUT-SHOWN display " + getDisplay().getDisplayId());
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        int a = ev.getActionMasked();
+        if (a == MotionEvent.ACTION_DOWN || a == MotionEvent.ACTION_UP || a == MotionEvent.ACTION_CANCEL)
+            Log.i("PC_SELFTEST", "TOUCH " + MotionEvent.actionToString(a) + " " + Math.round(ev.getRawX()) + "," + Math.round(ev.getRawY()) + " display " + ev.getDisplayId());
+        return super.dispatchTouchEvent(ev);
     }
 }
