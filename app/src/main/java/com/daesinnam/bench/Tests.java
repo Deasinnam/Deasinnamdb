@@ -174,6 +174,26 @@ final class Tests {
             cv.drawCircle(x, y, r, pt);
         }
 
+        // 실제 사진처럼 잔무늬(노이즈)를 깔아 둡니다. 매끈한 그림은 JPEG 저장이 비현실적으로 빨라서. (시간에 안 넣음)
+        ExecutorService prep = Executors.newFixedThreadPool(threads());
+        Future<?>[] ps = new Future<?>[H / 200];
+        for (int s = 0; s < ps.length; s++) {
+            final int y0 = s * 200;
+            ps[s] = prep.submit(() -> {
+                int[] px = new int[W * 200];
+                b.getPixels(px, 0, W, 0, y0, W, 200);
+                int seed = y0 * 7919 + 1;
+                for (int i = 0; i < px.length; i++) {
+                    seed = seed * 1103515245 + 12345;
+                    int n = ((seed >>> 16) & 31) - 16, c0 = px[i];
+                    px[i] = (c0 & 0xFF000000) | (clamp(((c0 >> 16) & 255) + n) << 16) | (clamp(((c0 >> 8) & 255) + n) << 8) | clamp((c0 & 255) + n);
+                }
+                b.setPixels(px, 0, W, 0, y0, W, 200);
+            });
+        }
+        for (Future<?> f : ps) f.get();
+        prep.shutdown();
+
         p.on("{\"step\":\"2400만 화소 노출 · 대비 · 채도 보정\"}");
         final int[] lut = new int[256];
         for (int i = 0; i < 256; i++) {
@@ -483,8 +503,8 @@ final class Tests {
         SensorManager sm = c.getSystemService(SensorManager.class);
         Sensor acc = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         Sensor gyr = sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (acc != null) put(a, "speed.accel", rate(sm, acc)); else na(a, "speed.accel", "가속도 센서 없음");
-        if (gyr != null) put(a, "speed.gyro", rate(sm, gyr)); else na(a, "speed.gyro", "자이로 센서 없음");
+        sensorItem(a, sm, acc, "speed.accel", "가속도 센서 없음");
+        sensorItem(a, sm, gyr, "speed.gyro", "자이로 센서 없음");
         // GPS: 위치 권한을 쓰지 않고, 기기에 GPS(위성 수신기)가 있는지만 봅니다
         boolean gps = c.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
         int bands = 0;
@@ -494,6 +514,11 @@ final class Tests {
         }
         put(a, "speed.gps", gps ? 1 : 0);
         if (bands < 0) put(a, "never", 0);
+    }
+
+    private static void sensorItem(JSONArray a, SensorManager sm, Sensor s, String k, String none) throws Exception {
+        if (s == null) { na(a, k, none); return; }
+        try { put(a, k, rate(sm, s)); } catch (Exception e) { na(a, k, "읽기 실패"); }
     }
 
     private static double rate(SensorManager sm, Sensor s) throws Exception {

@@ -17,7 +17,7 @@
     "doc.layout":    { label: "100쪽 문서 줄 나누기 (화면 폭 3가지)", unit: "ms", dir: "down", target: 400, ok: 1500, mid: 4000 },
     "photo.adjust":  { label: "2400만 화소 노출 · 대비 · 채도 보정", unit: "ms", dir: "down", target: 500, ok: 1500, mid: 4000 },
     "photo.jpeg":    { label: "2400만 화소 JPEG 저장", unit: "ms", dir: "down", target: 600, ok: 1500, mid: 4000 },
-    "photo.thumbs":  { label: "보관함 미리보기 1장 만들기", unit: "ms", dir: "down", target: 15, ok: 50, mid: 150 },
+    "photo.thumbs":  { label: "보관함 미리보기 1장 만들기", unit: "ms", dir: "down", target: 2, ok: 10, mid: 40 },
     "audio.tracks":  { label: "실시간으로 섞는 트랙 (EQ · 압축 포함)", unit: "tracks", dir: "up", target: 128, ok: 24, mid: 8 },
     "audio.latency": { label: "소리 출력 지연 (추정)", unit: "ms", dir: "down", target: 8, ok: 15, mid: 40 },
     "desk.fps":      { label: "창 12개 · 위젯이 움직일 때", unit: "fps", dir: "up", target: 60, ok: 50, mid: 30 },

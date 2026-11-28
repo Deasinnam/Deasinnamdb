@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- 덜누름 벤치는 인터넷 · 위치 · 마이크 권한을 쓰지 않습니다. 모든 측정은 기기 안에서만 합니다. -->
+    <!-- 스피드미터 분야: 움직임 센서를 가장 빠른 속도로 읽어 봅니다 (일반 권한, 묻는 창 없음) -->
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
 
     <queries>
         <!-- 설치된 덜누름 앱을 찾기 위해 런처 앱 목록을 봅니다 -->
