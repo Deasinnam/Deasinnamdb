@@ -22,7 +22,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -387,11 +386,12 @@ public class NoteActivity extends Activity implements InkView.Listener {
         super.onPause();
         if (note == null) return;
         prefs.edit().putBoolean("penOnly", ink.penOnly).apply();
-        dirty = true;
-        saveNow();
-        final Model.Note snap = note.snapshot();
-        final File t = Store.thumb(this, note.id);
-        bg.execute(() -> Exporter.thumb(snap, ink.pdf, t));
+        // 목록으로 돌아가면 바로 새 그림 · 쪽 수가 보이게, 나갈 때는 여기서 곧바로 저장 (작은 그림이라 금방 끝남)
+        main.removeCallbacks(saveSoon);
+        dirty = false;
+        Model.Note snap = note.snapshot();
+        try { Store.save(this, snap); } catch (Exception e) { Log.w(TAG, "save", e); }
+        Exporter.thumb(snap, ink.pdf, Store.thumb(this, note.id));
     }
 
     @Override
