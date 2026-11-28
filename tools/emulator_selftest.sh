@@ -159,7 +159,7 @@ if [ "$MONTYPE" = overlay ]; then
 else
   pcres "click lands on monitor app" 'grep -q "GESTURE done click" selftest-pc.txt && grep -qE "TOUCH ACTION_DOWN 30[0-9],20[0-9] display ${MON}" selftest-pc.txt'
   pcres "drag on monitor" 'grep -q "GESTURE done drag-end" selftest-pc.txt'
-  pcres "phone keyboard text into monitor input" 'grep -q "INPUT-NOW \[안녕 PC!\] display ${MON}" selftest-pc.txt'
+  pcres "phone keyboard text into monitor input" 'grep -q "INPUT-NOW \[안녕 P!\] display ${MON}" selftest-pc.txt'
 fi
 grep -iE "FATAL|AndroidRuntime" -A5 <(adb logcat -d -b crash) | head -20
 [ "$MONTYPE" = overlay ] && adb shell settings put global overlay_display_devices '""' >/dev/null 2>&1 || true
