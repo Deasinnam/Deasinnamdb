@@ -109,7 +109,7 @@ jobs:
 
       # 미리보기 가지(preview-*)는 사이트 · 최신 릴리스에 손대지 않고 관리자 시험용 미리보기 릴리스에만 올림
       - name: 미리보기 APK 올리기 (localai-preview)
-        if: startsWith(github.ref, 'refs/heads/preview-')
+        if: always() && startsWith(github.ref, 'refs/heads/preview-') && hashFiles('ChatDNRAi.apk') != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
