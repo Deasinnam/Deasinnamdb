@@ -1068,6 +1068,8 @@ body[data-view="home"] { background: #f6f5f1; }
 .hm-big-act { display: flex; flex-wrap: wrap; gap: 10px; }
 .hm-big-act a { display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 20px; border-radius: 12px; font-weight: 800; text-decoration: none; }
 .hm-big-act .go { background: #ffd21f; color: #111; }
+.hm-big-act .hm-ntf { height: 48px; padding: 0 20px; border-radius: 12px; background: #ffffff10; color: #f0c58a; border: 1px solid #e0a25e; font-weight: 800; }
+.hm-big-act .hm-ntf.is-on { color: #c9c6bd; border-color: #6b6255; }
 .hm-big-act .more { background: #ffffff14; color: #fff; box-shadow: inset 0 0 0 1px #ffffff33; }
 .hm-big-note { margin: 14px 0 0; font-size: 12.5px; color: #a9a497; word-break: keep-all; }
 @media (max-width: 760px) { .hm-big-card { grid-template-columns: 1fr; padding: 18px; gap: 20px; } }
@@ -1412,7 +1414,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
           <li><b>03</b><span>메뉴 사진은 AI로 — 구독 중인 ChatGPT · Gemini 앱으로 추가 요금 없이</span></li>
           <li><b>04</b><span>결제는 카운터에서 받기를 권장, QR · 계좌이체 안내도 함께</span></li>
         </ul>
-        <div class="hm-big-act"><a class="go" href="#app-table">자세히 보기 ›</a><a class="more" href="#feedback" data-fb-app="덜누름 테이블">사장님 의견 보내기</a></div>
+        <div class="hm-big-act"><a class="go" href="#app-table">자세히 보기 ›</a><button type="button" class="ntf-btn hm-ntf" data-ntf="app-table">알림받기</button><a class="more" href="#feedback" data-fb-app="덜누름 테이블">사장님 의견 보내기</a></div>
         <p class="hm-big-note">개발 중이라 아직 내려받을 수 없어요. 매장 이름과 메뉴는 예시이고, 메뉴 사진은 AI로 만들었어요.</p>
       </div>
     </div>
@@ -5520,6 +5522,7 @@ header.top nav a.nav-fb:hover { text-decoration: none; color: #fff; }
     if (row) { row.innerHTML = '<button type="button" class="ntf-btn"></button><span class="al-count ntf-count" aria-live="polite"></span>'; st.btns.push(row.querySelector("button")); st.outs.push(row.querySelector(".al-count")); }
     var hmn = document.querySelector('.hm-card[data-app="' + id + '"] .hm-dl');
     if (hmn) { hmn.innerHTML = '<button type="button" class="key ntf-btn"></button>'; st.btns.push(hmn.querySelector("button")); }
+    [].forEach.call(document.querySelectorAll('[data-ntf="' + id + '"]'), function (b) { st.btns.push(b); }); /* 메인 대표 소식 등 따로 둔 알림받기 단추 */
     var sec = document.getElementById(id);
     (sec ? [].slice.call(sec.querySelectorAll(".amp-cta")) : []).forEach(function (cta) { cta.innerHTML = '<button type="button" class="ntf-btn"></button><span class="dl-count ntf-count" aria-live="polite"></span>'; st.btns.push(cta.querySelector("button")); st.outs.push(cta.querySelector(".dl-count")); });
     if (!st.btns.length) return;
