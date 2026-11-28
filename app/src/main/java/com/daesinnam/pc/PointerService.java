@@ -203,7 +203,7 @@ public class PointerService extends AccessibilityService implements DisplayManag
     private final GestureResultCallback dragCallback = new GestureResultCallback() {
         @Override public void onCompleted(GestureDescription g) {
             dragBusy = false;
-            if (dragStroke == null) return;
+            if (dragStroke == null) { Log.i(TAG, "GESTURE done drag-end"); return; }
             if (dragEnding || Math.abs(x - dragFromX) + Math.abs(y - dragFromY) >= 1) dragStep(dragEnding);
         }
         @Override public void onCancelled(GestureDescription g) {
@@ -270,6 +270,7 @@ public class PointerService extends AccessibilityService implements DisplayManag
     String type(String kind, String text) {
         AccessibilityNodeInfo n = focusedInput();
         if (n == null) { Log.i(TAG, "TYPE none"); return "none"; }
+        n.refresh();   // 접근성 기억(캐시)에 남은 예전 글자가 아니라 지금 글자를 읽음
         String cur = currentText(n);
         boolean ok;
         switch (kind) {
