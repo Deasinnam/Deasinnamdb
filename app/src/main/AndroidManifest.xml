@@ -95,6 +95,20 @@
             </intent-filter>
         </activity>
 
+        <!-- 덜누름 벤치가 자비스(기기 안 AI)를 재는 입구. 같은 서명의 덜누름 앱만 부를 수 있고, 숫자 결과만 돌려줌 -->
+        <activity
+            android:name=".BenchActivity"
+            android:exported="true"
+            android:theme="@style/Theme.LocalAI.Ask"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode|density">
+            <intent-filter>
+                <action android:name="com.daesinnam.ai.action.BENCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- 모델 내려받기(약 2.6~3.7GB): 화면을 꺼도 이어지고, 끊겨도 이어받기 -->
         <service
             android:name=".DownloadService"

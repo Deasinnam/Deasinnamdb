@@ -148,6 +148,20 @@ for i in $(seq 1 40); do
 done
 sleep 3; shot 7-real-ask-channel
 if [ $OK = 1 ]; then log "PASS ask channel summary"; else log "FAIL ask channel"; fi
+# 2-f) 덜누름 벤치 입구: 모델 올리기 · 답 속도 · 말 받아 적기 · 그림(작게) → 숫자 결과
+adb shell am force-stop $PKG
+adb logcat -c
+adb shell am start -n $PKG/.BenchActivity -a com.daesinnam.ai.action.BENCH --ez selftest true --ez small true >/dev/null
+sleep 8; shot 8-bench-running
+for i in $(seq 1 120); do sleep 10; if timeout 20 adb logcat -d -s LA_BENCH:I | grep -q "RESULT"; then break; fi; done
+BR=$(timeout 20 adb logcat -d -s LA_BENCH:I | grep -o 'LA_BENCH: .*' | sed 's/^LA_BENCH: //')
+echo "$BR" | cut -c1-400 > bench-log.txt
+RES=$(echo "$BR" | grep '^RESULT' | tail -1)
+if echo "$RES" | grep -q '"ttftMs"' && ! echo "$RES" | grep -q '"error"'; then log "PASS bench entry: $(echo "$RES" | cut -c1-300)"; else log "FAIL bench entry ($(echo "$BR" | tail -3 | tr '\n' ' ' | cut -c1-300))"; fi
+# 부른 앱 서명 확인: 셸에서 selftest 없이 부르면 거절되어야 함
+adb logcat -c
+adb shell am start -n $PKG/.BenchActivity -a com.daesinnam.ai.action.BENCH >/dev/null; sleep 4
+if timeout 20 adb logcat -d -s LA_BENCH:I | grep -q "STEP"; then log "FAIL bench entry opened for unknown caller"; else log "PASS bench entry refuses unknown caller"; fi
 # 3) 사진 붙여 화면 질문 — 공유하기로 사진 넣기
 adb shell am force-stop $PKG
 adb shell am start -n $PKG/.MainActivity --es demo stream >/dev/null; sleep 5; shot 5-demo-stream

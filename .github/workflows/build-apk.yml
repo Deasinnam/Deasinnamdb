@@ -104,7 +104,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete localai-ci --yes --cleanup-tag || true
-          gh release create localai-ci $(ls localai-screen-*.png selftest-result.txt logcat-tail.txt selftest-image.png logcat-img.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
+          gh release create localai-ci $(ls localai-screen-*.png selftest-result.txt logcat-tail.txt selftest-image.png logcat-img.txt bench-log.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
             --title "Chat DNR Ai 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: Releases에 APK 올리기

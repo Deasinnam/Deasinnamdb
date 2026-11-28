@@ -378,6 +378,73 @@ class Ai(private val ctx: Context) {
     @Volatile private var imgLoaded = false
     fun freeImage() { if (ImageGen.available) runCatching { ImageGen.nFree() }; imgLoaded = false }
 
+    // ---------- 덜누름 벤치: 지금 쓰는 모델 · 처리 장치 그대로 잼 (대화 기록은 읽지도 남기지도 않음) ----------
+
+    /** 모델을 처음부터 올리고(올리는 시간) 정해진 질문 하나에 답하는 속도. 엔진은 올려 둔 채 끝냄(이어서 받아 적기 측정) */
+    @OptIn(ExperimentalApi::class)
+    suspend fun benchText(prompt: String): JSONObject {
+        if (busy()) throw IllegalStateException("Chat DNR Ai가 다른 답을 만드는 중이에요")
+        if (imgLoaded) freeImage()
+        unload()
+        ExperimentalFlags.enableBenchmark = true
+        val o = JSONObject()
+        val t0 = System.currentTimeMillis()
+        val e = ensureEngine()
+        val st = status.value
+        o.put("loadMs", System.currentTimeMillis() - t0).put("model", st.model ?: "").put("backend", st.backend ?: "").put("audio", audioOk)
+        lock.withLock {
+            runCatching { conv?.close() }; conv = null; convKey = null
+            e.createConversation(ConversationConfig(
+                systemInstruction = Contents.of(Content.Text(sysPrompt())),
+                samplerConfig = SamplerConfig(1, 1.0, 0.1, 0), // 매번 거의 같은 답(기기끼리 비교하려고)
+            )).use { c ->
+                var acc = ""; var first = 0L
+                val t1 = System.currentTimeMillis()
+                c.sendMessageAsync(prompt).collect { m ->
+                    val piece = split(m).first
+                    if (first == 0L && piece.isNotBlank()) first = System.currentTimeMillis()
+                    acc += piece
+                }
+                val t2 = System.currentTimeMillis()
+                o.put("answerChars", acc.length).put("totalMs", t2 - t1)
+                    .put("ttftMs", if (first > 0) first - t1 else t2 - t1)
+                    .put("cps", if (first > 0 && t2 > first) acc.length * 1000.0 / (t2 - first) else 0.0)
+                runCatching { c.getBenchmarkInfo() }.onSuccess { b ->
+                    o.put("tps", b.lastDecodeTokensPerSecond).put("prefillTps", b.lastPrefillTokensPerSecond)
+                        .put("decodeTokens", b.lastDecodeTokenCount).put("prefillTokens", b.lastPrefillTokenCount)
+                        .put("ttftLibMs", Math.round(b.timeToFirstTokenInSecond * 1000))
+                }.onFailure { o.put("benchInfoError", it.message?.take(120) ?: it.javaClass.simpleName) }
+            }
+        }
+        return o
+    }
+
+    /** 벤치 끝: 측정 표시 끄고 엔진 내림(다음에 쓸 때 평소대로 다시 올라감) */
+    @OptIn(ExperimentalApi::class)
+    suspend fun benchEnd() {
+        ExperimentalFlags.enableBenchmark = false
+        if (imgLoaded) freeImage()
+        unload()
+    }
+
+    /** 그림 1장: 앱에서 그릴 때와 같은 단계 수 · 크기. (그림 설명 쓰기는 빼고 엔진만) */
+    fun benchImage(size: Int, steps: Int): JSONObject {
+        val o = JSONObject().put("size", size).put("steps", steps)
+        if (!ImageGen.available) return o.put("na", "그림 엔진 없음")
+        val im = App.app.models.imageModel
+        if (!App.app.models.ready(im)) return o.put("na", "그림 모델 없음")
+        val t0 = System.currentTimeMillis()
+        imgLoaded = true
+        if (!ImageGen.nLoad(App.app.models.file(im).absolutePath, 0)) return o.put("na", "그림 모델을 열지 못함")
+        val t1 = System.currentTimeMillis()
+        val rgb = ImageGen.nGenerate("a cozy cafe by the sea at sunset, warm light, detailed, high quality",
+            "lowres, blurry, worst quality", size, size, steps, 1.5f, 1234L)
+        val t2 = System.currentTimeMillis()
+        freeImage()
+        if (rgb == null) return o.put("na", "그림을 만들지 못함")
+        return o.put("loadMs", t1 - t0).put("drawMs", t2 - t1)
+    }
+
     // ---------- 자동 점검(에뮬레이터 CI): 진짜 모델로 글 · 사진 질문 ----------
     fun selftestImage(path: String, out: (String) -> Unit) {
         scope.launch {
