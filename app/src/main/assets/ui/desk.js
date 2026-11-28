@@ -135,7 +135,7 @@
     { key: "in:notes", label: "메모", glyph: "메", color: 0 },
     { key: "in:calc", label: "계산기", glyph: "계", color: 1 },
     { key: "in:cal", label: "달력", glyph: "달", color: 2 },
-    { key: "in:settings", label: "데스크 설정", glyph: "설", color: 3 },
+    { key: "in:settings", label: "PC 런처 설정", glyph: "설", color: 3 },
     { key: "in:arrange", label: "창정리", glyph: "창", color: 2 },
   ];
   const HIDDEN = [{ key: "in:wlog", label: "위젯 자리 기록", glyph: "기", color: 3 }]; // 목록에는 안 나오는 내부 창
@@ -387,7 +387,7 @@
     return el;
   }
   const pinCols = () => (innerWidth <= 380 ? 3 : innerWidth <= 600 ? 4 : 6);
-  const kindOf = (a) => (a.key.startsWith("in:") ? "덜누름 데스크 도구" : "앱");
+  const kindOf = (a) => (a.key.startsWith("in:") ? "덜누름 PC 런처 도구" : "앱");
   function detailOf(app) {
     const ext = !app.key.startsWith("in:"), pinned = S.pins.includes(app.key);
     const act = (label, icon, fn) => h("button", { onclick: () => { fn(); } }, svg(icon), h("span", { text: label }));
@@ -489,7 +489,7 @@
   function powerMenu() {
     const c = $("ctx");
     c.textContent = "";
-    c.append(menuItem("데스크 설정", IC.gear, () => openApp("in:settings")),
+    c.append(menuItem("PC 런처 설정", IC.gear, () => openApp("in:settings")),
       menuItem("기기 설정", IC.device, () => call("openSettings", "all")),
       menuItem("위젯 추가", IC.widgets, openWidgetPicker),
       h("hr"),
@@ -563,7 +563,7 @@
     if (!qs.canWrite) bright.addEventListener("pointerdown", () => { if (!brightAsked) { brightAsked = true; toast("밝기를 바꾸려면 다음 화면에서 '시스템 설정 변경'을 허용해 주세요."); call("openSettings", "write"); } });
     q.append(h("div", { class: "qfoot" },
       h("span", { class: "qbat" }, svg(IC.batt), h("span", { text: status.battery >= 0 ? status.battery + "%" + (status.charging ? " · 충전 중" : "") : "" })),
-      h("button", { title: "데스크 설정", "aria-label": "데스크 설정", onclick: () => openApp("in:settings") }, svg(IC.pencil)),
+      h("button", { title: "PC 런처 설정", "aria-label": "PC 런처 설정", onclick: () => openApp("in:settings") }, svg(IC.pencil)),
       h("button", { title: "기기 설정", "aria-label": "기기 설정", onclick: open("all") }, svg(IC.gear))));
   }
   function toggleCal() {
@@ -1026,7 +1026,7 @@
       body.append(h("div", { class: "set" },
         h("h4", { text: "앱을 누르면" }),
         seg(S.openMode, [["window", "창으로 열기"], ["full", "전체 화면으로 열기"]], (v) => { S.openMode = v; }),
-        h("p", { text: "앱을 길게 누르면(마우스는 오른쪽 누름) 창·화면 나눠 열기·전체 화면을 고를 수 있습니다. 화면 나누기는 이 화면 안에서 다른 앱을 나눠 띄우며, 화면이 넓을수록 많이 나눕니다 (좁은 화면 1~2개, 펼친 화면·DeX 최대 4개). 덜누름 데스크 자체는 화면 나누기에 넣지 않습니다." }),
+        h("p", { text: "앱을 길게 누르면(마우스는 오른쪽 누름) 창·화면 나눠 열기·전체 화면을 고를 수 있습니다. 화면 나누기는 이 화면 안에서 다른 앱을 나눠 띄우며, 화면이 넓을수록 많이 나눕니다 (좁은 화면 1~2개, 펼친 화면·DeX 최대 4개). 덜누름 PC 런처 자체는 화면 나누기에 넣지 않습니다." }),
         status.freeform ? null : h("div", { class: "note" },
           "이 기기는 '자유 창'을 지원한다고 알려 오지 않았습니다. 창으로 열어도 전체 화면으로 뜨면, 개발자 옵션에서 '자유 형식 창 사용'(freeform windows)을 켠 뒤 기기를 다시 시작해 보세요. ",
           h("button", { class: "btn", onclick: () => call("openSettings", "developer") }, "개발자 옵션 열기")),
@@ -1049,13 +1049,10 @@
         h("h4", { text: "작업 표시줄" }),
         seg(S.tbAlign, [["center", "아이콘 가운데"], ["left", "아이콘 왼쪽"]], (v) => { S.tbAlign = v; }),
         seg(S.tbStyle, [["dock", "화면 아래에 붙임"], ["float", "떠 있는 둥근 모양"]], (v) => { S.tbStyle = v; }),
-        h("h4", { text: "홈 앱" }),
-        h("p", { text: status.isDefault ? "덜누름 데스크가 기본 홈 앱입니다. 홈 버튼을 누르면 이 화면으로 옵니다." : "기본 홈 앱으로 정하면 홈 버튼을 누를 때 이 화면이 나옵니다. 언제든 기기 설정에서 원래 홈으로 되돌릴 수 있습니다." }),
-        h("div", null,
-          status.isDefault ? null : h("button", { class: "btn primary", onclick: () => call("makeDefault") }, "기본 홈 앱으로 정하기"),
-          h("button", { class: "btn", onclick: () => call("openSettings", "home") }, "홈 앱 설정 열기")),
+        h("h4", { text: "폰 화면" }),
+        h("p", { text: "휴대폰의 덜누름 PC 런처 앱에서 모니터 연결 상태 · 데스크톱 모드 켜기 · 터치패드(폰 화면으로 포인터 움직이기) · 폰 키보드 입력을 쓸 수 있습니다." }),
         h("h4", { text: "정보" }),
-        h("p", { text: "덜누름 데스크 " + (status.version || "") + " · 인터넷 권한 없이 기기 안에서만 동작합니다." }),
+        h("p", { text: "덜누름 PC 런처 " + (status.version || "") + " · 인터넷 권한 없이 기기 안에서만 동작합니다." }),
         S.widgets.length ? h("div", null, h("button", { class: "btn", onclick: () => openBuiltin("in:wlog") }, "위젯 자리 기록 보기")) : null,
         S.widgets.length ? h("p", { text: "위젯이 엉뚱한 자리로 가면, 그 직후 이 기록을 찍어 보내 주세요. 화면 크기와 위젯 자리가 바뀐 때가 적혀 있습니다." }) : null));
     };
@@ -1438,7 +1435,7 @@
         if (open) root.append(
           h("div", { class: "note ar-adv" + (shz.granted ? " on" : "") },
             h("b", { text: shz.granted ? "연결됨 — 열려 있는 창도 옮기고, 현재 배치를 저장합니다." : "열려 있는 창을 옮기고, 현재 배치를 저장할 수 있습니다." }),
-            shz.granted ? null : h("span", { text: !shz.installed ? "Shizuku(무료 공개 앱)를 설치한 뒤 무선 디버깅으로 한 번 켜 두면 됩니다. 덜누름 게임에서 이미 연결했다면 같은 방법입니다." : !shz.running ? "Shizuku 앱을 열어 '시작'을 누른 뒤 돌아와 주세요." : "Shizuku가 켜져 있습니다. 덜누름 데스크를 허락해 주세요." }),
+            shz.granted ? null : h("span", { text: !shz.installed ? "Shizuku(무료 공개 앱)를 설치한 뒤 무선 디버깅으로 한 번 켜 두면 됩니다. 덜누름 게임에서 이미 연결했다면 같은 방법입니다." : !shz.running ? "Shizuku 앱을 열어 '시작'을 누른 뒤 돌아와 주세요." : "Shizuku가 켜져 있습니다. 덜누름 PC 런처를 허락해 주세요." }),
             shz.granted ? null : h("button", { class: "btn primary", onclick: async () => { const r = await call("shizukuConnect"); if (r === "start") toast("Shizuku에서 '시작'을 누른 뒤 돌아와 주세요"); setTimeout(refreshShizuku, 1200); } }, !shz.installed ? "Shizuku 받으러 가기" : !shz.running ? "Shizuku 열기" : "허락하기")),
             h("button", { class: "btn", onclick: () => window.ShizukuGuide && ShizukuGuide.open("desk", refreshShizuku) }, shz.granted ? "Shizuku 안내 다시 보기" : "설정 방법 (그림)"),
           h("button", { class: "ar-link ar-diag-btn", onclick: async () => { body._diag = await call("arrangeDiag"); mode = "diag"; draw(); } }, "마지막 펼치기 점검 보기"),

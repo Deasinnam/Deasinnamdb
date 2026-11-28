@@ -1,8 +1,8 @@
-name: Build 덜누름 데스크 APK
+name: Build 덜누름 PC 런처 APK
 
 on:
   push:
-    branches: [deolnureum-desk, 'desk-try-*']
+    branches: [deolnureum-pc]
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
 
       - name: 화면 코드 문법 확인
-        run: node --check app/src/main/assets/ui/desk.js
+        run: node --check app/src/main/assets/ui/desk.js && node --check app/src/main/assets/phone/phone.js
 
       - name: Android SDK 준비
         run: |
@@ -33,7 +33,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk Desk-test.apk
+          cp app/build/outputs/apk/debug/app-debug.apk Pc-test.apk
 
       - name: 에뮬레이터 KVM 켜기
         run: |
@@ -41,7 +41,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: 에뮬레이터 점검 (앱 목록 · 시작 메뉴 · 내부 창 · 앱 띄우기)
+      - name: 에뮬레이터 점검 (PC 화면 · 가상 모니터 · 터치패드)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -51,19 +51,19 @@ jobs:
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash tools/emulator_selftest.sh Desk-test.apk
+          script: bash tools/emulator_selftest.sh Pc-test.apk
 
-      - name: 점검 기록 올리기 (desk-ci 릴리스)
+      - name: 점검 기록 올리기 (pc-ci 릴리스)
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete desk-ci --yes --cleanup-tag || true
-          gh release create desk-ci $(find . -maxdepth 1 -size +0 \( -name 'desk-screen-*.png' -o -name 'selftest-*.txt' -o -name exit-info.txt -o -name crash-1.txt -o -name logcat-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease \
-            --title "덜누름 데스크 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
+          gh release delete pc-ci --yes --cleanup-tag || true
+          gh release create pc-ci $(find . -maxdepth 1 -size +0 \( -name 'desk-screen-*.png' -o -name 'pc-screen-*.png' -o -name 'selftest-*.txt' -o -name 'pc-*.txt' -o -name exit-info.txt -o -name crash-1.txt -o -name logcat-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease \
+            --title "덜누름 PC 런처 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비
-        if: github.ref == 'refs/heads/deolnureum-desk'
+        if: github.ref == 'refs/heads/deolnureum-pc'
         env:
           AMP_KEYSTORE_BASE64: ${{ secrets.AMP_KEYSTORE_BASE64 }}
         run: |
@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: 배포용 APK
-        if: github.ref == 'refs/heads/deolnureum-desk'
+        if: github.ref == 'refs/heads/deolnureum-pc'
         env:
           AMP_KEYSTORE_PASSWORD: ${{ secrets.AMP_KEYSTORE_PASSWORD }}
           AMP_KEY_ALIAS: ${{ secrets.AMP_KEY_ALIAS }}
@@ -84,19 +84,19 @@ jobs:
         run: |
           if [ "$VARIANT" = release ]; then ./gradlew --no-daemon assembleRelease; fi
           rm -f "$RUNNER_TEMP/release.p12"
-          cp app/build/outputs/apk/$VARIANT/*.apk DeolnureumDesk.apk
+          cp app/build/outputs/apk/$VARIANT/*.apk DeolnureumPC.apk
 
       - name: Releases에 APK 올리기
-        if: github.ref == 'refs/heads/deolnureum-desk'
+        if: github.ref == 'refs/heads/deolnureum-pc'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete desk-latest --yes --cleanup-tag || true
-          gh release create desk-latest DeolnureumDesk.apk --target "$GITHUB_SHA" \
-            --title "덜누름 데스크 (최신 빌드)" --notes "안드로이드를 데스크톱처럼: 바탕화면 · 작업 표시줄 · 시작 메뉴 · 창. 빌드 ${{ github.run_number }} ($VARIANT)"
-          # 버전별 릴리스(desk-v<버전>): 사이트에서 이전 버전도 고를 수 있게 남겨 둠
+          gh release delete pc-latest --yes --cleanup-tag || true
+          gh release create pc-latest DeolnureumPC.apk --target "$GITHUB_SHA" \
+            --title "덜누름 PC 런처 (최신 빌드)" --notes "휴대폰을 모니터에 꽂아 PC처럼: 바탕화면 · 작업 표시줄 · 시작 메뉴 · 창 · 터치패드. 빌드 ${{ github.run_number }} ($VARIANT)"
+          # 버전별 릴리스(pc-v<버전>): 사이트에서 이전 버전도 고를 수 있게 남겨 둠
           VER=$(grep -oP 'versionName "\K[^"]+' app/build.gradle)
-          cp DeolnureumDesk.apk "DeolnureumDesk-$VER.apk"
-          gh release delete "desk-v$VER" --yes --cleanup-tag || true
-          gh release create "desk-v$VER" "DeolnureumDesk-$VER.apk" --target "$GITHUB_SHA" --title "덜누름 데스크 $VER" \
-            --notes "덜누름 데스크 버전 $VER. 빌드 ${{ github.run_number }} ($VARIANT)"
+          cp DeolnureumPC.apk "DeolnureumPC-$VER.apk"
+          gh release delete "pc-v$VER" --yes --cleanup-tag || true
+          gh release create "pc-v$VER" "DeolnureumPC-$VER.apk" --target "$GITHUB_SHA" --title "덜누름 PC 런처 $VER" \
+            --notes "덜누름 PC 런처 버전 $VER. 빌드 ${{ github.run_number }} ($VARIANT)"

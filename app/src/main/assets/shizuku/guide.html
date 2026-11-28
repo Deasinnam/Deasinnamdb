@@ -61,6 +61,7 @@ p, li { font-size:15.5px; }
       <li data-app="tv"><b>덜누름 TV</b><span>넷플릭스 등을 DeX에서 완전한 전체 화면으로 · 다른 앱을 보는 중에도 리모컨 ＋ − 위 · 아래 · 다른 앱 단추 기능(접근성) 바로 켜기</span></li>
       <li data-app="game"><b>덜누름 게임</b><span>게임 위 FPS 표시 · 게임별 맞춤 설정(FPS 상한 · 해상도 · 게임 모드) 실제 적용</span></li>
       <li data-app="desk"><b>덜누름 데스크탑앱</b><span>창정리: 열린 창을 저장한 자리 · 크기로 정확히 배치</span></li>
+      <li data-app="pc"><b>덜누름 PC 런처</b><span>모니터 데스크톱 모드(개발자 옵션) 바로 켜기 · 다시 시작 · 창정리</span></li>
       <li data-app="sseum"><b>덜씀</b><span>안 쓰는 앱 완전 종료 · 모든 앱 캐시 정리 · 남은 설치 파일 정리 · 절전 모드 자동 · 화면 효과 줄이기</span></li>
     </ul>
     <p style="margin-top:12px;color:var(--ink2)">Shizuku가 없어도 덜누름 앱의 기본 기능은 그대로 쓸 수 있습니다. 위 기능만 동작하지 않습니다.</p>
@@ -135,7 +136,7 @@ p, li { font-size:15.5px; }
   if (app) {
     var li = document.querySelector('#appList li[data-app="' + app + '"]');
     if (li) { li.classList.add("me"); li.parentNode.insertBefore(li, li.parentNode.firstChild); }
-    var conn = { tv: "설정 › 미테르 리모컨 최적화 › 점검 › Shizuku 연결", game: "도구 › FPS 보기 › 덜누름 게임 허용하기", desk: "창정리 › Shizuku 연결 · 허락하기", sseum: "권한 › Shizuku 허락" }[app];
+    var conn = { tv: "설정 › 미테르 리모컨 최적화 › 점검 › Shizuku 연결", game: "도구 › FPS 보기 › 덜누름 게임 허용하기", desk: "창정리 › Shizuku 연결 · 허락하기", sseum: "권한 › Shizuku 허락", pc: "폰 화면의 덜누름 PC 런처 › 데스크톱 모드 › Shizuku 연결" }[app];
     if (conn) document.getElementById("connName").textContent = conn;
   }
 })();

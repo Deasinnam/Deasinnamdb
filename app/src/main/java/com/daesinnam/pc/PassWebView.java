@@ -1,4 +1,4 @@
-package com.daesinnam.desk;
+package com.daesinnam.pc;
 
 import android.content.Context;
 import android.graphics.Rect;

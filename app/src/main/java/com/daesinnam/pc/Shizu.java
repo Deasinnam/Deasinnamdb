@@ -1,4 +1,4 @@
-package com.daesinnam.desk;
+package com.daesinnam.pc;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -16,13 +16,14 @@ import rikka.shizuku.Shizuku;
  *
  * Shizuku는 사용자가 따로 설치하는 무료 공개 앱입니다. 무선 디버깅으로 한 번 켜 두면,
  * 허락받은 앱이 개발자용 셸(ADB)과 같은 권한으로 명령을 실행할 수 있습니다(루팅 필요 없음).
- * 덜누름 데스크는 이 권한으로
+ * 덜누름 PC 런처는 이 권한으로
+ *  - 모니터 데스크톱 모드 켜기 (settings put global ...)
  *  - 열려 있는 창 목록 읽기 (am stack list)
  *  - 창 자리 옮기기 (am task resize) — 창정리에서 저장한 배치로
  * 만 씁니다.
  */
 final class Shizu {
-    static final String TAG = "DeskShizuku";
+    static final String TAG = "PcShizuku";
     static final String PKG = "moe.shizuku.privileged.api";
     static final String DOWNLOAD = "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api";
 
@@ -38,7 +39,7 @@ final class Shizu {
         try { return Shizuku.pingBinder() && !Shizuku.isPreV11(); } catch (Throwable t) { return false; }
     }
 
-    /** 켜져 있고 덜누름 데스크를 허락함 */
+    /** 켜져 있고 덜누름 PC 런처를 허락함 */
     static boolean granted() {
         try { return running() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED; }
         catch (Throwable t) { return false; }

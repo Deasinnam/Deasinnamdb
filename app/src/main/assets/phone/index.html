@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>덜누름 PC 런처</title>
+  <link rel="stylesheet" href="phone.css">
+</head>
+<body>
+<!-- 연결 도우미 -->
+<section id="home">
+  <header class="top">
+    <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
+    <b>덜누름 PC 런처</b>
+    <span class="sp"></span>
+    <small id="ver"></small>
+  </header>
+
+  <div class="card monitor" id="monCard">
+    <div class="mon-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-7v2h3v2H7v-2h3v-2H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v9h16V6z"/></svg></div>
+    <div class="mon-txt">
+      <h1 id="monTitle">모니터 연결 안 됨</h1>
+      <p id="monSub">USB-C 케이블(또는 허브)로 모니터를 꽂아 주세요.</p>
+      <p class="badges"><span id="modeBadge" class="pill"></span><span id="openBadge" class="pill ok" hidden>모니터에 PC 화면 열림</span></p>
+    </div>
+    <div class="row">
+      <button class="primary big" id="openBtn">모니터에 PC 화면 열기</button>
+      <button class="big" id="padBtn">터치패드</button>
+    </div>
+  </div>
+
+  <h2>처음 한 번 준비</h2>
+  <ol class="steps">
+    <li id="st1">
+      <div class="st-h"><b>휴대폰 화면 출력</b><span class="pill" id="p1"></span></div>
+      <p>USB-C로 모니터를 꽂았을 때 폰 화면이 모니터에 나오면 지원하는 휴대폰이에요. 아무것도 안 나오면 이 휴대폰은 유선 화면 출력이 없어 무선 미러링만 가능해요(덜누름 PC 런처를 쓸 수 없어요).</p>
+    </li>
+    <li id="st2">
+      <div class="st-h"><b>데스크톱 모드 켜기</b><span class="pill" id="p2"></span></div>
+      <p>모니터를 폰과 따로 쓰는 화면으로 만들고, 다른 앱도 모니터에서 창으로 열리게 하는 안드로이드 개발자 옵션이에요. 켠 뒤 <b>휴대폰을 다시 시작</b>해야 적용돼요.</p>
+      <div class="row">
+        <button class="primary" id="dmBtn">Shizuku로 바로 켜기</button>
+        <button id="devBtn">개발자 옵션 열기</button>
+        <button id="rebootBtn" hidden>지금 다시 시작</button>
+      </div>
+      <details>
+        <summary>직접 켜는 방법</summary>
+        <ol class="how">
+          <li>설정 › 휴대전화 정보 › (소프트웨어 정보) › <b>빌드 번호</b>를 7번 눌러 개발자 옵션을 켜요. <a href="#" id="aboutLink">휴대전화 정보 열기</a></li>
+          <li>설정 › 개발자 옵션에서 <b>보조 디스플레이에서 데스크톱 모드 강제 사용</b>(Force desktop mode)을 켜요.</li>
+          <li>같은 곳의 <b>자유 형식 창 사용</b>(Enable freeform windows)도 켜요.</li>
+          <li>휴대폰을 다시 시작해요.</li>
+        </ol>
+        <p class="note">메뉴 이름은 제조사 · 안드로이드 버전에 따라 조금 달라요. 일부 제조사는 이 메뉴를 숨겨 두어, 그런 휴대폰은 PC 화면은 모니터에 열려도 다른 앱이 폰에서 열릴 수 있어요. 픽셀 · 삼성 최신 기기는 안드로이드 16의 데스크톱 기능이 기본으로 들어 있어 이 단계가 필요 없을 수 있어요.</p>
+      </details>
+    </li>
+    <li id="st3">
+      <div class="st-h"><b>터치패드 · 폰 키보드</b><span class="pill" id="p3"></span></div>
+      <p>마우스가 없을 때 폰 화면을 터치패드로 써서 모니터의 포인터를 움직이고, 폰 키보드로 글자를 넣어요. 접근성에서 <b>덜누름 PC 런처 터치패드</b>를 켜 주세요. 화면 내용을 저장하거나 밖으로 보내지 않아요.</p>
+      <div class="row"><button id="a11yBtn">접근성 설정 열기</button></div>
+    </li>
+    <li id="st4">
+      <div class="st-h"><b>꽂으면 바로 열기</b><label class="switch"><input type="checkbox" id="autoChk"><span></span></label></div>
+      <p id="autoNote">모니터를 꽂으면 PC 화면을 모니터에 저절로 열어요. 알림에 "모니터 연결" 표시가 계속 떠 있어요.</p>
+      <div class="row"><button id="ovBtn" hidden>다른 앱 위에 표시 허용</button></div>
+    </li>
+  </ol>
+
+  <div class="card tips">
+    <b>알아 두면 좋아요</b>
+    <ul>
+      <li>블루투스 · USB 마우스와 키보드를 연결하면 모니터에서 그대로 쓸 수 있어요. 키보드 <kbd>⊞</kbd>(윈도우 키)로 시작 메뉴, <kbd>⊞</kbd>+<kbd>D</kbd>로 바탕화면.</li>
+      <li>모니터의 PC 화면은 바탕화면 · 작업 표시줄 · 시작 메뉴 · 창 · 위젯을 덜누름 데스크와 똑같이 써요.</li>
+      <li>충전하면서 쓰려면 충전 단자(PD)가 있는 USB-C 허브를 쓰세요.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 터치패드 -->
+<section id="pad" hidden>
+  <header class="top pad-top">
+    <button class="icon" id="padBack" aria-label="돌아가기">←</button>
+    <b>터치패드</b>
+    <span class="sp"></span>
+    <label class="speed">속도 <input type="range" id="speed" min="0.6" max="4" step="0.1"></label>
+  </header>
+  <div id="padArea" class="pad-area">
+    <div class="pad-hint" id="padHint">
+      <p><b>한 손가락</b> 포인터 움직이기</p>
+      <p><b>톡</b> 클릭 · <b>길게</b> 오른쪽 클릭</p>
+      <p><b>두 번 톡 하고 끌기</b> 끌어 옮기기</p>
+      <p><b>두 손가락</b> 위아래 · 좌우 넘기기</p>
+    </div>
+    <div class="pad-msg" id="padMsg" hidden></div>
+  </div>
+  <div class="pad-btns">
+    <button id="bLeft">클릭</button>
+    <button id="bRight">오른쪽 클릭</button>
+    <button id="bDrag" aria-pressed="false">끌기</button>
+  </div>
+  <div class="pad-btns">
+    <button id="bBack">뒤로</button>
+    <button id="bHome">PC 화면</button>
+    <button id="bKbd" aria-pressed="false">키보드</button>
+  </div>
+  <div class="kbd" id="kbd" hidden>
+    <input id="kbdIn" type="text" placeholder="여기에 쓰고 보내기 (모니터에서 입력 칸을 먼저 클릭)" autocomplete="off" enterkeyhint="send">
+    <button class="primary" id="kSend">보내기</button>
+    <button id="kBs" aria-label="한 글자 지우기">⌫</button>
+    <button id="kEnter" aria-label="엔터">↵</button>
+  </div>
+</section>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="../shizuku/open.js"></script>
+<script src="phone.js"></script>
+</body>
+</html>

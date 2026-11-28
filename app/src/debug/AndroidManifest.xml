@@ -2,6 +2,11 @@
 <!-- 시험용 빌드에만 들어가는 작은 위젯: 자동 점검이 "위젯 올리기 · 위젯 누르기"를 확인하는 데 씁니다 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
+        <activity
+            android:name=".TestInputActivity"
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="stateHidden" />
         <receiver
             android:name=".TestWidget"
             android:exported="true"

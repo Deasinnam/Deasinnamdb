@@ -1,4 +1,4 @@
-package com.daesinnam.desk;
+package com.daesinnam.pc;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -11,7 +11,7 @@ import android.widget.RemoteViews;
 
 /** 시험용 빌드 전용 위젯. 누르면 기록을 남기고 글자를 바꿉니다 (자동 점검이 확인). */
 public class TestWidget extends AppWidgetProvider {
-    private static final String CLICK = "com.daesinnam.desk.TEST_WIDGET_CLICK";
+    private static final String CLICK = "com.daesinnam.pc.TEST_WIDGET_CLICK";
     private static int clicks;
 
     private static RemoteViews views(Context context) {

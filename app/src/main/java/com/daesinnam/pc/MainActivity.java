@@ -1,7 +1,8 @@
-package com.daesinnam.desk;
+package com.daesinnam.pc;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.view.Display;
 import android.app.role.RoleManager;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
@@ -293,6 +294,16 @@ public class MainActivity extends ComponentActivity {
         web.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             if (r - l != or - ol || b - t != ob - ot) push("layout");
         });
+        // 자동 점검(시험용 빌드만): 모니터에 연 바탕화면에서 설정 앱을 창으로 띄워 봄 → 모니터에 뜨는지 스크립트가 확인
+        if (BuildConfig.DEBUG && getIntent() != null && getIntent().getBooleanExtra("pc.selftestLaunch", false)) {
+            main.postDelayed(() -> {
+                try {
+                    Log.i("PC_SELFTEST", "MONITOR-LAUNCH " + launch("com.android.settings", "com.android.settings.Settings", "window", null, 48));
+                } catch (Exception e) {
+                    Log.i("PC_SELFTEST", "MONITOR-LAUNCH fail " + e);
+                }
+            }, 4000);
+        }
         web.loadUrl(INDEX + (selftest ? ("2".equals(getIntent().getStringExtra("desk.phase")) ? "?selftest=2" : "?selftest") : ""));
     }
 
@@ -312,12 +323,18 @@ public class MainActivity extends ComponentActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         // 홈 버튼을 다시 누르면: 시작 메뉴 등을 닫고 바탕화면으로
-        if (intent != null && intent.hasCategory(Intent.CATEGORY_HOME)) push("home");
+        if (intent != null && (intent.hasCategory(Intent.CATEGORY_HOME) || intent.getBooleanExtra("pc.monitor", false))) push("home");
     }
+
+    /** 바탕화면이 마지막으로 떠 있던 화면 번호 (폰 화면의 연결 도우미가 "모니터에 열림"을 보여 줄 때 씀) */
+    static volatile int shownOnDisplay = -1;
 
     @Override
     protected void onResume() {
         super.onResume();
+        Display shown = Compat.display(this);
+        shownOnDisplay = shown != null ? shown.getDisplayId() : -1;
+        Log.i(TAG, "PC desktop resumed on display " + shownOnDisplay);
         push("status");
         push("resume"); // 창을 내렸다가 다시 띄웠을 때 등: 화면이 위젯 자리를 다시 맞추게
     }
@@ -1044,6 +1061,8 @@ public class MainActivity extends ComponentActivity {
         try {
             ActivityOptions o = ActivityOptions.makeBasic();
             if ("full".equals(mode)) {
+                // 모니터에서 연 바탕화면이면 앱도 그 모니터에 (덜누름 PC 런처)
+                if (Compat.display(MainActivity.this) != null) o.setLaunchDisplayId(Compat.display(MainActivity.this).getDisplayId());
                 opts = o.toBundle();
                 opts.putInt(KEY_WINDOWING_MODE, 1);
             } else {
@@ -1063,7 +1082,13 @@ public class MainActivity extends ComponentActivity {
         } catch (RuntimeException e) {
             // 창 방식 지정을 받지 않는 기기: 보통 방식으로
             Log.w(TAG, "창 방식으로 열지 못해 보통 방식으로 엽니다: " + e);
-            startActivity(i);
+            Bundle same = null;
+            if (Compat.display(MainActivity.this) != null) {
+                ActivityOptions o2 = ActivityOptions.makeBasic();
+                o2.setLaunchDisplayId(Compat.display(MainActivity.this).getDisplayId());
+                same = o2.toBundle();
+            }
+            try { startActivity(i, same); } catch (RuntimeException e2) { startActivity(i); }
             r.put("fallback", true);
         }
         return r.put("ok", true).put("freeform", freeformSupported());

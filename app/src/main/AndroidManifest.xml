@@ -8,6 +8,12 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!-- 빠른 설정의 밝기 막대가 화면 밝기를 바꾸는 데 씁니다. 사용자가 "시스템 설정 변경"을 허용해야만 동작합니다. -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <!-- 모니터 연결 지켜보기(알림) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 허용하면 모니터를 꽂았을 때 PC 화면을 바로 엶 (안드로이드는 화면 밖 앱이 화면을 여는 것을 막음) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- 시작 메뉴에 보여 줄 앱(런처에 나오는 앱) 목록 -->
     <queries>
@@ -28,31 +34,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- 폰 화면: 연결 도우미 + 터치패드 (앱 아이콘) -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:stateNotNeeded="true"
-            android:resizeableActivity="true"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
-            android:windowSoftInputMode="adjustResize">
-            <!-- 홈 앱(런처)으로 고를 수 있게.
-                 앱 서랍 아이콘(LAUNCHER)은 아래 DexActivity가 맡습니다: 예전 DeX(노트20 · 탭 S9 등)는 홈 앱으로 등록된 화면을
-                 "휴대전화 홈 화면에서만 실행 가능"이라며 열지 않기 때문입니다. -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <!-- 앱 서랍에서 여는 덜누름 데스크. 홈 앱이 아닌 일반 화면이라 DeX 안에서도 창으로 열립니다(화면 · 기능은 같음). -->
-        <activity
-            android:name=".DexActivity"
+            android:name=".PhoneActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:taskAffinity="com.daesinnam.desk.dex"
-            android:resizeableActivity="true"
+            android:taskAffinity="com.daesinnam.pc.phone"
+            android:screenOrientation="unspecified"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -60,9 +49,49 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- PC 화면(바탕화면 · 작업 표시줄 · 시작 메뉴 · 창): 모니터에서 열림.
+             덜누름 PC 런처를 기본 홈 앱으로 고르면 데스크톱 모드 모니터에서는 안드로이드가 이 화면을 저절로 엽니다(SECONDARY_HOME). -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.SECONDARY_HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- 모니터 연결 지켜보기 (켜 두면 꽂자마자 PC 화면을 엶) -->
+        <service
+            android:name=".MonitorService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="외부 모니터가 연결되면 그 모니터에 데스크톱 화면을 엶" />
+        </service>
+
+        <!-- 터치패드 (접근성): 모니터 포인터 · 누르기 · 끌기 · 넘기기, 폰 키보드로 글자 넣기 -->
+        <service
+            android:name=".PointerService"
+            android:exported="true"
+            android:label="덜누름 PC 런처 터치패드"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/pointer_service" />
+        </service>
         <!-- DeX에서 화면 밀도가 바뀌어도 앱을 다시 시작하지 않게 (삼성) -->
         <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />
-        <!-- 창정리 고급 기능(Shizuku) 연결 -->
+        <!-- 고급 기능(Shizuku) 연결: 데스크톱 모드 켜기 · 창정리 -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"

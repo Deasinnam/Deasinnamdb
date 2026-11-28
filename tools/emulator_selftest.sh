@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# 덜누름 데스크 에뮬레이터 점검: 앱 목록·아이콘, 시작 메뉴·검색, 내부 창, 내 사진 배경, 바깥 앱 띄우기.
+# 덜누름 PC 런처 에뮬레이터 점검
+# 1부: PC 화면(덜누름 데스크와 같은 바탕화면) — 앱 목록·아이콘, 시작 메뉴·검색, 내부 창, 내 사진 배경, 바깥 앱 띄우기
+# 2부: 가상 모니터(안드로이드 overlay display)로 — 모니터 찾기 · 모니터에 PC 화면 열기 · 거기서 앱 띄우기 · 터치패드 · 폰 키보드
 set -u
 APK="$1"
-PKG=com.daesinnam.desk
+PKG=com.daesinnam.pc
 adb install -r -g "$APK" || exit 1
 # 자유 창을 켜 봄 (다시 시작해야 적용되는 기기도 있어 결과는 참고용)
 adb shell settings put global enable_freeform_support 1
@@ -90,17 +92,9 @@ done
 adb logcat -d -s DESK_SELFTEST:I Desk:* DeskConsole:* >> selftest-result.txt
 echo "===== 점검 결과 ====="
 grep DESK_SELFTEST selftest-result.txt | cut -c1-400
-echo "===== 앱 아이콘(DexActivity)으로 열기 ====="
-adb logcat -c
-adb shell am start -W -n "$PKG/.DexActivity" > dex-start.txt 2>&1; sleep 4
-adb exec-out screencap -p > desk-screen-dex-activity.png
-if adb shell dumpsys activity activities | grep -E "mResumedActivity|topResumedActivity|ResumedActivity" | grep -q "$PKG/.DexActivity" && ! adb logcat -d -b crash | grep -q "$PKG"; then dx=PASS; else dx=FAIL; fi
-echo "x DESK_SELFTEST: $dx app icon opens DexActivity (not a home activity)" >> selftest-result.txt
-echo "DexActivity: $dx"; cat dex-start.txt | head -8
-echo "===== 앱 아이콘 대상 ====="
-adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "$PKG" 2>/dev/null | tail -1
-echo "===== 홈 앱으로 고를 수 있는지 ====="
-adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.HOME 2>/dev/null | grep -c "$PKG" | sed 's/^/홈 후보 등록 수: /'
+echo "===== 앱 아이콘 대상 (폰 화면이어야 함) ====="
+adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "$PKG" 2>/dev/null | tail -1 | tee launcher-target.txt
+if grep -q "$PKG/.PhoneActivity" launcher-target.txt; then echo "x DESK_SELFTEST: PASS app icon opens PhoneActivity" >> selftest-result.txt; else echo "x DESK_SELFTEST: FAIL app icon target" >> selftest-result.txt; fi
 echo "===== 띄운 앱의 창 방식 (참고) ====="
 adb shell dumpsys activity activities | grep -E "mWindowingMode=|windowingMode=" | sort | uniq -c | head -8
 adb shell am start -n "$PKG/.MainActivity" >/dev/null 2>&1; sleep 2
@@ -113,6 +107,49 @@ adb shell wm size reset; adb shell wm density reset
 echo "===== 앱이 꺼진 까닭 (exit-info) ====="
 adb shell dumpsys activity exit-info "$PKG" | grep -E "ApplicationExitInfo|reason=|description=|timestamp=|pid=" | head -40 | tee exit-info.txt
 echo "===== crash ====="; cat crash-1.txt | head -40
+echo "===== 2부: 가상 모니터 ====="
+adb shell settings put global overlay_display_devices 1280x720/160
+sleep 5
+adb shell dumpsys display | grep -E "mDisplayId=|mBaseDisplayInfo|DisplayDeviceInfo\{" | head -12 > pc-displays.txt
+MON=$(adb shell dumpsys display | grep -oE "mDisplayId=[0-9]+" | cut -d= -f2 | sort -un | grep -v "^0$" | head -1 | tr -d '\r')
+echo "가상 모니터 번호: ${MON:-없음}"; cat pc-displays.txt
+# 터치패드(접근성) 켜기 — 실제 기기에서는 사용자가 접근성 설정에서 켭니다
+adb shell settings put secure enabled_accessibility_services "$PKG/$PKG.PointerService"
+adb shell settings put secure accessibility_enabled 1
+sleep 3
+adb logcat -c
+adb shell am start -n "$PKG/.PhoneActivity" --ez pc.selftest true
+typed=0
+for i in $(seq 1 60); do
+  sleep 2
+  L=$(adb logcat -d -s PC_SELFTEST:I)
+  if [ ! -f pc-screen-phone.png ] && echo "$L" | grep -q "SHOT-HOME"; then adb exec-out screencap -p > pc-screen-phone.png; fi
+  if [ ! -f pc-screen-monitor.png ] && echo "$L" | grep -q "SHOT-MONITOR"; then
+    adb exec-out screencap -p > pc-screen-monitor.png
+    adb shell dumpsys activity activities > pc-activities.txt
+  fi
+  if [ ! -f pc-screen-pad.png ] && echo "$L" | grep -q "SHOT-PAD"; then adb exec-out screencap -p > pc-screen-pad.png; fi
+  if [ "$typed" = 0 ] && echo "$L" | grep -q "TYPE-READY"; then
+    typed=1; adb shell am start --display "${MON:-2}" -n "$PKG/.TestInputActivity" | head -3
+  fi
+  if [ ! -f pc-screen-type.png ] && echo "$L" | grep -q "SHOT-TYPE"; then adb exec-out screencap -p > pc-screen-type.png; fi
+  if echo "$L" | grep -q "DONE"; then break; fi
+done
+adb logcat -d -s PC_SELFTEST:I PcPointer:* PcMonitor:* PcMonitorSvc:* PcPhone:* PcPhoneConsole:* Desk:I > selftest-pc.txt
+echo "===== 2부 기록 ====="; grep -E "PC_SELFTEST|PcPointer|PcMonitor" selftest-pc.txt | cut -c1-260 | head -60
+# 모니터 화면(Display #MON) 안에 바탕화면과 거기서 띄운 설정 앱이 있는지
+awk -v m="Display #${MON:-2} " 'index($0,"Display #")==1{on=(index($0,m)==1)} on' pc-activities.txt > pc-monitor-tasks.txt
+grep -oE "(com\.daesinnam\.pc|com\.android\.settings)/[.A-Za-z]+" pc-monitor-tasks.txt | sort -u | sed 's/^/모니터 화면 위: /'
+pcres() { if eval "$2"; then echo "x DESK_SELFTEST: PASS pc $1" >> selftest-result.txt; echo "PASS $1"; else echo "x DESK_SELFTEST: FAIL pc $1" >> selftest-result.txt; echo "FAIL $1"; fi; }
+pcres "monitor found" 'grep -q "STATUS connected true" selftest-pc.txt'
+pcres "desktop opened on monitor" 'grep -q "DESKTOP-ON true" selftest-pc.txt && grep -q "com.daesinnam.pc/.MainActivity" pc-monitor-tasks.txt'
+pcres "app launched from monitor desktop lands on monitor" 'grep -q "com.android.settings/" pc-monitor-tasks.txt'
+pcres "pointer moved" 'grep -E "POS from .* to [0-9]+,[0-9]+" selftest-pc.txt | grep -qv "to 0,0,"'
+pcres "click on monitor" 'grep -q "GESTURE done click" selftest-pc.txt'
+pcres "drag on monitor" 'grep -q "GESTURE done drag-end" selftest-pc.txt'
+pcres "phone keyboard text into monitor input" 'grep -q "INPUT-NOW \[안녕 PC!\]" selftest-pc.txt'
+grep -iE "FATAL|AndroidRuntime" -A5 <(adb logcat -d -b crash) | head -20
+adb shell settings put global overlay_display_devices '""' >/dev/null 2>&1 || true
 echo "x DESK_SELFTEST: ${sq:-FAIL} real window placed in top-left quarter (${spkg:-})" >> selftest-result.txt
 pass=$(grep -c "DESK_SELFTEST: PASS" selftest-result.txt || true)
 failn=$(grep -c "DESK_SELFTEST: FAIL" selftest-result.txt || true)

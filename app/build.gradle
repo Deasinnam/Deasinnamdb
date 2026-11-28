@@ -1,15 +1,15 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.daesinnam.desk'
+    namespace 'com.daesinnam.pc'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.daesinnam.desk'
+        applicationId 'com.daesinnam.pc'
         minSdk 26
         targetSdk 35
-        versionCode 17
-        versionName "1.6.7"
+        versionCode 1
+        versionName "0.1"
     }
 
     buildFeatures { buildConfig true }
