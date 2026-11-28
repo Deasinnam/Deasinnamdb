@@ -13,6 +13,21 @@
   if (window.__dnCraftCommon) return;
   window.__dnCraftCommon = true;
 
+  // 화면 언어 기본값: 한국어.
+  // 사진 편집(PhotoCraft)은 시작할 때 localStorage 의 환경설정을 읽으므로, 언어가 정해져 있지 않으면 미리 "ko"로 적어 둠.
+  // (사용자가 설정에서 다른 언어를 고르면 그 값이 저장되어 그대로 씀. 동영상 편집은 film-bridge.js, 사진 정리는 앱 안 사전이 맡음)
+  try {
+    if (/\/assets\/photo\//.test(location.pathname)) {
+      const K = "photocraft.preferences";
+      let d = null;
+      try { d = JSON.parse(localStorage.getItem(K) || "{}"); } catch (_) { d = null; }
+      if (d && typeof d === "object" && !Array.isArray(d)) {
+        if (!d.interface || typeof d.interface !== "object") d.interface = {};
+        if (!d.interface.language) { d.interface.language = "ko"; localStorage.setItem(K, JSON.stringify(d)); }
+      }
+    }
+  } catch (_) {}
+
   const TARGET = 900; // 편집기가 편하게 보이는 최소 화면 폭 (CSS px)
   const MIN_SCALE = 0.55; // 이보다 더 줄이면 글자가 너무 작아짐
   let original = null; // 편집기 원래의 viewport 설정 (넓은 화면에서는 그대로 둠)

@@ -23,6 +23,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # 사진 정리 · 녹음 · 동영상 편집을 소스에서 빌드하므로 쓰지 않는 도구를 지워 디스크 자리를 만듦
+      - name: 디스크 자리 만들기
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/swift || true
+          df -h /
+
       - name: 앱 버전 읽기
         run: echo "APP_VERSION=$(grep -oP 'versionName "\K[^"]+' app/build.gradle)" >> "$GITHUB_ENV"
 
@@ -147,6 +153,35 @@ jobs:
       - name: 동영상 편집 수정 넣기 (웹 H.264 내보내기)
         run: python3 tools/filmcraft_patch.py upstream-film
 
+      # ===================== 사진 정리 · 녹음 편집 한국어 (소스에서 빌드) =====================
+      - name: 사진 정리 소스 받기 (LightCraft)
+        uses: actions/checkout@v5
+        with:
+          repository: storytold/lightcraft
+          ref: ${{ env.LIGHT_TAG }}
+          path: upstream-light
+          lfs: false
+
+      - name: 무료 글꼴 저장소 받기 (craft-fonts, 한글 글꼴 포함)
+        uses: actions/checkout@v5
+        with:
+          repository: storytold/craft-fonts
+          path: craft-fonts
+          lfs: false
+
+      - name: 녹음 편집 소스 받기 (SoundCraft)
+        uses: actions/checkout@v5
+        with:
+          repository: storytold/soundcraft
+          ref: ${{ env.SOUND_TAG }}
+          path: upstream-sound
+          lfs: false
+
+      - name: 사진 정리 · 녹음 편집 한국어 넣기
+        run: |
+          python3 tools/lightcraft_patch.py upstream-light
+          python3 tools/soundcraft_patch.py upstream-sound
+
       - name: Rust · wasm 도구 준비
         run: |
           rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
@@ -176,13 +211,41 @@ jobs:
       - name: Rust 빌드 캐시 (동영상 편집)
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: upstream-film -> target
+          workspaces: |
+            upstream-film -> target
+            upstream-light -> target
+            upstream-sound -> target
 
       - name: 동영상 편집 웹 빌드
         run: |
           cd upstream-film
           cargo +stable xtask web
           ls -la target/web/dist
+
+      - name: 사진 정리 웹 빌드 (한국어)
+        run: |
+          cd upstream-light
+          CRAFT_FONTS_DIR="$GITHUB_WORKSPACE/craft-fonts" cargo +stable xtask web
+          OUT=target/web-site; ls -la "$OUT"
+          # 공식 웹 빌드(라이선스 · 글꼴 안내 파일 포함) 위에 새로 만든 파일을 덮어씀
+          cp -r "$OUT"/. "$LIGHT_SITE"/
+          cp "$GITHUB_WORKSPACE/craft-fonts/fonts/nanum-gothic/OFL.txt" "$LIGHT_SITE/OFL-nanum-gothic.txt"
+          df -h /
+
+      - name: 녹음 편집 웹 빌드 (한국어, trunk)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/trunk" && cd "$RUNNER_TEMP/trunk"
+          gh release download -R trunk-rs/trunk --pattern 'trunk-x86_64-unknown-linux-gnu.tar.gz'
+          tar xzf trunk-*.tar.gz && echo "$PWD" >> "$GITHUB_PATH" && export PATH="$PWD:$PATH"
+          cd "$GITHUB_WORKSPACE/upstream-sound/apps/soundcraft-web"
+          RUSTUP_TOOLCHAIN=stable trunk build --release
+          OUT="$GITHUB_WORKSPACE/upstream-sound/dist/web"; ls -la "$OUT"
+          # 공식 웹 빌드의 이전 프로그램 파일(이름에 해시가 붙음)을 지우고 새로 만든 것으로 바꿈
+          rm -rf "$SOUND_SITE"/soundcraft-web-* "$SOUND_SITE"/snippets "$SOUND_SITE"/index.html "$SOUND_SITE"/*.png
+          cp -r "$OUT"/. "$SOUND_SITE"/
+          grep -c "사진\|세션 저장" "$SOUND_SITE"/*.wasm || true
 
       # ===================== 합치기 · 크롬 점검 =====================
       - name: 사진·동영상·사진 정리·녹음 에셋 넣기, 이름 바꾸기, 라이선스·정보 화면
@@ -319,7 +382,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) · 사진 정리($LIGHT_TAG 기반) · 녹음($SOUND_TAG 기반, 안드로이드 녹음 추가) 편집을 한 앱에. 휴대폰 화면 맞춤. 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
+          NOTES="덜누름 워크 버전 $APP_VERSION. 문서($IEUM_VERSION 기반) · 사진($PHOTO_TAG 기반) · 동영상($FILM_TAG 기반, 웹 H.264·한국어 화면 수정) · 사진 정리($LIGHT_TAG 기반, 한국어 화면) · 녹음($SOUND_TAG 기반, 한국어 화면 · 안드로이드 녹음 추가) 편집을 한 앱에. 휴대폰 화면 맞춤. 문서 편집에 무료 글꼴(SIL OFL) 74개 파일 · 30여 종. 휴대폰용 arm64. 빌드 ${{ github.run_number }} ($VARIANT)"
           gh release delete work-latest --yes --cleanup-tag || true
           gh release create work-latest DeolnureumWork.apk DaesinnamWork.apk --target "$GITHUB_SHA" \
             --title "덜누름 워크 (최신 빌드)" --notes "$NOTES"

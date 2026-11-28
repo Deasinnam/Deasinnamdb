@@ -164,6 +164,20 @@ tools/                      빌드·점검 스크립트 (아래)
 - 배포: 빌드가 `work-latest`와 함께 `work-v<버전>` 릴리스를 만들고, `work-latest`를 바꾸기 전에 이전 버전이 `work-v<이전 버전>`에 없으면 옮겨 둡니다(사이트에서 버전을 골라 받게).
 - 서명은 그대로 저장소 비밀값 `AMP_KEYSTORE_*` → 기존 앱 위에 덮어 설치됩니다.
 
+## 1.0.12에서 더한 것 (2026-11-28) — 사진 · 동영상 · 사진 정리 · 녹음 편집 한국어
+
+요청: "덜누름 워크에서 사진·영상·오디오 작업도 한글화 해서 반영해"
+
+| 편집기 | 한 일 |
+|---|---|
+| 사진(PhotoCraft) | 원작에 한국어 있음. 처음 열 때 환경설정(localStorage `photocraft.preferences`)에 언어가 없으면 `ko`로 적어 둠 (craft-common.js) |
+| 동영상(FilmCraft) | 원작에 한국어 있음. film-bridge.js 가 기억한 언어가 없으면 `ko`로 시작 |
+| 사진 정리(LightCraft) | 원작 i18n(영어 문구가 키인 JSON)에 `ko` 추가: `tools/i18n/light/ko.json`(2454) · `ko-formats.json`(328). `tools/lightcraft_patch.py <소스>` 가 locales 에 복사(자리 표시 검사) + `Locale::Ko` + 언어 메뉴 + wasm 글꼴에 NanumGothic. CI가 소스에서 `cargo xtask web`(CRAFT_FONTS_DIR=craft-fonts)로 빌드해 공식 웹 빌드 폴더 위에 덮어씀 |
+| 녹음(SoundCraft) | 원작에 다국어 체계가 없음 → `tools/soundcraft_patch.py <소스>` 가 Cargo.toml 의 egui 포크 rev 를 vendor/egui 에 받아 `egui::dn_tr`(사전 + format! 모양 맞추기, 캐시) 를 넣고 WidgetText/RichText 만들기 · Painter::text 에서 바꿈. egui 가족 전체를 path 로 바꿈(두 벌 방지). 사전: `tools/i18n/sound/ko.json`(1255) · `ko-patterns.json`(94, 모양 안 `{0}` 은 이름 없는 자리 순서). CI가 trunk 로 빌드 |
+
+- 사전 갱신: 원작 새 버전에서 문구가 바뀌면 그 문구만 영어로 나옴(깨지지 않음). LightCraft 는 패치가 ja 에 없는 키를 버리므로 새 문구는 ja 키를 기준으로 추가.
+- CI 시간이 늘어남(소스 빌드 3개). 디스크 부족 대비로 처음에 쓰지 않는 도구를 지움.
+
 ## 1.0.11에서 더한 것 (2026-11-27) — 사진 정리 · 녹음 편집, 휴대폰 화면 맞춤
 
 요청: "아트크래프트에서 LightCraft · SoundCraft를 덜누름 워크에 추가, PhotoCraft · FilmCraft는 최신판, 안드로이드에서 문제 있던 부분은 모두 반영. 기본은 아트크래프트지만 안드로이드 최적화는 덜누름 워크가." (VectorCraft는 넣지 않기로 함. PDF 편집은 이음오피스와 겹쳐 PdfCraft는 넣지 않음)

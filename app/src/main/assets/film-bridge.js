@@ -145,6 +145,8 @@
     whenReady(240000).then(async () => {
       let saved = null;
       try { saved = localStorage.getItem(KEY); } catch (_) {}
+      // 처음 여는 경우에는 기기 언어와 상관없이 한국어 화면으로 시작 (설정에서 다른 언어를 고르면 그 언어를 기억)
+      if (saved === null) saved = "ko";
       if (saved && saved !== "system") {
         try { await window.filmcraft.execute("prefs.set", { key: "general.interfaceLanguage", value: saved }); }
         catch (e) { log("언어 복원 실패: " + e); }
