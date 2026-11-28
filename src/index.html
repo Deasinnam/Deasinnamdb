@@ -1123,7 +1123,10 @@ body[data-view="home"] { background: #f6f5f1; }
 .wk-pts li b { flex: none; color: #c4b5fd; font: 700 12px/1.9 var(--font-mono); }
 .wk-pts li span b { color: #fff; font: inherit; }
 @media (max-width: 760px) { .wk-pts { grid-template-columns: 1fr; } }
-#work-new .ap-trio small { color: #c4b5fd; }
+#work-new .ap-trio small, #work-ko .ap-trio small { color: #c4b5fd; }
+.ap-howto.ap-ver { border-color: #4c3d75; background: linear-gradient(180deg, rgba(167,139,250,.10), rgba(167,139,250,.02)); }
+.ap-howto.ap-ver li::before { background: #a78bfa; }
+.ap-howto.ap-ver > p b { color: #e9e3ff; }
 .nt-figs.two-wide figure img { border-radius: 14px; }
 
 .spd-taxi-vid { grid-column: 1 / -1; max-width: 520px; width: 100%; margin: 8px auto 0; }
@@ -2270,9 +2273,9 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
       <div class="amp-copy">
         <div class="amp-eyebrow">문서 · 사진 · 동영상 · 녹음</div>
         <h1 id="ap-work-t"><img class="ap-ic" src="media/icons/work.png" alt="" width="56" height="56">덜누름 워크</h1>
-        <p class="amp-kind">오피스 · 그래픽 작업을 한 앱에서</p>
+        <p class="amp-kind">이음오피스 · 아트크래프트의 안드로이드 덜누름 Ver.</p>
         <p class="amp-lead">안드로이드를 일반 PC처럼<br>사용해보세요.</p>
-        <p class="ap-desc">덜누름 워크는 오피스 작업과 그래픽 작업을 안드로이드용으로 한데 모으고 폴드에 맞게 최적화한 앱입니다. 문서 작업과 그래픽 작업을 스마트폰 한 대에서, 앱을 오가지 않고 한 번에 끝냅니다.</p>
+        <p class="ap-desc">덜누름 워크는 오픈소스 <b>이음오피스</b>와 <b>아트크래프트(ArtCraft)</b>를 안드로이드에 맞게 다시 다듬은 <b>덜누름 Ver.</b> 업무용 프로그램입니다. PC 프로그램을 그대로 옮기지 않고 폴드 화면 · 터치 · 휴대폰 기능에 맞춰 새롭게 해석해, 문서 · 사진 · 동영상 · 녹음 작업을 스마트폰 한 대에서 앱을 오가지 않고 끝냅니다.</p>
         <ul class="amp-points">
           <li><b>1×</b><span>파일 열기 한 번이면 형식에 맞는 편집기가 알아서 열립니다</span></li>
           <li><b>01</b><span>오피스 작업 · 문서 · 표 · 발표 자료 · PDF 보기 · 마인드맵 · 다이어그램</span></li>
@@ -2286,8 +2289,19 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
         </ul>
         <div class="amp-cta"><a class="amp-btn" href="https://github.com/Deasinnam/Deasinnamdb/releases/download/work-latest/DaesinnamWork.apk">내려받기 <small>APK</small></a><span class="dl-count" aria-live="polite"></span></div>
         <div class="ap-fix"><a class="amp-btn ap-fix-btn" href="#post-install-guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>설치가 차단될 때 해결 방법 보기</a></div>
+        <div class="ap-fix"><button type="button" class="amp-btn ap-guide-btn" data-scroll="work-ko">가 1.0.12 · 모든 편집기 한국어 화면 보기</button></div>
         <div class="ap-fix"><button type="button" class="amp-btn ap-guide-btn" data-scroll="work-new">🎙 1.0.11 새 기능 · 사진 보정 · 녹음 편집 보기</button></div>
         <div class="ap-fb"><a class="amp-btn" href="#feedback" data-fb-app="덜누름 워크">이 앱에 의견 보내기</a><a class="amp-btn ap-hw" href="#hardware"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18" stroke="currentColor" stroke-width="2"/></svg>관련 하드웨어 보기</a></div>
+        <div class="ap-howto ap-ver">
+          <h2>덜누름 Ver. — PC 버전과 다른 안드로이드 최적화판</h2>
+          <p>덜누름 워크는 이음오피스 · 아트크래프트의 PC 버전과 <b>따로 업데이트</b>됩니다. 원작의 좋은 점은 이어받고, 안드로이드에서 불편한 부분은 덜누름이 고치고 더해 덜누름 워크에서만 제공합니다.</p>
+          <ol>
+            <li><b>안드로이드 화면에 맞게</b><span>폴드 펼친 화면 · 휴대폰 세로 화면 · DeX와 터치에 맞춘 편집 화면</span></li>
+            <li><b>휴대폰 기능과 연결</b><span>마이크 녹음, 갤러리에서 공유로 보내기, 안드로이드 저장 위치 고르기, 파일 열기 한 번으로 맞는 편집기 열기</span></li>
+            <li><b>모두 한국어</b><span>문서 · 사진 · 동영상 · 사진 정리 · 녹음 편집 한국어 화면과 무료 한글 글꼴 30여 종</span></li>
+            <li><b>덜누름 워크만의 업데이트</b><span>원작 새 버전을 받아 다시 다듬고, 의견으로 받은 개선을 더해 덜누름 워크 버전(1.0.x)으로 배포합니다</span></li>
+          </ol>
+        </div>
         <div class="ap-howto ap-install">
           <h2>처음 설치하시나요?</h2>
           <p>Play 스토어 밖에서 받는 앱이라 "기기 보호를 위해 앱 차단됨" 같은 창이 뜰 수 있습니다. 고장이 아니에요. 아래 순서대로 3분이면 설치됩니다.</p>
@@ -2305,12 +2319,46 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
           <div><dt>최적화 기기</dt><dd>삼성 갤럭시 Z 폴드7 · Z 폴드8 울트라</dd></div>
           <div><dt>필요</dt><dd>Android 8.0 이상 · 64비트 · 무료</dd></div>
         </dl>
-        <p class="ap-note">오픈소스 이음오피스(Apache-2.0)와 ArtCraft의 PhotoCraft · FilmCraft · LightCraft · SoundCraft(MIT/Apache-2.0)를 바탕으로 덜누름이 고쳐 만든 앱입니다. 원작 개발팀과는 관련이 없으며, 원작 라이선스와 고지는 앱의 정보 화면에서 볼 수 있습니다.</p>
+        <p class="ap-note">오픈소스 이음오피스(Apache-2.0)와 ArtCraft의 PhotoCraft · FilmCraft · LightCraft · SoundCraft(MIT/Apache-2.0)를 바탕으로 덜누름이 안드로이드용으로 고쳐 만든 덜누름 Ver.입니다. 기능과 업데이트는 PC 버전과 다를 수 있습니다. 원작 개발팀과는 관련이 없으며, 원작 라이선스와 고지는 앱의 정보 화면에서 볼 수 있습니다.</p>
       </div>
       <div class="ap-media">
         <div class="ap-dev"><video src="media/app-work.mp4?v=1115" poster="media/app-work-poster.jpg?v=1115" muted playsinline preload="none" aria-label="덜누름 워크 실제 화면 영상: 시작 화면에서 오피스 작업 화면과 사진 편집기, 동영상 편집기를 차례로 여는 모습"></video><button class="ap-again" type="button" hidden>↻ 다시 보기</button></div>
         <p class="ap-cap">갤럭시 Z 폴드 펼친 화면에서 찍은 실제 화면</p>
       </div>
+    </div>
+    <div class="amp-wrap ap-sub" id="work-ko">
+      <div class="amp-copy ap-wide">
+        <div class="amp-eyebrow">NEW · 1.0.12 · 11월 28일 업데이트</div>
+        <h2>사진도, 영상도, 녹음도<br>이제 한국어로.</h2>
+        <p class="ap-desc">덜누름 워크 안의 편집기 네 가지가 모두 <b>한국어 화면</b>으로 열립니다. 원작에 한국어가 없던 사진 정리 · 녹음 편집은 덜누름이 직접 번역해 넣었고, 휴대폰 언어가 영어로 되어 있어도 처음에는 한국어로 시작합니다.</p>
+      </div>
+      <ul class="wk-pts">
+        <li><b>01</b><span><b>사진 정리 · 보정</b> — 메뉴 · 보정 막대 · 안내 창까지 약 2,800개 문구를 새로 번역. 한글이 깨지지 않게 나눔고딕 글꼴을 함께 넣었습니다.</span></li>
+        <li><b>02</b><span><b>녹음 · 음성 편집</b> — 언어 기능이 없던 원작에 한국어 사전(약 1,350개 문구)을 더해 메뉴 · 패널 · 환경 설정 · 오류 안내를 한국어로.</span></li>
+        <li><b>03</b><span><b>사진 편집</b> — 휴대폰 언어와 상관없이 처음부터 한국어. 다른 언어를 고르면 그대로 기억합니다.</span></li>
+        <li><b>04</b><span><b>동영상 편집</b> — 처음부터 한국어로 시작하고, 고른 언어를 앱이 기억했다가 다음에도 적용합니다.</span></li>
+      </ul>
+      <div class="ap-trio ap-pair" style="max-width:none">
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/900"><img src="media/work-1012-light.webp" alt="사진 정리 · 보정 한국어 화면: 파일 · 편집 · 보기 · 사진 메뉴, 노출 · 대비 · 밝은 영역 · 어두운 영역 막대, 환영합니다 창" loading="lazy"></div>
+          <figcaption><small>01 · 사진 정리 · 보정</small><h3>노출 · 대비 · 밝은 영역.</h3><p>보정 막대 이름부터 첫 안내 창까지 한국어로 바뀌었습니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/900"><img src="media/work-1012-sound.webp" alt="녹음 · 음성 편집 한국어 화면: 파일 메뉴(새로 만들기 · 열기 · 세션 저장 · 믹스 바운스 · 가져오기 · 내보내기)와 트랙과 그룹, 클립 찾기" loading="lazy"></div>
+          <figcaption><small>02 · 녹음 · 음성 편집</small><h3>세션 저장 · 믹스 바운스.</h3><p>파일 메뉴와 트랙 · 클립 패널, MIDI 편집기 · 실행 취소 기록 탭이 한국어입니다.</p></figcaption>
+        </figure>
+      </div>
+      <div class="ap-trio ap-pair" style="max-width:none">
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/900"><img src="media/work-1012-photo.webp" alt="사진 편집 한국어 화면: 파일 · 편집 · 이미지 · 레이어 메뉴와 새 파일 · 열기 단추, 이미지나 PSD를 놓아 여세요 안내" loading="lazy"></div>
+          <figcaption><small>03 · 사진 편집</small><h3>파일 · 이미지 · 레이어.</h3><p>휴대폰 언어가 영어여도 처음부터 한국어로 시작합니다.</p></figcaption>
+        </figure>
+        <figure>
+          <div class="ap-dev" style="aspect-ratio:1400/900"><img src="media/work-1012-film.webp" alt="동영상 편집 한국어 화면: 가져오기 · 편집 · 내보내기, 소스 · 효과 컨트롤 · 프로그램 · 타임라인 패널" loading="lazy"></div>
+          <figcaption><small>04 · 동영상 편집</small><h3>프로그램 · 타임라인.</h3><p>패널 이름과 상태 줄 안내까지 한국어. 고른 언어는 앱이 기억합니다.</p></figcaption>
+        </figure>
+      </div>
+      <p class="ap-disc" role="note" style="grid-column:1/-1"><b>알아 두세요</b>트랙 · 파일 · 효과(플러그인) 이름과 SHUFFLE · SLIP 같은 편집 모드 이름은 원래 이름 그대로 둡니다. 녹음 편집기는 사전으로 바꾸는 방식이라 드물게 영어 문구가 보일 수 있고, 지금은 한국어로만 나옵니다. 영어로 남은 곳을 찍어 <a href="#feedback">의견</a>으로 보내 주시면 사전에 더하겠습니다. 위 화면은 같은 편집기를 PC 화면 크기로 띄워 찍었습니다.</p>
     </div>
     <div class="amp-wrap ap-sub" id="work-new">
       <div class="amp-copy ap-wide">
@@ -2346,7 +2394,7 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
           <figcaption><small>04 · 녹음 단추</small><h3>손가락으로 옮겨 둡니다.</h3><p>빨간 녹음 단추와 홈 단추는 메뉴를 가리지 않게 끌어 옮길 수 있습니다.</p></figcaption>
         </figure>
       </div>
-      <p class="ap-disc" role="note" style="grid-column:1/-1"><b>알아 두세요</b>사진 정리 · 녹음 편집기의 메뉴는 영어입니다(원작에 한국어 화면이 아직 없음). 녹음 편집기는 그래픽 성능이 낮은 일부 오래된 기기에서는 열리지 않을 수 있고, 이때는 이유를 한국어로 안내합니다. 사진 정리를 처음 열 때 환영 창이 떠 있으면 공유한 사진이 들어가지 않으니, 창을 닫고 다시 공유해 주세요.</p>
+      <p class="ap-disc" role="note" style="grid-column:1/-1"><b>알아 두세요</b>사진 정리 · 녹음 편집기는 1.0.12부터 한국어 화면입니다(위 사진은 1.0.11 영어 화면). 녹음 편집기는 그래픽 성능이 낮은 일부 오래된 기기에서는 열리지 않을 수 있고, 이때는 이유를 한국어로 안내합니다. 사진 정리를 처음 열 때 환영 창이 떠 있으면 공유한 사진이 들어가지 않으니, 창을 닫고 다시 공유해 주세요.</p>
     </div>
     <div class="amp-wrap ap-after">
       <div class="ap-rec is-list" aria-labelledby="ap-work-rec">
@@ -4067,9 +4115,14 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
         </header>
         <div class="nt-body">
           <p>"사진 · 영상 · 오디오 작업도 한글로 보고 싶다"는 의견을 반영했습니다. 1.0.12부터 덜누름 워크의 편집기 네 가지가 모두 <b>한국어 화면</b>으로 열립니다. 메뉴 · 버튼 · 설명 문구를 한국어로 바꿨고, 휴대폰 언어가 영어로 되어 있어도 처음에는 한국어로 시작합니다.</p>
+          <p>덜누름 워크는 이음오피스와 아트크래프트를 안드로이드에 맞게 다시 다듬은 <b>덜누름 Ver.</b>입니다. 그래서 이번 한국어 화면처럼 PC 버전에는 없는 개선이 덜누름 워크에 먼저, 따로 들어갑니다.</p>
           <div class="nt-figs">
             <figure><img src="media/work-1012-light.webp" alt="사진 정리 · 보정 한국어 화면: 파일 · 편집 · 보기 · 사진 메뉴, 노출 · 대비 · 밝은 영역 · 어두운 영역 막대, 환영합니다 창" loading="lazy"><figcaption>사진 정리 · 보정 — 메뉴 · 보정 막대 · 안내 창까지 한국어</figcaption></figure>
             <figure><img src="media/work-1012-sound.webp" alt="녹음 · 음성 편집 한국어 화면: 파일 메뉴(새로 만들기 · 열기 · 세션 저장 · 믹스 바운스 · 가져오기 · 내보내기)와 트랙과 그룹, 클립 찾기" loading="lazy"><figcaption>녹음 · 음성 편집 — 파일 메뉴 · 패널 이름이 한국어</figcaption></figure>
+          </div>
+          <div class="nt-figs">
+            <figure><img src="media/work-1012-photo.webp" alt="사진 편집 한국어 화면: 파일 · 편집 · 이미지 · 레이어 메뉴와 새 파일 · 열기 단추" loading="lazy"><figcaption>사진 편집 — 휴대폰 언어가 영어여도 한국어로 시작</figcaption></figure>
+            <figure><img src="media/work-1012-film.webp" alt="동영상 편집 한국어 화면: 소스 · 효과 컨트롤 · 프로그램 · 타임라인 패널" loading="lazy"><figcaption>동영상 편집 — 패널 이름과 안내까지 한국어</figcaption></figure>
           </div>
 
           <h3>무엇이 한국어가 됐나요</h3>
