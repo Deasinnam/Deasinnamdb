@@ -132,9 +132,22 @@ echo "guard prefs: $st"; echo "last crash: $ct"
 if alive && echo "$st" | grep -q 'name="strikes" value="2"' && echo "$ct" | grep -q "꺼진 이유"; then g=PASS; else g=FAIL; fi
 echo "x DESK_SELFTEST: $g crash guard: 2 early crashes -> safe mode opens, reason saved" >> selftest-result.txt
 adb shell am force-stop $PKG; adb shell run-as $PKG rm -f shared_prefs/desk_guard.xml files/last_crash.txt
+# ---- 1.6.9: 기본 홈이 아니면 홈 앱 등록을 꺼서 삼성 DeX에서 열리게 ----
+homecount() { adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.HOME 2>/dev/null | grep -c "$PKG"; }
+adb shell am force-stop $PKG; adb shell am start -W -n "$PKG/.DexActivity" >/dev/null 2>&1; sleep 4
+h1=$(homecount | tr -d '\r')
+if [ "$h1" = 0 ]; then r=PASS; else r=FAIL; fi
+echo "x DESK_SELFTEST: $r not default home -> HOME registration off after opening (candidates=$h1)" >> selftest-result.txt
+# 덮어 설치(새 버전)하면 앱을 열지 않아도 꺼지는지
+adb shell pm enable "$PKG/.Home" >/dev/null 2>&1
+h2=$(homecount | tr -d '\r')
+adb install -r "$APK" >/dev/null 2>&1; sleep 6
+h3=$(homecount | tr -d '\r')
+if [ "$h2" != 0 ] && [ "$h3" = 0 ]; then r=PASS; else r=FAIL; fi
+echo "x DESK_SELFTEST: $r reinstall turns HOME registration off (before=$h2 after=$h3)" >> selftest-result.txt
 # ---- 배포용(서명) APK도 탭 화면에서 열어 봄 (있을 때만) ----
 echo "배포용 APK 찾기: $(pwd)"; ls -la *.apk 2>&1 | head -5
-REL="${2:-}"; [ -z "$REL" ] && [ -f DeolnureumDesk.apk ] && REL=DeolnureumDesk.apk
+REL="${2:-}"; echo "넘겨받은 값: [$REL] (인자 $#개)"; [ -f "$REL" ] || REL=DeolnureumDesk.apk; echo "쓸 파일: $REL"
 if [ -n "$REL" ] && [ -f "$REL" ]; then
   adb uninstall $PKG >/dev/null 2>&1; adb install -r "$REL" >/dev/null 2>&1
   for act in MainActivity DexActivity; do

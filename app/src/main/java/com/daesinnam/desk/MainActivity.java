@@ -182,6 +182,8 @@ public class MainActivity extends ComponentActivity {
         selftest = BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("desk.selftest");
         // 1.6.8: 켠 지 얼마 안 돼 두 번 이어서 꺼졌으면 위젯 · 고급 기능 없이 엽니다 (DeskApp)
         safeMode = DeskApp.safeMode(this);
+        // 1.6.9: 기본 홈이 아니면 홈 앱 등록을 꺼 둠 — 삼성 DeX가 홈 앱은 열지 않기 때문 (HomeMode)
+        if (!selftest || getIntent().getBooleanExtra("desk.tidyhome", false)) HomeMode.tidy(this);
         // 시험용 빌드만: 꺼짐 지킴이 점검 (일부러 켜자마자 끄기)
         if (BuildConfig.DEBUG && getIntent() != null && getIntent().getBooleanExtra("desk.crashtest", false) && !safeMode)
             throw new IllegalStateException("desk.crashtest: 꺼짐 지킴이 점검용");
@@ -418,6 +420,10 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 7) { // 기본 홈 요청에서 돌아옴: 고르지 않았으면 홈 등록을 다시 끔 (DeX에서 열리게)
+            main.postDelayed(() -> { HomeMode.tidy(this); push("status"); }, 600);
+            return;
+        }
         if (requestCode != REQ_WIDGET_CONFIG) return;
         // 위젯이 자기 설정 화면을 띄운 뒤 돌아옴
         int id = pendingWidgetId;
@@ -547,6 +553,8 @@ public class MainActivity extends ComponentActivity {
                 return openSettings(a.optString(0));
             case "makeDefault":
                 return makeDefault();
+            case "leaveHome":
+                return leaveHome();
             case "pickWallpaper":
                 pickWallpaper.launch(new PickVisualMediaRequest.Builder()
                         .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
@@ -1469,6 +1477,7 @@ public class MainActivity extends ComponentActivity {
         r.put("split", inSplit());
         r.put("safe", safeMode);
         r.put("isDefault", isDefaultHome());
+        r.put("homeReg", HomeMode.registered(this));
         File wp = wallpaperFile();
         r.put("wallpaper", wp.exists() ? wp.lastModified() : 0); // 내 사진 배경이 있으면 바뀐 시각(화면이 새 사진을 다시 읽게)
         r.put("version", BuildConfig.VERSION_NAME);
@@ -1487,6 +1496,7 @@ public class MainActivity extends ComponentActivity {
 
     @SuppressWarnings("deprecation")
     private boolean makeDefault() {
+        HomeMode.set(this, true); // 홈 앱 등록을 켜야 안드로이드가 기본 홈 후보로 봄
         if (Compat.SDK >= 29) try {
             RoleManager rm = getSystemService(RoleManager.class);
             if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
@@ -1495,6 +1505,12 @@ public class MainActivity extends ComponentActivity {
             }
         } catch (RuntimeException ignored) {
         }
+        startActivity(new Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        return true;
+    }
+
+    /** 홈 앱 등록 끄기: DeX에서 쓰려고 기본 홈을 그만둘 때 (기본 홈 설정 화면을 열어 다른 홈을 고르게 함) */
+    private boolean leaveHome() {
         startActivity(new Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         return true;
     }

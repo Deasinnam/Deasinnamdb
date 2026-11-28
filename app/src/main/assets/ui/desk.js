@@ -1056,6 +1056,7 @@
         h("p", { text: status.isDefault ? "덜누름 데스크가 기본 홈 앱입니다. 홈 버튼을 누르면 이 화면으로 옵니다." : "기본 홈 앱으로 정하면 홈 버튼을 누를 때 이 화면이 나옵니다. 언제든 기기 설정에서 원래 홈으로 되돌릴 수 있습니다." }),
         h("div", null,
           status.isDefault ? null : h("button", { class: "btn primary", onclick: () => call("makeDefault") }, "기본 홈 앱으로 정하기"),
+          status.isDefault ? h("p", { text: "삼성 DeX는 기본 홈 앱을 DeX 안에서 열지 않아요. DeX에서도 쓰려면 기기 설정에서 다른 홈 앱을 고르세요(덜누름 데스크는 다음에 열 때 홈 등록을 스스로 꺼요)." }) : null,
           h("button", { class: "btn", onclick: () => call("openSettings", "home") }, "홈 앱 설정 열기")),
         h("h4", { text: "정보" }),
         h("p", { text: "덜누름 데스크 " + (status.version || "") + " · 인터넷 권한 없이 기기 안에서만 동작합니다." }),

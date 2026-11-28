@@ -37,15 +37,28 @@
             android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
             android:windowSoftInputMode="adjustResize">
-            <!-- 홈 앱(런처)으로 고를 수 있게.
-                 앱 서랍 아이콘(LAUNCHER)은 아래 DexActivity가 맡습니다: 예전 DeX(노트20 · 탭 S9 등)는 홈 앱으로 등록된 화면을
-                 "휴대전화 홈 화면에서만 실행 가능"이라며 열지 않기 때문입니다. -->
+        </activity>
+        <!-- 홈 앱(런처)으로 고를 수 있게 하는 입구 (1.6.9).
+             삼성 DeX(One UI 6 이하 탭 S9 등)는 홈 앱으로 등록된 앱은 어느 화면이든 "태블릿 홈 화면에서만 사용할 수 있어
+             DeX에서 실행할 수 없어요"라며 열지 않습니다. 그래서 홈 등록을 이 별칭 하나에 모아 두고,
+             덜누름 데스크가 기본 홈이 아닐 때는 앱이 스스로 꺼 둡니다(HomeMode). "기본 홈 앱으로 정하기"를 누르면 다시 켭니다. -->
+        <activity-alias
+            android:name=".Home"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+        <!-- 앱을 새 버전으로 덮어 설치하면: 기본 홈이 아니면 홈 등록을 끔 (DeX에서 바로 열리게) -->
+        <receiver android:name=".HomeMode$Updated" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <!-- 앱 서랍에서 여는 덜누름 데스크. 홈 앱이 아닌 일반 화면이라 DeX 안에서도 창으로 열립니다(화면 · 기능은 같음). -->
         <activity
             android:name=".DexActivity"
