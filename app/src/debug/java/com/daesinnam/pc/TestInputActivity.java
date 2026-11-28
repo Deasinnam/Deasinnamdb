@@ -30,7 +30,7 @@ public class TestInputActivity extends Activity {
     public boolean dispatchTouchEvent(MotionEvent ev) {
         int a = ev.getActionMasked();
         if (a == MotionEvent.ACTION_DOWN || a == MotionEvent.ACTION_UP || a == MotionEvent.ACTION_CANCEL)
-            Log.i("PC_SELFTEST", "TOUCH " + MotionEvent.actionToString(a) + " " + Math.round(ev.getRawX()) + "," + Math.round(ev.getRawY()) + " display " + ev.getDisplayId());
+            Log.i("PC_SELFTEST", "TOUCH " + MotionEvent.actionToString(a) + " " + Math.round(ev.getRawX()) + "," + Math.round(ev.getRawY()) + " display " + getDisplay().getDisplayId());
         return super.dispatchTouchEvent(ev);
     }
 }
