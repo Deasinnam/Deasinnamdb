@@ -342,13 +342,16 @@
     return qs;
   }
   // 상태는 여러 번 겹쳐 물을 수 있어, 늦게 도착한 옛 응답이 새 응답을 덮지 않게 합니다 (예: 배경 사진이 방금 생겼는데 "없음"으로 돌아가던 일)
-  let statusSeq = 0, statusShown = 0;
+  let statusSeq = 0, statusShown = 0, safeTold = false;
   async function refreshStatus() {
     const my = ++statusSeq;
     const r = await call("status");
     if (my < statusShown) return;
     statusShown = my;
-    if (r && !r.error) { status = r; renderTray(); $("splitblock").hidden = !status.split; }
+    if (r && !r.error) {
+      status = r; renderTray(); $("splitblock").hidden = !status.split;
+      if (status.safe && !safeTold) { safeTold = true; toast("안전 모드로 열었어요: 위젯과 창정리 고급 기능은 잠시 쉽니다"); }
+    }
     refreshQuick();
   }
 

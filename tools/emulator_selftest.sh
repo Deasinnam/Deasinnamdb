@@ -109,6 +109,41 @@ adb exec-out screencap -p > desk-screen-home.png
 adb shell input keyevent KEYCODE_META_LEFT >/dev/null 2>&1; sleep 1
 adb exec-out screencap -p > desk-screen-start.png
 adb shell input keyevent KEYCODE_ESCAPE >/dev/null 2>&1
+# ---- 1.6.8: 갤럭시 탭 S9 화면(2560x1600, 밀도 340)에서 열자마자 꺼지지 않는지 ----
+alive() { [ -n "$(adb shell pidof $PKG | tr -d '\r')" ] && ! adb logcat -d -b crash | grep -q "$PKG"; }
+adb shell settings put global hide_error_dialogs 1 >/dev/null 2>&1
+adb shell wm size 2560x1600; adb shell wm density 340; sleep 3
+for act in MainActivity DexActivity; do
+  adb shell am force-stop $PKG; adb logcat -c; adb logcat -b crash -c 2>/dev/null
+  adb shell am start -W -n "$PKG/.$act" >/dev/null 2>&1; sleep 7
+  if alive; then r=PASS; else r=FAIL; adb logcat -d -b crash | head -30; fi
+  adb exec-out screencap -p > desk-screen-tab-$act.png
+  echo "x DESK_SELFTEST: $r tablet 2560x1600@340 $act stays open" >> selftest-result.txt
+done
+# ---- 1.6.8: 꺼짐 지킴이 — 켜자마자 두 번 꺼지면 세 번째는 안전 모드로 열리고 꺼진 이유가 남는지 ----
+adb shell am force-stop $PKG; adb shell run-as $PKG rm -f shared_prefs/desk_guard.xml files/last_crash.txt
+for i in 1 2; do adb shell am start -n "$PKG/.DexActivity" --ez desk.crashtest true >/dev/null 2>&1; sleep 4; adb shell am force-stop $PKG; done
+adb logcat -c; adb logcat -b crash -c 2>/dev/null
+adb shell am start -n "$PKG/.DexActivity" --ez desk.crashtest true >/dev/null 2>&1; sleep 7
+adb exec-out screencap -p > desk-screen-safe-mode.png
+st=$(adb shell run-as $PKG cat shared_prefs/desk_guard.xml 2>/dev/null | tr -d '\r')
+ct=$(adb shell run-as $PKG cat files/last_crash.txt 2>/dev/null | head -3 | tr -d '\r')
+echo "guard prefs: $st"; echo "last crash: $ct"
+if alive && echo "$st" | grep -q 'name="strikes" value="2"' && echo "$ct" | grep -q "꺼진 이유"; then g=PASS; else g=FAIL; fi
+echo "x DESK_SELFTEST: $g crash guard: 2 early crashes -> safe mode opens, reason saved" >> selftest-result.txt
+adb shell am force-stop $PKG; adb shell run-as $PKG rm -f shared_prefs/desk_guard.xml files/last_crash.txt
+# ---- 배포용(서명) APK도 탭 화면에서 열어 봄 (있을 때만) ----
+REL="${2:-}"
+if [ -n "$REL" ] && [ -f "$REL" ]; then
+  adb uninstall $PKG >/dev/null 2>&1; adb install -r "$REL" >/dev/null 2>&1
+  for act in MainActivity DexActivity; do
+    adb shell am force-stop $PKG; adb logcat -c; adb logcat -b crash -c 2>/dev/null
+    adb shell am start -W -n "$PKG/.$act" >/dev/null 2>&1; sleep 7
+    if alive; then r=PASS; else r=FAIL; adb logcat -d -b crash | head -30; fi
+    adb exec-out screencap -p > desk-screen-release-$act.png
+    echo "x DESK_SELFTEST: $r release APK tablet $act stays open" >> selftest-result.txt
+  done
+fi
 adb shell wm size reset; adb shell wm density reset
 echo "===== 앱이 꺼진 까닭 (exit-info) ====="
 adb shell dumpsys activity exit-info "$PKG" | grep -E "ApplicationExitInfo|reason=|description=|timestamp=|pid=" | head -40 | tee exit-info.txt

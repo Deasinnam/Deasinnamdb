@@ -179,13 +179,26 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try { rikka.shizuku.Shizuku.addRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
         selftest = BuildConfig.DEBUG && getIntent() != null && getIntent().hasExtra("desk.selftest");
+        // 1.6.8: 켠 지 얼마 안 돼 두 번 이어서 꺼졌으면 위젯 · 고급 기능 없이 엽니다 (DeskApp)
+        safeMode = DeskApp.safeMode(this);
+        // 시험용 빌드만: 꺼짐 지킴이 점검 (일부러 켜자마자 끄기)
+        if (BuildConfig.DEBUG && getIntent() != null && getIntent().getBooleanExtra("desk.crashtest", false) && !safeMode)
+            throw new IllegalStateException("desk.crashtest: 꺼짐 지킴이 점검용");
+        if (!safeMode && !DeskApp.shizukuOff(this)) {
+            try { rikka.shizuku.Shizuku.addRequestPermissionResultListener(shizukuResult); } catch (Throwable ignored) { }
+        }
 
         root = new FrameLayout(this);
         root.setBackgroundColor(0xFF0E0F13);
         // 아래부터: 배경 → 위젯 → 바탕화면 화면(투명)
-        wallWeb = new WebView(this);
+        try {
+            wallWeb = new WebView(this);
+        } catch (Throwable t) { // 기기의 WebView(Android System WebView)를 쓸 수 없음 — 앱을 끄지 않고 안내
+            Log.e(TAG, "WebView를 만들지 못함", t);
+            noWebView(t);
+            return;
+        }
         wallWeb.setBackgroundColor(0xFF0E0F13);
         wallWeb.setFocusable(false);
         wallWeb.setOnTouchListener((v, e) -> true);
@@ -294,6 +307,66 @@ public class MainActivity extends ComponentActivity {
             if (r - l != or - ol || b - t != ob - ot) push("layout");
         });
         web.loadUrl(INDEX + (selftest ? ("2".equals(getIntent().getStringExtra("desk.phase")) ? "?selftest=2" : "?selftest") : ""));
+        main.postDelayed(() -> { if (!isFinishing()) DeskApp.ranFine(this); }, 20_000);
+        main.postDelayed(this::showCrashNotice, 1200);
+    }
+
+    /** 안전 모드 (1.6.8): 다른 앱 위젯을 그리지 않고 Shizuku를 쓰지 않음 */
+    private boolean safeMode;
+
+    /** 지난번에 앱이 꺼졌으면 그 까닭을 보여 주고 복사할 수 있게 (화면 WebView와 상관없는 안드로이드 기본 창) */
+    private void showCrashNotice() {
+        if (isFinishing() || isDestroyed() || selftest) return;
+        String text = DeskApp.unseenCrash(this);
+        if (text == null) return;
+        DeskApp.markSeen(this);
+        String head = safeMode
+                ? "덜누름 데스크가 지난번에 열자마자 꺼져서, 이번에는 안전 모드로 열었어요.\n(다른 앱 위젯과 창정리 고급 기능은 잠시 쉽니다.)\n\n아래 '이유 복사'를 눌러 개발 대화에 붙여 넣어 주시면 고칠 수 있어요."
+                : "덜누름 데스크가 지난번에 갑자기 꺼졌어요.\n아래 '이유 복사'를 눌러 개발 대화에 붙여 넣어 주시면 고칠 수 있어요.";
+        try {
+            android.widget.TextView tv = new android.widget.TextView(this);
+            tv.setText(head + "\n\n" + text);
+            tv.setTextIsSelectable(true);
+            tv.setTextSize(13);
+            int pad = Math.round(20 * getResources().getDisplayMetrics().density);
+            tv.setPadding(pad, pad / 2, pad, 0);
+            android.widget.ScrollView sv = new android.widget.ScrollView(this);
+            sv.addView(tv);
+            android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                    .setTitle("지난번에 꺼진 이유")
+                    .setView(sv)
+                    .setPositiveButton("이유 복사", (d, w) -> copyText(text))
+                    .setNegativeButton("닫기", null);
+            if (safeMode) b.setNeutralButton("보통 모드로 다시 열기", (d, w) -> { DeskApp.reset(this); recreate(); });
+            b.show();
+        } catch (RuntimeException e) {
+            Log.w(TAG, "꺼진 이유 창을 띄우지 못함", e);
+        }
+    }
+
+    private void copyText(String text) {
+        try {
+            android.content.ClipboardManager cm = getSystemService(android.content.ClipboardManager.class);
+            if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("덜누름 데스크 꺼진 이유", text));
+            android.widget.Toast.makeText(this, "복사했어요. 개발 대화에 붙여 넣어 주세요.", android.widget.Toast.LENGTH_LONG).show();
+        } catch (RuntimeException ignored) { }
+    }
+
+    /** WebView가 없거나 고장 난 기기: 앱을 끄지 않고 고치는 방법 안내 */
+    private void noWebView(Throwable t) {
+        android.widget.TextView tv = new android.widget.TextView(this);
+        tv.setTextColor(0xFFFFFFFF);
+        tv.setTextSize(16);
+        int pad = Math.round(32 * getResources().getDisplayMetrics().density);
+        tv.setPadding(pad, pad, pad, pad);
+        tv.setText("덜누름 데스크 화면을 그리는 'Android System WebView'를 쓸 수 없어요.\n\n"
+                + "Play 스토어(또는 Galaxy Store)에서 'Android System WebView'와 'Chrome'을 업데이트한 뒤 다시 열어 주세요.\n\n"
+                + DeskApp.deviceLine(this) + "\n" + t);
+        tv.setTextIsSelectable(true);
+        android.widget.ScrollView sv = new android.widget.ScrollView(this);
+        sv.setBackgroundColor(0xFF0E0F13);
+        sv.addView(tv);
+        setContentView(sv);
     }
 
     /**
@@ -412,7 +485,7 @@ public class MainActivity extends ComponentActivity {
     private Object safe(Call c) {
         try {
             return c.run();
-        } catch (Exception e) {
+        } catch (Throwable e) { // 1.6.8: 오류(Error)도 잡아 앱이 꺼지지 않게
             Log.w(TAG, "요청 실패", e);
             try {
                 return new JSONObject().put("error", String.valueOf(e.getMessage()));
@@ -836,7 +909,13 @@ public class MainActivity extends ComponentActivity {
                     missing.put(id);
                     continue;
                 }
-                v = widgetHost.createView(widgetCtx, id, info);
+                if (safeMode) continue; // 안전 모드: 위젯 자리는 기억만 하고 그리지 않음 (지우지 않음)
+                try {
+                    v = widgetHost.createView(widgetCtx, id, info);
+                } catch (Throwable t) { // 그 앱의 위젯이 고장 나도 데스크는 계속
+                    Log.w(TAG, "위젯을 그리지 못함 " + id + " " + info.provider, t);
+                    continue;
+                }
                 widgetViews.put(id, v);
                 FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h);
                 lp.leftMargin = x;
@@ -1388,6 +1467,7 @@ public class MainActivity extends ComponentActivity {
         r.put("freeform", freeformSupported());
         r.put("dex", dexOn());
         r.put("split", inSplit());
+        r.put("safe", safeMode);
         r.put("isDefault", isDefaultHome());
         File wp = wallpaperFile();
         r.put("wallpaper", wp.exists() ? wp.lastModified() : 0); // 내 사진 배경이 있으면 바뀐 시각(화면이 새 사진을 다시 읽게)
