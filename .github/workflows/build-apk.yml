@@ -51,7 +51,7 @@ jobs:
           target: google_apis
           ram-size: 4096M
           disk-size: 6000M
-          emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu guest -no-boot-anim -camera-back none
           disable-animations: true
           script: bash tools/emulator_selftest.sh Bench-test.apk
 

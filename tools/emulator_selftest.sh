@@ -4,7 +4,7 @@ set -u
 APK="$1"
 PKG=com.daesinnam.bench
 adb install -r -g "$APK" || exit 1
-adb shell wm size 1080x2340; adb shell wm density 420; sleep 3
+sleep 2
 adb logcat -c
 # 기록을 실시간으로 파일에 받아 둡니다 (에뮬레이터가 중간에 꺼져도 어디까지 갔는지 남도록)
 adb logcat -v time BENCH_SELFTEST:I Bench:* BenchConsole:* AndroidRuntime:E ActivityManager:I lowmemorykiller:* DEBUG:* '*:F' > logcat-live.txt 2>&1 &
