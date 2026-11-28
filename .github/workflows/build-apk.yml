@@ -75,7 +75,7 @@ jobs:
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash tools/emulator_selftest.sh Desk-test.apk $( [ -f DeolnureumDesk.apk ] && echo DeolnureumDesk.apk )
+          script: bash tools/emulator_selftest.sh Desk-test.apk
 
       - name: 점검 기록 올리기 (desk-ci 릴리스)
         if: always()
