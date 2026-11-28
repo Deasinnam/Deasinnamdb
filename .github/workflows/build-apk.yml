@@ -59,7 +59,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete pc-ci --yes --cleanup-tag || true
-          gh release create pc-ci $(find . -maxdepth 1 -size +0 \( -name 'desk-screen-*.png' -o -name 'pc-screen-*.png' -o -name 'selftest-*.txt' -o -name 'pc-*.txt' -o -name exit-info.txt -o -name crash-1.txt -o -name logcat-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease \
+          gh release create pc-ci $(find . -maxdepth 1 -size +0 \( -name 'desk-screen-*.png' -o -name 'pc-screen-*.png' -o -name 'pc-monitor-*.png' -o -name 'selftest-*.txt' -o -name 'pc-*.txt' -o -name exit-info.txt -o -name crash-1.txt -o -name logcat-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease \
             --title "덜누름 PC 런처 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비

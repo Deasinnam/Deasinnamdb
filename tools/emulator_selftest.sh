@@ -129,19 +129,27 @@ sleep 3
 adb logcat -c
 adb shell am start -n "$PKG/.PhoneActivity" --ez pc.selftest true
 typed=0
+# 모니터(에뮬레이터 2번째 화면) 사진: 에뮬레이터가 이 컴퓨터 폴더에 바로 저장
+monshot() {
+  [ "$MONTYPE" = multidisplay ] || return 0
+  mkdir -p monshots; rm -f monshots/*.png
+  adb emu screenrecord screenshot "$PWD/monshots" --display 1 >/dev/null 2>&1; sleep 1
+  f=$(ls -t monshots/*.png 2>/dev/null | head -1); [ -n "$f" ] && mv "$f" "pc-monitor-$1.png" && echo "모니터 사진: pc-monitor-$1.png"
+}
 for i in $(seq 1 60); do
   sleep 2
   L=$(adb logcat -d -s PC_SELFTEST:I)
   if [ ! -f pc-screen-phone.png ] && echo "$L" | grep -q "SHOT-HOME"; then adb exec-out screencap -p > pc-screen-phone.png; fi
   if [ ! -f pc-screen-monitor.png ] && echo "$L" | grep -q "SHOT-MONITOR"; then
     adb exec-out screencap -p > pc-screen-monitor.png
+    monshot desktop
     adb shell dumpsys activity activities > pc-activities.txt
   fi
-  if [ ! -f pc-screen-pad.png ] && echo "$L" | grep -q "SHOT-PAD"; then adb exec-out screencap -p > pc-screen-pad.png; fi
+  if [ ! -f pc-screen-pad.png ] && echo "$L" | grep -q "SHOT-PAD"; then adb exec-out screencap -p > pc-screen-pad.png; monshot pointer; fi
   if [ "$typed" = 0 ] && echo "$L" | grep -q "INPUT-READY"; then
     typed=1; adb shell am start --display "${MON:-2}" -n "$PKG/.TestInputActivity" | head -3
   fi
-  if [ ! -f pc-screen-type.png ] && echo "$L" | grep -q "SHOT-TYPE"; then adb exec-out screencap -p > pc-screen-type.png; fi
+  if [ ! -f pc-screen-type.png ] && echo "$L" | grep -q "SHOT-TYPE"; then adb exec-out screencap -p > pc-screen-type.png; monshot typed; fi
   if echo "$L" | grep -q "DONE"; then break; fi
 done
 adb logcat -d -s PC_SELFTEST:I PcPointer:* PcMonitor:* PcMonitorSvc:* PcPhone:* PcPhoneConsole:* Desk:I > selftest-pc.txt
