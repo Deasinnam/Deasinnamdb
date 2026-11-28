@@ -426,7 +426,7 @@ public class InkView extends View {
     public boolean onGenericMotionEvent(MotionEvent e) {
         if (e.getActionMasked() == MotionEvent.ACTION_SCROLL && note != null) {
             float v = e.getAxisValue(MotionEvent.AXIS_VSCROLL), hz = e.getAxisValue(MotionEvent.AXIS_HSCROLL);
-            if (e.isCtrlPressed()) {
+            if ((e.getMetaState() & android.view.KeyEvent.META_CTRL_ON) != 0) {
                 float before = scale();
                 zoom = Math.max(0.5f, Math.min(6f, zoom * (v > 0 ? 1.12f : 1 / 1.12f)));
                 float after = scale();
