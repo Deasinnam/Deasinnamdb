@@ -100,6 +100,7 @@ public class MainActivity extends Activity {
     private BroadcastReceiver pkgReceiver;
 
     private int lastDpi;
+    private volatile int insTop, insBottom, insLeft, insRight;   // 상태 표시줄 · 내비게이션 막대 자리
 
     @Override
     public void onConfigurationChanged(android.content.res.Configuration c) {
@@ -139,6 +140,17 @@ public class MainActivity extends Activity {
         });
         web.addJavascriptInterface(new Bridge(), "Android");
         setContentView(web);
+        // 덱스 화면이 실제로 차지한 자리 = 창이 쓸 수 있는 자리 (상태 표시줄 · 내비게이션 막대 제외)
+        web.addOnLayoutChangeListener((v, l, t, r, b2, ol, ot, or, ob) -> {
+            int[] at = new int[2];
+            v.getLocationOnScreen(at);
+            Point real = new Point();
+            getWindowManager().getDefaultDisplay().getRealSize(real);
+            Display dd = v.getDisplay();
+            if (dd != null) dd.getRealSize(real);
+            insLeft = Math.max(0, at[0]); insTop = Math.max(0, at[1]);
+            insRight = Math.max(0, real.x - at[0] - v.getWidth()); insBottom = Math.max(0, real.y - at[1] - v.getHeight());
+        });
         immersive();
         web.loadUrl("file:///android_asset/ui/index.html?d=" + displayId() + (selftest ? "&selftest=1" : ""));
 
@@ -281,7 +293,7 @@ public class MainActivity extends Activity {
     // ───────── 화면(디스플레이) ─────────
     private JSONArray displays() throws JSONException {
         JSONArray a = new JSONArray();
-        for (Display d : getSystemService(DisplayManager.class).getDisplays()) {
+        for (Display d : realDisplays()) {
             Point p = new Point();
             d.getRealSize(p);
             JSONObject o = new JSONObject().put("id", d.getDisplayId()).put("name", d.getName()).put("w", p.x).put("h", p.y)
@@ -291,9 +303,22 @@ public class MainActivity extends Activity {
         return a;
     }
 
+    /** 태블릿 화면 + 실제 연결된 모니터만 (화면 녹화 · 캐스트용 가상 화면은 뺌) */
+    private List<Display> realDisplays() {
+        DisplayManager dm = getSystemService(DisplayManager.class);
+        List<Display> out = new java.util.ArrayList<>();
+        Display main0 = dm.getDisplay(Display.DEFAULT_DISPLAY);
+        if (main0 != null) out.add(main0);
+        for (Display d : dm.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION))
+            if (d.getDisplayId() != Display.DEFAULT_DISPLAY && (d.getFlags() & Display.FLAG_PRIVATE) == 0) out.add(d);
+        Display here = dm.getDisplay(displayId());
+        if (here != null && !out.contains(here)) out.add(here);
+        return out;
+    }
+
     /** 이 화면 말고 다른 화면(외부 모니터) 하나. 없으면 -1 */
     private int otherDisplay() {
-        for (Display d : getSystemService(DisplayManager.class).getDisplays())
+        for (Display d : realDisplays())
             if (d.getDisplayId() != displayId()) return d.getDisplayId();
         return -1;
     }
@@ -382,11 +407,23 @@ public class MainActivity extends Activity {
         DisplayMetrics dm = new DisplayMetrics();
         d.getRealMetrics(dm);
         int tb = (int) Math.round(taskbarCss * dm.density);
-        int w = p.x, h = p.y - tb;
+        // 쓸 수 있는 자리: 위 상태 표시줄 아래 ~ 아래 (내비게이션 막대 + 작업 표시줄) 위
+        boolean mine = displayId == displayId();
+        int top = mine ? insTop : 0, bottom = (mine ? insBottom : 0) + tb, left = mine ? insLeft : 0, right = mine ? insRight : 0;
+        int w = p.x - left - right, h = p.y - top - bottom;
+        Rect r = area(mode, w, h, dm);
+        r.offset(left, top);
+        return r;
+    }
+
+    private Rect area(String mode, int w, int h, DisplayMetrics dm) {
         switch (mode) {
             case "left": return new Rect(0, 0, w / 2, h);
             case "right": return new Rect(w / 2, 0, w, h);
             case "max": return new Rect(0, 0, w, h);
+            case "small": { int cw = (int) (w * 0.42), ch = (int) (h * 0.55); return new Rect((w - cw) / 2, (h - ch) / 2, (w + cw) / 2, (h + ch) / 2); }
+            case "big": { int cw = (int) (w * 0.82), ch = (int) (h * 0.88); return new Rect((w - cw) / 2, (h - ch) / 2, (w + cw) / 2, (h + ch) / 2); }
+            case "center": { int cw = (int) (w * 0.6), ch = (int) (h * 0.72); return new Rect((w - cw) / 2, (h - ch) / 2, (w + cw) / 2, (h + ch) / 2); }
             default: {
                 int cw = (int) (w * 0.6), ch = (int) (h * 0.72);
                 int n = prefs.getInt("cascade", 0);

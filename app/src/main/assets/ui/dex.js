@@ -109,10 +109,12 @@
   }
   function renderHint() {
     var h = $("hint");
-    var need = !info.freeform || (!info.monitor && !info.defaultHome);
+    var noShz = info.freeform && !(info.shizuku && info.shizuku.granted);
+    var need = !info.freeform || noShz || (!info.monitor && !info.defaultHome);
     if (!need || load("hintOff", false) || info.monitor) { h.hidden = true; return; }
     h.hidden = false;
     h.innerHTML = "<b>덱스를 켜 볼까요?</b><br>" + (!info.freeform ? "이 태블릿은 아직 앱을 <b>창</b>으로 띄울 수 없어요. " : "") +
+      (noShz ? "열린 창의 <b>위치 · 크기를 바꾸려면</b> Shizuku 연결이 필요해요. " : "") +
       (!info.defaultHome ? "덜누름 덱스를 <b>홈 앱</b>으로 고르면 홈 단추를 눌렀을 때 바로 이 화면이 나와요. " : "") +
       '<div class="btns" style="margin-top:10px"><button type="button" class="btn primary" data-act="setup">덱스 설정 열기</button><button type="button" class="btn" data-act="hintOff">다음에</button></div>';
   }
@@ -188,8 +190,10 @@
       items.push("-");
       items.push({ t: "이 창: 왼쪽 절반", ic: "◧", fn: function () { taskDo(task, "left"); } });
       items.push({ t: "이 창: 오른쪽 절반", ic: "◨", fn: function () { taskDo(task, "right"); } });
-      items.push({ t: "이 창: 크게", ic: "□", fn: function () { taskDo(task, "max"); } });
-      items.push({ t: "이 창: 가운데 창으로", ic: "▢", fn: function () { taskDo(task, "window"); } });
+      items.push({ t: "이 창: 꽉 채우기", ic: "□", fn: function () { taskDo(task, "max"); } });
+      items.push({ t: "이 창: 크게", ic: "▣", fn: function () { taskDo(task, "big"); } });
+      items.push({ t: "이 창: 보통 (가운데)", ic: "▢", fn: function () { taskDo(task, "center"); } });
+      items.push({ t: "이 창: 작게", ic: "▫", fn: function () { taskDo(task, "small"); } });
       items.push({ t: "이 창 닫기", ic: "✕", fn: function () { taskDo(task, "close"); } });
     }
     if (byKey[k]) {
@@ -200,6 +204,20 @@
       if (!a.sys) items.push({ t: "제거", ic: "⌫", fn: function () { if (A) A.uninstall(a.pkg); } });
     }
     menu(x, y, a.label, items);
+  }
+  /** 작업 표시줄에서 앞에 떠 있는 창을 누르면: 창 위치 · 크기 바꾸기 */
+  function windowMenu(task, k, x, y) {
+    var a = byKey[k] || { label: k.split("/")[0] };
+    menu(x, y, a.label + " 창 조정", [
+      { t: "왼쪽 절반", ic: "◧", fn: function () { taskDo(task, "left"); } },
+      { t: "오른쪽 절반", ic: "◨", fn: function () { taskDo(task, "right"); } },
+      { t: "꽉 채우기", ic: "□", fn: function () { taskDo(task, "max"); } },
+      { t: "크게", ic: "▣", fn: function () { taskDo(task, "big"); } },
+      { t: "보통 (가운데)", ic: "▢", fn: function () { taskDo(task, "center"); } },
+      { t: "작게", ic: "▫", fn: function () { taskDo(task, "small"); } },
+      "-",
+      { t: "창 닫기", ic: "✕", fn: function () { taskDo(task, "close"); } }
+    ]);
   }
   async function taskDo(task, action) {
     var r = await call("taskAction", task, action, barPx());
@@ -284,6 +302,11 @@
       return;
     }
     var b = target(e);
+    if (b && b.classList.contains("front") && b.getAttribute("data-task")) {
+      var rr = b.getBoundingClientRect();
+      windowMenu(+b.getAttribute("data-task"), b.getAttribute("data-k"), rr.left, rr.top - 300);
+      return;
+    }
     if (b) {
       var k = b.getAttribute("data-k"), a = byKey[k];
       if (!a) { var p = k.split("/"); a = { pkg: p[0], cls: p[1], label: p[0] }; }
@@ -346,7 +369,7 @@
     var mon = s.force_desktop_mode_on_external_displays === 1;
     var html = [];
     html.push('<div class="card"><div class="row"><h3>Shizuku 연결</h3>' + (sh.granted ? st(true) : '<span class="state no">' + (sh.running ? "허락 필요" : sh.installed ? "꺼져 있음" : "설치 안 됨") + "</span>") + "</div>" +
-      "<p>Shizuku는 무료 공개 앱입니다. 무선 디버깅으로 한 번 켜 두면 덜누름 덱스가 숨은 창 설정을 켜고, 열린 창을 옮기고, 최근 앱 · 알림을 열 수 있어요. 루팅은 필요 없어요.</p>" +
+      "<p>Shizuku는 무료 공개 앱입니다. 무선 디버깅으로 한 번 켜 두면 덜누름 덱스가 숨은 창 설정을 켜고, <b>열린 창의 위치 · 크기를 바꾸고</b>(작업 표시줄에서 열린 앱 누르기), 최근 앱 · 알림을 열 수 있어요. 이 태블릿처럼 창에 조절 막대가 안 나오는 기기에서는 꼭 필요해요. 루팅은 필요 없어요.</p>" +
       (sh.granted ? "" : '<div class="btns"><button type="button" class="btn primary" data-s="shizuku">' + (sh.running ? "덜누름 덱스 허락하기" : sh.installed ? "Shizuku 열기" : "Shizuku 설치하기") + "</button></div>") + "</div>");
     html.push(resCard(canCmd));
     html.push('<div class="card"><div class="row"><h3>① 앱을 창으로 띄우기 (자유 창)</h3>' + st(ff, ffSet && !ff || pendingRestart.ff) + "</div>" +
