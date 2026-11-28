@@ -43,6 +43,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: 에뮬레이터 점검 (빠른 측정 끝까지)
+        timeout-minutes: 20
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -60,7 +61,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete bench-ci --yes --cleanup-tag || true
-          gh release create bench-ci $(find . -maxdepth 1 -size +0 \( -name 'bench-screen-*.png' -o -name selftest-result.txt -o -name crash-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease --latest=false \
+          gh release create bench-ci $(find . -maxdepth 1 -size +0 \( -name 'bench-screen-*.png' -o -name selftest-result.txt -o -name logcat-live.txt -o -name crash-1.txt \) | sort) --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "덜누름 벤치 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
       - name: 서명 키 준비
