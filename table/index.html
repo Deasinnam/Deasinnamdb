@@ -1108,6 +1108,10 @@ body[data-view="home"] { background: #f6f5f1; }
 .hm-big-card.is-table .hm-big-tx h2 em, .hm-big-card.is-table .hm-big-tx li b { color: #f0c58a; }
 .hm-big-card.is-table .hm-big-act .go { background: #e0a25e; color: #111; }
 .hm-big-card.is-table .hm-big-tx p b { color: #fff; }
+.hm-big-card.is-comm { background: radial-gradient(120% 120% at 0% 0%, #0f2e26 0%, #0f1312 58%); }
+.hm-big-card.is-comm .hm-big-tx h2 em, .hm-big-card.is-comm .hm-big-tx li b { color: #6ee7b7; }
+.hm-big-card.is-comm .hm-big-act .go { background: #34d399; color: #111; }
+.hm-big-card.is-comm .hm-big-shots.is-land { box-shadow: 0 0 0 1px #1f4a3d; }
 .hm-big-shots.is-land { aspect-ratio: 1600 / 1003; box-shadow: 0 0 0 1px #4a3a24; }
 .hm-big-shots { position: relative; border-radius: 18px; overflow: hidden; border: 6px solid #1d1d1d; box-shadow: 0 0 0 1px #3a3450; aspect-ratio: 1400 / 1152; background: #000; }
 .hm-big-shots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; }
@@ -1426,6 +1430,26 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
   <!-- 대표 업데이트 소식: 옆으로 넘겨 보기 (새 소식은 hm-big-track 맨 앞에 카드 하나, 점 단추도 하나 추가) -->
   <section class="wrap hm-big" aria-roledescription="회전 소식" aria-label="대표 업데이트 소식">
     <div class="hm-big-track" id="hmBigTrack" tabindex="0">
+    <div class="hm-big-card is-comm" id="hmBig-comm" role="group" aria-roledescription="소식" aria-label="덜누름 커뮤니티 운영 시작">
+      <div class="hm-big-shots is-land">
+        <img class="on" src="/media/community-board.jpg?v=1128" alt="덜누름 커뮤니티 게시판 화면: 공지 · 업데이트 · 질문 · 오류신고 · 건의 분류와 글쓰기 단추" loading="lazy">
+        <span class="tag">덜누름 커뮤니티 · 실제 화면</span>
+      </div>
+      <div class="hm-big-tx">
+        <span class="hm-chip hm-c-hot">NEW · 덜누름 커뮤니티 운영 시작</span>
+        <h2>덜누름 <em>커뮤니티</em>를<br>열었어요.</h2>
+        <p>덜누름 커뮤니티 운영을 시작합니다. 앱 개선 및 필요한 앱, 호환성 등 관련 질문을 게시판에 입력해 소통할 수 있게 됐습니다.</p>
+        <ul>
+          <li><b>01</b><span>앱 개선 — 고쳐 줬으면 하는 점, 오류 신고</span></li>
+          <li><b>02</b><span>필요한 앱 — 있었으면 하는 앱 · 기능 건의</span></li>
+          <li><b>03</b><span>호환성 — 내 폰 · 태블릿 · DeX에서 되는지 질문</span></li>
+          <li><b>04</b><span>회원가입 후 작성 가능 — 무료 원클릭 가입</span></li>
+          <li><b>05</b><span>그 외 각종 이벤트 참여</span></li>
+        </ul>
+        <div class="hm-big-act"><a class="go" href="https://daesinnam.com/board?b=app#/" target="_blank" rel="noopener">커뮤니티 바로가기 ↗</a><a class="more" href="/updates/">의견 반영 보기</a></div>
+        <p class="hm-big-note">글은 누구나 볼 수 있고, 글쓰기는 회원가입 후 가능해요(무료 원클릭 가입).</p>
+      </div>
+    </div>
     <div class="hm-big-card is-table" id="hmBig-table" role="group" aria-roledescription="소식" aria-label="관리비 0원 · 중소상인을 위한 덜누름 키오스크(덜누름 테이블) 개발">
       <div class="hm-big-shots is-land" data-rotate>
         <img class="on" src="/media/app-table-menu.jpg?v=1128" alt="덜누름 테이블 손님 화면: 왼쪽 분류와 디저트 메뉴 사진 카드" loading="lazy" data-tag="테이블 주문기 · 손님 화면">
@@ -1506,10 +1530,11 @@ header.top nav a.nav-ext::after { content: "↗"; font-size: .8em; margin-left: 
     </div>
     <div class="hm-big-bar">
       <div class="hm-big-dots" role="tablist" aria-label="소식 고르기">
-        <button type="button" role="tab" data-go="0" aria-current="true"><i></i><span>덜누름 테이블 · 관리비 0원</span></button>
-        <button type="button" role="tab" data-go="1"><i></i><span>덜누름 워크 1.0.12</span></button>
-        <button type="button" role="tab" data-go="2"><i></i><span>스피드미터 1.98</span></button>
-        <button type="button" role="tab" data-go="3"><i></i><span>안드로이드 8 · 새 아이콘</span></button>
+        <button type="button" role="tab" data-go="0" aria-current="true"><i></i><span>덜누름 커뮤니티 오픈</span></button>
+        <button type="button" role="tab" data-go="1"><i></i><span>덜누름 테이블 · 관리비 0원</span></button>
+        <button type="button" role="tab" data-go="2"><i></i><span>덜누름 워크 1.0.12</span></button>
+        <button type="button" role="tab" data-go="3"><i></i><span>스피드미터 1.98</span></button>
+        <button type="button" role="tab" data-go="4"><i></i><span>안드로이드 8 · 새 아이콘</span></button>
       </div>
       <div class="hm-big-nav"><button type="button" data-step="-1" aria-label="이전 소식">‹</button><button type="button" data-step="1" aria-label="다음 소식">›</button></div>
     </div>
