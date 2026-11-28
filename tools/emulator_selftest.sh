@@ -139,7 +139,9 @@ h1=$(homecount | tr -d '\r')
 if [ "$h1" = 0 ]; then r=PASS; else r=FAIL; fi
 echo "x DESK_SELFTEST: $r not default home -> HOME registration off after opening (candidates=$h1)" >> selftest-result.txt
 # 덮어 설치(새 버전)하면 앱을 열지 않아도 꺼지는지
-adb shell pm enable "$PKG/.Home" >/dev/null 2>&1
+# 새로 설치하면 홈 등록이 켜져 있음 → 홈 등록을 건드리지 않는 점검 모드로 한 번 열어 둠(실제 기기처럼 "한 번 쓴 앱") → 덮어 설치
+adb uninstall $PKG >/dev/null 2>&1; adb install -r -g "$APK" >/dev/null 2>&1
+adb shell am start -n "$PKG/.MainActivity" --ez desk.selftest true --es desk.phase 9 >/dev/null 2>&1; sleep 4
 h2=$(homecount | tr -d '\r')
 adb install -r "$APK" >/dev/null 2>&1; sleep 6
 h3=$(homecount | tr -d '\r')
