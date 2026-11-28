@@ -4,7 +4,7 @@
   "use strict";
   var A = window.Android || null;
   var $ = function (id) { return document.getElementById(id); };
-  var BAR = 52;                                  // 작업 표시줄 높이(CSS 픽셀) — 창 자리 계산에 씀
+  var BAR0 = 52;                                 // 작업 표시줄 높이(CSS 픽셀) — 창 자리 계산에 씀
   var SELFTEST = /selftest=1/.test(location.search);
   function log(s) { if (A) A.log(s); else console.log(s); }
   function J(s, d) { try { return JSON.parse(s); } catch (e) { return d; } }
@@ -32,6 +32,10 @@
   var info = {}, apps = [], byKey = {}, running = [];
   var pins = { bar: null, desk: null };
   var wall = load("wall", "w1");
+  var zoom = +load("zoom", 1) || 1;               // 덱스 화면 크기 (Shizuku 없이)
+  var dens = null;                                // 화면 해상도 정보 (Shizuku)
+  function barPx() { return Math.round(BAR0 * zoom); }
+  function applyZoom() { document.documentElement.style.zoom = zoom === 1 ? "" : String(zoom); }
 
   function toast(t) { var e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { e.hidden = true; }, 2800); }
 
@@ -141,7 +145,7 @@
   /* ───────── 앱 열기 ───────── */
   function openApp(a, mode, where) {
     mode = mode || (info.freeform ? "window" : "full");
-    var r = A ? J(A.launch(a.pkg, a.cls, mode, where || "here", BAR), {}) : { ok: true };
+    var r = A ? J(A.launch(a.pkg, a.cls, mode, where || "here", barPx()), {}) : { ok: true };
     log("LAUNCH " + a.pkg + " " + JSON.stringify(r));
     if (r && r.ok === false) toast("열지 못했어요: " + a.label);
     else if (mode !== "full" && r && !r.freeform && !load("ffWarned", false)) {
@@ -198,7 +202,7 @@
     menu(x, y, a.label, items);
   }
   async function taskDo(task, action) {
-    var r = await call("taskAction", task, action, BAR);
+    var r = await call("taskAction", task, action, barPx());
     if (!r || !r.ok) toast("창을 옮기지 못했어요" + (r && r.need === "shizuku" ? " · Shizuku 연결이 필요해요" : ""));
     setTimeout(pollTasks, 600);
   }
@@ -309,7 +313,30 @@
   $("setupClose").addEventListener("click", function () { $("setup").hidden = true; });
 
   /* ───────── 덱스 설정 ───────── */
-  function openSetup() { closeAll(); info = A ? J(A.info(), info) : info; renderSetup(); $("setup").hidden = false; }
+  function openSetup() {
+    closeAll(); info = A ? J(A.info(), info) : info; renderSetup(); $("setup").hidden = false;
+    if (info.shizuku && info.shizuku.granted) call("densityInfo").then(function (d) { if (d) { dens = d; renderSetup(); } });
+  }
+  function densBase() { return (dens && dens.physical) || info.dpiBase || (dens && dens.current) || info.dpi || 320; }
+  var RES = [["기본", 1], ["넓게", 0.85], ["더 넓게", 0.75], ["가장 넓게", 0.65]];
+  function resCard(canCmd) {
+    var cur = (dens && dens.current) || info.dpi, base = densBase();
+    var zs = [["작게", 0.85], ["보통", 1], ["크게", 1.15]];
+    var h = '<div class="card"><div class="row"><h3>해상도 · 화면 크기</h3><span class="state ok">' + cur + ' dpi</span></div>' +
+      "<p><b>화면 해상도</b>를 넓히면 PC처럼 글자와 아이콘이 작아지고 한 화면에 창을 더 많이 띄울 수 있어요. 모든 앱에 적용되고, 다시 시작하지 않아도 바로 바뀌어요.</p>";
+    if (canCmd) {
+      h += '<div class="btns">' + RES.map(function (r) {
+        var dpi = Math.round(base * r[1] / 4) * 4, on = Math.abs(cur - dpi) <= 4;
+        return '<button type="button" class="btn' + (on ? " primary" : "") + '" data-res="' + (r[1] === 1 ? 0 : dpi) + '">' + r[0] + " · " + dpi + "</button>";
+      }).join("") + "</div>" + (others().length ? '<p class="small">지금 보고 있는 화면(' + (info.monitor ? "모니터" : "태블릿") + ")에만 적용돼요. 모니터는 모니터 화면의 덱스 설정에서 따로 바꿔요.</p>" : "");
+    } else {
+      h += "<ol><li>설정 → 디스플레이 → <b>화면 크기</b>(디스플레이 크기)를 가장 작게</li><li>더 넓게 쓰려면 개발자 옵션 → <b>최소 너비</b> 값을 키우기 (예: 800 → 1100)</li></ol>" +
+        '<p class="small">Shizuku를 연결하면 이 카드에서 단추 하나로 바꿀 수 있어요.</p>';
+    }
+    h += '<p style="margin-top:12px"><b>덱스 화면 크기</b> — 바탕화면 · 작업 표시줄만 키우거나 줄여요 (Shizuku 없이도 됨)</p><div class="btns">' +
+      zs.map(function (z) { return '<button type="button" class="btn' + (zoom === z[1] ? " primary" : "") + '" data-zoom="' + z[1] + '">' + z[0] + "</button>"; }).join("") + "</div></div>";
+    return h;
+  }
   function st(ok, wait) { return '<span class="state ' + (ok ? "ok" : wait ? "wait" : "no") + '">' + (ok ? "켜짐" : wait ? "다시 시작 필요" : "꺼짐") + "</span>"; }
   var pendingRestart = load("pendingRestart", {});
   function renderSetup() {
@@ -321,6 +348,7 @@
     html.push('<div class="card"><div class="row"><h3>Shizuku 연결</h3>' + (sh.granted ? st(true) : '<span class="state no">' + (sh.running ? "허락 필요" : sh.installed ? "꺼져 있음" : "설치 안 됨") + "</span>") + "</div>" +
       "<p>Shizuku는 무료 공개 앱입니다. 무선 디버깅으로 한 번 켜 두면 덜누름 덱스가 숨은 창 설정을 켜고, 열린 창을 옮기고, 최근 앱 · 알림을 열 수 있어요. 루팅은 필요 없어요.</p>" +
       (sh.granted ? "" : '<div class="btns"><button type="button" class="btn primary" data-s="shizuku">' + (sh.running ? "덜누름 덱스 허락하기" : sh.installed ? "Shizuku 열기" : "Shizuku 설치하기") + "</button></div>") + "</div>");
+    html.push(resCard(canCmd));
     html.push('<div class="card"><div class="row"><h3>① 앱을 창으로 띄우기 (자유 창)</h3>' + st(ff, ffSet && !ff || pendingRestart.ff) + "</div>" +
       "<p>덱스처럼 앱을 크기 조절되는 창으로 띄우고, 왼쪽 · 오른쪽 절반에 나란히 놓을 수 있어요.</p>" +
       (canCmd ? '<div class="btns"><button type="button" class="btn primary" data-s="ff-on">' + (ffSet ? "다시 켜기" : "켜기") + '</button>' + (ffSet ? '<button type="button" class="btn" data-s="ff-off">끄기</button>' : "") + "</div>"
@@ -343,6 +371,15 @@
     $("setupBody").innerHTML = html.join("");
   }
   $("setupBody").addEventListener("click", async function (e) {
+    var z = e.target.closest("[data-zoom]");
+    if (z) { zoom = +z.getAttribute("data-zoom"); save("zoom", zoom); applyZoom(); renderSetup(); return; }
+    var rb = e.target.closest("[data-res]");
+    if (rb && A) {
+      toast("해상도를 바꾸는 중…");
+      var d = await call("density", +rb.getAttribute("data-res"));
+      if (d) { dens = d; toast(d.ok ? "해상도를 " + d.current + " dpi로 바꿨어요" : "해상도를 바꾸지 못했어요"); }
+      renderSetup(); return;
+    }
     var b = e.target.closest("[data-s]"); if (!b || !A) return;
     var s = b.getAttribute("data-s");
     if (s === "shizuku") A.requestShizuku();
@@ -365,6 +402,7 @@
 
   /* ───────── 시작 ───────── */
   // 다시 시작해서 설정이 실제로 켜졌으면 "다시 시작 필요" 표시를 지움
+  applyZoom();
   loadAll();
   if (info.freeform) { pendingRestart.ff = false; }
   if ((info.settings || {}).force_desktop_mode_on_external_displays === 1 && others().length && info.monitor) pendingRestart.mon = false;

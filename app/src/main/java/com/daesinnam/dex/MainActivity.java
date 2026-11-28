@@ -12,6 +12,8 @@ import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -97,9 +99,21 @@ public class MainActivity extends Activity {
     private DisplayManager.DisplayListener displayListener;
     private BroadcastReceiver pkgReceiver;
 
+    private int lastDpi;
+
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration c) {
+        super.onConfigurationChanged(c);
+        // 해상도(밀도)가 바뀌면 화면을 새로 그려 선명하게
+        if (lastDpi != 0 && c.densityDpi != lastDpi) { lastDpi = c.densityDpi; recreate(); return; }
+        lastDpi = c.densityDpi;
+        push("displays");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        lastDpi = getResources().getConfiguration().densityDpi;
         prefs = getSharedPreferences("dex", MODE_PRIVATE);
         selftest = getIntent().getBooleanExtra("dex.selftest", false);
         if (Build.VERSION.SDK_INT >= 30) getWindow().setDecorFitsSystemWindows(false);
@@ -244,7 +258,7 @@ public class MainActivity extends Activity {
                     try { d = pm.getActivityIcon(new ComponentName(pkg, cls)); } catch (Exception ignored) { }
                 }
                 if (d == null) d = pm.getApplicationIcon(pkg);
-                int s = 144;
+                int s = 192;
                 Bitmap b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(b);
                 d.setBounds(0, 0, s, s);
@@ -309,7 +323,9 @@ public class MainActivity extends Activity {
                 .put("freeformFeature", getPackageManager().hasSystemFeature(PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT))
                 .put("devOptions", global(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED) == 1)
                 .put("defaultHome", isDefaultHome())
-                .put("selftest", selftest);
+                .put("selftest", selftest)
+                .put("dpi", getResources().getDisplayMetrics().densityDpi)
+                .put("dpiBase", displayId() == Display.DEFAULT_DISPLAY ? DisplayMetrics.DENSITY_DEVICE_STABLE : 0);
         JSONObject s = new JSONObject();
         for (String k : SETTING_KEYS) s.put(k, global(k));
         o.put("settings", s);
@@ -442,6 +458,27 @@ public class MainActivity extends Activity {
         return new JSONObject().put("ok", now == (on ? 1 : 0)).put("value", now);
     }
 
+    // ───────── 해상도 (화면 밀도) : 작을수록 한 화면에 더 많이 보임 ─────────
+    private JSONObject densityInfo() throws JSONException {
+        JSONObject o = new JSONObject().put("current", getResources().getDisplayMetrics().densityDpi);
+        if (!Shizu.granted()) return o.put("need", "shizuku");
+        String out = Shizu.run("wm density -d " + displayId(), 2500);
+        if (out != null) {
+            Matcher m = Pattern.compile("Physical density:\\s*(\\d+)").matcher(out);
+            if (m.find()) o.put("physical", Integer.parseInt(m.group(1)));
+            m = Pattern.compile("Override density:\\s*(\\d+)").matcher(out);
+            if (m.find()) o.put("override", Integer.parseInt(m.group(1)));
+        }
+        return o;
+    }
+
+    private JSONObject setDensity(int dpi) throws JSONException {
+        if (!Shizu.granted()) return new JSONObject().put("ok", false).put("need", "shizuku");
+        if (dpi != 0 && (dpi < 120 || dpi > 640)) return new JSONObject().put("ok", false).put("error", "범위 밖");
+        String out = Shizu.run("wm density " + (dpi == 0 ? "reset" : String.valueOf(dpi)) + " -d " + displayId(), 3000);
+        return densityInfo().put("ok", out != null && !out.toLowerCase(Locale.ROOT).contains("exception"));
+    }
+
     private void open(Intent i) {
         try { startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
         catch (Exception e) { Log.w(TAG, "open " + i + " " + e); }
@@ -493,6 +530,8 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void tasks(String id) { async(id, MainActivity.this::tasks); }
         @JavascriptInterface public void taskAction(String id, int task, String action, double tb) { async(id, () -> MainActivity.this.taskAction(task, action, tb)); }
         @JavascriptInterface public void setting(String id, String key, boolean on) { async(id, () -> setSetting(key, on)); }
+        @JavascriptInterface public void density(String id, int dpi) { async(id, () -> setDensity(dpi)); }
+        @JavascriptInterface public void densityInfo(String id) { async(id, () -> densityInfo()); }
         @JavascriptInterface public void reboot() { worker.submit(() -> Shizu.run("svc power reboot || reboot", 5000)); }
         @JavascriptInterface public void recents() { worker.submit(() -> Shizu.run("input keyevent KEYCODE_APP_SWITCH", 2000)); }
         @JavascriptInterface public void notifications() { worker.submit(() -> statusBar(false)); }
