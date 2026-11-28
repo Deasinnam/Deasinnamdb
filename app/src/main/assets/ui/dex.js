@@ -31,7 +31,8 @@
 
   var info = {}, apps = [], byKey = {}, running = [];
   var pins = { bar: null, desk: null };
-  var wall = load("wall", "w1");
+  // 바탕화면: kind = w1~w4(기본 색) · photo(내 사진) · system(안드로이드 배경화면), fit = 사진 맞춤, dim = 어둡게
+  var wall = (function () { var w = load("wall", "w1"); return typeof w === "string" ? { kind: w, fit: false, dim: 0, v: 0 } : w; })();
   var zoom = +load("zoom", 1) || 1;               // 덱스 화면 크기 (Shizuku 없이)
   var dens = null;                                // 화면 해상도 정보 (Shizuku)
   function barPx() { return Math.round(BAR0 * zoom); }
@@ -69,7 +70,7 @@
     pins.desk = load("pinsDesk", null) || defaults(10);
     pins.bar = pins.bar.filter(function (k) { return byKey[k]; });
     pins.desk = pins.desk.filter(function (k) { return byKey[k]; });
-    $("wall").className = wall === "w1" ? "" : wall;
+    applyWall();
     renderDesk(); renderBar(); renderDrawer(); renderMonitor(); renderHint(); status();
   }
   function renderDesk() {
@@ -232,16 +233,46 @@
   }
   function deskMenu(x, y) {
     menu(x, y, "바탕화면", [
-      { t: "배경: 남색", ic: wall === "w1" ? "✓" : "", fn: function () { setWall("w1"); } },
-      { t: "배경: 노을", ic: wall === "w2" ? "✓" : "", fn: function () { setWall("w2"); } },
-      { t: "배경: 숲", ic: wall === "w3" ? "✓" : "", fn: function () { setWall("w3"); } },
-      { t: "배경: 회색", ic: wall === "w4" ? "✓" : "", fn: function () { setWall("w4"); } },
+      { t: "내 사진으로 바탕화면 바꾸기", ic: "🖼", fn: pickPhoto },
+      { t: "안드로이드 배경화면 쓰기", ic: wall.kind === "system" ? "✓" : "", fn: function () { setWall({ kind: "system" }); } },
+      { t: "배경: 남색", ic: wall.kind === "w1" ? "✓" : "", fn: function () { setWall({ kind: "w1" }); } },
+      { t: "배경: 노을", ic: wall.kind === "w2" ? "✓" : "", fn: function () { setWall({ kind: "w2" }); } },
+      { t: "배경: 숲", ic: wall.kind === "w3" ? "✓" : "", fn: function () { setWall({ kind: "w3" }); } },
+      { t: "배경: 회색", ic: wall.kind === "w4" ? "✓" : "", fn: function () { setWall({ kind: "w4" }); } },
+      { t: "바탕화면 꾸미기…", ic: "✎", fn: openSetup },
       "-",
       { t: "덱스 설정", ic: "⚙", fn: openSetup },
       { t: "안드로이드 설정", ic: "⚙", fn: function () { if (A) A.openSettings(); } }
     ]);
   }
-  function setWall(w) { wall = w; save("wall", w); $("wall").className = w === "w1" ? "" : w; }
+  function applyWall() {
+    var k = wall.kind;
+    if (k === "photo" && !(A ? A.hasWallPhoto() : wall.v)) k = wall.kind = "w1";
+    var el = $("wall");
+    el.className = (k === "w1" ? "" : k) + (k === "photo" && wall.fit ? " fit" : "");
+    document.documentElement.style.setProperty("--wallimg", 'url("https://dex.local/wall?v=' + (wall.v || 0) + '")');
+    el.style.setProperty("--dim", String(wall.dim || 0));
+    if (A && A.systemWallpaper) A.systemWallpaper(k === "system");
+  }
+  function setWall(patch) {
+    for (var x in patch) wall[x] = patch[x];
+    save("wall", wall); applyWall();
+    if (!$("setup").hidden) renderSetup();
+  }
+  function pickPhoto() { if (A) { toast("바탕화면으로 쓸 사진을 골라 주세요"); A.pickWallpaper(); } }
+  function wallCard() {
+    var sw = [["w1", "남색"], ["w2", "노을"], ["w3", "숲"], ["w4", "회색"]];
+    var hasPhoto = A ? A.hasWallPhoto() : !!wall.v;
+    var h = '<div class="card"><div class="row"><h3>바탕화면</h3></div><p>기본 색을 고르거나, 내 사진 또는 안드로이드에 설정한 배경화면을 쓸 수 있어요.</p><div class="swatches">' +
+      sw.map(function (x) { return '<button type="button" class="sw ' + x[0] + (wall.kind === x[0] ? " on" : "") + '" data-wall="' + x[0] + '"><span>' + x[1] + "</span></button>"; }).join("") +
+      (hasPhoto ? '<button type="button" class="sw photo' + (wall.kind === "photo" ? " on" : "") + '" data-wall="photo"><span>내 사진</span></button>' : "") +
+      '<button type="button" class="sw system' + (wall.kind === "system" ? " on" : "") + '" data-wall="system"><span>안드로이드</span></button></div>' +
+      '<div class="btns"><button type="button" class="btn primary" data-wall="pick">' + (hasPhoto ? "다른 사진 고르기" : "내 사진 고르기") + "</button></div>";
+    if (wall.kind === "photo") h += '<p style="margin-top:12px"><b>사진 맞춤</b></p><div class="btns"><button type="button" class="btn' + (!wall.fit ? " primary" : "") + '" data-fit="0">화면 꽉 채우기</button><button type="button" class="btn' + (wall.fit ? " primary" : "") + '" data-fit="1">사진 전체 보이기</button></div>';
+    h += '<p style="margin-top:12px"><b>어둡게</b> — 아이콘 글자가 잘 보이게</p><div class="btns">' +
+      [[0, "없음"], [0.2, "조금"], [0.4, "많이"]].map(function (d) { return '<button type="button" class="btn' + ((wall.dim || 0) === d[0] ? " primary" : "") + '" data-dim="' + d[0] + '">' + d[1] + "</button>"; }).join("") + "</div></div>";
+    return h;
+  }
 
   /* ───────── 패널 열고 닫기 ───────── */
   function closeAll() { $("drawer").hidden = true; $("menu").hidden = true; $("drawerBtn").classList.remove("on"); }
@@ -258,6 +289,9 @@
     closeAll();
   };
   Dex.event = function (e) {
+    if (e === "wall:ok") { setWall({ kind: "photo", v: Date.now() }); toast("바탕화면을 바꿨어요"); return; }
+    if (e === "wall:fail") { toast("사진을 불러오지 못했어요"); return; }
+    if (e === "wall:cancel") return;
     if (e === "key:meta") toggleDrawer();
     else if (e === "home") { closeAll(); $("setup").hidden = true; }
     else if (e === "apps") loadAll();
@@ -371,6 +405,7 @@
     html.push('<div class="card"><div class="row"><h3>Shizuku 연결</h3>' + (sh.granted ? st(true) : '<span class="state no">' + (sh.running ? "허락 필요" : sh.installed ? "꺼져 있음" : "설치 안 됨") + "</span>") + "</div>" +
       "<p>Shizuku는 무료 공개 앱입니다. 무선 디버깅으로 한 번 켜 두면 덜누름 덱스가 숨은 창 설정을 켜고, <b>열린 창의 위치 · 크기를 바꾸고</b>(작업 표시줄에서 열린 앱 누르기), 최근 앱 · 알림을 열 수 있어요. 이 태블릿처럼 창에 조절 막대가 안 나오는 기기에서는 꼭 필요해요. 루팅은 필요 없어요.</p>" +
       (sh.granted ? "" : '<div class="btns"><button type="button" class="btn primary" data-s="shizuku">' + (sh.running ? "덜누름 덱스 허락하기" : sh.installed ? "Shizuku 열기" : "Shizuku 설치하기") + "</button></div>") + "</div>");
+    html.push(wallCard());
     html.push(resCard(canCmd));
     html.push('<div class="card"><div class="row"><h3>① 앱을 창으로 띄우기 (자유 창)</h3>' + st(ff, ffSet && !ff || pendingRestart.ff) + "</div>" +
       "<p>덱스처럼 앱을 크기 조절되는 창으로 띄우고, 왼쪽 · 오른쪽 절반에 나란히 놓을 수 있어요.</p>" +
@@ -394,6 +429,10 @@
     $("setupBody").innerHTML = html.join("");
   }
   $("setupBody").addEventListener("click", async function (e) {
+    var wb = e.target.closest("[data-wall]");
+    if (wb) { var wk = wb.getAttribute("data-wall"); if (wk === "pick") pickPhoto(); else setWall({ kind: wk }); return; }
+    var fb = e.target.closest("[data-fit]"); if (fb) { setWall({ fit: fb.getAttribute("data-fit") === "1" }); return; }
+    var db = e.target.closest("[data-dim]"); if (db) { setWall({ dim: +db.getAttribute("data-dim") }); return; }
     var z = e.target.closest("[data-zoom]");
     if (z) { zoom = +z.getAttribute("data-zoom"); save("zoom", zoom); applyZoom(); renderSetup(); return; }
     var rb = e.target.closest("[data-res]");

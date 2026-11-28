@@ -110,3 +110,16 @@ svg { width: 22px; height: 22px; }
   .clock span { display: none; }
   #recentsBtn { display: none; }
 }
+
+/* 바탕화면 개인 설정: 내 사진 · 안드로이드 배경화면 · 어둡게 */
+#wall.photo { background: #05070d var(--wallimg) center / cover no-repeat; }
+#wall.photo.fit { background-size: contain; }
+#wall.system { background: transparent; }
+#wall::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,var(--dim,0)); pointer-events: none; }
+.swatches { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; }
+.sw { width: 84px; height: 48px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; position: relative; overflow: hidden; color: #fff; font: 600 11px/1 system-ui; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; }
+.sw.on { border-color: #8ea0ff; box-shadow: 0 0 0 3px rgba(110,130,255,.3); }
+.sw.w1 { background: linear-gradient(160deg, #23306e, #101634); } .sw.w2 { background: linear-gradient(160deg, #a2482c, #24121f); }
+.sw.w3 { background: linear-gradient(160deg, #1f7a55, #0c1d1a); } .sw.w4 { background: linear-gradient(160deg, #3a3f4c, #15171c); }
+.sw.photo { background: #222 var(--wallimg) center / cover; } .sw.system { background: repeating-linear-gradient(45deg, #2a2f44 0 8px, #222638 8px 16px); }
+.sw span { white-space: nowrap; background: rgba(0,0,0,.45); padding: 2px 6px; border-radius: 6px; }

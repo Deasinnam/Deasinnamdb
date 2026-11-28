@@ -12,6 +12,7 @@ import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.view.WindowManager;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import android.graphics.Canvas;
@@ -79,6 +80,7 @@ public class MainActivity extends Activity {
     private static final String KEY_WINDOWING_MODE = "android.activity.windowingMode";
     private static final String ICON_HOST = "dex.local";
     private static final int REQ_SHIZUKU = 7;
+    private static final int REQ_WALL = 9;
 
     /** 덱스 설정에서 켜고 끌 수 있는 시스템 설정(전역). 이 밖의 값은 건드리지 않습니다. */
     private static final String[] SETTING_KEYS = {
@@ -134,6 +136,7 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
+                if (ICON_HOST.equals(u.getHost()) && "/wall".equals(u.getPath())) return wallResponse();
                 if (ICON_HOST.equals(u.getHost())) return iconResponse(u.getQueryParameter("p"), u.getQueryParameter("c"));
                 return null;
             }
@@ -257,6 +260,61 @@ public class MainActivity extends Activity {
         JSONArray a = new JSONArray();
         for (JSONObject o : out) a.put(o);
         return a;
+    }
+
+    // ───────── 바탕화면 사진 ─────────
+    private java.io.File wallFile() { return new java.io.File(getFilesDir(), "wall.jpg"); }
+
+    private WebResourceResponse wallResponse() {
+        try {
+            WebResourceResponse r = new WebResourceResponse("image/jpeg", null, new java.io.FileInputStream(wallFile()));
+            java.util.Map<String, String> h = new java.util.HashMap<>();
+            h.put("Cache-Control", "no-store");
+            r.setResponseHeaders(h);
+            return r;
+        } catch (Exception e) {
+            return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found", null, new ByteArrayInputStream(new byte[0]));
+        }
+    }
+
+    /** 고른 사진을 화면 크기에 맞게 줄여 앱 안에 저장 (원본 사진은 건드리지 않음) */
+    private void saveWall(Uri uri) {
+        worker.submit(() -> {
+            boolean ok = false;
+            try {
+                Point real = new Point();
+                getWindowManager().getDefaultDisplay().getRealSize(real);
+                int max = Math.max(2560, Math.max(real.x, real.y));
+                Bitmap b = android.graphics.ImageDecoder.decodeBitmap(android.graphics.ImageDecoder.createSource(getContentResolver(), uri), (dec, info, src) -> {
+                    int w = info.getSize().getWidth(), h = info.getSize().getHeight();
+                    float sc = Math.min(1f, (float) max / Math.max(w, h));
+                    dec.setTargetSize(Math.max(1, Math.round(w * sc)), Math.max(1, Math.round(h * sc)));
+                    dec.setAllocator(android.graphics.ImageDecoder.ALLOCATOR_SOFTWARE);
+                });
+                try (java.io.FileOutputStream fo = new java.io.FileOutputStream(wallFile())) { b.compress(Bitmap.CompressFormat.JPEG, 92, fo); }
+                b.recycle();
+                ok = true;
+            } catch (Throwable t) {
+                Log.w("Dex", "wall", t);
+            }
+            boolean fOk = ok;
+            main.post(() -> push(fOk ? "wall:ok" : "wall:fail"));
+        });
+    }
+
+    private void showSystemWallpaper(boolean on) {
+        if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
+        else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
+        web.setBackgroundColor(on ? 0x00000000 : 0xFF0E1222);
+    }
+
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req == REQ_WALL) {
+            if (res == RESULT_OK && data != null && data.getData() != null) saveWall(data.getData());
+            else push("wall:cancel");
+        }
     }
 
     private WebResourceResponse iconResponse(String pkg, String cls) {
@@ -569,6 +627,18 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void setting(String id, String key, boolean on) { async(id, () -> setSetting(key, on)); }
         @JavascriptInterface public void density(String id, int dpi) { async(id, () -> setDensity(dpi)); }
         @JavascriptInterface public void densityInfo(String id) { async(id, () -> readDensity()); }
+        @JavascriptInterface public void pickWallpaper() {
+            main.post(() -> {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*");
+                try { startActivityForResult(i, REQ_WALL); }
+                catch (Exception e) {
+                    try { startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), REQ_WALL); }
+                    catch (Exception e2) { push("wall:fail"); }
+                }
+            });
+        }
+        @JavascriptInterface public boolean hasWallPhoto() { return wallFile().length() > 0; }
+        @JavascriptInterface public void systemWallpaper(boolean on) { main.post(() -> showSystemWallpaper(on)); }
         @JavascriptInterface public void reboot() { worker.submit(() -> Shizu.run("svc power reboot || reboot", 5000)); }
         @JavascriptInterface public void recents() { worker.submit(() -> Shizu.run("input keyevent KEYCODE_APP_SWITCH", 2000)); }
         @JavascriptInterface public void notifications() { worker.submit(() -> statusBar(false)); }

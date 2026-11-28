@@ -8,8 +8,8 @@ android {
         applicationId 'com.daesinnam.dex'
         minSdk 29          // 외부 모니터 데스크톱(보조 디스플레이 홈)은 안드로이드 10부터
         targetSdk 35
-        versionCode 3
-        versionName "0.3.0"
+        versionCode 4
+        versionName "0.4.0"
     }
 
     buildFeatures { buildConfig true }
