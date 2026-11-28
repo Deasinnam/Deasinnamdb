@@ -133,6 +133,7 @@ if alive && echo "$st" | grep -q 'name="strikes" value="2"' && echo "$ct" | grep
 echo "x DESK_SELFTEST: $g crash guard: 2 early crashes -> safe mode opens, reason saved" >> selftest-result.txt
 adb shell am force-stop $PKG; adb shell run-as $PKG rm -f shared_prefs/desk_guard.xml files/last_crash.txt
 # ---- 배포용(서명) APK도 탭 화면에서 열어 봄 (있을 때만) ----
+echo "배포용 APK 찾기: $(pwd)"; ls -la *.apk 2>&1 | head -5
 REL="${2:-}"; [ -z "$REL" ] && [ -f DeolnureumDesk.apk ] && REL=DeolnureumDesk.apk
 if [ -n "$REL" ] && [ -f "$REL" ]; then
   adb uninstall $PKG >/dev/null 2>&1; adb install -r "$REL" >/dev/null 2>&1
