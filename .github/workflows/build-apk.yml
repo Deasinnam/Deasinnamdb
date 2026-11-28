@@ -107,6 +107,17 @@ jobs:
           gh release create localai-ci $(ls localai-screen-*.png selftest-result.txt logcat-tail.txt selftest-image.png logcat-img.txt bench-log.txt 2>/dev/null) --target "$GITHUB_SHA" --prerelease \
             --title "Chat DNR Ai 자동 점검 기록" --notes "빌드 ${{ github.run_number }}"
 
+      # 미리보기 가지(preview-*)는 사이트 · 최신 릴리스에 손대지 않고 관리자 시험용 미리보기 릴리스에만 올림
+      - name: 미리보기 APK 올리기 (localai-preview)
+        if: startsWith(github.ref, 'refs/heads/preview-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts | head -1)
+          gh release delete localai-preview --yes --cleanup-tag || true
+          gh release create localai-preview ChatDNRAi.apk --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Chat DNR Ai $VER 미리보기 (${GITHUB_REF_NAME}, 사이트 미공개)" --notes "관리자 시험용. 빌드 ${{ github.run_number }} ($VARIANT)"
+
       - name: Releases에 APK 올리기
         if: github.ref == 'refs/heads/deolnureum-localai'
         env:
