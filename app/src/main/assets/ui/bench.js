@@ -33,6 +33,15 @@
     "ai.speech":     { label: "음성 명령 알아듣기", unit: "speech", dir: "up", target: 2, ok: 2, mid: 1 },
     "ai.tts":        { label: "한국어 음성 합성 준비", unit: "ms", dir: "down", target: 600, ok: 2000, mid: 5000 },
     "ai.ram":        { label: "기기 안 AI 모델을 올릴 메모리", unit: "gb", dir: "up", target: 12, ok: 11, mid: 7.5 },
+    "jv.load":       { label: "자비스 AI 준비 (모델 올리기)", unit: "ms", dir: "down", target: 3000, ok: 10000, mid: 30000 },
+    "jv.ttft":       { label: "질문하고 첫 글자가 나올 때까지", unit: "ms", dir: "down", target: 600, ok: 2000, mid: 5000 },
+    "jv.tps":        { label: "답 쓰는 속도", unit: "tps", dir: "up", target: 25, ok: 10, mid: 4 },
+    "jv.cps":        { label: "답 쓰는 속도 (글자)", unit: "cps", dir: "up", target: 40, ok: 15, mid: 6 },
+    "jv.prefill":    { label: "질문 읽는 속도", unit: "tps", dir: "up", target: 300, ok: 80, mid: 20 },
+    "jv.tts":        { label: "답을 목소리로 만들기 (한 문장)", unit: "ms", dir: "down", target: 500, ok: 1500, mid: 4000 },
+    "jv.stt":        { label: "말 받아 적기 (한 문장)", unit: "ms", dir: "down", target: 1500, ok: 4000, mid: 10000 },
+    "jv.sttAcc":     { label: "받아 적기 정확도", unit: "pct", dir: "up", target: 95, ok: 85, mid: 60 },
+    "jv.img":        { label: "그림 1장 그리기", unit: "ms", dir: "down", target: 20000, ok: 45000, mid: 90000 },
     "speed.gauge":   { label: "계기판 화면 부드러움", unit: "fps", dir: "up", target: 60, ok: 55, mid: 40 },
     "speed.accel":   { label: "가속도 센서 속도", unit: "hz", dir: "up", target: 400, ok: 100, mid: 50 },
     "speed.gyro":    { label: "자이로 센서 속도", unit: "hz", dir: "up", target: 400, ok: 100, mid: 50 },
@@ -48,7 +57,7 @@
     { id: "video", name: "영상",       full: "영상 편집",         w: 15, icon: "work", app: "com.daesinnam.work", run: [["native", "video"]] },
     { id: "web",   name: "브라우저",   full: "브라우저",          w: 10, icon: "web",  app: "com.daesinnam.browser", run: [["web", "suite"], ["native", "memory"]] },
     { id: "game",  name: "게임",       full: "게임",              w: 10, icon: "game", app: "com.daesinnam.game", run: [["web", "gl"]] },
-    { id: "ai",    name: "자비스",     full: "AI 보이스 자비스",  w: 10, icon: "ai",   app: null, run: [["native", "ai"]] },
+    { id: "ai",    name: "자비스",     full: "AI 보이스 자비스",  w: 10, icon: "ai",   app: "com.daesinnam.localai", run: [["jarvis", "ai"]] },
     { id: "speed", name: "스피드미터", full: "스피드미터",        w: 10, icon: "speed", app: "speed", run: [["web", "gauge"], ["native", "sensors"]] }
   ];
   var SPEED_ICON = '<svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#1f2a33"/><path d="M12 31a12 12 0 1 1 24 0" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round"/><path d="M24 31l6-8" stroke="#ffc21a" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="31" r="2.5" fill="#ffc21a"/></svg>';
@@ -87,6 +96,9 @@
       case "gb": return Math.round(v) + "GB";
       case "hz": return Math.round(v) + "Hz";
       case "bool": return v ? "있음" : "없음";
+      case "tps": return v.toFixed(1) + " 토큰/초";
+      case "cps": return Math.round(v) + " 글자/초";
+      case "pct": return Math.round(v) + "%";
     }
     return String(v);
   }
@@ -128,7 +140,7 @@
   function toast(t) { var e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(function () { e.hidden = true; }, 2600); }
 
   /* ───────── 시작 화면 ───────── */
-  var device = {}, installed = [];
+  var device = {}, installed = [], jarvis = {};
   function readJSON(s, d) { try { return JSON.parse(s); } catch (e) { return d; } }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
@@ -142,17 +154,18 @@
       "<span><b>화면</b>" + esc(device.screen) + " · " + esc(device.maxHz || device.hz) + "Hz</span><span><b>안드로이드</b>" + esc(device.android) + "</span>";
     var list = [
       ["work", "워크", "com.daesinnam.work"], ["desk", "데스크탑", "com.daesinnam.desk"], ["web", "브라우저", "com.daesinnam.browser"],
-      ["game", "게임", "com.daesinnam.game"], ["speed", "스피드", "speed"], ["ai", "자비스", null]
+      ["game", "게임", "com.daesinnam.game"], ["speed", "스피드", "speed"], ["ai", "자비스", "jarvis"]
     ];
     var n = 0;
+    jarvis = A ? readJSON(A.jarvis(), {}) : {};
     $("apps").innerHTML = list.map(function (a) {
-      var app = findApp(a[2]);
-      var cls = a[2] === null ? "soon off" : app ? "" : "off";
+      var app = a[2] === "jarvis" ? (jarvis.installed ? jarvis : null) : findApp(a[2]);
+      var cls = app ? (a[2] === "jarvis" && !jarvis.bench ? "soon" : "") : "off";
       if (app) n++;
-      var em = a[2] === null ? "제작 중" : app ? "v" + esc(app.version || "") : "미설치";
+      var em = !app ? "미설치" : "v" + esc(app.version || "") + (a[2] === "jarvis" && !jarvis.bench ? " · 업데이트 필요" : "");
       return '<div class="app ' + cls + '">' + iconHtml(a[0]) + "<span>" + a[1] + "</span><em>" + em + "</em></div>";
     }).join("");
-    $("appCount").textContent = "5개 중 " + n + "개";
+    $("appCount").textContent = "6개 중 " + n + "개";
     var hist = loadHistory();
     $("historyBtn").hidden = !hist.length;
     renderCond();
@@ -179,7 +192,8 @@
   syncModes();
 
   /* ───────── 측정 진행 ───────── */
-  var pendingNative = null, invalid = false, stopFlag = false;
+  var pendingNative = null, pendingJarvis = null, externalRun = false, invalid = false, stopFlag = false;
+  Bench.jarvisDone = function (json) { var p = pendingJarvis; pendingJarvis = null; if (p) p(readJSON(json, { cancel: true })); };
   Bench.nativeDone = function (json) { var r = readJSON(json, {}); var p = pendingNative; pendingNative = null; if (p) p(r); };
   Bench.progress = function (json) {
     var m = readJSON(json, {});
@@ -187,7 +201,7 @@
     if (m.perf != null) { $("statNow").textContent = m.perf + "%"; pushGraph(m.perf, 100); }
     if (m.tempC) $("statTemp").textContent = m.tempC.toFixed(1) + "°C";
   };
-  Bench.paused = function () { if (running) invalid = true; };
+  Bench.paused = function () { if (running && !externalRun) invalid = true; };  // 자비스 측정 화면이 위에 뜬 것은 괜찮음
   function runNative(id, mode) {
     return new Promise(function (resolve) {
       if (!A) { resolve({ id: id, items: [] }); return; }
@@ -243,15 +257,16 @@
         $("statNow").textContent = "—";
         resetGraph();
         renderSteps(done, c.id, mode === "full");
-        var items = [];
+        var items = [], meta = null;
         for (var j = 0; j < c.run.length; j++) {
           var kind = c.run[j][0], id = c.run[j][1];
-          var r = kind === "native" ? await runNative(id) : await WEB[id]();
+          var r = kind === "native" ? await runNative(id) : kind === "jarvis" ? await runJarvis() : await WEB[id]();
+          if (r.meta) meta = r.meta;
           (r.items || []).forEach(function (it) { items.push(it); });
           if (r.error) log("ERROR " + id + " " + r.error);
         }
         items.forEach(function (it) { it.score = it.na ? null : itemScore(it.k, it.v); it.verdict = it.na ? "na" : verdict(it.k, it.v); });
-        done[c.id] = { score: catScore(items), items: items };
+        done[c.id] = { score: catScore(items), items: items, meta: meta };
         log("CAT " + c.id + " " + done[c.id].score + " " + JSON.stringify(items));
         await sleep(300);
       }
@@ -293,6 +308,45 @@
     startRun(m);
   });
   $("stopBtn").addEventListener("click", function () { stopFlag = true; if (A) A.stop(); });
+
+  /* ───────── AI 보이스 자비스: Chat DNR Ai 0.6.1+의 벤치 입구로 직접 잼, 없으면 기본 측정 ───────── */
+  async function runJarvis() {
+    var info = A ? readJSON(A.jarvis(), {}) : {};
+    if (info.bench) {
+      $("runStep").textContent = "자비스 화면에서 재는 중 · 모델 올리기 → 답 쓰기 → 받아 적기 → 그림";
+      externalRun = true;
+      var j = await new Promise(function (resolve) {
+        pendingJarvis = resolve;
+        A.runJarvis();
+        setTimeout(function () { if (pendingJarvis) { pendingJarvis = null; resolve({ cancel: true, na: "시간 초과 (15분)" }); } }, 15 * 60 * 1000);
+      });
+      await sleep(600);
+      externalRun = false;
+      log("JARVIS " + JSON.stringify(j).slice(0, 600));
+      if (!j.cancel && j.ready) return { items: jarvisItems(j), meta: { via: "jarvis", version: j.version, model: j.model, backend: (j.text || {}).backend, error: j.error } };
+      var why = j.ready === false ? (j.na || "자비스에 AI 모델이 없어요") : j.na || "자비스 측정을 그만뒀어요";
+      var r0 = await runNative("ai");
+      r0.meta = { via: "basic", why: why, version: info.version };
+      return r0;
+    }
+    var r = await runNative("ai");
+    r.meta = { via: "basic", why: info.installed ? "Chat DNR Ai " + info.version + "에는 벤치 입구가 없어요 (0.6.1 이상 필요)" : "자비스(Chat DNR Ai)가 설치되어 있지 않아요" };
+    return r;
+  }
+  function jarvisItems(j) {
+    var t = j.text || {}, v = j.voice || {}, im = j.image || {}, out = [];
+    function add(k, val) { if (val != null && !isNaN(val) && val > 0) out.push({ k: k, v: val }); }
+    add("jv.load", t.loadMs);
+    add("jv.ttft", t.ttftLibMs > 0 ? t.ttftLibMs : t.ttftMs);
+    if (t.tps > 0) add("jv.tps", t.tps); else add("jv.cps", t.cps);
+    add("jv.prefill", t.prefillTps);
+    if (v.na) out.push({ k: "jv.stt", na: v.na });
+    else { add("jv.tts", v.ttsMs); add("jv.stt", v.sttMs); if (v.accuracy != null) out.push({ k: "jv.sttAcc", v: v.accuracy }); }
+    if (im.na) out.push({ k: "jv.img", na: im.na });
+    else add("jv.img", im.drawMs);
+    if (!out.length) out.push({ k: "jv.tps", na: j.error || "측정값 없음" });
+    return out;
+  }
 
   /* ───────── 웹 측정 (화면 · 웹 · 그래픽) ───────── */
   function stageOn(on) { var s = $("stage"); s.innerHTML = ""; s.classList.toggle("on", !!on); return s; }
@@ -551,7 +605,9 @@
         var val = it.na ? it.na : fmt(it.k, it.v);
         return '<li><em class="' + v + '" aria-label="' + ({ ok: "충분", mid: "느림", no: "어려움", na: "잴 수 없음" }[v]) + '">' + sym + "</em><span>" + ITEMS[it.k].label + '</span><b class="' + v + '">' + esc(val) + "</b></li>";
       }).join("");
-      var note = c.app === null ? '<li><em class="na">i</em><span>자비스가 나오기 전이라 벤치 안에서 같은 작업으로 잽니다</span><b class="na">기본 측정</b></li>' : "";
+      var m = r.meta, note = "";
+      if (m && m.via === "jarvis") note = '<li><em class="na">i</em><span>Chat DNR Ai ' + esc(m.version) + " · " + esc(m.model) + (m.backend ? " · " + esc(m.backend) : "") + "에서 직접 잰 값</span><b class=\"na\">자비스</b></li>";
+      else if (m && m.via === "basic") note = '<li><em class="na">i</em><span>' + esc(m.why) + ". 벤치 안에서 같은 종류의 작업으로 잽니다</span><b class=\"na\">기본 측정</b></li>";
       return '<section class="dsec"><header>' + iconHtml(c.icon) + "<strong>" + String(i + 1).padStart(2, "0") + " " + c.full + "</strong><b>" + (r.score == null ? "—" : r.score) + "</b></header><ul>" + rows + note + "</ul></section>";
     }).join("");
   }

@@ -1,7 +1,10 @@
 package com.daesinnam.bench;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.ResolveInfo;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +31,9 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity {
     static final String TAG = "Bench";
     static final String SELFTEST_TAG = "BENCH_SELFTEST";
+    static final String JARVIS_PKG = "com.daesinnam.localai";
+    static final String ACTION_JARVIS_BENCH = "com.daesinnam.ai.action.BENCH";
+    static final int REQ_JARVIS = 41;
 
     private WebView web;
     private SharedPreferences prefs;
@@ -79,6 +85,33 @@ public class MainActivity extends Activity {
         cancel = true;
         worker.shutdownNow();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req != REQ_JARVIS) return;
+        String out = data != null ? data.getStringExtra("bench") : null;
+        if (res != RESULT_OK || out == null) {
+            String err = data != null ? data.getStringExtra("error") : null;
+            out = "{\"cancel\":true" + (err != null ? ",\"na\":" + JSONObject.quote(err) : "") + "}";
+        }
+        js("jarvisDone", out);
+    }
+
+    /** 자비스(Chat DNR Ai) 설치 여부 · 버전 · 벤치 입구가 있는지 */
+    String jarvisInfo() {
+        try {
+            JSONObject o = new JSONObject();
+            PackageInfo pi;
+            try { pi = getPackageManager().getPackageInfo(JARVIS_PKG, 0); } catch (Exception e) { o.put("installed", false); return o.toString(); }
+            o.put("installed", true);
+            o.put("version", pi.versionName);
+            Intent i = new Intent(ACTION_JARVIS_BENCH).setPackage(JARVIS_PKG);
+            ResolveInfo ri = getPackageManager().resolveActivity(i, 0);
+            o.put("bench", ri != null);
+            return o.toString();
+        } catch (Exception e) { return "{}"; }
     }
 
     void js(String fn, String arg) {
@@ -144,6 +177,19 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface public boolean selftest() { return selftest; }
+
+        @JavascriptInterface public String jarvis() { return jarvisInfo(); }
+
+        /** 자비스의 벤치 입구를 엽니다. 결과는 Bench.jarvisDone(JSON)으로 */
+        @JavascriptInterface public void runJarvis() {
+            main.post(() -> {
+                try {
+                    startActivityForResult(new Intent(ACTION_JARVIS_BENCH).setPackage(JARVIS_PKG), REQ_JARVIS);
+                } catch (Exception e) {
+                    js("jarvisDone", "{\"cancel\":true,\"na\":\"자비스를 열지 못했어요\"}");
+                }
+            });
+        }
 
         @JavascriptInterface public void log(String s) { Log.i(SELFTEST_TAG, s); }
 

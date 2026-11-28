@@ -11,6 +11,11 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- AI 보이스 자비스(Chat DNR Ai)의 벤치 입구 -->
+        <package android:name="com.daesinnam.localai" />
+        <intent>
+            <action android:name="com.daesinnam.ai.action.BENCH" />
+        </intent>
         <!-- 음성 인식 · 음성 합성 엔진이 있는지 확인 (AI 보이스 자비스 기본 측정) -->
         <intent>
             <action android:name="android.speech.RecognitionService" />
