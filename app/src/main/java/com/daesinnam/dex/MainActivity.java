@@ -459,7 +459,7 @@ public class MainActivity extends Activity {
     }
 
     // ───────── 해상도 (화면 밀도) : 작을수록 한 화면에 더 많이 보임 ─────────
-    private JSONObject densityInfo() throws JSONException {
+    private JSONObject readDensity() throws JSONException {
         JSONObject o = new JSONObject().put("current", getResources().getDisplayMetrics().densityDpi);
         if (!Shizu.granted()) return o.put("need", "shizuku");
         String out = Shizu.run("wm density -d " + displayId(), 2500);
@@ -476,7 +476,7 @@ public class MainActivity extends Activity {
         if (!Shizu.granted()) return new JSONObject().put("ok", false).put("need", "shizuku");
         if (dpi != 0 && (dpi < 120 || dpi > 640)) return new JSONObject().put("ok", false).put("error", "범위 밖");
         String out = Shizu.run("wm density " + (dpi == 0 ? "reset" : String.valueOf(dpi)) + " -d " + displayId(), 3000);
-        return densityInfo().put("ok", out != null && !out.toLowerCase(Locale.ROOT).contains("exception"));
+        return readDensity().put("ok", out != null && !out.toLowerCase(Locale.ROOT).contains("exception"));
     }
 
     private void open(Intent i) {
@@ -531,7 +531,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void taskAction(String id, int task, String action, double tb) { async(id, () -> MainActivity.this.taskAction(task, action, tb)); }
         @JavascriptInterface public void setting(String id, String key, boolean on) { async(id, () -> setSetting(key, on)); }
         @JavascriptInterface public void density(String id, int dpi) { async(id, () -> setDensity(dpi)); }
-        @JavascriptInterface public void densityInfo(String id) { async(id, () -> densityInfo()); }
+        @JavascriptInterface public void densityInfo(String id) { async(id, () -> readDensity()); }
         @JavascriptInterface public void reboot() { worker.submit(() -> Shizu.run("svc power reboot || reboot", 5000)); }
         @JavascriptInterface public void recents() { worker.submit(() -> Shizu.run("input keyevent KEYCODE_APP_SWITCH", 2000)); }
         @JavascriptInterface public void notifications() { worker.submit(() -> statusBar(false)); }
