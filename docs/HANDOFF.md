@@ -173,7 +173,7 @@ tools/                      빌드·점검 스크립트 (아래)
 | 사진(PhotoCraft) | 원작에 한국어 있음. 처음 열 때 환경설정(localStorage `photocraft.preferences`)에 언어가 없으면 `ko`로 적어 둠 (craft-common.js) |
 | 동영상(FilmCraft) | 원작에 한국어 있음. film-bridge.js 가 기억한 언어가 없으면 `ko`로 시작 |
 | 사진 정리(LightCraft) | 원작 i18n(영어 문구가 키인 JSON)에 `ko` 추가: `tools/i18n/light/ko.json`(2454) · `ko-formats.json`(328). `tools/lightcraft_patch.py <소스>` 가 locales 에 복사(자리 표시 검사) + `Locale::Ko` + 언어 메뉴 + wasm 글꼴에 NanumGothic. CI가 소스에서 `cargo xtask web`(CRAFT_FONTS_DIR=craft-fonts)로 빌드해 공식 웹 빌드 폴더 위에 덮어씀 |
-| 녹음(SoundCraft) | 원작에 다국어 체계가 없음 → `tools/soundcraft_patch.py <소스>` 가 Cargo.toml 의 egui 포크 rev 를 vendor/egui 에 받아 `egui::dn_tr`(사전 + format! 모양 맞추기, 캐시) 를 넣고 WidgetText/RichText 만들기 · Painter::text 에서 바꿈. egui 가족 전체를 path 로 바꿈(두 벌 방지). 사전: `tools/i18n/sound/ko.json`(1255) · `ko-patterns.json`(94, 모양 안 `{0}` 은 이름 없는 자리 순서). CI가 trunk 로 빌드 |
+| 녹음(SoundCraft) | 원작에 다국어 체계가 없음 → `tools/soundcraft_patch.py <소스>` 가 Cargo.toml 의 egui 포크 rev 를 `<소스>-egui` 옆 폴더에 받아 `egui::dn_tr`(사전 + format! 모양 맞추기, 캐시) 를 넣고 WidgetText/RichText 만들기 · Painter::text 에서 바꿈. egui 가족 전체를 path 로 바꿈(두 벌 방지). 사전: `tools/i18n/sound/ko.json`(1255) · `ko-patterns.json`(94, 모양 안 `{0}` 은 이름 없는 자리 순서). CI가 trunk 로 빌드 |
 
 - 사전 갱신: 원작 새 버전에서 문구가 바뀌면 그 문구만 영어로 나옴(깨지지 않음). LightCraft 는 패치가 ja 에 없는 키를 버리므로 새 문구는 ja 키를 기준으로 추가.
 - CI 시간이 늘어남(소스 빌드 3개). 디스크 부족 대비로 처음에 쓰지 않는 도구를 지움.

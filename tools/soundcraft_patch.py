@@ -2,7 +2,7 @@
 """SoundCraft 화면 문구를 한국어로 바꾸는 패치.
 
 SoundCraft에는 다국어 체계가 없으므로, SoundCraft가 쓰는 egui(storytold 포크)를
-vendor/egui 에 받아 두고 글자가 위젯으로 들어가는 자리(WidgetText·RichText 만들기,
+<소스>-egui 옆 폴더에 받아 두고 글자가 위젯으로 들어가는 자리(WidgetText·RichText 만들기,
 Painter::text)에서 사전으로 바꿔 넣는다.
 
   python3 tools/soundcraft_patch.py <soundcraft 소스 폴더> [<egui 포크 폴더>]
@@ -242,7 +242,8 @@ def main():
     sc = Path(sys.argv[1]).resolve()
     cargo = (sc / "Cargo.toml").read_text(encoding="utf-8")
     m = re.search(r'egui = \{ git = "(https://github.com/[^"]+/egui\.git)", rev = "([0-9a-f]+)" \}', cargo)
-    vendor = sc / "vendor" / "egui"
+    # soundcraft 폴더 안에 두면 cargo 가 egui 크레이트의 workspace 상속을 soundcraft 쪽에서 찾으므로 옆 폴더에 둔다
+    vendor = sc.parent / (sc.name + "-egui")
     if len(sys.argv) > 2:
         egui = Path(sys.argv[2]).resolve()
     elif m:
