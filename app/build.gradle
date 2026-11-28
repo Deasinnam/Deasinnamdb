@@ -1,0 +1,54 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.daesinnam.dex'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.daesinnam.dex'
+        minSdk 29          // 외부 모니터 데스크톱(보조 디스플레이 홈)은 안드로이드 10부터
+        targetSdk 35
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    buildFeatures { buildConfig true }
+
+    // 서명 키는 저장소에 두지 않습니다. CI가 GitHub 비밀값에서 꺼내 씁니다 (다른 덜누름 앱과 같은 키).
+    def keystore = System.getenv('AMP_KEYSTORE_FILE')
+    signingConfigs {
+        daesinnam {
+            if (keystore) {
+                storeFile file(keystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('AMP_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('AMP_KEY_ALIAS') ?: 'amp'
+                keyPassword System.getenv('AMP_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (keystore) signingConfig signingConfigs.daesinnam
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+    // 덱스 켜기 · 창 다루기: Shizuku (사용자가 따로 설치한 무료 공개 앱과 연결, 루팅 필요 없음)
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+}
