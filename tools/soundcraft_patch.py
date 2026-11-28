@@ -155,6 +155,12 @@ fn match_pieces<'a>(pieces: &[Piece], s: &'a str, caps: &mut Vec<&'a str>) -> bo
     }
 }
 
+/// 대문자로만 쓴 탭 이름(예: "UNDO HISTORY")은 같은 글자의 사전 문구로 찾음
+fn upper() -> &'static HashMap<String, &'static str> {
+    static MAP: OnceLock<HashMap<String, &'static str>> = OnceLock::new();
+    MAP.get_or_init(|| data::PLAIN.iter().map(|(en, ko)| (en.to_uppercase(), *ko)).collect())
+}
+
 fn plain_or(s: &str) -> &str {
     plain().get(s).copied().unwrap_or(s)
 }
@@ -186,6 +192,11 @@ pub fn tr(s: String) -> String {
         return s;
     }
     if let Some(k) = plain().get(s.as_str()) {
+        return (*k).to_owned();
+    }
+    if s.chars().any(char::is_uppercase) && !s.chars().any(char::is_lowercase)
+        && let Some(k) = upper().get(s.as_str())
+    {
         return (*k).to_owned();
     }
     if let Some(hit) = CACHE.with(|c| c.borrow().get(&s).cloned()) {
@@ -230,9 +241,13 @@ def patch_egui(egui):
     (src / "widget_text.rs").write_text(wt, encoding="utf-8")
 
     pt = (src / "painter.rs").read_text(encoding="utf-8")
-    pt = sub_once(pt, "let galley = self.layout_no_wrap(text.to_string(), font_id, text_color);\n        let rect = anchor",
-                  "let galley = self.layout_no_wrap(crate::dn_tr::tr(text.to_string()), font_id, text_color);\n        let rect = anchor",
-                  "Painter::text")
+    # Painter::text 도 layout_no_wrap 을 거치므로 layout 두 곳에서 바꿈 (위젯 밖에서 직접 그리는 글자)
+    pt = sub_once(pt, "    ) -> Arc<Galley> {\n        self.fonts_mut(|f| f.layout(text, font_id, color, wrap_width))",
+                  "    ) -> Arc<Galley> {\n        let text = crate::dn_tr::tr(text);\n        self.fonts_mut(|f| f.layout(text, font_id, color, wrap_width))",
+                  "Painter::layout")
+    pt = sub_once(pt, "    ) -> Arc<Galley> {\n        self.fonts_mut(|f| f.layout(text, font_id, color, f32::INFINITY))",
+                  "    ) -> Arc<Galley> {\n        let text = crate::dn_tr::tr(text);\n        self.fonts_mut(|f| f.layout(text, font_id, color, f32::INFINITY))",
+                  "Painter::layout_no_wrap")
     (src / "painter.rs").write_text(pt, encoding="utf-8")
 
 

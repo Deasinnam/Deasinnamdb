@@ -245,6 +245,7 @@ jobs:
           # 공식 웹 빌드의 이전 프로그램 파일(이름에 해시가 붙음)을 지우고 새로 만든 것으로 바꿈
           rm -rf "$SOUND_SITE"/soundcraft-web-* "$SOUND_SITE"/snippets "$SOUND_SITE"/index.html "$SOUND_SITE"/*.png
           cp -r "$OUT"/. "$SOUND_SITE"/
+          rm -f "$SOUND_SITE"/.trunk-lock
           grep -c "사진\|세션 저장" "$SOUND_SITE"/*.wasm || true
 
       # ===================== 합치기 · 크롬 점검 =====================
